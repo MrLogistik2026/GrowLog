@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<meta name="theme-color" content="#111111"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="GrowSmart"/>
+<link rel="manifest" href="manifest.json"/>
+<title>GrowSmart</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg: #0f0f0f;
+  --surface: #161616;
+  --card: #1c1c1c;
+  --card2: #212121;
+  --border: #2a2a2a;
+  --border-g: #243524;
+  --green: #4caf70;
+  --green-dk: #2d6e45;
+  --green-bg: #0d1e0d;
+  --green-mid: #162216;
+  --green-hint: #3a6e4a;
+  --blue: #5aabf0;
+  --blue-bg: #0d1e2e;
+  --teal: #5adada;
+  --teal-bg: #0e1a1a;
+  --teal-bd: #1e3535;
+  --amber: #c8a04a;
+  --amber-bg: #2a1e0d;
+  --purple: #b06ac8;
+  --purple-bg: #1a1030;
+  --red: #e06060;
+  --red-bg: #2a0d0d;
+  --text: #e0e0e0;
+  --text-sub: #aaa;
+  --text-muted: #666;
+  --text-hint: #444;
+  --font: 'DM Sans', sans-serif;
+  --mono: 'DM Mono', monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-family:var(--font);color:var(--text);}
+#app{width:100%;height:100%;display:flex;flex-direction:column;max-width:480px;margin:0 auto;position:relative;}
+
+/* SCREENS */
+.screen{display:none;flex-direction:column;flex:1;overflow:hidden;}
+.screen.active{display:flex;}
+.scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px;display:flex;flex-direction:column;gap:10px;}
+.scroll::-webkit-scrollbar{display:none;}
+
+/* TOPBAR */
+.topbar{background:var(--surface);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:0.5px solid var(--border);flex-shrink:0;}
+.topbar-title{font-size:14px;font-weight:500;color:var(--text);}
+.app-title{font-size:17px;font-weight:600;color:var(--text);letter-spacing:-0.3px;}
+.icon-btn{background:none;border:none;color:var(--green);font-size:22px;cursor:pointer;padding:4px;display:flex;align-items:center;}
+.save-pill{background:var(--green-bg);border:0.5px solid var(--green-dk);border-radius:7px;padding:4px 10px;font-size:11px;color:var(--green);cursor:pointer;font-family:var(--font);}
+
+/* BOTTOM NAV */
+.bottom-nav{background:var(--surface);border-top:0.5px solid var(--border);display:flex;padding-bottom:env(safe-area-inset-bottom);flex-shrink:0;}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 0 6px;cursor:pointer;background:none;border:none;opacity:0.45;transition:opacity 0.15s;}
+.nav-btn.active{opacity:1;}
+.nav-icon{font-size:20px;line-height:1;}
+.nav-label{font-size:9px;color:var(--green);font-weight:500;font-family:var(--font);}
+
+/* CARDS */
+.card{background:var(--card);border-radius:14px;border:0.5px solid var(--border);padding:14px;}
+.card-sm{background:var(--card);border-radius:10px;border:0.5px solid var(--border);padding:10px 12px;}
+.sect-head{font-size:10px;color:var(--green);font-weight:500;letter-spacing:0.06em;padding:3px 0 1px;}
+
+/* STAT BOXES */
+.stat-row{display:flex;gap:8px;}
+.stat-box{flex:1;background:var(--surface);border-radius:10px;padding:10px 12px;}
+.stat-lbl{font-size:9px;color:var(--text-hint);margin-bottom:3px;}
+.stat-val{font-size:18px;font-weight:500;color:var(--text);}
+.stat-unit{font-size:10px;color:var(--text-hint);}
+
+/* PHASE PILL */
+.phase-pill{display:inline-block;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:500;}
+
+/* PROGRESS */
+.prog-bg{height:4px;background:var(--border);border-radius:4px;overflow:hidden;}
+.prog-fill{height:100%;border-radius:4px;transition:width 0.3s;}
+
+/* CYCLE CARD */
+.cycle-card{background:var(--card);border-radius:14px;border:0.5px solid var(--border);padding:14px;display:flex;flex-direction:column;gap:10px;cursor:pointer;active:opacity:0.8;}
+.cycle-header-row{display:flex;align-items:center;gap:10px;}
+.c-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.c-name{font-size:13px;font-weight:500;color:var(--text);flex:1;}
+.c-day{font-size:11px;color:var(--text-muted);}
+
+/* INPUTS */
+.inp-wrap{display:flex;flex-direction:column;gap:3px;flex:1;}
+.inp-label{font-size:9px;color:var(--text-hint);}
+.inp-field{background:#1c1c1c;border:0.5px solid var(--border);border-radius:7px;padding:6px 9px;color:var(--text-sub);font-size:10px;font-family:var(--font);width:100%;outline:none;}
+.inp-field:focus{border-color:var(--green-hint);}
+.row2{display:flex;gap:8px;}
+
+/* VPD BOX */
+.vpd-box{background:var(--teal-bg);border:0.5px solid var(--teal-bd);border-radius:10px;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.vpd-lbl{font-size:9px;color:#3a7a7a;margin-bottom:2px;}
+.vpd-val{font-size:22px;font-weight:500;color:var(--teal);font-family:var(--mono);}
+.vpd-unit{font-size:10px;color:#3a7a7a;}
+.vpd-pill{padding:2px 9px;border-radius:20px;font-size:10px;font-weight:500;display:inline-block;margin-top:4px;}
+.vpd-scale-wrap{display:flex;flex-direction:column;gap:3px;width:90px;}
+.vpd-scale{display:flex;height:6px;border-radius:3px;overflow:hidden;}
+.vpd-seg{flex:1;}
+.vpd-marker-row{position:relative;height:7px;}
+.vpd-marker{position:absolute;top:0;width:2px;height:9px;background:#fff;border-radius:2px;transition:left 0.3s;}
+.vpd-nums{display:flex;justify-content:space-between;font-size:8px;color:var(--text-hint);}
+
+/* NUTRIENT TABLE */
+.tbl-header-row{background:var(--green-mid);border-radius:10px 10px 0 0;border:0.5px solid var(--border-g);padding:7px 10px;display:flex;align-items:center;justify-content:space-between;}
+.tbl-header-title{font-size:11px;font-weight:500;color:#8de0a8;}
+.tbl-wrap{background:var(--surface);border:0.5px solid var(--border);border-top:none;border-radius:0 0 10px 10px;overflow:hidden;}
+.tbl-head{display:grid;grid-template-columns:1fr 48px 52px;background:var(--green-mid);padding:4px 10px;border-bottom:0.5px solid var(--border);}
+.th{font-size:9px;color:var(--green);font-weight:500;}
+.th:not(:first-child){text-align:right;}
+.tbl-row{display:grid;grid-template-columns:1fr 48px 52px;padding:4px 10px;border-bottom:0.5px solid #1e1e1e;align-items:center;}
+.tbl-row:last-child{border:none;}
+.tbl-row:nth-child(odd){background:#191919;}
+.tbl-row:nth-child(even){background:var(--surface);}
+.t-name{font-size:10px;color:#999;}
+.t-hint{font-size:10px;color:var(--green-hint);text-align:right;font-family:var(--mono);}
+.t-inp{background:#1e1e1e;border:0.5px solid var(--border);border-radius:5px;padding:2px 5px;color:#bbb;font-size:10px;font-family:var(--mono);width:48px;text-align:right;outline:none;}
+.t-inp:focus{border-color:var(--green-hint);background:#1a2a1a;}
+
+/* NOTE */
+.note-wrap{background:var(--surface);border:0.5px solid var(--border);border-radius:10px;padding:8px 10px;display:flex;flex-direction:column;gap:4px;}
+.note-ta{background:#1c1c1c;border:0.5px solid var(--border);border-radius:7px;padding:7px 9px;color:#aaa;font-size:10px;font-family:var(--font);width:100%;min-height:68px;resize:none;outline:none;line-height:1.6;}
+.note-ta:focus{border-color:var(--green-hint);}
+
+/* AI STRIP */
+.ai-strip{background:var(--green-bg);border:0.5px solid #1e3d28;border-radius:9px;padding:8px 11px;display:flex;gap:7px;align-items:flex-start;}
+.ai-dot{width:6px;height:6px;border-radius:50%;background:var(--green);flex-shrink:0;margin-top:3px;}
+.ai-txt{font-size:10px;color:#7ab88a;line-height:1.6;flex:1;}
+.ai-txt b{color:var(--green);font-weight:500;}
+
+/* BIG SAVE BTN */
+.big-save{background:var(--green-dk);border:none;border-radius:10px;padding:12px;font-size:13px;font-weight:500;color:#d0f0e0;width:100%;cursor:pointer;font-family:var(--font);}
+
+/* CALENDAR */
+.cal-day-header{display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:4px;}
+.cal-day-lbl{text-align:center;font-size:9px;color:var(--text-muted);}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;}
+.cal-cell{aspect-ratio:0.85;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;position:relative;border:0.5px solid transparent;}
+.cal-cell.active{background:var(--surface);}
+.cal-cell.today{border-color:var(--green)!important;}
+.cal-num{font-size:11px;color:var(--text-sub);font-weight:500;line-height:1;}
+.cal-cell.today .cal-num{color:var(--green);}
+.cal-dot{width:4px;height:4px;border-radius:50%;position:absolute;bottom:4px;}
+.cal-legend{display:flex;flex-wrap:wrap;gap:10px;padding:6px 0;}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text-muted);}
+.legend-dot{width:8px;height:8px;border-radius:50%;}
+.month-nav{display:flex;align-items:center;justify-content:space-between;padding:0 4px;}
+.month-title{font-size:15px;font-weight:500;color:var(--text);}
+.month-btn{background:none;border:none;color:var(--green);font-size:20px;cursor:pointer;padding:4px 8px;}
+
+/* SETTINGS */
+.tab-row{display:flex;gap:6px;flex-wrap:wrap;}
+.tab-item{display:flex;align-items:center;gap:5px;background:var(--surface);border-radius:8px;padding:5px 10px;border:0.5px solid var(--border);cursor:pointer;font-size:11px;color:var(--text-muted);font-family:var(--font);}
+.tab-item.active{border-color:var(--green);background:var(--green-bg);color:var(--green);}
+.tab-dot{width:6px;height:6px;border-radius:50%;}
+.dur-grid{display:flex;flex-wrap:wrap;gap:8px;}
+.dur-box{display:flex;flex-direction:column;gap:3px;width:calc(33% - 6px);}
+.dur-lbl{font-size:9px;color:var(--text-hint);}
+.dur-inp{background:var(--card2);border:0.5px solid var(--border);border-radius:7px;padding:5px;color:var(--text-sub);font-size:12px;text-align:center;width:100%;outline:none;font-family:var(--mono);}
+.sub-head{font-size:9px;color:var(--text-hint);font-weight:500;letter-spacing:0.04em;margin-top:6px;}
+.switch-row{display:flex;align-items:center;justify-content:space-between;}
+.switch{position:relative;width:42px;height:24px;cursor:pointer;}
+.switch input{opacity:0;width:0;height:0;}
+.slider{position:absolute;inset:0;background:#333;border-radius:24px;transition:0.2s;}
+.slider:before{content:'';position:absolute;width:18px;height:18px;left:3px;top:3px;background:#888;border-radius:50%;transition:0.2s;}
+input:checked+.slider{background:var(--green-dk);}
+input:checked+.slider:before{transform:translateX(18px);background:var(--green);}
+.del-btn{display:flex;align-items:center;gap:6px;padding:8px 0;cursor:pointer;background:none;border:none;font-size:12px;color:var(--red);font-family:var(--font);}
+.section-toggle{background:var(--card);border-radius:12px;border:0.5px solid var(--border);padding:13px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px;color:var(--text);}
+.section-toggle span{flex:1;}
+.add-btn{display:flex;align-items:center;gap:5px;background:var(--green-bg);border:0.5px solid var(--green-dk);border-radius:8px;padding:4px 10px;font-size:11px;color:var(--green);cursor:pointer;font-family:var(--font);}
+
+/* AI COACH SCREEN */
+.ai-fetch-btn{background:var(--green-bg);border:0.5px solid var(--green-dk);border-radius:12px;padding:14px;text-align:center;cursor:pointer;font-size:14px;color:var(--green);font-weight:500;font-family:var(--font);width:100%;}
+.ai-result-card{background:var(--card);border-radius:14px;border:0.5px solid var(--border-g);padding:14px;display:flex;flex-direction:column;gap:10px;}
+.nut-row{display:flex;align-items:center;gap:8px;}
+.nut-name{font-size:11px;color:var(--text-muted);width:85px;flex-shrink:0;}
+.nut-bar{flex:1;height:4px;background:var(--border);border-radius:2px;overflow:hidden;}
+.nut-fill{height:100%;background:var(--green);border-radius:2px;}
+.nut-val{font-size:11px;color:#c8f0d8;font-weight:500;width:46px;text-align:right;font-family:var(--mono);}
+
+/* EMPTY STATE */
+.empty-state{display:flex;flex-direction:column;align-items:center;gap:10px;padding:30px 20px;text-align:center;}
+.empty-icon{font-size:40px;opacity:0.3;}
+.empty-text{font-size:13px;color:var(--text-muted);}
+.empty-btn{background:var(--green-bg);border:0.5px solid var(--green-dk);border-radius:10px;padding:10px 20px;font-size:13px;color:var(--green);cursor:pointer;font-family:var(--font);}
+
+/* LOADING */
+.spinner{display:inline-block;width:18px;height:18px;border:2px solid var(--green-bg);border-top-color:var(--green);border-radius:50%;animation:spin 0.7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- DASHBOARD -->
+  <div class="screen active" id="screen-dashboard">
+    <div class="topbar" style="padding-top:max(12px,env(safe-area-inset-top))">
+      <span class="app-title">🌿 GrowSmart</span>
+      <button class="icon-btn" onclick="openTodayEntry()">＋</button>
+    </div>
+    <div class="scroll" id="dashboard-scroll"></div>
+    <nav class="bottom-nav" id="nav-dashboard"></nav>
+  </div>
+
+  <!-- CALENDAR -->
+  <div class="screen" id="screen-calendar">
+    <div class="topbar" style="padding-top:max(12px,env(safe-area-inset-top))">
+      <span class="app-title">Kalender</span>
+    </div>
+    <div class="scroll" id="calendar-scroll"></div>
+    <nav class="bottom-nav" id="nav-calendar"></nav>
+  </div>
+
+  <!-- AI COACH -->
+  <div class="screen" id="screen-ai">
+    <div class="topbar" style="padding-top:max(12px,env(safe-area-inset-top))">
+      <span class="app-title">KI-Coach</span>
+    </div>
+    <div class="scroll" id="ai-scroll"></div>
+    <nav class="bottom-nav" id="nav-ai"></nav>
+  </div>
+
+  <!-- SETTINGS -->
+  <div class="screen" id="screen-settings">
+    <div class="topbar" style="padding-top:max(12px,env(safe-area-inset-top))">
+      <span class="app-title">Einstellungen</span>
+    </div>
+    <div class="scroll" id="settings-scroll"></div>
+    <nav class="bottom-nav" id="nav-settings"></nav>
+  </div>
+
+  <!-- ENTRY -->
+  <div class="screen" id="screen-entry">
+    <div class="topbar" style="padding-top:max(12px,env(safe-area-inset-top))">
+      <button class="icon-btn" onclick="goTo('dashboard')" style="font-size:20px">←</button>
+      <span class="topbar-title" id="entry-title">Eintrag</span>
+      <button class="save-pill" onclick="saveEntry()">Speichern</button>
+    </div>
+    <div class="scroll" id="entry-scroll"></div>
+  </div>
+
+</div>
+
+<script>
+// ============================================================
+// STATE
+// ============================================================
+const STORAGE_KEY = 'growsmart_data';
+let state = {
+  cycles: [],
+  entries: {},
+  schedule: {
+    1:{root_juice:4,bio_grow:0,bio_bloom:0,top_max:0,bio_heaven:2,alg_a_mic:0,acti_vera:0,calmag:0.3},
+    2:{root_juice:0,bio_grow:2,bio_bloom:0,top_max:0,bio_heaven:2,alg_a_mic:0,acti_vera:2,calmag:0.3},
+    3:{root_juice:0,bio_grow:2,bio_bloom:1,top_max:1,bio_heaven:2,alg_a_mic:1,acti_vera:2,calmag:0.3},
+    4:{root_juice:0,bio_grow:3,bio_bloom:2,top_max:1,bio_heaven:3,alg_a_mic:2,acti_vera:3,calmag:0.3},
+    5:{root_juice:0,bio_grow:4,bio_bloom:3,top_max:1,bio_heaven:4,alg_a_mic:3,acti_vera:4,calmag:0.3},
+    6:{root_juice:0,bio_grow:4,bio_bloom:3,top_max:4,bio_heaven:4,alg_a_mic:3,acti_vera:4,calmag:0.5},
+    7:{root_juice:0,bio_grow:4,bio_bloom:4,top_max:4,bio_heaven:5,alg_a_mic:4,acti_vera:5,calmag:0.5},
+    8:{root_juice:0,bio_grow:4,bio_bloom:4,top_max:4,bio_heaven:5,alg_a_mic:4,acti_vera:5,calmag:0.5},
+    9:{root_juice:0,bio_grow:4,bio_bloom:4,top_max:4,bio_heaven:5,alg_a_mic:4,acti_vera:5,calmag:0.5},
+    10:{root_juice:0,bio_grow:4,bio_bloom:4,top_max:4,bio_heaven:5,alg_a_mic:4,acti_vera:5,calmag:0.5},
+  }
+};
+let currentTab = 'dashboard';
+let calViewDate = new Date();
+let editingDate = null;
+let showSchedule = false;
+let selectedCycleId = null;
+
+const NUTRIENTS = [
+  {key:'root_juice',label:'1. Root-Juice'},
+  {key:'bio_grow',label:'2. Bio-Grow'},
+  {key:'bio_bloom',label:'3. Bio-Bloom'},
+  {key:'top_max',label:'4. Top-Max'},
+  {key:'bio_heaven',label:'5. Bio-Heaven'},
+  {key:'alg_a_mic',label:'6. Alg-A-Mic'},
+  {key:'acti_vera',label:'7. Acti-Vera'},
+  {key:'calmag',label:'8. Calmag'},
+];
+
+const PHASE_CFG = {
+  anzucht: {label:'Anzucht',color:'#5aabf0',bg:'#0d1e2e',calColor:'#1e3a6e'},
+  bloom:   {label:'Blüte',  color:'#4caf70',bg:'#0d1e0d',calColor:'#1e6e3a'},
+  flush:   {label:'Spülen', color:'#c8b44a',bg:'#2a2a0d',calColor:'#5a5a10'},
+  ice:     {label:'IceFlush',color:'#5adada',bg:'#0d1e1e',calColor:'#1a5a5a'},
+  harvest: {label:'Ernte',  color:'#b06ac8',bg:'#1a0d2a',calColor:'#5a1e6e'},
+  dry:     {label:'Trocknen',color:'#b08a4a',bg:'#1e1a0d',calColor:'#5a4010'},
+};
+
+// ============================================================
+// PERSISTENCE
+// ============================================================
+function loadState() {
+  try { const s = localStorage.getItem(STORAGE_KEY); if(s) state = JSON.parse(s); } catch(e){}
+}
+function saveState() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e){}
+}
+
+// ============================================================
+// GROW LOGIC
+// ============================================================
+function todayISO() { return new Date().toISOString().split('T')[0]; }
+
+function getPhase(dateISO, cycle) {
+  if (!cycle.startDate) return null;
+  const diff = Math.floor((new Date(dateISO) - new Date(cycle.startDate)) / 86400000);
+  if (diff < 0) return null;
+  const a = cycle.anzuchtDays||17, b = a+(cycle.bloomDays||66), f = b+(cycle.flushDays||9),
+        i = f+(cycle.iceDays||6), h = i+(cycle.harvestDays||1), d = h+(cycle.dryDays||7);
+  if (diff < a) return {phase:'anzucht', day:diff+1, week:Math.floor(diff/7)+1, total:d};
+  if (diff < b) return {phase:'bloom',   day:diff+1, week:Math.floor((diff-a)/7)+1, total:d};
+  if (diff < f) return {phase:'flush',   day:diff+1, week:null, total:d};
+  if (diff < i) return {phase:'ice',     day:diff+1, week:null, total:d};
+  if (diff < h) return {phase:'harvest', day:diff+1, week:null, total:d};
+  if (diff <= d) return {phase:'dry',    day:diff+1, week:null, total:d};
+  return null;
+}
+
+function getRec(dateISO, cycle) {
+  const p = getPhase(dateISO, cycle);
+  if (!p) return null;
+  if (['flush','ice','harvest','dry'].includes(p.phase)) return {action:p.phase, nutrients:null};
+  const wk = Math.min(p.week||1, 10);
+  const sch = state.schedule[wk] || state.schedule[1];
+  return {
+    action: p.phase==='anzucht' ? 'water_anzucht' : (p.day%2===0?'feed':'water'),
+    nutrients: p.phase==='anzucht' ? {...sch, bio_bloom:0, top_max:0} : sch,
+    week: wk
+  };
+}
+
+function calcVPD(t, rh) {
+  if (isNaN(t)||isNaN(rh)) return null;
+  return Math.round(0.6108*Math.exp(17.27*t/(t+237.3))*(1-rh/100)*100)/100;
+}
+
+function getVPDZone(vpd) {
+  if (vpd===null) return null;
+  if (vpd<0.4)  return {label:'Zu feucht – Schimmelgefahr',color:'#7a7af0',bg:'#1e1e3a',hint:'VPD zu niedrig – Luftzirkulation erhöhen!',pct:Math.round(vpd/0.4*15)};
+  if (vpd<0.8)  return {label:'Anzucht – optimal',color:'#5aabf0',bg:'#0d1e2e',hint:'VPD ideal für Anzucht.',pct:Math.round(15+(vpd-0.4)/0.4*35)};
+  if (vpd<1.2)  return {label:'Blüte – optimal',color:'#4caf70',bg:'#0d1e0d',hint:'VPD perfekt für die Blütephase!',pct:Math.round(50+(vpd-0.8)/0.4*25)};
+  if (vpd<1.6)  return {label:'Blüte – obere Grenze',color:'#c8a04a',bg:'#2a1e0d',hint:'VPD etwas hoch – Luftfeuchtigkeit erhöhen.',pct:Math.round(75+(vpd-1.2)/0.4*15)};
+  return          {label:'Pflanzenstress!',color:'#e06060',bg:'#2a0d0d',hint:'VPD kritisch – sofort anpassen!',pct:Math.min(97,Math.round(90+(vpd-1.6)*10))};
+}
+
+function daysToHarvest(cycle) {
+  if (!cycle.startDate) return null;
+  const harvestDay = (cycle.anzuchtDays||17)+(cycle.bloomDays||66)+(cycle.flushDays||9)+(cycle.iceDays||6);
+  const diff = Math.ceil((new Date(cycle.startDate).getTime()+harvestDay*86400000 - Date.now()) / 86400000);
+  return diff > 0 ? diff : 0;
+}
+
+function getActiveCycles() { return state.cycles.filter(c=>c.active&&c.startDate); }
+
+function actionLabel(a) {
+  return {water_anzucht:'Wasser',water:'Wasser',feed:'Dünger',flush:'Spülen',ice:'IceFlush',harvest:'Ernte',dry:'Trocknen'}[a]||'–';
+}
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+const TABS = ['dashboard','calendar','ai','settings'];
+const TAB_ICONS = {dashboard:'🌿',calendar:'📅',ai:'✦',settings:'⚙'};
+const TAB_LABELS = {dashboard:'Übersicht',calendar:'Kalender',ai:'KI-Coach',settings:'Einst.'};
+
+function buildNav(tab) {
+  return TABS.map(t=>`
+    <button class="nav-btn ${t===tab?'active':''}" onclick="goTo('${t}')">
+      <span class="nav-icon">${TAB_ICONS[t]}</span>
+      <span class="nav-label">${TAB_LABELS[t]}</span>
+    </button>`).join('');
+}
+
+function goTo(tab) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  const el = document.getElementById('screen-'+tab);
+  if (el) { el.classList.add('active'); currentTab = tab; }
+  renderTab(tab);
+}
+
+function renderTab(tab) {
+  const navEl = document.getElementById('nav-'+tab);
+  if (navEl) navEl.innerHTML = buildNav(tab);
+  if (tab==='dashboard') renderDashboard();
+  else if (tab==='calendar') renderCalendar();
+  else if (tab==='ai') renderAI();
+  else if (tab==='settings') renderSettings();
+}
+
+// ============================================================
+// DASHBOARD
+// ============================================================
+function renderDashboard() {
+  const active = getActiveCycles();
+  const today = todayISO();
+  const todayFmt = new Date().toLocaleDateString('de-DE',{weekday:'long',day:'2-digit',month:'long'});
+
+  let todayTasks = active.map(c=>{
+    const p = getPhase(today,c), r = getRec(today,c);
+    const cfg = PHASE_CFG[p?.phase]||PHASE_CFG.bloom;
+    return `<div style="display:flex;align-items:center;gap:8px">
+      <div style="width:8px;height:8px;border-radius:50%;background:${cfg.color};flex-shrink:0"></div>
+      <div>
+        <div style="font-size:12px;font-weight:500;color:var(--text)">${c.name}</div>
+        <div style="font-size:11px;color:var(--text-muted)">Tag ${p?.day||'–'}${p?.week?` · Woche ${p.week}`:''} · ${actionLabel(r?.action)}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  const firstCycle = active[0];
+  const harvestIn = firstCycle ? daysToHarvest(firstCycle) : null;
+
+  const statsHTML = `<div class="stat-row">
+    <div class="stat-box"><div class="stat-lbl">Aktive Zyklen</div><div class="stat-val">${active.length}</div></div>
+    <div class="stat-box"><div class="stat-lbl">Heute</div><div class="stat-val" style="color:var(--blue);font-size:14px">${active.length>0?actionLabel(getRec(today,active[0])?.action):'–'}</div></div>
+    <div class="stat-box"><div class="stat-lbl">Ernte in</div><div class="stat-val">${harvestIn!==null?harvestIn:'–'}<span class="stat-unit"> d</span></div></div>
+  </div>`;
+
+  const cycleCards = active.map(c=>{
+    const p = getPhase(today,c), r = getRec(today,c);
+    const cfg = PHASE_CFG[p?.phase]||PHASE_CFG.bloom;
+    const pct = p ? Math.round(p.day/(p.total+1)*100) : 0;
+    const startFmt = c.startDate ? new Date(c.startDate+'T12:00:00').toLocaleDateString('de-DE') : '–';
+    return `<div class="cycle-card" onclick="openEntry('${today}')">
+      <div class="cycle-header-row">
+        <div class="c-dot" style="background:${cfg.color}"></div>
+        <div class="c-name">${c.name}${c.location?` – ${c.location}`:''}</div>
+        <div class="c-day">Tag ${p?.day||'–'}</div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <span class="phase-pill" style="background:${cfg.bg};color:${cfg.color}">${cfg.label}${p?.week?` Wo. ${p.week}`:''}</span>
+        ${r?.action==='feed'?`<span class="phase-pill" style="background:var(--green-bg);color:var(--green)">Düngertag</span>`:''}
+      </div>
+      <div><div class="prog-bg"><div class="prog-fill" style="width:${pct}%;background:${cfg.color}"></div></div>
+      <div style="display:flex;justify-content:space-between;margin-top:4px">
+        <span style="font-size:10px;color:var(--text-hint)">Start ${startFmt}</span>
+        <span style="font-size:10px;color:var(--text-hint)">${pct}% abgeschlossen</span>
+      </div></div>
+    </div>`;
+  }).join('');
+
+  const emptyState = active.length===0 ? `<div class="empty-state">
+    <div class="empty-icon">🌱</div>
+    <div class="empty-text">Noch keine aktiven Zyklen.<br>Erstelle deinen ersten Zyklus.</div>
+    <button class="empty-btn" onclick="goTo('settings')">Zyklus erstellen</button>
+  </div>` : '';
+
+  document.getElementById('dashboard-scroll').innerHTML = `
+    <div class="card" style="gap:8px;display:flex;flex-direction:column">
+      <div style="font-size:11px;color:var(--green);font-weight:500">${todayFmt}</div>
+      ${active.length===0?'<div style="font-size:12px;color:var(--text-muted)">Keine aktiven Zyklen.</div>':todayTasks}
+    </div>
+    ${statsHTML}
+    <div class="sect-head">Meine Zyklen</div>
+    ${emptyState}
+    ${cycleCards}
+    <div style="height:10px"></div>`;
+}
+
+// ============================================================
+// CALENDAR
+// ============================================================
+function renderCalendar() {
+  const y = calViewDate.getFullYear(), m = calViewDate.getMonth();
+  const months = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+  const active = getActiveCycles();
+  const today = todayISO();
+
+  const firstDay = new Date(y,m,1).getDay();
+  const daysInMonth = new Date(y,m+1,0).getDate();
+  const offset = firstDay===0?6:firstDay-1;
+
+  let cells = '';
+  for(let i=0;i<offset;i++) cells += '<div></div>';
+  for(let d=1;d<=daysInMonth;d++){
+    const iso = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isToday = iso===today;
+    const phases = active.map(c=>getPhase(iso,c)).filter(Boolean);
+    const hasEntry = state.entries[iso];
+    const bgColor = phases.length>0 ? PHASE_CFG[phases[0].phase]?.calColor : '';
+    cells += `<div class="cal-cell ${bgColor?'active':''} ${isToday?'today':''}" 
+      style="${bgColor?`background:${bgColor};`:'background:var(--surface);'}"
+      onclick="openEntry('${iso}')">
+      <span class="cal-num">${d}</span>
+      ${hasEntry?`<div class="cal-dot" style="background:var(--green)"></div>`:''}
+    </div>`;
+  }
+
+  document.getElementById('calendar-scroll').innerHTML = `
+    <div class="month-nav">
+      <button class="month-btn" onclick="changeMonth(-1)">‹</button>
+      <span class="month-title">${months[m]} ${y}</span>
+      <button class="month-btn" onclick="changeMonth(1)">›</button>
+    </div>
+    <div class="cal-day-header">${['Mo','Di','Mi','Do','Fr','Sa','So'].map(d=>`<div class="cal-day-lbl">${d}</div>`).join('')}</div>
+    <div class="cal-grid">${cells}</div>
+    <div class="cal-legend">
+      ${Object.entries(PHASE_CFG).map(([k,v])=>`<div class="legend-item"><div class="legend-dot" style="background:${v.calColor}"></div>${v.label}</div>`).join('')}
+    </div>
+    <div style="height:10px"></div>`;
+}
+
+function changeMonth(dir) {
+  calViewDate = new Date(calViewDate.getFullYear(), calViewDate.getMonth()+dir, 1);
+  renderCalendar();
+}
+
+// ============================================================
+// AI COACH
+// ============================================================
+function renderAI() {
+  const active = getActiveCycles();
+  const today = todayISO();
+  const entry = state.entries[today]||{};
+  const vpd = calcVPD(parseFloat(entry.temp), parseFloat(entry.humidity));
+  const vpdZ = getVPDZone(vpd);
+
+  const statusRows = active.map(c=>{
+    const p = getPhase(today,c), r = getRec(today,c);
+    const cfg = PHASE_CFG[p?.phase]||PHASE_CFG.bloom;
+    return `<div style="display:flex;align-items:center;gap:8px">
+      <div style="width:8px;height:8px;border-radius:50%;background:${cfg.color}"></div>
+      <div style="flex:1"><div style="font-size:12px;font-weight:500;color:var(--text)">${c.name} – Tag ${p?.day||'–'}</div>
+      <div style="font-size:11px;color:var(--text-muted)">${cfg.label}${p?.week?` · Woche ${p.week}`:''} · ${actionLabel(r?.action)}</div></div>
+    </div>`;
+  }).join('');
+
+  const firstCycle = active[0];
+  const rec = firstCycle ? getRec(today, firstCycle) : null;
+  const nutRows = rec?.nutrients ? NUTRIENTS.map(n=>{
+    const val = rec.nutrients[n.key]||0;
+    const pct = Math.round(val/5*100);
+    return `<div class="nut-row">
+      <span class="nut-name">${n.label}</span>
+      <div class="nut-bar"><div class="nut-fill" style="width:${pct}%"></div></div>
+      <span class="nut-val">${val} ml/L</span>
+    </div>`;
+  }).join('') : '<div style="font-size:11px;color:var(--text-muted)">Kein Düngertag heute.</div>';
+
+  document.getElementById('ai-scroll').innerHTML = `
+    <div class="card" style="gap:8px;display:flex;flex-direction:column">
+      <div class="sect-head">Heutiger Status</div>
+      ${active.length===0?'<div style="font-size:12px;color:var(--text-muted)">Keine aktiven Zyklen.</div>':statusRows}
+      ${vpd!==null?`<div style="display:flex;align-items:center;gap:8px;margin-top:4px">
+        <span style="font-size:13px;color:var(--text-sub)">${entry.temp}°C &nbsp; ${entry.humidity}%</span>
+        <span class="phase-pill" style="background:${vpdZ?.bg};color:${vpdZ?.color}">VPD ${vpd.toFixed(2)} kPa</span>
+      </div>`:'<div style="font-size:11px;color:var(--text-muted)">Noch kein Eintrag heute.</div>'}
+    </div>
+    ${firstCycle?`<div class="card" style="gap:8px;display:flex;flex-direction:column">
+      <div class="sect-head">Empfehlung heute – ${firstCycle.name}</div>
+      ${nutRows}
+    </div>`:''}
+    <button class="ai-fetch-btn" onclick="fetchAI()" id="ai-btn">✦ KI-Analyse abrufen</button>
+    <div id="ai-result"></div>
+    <div style="height:10px"></div>`;
+}
+
+async function fetchAI() {
+  const active = getActiveCycles();
+  if (active.length===0) { alert('Keine aktiven Zyklen vorhanden.'); return; }
+  const btn = document.getElementById('ai-btn');
+  btn.innerHTML = '<div class="spinner" style="margin:0 auto"></div>';
+  btn.disabled = true;
+  const today = todayISO();
+  const entry = state.entries[today]||{};
+  const vpd = calcVPD(parseFloat(entry.temp),parseFloat(entry.humidity));
+
+  const cycleInfos = active.map(c=>{
+    const p = getPhase(today,c), r = getRec(today,c);
+    return `${c.name}: Tag ${p?.day||'–'}, Phase ${p?.phase||'–'}, Woche ${p?.week||'–'}, Aktion heute: ${r?.action||'–'}`;
+  }).join('\n');
+
+  const prompt = `Du bist ein erfahrener Cannabis-Grow-Assistent. Antworte auf Deutsch, freundlich und präzise, max. 180 Wörter.
+
+Datum: ${today}
+Temp: ${entry.temp||'?'}°C, Luftf.: ${entry.humidity||'?'}%, VPD: ${vpd!==null?vpd.toFixed(2)+' kPa':'nicht gemessen'}
+
+Zyklen:
+${cycleInfos}
+
+Gib: 1) Kurze Tagesanalyse 2) Empfehlungen für heute 3) Vorschau nächste 7 Tage`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})
+    });
+    const data = await res.json();
+    const text = data.content?.map(b=>b.text||'').join('')||'Fehler beim Abrufen.';
+    document.getElementById('ai-result').innerHTML = `
+      <div class="ai-result-card">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="width:8px;height:8px;border-radius:50%;background:var(--green)"></div>
+          <span style="font-size:12px;color:var(--green);font-weight:500">KI-Analyse</span>
+        </div>
+        <div style="font-size:12px;color:var(--text-sub);line-height:1.7">${text.replace(/\n/g,'<br>')}</div>
+      </div>`;
+  } catch(e) {
+    document.getElementById('ai-result').innerHTML = `<div class="card"><span style="font-size:12px;color:var(--red)">Verbindungsfehler. Bitte API-Key prüfen.</span></div>`;
+  }
+  btn.innerHTML = '✦ KI-Analyse abrufen';
+  btn.disabled = false;
+}
+
+// ============================================================
+// SETTINGS
+// ============================================================
+function renderSettings() {
+  if (!selectedCycleId && state.cycles.length>0) selectedCycleId = state.cycles[0].id;
+  const sel = state.cycles.find(c=>c.id===selectedCycleId);
+
+  const tabs = state.cycles.map(c=>`
+    <div class="tab-item ${c.id===selectedCycleId?'active':''}" onclick="selectCycle('${c.id}')">
+      <div class="tab-dot" style="background:${c.active?'var(--green)':'var(--text-hint)'}"></div>${c.name}
+    </div>`).join('');
+
+  const durations = sel ? [
+    ['Anzucht (Tage)','anzuchtDays'],['Blüte (Tage)','bloomDays'],['Spülen','flushDays'],
+    ['IceFlush','iceDays'],['Ernte','harvestDays'],['Trocknen','dryDays']
+  ].map(([lbl,key])=>`
+    <div class="dur-box"><div class="dur-lbl">${lbl}</div>
+    <input class="dur-inp" type="number" value="${sel[key]||0}" onchange="updateCycleField('${sel.id}','${key}',this.value)"/></div>`
+  ).join('') : '';
+
+  const scheduleHTML = showSchedule ? `
+    <div class="card" style="gap:10px;display:flex;flex-direction:column">
+      <div class="sect-head">Düngeplan (ml/L)</div>
+      ${[1,2,3,4,5,6,7,8,9,10].map(w=>`
+        <div style="display:flex;align-items:center;gap:6px;border-bottom:0.5px solid var(--border);padding-bottom:6px">
+          <span style="font-size:11px;color:var(--green);width:24px;font-family:var(--mono)">W${w}</span>
+          <div style="display:flex;gap:4px;overflow-x:auto;flex:1">
+            ${NUTRIENTS.map(n=>`
+              <div style="display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0">
+                <span style="font-size:8px;color:var(--text-hint)">${n.label.split('. ')[1].substring(0,5)}</span>
+                <input style="width:36px;background:var(--card2);border:0.5px solid var(--border);border-radius:5px;padding:3px;color:var(--text-sub);font-size:10px;text-align:center;font-family:var(--mono);outline:none"
+                  type="number" value="${state.schedule[w]?.[n.key]??0}"
+                  onchange="updateSchedule(${w},'${n.key}',this.value)"/>
+              </div>`).join('')}
+          </div>
+        </div>`).join('')}
+      <button onclick="resetSchedule()" style="background:var(--red-bg);border:none;border-radius:8px;padding:9px;font-size:12px;color:var(--red);cursor:pointer;font-family:var(--font)">Standardwerte laden</button>
+    </div>` : '';
+
+  document.getElementById('settings-scroll').innerHTML = `
+    <div class="card" style="gap:10px;display:flex;flex-direction:column">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div class="sect-head">Meine Zyklen</div>
+        <button class="add-btn" onclick="addCycle()">＋ Neu</button>
+      </div>
+      <div class="tab-row">${tabs}</div>
+      ${sel?`<div style="display:flex;flex-direction:column;gap:8px;margin-top:4px">
+        <div class="inp-wrap"><div class="inp-label">Name</div>
+          <input class="inp-field" value="${sel.name||''}" onchange="updateCycleField('${sel.id}','name',this.value)"/></div>
+        <div class="inp-wrap"><div class="inp-label">Standort</div>
+          <input class="inp-field" value="${sel.location||''}" onchange="updateCycleField('${sel.id}','location',this.value)"/></div>
+        <div class="switch-row">
+          <span style="font-size:11px;color:var(--text-sub)">Aktiv</span>
+          <label class="switch"><input type="checkbox" ${sel.active?'checked':''} onchange="toggleActive('${sel.id}',this.checked)"/><span class="slider"></span></label>
+        </div>
+        ${sel.startDate?`<div style="font-size:11px;color:var(--text-muted)">Start: <span style="color:var(--green)">${new Date(sel.startDate+'T12:00:00').toLocaleDateString('de-DE')}</span></div>`:''}
+        <div class="sub-head">Phasendauern</div>
+        <div class="dur-grid">${durations}</div>
+        <div class="sub-head">Bewässerungsintervall</div>
+        <div class="dur-grid">
+          <div class="dur-box"><div class="dur-lbl">Anzucht (Tage)</div>
+            <input class="dur-inp" type="number" value="${sel.waterIntervalAnzucht||4}" onchange="updateCycleField('${sel.id}','waterIntervalAnzucht',this.value)"/></div>
+          <div class="dur-box"><div class="dur-lbl">Blüte (Tage)</div>
+            <input class="dur-inp" type="number" value="${sel.waterIntervalBloom||3}" onchange="updateCycleField('${sel.id}','waterIntervalBloom',this.value)"/></div>
+        </div>
+        <button class="del-btn" onclick="deleteCycle('${sel.id}')">🗑 Zyklus löschen</button>
+      </div>`:'<div style="font-size:12px;color:var(--text-muted)">Noch keine Zyklen.</div>'}
+    </div>
+    <div class="section-toggle" onclick="toggleSchedule()">
+      <span>🧪</span><span>Düngeplan bearbeiten</span><span style="color:var(--text-muted)">${showSchedule?'▲':'▼'}</span>
+    </div>
+    ${scheduleHTML}
+    <div style="height:20px"></div>`;
+}
+
+function selectCycle(id) { selectedCycleId = id; renderSettings(); }
+function toggleSchedule() { showSchedule = !showSchedule; renderSettings(); }
+
+function addCycle() {
+  const c = {
+    id: Date.now().toString(), name:`Zyklus ${state.cycles.length+1}`,
+    location:'', active:false, startDate:null,
+    anzuchtDays:17, bloomDays:66, flushDays:9, iceDays:6, harvestDays:1, dryDays:7,
+    waterIntervalAnzucht:4, waterIntervalBloom:3
+  };
+  state.cycles.push(c); selectedCycleId = c.id; saveState(); renderSettings();
+}
+
+function updateCycleField(id, key, val) {
+  const c = state.cycles.find(c=>c.id===id);
+  if (c) { c[key] = isNaN(val)||val===''?val:Number(val); saveState(); }
+}
+
+function toggleActive(id, checked) {
+  const c = state.cycles.find(c=>c.id===id);
+  if (c) { c.active = checked; c.startDate = checked ? todayISO() : null; saveState(); renderSettings(); }
+}
+
+function deleteCycle(id) {
+  if (!confirm('Zyklus und alle zugehörigen Logs löschen?')) return;
+  state.cycles = state.cycles.filter(c=>c.id!==id);
+  Object.keys(state.entries).forEach(d=>{
+    if (state.entries[d]?.cycleData?.[id]) delete state.entries[d].cycleData[id];
+  });
+  selectedCycleId = state.cycles[0]?.id||null;
+  saveState(); renderSettings();
+}
+
+function updateSchedule(week, key, val) {
+  if (!state.schedule[week]) state.schedule[week] = {};
+  state.schedule[week][key] = parseFloat(val)||0;
+  saveState();
+}
+
+function resetSchedule() {
+  if (!confirm('Standardwerte laden?')) return;
+  state.schedule = {
+    1:{root_juice:4,bio_grow:0,bio_bloom:0,top_max:0,bio_heaven:2,alg_a_mic:0,acti_vera:0,calmag:0.3},
+    2:{root_juice:0,bio_grow:2,bio_bloom:0,top_max:0,bio_heaven:2,alg_a_mic:0,acti_vera:2,calmag:0.3},
+    3:{root_juice:0,bio_grow:2,bio_bloom:1,top_max:1,bio_heaven:2,alg_a_mic:1,acti_vera:2,calmag:0.3},
+    4:{root_juice:0,bio_grow:3,bio_bloom:2,top_max:1,bio_heaven:3,alg_a_mic:2,acti_vera:3,calmag:0.3},
+    5:{root_juice:0,bio_grow:4,bio_bloom:3,top_max:1,bio_heaven:4,alg_a_mic:3,acti_vera:4,calmag:0.3},
+    6:{root_juice:0,bio_grow:4,bio_bloom:3,top_max:4,bio_heaven:4,alg_a_mic:3,acti_vera:4,calmag:0.5},
+    7:{root_juice:0,bio_grow:4,bio_bloom:4,top_max:4,bio_heaven:5,alg_a_mic:4,acti_vera:5,calmag:0.5},
+    8:{root_juice:0,bio_grow:4,bio_bloom:4,top_max:4,bio_heaven:5,alg_a_mic:4,acti_vera:5,calmag:0.5},
+    9:{root_juice:0,bio_grow:4,bio_bloom:4,top_max:4,bio_heaven:5,alg_a_mic:4,acti_vera:5,calmag:0.5},
+    10:{root_juice:0,bio_grow:4,bio_bloom:4,top_max:4,bio_heaven:5,alg_a_mic:4,acti_vera:5,calmag:0.5},
+  };
+  saveState(); renderSettings();
+}
+
+// ============================================================
+// ENTRY SCREEN
+// ============================================================
+function openTodayEntry() { openEntry(todayISO()); }
+
+function openEntry(dateISO) {
+  editingDate = dateISO;
+  const dateFmt = new Date(dateISO+'T12:00:00').toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'});
+  document.getElementById('entry-title').textContent = `Eintrag – ${dateFmt}`;
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-entry').classList.add('active');
+  renderEntry(dateISO);
+}
+
+function renderEntry(dateISO) {
+  const active = getActiveCycles();
+  const saved = state.entries[dateISO]||{};
+  const temp = saved.temp||''; const rh = saved.humidity||'';
+  const vpd = calcVPD(parseFloat(temp),parseFloat(rh));
+  const vpdZ = getVPDZone(vpd);
+
+  const vpdHTML = vpd!==null ? `
+    <div class="vpd-box">
+      <div>
+        <div class="vpd-lbl">VPD (automatisch)</div>
+        <div style="display:flex;align-items:baseline;gap:3px">
+          <span class="vpd-val" id="vpd-num">${vpd.toFixed(2)}</span>
+          <span class="vpd-unit">kPa</span>
+        </div>
+        <span class="vpd-pill" id="vpd-pill" style="background:${vpdZ.bg};color:${vpdZ.color}">${vpdZ.label}</span>
+      </div>
+      <div class="vpd-scale-wrap">
+        <div style="display:flex;justify-content:space-between;font-size:8px;color:var(--text-hint)">
+          <span>Anzucht</span><span>Blüte</span><span>Stress</span>
+        </div>
+        <div class="vpd-scale">
+          <div class="vpd-seg" style="background:#1e3a6e"></div>
+          <div class="vpd-seg" style="background:#1e6e3a"></div>
+          <div class="vpd-seg" style="background:#6e4a1e"></div>
+        </div>
+        <div class="vpd-marker-row">
+          <div class="vpd-marker" id="vpd-mk" style="left:${Math.min(95,vpdZ.pct)}%"></div>
+        </div>
+        <div class="vpd-nums"><span>0.4</span><span>0.8</span><span>1.2</span><span>1.8</span></div>
+      </div>
+    </div>` : `<div class="vpd-box" id="vpd-box-empty"><div style="font-size:11px;color:var(--text-muted)">Temperatur & Luftfeuchtigkeit eingeben für VPD</div></div>`;
+
+  const cycleBlocks = active.map(c=>{
+    const p = getPhase(dateISO,c), r = getRec(dateISO,c);
+    const cfg = PHASE_CFG[p?.phase]||PHASE_CFG.bloom;
+    const cd = saved.cycleData?.[c.id]||{};
+
+    const nutRows = NUTRIENTS.map((n,i)=>{
+      const hint = r?.nutrients?.[n.key]??0;
+      const val = cd.nutrients?.[n.key]||'';
+      return `<div class="tbl-row">
+        <span class="t-name">${n.label}</span>
+        <span class="t-hint">${hint}</span>
+        <input class="t-inp" type="number" value="${val}" placeholder="${hint}"
+          onchange="updateEntryNutrient('${c.id}','${n.key}',this.value)" id="nut-${c.id}-${n.key}"/>
+      </div>`;
+    }).join('');
+
+    const aiHint = vpdZ ? `<div class="ai-strip"><div class="ai-dot"></div>
+      <div class="ai-txt"><b>KI-Hinweis:</b> ${vpdZ.hint}${r?.action==='feed'?' Heute ist Düngertag.':''}${r?.action==='flush'?' Spülphase – kein Dünger!':''}</div>
+    </div>` : '';
+
+    return `
+      <div class="sect-head">${c.name}${c.location?` – ${c.location}`:''} · Tag ${p?.day||'–'}</div>
+      <div class="tbl-header-row">
+        <span class="tbl-header-title">Nährstofflösung (ml/L)</span>
+        <span class="phase-pill" style="background:${cfg.bg};color:${cfg.color};font-size:9px">${cfg.label}${p?.week?` Wo. ${p.week}`:''}</span>
+      </div>
+      <div class="tbl-wrap">
+        <div class="tbl-head">
+          <span class="th">Nährstoff</span>
+          <span class="th" style="text-align:right">Empf.</span>
+          <span class="th" style="text-align:right">Eingabe</span>
+        </div>
+        ${nutRows}
+      </div>
+      <div class="row2" style="margin-top:2px">
+        <div class="inp-wrap"><div class="inp-label">Wasser gesamt (ml)</div>
+          <input class="inp-field" type="number" value="${cd.water||''}" placeholder="z. B. 3500"
+            onchange="updateEntryField('${c.id}','water',this.value)" id="water-${c.id}"/></div>
+        <div style="width:72px;flex-shrink:0"><div class="inp-label">pH-Wert</div>
+          <input class="inp-field" type="number" step="0.1" value="${cd.ph||''}" placeholder="6.2"
+            onchange="updateEntryField('${c.id}','ph',this.value)" id="ph-${c.id}"/></div>
+      </div>
+      <div class="note-wrap">
+        <div class="inp-label" style="margin-bottom:3px">Notizen zum Zyklus</div>
+        <textarea class="note-ta" placeholder="z. B. Blätter leicht gelb, Licht angepasst..."
+          onchange="updateEntryField('${c.id}','notes',this.value)" id="notes-${c.id}">${cd.notes||''}</textarea>
+      </div>
+      ${aiHint}`;
+  }).join('');
+
+  const noActive = active.length===0?`<div class="empty-state">
+    <div class="empty-icon">🌱</div>
+    <div class="empty-text">Keine aktiven Zyklen vorhanden.</div>
+    <button class="empty-btn" onclick="goTo('settings')">Zyklus erstellen</button>
+  </div>`:'';
+
+  document.getElementById('entry-scroll').innerHTML = `
+    <div class="sect-head">Umgebung</div>
+    <div class="row2">
+      <div class="inp-wrap"><div class="inp-label">Temperatur (°C)</div>
+        <input class="inp-field" type="number" value="${temp}" placeholder="z. B. 23" id="entry-temp"
+          oninput="updateEnvLive()" onchange="updateEnvLive()"/></div>
+      <div class="inp-wrap"><div class="inp-label">Luftfeuchtigkeit (%)</div>
+        <input class="inp-field" type="number" value="${rh}" placeholder="z. B. 48" id="entry-rh"
+          oninput="updateEnvLive()" onchange="updateEnvLive()"/></div>
+    </div>
+    <div id="vpd-container">${vpdHTML}</div>
+    ${noActive}
+    ${cycleBlocks}
+    <button class="big-save" onclick="saveEntry()">Speichern</button>
+    <div style="height:20px"></div>`;
+}
+
+function updateEnvLive() {
+  const t = parseFloat(document.getElementById('entry-temp')?.value);
+  const rh = parseFloat(document.getElementById('entry-rh')?.value);
+  const vpd = calcVPD(t,rh);
+  const z = getVPDZone(vpd);
+  if (vpd!==null && z) {
+    const numEl = document.getElementById('vpd-num');
+    const pillEl = document.getElementById('vpd-pill');
+    const mkEl = document.getElementById('vpd-mk');
+    if (numEl) numEl.textContent = vpd.toFixed(2);
+    if (pillEl) { pillEl.textContent = z.label; pillEl.style.background = z.bg; pillEl.style.color = z.color; }
+    if (mkEl) mkEl.style.left = Math.min(95,z.pct)+'%';
+  }
+}
+
+function updateEntryNutrient(cycleId, key, val) {
+  if (!state.entries[editingDate]) state.entries[editingDate]={cycleData:{}};
+  if (!state.entries[editingDate].cycleData) state.entries[editingDate].cycleData={};
+  if (!state.entries[editingDate].cycleData[cycleId]) state.entries[editingDate].cycleData[cycleId]={nutrients:{}};
+  if (!state.entries[editingDate].cycleData[cycleId].nutrients) state.entries[editingDate].cycleData[cycleId].nutrients={};
+  state.entries[editingDate].cycleData[cycleId].nutrients[key] = val;
+}
+
+function updateEntryField(cycleId, field, val) {
+  if (!state.entries[editingDate]) state.entries[editingDate]={cycleData:{}};
+  if (!state.entries[editingDate].cycleData) state.entries[editingDate].cycleData={};
+  if (!state.entries[editingDate].cycleData[cycleId]) state.entries[editingDate].cycleData[cycleId]={nutrients:{}};
+  state.entries[editingDate].cycleData[cycleId][field] = val;
+}
+
+function saveEntry() {
+  if (!editingDate) return;
+  if (!state.entries[editingDate]) state.entries[editingDate]={cycleData:{}};
+  const t = document.getElementById('entry-temp')?.value||'';
+  const rh = document.getElementById('entry-rh')?.value||'';
+  state.entries[editingDate].temp = t;
+  state.entries[editingDate].humidity = rh;
+  saveState();
+  goTo('dashboard');
+}
+
+// ============================================================
+// INIT
+// ============================================================
+loadState();
+calViewDate = new Date();
+renderTab('dashboard');
+document.getElementById('nav-dashboard').innerHTML = buildNav('dashboard');
+</script>
+</body>
+</html>
