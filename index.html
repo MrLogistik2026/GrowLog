@@ -91,11 +91,13 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-famil
 .cal-day-header{display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:5px;}
 .cal-day-lbl{text-align:center;font-size:11px;color:var(--text-muted);}
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;}
-.cal-cell{aspect-ratio:0.85;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;position:relative;border:0.5px solid transparent;user-select:none;}
-.cal-cell.today{border-color:var(--green)!important;}
-.cal-num{font-size:12px;color:var(--text-sub);font-weight:500;line-height:1;}
+.cal-cell{aspect-ratio:0.85;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;position:relative;border:0.5px solid transparent;user-select:none;padding:2px;}
+.cal-cell.today{border:2px solid var(--green)!important;}
+.cal-num{font-size:13px;color:var(--text-sub);font-weight:600;line-height:1;}
 .cal-cell.today .cal-num{color:var(--green);}
-.cal-dot{width:4px;height:4px;border-radius:50%;position:absolute;bottom:3px;}
+.cal-tag{font-size:8px;color:rgba(255,255,255,0.7);line-height:1;margin-top:1px;white-space:nowrap;overflow:hidden;max-width:100%;text-align:center;}
+.cal-icon{font-size:13px;line-height:1;margin-bottom:1px;}
+.cal-dot{width:4px;height:4px;border-radius:50%;position:absolute;bottom:2px;right:3px;}
 .cal-legend{display:flex;flex-wrap:wrap;gap:8px;padding:6px 0;}
 .legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-muted);}
 .legend-dot{width:8px;height:8px;border-radius:50%;}
@@ -323,17 +325,6 @@ window.addEventListener('popstate',()=>{
   showToast('Nochmal drücken zum Beenden');
 });
 
-// SWIPE calendar
-let sx=0,sy=0;
-function initSwipe(){
-  const el=document.getElementById('calendar-scroll');if(!el)return;
-  el.addEventListener('touchstart',e=>{sx=e.touches[0].clientX;sy=e.touches[0].clientY;},{passive:true});
-  el.addEventListener('touchend',e=>{
-    const dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy;
-    if(Math.abs(dx)>55&&Math.abs(dx)>Math.abs(dy)*1.5)changeMonth(dx<0?1:-1);
-  },{passive:true});
-}
-
 // DASHBOARD
 function renderDash(){
   const active=getActive(),today=todayISO();
@@ -378,10 +369,22 @@ function renderCal(){
       const r1=getRec(iso,wc[0]),r2=getRec(iso,wc[1]);
       bg=`background:linear-gradient(135deg,${ACTION_COLORS[r1.action]||'#1e3a6e'} 50%,${ACTION_COLORS[r2.action]||'#1e6e3a'} 50%);`;
     }
+    // Icon for the action
+    const actionR = wc.length>0 ? getRec(iso, wc[0]) : null;
+    const iconMap = {water_anzucht:'💧',water:'💧',feed:'🧪',flush:'🚿',ice:'❄️',harvest:'✂️',dry:'🍃'};
+    const calIcon = actionR ? (iconMap[actionR.action]||'') : '';
+    // Tag day label - show if any active cycle covers this day
+    const anyPhase = active.map(c=>getPhase(iso,c)).filter(Boolean);
+    const tagLabel = anyPhase.length>0 ? `Tag ${anyPhase[0].day}` : '';
+    // Start day flag
+    const isStartDay = active.some(c=>c.startDate===iso);
+
     cells+=`<div class="cal-cell ${isToday?'today':''}" style="${bg}"
       onclick="openEntry('${iso}')"
       ontouchstart="startLP('${iso}',event)" ontouchend="cancelLP()" ontouchmove="cancelLP()">
+      ${isStartDay?`<span class="cal-icon">🏁</span>`:calIcon?`<span class="cal-icon">${calIcon}</span>`:''}
       <span class="cal-num">${d}</span>
+      ${tagLabel?`<span class="cal-tag">${tagLabel}</span>`:''}
       ${hasEntry?`<div class="cal-dot" style="background:var(--green)"></div>`:''}
     </div>`;
   }
@@ -390,7 +393,6 @@ function renderCal(){
     {c:ACTION_COLORS.flush,l:'Spülen'},{c:ACTION_COLORS.ice,l:'IceFlush'},{c:ACTION_COLORS.harvest,l:'Ernte'}
   ].map(x=>`<div class="legend-item"><div class="legend-dot" style="background:${x.c}"></div>${x.l}</div>`).join('');
   document.getElementById('calendar-scroll').innerHTML=`<div class="cal-day-header">${['Mo','Di','Mi','Do','Fr','Sa','So'].map(x=>`<div class="cal-day-lbl">${x}</div>`).join('')}</div><div class="cal-grid">${cells}</div><div class="cal-legend">${legend}</div><div style="height:10px"></div>`;
-  initSwipe();
 }
 function changeMonth(dir){calViewDate=new Date(calViewDate.getFullYear(),calViewDate.getMonth()+dir,1);renderCal();}
 
@@ -579,6 +581,20 @@ function saveEntry(){
 loadState();calViewDate=new Date();
 renderTab('dashboard');document.getElementById('nav-dashboard').innerHTML=buildNav('dashboard');
 history.pushState(null,'',location.href);
+// Init swipe ONCE on the calendar screen (not on scroll which rebuilds)
+(function(){
+  const screen=document.getElementById('screen-calendar');
+  let sx=0,sy=0,sTime=0;
+  screen.addEventListener('touchstart',e=>{
+    sx=e.touches[0].clientX;sy=e.touches[0].clientY;sTime=Date.now();
+  },{passive:true});
+  screen.addEventListener('touchend',e=>{
+    if(Date.now()-sTime>500)return; // ignore long press
+    const dx=e.changedTouches[0].clientX-sx;
+    const dy=e.changedTouches[0].clientY-sy;
+    if(Math.abs(dx)>60&&Math.abs(dx)>Math.abs(dy)*1.8){changeMonth(dx<0?1:-1);}
+  },{passive:true});
+})();
 </script>
 </body>
 </html>
