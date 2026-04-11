@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<meta name="theme-color" content="#111111"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="GrowSmart"/>
+<link rel="manifest" href="manifest.json"/>
+<title>GrowSmart</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#0f0f0f;--surface:#161616;--card:#1c1c1c;--card2:#212121;
+  --border:#2a2a2a;--border-g:#243524;
+  --green:#4caf70;--green-dk:#2d6e45;--green-bg:#0d1e0d;--green-mid:#162216;--green-hint:#3a6e4a;
+  --blue:#5aabf0;--teal:#5adada;--teal-bg:#0e1a1a;--teal-bd:#1e3535;
+  --amber:#c8a04a;--red:#e06060;--red-bg:#2a0d0d;
+  --text:#e0e0e0;--text-sub:#aaa;--text-muted:#666;--text-hint:#555;
+  --font:'DM Sans',sans-serif;--mono:'DM Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-family:var(--font);color:var(--text);}
+#app{width:100%;height:100%;display:flex;flex-direction:column;max-width:480px;margin:0 auto;position:relative;}
+.screen{display:none;flex-direction:column;flex:1;overflow:hidden;}
+.screen.active{display:flex;}
+.scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px;display:flex;flex-direction:column;gap:10px;}
+.scroll::-webkit-scrollbar{display:none;}
+.topbar{background:var(--surface);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:0.5px solid var(--border);flex-shrink:0;}
+.topbar-title{font-size:14px;font-weight:500;color:var(--text);}
+.app-title{font-size:17px;font-weight:600;color:var(--text);letter-spacing:-0.3px;}
+.icon-btn{background:none;border:none;color:var(--green);font-size:22px;cursor:pointer;padding:4px;display:flex;align-items:center;}
+.save-pill{background:var(--green-bg);border:0.5px solid var(--green-dk);border-radius:7px;padding:5px 12px;font-size:12px;color:var(--green);cursor:pointer;font-family:var(--font);}
+.bottom-nav{background:var(--surface);border-top:0.5px solid var(--border);display:flex;padding-bottom:env(safe-area-inset-bottom);flex-shrink:0;}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 0 6px;cursor:pointer;background:none;border:none;opacity:0.45;transition:opacity 0.15s;}
+.nav-btn.active{opacity:1;}
+.nav-icon{font-size:20px;line-height:1;}
+.nav-label{font-size:10px;color:var(--green);font-weight:500;font-family:var(--font);}
+.card{background:var(--card);border-radius:14px;border:0.5px solid var(--border);padding:14px;}
+.sect-head{font-size:11px;color:var(--green);font-weight:500;letter-spacing:0.06em;padding:4px 0 2px;}
+.stat-row{display:flex;gap:8px;}
+.stat-box{flex:1;background:var(--surface);border-radius:10px;padding:10px 12px;}
+.stat-lbl{font-size:11px;color:var(--text-hint);margin-bottom:3px;}
+.stat-val{font-size:20px;font-weight:500;color:var(--text);}
+.stat-unit{font-size:11px;color:var(--text-hint);}
+.phase-pill{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:500;}
+.prog-bg{height:4px;background:var(--border);border-radius:4px;overflow:hidden;}
+.prog-fill{height:100%;border-radius:4px;transition:width 0.3s;}
+.cycle-card{background:var(--card);border-radius:14px;border:0.5px solid var(--border);padding:14px;display:flex;flex-direction:column;gap:10px;cursor:pointer;}
+.c-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.c-name{font-size:14px;font-weight:500;color:var(--text);flex:1;}
+.c-day{font-size:12px;color:var(--text-muted);}
+.inp-wrap{display:flex;flex-direction:column;gap:3px;flex:1;}
+.inp-label{font-size:11px;color:var(--text-hint);}
+.inp-field{background:#1c1c1c;border:0.5px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text-sub);font-size:13px;font-family:var(--font);width:100%;outline:none;}
+.inp-field:focus{border-color:var(--green-hint);}
+.row2{display:flex;gap:8px;}
+.vpd-box{background:var(--teal-bg);border:0.5px solid var(--teal-bd);border-radius:10px;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.vpd-lbl{font-size:10px;color:#3a7a7a;margin-bottom:2px;}
+.vpd-val{font-size:22px;font-weight:500;color:var(--teal);font-family:var(--mono);}
+.vpd-pill{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:500;display:inline-block;margin-top:4px;}
+.vpd-scale-wrap{display:flex;flex-direction:column;gap:3px;width:90px;}
+.vpd-scale{display:flex;height:6px;border-radius:3px;overflow:hidden;}
+.vpd-seg{flex:1;}
+.vpd-marker-row{position:relative;height:8px;}
+.vpd-marker{position:absolute;top:0;width:2px;height:10px;background:#fff;border-radius:2px;transition:left 0.3s;}
+.vpd-nums{display:flex;justify-content:space-between;font-size:9px;color:var(--text-hint);}
+.tbl-header-row{background:var(--green-mid);border-radius:10px 10px 0 0;border:0.5px solid var(--border-g);padding:8px 12px;display:flex;align-items:center;justify-content:space-between;}
+.tbl-header-title{font-size:12px;font-weight:500;color:#8de0a8;}
+.tbl-wrap{background:var(--surface);border:0.5px solid var(--border);border-top:none;border-radius:0 0 10px 10px;overflow:hidden;}
+.tbl-head{display:grid;grid-template-columns:1fr 52px 56px;background:var(--green-mid);padding:5px 10px;border-bottom:0.5px solid var(--border);}
+.th{font-size:11px;color:var(--green);font-weight:500;}
+.th:not(:first-child){text-align:right;}
+.tbl-row{display:grid;grid-template-columns:1fr 52px 56px;padding:5px 10px;border-bottom:0.5px solid #1e1e1e;align-items:center;}
+.tbl-row:last-child{border:none;}
+.tbl-row:nth-child(odd){background:#191919;}
+.tbl-row:nth-child(even){background:var(--surface);}
+.t-name{font-size:12px;color:#999;}
+.t-hint{font-size:12px;color:var(--green-hint);text-align:right;font-family:var(--mono);}
+.t-inp{background:#1e1e1e;border:0.5px solid var(--border);border-radius:5px;padding:3px 6px;color:#bbb;font-size:12px;font-family:var(--mono);width:52px;text-align:right;outline:none;}
+.t-inp:focus{border-color:var(--green-hint);background:#1a2a1a;}
+.note-wrap{background:var(--surface);border:0.5px solid var(--border);border-radius:10px;padding:8px 10px;display:flex;flex-direction:column;gap:4px;}
+.note-ta{background:#1c1c1c;border:0.5px solid var(--border);border-radius:7px;padding:8px 10px;color:#aaa;font-size:12px;font-family:var(--font);width:100%;min-height:68px;resize:none;outline:none;line-height:1.6;}
+.note-ta:focus{border-color:var(--green-hint);}
+.ai-strip{background:var(--green-bg);border:0.5px solid #1e3d28;border-radius:9px;padding:8px 11px;display:flex;gap:7px;align-items:flex-start;}
+.ai-dot{width:6px;height:6px;border-radius:50%;background:var(--green);flex-shrink:0;margin-top:3px;}
+.ai-txt{font-size:12px;color:#7ab88a;line-height:1.6;flex:1;}
+.ai-txt b{color:var(--green);font-weight:500;}
+.big-save{background:var(--green-dk);border:none;border-radius:10px;padding:13px;font-size:14px;font-weight:500;color:#d0f0e0;width:100%;cursor:pointer;font-family:var(--font);}
+.cal-day-header{display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:5px;}
+.cal-day-lbl{text-align:center;font-size:11px;color:var(--text-muted);}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;}
+.cal-cell{aspect-ratio:0.85;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;position:relative;border:0.5px solid transparent;user-select:none;}
+.cal-cell.today{border-color:var(--green)!important;}
+.cal-num{font-size:12px;color:var(--text-sub);font-weight:500;line-height:1;}
+.cal-cell.today .cal-num{color:var(--green);}
+.cal-dot{width:4px;height:4px;border-radius:50%;position:absolute;bottom:3px;}
+.cal-legend{display:flex;flex-wrap:wrap;gap:8px;padding:6px 0;}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-muted);}
+.legend-dot{width:8px;height:8px;border-radius:50%;}
+.tab-row{display:flex;gap:6px;flex-wrap:wrap;}
+.tab-item{display:flex;align-items:center;gap:5px;background:var(--surface);border-radius:8px;padding:6px 12px;border:0.5px solid var(--border);cursor:pointer;font-size:12px;color:var(--text-muted);font-family:var(--font);}
+.tab-item.active{border-color:var(--green);background:var(--green-bg);color:var(--green);}
+.tab-dot{width:6px;height:6px;border-radius:50%;}
+.dur-grid{display:flex;flex-wrap:wrap;gap:8px;}
+.dur-box{display:flex;flex-direction:column;gap:3px;width:calc(33% - 6px);}
+.dur-lbl{font-size:11px;color:var(--text-hint);}
+.dur-inp{background:var(--card2);border:0.5px solid var(--border);border-radius:7px;padding:6px;color:var(--text-sub);font-size:13px;text-align:center;width:100%;outline:none;font-family:var(--mono);}
+.sub-head{font-size:11px;color:var(--text-hint);font-weight:500;letter-spacing:0.04em;margin-top:8px;margin-bottom:2px;}
+.switch-row{display:flex;align-items:center;justify-content:space-between;padding:4px 0;}
+.switch{position:relative;width:44px;height:26px;cursor:pointer;}
+.switch input{opacity:0;width:0;height:0;}
+.slider{position:absolute;inset:0;background:#333;border-radius:26px;transition:0.2s;}
+.slider:before{content:'';position:absolute;width:20px;height:20px;left:3px;top:3px;background:#888;border-radius:50%;transition:0.2s;}
+input:checked+.slider{background:var(--green-dk);}
+input:checked+.slider:before{transform:translateX(18px);background:var(--green);}
+.del-btn{display:flex;align-items:center;gap:6px;padding:8px 0;cursor:pointer;background:none;border:none;font-size:13px;color:var(--red);font-family:var(--font);}
+.section-toggle{background:var(--card);border-radius:12px;border:0.5px solid var(--border);padding:14px;display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px;color:var(--text);}
+.section-toggle span{flex:1;}
+.add-btn{display:flex;align-items:center;gap:5px;background:var(--green-bg);border:0.5px solid var(--green-dk);border-radius:8px;padding:6px 12px;font-size:12px;color:var(--green);cursor:pointer;font-family:var(--font);}
+.save-settings-btn{background:var(--green-dk);border:none;border-radius:10px;padding:12px;font-size:13px;font-weight:500;color:#d0f0e0;width:100%;cursor:pointer;font-family:var(--font);margin-top:6px;}
+.ai-fetch-btn{background:var(--green-bg);border:0.5px solid var(--green-dk);border-radius:12px;padding:14px;text-align:center;cursor:pointer;font-size:14px;color:var(--green);font-weight:500;font-family:var(--font);width:100%;}
+.ai-result-card{background:var(--card);border-radius:14px;border:0.5px solid var(--border-g);padding:14px;display:flex;flex-direction:column;gap:10px;}
+.nut-row{display:flex;align-items:center;gap:8px;}
+.nut-name{font-size:12px;color:var(--text-muted);width:90px;flex-shrink:0;}
+.nut-bar{flex:1;height:4px;background:var(--border);border-radius:2px;overflow:hidden;}
+.nut-fill{height:100%;background:var(--green);border-radius:2px;}
+.nut-val{font-size:12px;color:#c8f0d8;font-weight:500;width:50px;text-align:right;font-family:var(--mono);}
+.empty-state{display:flex;flex-direction:column;align-items:center;gap:10px;padding:30px 20px;text-align:center;}
+.empty-icon{font-size:40px;opacity:0.3;}
+.empty-text{font-size:13px;color:var(--text-muted);}
+.empty-btn{background:var(--green-bg);border:0.5px solid var(--green-dk);border-radius:10px;padding:10px 20px;font-size:13px;color:var(--green);cursor:pointer;font-family:var(--font);}
+#toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#222;color:#ddd;padding:10px 22px;border-radius:22px;font-size:13px;z-index:9999;border:0.5px solid #444;pointer-events:none;opacity:0;transition:opacity 0.25s;white-space:nowrap;}
+#toast.show{opacity:1;}
+#ctx-menu{position:fixed;z-index:9998;background:#1e1e1e;border:0.5px solid #3a3a3a;border-radius:14px;padding:6px;min-width:240px;box-shadow:0 8px 32px rgba(0,0,0,0.7);display:none;}
+#ctx-menu.show{display:block;}
+.ctx-item{padding:12px 16px;border-radius:10px;font-size:13px;color:var(--text-sub);cursor:pointer;display:flex;align-items:center;gap:10px;}
+.ctx-item:active{background:#2a2a2a;}
+.ctx-item.green{color:var(--green);}
+.ctx-item.red{color:var(--red);}
+.ctx-icon{font-size:15px;width:22px;text-align:center;font-style:normal;}
+.ctx-divider{height:0.5px;background:#333;margin:4px 0;}
+#ctx-overlay{position:fixed;inset:0;z-index:9997;display:none;}
+#ctx-overlay.show{display:block;}
+.spinner{display:inline-block;width:18px;height:18px;border:2px solid var(--green-bg);border-top-color:var(--green);border-radius:50%;animation:spin 0.7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="screen active" id="screen-dashboard">
+    <div class="topbar" style="padding-top:max(12px,env(safe-area-inset-top))">
+      <span class="app-title">🌿 GrowSmart</span>
+      <button class="icon-btn" onclick="openTodayEntry()">＋</button>
+    </div>
+    <div class="scroll" id="dashboard-scroll"></div>
+    <nav class="bottom-nav" id="nav-dashboard"></nav>
+  </div>
+  <div class="screen" id="screen-calendar">
+    <div class="topbar" style="padding-top:max(12px,env(safe-area-inset-top))">
+      <button onclick="changeMonth(-1)" style="background:none;border:none;color:var(--green);font-size:24px;cursor:pointer;padding:0 8px;">‹</button>
+      <span style="font-size:16px;font-weight:500;color:var(--text)" id="cal-month-label">–</span>
+      <button onclick="changeMonth(1)" style="background:none;border:none;color:var(--green);font-size:24px;cursor:pointer;padding:0 8px;">›</button>
+    </div>
+    <div class="scroll" id="calendar-scroll"></div>
+    <nav class="bottom-nav" id="nav-calendar"></nav>
+  </div>
+  <div class="screen" id="screen-ai">
+    <div class="topbar" style="padding-top:max(12px,env(safe-area-inset-top))">
+      <span class="app-title">KI-Coach</span>
+    </div>
+    <div class="scroll" id="ai-scroll"></div>
+    <nav class="bottom-nav" id="nav-ai"></nav>
+  </div>
+  <div class="screen" id="screen-settings">
+    <div class="topbar" style="padding-top:max(12px,env(safe-area-inset-top))">
+      <span class="app-title">Einstellungen</span>
+    </div>
+    <div class="scroll" id="settings-scroll"></div>
+    <nav class="bottom-nav" id="nav-settings"></nav>
+  </div>
+  <div class="screen" id="screen-entry">
+    <div class="topbar" style="padding-top:max(12px,env(safe-area-inset-top))">
+      <button class="icon-btn" onclick="goTo('dashboard')" style="font-size:20px">←</button>
+      <span class="topbar-title" id="entry-title">Eintrag</span>
+      <button class="save-pill" onclick="saveEntry()">Speichern</button>
+    </div>
+    <div class="scroll" id="entry-scroll"></div>
+  </div>
+</div>
+<div id="ctx-overlay" onclick="closeCtxMenu()"></div>
+<div id="ctx-menu"></div>
+<div id="toast"></div>
+<script>
+const STORAGE_KEY='growsmart_data';
+const DEFAULT_SCHEDULE={
+  1:{root_juice:4,bio_grow:0,bio_bloom:0,top_max:0,bio_heaven:2,alg_a_mic:0,acti_vera:0,calmag:0.3},
+  2:{root_juice:0,bio_grow:2,bio_bloom:0,top_max:0,bio_heaven:2,alg_a_mic:0,acti_vera:2,calmag:0.3},
+  3:{root_juice:0,bio_grow:2,bio_bloom:1,top_max:1,bio_heaven:2,alg_a_mic:1,acti_vera:2,calmag:0.3},
+  4:{root_juice:0,bio_grow:3,bio_bloom:2,top_max:1,bio_heaven:3,alg_a_mic:2,acti_vera:3,calmag:0.3},
+  5:{root_juice:0,bio_grow:4,bio_bloom:3,top_max:1,bio_heaven:4,alg_a_mic:3,acti_vera:4,calmag:0.3},
+  6:{root_juice:0,bio_grow:4,bio_bloom:3,top_max:4,bio_heaven:4,alg_a_mic:3,acti_vera:4,calmag:0.5},
+  7:{root_juice:0,bio_grow:4,bio_bloom:4,top_max:4,bio_heaven:5,alg_a_mic:4,acti_vera:5,calmag:0.5},
+  8:{root_juice:0,bio_grow:4,bio_bloom:4,top_max:4,bio_heaven:5,alg_a_mic:4,acti_vera:5,calmag:0.5},
+  9:{root_juice:0,bio_grow:4,bio_bloom:4,top_max:4,bio_heaven:5,alg_a_mic:4,acti_vera:5,calmag:0.5},
+  10:{root_juice:0,bio_grow:4,bio_bloom:4,top_max:4,bio_heaven:5,alg_a_mic:4,acti_vera:5,calmag:0.5}
+};
+let state={cycles:[],entries:{},schedule:JSON.parse(JSON.stringify(DEFAULT_SCHEDULE))};
+let currentTab='dashboard',calViewDate=new Date(),editingDate=null,showSchedule=false,selectedCycleId=null,lastBackTime=0,settingsDraft={};
+const NUTRIENTS=[
+  {key:'root_juice',label:'1. Root-Juice'},{key:'bio_grow',label:'2. Bio-Grow'},
+  {key:'bio_bloom',label:'3. Bio-Bloom'},{key:'top_max',label:'4. Top-Max'},
+  {key:'bio_heaven',label:'5. Bio-Heaven'},{key:'alg_a_mic',label:'6. Alg-A-Mic'},
+  {key:'acti_vera',label:'7. Acti-Vera'},{key:'calmag',label:'8. Calmag'}
+];
+const PHASE_CFG={
+  anzucht:{label:'Anzucht',color:'#5aabf0',bg:'#0d1e2e'},
+  bloom:{label:'Blüte',color:'#4caf70',bg:'#0d1e0d'},
+  flush:{label:'Spülen',color:'#c8b44a',bg:'#2a2a0d'},
+  ice:{label:'IceFlush',color:'#5adada',bg:'#0d1e1e'},
+  harvest:{label:'Ernte',color:'#b06ac8',bg:'#1a0d2a'},
+  dry:{label:'Trocknen',color:'#b08a4a',bg:'#1e1a0d'}
+};
+const ACTION_COLORS={water_anzucht:'#1e3a6e',water:'#163a7a',feed:'#1e6e3a',flush:'#5a5a10',ice:'#1a5a5a',harvest:'#5a1e6e',dry:'#3a2a10'};
+
+function loadState(){try{const s=localStorage.getItem(STORAGE_KEY);if(s){const p=JSON.parse(s);state=Object.assign({cycles:[],entries:{},schedule:JSON.parse(JSON.stringify(DEFAULT_SCHEDULE))},p);}}catch(e){}}
+function saveState(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(state));}catch(e){}}
+
+let toastTimer=null;
+function showToast(msg,dur=2200){
+  const el=document.getElementById('toast');
+  el.textContent=msg;el.classList.add('show');
+  if(toastTimer)clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>el.classList.remove('show'),dur);
+}
+
+function todayISO(){return new Date().toISOString().split('T')[0];}
+
+function getPhase(iso,c){
+  if(!c.startDate)return null;
+  const diff=Math.floor((new Date(iso)-new Date(c.startDate))/86400000);
+  if(diff<0)return null;
+  const a=c.anzuchtDays||17,b=a+(c.bloomDays||66),f=b+(c.flushDays||9),
+        i=f+(c.iceDays||6),h=i+(c.harvestDays||1),d=h+(c.dryDays||7);
+  if(diff<a)return{phase:'anzucht',day:diff+1,week:Math.floor(diff/7)+1,total:d};
+  if(diff<b)return{phase:'bloom',day:diff+1,week:Math.floor((diff-a)/7)+1,total:d};
+  if(diff<f)return{phase:'flush',day:diff+1,week:null,total:d};
+  if(diff<i)return{phase:'ice',day:diff+1,week:null,total:d};
+  if(diff<h)return{phase:'harvest',day:diff+1,week:null,total:d};
+  if(diff<=d)return{phase:'dry',day:diff+1,week:null,total:d};
+  return null;
+}
+function getRec(iso,c){
+  const p=getPhase(iso,c);if(!p)return null;
+  if(['flush','ice','harvest','dry'].includes(p.phase))return{action:p.phase,nutrients:null};
+  const wk=Math.min(p.week||1,10),sch=state.schedule[wk]||state.schedule[1];
+  return{action:p.phase==='anzucht'?'water_anzucht':(p.day%2===0?'feed':'water'),
+    nutrients:p.phase==='anzucht'?{...sch,bio_bloom:0,top_max:0}:sch,week:wk};
+}
+function isWaterDay(iso,c){const r=getRec(iso,c);return r&&['water_anzucht','water','feed','flush','ice'].includes(r.action);}
+function calcVPD(t,rh){if(isNaN(t)||isNaN(rh))return null;return Math.round(0.6108*Math.exp(17.27*t/(t+237.3))*(1-rh/100)*100)/100;}
+function getVPDZone(v){
+  if(v===null)return null;
+  if(v<0.4)return{label:'Zu feucht',color:'#7a7af0',bg:'#1e1e3a',hint:'VPD zu niedrig – Luftzirkulation erhöhen!',pct:Math.round(v/0.4*15)};
+  if(v<0.8)return{label:'Anzucht – optimal',color:'#5aabf0',bg:'#0d1e2e',hint:'VPD ideal für Anzucht.',pct:Math.round(15+(v-0.4)/0.4*35)};
+  if(v<1.2)return{label:'Blüte – optimal',color:'#4caf70',bg:'#0d1e0d',hint:'VPD perfekt für die Blütephase!',pct:Math.round(50+(v-0.8)/0.4*25)};
+  if(v<1.6)return{label:'Obere Grenze',color:'#c8a04a',bg:'#2a1e0d',hint:'VPD etwas hoch – Luftfeuchtigkeit erhöhen.',pct:Math.round(75+(v-1.2)/0.4*15)};
+  return{label:'Pflanzenstress!',color:'#e06060',bg:'#2a0d0d',hint:'VPD kritisch – sofort anpassen!',pct:Math.min(97,Math.round(90+(v-1.6)*10))};
+}
+function daysToHarvest(c){
+  if(!c.startDate)return null;
+  const hd=(c.anzuchtDays||17)+(c.bloomDays||66)+(c.flushDays||9)+(c.iceDays||6);
+  const diff=Math.ceil((new Date(c.startDate).getTime()+hd*86400000-Date.now())/86400000);
+  return diff>0?diff:0;
+}
+function getActive(){return state.cycles.filter(c=>c.active&&c.startDate);}
+function aLabel(a){return{water_anzucht:'Wasser',water:'Wasser',feed:'Dünger',flush:'Spülen',ice:'IceFlush',harvest:'Ernte',dry:'Trocknen'}[a]||'–';}
+
+function shiftEntries(cId,days){
+  if(!days)return;
+  const keys=Object.keys(state.entries).sort((a,b)=>days>0?b.localeCompare(a):a.localeCompare(b));
+  const moves=[];
+  keys.forEach(d=>{if(state.entries[d]?.cycleData?.[cId]){
+    const o=new Date(d+'T12:00:00');o.setDate(o.getDate()+days);
+    moves.push({from:d,to:o.toISOString().split('T')[0],log:state.entries[d].cycleData[cId]});
+  }});
+  moves.forEach(({from,to,log})=>{
+    delete state.entries[from].cycleData[cId];
+    if(!state.entries[to])state.entries[to]={temp:'',humidity:'',cycleData:{}};
+    if(!state.entries[to].cycleData)state.entries[to].cycleData={};
+    state.entries[to].cycleData[cId]=log;
+  });
+  Object.keys(state.entries).forEach(d=>{
+    const e=state.entries[d];
+    if(!e.temp&&!e.humidity&&!Object.keys(e.cycleData||{}).length)delete state.entries[d];
+  });
+}
+
+// NAV
+const TABS=['dashboard','calendar','ai','settings'];
+const TICONS={dashboard:'🌿',calendar:'📅',ai:'✦',settings:'⚙'};
+const TLABELS={dashboard:'Übersicht',calendar:'Kalender',ai:'KI-Coach',settings:'Einst.'};
+function buildNav(t){return TABS.map(x=>`<button class="nav-btn ${x===t?'active':''}" onclick="goTo('${x}')"><span class="nav-icon">${TICONS[x]}</span><span class="nav-label">${TLABELS[x]}</span></button>`).join('');}
+function goTo(tab){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  const el=document.getElementById('screen-'+tab);
+  if(el){el.classList.add('active');currentTab=tab;}
+  renderTab(tab);
+}
+function renderTab(tab){
+  const n=document.getElementById('nav-'+tab);if(n)n.innerHTML=buildNav(tab);
+  if(tab==='dashboard')renderDash();
+  else if(tab==='calendar')renderCal();
+  else if(tab==='ai')renderAI();
+  else if(tab==='settings')renderSettings();
+}
+window.addEventListener('popstate',()=>{
+  if(document.getElementById('screen-entry').classList.contains('active')){goTo('dashboard');history.pushState(null,'',location.href);return;}
+  const now=Date.now();
+  if(now-lastBackTime<2000)return;
+  lastBackTime=now;history.pushState(null,'',location.href);
+  showToast('Nochmal drücken zum Beenden');
+});
+
+// SWIPE calendar
+let sx=0,sy=0;
+function initSwipe(){
+  const el=document.getElementById('calendar-scroll');if(!el)return;
+  el.addEventListener('touchstart',e=>{sx=e.touches[0].clientX;sy=e.touches[0].clientY;},{passive:true});
+  el.addEventListener('touchend',e=>{
+    const dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy;
+    if(Math.abs(dx)>55&&Math.abs(dx)>Math.abs(dy)*1.5)changeMonth(dx<0?1:-1);
+  },{passive:true});
+}
+
+// DASHBOARD
+function renderDash(){
+  const active=getActive(),today=todayISO();
+  const todayFmt=new Date().toLocaleDateString('de-DE',{weekday:'long',day:'2-digit',month:'long'});
+  const tasks=active.map(c=>{
+    const p=getPhase(today,c),r=getRec(today,c);
+    const cfg=PHASE_CFG[p?.phase]||PHASE_CFG.bloom;
+    return`<div style="display:flex;align-items:center;gap:8px"><div style="width:8px;height:8px;border-radius:50%;background:${cfg.color};flex-shrink:0"></div><div><div style="font-size:13px;font-weight:500;color:var(--text)">${c.name}</div><div style="font-size:12px;color:var(--text-muted)">Tag ${p?.day||'–'}${p?.week?` · Wo. ${p.week}`:''} · ${aLabel(r?.action)}</div></div></div>`;
+  }).join('');
+  const fc=active[0],hi=fc?daysToHarvest(fc):null;
+  const stats=`<div class="stat-row">
+    <div class="stat-box"><div class="stat-lbl">Zyklen</div><div class="stat-val">${active.length}</div></div>
+    <div class="stat-box"><div class="stat-lbl">Heute</div><div class="stat-val" style="color:var(--blue);font-size:15px">${active.length>0?aLabel(getRec(today,active[0])?.action):'–'}</div></div>
+    <div class="stat-box"><div class="stat-lbl">Ernte in</div><div class="stat-val">${hi!==null?hi:'–'}<span class="stat-unit"> d</span></div></div>
+  </div>`;
+  const cards=active.map(c=>{
+    const p=getPhase(today,c),r=getRec(today,c),cfg=PHASE_CFG[p?.phase]||PHASE_CFG.bloom;
+    const pct=p?Math.round(p.day/(p.total+1)*100):0;
+    const sf=c.startDate?new Date(c.startDate+'T12:00:00').toLocaleDateString('de-DE'):'–';
+    return`<div class="cycle-card" onclick="openEntry('${today}')"><div style="display:flex;align-items:center;gap:10px"><div class="c-dot" style="background:${cfg.color}"></div><div class="c-name">${c.name}${c.location?` – ${c.location}`:''}</div><div class="c-day">Tag ${p?.day||'–'}</div></div><div style="display:flex;gap:6px"><span class="phase-pill" style="background:${cfg.bg};color:${cfg.color}">${cfg.label}${p?.week?` Wo. ${p.week}`:''}</span>${r?.action==='feed'?`<span class="phase-pill" style="background:var(--green-bg);color:var(--green)">Düngertag</span>`:''}</div><div><div class="prog-bg"><div class="prog-fill" style="width:${pct}%;background:${cfg.color}"></div></div><div style="display:flex;justify-content:space-between;margin-top:4px"><span style="font-size:11px;color:var(--text-hint)">Start ${sf}</span><span style="font-size:11px;color:var(--text-hint)">${pct}%</span></div></div></div>`;
+  }).join('');
+  const empty=active.length===0?`<div class="empty-state"><div class="empty-icon">🌱</div><div class="empty-text">Noch keine aktiven Zyklen.</div><button class="empty-btn" onclick="goTo('settings')">Zyklus erstellen</button></div>`:'';
+  document.getElementById('dashboard-scroll').innerHTML=`<div class="card" style="gap:8px;display:flex;flex-direction:column"><div style="font-size:12px;color:var(--green);font-weight:500">${todayFmt}</div>${active.length===0?'<div style="font-size:13px;color:var(--text-muted)">Keine aktiven Zyklen.</div>':tasks}</div>${stats}<div class="sect-head">Meine Zyklen</div>${empty}${cards}<div style="height:10px"></div>`;
+}
+
+// CALENDAR
+const MNAMES=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+function renderCal(){
+  const y=calViewDate.getFullYear(),m=calViewDate.getMonth();
+  document.getElementById('cal-month-label').textContent=`${MNAMES[m]} ${y}`;
+  const active=getActive(),today=todayISO();
+  const fd=new Date(y,m,1).getDay(),dim=new Date(y,m+1,0).getDate(),off=fd===0?6:fd-1;
+  let cells='';
+  for(let i=0;i<off;i++)cells+='<div></div>';
+  for(let d=1;d<=dim;d++){
+    const iso=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isToday=iso===today,hasEntry=!!state.entries[iso];
+    const wc=active.filter(c=>isWaterDay(iso,c));
+    let bg='background:var(--surface);';
+    if(wc.length===1){const r=getRec(iso,wc[0]);bg=`background:${ACTION_COLORS[r.action]||'#1e3a6e'};`;}
+    else if(wc.length>=2){
+      const r1=getRec(iso,wc[0]),r2=getRec(iso,wc[1]);
+      bg=`background:linear-gradient(135deg,${ACTION_COLORS[r1.action]||'#1e3a6e'} 50%,${ACTION_COLORS[r2.action]||'#1e6e3a'} 50%);`;
+    }
+    cells+=`<div class="cal-cell ${isToday?'today':''}" style="${bg}"
+      onclick="openEntry('${iso}')"
+      ontouchstart="startLP('${iso}',event)" ontouchend="cancelLP()" ontouchmove="cancelLP()">
+      <span class="cal-num">${d}</span>
+      ${hasEntry?`<div class="cal-dot" style="background:var(--green)"></div>`:''}
+    </div>`;
+  }
+  const legend=[
+    {c:ACTION_COLORS.water_anzucht,l:'Wasser'},{c:ACTION_COLORS.feed,l:'Dünger'},
+    {c:ACTION_COLORS.flush,l:'Spülen'},{c:ACTION_COLORS.ice,l:'IceFlush'},{c:ACTION_COLORS.harvest,l:'Ernte'}
+  ].map(x=>`<div class="legend-item"><div class="legend-dot" style="background:${x.c}"></div>${x.l}</div>`).join('');
+  document.getElementById('calendar-scroll').innerHTML=`<div class="cal-day-header">${['Mo','Di','Mi','Do','Fr','Sa','So'].map(x=>`<div class="cal-day-lbl">${x}</div>`).join('')}</div><div class="cal-grid">${cells}</div><div class="cal-legend">${legend}</div><div style="height:10px"></div>`;
+  initSwipe();
+}
+function changeMonth(dir){calViewDate=new Date(calViewDate.getFullYear(),calViewDate.getMonth()+dir,1);renderCal();}
+
+// LONG PRESS
+let lpTimer=null;
+function startLP(iso,e){lpTimer=setTimeout(()=>{lpTimer=null;showCtx(iso,e);},600);}
+function cancelLP(){if(lpTimer){clearTimeout(lpTimer);lpTimer=null;}}
+
+function showCtx(iso,e){
+  const active=getActive();
+  const df=new Date(iso+'T12:00:00').toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'});
+  let items=[];
+  active.forEach(c=>{
+    const p=getPhase(iso,c);if(!p)return;
+    items.push(`<div class="ctx-item green" onclick="shiftFrom('${c.id}','${iso}',1)"><i class="ctx-icon">+1d</i>${c.name}: Zyklus +1 Tag</div>`);
+    items.push(`<div class="ctx-item" onclick="shiftFrom('${c.id}','${iso}',-1)"><i class="ctx-icon">-1d</i>${c.name}: Zyklus -1 Tag</div>`);
+  });
+  if(items.length)items.push('<div class="ctx-divider"></div>');
+  state.cycles.filter(c=>!c.active).forEach(c=>{
+    items.push(`<div class="ctx-item green" onclick="startOn('${c.id}','${iso}')"><i class="ctx-icon">▶</i>${c.name} hier starten</div>`);
+  });
+  active.forEach(c=>{
+    items.push(`<div class="ctx-item red" onclick="stopC('${c.id}')"><i class="ctx-icon">■</i>${c.name} beenden</div>`);
+  });
+  if(active.length||state.cycles.filter(c=>!c.active).length)items.push('<div class="ctx-divider"></div>');
+  items.push(`<div class="ctx-item" onclick="openEntry('${iso}');closeCtx()"><i class="ctx-icon">✏</i>Eintrag ${df} öffnen</div>`);
+  const menu=document.getElementById('ctx-menu');
+  menu.innerHTML=`<div style="font-size:11px;color:var(--text-hint);padding:8px 16px 2px;font-weight:500">${df}</div>`+items.join('');
+  const t=e?.touches?.[0]||e?.changedTouches?.[0];
+  let x=t?Math.min(t.clientX,window.innerWidth-260):window.innerWidth/2-120;
+  let y=t?Math.min(t.clientY,window.innerHeight-320):window.innerHeight/2;
+  menu.style.left=x+'px';menu.style.top=y+'px';
+  menu.classList.add('show');document.getElementById('ctx-overlay').classList.add('show');
+}
+function closeCtx(){document.getElementById('ctx-menu').classList.remove('show');document.getElementById('ctx-overlay').classList.remove('show');}
+// alias for onclick
+function closeCtxMenu(){closeCtx();}
+
+function shiftFrom(cId,iso,days){
+  closeCtx();
+  const c=state.cycles.find(x=>x.id===cId);if(!c)return;
+  shiftEntries(cId,days);
+  const ns=new Date(c.startDate+'T12:00:00');ns.setDate(ns.getDate()+days);
+  c.startDate=ns.toISOString().split('T')[0];
+  saveState();renderCal();
+  showToast(`${c.name} um ${days>0?'+':''}${days} Tag verschoben`);
+}
+function startOn(cId,iso){
+  closeCtx();
+  const c=state.cycles.find(x=>x.id===cId);if(!c)return;
+  c.active=true;c.startDate=iso;saveState();renderCal();
+  showToast(`${c.name} gestartet`);
+  setTimeout(()=>{selectedCycleId=cId;settingsDraft={};goTo('settings');},1000);
+}
+function stopC(cId){
+  closeCtx();
+  const c=state.cycles.find(x=>x.id===cId);if(!c)return;
+  if(!confirm(`"${c.name}" wirklich beenden?`))return;
+  c.active=false;c.startDate=null;saveState();renderCal();showToast(`${c.name} beendet`);
+}
+
+// AI
+function renderAI(){
+  const active=getActive(),today=todayISO(),entry=state.entries[today]||{};
+  const vpd=calcVPD(parseFloat(entry.temp),parseFloat(entry.humidity)),vpdZ=getVPDZone(vpd);
+  const rows=active.map(c=>{
+    const p=getPhase(today,c),r=getRec(today,c),cfg=PHASE_CFG[p?.phase]||PHASE_CFG.bloom;
+    return`<div style="display:flex;align-items:center;gap:8px"><div style="width:8px;height:8px;border-radius:50%;background:${cfg.color}"></div><div style="flex:1"><div style="font-size:13px;font-weight:500;color:var(--text)">${c.name} – Tag ${p?.day||'–'}</div><div style="font-size:12px;color:var(--text-muted)">${cfg.label}${p?.week?` · Wo. ${p.week}`:''} · ${aLabel(r?.action)}</div></div></div>`;
+  }).join('');
+  const fc=active[0],rec=fc?getRec(today,fc):null;
+  const nutRows=rec?.nutrients?NUTRIENTS.map(n=>{const v=rec.nutrients[n.key]||0;return`<div class="nut-row"><span class="nut-name">${n.label}</span><div class="nut-bar"><div class="nut-fill" style="width:${Math.round(v/5*100)}%"></div></div><span class="nut-val">${v} ml/L</span></div>`;}).join(''):`<div style="font-size:12px;color:var(--text-muted)">Kein Düngertag heute.</div>`;
+  document.getElementById('ai-scroll').innerHTML=`<div class="card" style="gap:8px;display:flex;flex-direction:column"><div class="sect-head">Status heute</div>${active.length===0?'<div style="font-size:13px;color:var(--text-muted)">Keine aktiven Zyklen.</div>':rows}${vpd!==null?`<div style="display:flex;align-items:center;gap:8px;margin-top:4px"><span style="font-size:13px;color:var(--text-sub)">${entry.temp}°C &nbsp;${entry.humidity}%</span><span class="phase-pill" style="background:${vpdZ?.bg};color:${vpdZ?.color}">VPD ${vpd.toFixed(2)} kPa</span></div>`:'<div style="font-size:12px;color:var(--text-muted)">Noch kein Eintrag heute.</div>'}</div>${fc?`<div class="card" style="gap:8px;display:flex;flex-direction:column"><div class="sect-head">Empfehlung – ${fc.name}</div>${nutRows}</div>`:''}<button class="ai-fetch-btn" onclick="fetchAI()" id="ai-btn">✦ KI-Analyse abrufen</button><div id="ai-result"></div><div style="height:10px"></div>`;
+}
+async function fetchAI(){
+  const active=getActive();if(!active.length){showToast('Keine aktiven Zyklen.');return;}
+  const btn=document.getElementById('ai-btn');btn.innerHTML='<div class="spinner" style="margin:0 auto"></div>';btn.disabled=true;
+  const today=todayISO(),entry=state.entries[today]||{},vpd=calcVPD(parseFloat(entry.temp),parseFloat(entry.humidity));
+  const ci=active.map(c=>{const p=getPhase(today,c),r=getRec(today,c);return`${c.name}: Tag ${p?.day||'–'}, Phase ${p?.phase||'–'}, Woche ${p?.week||'–'}, Aktion: ${r?.action||'–'}`;}).join('\n');
+  const prompt=`Du bist ein erfahrener Cannabis-Grow-Assistent. Antworte Deutsch, freundlich, max. 180 Wörter.\nDatum: ${today}\nTemp: ${entry.temp||'?'}°C, RLF: ${entry.humidity||'?'}%, VPD: ${vpd!==null?vpd.toFixed(2)+' kPa':'?'}\nZyklen:\n${ci}\nGib: 1) Tagesanalyse 2) Empfehlungen heute 3) Vorschau 7 Tage`;
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})});
+    const data=await res.json();
+    const text=data.content?.map(b=>b.text||'').join('')||'Fehler.';
+    document.getElementById('ai-result').innerHTML=`<div class="ai-result-card"><div style="display:flex;align-items:center;gap:8px"><div style="width:8px;height:8px;border-radius:50%;background:var(--green)"></div><span style="font-size:13px;color:var(--green);font-weight:500">KI-Analyse</span></div><div style="font-size:13px;color:var(--text-sub);line-height:1.7">${text.replace(/\n/g,'<br>')}</div></div>`;
+  }catch(e){document.getElementById('ai-result').innerHTML=`<div class="card"><span style="font-size:13px;color:var(--red)">Verbindungsfehler.</span></div>`;}
+  btn.innerHTML='✦ KI-Analyse abrufen';btn.disabled=false;
+}
+
+// SETTINGS
+function renderSettings(){
+  if(!selectedCycleId&&state.cycles.length>0)selectedCycleId=state.cycles[0].id;
+  const sel=state.cycles.find(c=>c.id===selectedCycleId);
+  if(sel&&settingsDraft.id!==sel.id)settingsDraft={...sel};
+  const d=settingsDraft;
+  const tabs=state.cycles.map(c=>`<div class="tab-item ${c.id===selectedCycleId?'active':''}" onclick="selCycle('${c.id}')"><div class="tab-dot" style="background:${c.active?'var(--green)':'var(--text-hint)'}"></div>${c.name}</div>`).join('');
+  const durs=sel?[['Anzucht','anzuchtDays'],['Blüte','bloomDays'],['Spülen','flushDays'],['IceFlush','iceDays'],['Ernte','harvestDays'],['Trocknen','dryDays']].map(([l,k])=>`<div class="dur-box"><div class="dur-lbl">${l} (Tage)</div><input class="dur-inp" type="number" value="${d[k]||0}" oninput="dd('${k}',this.value)"/></div>`).join(''):'';
+  const schHTML=showSchedule?`<div class="card" style="gap:10px;display:flex;flex-direction:column"><div class="sect-head">Düngeplan (ml/L)</div>${[1,2,3,4,5,6,7,8,9,10].map(w=>`<div style="display:flex;align-items:center;gap:6px;border-bottom:0.5px solid var(--border);padding-bottom:6px"><span style="font-size:12px;color:var(--green);width:26px;font-family:var(--mono);font-weight:500">W${w}</span><div style="display:flex;gap:4px;overflow-x:auto;flex:1;padding-bottom:2px">${NUTRIENTS.map(n=>`<div style="display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0"><span style="font-size:9px;color:var(--text-hint)">${n.label.split('. ')[1].substring(0,5)}</span><input style="width:38px;background:var(--card2);border:0.5px solid var(--border);border-radius:5px;padding:4px 3px;color:var(--text-sub);font-size:11px;text-align:center;font-family:var(--mono);outline:none" type="number" id="sch-${w}-${n.key}" value="${state.schedule[w]?.[n.key]??0}"/></div>`).join('')}</div></div>`).join('')}<button class="save-settings-btn" onclick="saveSchedule()">💾 Düngeplan speichern</button><button onclick="resetSch()" style="background:var(--red-bg);border:none;border-radius:10px;padding:10px;font-size:13px;color:var(--red);cursor:pointer;font-family:var(--font);margin-top:2px">Standardwerte laden</button></div>`:'';
+  document.getElementById('settings-scroll').innerHTML=`<div class="card" style="gap:10px;display:flex;flex-direction:column"><div style="display:flex;align-items:center;justify-content:space-between"><div class="sect-head">Meine Zyklen</div><button class="add-btn" onclick="addCycle()">＋ Neu</button></div><div class="tab-row">${tabs}</div>${sel?`<div style="display:flex;flex-direction:column;gap:8px;margin-top:4px"><div class="inp-wrap"><div class="inp-label">Name</div><input class="inp-field" value="${d.name||''}" oninput="dd('name',this.value)"/></div><div class="inp-wrap"><div class="inp-label">Standort</div><input class="inp-field" value="${d.location||''}" oninput="dd('location',this.value)"/></div><div class="switch-row"><span style="font-size:13px;color:var(--text-sub)">Aktiv</span><label class="switch"><input type="checkbox" ${sel.active?'checked':''} onchange="toggleAct('${sel.id}',this.checked)"/><span class="slider"></span></label></div><div class="inp-wrap"><div class="inp-label">Startdatum (ändern verschiebt alle Logs)</div><input class="inp-field" type="date" value="${d.startDate||''}" oninput="dd('startDate',this.value)" style="color-scheme:dark"/></div><div class="sub-head">Phasendauern</div><div class="dur-grid">${durs}</div><div class="sub-head">Bewässerungsintervall</div><div class="dur-grid"><div class="dur-box"><div class="dur-lbl">Anzucht (Tage)</div><input class="dur-inp" type="number" value="${d.waterIntervalAnzucht||4}" oninput="dd('waterIntervalAnzucht',this.value)"/></div><div class="dur-box"><div class="dur-lbl">Blüte (Tage)</div><input class="dur-inp" type="number" value="${d.waterIntervalBloom||3}" oninput="dd('waterIntervalBloom',this.value)"/></div></div><button class="save-settings-btn" onclick="saveDraft()">💾 Zyklus speichern</button><button class="del-btn" onclick="delCycle('${sel.id}')">🗑 Zyklus löschen</button></div>`:'<div style="font-size:13px;color:var(--text-muted)">Noch keine Zyklen.</div>'}</div><div class="section-toggle" onclick="toggleSch()"><span>🧪</span><span>Düngeplan bearbeiten</span><span style="color:var(--text-muted)">${showSchedule?'▲':'▼'}</span></div>${schHTML}<div style="height:20px"></div>`;
+}
+function dd(k,v){settingsDraft[k]=isNaN(v)||v===''?v:Number(v);}
+function saveDraft(){
+  const c=state.cycles.find(x=>x.id===selectedCycleId);if(!c)return;
+  const oldS=c.startDate,newS=settingsDraft.startDate;
+  if(oldS&&newS&&oldS!==newS){
+    const diff=Math.round((new Date(newS)-new Date(oldS))/86400000);
+    if(diff)shiftEntries(c.id,diff);
+  }
+  Object.assign(c,{...settingsDraft,id:c.id});
+  saveState();showToast('Zyklus gespeichert ✓');renderSettings();
+}
+function saveSchedule(){
+  for(let w=1;w<=10;w++){if(!state.schedule[w])state.schedule[w]={};NUTRIENTS.forEach(n=>{const el=document.getElementById(`sch-${w}-${n.key}`);if(el)state.schedule[w][n.key]=parseFloat(el.value)||0;});}
+  saveState();showToast('Düngeplan gespeichert ✓');
+}
+function selCycle(id){selectedCycleId=id;settingsDraft={};renderSettings();}
+function toggleSch(){showSchedule=!showSchedule;renderSettings();}
+function addCycle(){
+  const c={id:Date.now().toString(),name:`Zyklus ${state.cycles.length+1}`,location:'',active:false,startDate:null,anzuchtDays:17,bloomDays:66,flushDays:9,iceDays:6,harvestDays:1,dryDays:7,waterIntervalAnzucht:4,waterIntervalBloom:3};
+  state.cycles.push(c);selectedCycleId=c.id;settingsDraft={...c};saveState();renderSettings();
+}
+function toggleAct(id,checked){
+  const c=state.cycles.find(x=>x.id===id);if(!c)return;
+  c.active=checked;if(checked&&!c.startDate)c.startDate=todayISO();if(!checked)c.startDate=null;
+  settingsDraft.active=c.active;settingsDraft.startDate=c.startDate;saveState();renderSettings();
+}
+function delCycle(id){
+  if(!confirm('Zyklus und alle Logs löschen?'))return;
+  state.cycles=state.cycles.filter(x=>x.id!==id);
+  Object.keys(state.entries).forEach(d=>{if(state.entries[d]?.cycleData?.[id])delete state.entries[d].cycleData[id];});
+  selectedCycleId=state.cycles[0]?.id||null;settingsDraft={};saveState();renderSettings();showToast('Zyklus gelöscht');
+}
+function resetSch(){
+  if(!confirm('Standardwerte laden?'))return;
+  state.schedule=JSON.parse(JSON.stringify(DEFAULT_SCHEDULE));saveState();renderSettings();showToast('Standardwerte geladen');
+}
+
+// ENTRY
+function openTodayEntry(){openEntry(todayISO());}
+function openEntry(iso){
+  editingDate=iso;
+  document.getElementById('entry-title').textContent=`Eintrag – ${new Date(iso+'T12:00:00').toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'})}`;
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-entry').classList.add('active');
+  renderEntry(iso);
+}
+function renderEntry(iso){
+  const active=getActive(),saved=state.entries[iso]||{},temp=saved.temp||'',rh=saved.humidity||'';
+  const vpd=calcVPD(parseFloat(temp),parseFloat(rh)),vpdZ=getVPDZone(vpd);
+  const vpdHTML=vpd!==null?`<div class="vpd-box"><div><div class="vpd-lbl">VPD (automatisch)</div><div style="display:flex;align-items:baseline;gap:3px"><span class="vpd-val" id="vpd-num">${vpd.toFixed(2)}</span><span style="font-size:11px;color:#3a7a7a"> kPa</span></div><span class="vpd-pill" id="vpd-pill" style="background:${vpdZ.bg};color:${vpdZ.color}">${vpdZ.label}</span></div><div class="vpd-scale-wrap"><div style="display:flex;justify-content:space-between;font-size:9px;color:var(--text-hint)"><span>Anzucht</span><span>Blüte</span><span>Stress</span></div><div class="vpd-scale"><div class="vpd-seg" style="background:#1e3a6e"></div><div class="vpd-seg" style="background:#1e6e3a"></div><div class="vpd-seg" style="background:#6e4a1e"></div></div><div class="vpd-marker-row"><div class="vpd-marker" id="vpd-mk" style="left:${Math.min(95,vpdZ.pct)}%"></div></div><div class="vpd-nums"><span>0.4</span><span>0.8</span><span>1.2</span><span>1.8</span></div></div></div>`:`<div style="background:var(--teal-bg);border:0.5px solid var(--teal-bd);border-radius:10px;padding:10px 12px;font-size:12px;color:var(--text-muted)">Temp &amp; Luftfeuchte eingeben für VPD</div>`;
+  const blocks=active.map(c=>{
+    const p=getPhase(iso,c),r=getRec(iso,c),cfg=PHASE_CFG[p?.phase]||PHASE_CFG.bloom,cd=saved.cycleData?.[c.id]||{};
+    const nutRows=NUTRIENTS.map(n=>{const hint=r?.nutrients?.[n.key]??0,val=cd.nutrients?.[n.key]||'';return`<div class="tbl-row"><span class="t-name">${n.label}</span><span class="t-hint">${hint}</span><input class="t-inp" type="number" value="${val}" placeholder="${hint}" onchange="uEN('${c.id}','${n.key}',this.value)"/></div>`;}).join('');
+    const ai=vpdZ?`<div class="ai-strip"><div class="ai-dot"></div><div class="ai-txt"><b>KI-Hinweis:</b> ${vpdZ.hint}${r?.action==='feed'?' Düngertag!':''}${r?.action==='flush'?' Spülphase – kein Dünger!':''}</div></div>`:'';
+    return`<div class="sect-head">${c.name}${c.location?` – ${c.location}`:''} · Tag ${p?.day||'–'}</div><div class="tbl-header-row"><span class="tbl-header-title">Nährstofflösung (ml/L)</span><span class="phase-pill" style="background:${cfg.bg};color:${cfg.color};font-size:10px">${cfg.label}${p?.week?` Wo. ${p.week}`:''}</span></div><div class="tbl-wrap"><div class="tbl-head"><span class="th">Nährstoff</span><span class="th" style="text-align:right">Empf.</span><span class="th" style="text-align:right">Eingabe</span></div>${nutRows}</div><div class="row2" style="margin-top:2px"><div class="inp-wrap"><div class="inp-label">Wasser gesamt (ml)</div><input class="inp-field" type="number" value="${cd.water||''}" placeholder="z. B. 3500" onchange="uEF('${c.id}','water',this.value)"/></div><div style="width:76px;flex-shrink:0"><div class="inp-label">pH-Wert</div><input class="inp-field" type="number" step="0.1" value="${cd.ph||''}" placeholder="6.2" onchange="uEF('${c.id}','ph',this.value)"/></div></div><div class="note-wrap"><div class="inp-label" style="margin-bottom:3px">Notizen</div><textarea class="note-ta" placeholder="z. B. Blätter leicht gelb..." onchange="uEF('${c.id}','notes',this.value)">${cd.notes||''}</textarea></div>${ai}`;
+  }).join('');
+  const noActive=active.length===0?`<div class="empty-state"><div class="empty-icon">🌱</div><div class="empty-text">Keine aktiven Zyklen.</div><button class="empty-btn" onclick="goTo('settings')">Zyklus erstellen</button></div>`:'';
+  document.getElementById('entry-scroll').innerHTML=`<div class="sect-head">Umgebung</div><div class="row2"><div class="inp-wrap"><div class="inp-label">Temperatur (°C)</div><input class="inp-field" type="number" value="${temp}" placeholder="z. B. 23" id="entry-temp" oninput="uEnvLive()"/></div><div class="inp-wrap"><div class="inp-label">Luftfeuchtigkeit (%)</div><input class="inp-field" type="number" value="${rh}" placeholder="z. B. 48" id="entry-rh" oninput="uEnvLive()"/></div></div><div id="vpd-c">${vpdHTML}</div>${noActive}${blocks}<button class="big-save" onclick="saveEntry()">Speichern</button><div style="height:20px"></div>`;
+}
+function uEnvLive(){
+  const t=parseFloat(document.getElementById('entry-temp')?.value),rh=parseFloat(document.getElementById('entry-rh')?.value);
+  const vpd=calcVPD(t,rh),z=getVPDZone(vpd);
+  if(vpd!==null&&z){
+    const n=document.getElementById('vpd-num'),p=document.getElementById('vpd-pill'),m=document.getElementById('vpd-mk');
+    if(n)n.textContent=vpd.toFixed(2);
+    if(p){p.textContent=z.label;p.style.background=z.bg;p.style.color=z.color;}
+    if(m)m.style.left=Math.min(95,z.pct)+'%';
+  }
+}
+function ensureEntry(cId){
+  if(!state.entries[editingDate])state.entries[editingDate]={temp:'',humidity:'',cycleData:{}};
+  if(!state.entries[editingDate].cycleData)state.entries[editingDate].cycleData={};
+  if(!state.entries[editingDate].cycleData[cId])state.entries[editingDate].cycleData[cId]={nutrients:{}};
+  if(!state.entries[editingDate].cycleData[cId].nutrients)state.entries[editingDate].cycleData[cId].nutrients={};
+}
+function uEN(cId,key,val){ensureEntry(cId);state.entries[editingDate].cycleData[cId].nutrients[key]=val;}
+function uEF(cId,field,val){ensureEntry(cId);state.entries[editingDate].cycleData[cId][field]=val;}
+function saveEntry(){
+  if(!editingDate)return;
+  ensureEntry(state.cycles[0]?.id||'_');
+  state.entries[editingDate].temp=document.getElementById('entry-temp')?.value||'';
+  state.entries[editingDate].humidity=document.getElementById('entry-rh')?.value||'';
+  saveState();showToast('Gespeichert ✓');setTimeout(()=>goTo('dashboard'),400);
+}
+
+// INIT
+loadState();calViewDate=new Date();
+renderTab('dashboard');document.getElementById('nav-dashboard').innerHTML=buildNav('dashboard');
+history.pushState(null,'',location.href);
+</script>
+</body>
+</html>
