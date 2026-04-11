@@ -14,7 +14,7 @@
 :root{
   --bg:#0f0f0f;--surface:#161616;--card:#1c1c1c;--card2:#212121;
   --border:#2a2a2a;
-  --green:#4caf70;--green-dk:#2d6e45;--green-bg:#0d1e0d;--green-mid:#162216;--green-hint:#3a6e4a;
+  --green:#4caf70;--green-dk:#2d6e45;--green-bg:#0d1e0d;--green-hint:#3a6e4a;
   --blue:#5aabf0;--teal:#5adada;--teal-bg:#0e1a1a;--teal-bd:#1e3535;
   --red:#e06060;--red-bg:#2a0d0d;
   --text:#e0e0e0;--text-sub:#aaa;--text-muted:#666;--text-hint:#555;
@@ -33,15 +33,15 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-famil
 .icon-btn{background:none;border:none;color:var(--green);font-size:22px;cursor:pointer;padding:4px;}
 .save-pill{background:var(--green-bg);border:0.5px solid var(--green-dk);border-radius:7px;padding:5px 12px;font-size:12px;color:var(--green);cursor:pointer;font-family:var(--font);}
 .bottom-nav{background:var(--surface);border-top:0.5px solid var(--border);display:flex;padding-bottom:env(safe-area-inset-bottom);flex-shrink:0;}
-.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 0 6px;cursor:pointer;background:none;border:none;opacity:0.45;transition:opacity 0.15s;}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 0 6px;cursor:pointer;background:none;border:none;opacity:0.45;}
 .nav-btn.active{opacity:1;}
 .nav-icon{font-size:20px;line-height:1;}
 .nav-label{font-size:10px;color:var(--green);font-weight:500;font-family:var(--font);}
 .card{background:var(--card);border-radius:14px;border:0.5px solid var(--border);padding:14px;}
-.sect-head{font-size:11px;color:var(--green);font-weight:500;letter-spacing:0.06em;padding:4px 0 2px;}
+.sect-head{font-size:11px;color:var(--green);font-weight:500;letter-spacing:0.05em;padding:3px 0 2px;}
 .stat-row{display:flex;gap:8px;}
 .stat-box{flex:1;background:var(--surface);border-radius:10px;padding:10px 12px;}
-.stat-lbl{font-size:11px;color:var(--text-hint);margin-bottom:3px;}
+.stat-lbl{font-size:11px;color:var(--text-hint);margin-bottom:2px;}
 .stat-val{font-size:18px;font-weight:500;color:var(--text);}
 .stat-unit{font-size:11px;color:var(--text-hint);}
 .prog-bg{height:5px;background:var(--border);border-radius:4px;overflow:hidden;}
@@ -54,56 +54,51 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-famil
 .row2{display:flex;gap:8px;}
 /* VPD */
 .vpd-box{background:var(--teal-bg);border:0.5px solid var(--teal-bd);border-radius:10px;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px;}
-.vpd-val{font-size:22px;font-weight:500;color:var(--teal);font-family:var(--mono);}
-.vpd-pill{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:500;display:inline-block;margin-top:4px;}
-.vpd-scale{display:flex;height:6px;border-radius:3px;overflow:hidden;}
+.vpd-val{font-size:20px;font-weight:500;color:var(--teal);font-family:var(--mono);}
+.vpd-pill{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:500;display:inline-block;margin-top:3px;}
+.vpd-scale{display:flex;height:5px;border-radius:3px;overflow:hidden;}
 .vpd-seg{flex:1;}
 .vpd-mrow{position:relative;height:8px;}
-.vpd-marker{position:absolute;top:0;width:2px;height:10px;background:#fff;border-radius:2px;transition:left 0.3s;}
-/* TABLE */
-.tbl-hdr{border-radius:10px 10px 0 0;padding:8px 12px;display:flex;align-items:center;justify-content:space-between;}
-.tbl-wrap{background:var(--surface);border:0.5px solid var(--border);border-top:none;border-radius:0 0 10px 10px;overflow:hidden;}
-.tbl-head{display:grid;grid-template-columns:1fr 52px 56px;padding:5px 10px;border-bottom:0.5px solid var(--border);}
-.th{font-size:11px;color:var(--green);font-weight:500;}
-.th:not(:first-child){text-align:right;}
-.tbl-row{display:grid;grid-template-columns:1fr 52px 56px;padding:5px 10px;border-bottom:0.5px solid #1e1e1e;align-items:center;}
-.tbl-row:last-child{border:none;}
-.tbl-row:nth-child(odd){background:#191919;}
-.tbl-row:nth-child(even){background:var(--surface);}
-.t-name{font-size:12px;color:#999;}
-.t-hint{font-size:12px;color:var(--green-hint);text-align:right;font-family:var(--mono);}
-.t-inp{background:#1e1e1e;border:0.5px solid var(--border);border-radius:5px;padding:3px 6px;color:#bbb;font-size:12px;font-family:var(--mono);width:52px;text-align:right;outline:none;}
-.t-inp:focus{border-color:var(--green-hint);}
+.vpd-marker{position:absolute;top:0;width:2px;height:9px;background:#fff;border-radius:2px;transition:left 0.3s;}
+/* CALENDAR - larger cells */
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;}
+.cal-cell{aspect-ratio:0.78;border-radius:9px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;position:relative;border:0.5px solid transparent;background:#181818;user-select:none;padding:2px;}
+.cal-cell.today{border:2px solid #fff!important;}
+.cal-num{font-size:14px;color:var(--text-sub);font-weight:700;line-height:1;}
+.cal-cell.today .cal-num{color:#fff;}
+.cal-tag{font-size:7.5px;color:rgba(255,255,255,0.65);line-height:1;margin-top:1px;text-align:center;}
+.cal-icon{font-size:14px;line-height:1;margin-bottom:1px;}
+.cal-dot{width:4px;height:4px;border-radius:50%;position:absolute;bottom:2px;right:3px;background:rgba(255,255,255,0.7);}
+/* NUTRIENT TABLE */
+.nut-tbl-hdr{border-radius:10px 10px 0 0;padding:8px 12px;display:flex;align-items:center;justify-content:space-between;}
+.nut-tbl-wrap{border:0.5px solid var(--border);border-top:none;border-radius:0 0 10px 10px;overflow:hidden;}
+.nut-tbl-head{display:grid;grid-template-columns:1fr 58px 60px;padding:5px 10px;border-bottom:0.5px solid var(--border);}
+.nth{font-size:11px;font-weight:500;}
+.nth:not(:first-child){text-align:right;}
+.nut-row-tbl{display:grid;grid-template-columns:1fr 58px 60px;padding:5px 10px;border-bottom:0.5px solid #1e1e1e;align-items:center;}
+.nut-row-tbl:last-child{border:none;}
+.nut-row-tbl:nth-child(odd){background:#191919;}
+.nut-row-tbl:nth-child(even){background:var(--surface);}
+.nt-name{font-size:12px;color:#bbb;}
+.nt-hint{font-size:12px;text-align:right;font-family:var(--mono);}
+.nt-inp{background:#1e1e1e;border:0.5px solid var(--border);border-radius:5px;padding:3px 6px;color:#ddd;font-size:12px;font-family:var(--mono);width:56px;text-align:right;outline:none;}
+.nt-inp:focus{border-color:var(--green-hint);}
+/* NOTE */
 .note-wrap{background:var(--surface);border:0.5px solid var(--border);border-radius:10px;padding:8px 10px;}
 .note-ta{background:#1c1c1c;border:0.5px solid var(--border);border-radius:7px;padding:8px 10px;color:#aaa;font-size:12px;font-family:var(--font);width:100%;min-height:65px;resize:none;outline:none;line-height:1.6;}
-.note-ta:focus{border-color:var(--green-hint);}
-.big-save{border:none;border-radius:10px;padding:13px;font-size:14px;font-weight:500;color:#d0f0e0;width:100%;cursor:pointer;font-family:var(--font);}
-/* CALENDAR */
-.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;}
-.cal-cell{aspect-ratio:0.9;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;position:relative;border:0.5px solid transparent;background:#181818;user-select:none;padding:2px;}
-.cal-cell.today{border:2px solid #fff!important;}
-.cal-num{font-size:13px;color:var(--text-sub);font-weight:600;line-height:1;}
-.cal-cell.today .cal-num{color:#fff;}
-.cal-tag{font-size:8px;color:rgba(255,255,255,0.7);line-height:1;margin-top:1px;text-align:center;}
-.cal-icon{font-size:13px;line-height:1;margin-bottom:1px;}
-.cal-dot{width:5px;height:5px;border-radius:50%;position:absolute;bottom:2px;right:3px;}
+.big-save{border:none;border-radius:10px;padding:13px;font-size:14px;font-weight:500;color:#fff;width:100%;cursor:pointer;font-family:var(--font);}
 /* ALERTS */
 .alert{border-radius:12px;padding:10px 14px;display:flex;gap:10px;align-items:flex-start;border:0.5px solid transparent;}
-.alert-icon{font-size:18px;flex-shrink:0;}
-.alert-title{font-size:12px;font-weight:500;color:var(--text);margin-bottom:2px;}
-.alert-text{font-size:11px;color:var(--text-sub);line-height:1.5;}
-/* NEXT WATER CARD */
-.next-water{border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:12px;border:0.5px solid transparent;}
 /* SETTINGS */
 .tab-row{display:flex;gap:6px;flex-wrap:wrap;}
 .tab-item{display:flex;align-items:center;gap:6px;background:var(--surface);border-radius:8px;padding:6px 12px;border:0.5px solid var(--border);cursor:pointer;font-size:12px;color:var(--text-muted);font-family:var(--font);}
-.tab-item.active{border-color:var(--green);background:var(--green-bg);color:var(--green);}
+.tab-item.sel{border-color:var(--green);background:var(--green-bg);color:var(--green);}
 .dur-grid{display:flex;flex-wrap:wrap;gap:8px;}
 .dur-box{display:flex;flex-direction:column;gap:3px;width:calc(33% - 6px);}
 .dur-lbl{font-size:11px;color:var(--text-hint);}
 .dur-inp{background:var(--card2);border:0.5px solid var(--border);border-radius:7px;padding:6px;color:var(--text-sub);font-size:13px;text-align:center;width:100%;outline:none;font-family:var(--mono);}
 .sub-head{font-size:11px;color:var(--text-hint);font-weight:500;margin-top:8px;margin-bottom:4px;}
-.sw-row{display:flex;align-items:center;justify-content:space-between;padding:4px 0;}
+.sw-row{display:flex;align-items:center;justify-content:space-between;padding:5px 0;}
 .sw{position:relative;width:44px;height:26px;cursor:pointer;}
 .sw input{opacity:0;width:0;height:0;}
 .sl{position:absolute;inset:0;background:#333;border-radius:26px;transition:0.2s;}
@@ -111,8 +106,8 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-famil
 input:checked+.sl{background:var(--green-dk);}
 input:checked+.sl:before{transform:translateX(18px);background:var(--green);}
 .del-btn{display:flex;align-items:center;gap:6px;padding:8px 0;cursor:pointer;background:none;border:none;font-size:13px;color:var(--red);font-family:var(--font);}
-.sec-toggle{background:var(--card);border-radius:12px;border:0.5px solid var(--border);padding:14px;display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px;color:var(--text);}
-.sec-toggle span{flex:1;}
+.sec-tog{background:var(--card);border-radius:12px;border:0.5px solid var(--border);padding:13px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px;color:var(--text);}
+.sec-tog span{flex:1;}
 .add-btn{display:flex;align-items:center;gap:5px;background:var(--green-bg);border:0.5px solid var(--green-dk);border-radius:8px;padding:6px 12px;font-size:12px;color:var(--green);cursor:pointer;font-family:var(--font);}
 .sav-btn{border:none;border-radius:10px;padding:12px;font-size:13px;font-weight:500;color:#fff;width:100%;cursor:pointer;font-family:var(--font);margin-top:6px;}
 /* COLOR/SYMBOL PICKER */
@@ -121,29 +116,28 @@ input:checked+.sl:before{transform:translateX(18px);background:var(--green);}
 .col-opt.sel{border-color:#fff;transform:scale(1.2);}
 .sym-opt{width:36px;height:36px;border-radius:10px;background:var(--card2);border:2px solid transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;transition:transform 0.15s;}
 .sym-opt.sel{border-color:#fff;transform:scale(1.15);}
+/* DÜNGER PRODUCT CARD */
+.prod-card{background:var(--card2);border:0.5px solid var(--border);border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:10px;}
+.prod-color{width:12px;height:12px;border-radius:50%;flex-shrink:0;}
 /* AI */
 .ai-fetch-btn{background:var(--green-bg);border:0.5px solid var(--green-dk);border-radius:12px;padding:14px;text-align:center;cursor:pointer;font-size:14px;color:var(--green);font-weight:500;font-family:var(--font);width:100%;}
-.nut-row{display:flex;align-items:center;gap:8px;}
-.nut-name{font-size:12px;color:var(--text-muted);width:90px;flex-shrink:0;}
-.nut-bar{flex:1;height:4px;background:var(--border);border-radius:2px;overflow:hidden;}
-.nut-fill{height:100%;border-radius:2px;}
-.nut-val{font-size:12px;font-weight:500;width:50px;text-align:right;font-family:var(--mono);}
-.empty-state{display:flex;flex-direction:column;align-items:center;gap:10px;padding:30px 20px;text-align:center;}
-.empty-icon{font-size:40px;opacity:0.3;}
+/* TOAST */
 #toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#222;color:#ddd;padding:10px 22px;border-radius:22px;font-size:13px;z-index:9999;border:0.5px solid #444;pointer-events:none;opacity:0;transition:opacity 0.25s;white-space:nowrap;}
 #toast.show{opacity:1;}
-#ctx-menu{position:fixed;z-index:9998;background:#1e1e1e;border:0.5px solid #3a3a3a;border-radius:14px;padding:6px;min-width:240px;box-shadow:0 8px 32px rgba(0,0,0,0.7);display:none;}
-#ctx-menu.show{display:block;}
+/* CTX MENU */
+#ctx-m{position:fixed;z-index:9998;background:#1e1e1e;border:0.5px solid #3a3a3a;border-radius:14px;padding:6px;min-width:240px;box-shadow:0 8px 32px rgba(0,0,0,0.7);display:none;}
+#ctx-m.show{display:block;}
 .ctx-item{padding:12px 16px;border-radius:10px;font-size:13px;color:var(--text-sub);cursor:pointer;display:flex;align-items:center;gap:10px;}
 .ctx-item:active{background:#2a2a2a;}
-.ctx-item.green{color:var(--green);}
-.ctx-item.red{color:var(--red);}
-.ctx-icon{font-size:15px;width:22px;text-align:center;}
+.ctx-g{color:var(--green);}
+.ctx-r{color:var(--red);}
+.ctx-ic{font-size:15px;width:22px;text-align:center;}
 .ctx-div{height:0.5px;background:#333;margin:4px 0;}
 #ctx-ov{position:fixed;inset:0;z-index:9997;display:none;}
 #ctx-ov.show{display:block;}
 .spin{display:inline-block;width:18px;height:18px;border:2px solid var(--green-bg);border-top-color:var(--green);border-radius:50%;animation:sp 0.7s linear infinite;}
 @keyframes sp{to{transform:rotate(360deg);}}
+.empty-state{display:flex;flex-direction:column;align-items:center;gap:10px;padding:30px 20px;text-align:center;}
 </style>
 </head>
 <body>
@@ -158,11 +152,11 @@ input:checked+.sl:before{transform:translateX(18px);background:var(--green);}
   </div>
   <div class="screen" id="scr-cal">
     <div class="topbar" style="padding-top:max(12px,env(safe-area-inset-top))">
-      <button onclick="changeMonth(-1)" style="background:none;border:none;color:var(--green);font-size:26px;cursor:pointer;padding:0 10px;line-height:1">‹</button>
+      <button onclick="changeMonth(-1)" style="background:none;border:none;color:var(--green);font-size:28px;cursor:pointer;padding:0 10px;line-height:1">‹</button>
       <span style="font-size:16px;font-weight:500" id="cal-lbl">–</span>
-      <button onclick="changeMonth(1)" style="background:none;border:none;color:var(--green);font-size:26px;cursor:pointer;padding:0 10px;line-height:1">›</button>
+      <button onclick="changeMonth(1)" style="background:none;border:none;color:var(--green);font-size:28px;cursor:pointer;padding:0 10px;line-height:1">›</button>
     </div>
-    <div class="scroll" id="cal-body"></div>
+    <div class="scroll" id="cal-body" style="padding:8px;gap:6px;"></div>
     <nav class="bottom-nav" id="nav-cal"></nav>
   </div>
   <div class="screen" id="scr-ai">
@@ -181,19 +175,28 @@ input:checked+.sl:before{transform:translateX(18px);background:var(--green);}
   </div>
   <div class="screen" id="scr-entry">
     <div class="topbar" style="padding-top:max(12px,env(safe-area-inset-top))">
-      <button class="icon-btn" id="entry-back-btn" style="font-size:20px">←</button>
-      <span class="tb-title" id="entry-title">Eintrag</span>
+      <button class="icon-btn" id="entry-back" style="font-size:20px">←</button>
+      <span class="tb-title" id="entry-ttl">Eintrag</span>
       <button class="save-pill" onclick="saveEntry()">Speichern</button>
     </div>
     <div class="scroll" id="entry-body"></div>
   </div>
+  <!-- DÜNGER MANAGER SCREEN -->
+  <div class="screen" id="scr-duenger">
+    <div class="topbar" style="padding-top:max(12px,env(safe-area-inset-top))">
+      <button class="icon-btn" onclick="goTo('set')" style="font-size:20px">←</button>
+      <span class="app-title">Meine Dünger</span>
+      <button class="icon-btn" onclick="addProduct()">＋</button>
+    </div>
+    <div class="scroll" id="duenger-body"></div>
+  </div>
 </div>
 <div id="ctx-ov" onclick="closeCtx()"></div>
-<div id="ctx-menu"></div>
+<div id="ctx-m"></div>
 <div id="toast"></div>
 <script>
 // ============================================================
-// CONSTANTS
+// COLORS & SYMBOLS
 // ============================================================
 const COLORS=[
   {id:'g1',hex:'#4caf70',dk:'#071a0c'},{id:'g2',hex:'#5aabf0',dk:'#071422'},
@@ -202,52 +205,73 @@ const COLORS=[
   {id:'g7',hex:'#5adada',dk:'#041616'},{id:'g8',hex:'#a0c840',dk:'#101a04'},
 ];
 const SYMS=['🌿','🌸','🍀','🌴','🌵','🍁','🌾','⭐','🔥','💎'];
-const NUTRIENTS=[
-  {key:'root_juice',label:'1. Root-Juice'},{key:'bio_grow',label:'2. Bio-Grow'},
-  {key:'bio_bloom',label:'3. Bio-Bloom'},{key:'top_max',label:'4. Top-Max'},
-  {key:'bio_heaven',label:'5. Bio-Heaven'},{key:'alg_a_mic',label:'6. Alg-A-Mic'},
-  {key:'acti_vera',label:'7. Acti-Vera'},{key:'calmag',label:'8. Calmag'}
-];
-const PHASE_NAMES={anzucht:'Anzucht',bloom:'Blüte',flush:'Spülen',ice:'IceFlush',harvest:'Ernte',dry:'Trocknen'};
-// Smart recommended intervals per phase
-const REC_INT={anzucht:4,bloom:3,flush:2,ice:2};
-const DEFAULT_SCH={
-  1:{root_juice:4,bio_grow:0,bio_bloom:0,top_max:0,bio_heaven:2,alg_a_mic:0,acti_vera:0,calmag:0.3},
-  2:{root_juice:0,bio_grow:2,bio_bloom:0,top_max:0,bio_heaven:2,alg_a_mic:0,acti_vera:2,calmag:0.3},
-  3:{root_juice:0,bio_grow:2,bio_bloom:1,top_max:1,bio_heaven:2,alg_a_mic:1,acti_vera:2,calmag:0.3},
-  4:{root_juice:0,bio_grow:3,bio_bloom:2,top_max:1,bio_heaven:3,alg_a_mic:2,acti_vera:3,calmag:0.3},
-  5:{root_juice:0,bio_grow:4,bio_bloom:3,top_max:1,bio_heaven:4,alg_a_mic:3,acti_vera:4,calmag:0.3},
-  6:{root_juice:0,bio_grow:4,bio_bloom:3,top_max:4,bio_heaven:4,alg_a_mic:3,acti_vera:4,calmag:0.5},
-  7:{root_juice:0,bio_grow:4,bio_bloom:4,top_max:4,bio_heaven:5,alg_a_mic:4,acti_vera:5,calmag:0.5},
-  8:{root_juice:0,bio_grow:4,bio_bloom:4,top_max:4,bio_heaven:5,alg_a_mic:4,acti_vera:5,calmag:0.5},
-  9:{root_juice:0,bio_grow:4,bio_bloom:4,top_max:4,bio_heaven:5,alg_a_mic:4,acti_vera:5,calmag:0.5},
-  10:{root_juice:0,bio_grow:4,bio_bloom:4,top_max:4,bio_heaven:5,alg_a_mic:4,acti_vera:5,calmag:0.5}
-};
+
+// Default product colors for visual distinction
+const PROD_COLORS=['#4caf70','#5aabf0','#e8884a','#b06ac8','#f0d050','#e06060','#5adada','#a0c840','#e0a0f0','#f0c080'];
+
+// Phase names
+const PN={anzucht:'Anzucht',bloom:'Blüte',flush:'Spülen',ice:'IceFlush',harvest:'Ernte',dry:'Trocknen'};
+
+// Recommended intervals
+const RI={anzucht:4,bloom:3,flush:2,ice:2};
 
 // ============================================================
 // STATE
 // ============================================================
-const SK='growsmart_v3';
-let S={cycles:[],entries:{},schedule:JSON.parse(JSON.stringify(DEFAULT_SCH))};
+const SK='growsmart_v4';
+let S={
+  cycles:[],
+  entries:{},
+  // Custom fertilizer products
+  products:[
+    {id:'p1',name:'Grunddünger A',unit:'ml/L',color:'#4caf70',note:'Stickstoffbetont – Wachstum'},
+    {id:'p2',name:'Blütedünger B',unit:'ml/L',color:'#e8884a',note:'Phosphor/Kalium – Blüte'},
+    {id:'p3',name:'Wurzelstimulator',unit:'ml/L',color:'#5aabf0',note:'Anzucht & Vegetationsphase'},
+    {id:'p4',name:'CalMag',unit:'ml/L',color:'#f0d050',note:'Calcium & Magnesium'},
+  ],
+  // Global week schedule: weekNum → {productId: dose}
+  weekSchedule:{}
+};
+
 let tab='dash',calDate=new Date(),editISO=null,entryFrom='dash';
-let showSch=false,selId=null,draft={},lastBack=0,schDirty=false;
+let showSch=false,showDung=false,selId=null,draft={},lastBack=0;
+let editProd=null; // product being edited
 
 function col(c){return COLORS.find(x=>x.id===c.colorId)||COLORS[0];}
 function sym(c){return c.symbol||'🌿';}
 
 function loadS(){
   try{
-    const s=localStorage.getItem(SK)||localStorage.getItem('growsmart_v2')||localStorage.getItem('growsmart_data');
-    if(s){const p=JSON.parse(s);S=Object.assign({cycles:[],entries:{},schedule:JSON.parse(JSON.stringify(DEFAULT_SCH))},p);}
+    for(const k of ['growsmart_v4','growsmart_v3','growsmart_v2','growsmart_data']){
+      const s=localStorage.getItem(k);
+      if(s){
+        const p=JSON.parse(s);
+        S=Object.assign({cycles:[],entries:{},products:S.products,weekSchedule:{}},p);
+        // ensure products exist
+        if(!S.products||!S.products.length)S.products=JSON.parse(JSON.stringify(defaultProducts()));
+        if(!S.weekSchedule)S.weekSchedule={};
+        break;
+      }
+    }
   }catch(e){}
   S.cycles.forEach((c,i)=>{
     if(!c.colorId)c.colorId=COLORS[i%COLORS.length].id;
     if(!c.symbol)c.symbol=SYMS[i%SYMS.length];
-    if(!c.intAnzucht)c.intAnzucht=REC_INT.anzucht;
-    if(!c.intBloom)c.intBloom=REC_INT.bloom;
-    if(!c.intFlush)c.intFlush=REC_INT.flush;
+    if(!c.intAnzucht)c.intAnzucht=RI.anzucht;
+    if(!c.intBloom)c.intBloom=RI.bloom;
+    if(!c.intFlush)c.intFlush=RI.flush;
   });
 }
+
+function defaultProducts(){
+  return[
+    {id:'p1',name:'Grunddünger A',unit:'ml/L',color:'#4caf70',note:'Stickstoffbetont – Wachstum'},
+    {id:'p2',name:'Blütedünger B',unit:'ml/L',color:'#e8884a',note:'Phosphor/Kalium – Blüte'},
+    {id:'p3',name:'Wurzelstimulator',unit:'ml/L',color:'#5aabf0',note:'Anzucht & Vegetationsphase'},
+    {id:'p4',name:'CalMag',unit:'ml/L',color:'#f0d050',note:'Calcium & Magnesium'},
+  ];
+}
+
 function saveS(){try{localStorage.setItem(SK,JSON.stringify(S));}catch(e){}}
 
 // ============================================================
@@ -278,14 +302,13 @@ function phase(iso,c){
 }
 
 function getInt(c,ph){
-  if(ph==='anzucht')return c.intAnzucht||REC_INT.anzucht;
-  if(ph==='flush')return c.intFlush||REC_INT.flush;
-  return c.intBloom||REC_INT.bloom;
+  if(ph==='anzucht')return c.intAnzucht||RI.anzucht;
+  if(ph==='flush')return c.intFlush||RI.flush;
+  return c.intBloom||RI.bloom;
 }
 
-// Unified "Gießtag" logic
-// Returns: null (no action), 'giess-wasser' (plain water), 'giess-naehr' (with nutrients),
-//          'spuelen', 'ice', 'ernte', 'trocknen'
+// Every watering day = Gießtag (always with nutrients based on week plan)
+// Returns: null | 'giess' | 'spuelen' | 'ice' | 'ernte' | 'trocknen'
 function getAction(iso,c){
   const p=phase(iso,c);
   if(!p)return null;
@@ -294,52 +317,29 @@ function getAction(iso,c){
   if(p.ph==='ice')return'ice';
   if(p.ph==='flush')return'spuelen';
   const interval=getInt(c,p.ph);
-  if((p.day-1)%interval!==0)return null; // not a watering day
-  // In bloom alternate nährstoff/wasser; in anzucht always nährstoff
-  if(p.ph==='anzucht')return'giess-naehr';
-  const feedRound=Math.floor((p.day-1)/interval)%2===0;
-  return feedRound?'giess-naehr':'giess-wasser';
+  if((p.day-1)%interval!==0)return null;
+  return'giess';
 }
 
-// Human-readable label
-function actionLabel(a){
-  return{
-    'giess-naehr':'Gießtag 🌱',
-    'giess-wasser':'Gießtag 💧',
-    'spuelen':'Spülen 🚿',
-    'ice':'IceFlush ❄️',
-    'ernte':'Ernte ✂️',
-    'trocknen':'Trocknen 🍃',
-  }[a]||'–';
-}
-function actionIcon(a){
-  return{'giess-naehr':'🌱','giess-wasser':'💧','spuelen':'🚿','ice':'❄️','ernte':'✂️','trocknen':'🍃','start':'🏁'}[a]||'';
-}
+function isGiessTag(iso,c){return['giess','spuelen','ice'].includes(getAction(iso,c)||'');}
 
-function isGiessTag(iso,c){
-  const a=getAction(iso,c);
-  return a&&['giess-naehr','giess-wasser','spuelen','ice'].includes(a);
+// Get week schedule for a given cycle/week
+function getWeekDoses(cycleId,week){
+  const c=S.cycles.find(x=>x.id===cycleId);
+  const ownKey=cycleId+'_w'+week;
+  // cycle-specific schedule overrides global
+  if(S.weekSchedule[ownKey])return S.weekSchedule[ownKey];
+  const glKey='global_w'+week;
+  if(S.weekSchedule[glKey])return S.weekSchedule[glKey];
+  return {};
 }
-
-function getNutrients(iso,c){
-  const p=phase(iso,c);if(!p)return null;
-  const a=getAction(iso,c);
-  if(a!=='giess-naehr')return null;
-  const wk=Math.min(p.week||1,10);
-  const sch=c.ownSchedule?c.ownSchedule[wk]:S.schedule[wk]||S.schedule[1];
-  if(p.ph==='anzucht')return{...sch,bio_bloom:0,top_max:0};
-  return sch;
-}
+function setWeekDoses(key,doses){S.weekSchedule[key]=doses;}
 
 function nextGiessTag(c,fromISO){
   if(!c.active||!c.startDate)return null;
-  for(let i=1;i<=30;i++){
-    const iso=isoPlus(fromISO,i);
-    if(isGiessTag(iso,c))return{iso,days:i};
-  }
+  for(let i=1;i<=30;i++){const iso=isoPlus(fromISO,i);if(isGiessTag(iso,c))return{iso,days:i};}
   return null;
 }
-
 function daysToHarvest(c){
   if(!c.startDate)return null;
   const hd=(c.anzuchtDays||17)+(c.bloomDays||66)+(c.flushDays||9)+(c.iceDays||6);
@@ -348,101 +348,68 @@ function daysToHarvest(c){
 }
 function active(){return S.cycles.filter(c=>c.active&&c.startDate);}
 
-// Smart alerts
-function alerts(c){
-  const today=todayISO();
-  const p=phase(today,c);
-  if(!p||!c.active)return[];
+function getAlerts(c){
+  const today=todayISO();const p=phase(today,c);if(!p||!c.active)return[];
   const out=[];
-  // Overdue check
-  const lastWater=Object.keys(S.entries).filter(d=>{
-    return d<=today&&S.entries[d]?.cycleData?.[c.id]?.water;
-  }).sort().pop();
-  if(lastWater){
-    const days=Math.floor((new Date(today)-new Date(lastWater))/86400000);
-    const interval=getInt(c,p.ph);
-    if(days>interval+1)out.push({type:'warn',icon:'⚠️',title:`${sym(c)} Gießen überfällig`,text:`Letztes Gießen vor ${days} Tagen (Intervall: ${interval} Tage).`});
+  const lastW=Object.keys(S.entries).filter(d=>d<=today&&S.entries[d]?.cycleData?.[c.id]?.water).sort().pop();
+  if(lastW){
+    const days=Math.floor((new Date(today)-new Date(lastW))/86400000);
+    const iv=getInt(c,p.ph);
+    if(days>iv+1)out.push({type:'warn',icon:'⚠️',title:`${sym(c)} Gießen überfällig`,text:`Letztes Gießen vor ${days} Tagen (Intervall: ${iv} Tage).`});
   }
-  // Phase warnings
   if(p.ph==='bloom'){
-    const dLeft=(c.bloomDays||66)-Math.floor((p.day-1-(c.anzuchtDays||17)));
-    // avoid negative on anzucht boundary
     const bloomDay=p.day-(c.anzuchtDays||17);
-    const remaining=(c.bloomDays||66)-bloomDay;
-    if(remaining>0&&remaining<=7)out.push({type:'info',icon:'🚿',title:`${sym(c)} Spülung in ${remaining} Tagen`,text:'Letzte Nährstoffe kaufen – danach kein Dünger mehr!'});
-    if(p.week&&p.week>=7)out.push({type:'tip',icon:'🔬',title:`${sym(c)} Woche ${p.week} – Trichome checken`,text:'Lupe bereithalten. Auf Bernstein-Färbung achten.'});
+    const rem=(c.bloomDays||66)-bloomDay;
+    if(rem>0&&rem<=7)out.push({type:'info',icon:'🚿',title:`${sym(c)} Spülung in ${rem} Tagen`,text:'Letzten Dünger kaufen – danach nur noch klares Wasser.'});
+    if(p.week&&p.week>=7)out.push({type:'tip',icon:'🔬',title:`${sym(c)} Woche ${p.week} – Trichome checken`,text:'Lupe bereithalten. Auf bernsteinfarbene Trichome achten.'});
   }
-  if(p.ph==='flush')out.push({type:'info',icon:'❄️',title:`${sym(c)} IceFlush steht bevor`,text:'Nach dem Spülen Eiswasser-Phase vorbereiten.'});
-  if(p.ph==='ice'||p.ph==='harvest')out.push({type:'success',icon:'✂️',title:`${sym(c)} Ernte nähert sich!`,text:'Trichome prüfen, Ernte-Equipment bereitlegen.'});
+  if(p.ph==='ice'||p.ph==='harvest')out.push({type:'success',icon:'✂️',title:`${sym(c)} Ernte nähert sich!`,text:'Trichome prüfen, Ernte-Equipment vorbereiten.'});
   return out;
 }
 
 function calcVPD(t,rh){if(isNaN(t)||isNaN(rh))return null;return Math.round(0.6108*Math.exp(17.27*t/(t+237.3))*(1-rh/100)*100)/100;}
 function vpdZone(v){
   if(v===null)return null;
-  if(v<0.4)return{label:'Zu feucht – Schimmelgefahr',color:'#7a7af0',bg:'#1e1e3a',hint:'Belüftung erhöhen, Schimmelgefahr!',pct:Math.round(v/0.4*15)};
-  if(v<0.8)return{label:'Anzucht – optimal',color:'#5aabf0',bg:'#0d1e2e',hint:'Ideal für Anzucht und Vegphase.',pct:Math.round(15+(v-0.4)/0.4*35)};
-  if(v<1.2)return{label:'Blüte – optimal',color:'#4caf70',bg:'#0d1e0d',hint:'Perfekt für Blütephase!',pct:Math.round(50+(v-0.8)/0.4*25)};
+  if(v<0.4)return{label:'Zu feucht – Schimmel!',color:'#7a7af0',bg:'#1e1e3a',hint:'Belüftung erhöhen, Schimmelgefahr!',pct:Math.round(v/0.4*15)};
+  if(v<0.8)return{label:'Anzucht – optimal',color:'#5aabf0',bg:'#0d1e2e',hint:'Ideal für Anzucht.',pct:Math.round(15+(v-0.4)/0.4*35)};
+  if(v<1.2)return{label:'Blüte – optimal',color:'#4caf70',bg:'#0d1e0d',hint:'Perfekt für Blüte!',pct:Math.round(50+(v-0.8)/0.4*25)};
   if(v<1.6)return{label:'Etwas hoch',color:'#c8a04a',bg:'#2a1e0d',hint:'Luftfeuchtigkeit leicht erhöhen.',pct:Math.round(75+(v-1.2)/0.4*15)};
   return{label:'Pflanzenstress!',color:'#e06060',bg:'#2a0d0d',hint:'Sofort Luftfeuchtigkeit anpassen!',pct:Math.min(97,Math.round(90+(v-1.6)*10))};
 }
 
-// Shift entries ONLY from today forward (past stays untouched)
 function shiftFuture(cId,days){
-  if(!days)return;
   const today=todayISO();
-  const keys=Object.keys(S.entries)
-    .filter(d=>d>=today)
-    .sort((a,b)=>days>0?b.localeCompare(a):a.localeCompare(b));
+  const keys=Object.keys(S.entries).filter(d=>d>=today).sort((a,b)=>days>0?b.localeCompare(a):a.localeCompare(b));
   const moves=[];
-  keys.forEach(d=>{
-    if(S.entries[d]?.cycleData?.[cId]){
-      const o=new Date(d+'T12:00:00');o.setDate(o.getDate()+days);
-      moves.push({from:d,to:o.toISOString().split('T')[0],log:S.entries[d].cycleData[cId]});
-    }
-  });
+  keys.forEach(d=>{if(S.entries[d]?.cycleData?.[cId])moves.push({from:d,to:isoPlus(d,days),log:S.entries[d].cycleData[cId]});});
   moves.forEach(({from,to,log})=>{
     delete S.entries[from].cycleData[cId];
     if(!S.entries[to])S.entries[to]={temp:'',humidity:'',cycleData:{}};
     if(!S.entries[to].cycleData)S.entries[to].cycleData={};
     S.entries[to].cycleData[cId]=log;
   });
-  Object.keys(S.entries).forEach(d=>{
-    const e=S.entries[d];
-    if(!e.temp&&!e.humidity&&!Object.keys(e.cycleData||{}).length)delete S.entries[d];
-  });
+  Object.keys(S.entries).forEach(d=>{const e=S.entries[d];if(!e.temp&&!e.humidity&&!Object.keys(e.cycleData||{}).length)delete S.entries[d];});
 }
-
-// Full shift (for start date change in settings)
 function shiftAll(cId,days){
-  if(!days)return;
   const keys=Object.keys(S.entries).sort((a,b)=>days>0?b.localeCompare(a):a.localeCompare(b));
   const moves=[];
-  keys.forEach(d=>{
-    if(S.entries[d]?.cycleData?.[cId]){
-      const o=new Date(d+'T12:00:00');o.setDate(o.getDate()+days);
-      moves.push({from:d,to:o.toISOString().split('T')[0],log:S.entries[d].cycleData[cId]});
-    }
-  });
+  keys.forEach(d=>{if(S.entries[d]?.cycleData?.[cId])moves.push({from:d,to:isoPlus(d,days),log:S.entries[d].cycleData[cId]});});
   moves.forEach(({from,to,log})=>{
     delete S.entries[from].cycleData[cId];
     if(!S.entries[to])S.entries[to]={temp:'',humidity:'',cycleData:{}};
     if(!S.entries[to].cycleData)S.entries[to].cycleData={};
     S.entries[to].cycleData[cId]=log;
   });
-  Object.keys(S.entries).forEach(d=>{
-    const e=S.entries[d];
-    if(!e.temp&&!e.humidity&&!Object.keys(e.cycleData||{}).length)delete S.entries[d];
-  });
+  Object.keys(S.entries).forEach(d=>{const e=S.entries[d];if(!e.temp&&!e.humidity&&!Object.keys(e.cycleData||{}).length)delete S.entries[d];});
 }
 
 // ============================================================
 // NAV
 // ============================================================
 const TABS=['dash','cal','ai','set'];
-const TICONS={dash:'🌿',cal:'📅',ai:'✦',set:'⚙'};
-const TLABELS={dash:'Übersicht',cal:'Kalender',ai:'KI-Coach',set:'Einst.'};
-function buildNav(t){return TABS.map(x=>`<button class="nav-btn ${x===t?'active':''}" onclick="goTo('${x}')"><span class="nav-icon">${TICONS[x]}</span><span class="nav-label">${TLABELS[x]}</span></button>`).join('');}
+const TICO={dash:'🌿',cal:'📅',ai:'✦',set:'⚙'};
+const TLBL={dash:'Übersicht',cal:'Kalender',ai:'KI-Coach',set:'Einst.'};
+function buildNav(t){return TABS.map(x=>`<button class="nav-btn ${x===t?'active':''}" onclick="goTo('${x}')"><span class="nav-icon">${TICO[x]}</span><span class="nav-label">${TLBL[x]}</span></button>`).join('');}
 
 function goTo(t){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
@@ -456,8 +423,8 @@ function goTo(t){
 }
 
 window.addEventListener('popstate',()=>{
-  const entryActive=document.getElementById('scr-entry').classList.contains('active');
-  if(entryActive){goTo(entryFrom);history.pushState(null,'',location.href);return;}
+  if(document.getElementById('scr-entry').classList.contains('active')){goTo(entryFrom);history.pushState(null,'',location.href);return;}
+  if(document.getElementById('scr-duenger').classList.contains('active')){goTo('set');history.pushState(null,'',location.href);return;}
   const now=Date.now();
   if(now-lastBack<2000)return;
   lastBack=now;history.pushState(null,'',location.href);
@@ -469,43 +436,28 @@ window.addEventListener('popstate',()=>{
 // ============================================================
 function renderDash(){
   const act=active(),today=todayISO();
-  const todayFmt=new Date().toLocaleDateString('de-DE',{weekday:'long',day:'2-digit',month:'long'});
-
-  // Smart alerts
-  const allAlerts=act.flatMap(c=>alerts(c));
+  const fmt=new Date().toLocaleDateString('de-DE',{weekday:'long',day:'2-digit',month:'long'});
+  const allAlerts=act.flatMap(c=>getAlerts(c));
   const alertHTML=allAlerts.map(a=>{
     const bg={warn:'#1a1000',info:'#001020',success:'#001a00',tip:'#101000'}[a.type]||'#111';
     const bc={warn:'#6a4000',info:'#004080',success:'#006000',tip:'#606000'}[a.type]||'#333';
-    return`<div class="alert" style="background:${bg};border-color:${bc}"><span class="alert-icon">${a.icon}</span><div><div class="alert-title">${a.title}</div><div class="alert-text">${a.text}</div></div></div>`;
+    return`<div class="alert" style="background:${bg};border-color:${bc}"><span class="alert-icon">${a.icon}</span><div><div style="font-size:12px;font-weight:500;color:var(--text);margin-bottom:2px">${a.title}</div><div style="font-size:11px;color:var(--text-sub);line-height:1.5">${a.text}</div></div></div>`;
   }).join('');
 
-  // Today status per cycle
   const todayRows=act.map(c=>{
     const p=phase(today,c),a=getAction(today,c);
-    const cl=col(c),s=sym(c);
-    const next=nextGiessTag(c,today);
-    return`<div style="display:flex;align-items:center;gap:10px;padding:4px 0">
-      <span style="font-size:18px">${s}</span>
-      <div style="flex:1">
-        <div style="font-size:13px;font-weight:500;color:var(--text)">${c.name}${c.location?` <span style="color:var(--text-muted);font-size:11px">· ${c.location}</span>`:''}</div>
-        <div style="font-size:12px;color:${cl.hex}">${p?PHASE_NAMES[p.ph]:'–'}${p?.week?` Wo.${p.week}`:''} · Tag ${p?.day||'–'}</div>
-      </div>
-      <div style="text-align:right;flex-shrink:0">
-        ${a?`<div style="font-size:13px">${actionIcon(a)}</div><div style="font-size:11px;color:${cl.hex};font-weight:500">${a==='giess-naehr'?'Gießtag 🌱':a==='giess-wasser'?'Gießtag 💧':actionLabel(a).split(' ')[0]}</div>`:
-        next?`<div style="font-size:11px;color:var(--text-hint)">Nächstes Gießen</div><div style="font-size:13px;font-weight:500;color:${cl.hex}">in ${next.days} ${next.days===1?'Tag':'Tagen'}</div>`:''}
-      </div>
-    </div>`;
+    const cl=col(c),s=sym(c),next=nextGiessTag(c,today);
+    const actionTxt=a==='giess'?'Gießtag 🪣':a==='spuelen'?'Spülen 🚿':a==='ice'?'IceFlush ❄️':a==='ernte'?'Ernte ✂️':next?`Nächstes: in ${next.days}d`:'–';
+    return`<div style="display:flex;align-items:center;gap:10px;padding:4px 0"><span style="font-size:18px">${s}</span><div style="flex:1"><div style="font-size:13px;font-weight:500">${c.name}${c.location?' · <span style="color:var(--text-muted);font-size:11px">'+c.location+'</span>':''}</div><div style="font-size:12px;color:var(--text-muted)">${p?PN[p.ph]:'–'}${p?.week?' Wo.'+p.week:''} · Tag ${p?.day||'–'}</div></div><div style="text-align:right;flex-shrink:0"><div style="font-size:12px;color:${cl.hex};font-weight:500">${actionTxt}</div></div></div>`;
   }).join('');
 
-  // Stats
   const fc=act[0];
   const stats=`<div class="stat-row">
-    <div class="stat-box"><div class="stat-lbl">Aktive Zyklen</div><div class="stat-val">${act.length}</div></div>
+    <div class="stat-box"><div class="stat-lbl">Zyklen</div><div class="stat-val">${act.length}</div></div>
     <div class="stat-box"><div class="stat-lbl">Ernte in</div><div class="stat-val">${fc?daysToHarvest(fc):'–'}<span class="stat-unit"> d</span></div></div>
-    <div class="stat-box"><div class="stat-lbl">Heute</div><div class="stat-val" style="font-size:20px">${fc&&getAction(today,fc)?actionIcon(getAction(today,fc)):'–'}</div></div>
+    <div class="stat-box"><div class="stat-lbl">Heute</div><div class="stat-val" style="font-size:22px">${fc&&getAction(today,fc)?{'giess':'🪣','spuelen':'🚿','ice':'❄️','ernte':'✂️','trocknen':'🍃'}[getAction(today,fc)]||'💤':'–'}</div></div>
   </div>`;
 
-  // Cycle cards
   const cards=act.map(c=>{
     const p=phase(today,c),a=getAction(today,c);
     const cl=col(c),s=sym(c);
@@ -515,42 +467,20 @@ function renderDash(){
     return`<div style="background:${cl.dk};border:0.5px solid ${cl.hex}44;border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px;cursor:pointer" onclick="openEntry('${today}')">
       <div style="display:flex;align-items:center;gap:10px">
         <span style="font-size:22px">${s}</span>
-        <div style="flex:1">
-          <div style="font-size:14px;font-weight:500;color:var(--text)">${c.name}${c.location?' · '+c.location:''}</div>
-          <div style="font-size:12px;color:${cl.hex}">${p?PHASE_NAMES[p.ph]:'–'}${p?.week?' Woche '+p.week:''}</div>
-        </div>
-        <div style="text-align:right">
-          <div style="font-size:22px">${a?actionIcon(a):'💤'}</div>
-          <div style="font-size:11px;color:${a?cl.hex:'var(--text-hint)'}">${a?'Heute':'Pause'}</div>
-        </div>
+        <div style="flex:1"><div style="font-size:14px;font-weight:500">${c.name}${c.location?' · '+c.location:''}</div><div style="font-size:12px;color:${cl.hex}">${p?PN[p.ph]:'–'}${p?.week?' Woche '+p.week:''}</div></div>
+        <div style="text-align:right"><div style="font-size:24px">${a?{'giess':'🪣','spuelen':'🚿','ice':'❄️','ernte':'✂️','trocknen':'🍃'}[a]||'💤':'💤'}</div><div style="font-size:11px;color:${a?cl.hex:'var(--text-hint)'}">${a==='giess'?'Gießtag':a?PN[a]||a:'Pause'}</div></div>
       </div>
-      ${!a&&next?`<div class="next-water" style="background:${cl.hex}11;border-color:${cl.hex}44">
-        <span style="font-size:20px">💧</span>
-        <div>
-          <div style="font-size:12px;font-weight:500;color:${cl.hex}">Nächster Gießtag</div>
-          <div style="font-size:13px;color:var(--text)">${new Date(next.iso+'T12:00:00').toLocaleDateString('de-DE',{weekday:'long',day:'2-digit',month:'short'})} <span style="color:${cl.hex}">· in ${next.days} ${next.days===1?'Tag':'Tagen'}</span></div>
-        </div>
-      </div>`:''}
-      <div>
-        <div class="prog-bg"><div class="prog-fill" style="width:${pct}%;background:${cl.hex}"></div></div>
-        <div style="display:flex;justify-content:space-between;margin-top:4px">
-          <span style="font-size:11px;color:var(--text-hint)">Start ${sf}</span>
-          <span style="font-size:11px;color:${cl.hex}">Tag ${p?.day||0} · ${pct}%</span>
-        </div>
-      </div>
+      ${!a&&next?`<div style="background:${cl.hex}11;border:0.5px solid ${cl.hex}33;border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:10px"><span style="font-size:20px">🪣</span><div><div style="font-size:12px;font-weight:500;color:${cl.hex}">Nächster Gießtag</div><div style="font-size:13px">${new Date(next.iso+'T12:00:00').toLocaleDateString('de-DE',{weekday:'long',day:'2-digit',month:'short'})} <span style="color:${cl.hex}">· in ${next.days} ${next.days===1?'Tag':'Tagen'}</span></div></div></div>`:''}
+      <div><div class="prog-bg"><div class="prog-fill" style="width:${pct}%;background:${cl.hex}"></div></div><div style="display:flex;justify-content:space-between;margin-top:4px"><span style="font-size:11px;color:var(--text-hint)">Start ${sf}</span><span style="font-size:11px;color:${cl.hex}">Tag ${p?.day||0} · ${pct}%</span></div></div>
     </div>`;
   }).join('');
 
-  const empty=act.length===0?`<div class="empty-state"><div class="empty-icon">🌱</div><div style="font-size:13px;color:var(--text-muted)">Noch keine aktiven Zyklen.</div><button style="background:var(--green-bg);border:0.5px solid var(--green-dk);border-radius:10px;padding:10px 20px;font-size:13px;color:var(--green);cursor:pointer;font-family:var(--font)" onclick="goTo('set')">Ersten Zyklus erstellen</button></div>`:'';
+  const empty=act.length===0?`<div class="empty-state"><div style="font-size:40px;opacity:0.3">🌱</div><div style="font-size:13px;color:var(--text-muted)">Noch keine aktiven Zyklen.</div><button style="background:var(--green-bg);border:0.5px solid var(--green-dk);border-radius:10px;padding:10px 20px;font-size:13px;color:var(--green);cursor:pointer;font-family:var(--font)" onclick="goTo('set')">Ersten Zyklus erstellen</button></div>`:'';
 
   document.getElementById('dash-body').innerHTML=`
-    <div class="card" style="gap:8px;display:flex;flex-direction:column">
-      <div style="font-size:12px;color:var(--green);font-weight:500">${todayFmt}</div>
-      ${act.length===0?'<div style="font-size:13px;color:var(--text-muted)">Keine aktiven Zyklen.</div>':todayRows}
-    </div>
+    <div class="card" style="gap:8px;display:flex;flex-direction:column"><div style="font-size:12px;color:var(--green);font-weight:500">${fmt}</div>${act.length===0?'<div style="font-size:13px;color:var(--text-muted)">Keine aktiven Zyklen.</div>':todayRows}</div>
     ${alertHTML}${stats}
-    <div class="sect-head">Meine Zyklen</div>
-    ${empty}${cards}
+    <div class="sect-head">Meine Zyklen</div>${empty}${cards}
     <div style="height:10px"></div>`;
 }
 
@@ -578,110 +508,203 @@ function renderCal(){
     if(gc.length===1){const cl=col(gc[0]);bg=cl.dk;border=cl.hex+'88';}
     else if(gc.length>=2){const c1=col(gc[0]),c2=col(gc[1]);bg=`linear-gradient(135deg,${c1.dk} 50%,${c2.dk} 50%)`;border=c1.hex+'66';}
 
-    const icon=isStart?'🏁':gc.length>0?actionIcon(getAction(iso,gc[0])||'giess-wasser'):'';
+    const a=gc.length>0?getAction(iso,gc[0]):null;
+    const icon=isStart?'🏁':a?({'giess':'🪣','spuelen':'🚿','ice':'❄️','ernte':'✂️','trocknen':'🍃'}[a]||''):'';
     const tagInfo=allPh[0];
     const tagCol=gc.length>0?col(gc[0]).hex:(tagInfo?col(tagInfo.c).hex:'rgba(255,255,255,0.4)');
 
     cells+=`<div class="cal-cell ${isToday?'today':''}" style="background:${bg};border-color:${border}"
-      onclick="calCellClick('${iso}')"
-      ontouchstart="lpStart('${iso}',event)" ontouchend="lpEnd()" ontouchmove="lpEnd()">
+      onclick="calClick('${iso}')"
+      ontouchstart="lpS('${iso}',event)" ontouchend="lpE()" ontouchmove="lpE()">
       ${icon?`<span class="cal-icon">${icon}</span>`:''}
       <span class="cal-num">${d}</span>
       ${tagInfo?`<span class="cal-tag" style="color:${tagCol}">T${tagInfo.p.day}</span>`:''}
-      ${hasEntry?`<div class="cal-dot" style="background:rgba(255,255,255,0.7)"></div>`:''}
+      ${hasEntry?`<div class="cal-dot"></div>`:''}
     </div>`;
   }
 
-  const cycLeg=act.map(c=>`<div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-muted)"><div style="width:10px;height:10px;border-radius:50%;background:${col(c).hex}"></div>${sym(c)} ${c.name}</div>`).join('');
-  const actLeg=[{i:'🌱',l:'Gießtag+Nährstoffe'},{i:'💧',l:'Gießtag Wasser'},{i:'🚿',l:'Spülen'},{i:'❄️',l:'IceFlush'},{i:'✂️',l:'Ernte'}].map(x=>`<div style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text-muted)"><span>${x.i}</span>${x.l}</div>`).join('');
+  // Compact legend
+  const cycLeg=act.map(c=>`<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--text-muted)"><span style="width:8px;height:8px;border-radius:50%;background:${col(c).hex};display:inline-block"></span>${sym(c)} ${c.name}</span>`).join(' ');
+  const actLeg=`<span style="font-size:10px;color:var(--text-hint)">🪣 Gießtag &nbsp;🚿 Spülen &nbsp;❄️ Ice &nbsp;✂️ Ernte &nbsp;🏁 Start</span>`;
 
   document.getElementById('cal-body').innerHTML=`
-    <div style="display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:5px">
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:4px">
       ${['Mo','Di','Mi','Do','Fr','Sa','So'].map(x=>`<div style="text-align:center;font-size:11px;color:var(--text-muted)">${x}</div>`).join('')}
     </div>
     <div class="cal-grid">${cells}</div>
-    <div style="display:flex;flex-wrap:wrap;gap:8px;padding:8px 0;border-top:0.5px solid var(--border);margin-top:6px">${cycLeg}</div>
-    <div style="display:flex;flex-wrap:wrap;gap:8px;padding:4px 0 6px">${actLeg}</div>
-    <div style="height:10px"></div>`;
+    <div style="padding:6px 0;border-top:0.5px solid var(--border);margin-top:5px;display:flex;flex-wrap:wrap;gap:6px">${cycLeg}</div>
+    <div style="padding:2px 0 4px">${actLeg}</div>
+    <div style="height:6px"></div>`;
 }
 
-function calCellClick(iso){
-  entryFrom='cal';
-  openEntry(iso);
-}
-
+function calClick(iso){entryFrom='cal';openEntry(iso);}
 function changeMonth(d){calDate=new Date(calDate.getFullYear(),calDate.getMonth()+d,1);renderCal();}
 
 // ============================================================
 // LONG PRESS
 // ============================================================
 let lpT=null;
-function lpStart(iso,e){lpT=setTimeout(()=>{lpT=null;showCtx(iso,e);},600);}
-function lpEnd(){if(lpT){clearTimeout(lpT);lpT=null;}}
+function lpS(iso,e){lpT=setTimeout(()=>{lpT=null;showCtx(iso,e);},600);}
+function lpE(){if(lpT){clearTimeout(lpT);lpT=null;}}
 
 function showCtx(iso,e){
-  const act=active();
+  const act=active(),today=todayISO();
   const df=new Date(iso+'T12:00:00').toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'});
-  const today=todayISO();
   let items=[];
-
   act.forEach(c=>{
-    const cl=col(c),s=sym(c);
     const p=phase(iso,c);if(!p)return;
-    // Only allow future shifts
     if(iso>=today){
-      items.push(`<div class="ctx-item" style="color:${cl.hex}" onclick="shiftFrom('${c.id}','${iso}',1)"><span class="ctx-icon">+1</span>${s} ${c.name} – einen Tag später</div>`);
-      items.push(`<div class="ctx-item" style="color:${cl.hex}" onclick="shiftFrom('${c.id}','${iso}',-1)"><span class="ctx-icon">-1</span>${s} ${c.name} – einen Tag früher</div>`);
+      items.push(`<div class="ctx-item ctx-g" onclick="shiftF('${c.id}',1)"><span class="ctx-ic">+1d</span>${sym(c)} ${c.name} – einen Tag später</div>`);
+      items.push(`<div class="ctx-item" style="color:${col(c).hex}" onclick="shiftF('${c.id}',-1)"><span class="ctx-ic">-1d</span>${sym(c)} ${c.name} – einen Tag früher</div>`);
     }
   });
-
   if(items.length)items.push('<div class="ctx-div"></div>');
-
-  S.cycles.filter(c=>!c.active).forEach(c=>{
-    items.push(`<div class="ctx-item green" onclick="startOn('${c.id}','${iso}')"><span class="ctx-icon">▶</span>${sym(c)} ${c.name} starten</div>`);
-  });
-  act.forEach(c=>{
-    items.push(`<div class="ctx-item red" onclick="stopC('${c.id}')"><span class="ctx-icon">■</span>${sym(c)} ${c.name} beenden</div>`);
-  });
-
+  S.cycles.filter(c=>!c.active).forEach(c=>items.push(`<div class="ctx-item ctx-g" onclick="startOn('${c.id}','${iso}')"><span class="ctx-ic">▶</span>${sym(c)} ${c.name} starten</div>`));
+  act.forEach(c=>items.push(`<div class="ctx-item ctx-r" onclick="stopC('${c.id}')"><span class="ctx-ic">■</span>${sym(c)} ${c.name} beenden</div>`));
   if(items.length)items.push('<div class="ctx-div"></div>');
-  items.push(`<div class="ctx-item" onclick="calCellClick('${iso}');closeCtx()"><span class="ctx-icon">✏</span>Eintrag ${df} öffnen</div>`);
+  items.push(`<div class="ctx-item" onclick="calClick('${iso}');closeCtx()"><span class="ctx-ic">✏</span>Eintrag ${df} öffnen</div>`);
 
-  const menu=document.getElementById('ctx-menu');
+  const menu=document.getElementById('ctx-m');
   menu.innerHTML=`<div style="font-size:11px;color:var(--text-hint);padding:8px 16px 2px;font-weight:500">${df}</div>`+items.join('');
   const t=e?.touches?.[0]||e?.changedTouches?.[0];
-  let x=t?Math.min(t.clientX,window.innerWidth-260):window.innerWidth/2-120;
-  let y=t?Math.min(t.clientY,window.innerHeight-340):window.innerHeight/2;
+  const x=t?Math.min(t.clientX,window.innerWidth-260):window.innerWidth/2-120;
+  const y=t?Math.min(t.clientY,window.innerHeight-340):window.innerHeight/2;
   menu.style.left=x+'px';menu.style.top=y+'px';
   menu.classList.add('show');document.getElementById('ctx-ov').classList.add('show');
 }
-function closeCtx(){document.getElementById('ctx-menu').classList.remove('show');document.getElementById('ctx-ov').classList.remove('show');}
+function closeCtx(){document.getElementById('ctx-m').classList.remove('show');document.getElementById('ctx-ov').classList.remove('show');}
 function closeCtxMenu(){closeCtx();}
 
-function shiftFrom(cId,iso,days){
+function shiftF(cId,days){
   closeCtx();
   const c=S.cycles.find(x=>x.id===cId);if(!c)return;
-  // Only shift today + future, past stays untouched
-  shiftFuture(cId,days);
-  // Move startDate only if shift is backward (cycle started later)
-  // For +1: just shift future entries, startDate stays (plant was simply watered a day late)
-  // For -1: same logic
-  saveS();renderCal();
-  toast(`${sym(c)} ${c.name}: Gießplan ${days>0?'+':''}${days} Tag`);
+  shiftFuture(cId,days);saveS();renderCal();
+  toast(`${sym(c)} ${c.name}: ab heute ${days>0?'+':''}${days} Tag`);
 }
 function startOn(cId,iso){
-  closeCtx();
-  const c=S.cycles.find(x=>x.id===cId);if(!c)return;
+  closeCtx();const c=S.cycles.find(x=>x.id===cId);if(!c)return;
   c.active=true;c.startDate=iso;saveS();renderCal();
   toast(`${sym(c)} ${c.name} gestartet!`);
   setTimeout(()=>{selId=cId;draft={};goTo('set');},900);
 }
 function stopC(cId){
-  closeCtx();
-  const c=S.cycles.find(x=>x.id===cId);if(!c)return;
-  if(!confirm(`"${c.name}" wirklich beenden?`))return;
-  c.active=false;c.startDate=null;saveS();renderCal();
-  toast(`${sym(c)} ${c.name} beendet`);
+  closeCtx();const c=S.cycles.find(x=>x.id===cId);if(!c)return;
+  if(!confirm(`"${c.name}" beenden?`))return;
+  c.active=false;c.startDate=null;saveS();renderCal();toast(`${sym(c)} beendet`);
+}
+
+// ============================================================
+// DÜNGER PRODUKT MANAGER
+// ============================================================
+function openDuenger(){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('scr-duenger').classList.add('active');
+  renderDuenger();
+}
+
+function renderDuenger(){
+  const prods=S.products||[];
+  const rows=prods.map((p,i)=>`
+    <div class="prod-card">
+      <div class="prod-color" style="background:${p.color}"></div>
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:500;color:var(--text)">${p.name}</div>
+        <div style="font-size:11px;color:var(--text-muted)">${p.note||''} · ${p.unit||'ml/L'}</div>
+      </div>
+      <button onclick="editProduct('${p.id}')" style="background:none;border:none;color:var(--blue);font-size:13px;cursor:pointer;padding:4px 8px">✏</button>
+      <button onclick="delProduct('${p.id}')" style="background:none;border:none;color:var(--red);font-size:13px;cursor:pointer;padding:4px 8px">🗑</button>
+    </div>`).join('');
+
+  const editForm=editProd?`
+    <div class="card" style="border-color:var(--blue)44">
+      <div class="sect-head" style="color:var(--blue)">${editProd==='new'?'Neues Produkt':'Produkt bearbeiten'}</div>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:6px">
+        <div class="inp-wrap"><div class="inp-label">Produktname</div>
+          <input class="inp-field" id="pn" placeholder="z.B. BioGrow, Agrar N-Boost..." value="${editProd!=='new'?(S.products.find(x=>x.id===editProd)?.name||''):''}"/></div>
+        <div class="inp-wrap"><div class="inp-label">Notiz / Verwendungszweck</div>
+          <input class="inp-field" id="pnote" placeholder="z.B. Stickstoffdünger für Wachstum" value="${editProd!=='new'?(S.products.find(x=>x.id===editProd)?.note||''):''}"/></div>
+        <div class="row2">
+          <div class="inp-wrap"><div class="inp-label">Einheit</div>
+            <select class="inp-field" id="punit" style="cursor:pointer">
+              ${['ml/L','ml','g/L','g','Tropfen/L'].map(u=>`<option value="${u}" ${(editProd!=='new'&&S.products.find(x=>x.id===editProd)?.unit===u)?'selected':''}>${u}</option>`).join('')}
+            </select>
+          </div>
+          <div class="inp-wrap"><div class="inp-label">Farbe</div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px">
+              ${PROD_COLORS.map((c,i)=>`<div onclick="selectProdColor('${c}')" id="pc-${i}" style="width:28px;height:28px;border-radius:50%;background:${c};cursor:pointer;border:2px solid ${(editProd!=='new'&&S.products.find(x=>x.id===editProd)?.color===c)||i===0&&editProd==='new'?'#fff':'transparent'}"></div>`).join('')}
+            </div>
+          </div>
+        </div>
+        <button class="sav-btn" style="background:var(--blue)" onclick="saveProd()">💾 Produkt speichern</button>
+        <button onclick="editProd=null;renderDuenger()" style="background:none;border:none;color:var(--text-muted);font-size:13px;cursor:pointer;padding:6px;font-family:var(--font)">Abbrechen</button>
+      </div>
+    </div>`:'';
+
+  document.getElementById('duenger-body').innerHTML=`
+    ${editForm}
+    <div style="display:flex;flex-direction:column;gap:8px">
+      ${rows||'<div style="font-size:13px;color:var(--text-muted);padding:20px;text-align:center">Noch keine Produkte. Tippe + um eines hinzuzufügen.</div>'}
+    </div>
+    <div style="margin-top:12px;padding:12px 14px;background:var(--card);border-radius:12px;border:0.5px solid var(--border)">
+      <div class="sect-head">Düngekalender – Wochenplan</div>
+      <div style="font-size:12px;color:var(--text-muted);margin:4px 0 10px">Lege für jede Woche fest, wie viel von jedem Produkt du gibst. Gilt für alle Zyklen, die keinen eigenen Plan haben.</div>
+      ${[1,2,3,4,5,6,7,8,9,10].map(w=>`
+        <div style="margin-bottom:10px">
+          <div style="font-size:12px;font-weight:500;color:var(--green);margin-bottom:5px">Woche ${w}</div>
+          <div style="display:flex;flex-direction:column;gap:5px">
+            ${(S.products||[]).map(p=>{
+              const k='global_w'+w;
+              const dose=S.weekSchedule[k]?.[p.id]||0;
+              return`<div style="display:flex;align-items:center;gap:8px">
+                <div style="width:8px;height:8px;border-radius:50%;background:${p.color};flex-shrink:0"></div>
+                <span style="font-size:12px;color:var(--text-sub);flex:1">${p.name}</span>
+                <input type="number" step="0.1" value="${dose}" min="0" 
+                  style="width:60px;background:var(--card2);border:0.5px solid var(--border);border-radius:6px;padding:4px 6px;color:var(--text-sub);font-size:12px;text-align:right;outline:none;font-family:var(--mono)"
+                  onchange="setGlobalDose(${w},'${p.id}',this.value)"/>
+                <span style="font-size:11px;color:var(--text-hint);width:30px">${p.unit||'ml/L'}</span>
+              </div>`;
+            }).join('')}
+          </div>
+        </div>`).join('')}
+      <button class="sav-btn" style="background:var(--green-dk)" onclick="saveS();toast('Düngeplan gespeichert ✓')">💾 Plan speichern</button>
+    </div>
+    <div style="height:20px"></div>`;
+  // set temp color storage
+  if(!window._pColor)window._pColor=PROD_COLORS[0];
+}
+
+let _pColor=PROD_COLORS[0];
+function selectProdColor(c){
+  _pColor=c;
+  PROD_COLORS.forEach((x,i)=>{
+    const el=document.getElementById('pc-'+i);
+    if(el)el.style.borderColor=x===c?'#fff':'transparent';
+  });
+}
+function setGlobalDose(week,prodId,val){
+  const k='global_w'+week;
+  if(!S.weekSchedule[k])S.weekSchedule[k]={};
+  S.weekSchedule[k][prodId]=parseFloat(val)||0;
+}
+function addProduct(){editProd='new';_pColor=PROD_COLORS[0];renderDuenger();}
+function editProduct(id){editProd=id;const p=S.products.find(x=>x.id===id);if(p)_pColor=p.color;renderDuenger();}
+function saveProd(){
+  const name=document.getElementById('pn')?.value?.trim();
+  const note=document.getElementById('pnote')?.value?.trim()||'';
+  const unit=document.getElementById('punit')?.value||'ml/L';
+  if(!name){toast('Bitte Namen eingeben');return;}
+  if(editProd==='new'){
+    S.products.push({id:'p'+Date.now(),name,note,unit,color:_pColor});
+  } else {
+    const p=S.products.find(x=>x.id===editProd);
+    if(p)Object.assign(p,{name,note,unit,color:_pColor});
+  }
+  editProd=null;saveS();renderDuenger();toast('Produkt gespeichert ✓');
+}
+function delProduct(id){
+  if(!confirm('Produkt löschen?'))return;
+  S.products=S.products.filter(x=>x.id!==id);
+  saveS();renderDuenger();toast('Produkt gelöscht');
 }
 
 // ============================================================
@@ -693,53 +716,57 @@ function renderAI(){
 
   const rows=act.map(c=>{
     const p=phase(today,c),a=getAction(today,c);
-    const cl=col(c),s=sym(c);
-    return`<div style="display:flex;align-items:center;gap:8px;padding:3px 0">
-      <span style="font-size:16px">${s}</span>
-      <div style="flex:1">
-        <div style="font-size:13px;font-weight:500">${c.name} · Tag ${p?.day||'–'}</div>
-        <div style="font-size:12px;color:${cl.hex}">${p?PHASE_NAMES[p.ph]:'–'}${p?.week?` Wo.${p.week}`:''} · ${a?actionLabel(a).split(' ')[0]:'Pause'}</div>
-      </div>
-    </div>`;
+    const cl=col(c);
+    return`<div style="display:flex;align-items:center;gap:8px;padding:3px 0"><span style="font-size:16px">${sym(c)}</span><div style="flex:1"><div style="font-size:13px;font-weight:500">${c.name} · Tag ${p?.day||'–'}</div><div style="font-size:12px;color:${cl.hex}">${p?PN[p.ph]:'–'}${p?.week?' Wo.'+p.week:''} · ${a==='giess'?'Gießtag 🪣':a?PN[a]||a:'Pause'}</div></div></div>`;
   }).join('');
 
   const fc=act[0];
-  const nutRows=fc?(()=>{
-    const nut=getNutrients(today,fc);
-    if(!nut)return`<div style="font-size:12px;color:var(--text-muted)">Heute kein Gießtag oder kein Düngertag.</div>`;
-    const cl=col(fc);
-    return NUTRIENTS.map(n=>{const v=nut[n.key]||0;return`<div class="nut-row"><span class="nut-name">${n.label}</span><div class="nut-bar"><div class="nut-fill" style="width:${Math.round(v/5*100)}%;background:${cl.hex}"></div></div><span class="nut-val" style="color:${cl.hex}">${v} ml/L</span></div>`;}).join('');
-  })():'';
+  let nutRows='';
+  if(fc){
+    const p=phase(today,fc);
+    if(p&&getAction(today,fc)==='giess'){
+      const wk=Math.min(p.week||1,10);
+      const doses=getWeekDoses(fc.id,wk);
+      const cl=col(fc);
+      nutRows=(S.products||[]).map(prod=>{
+        const v=doses[prod.id]||0;
+        return`<div style="display:flex;align-items:center;gap:8px">
+          <div style="width:8px;height:8px;border-radius:50%;background:${prod.color};flex-shrink:0"></div>
+          <span style="font-size:12px;color:var(--text-muted);flex:1">${prod.name}</span>
+          <div style="flex:1;height:4px;background:var(--border);border-radius:2px;overflow:hidden"><div style="height:100%;background:${prod.color};border-radius:2px;width:${Math.min(100,Math.round(v/5*100))}%"></div></div>
+          <span style="font-size:12px;font-weight:500;color:${prod.color};width:55px;text-align:right;font-family:var(--mono)">${v} ${prod.unit||'ml/L'}</span>
+        </div>`;
+      }).join('')||'<div style="font-size:12px;color:var(--text-muted)">Noch keine Produkte im Düngeplan. <span style="color:var(--blue);cursor:pointer" onclick="openDuenger()">Dünger einrichten →</span></div>';
+    } else {
+      nutRows=`<div style="font-size:12px;color:var(--text-muted)">Heute kein Gießtag.</div>`;
+    }
+  }
 
   document.getElementById('ai-body').innerHTML=`
     <div class="card" style="gap:8px;display:flex;flex-direction:column">
       <div class="sect-head">Status heute</div>
       ${act.length===0?'<div style="font-size:13px;color:var(--text-muted)">Keine aktiven Zyklen.</div>':rows}
-      ${vpd!==null?`<div style="display:flex;align-items:center;gap:8px;margin-top:4px">
-        <span style="font-size:13px;color:var(--text-sub)">${entry.temp}°C · ${entry.humidity}%</span>
-        <span class="pill" style="background:${z?.bg};color:${z?.color}">VPD ${vpd.toFixed(2)} kPa</span>
-      </div>`:'<div style="font-size:12px;color:var(--text-muted)">Noch kein Eintrag heute – Temp & RLF eintragen für VPD.</div>'}
+      ${vpd!==null?`<div style="display:flex;align-items:center;gap:8px;margin-top:4px"><span style="font-size:13px;color:var(--text-sub)">${entry.temp}°C · ${entry.humidity}%</span><span class="pill" style="background:${z?.bg};color:${z?.color}">VPD ${vpd.toFixed(2)} kPa</span></div>`:'<div style="font-size:12px;color:var(--text-muted)">Eintrag heute mit Temp &amp; RLF für VPD.</div>'}
     </div>
     ${fc?`<div class="card" style="gap:8px;display:flex;flex-direction:column;border-color:${col(fc).hex}44">
-      <div class="sect-head">${sym(fc)} ${fc.name} – Gießtag-Nährstoffe</div>
+      <div style="display:flex;align-items:center;justify-content:space-between"><div class="sect-head">${sym(fc)} ${fc.name} – Heute</div><button onclick="openDuenger()" style="background:none;border:none;color:var(--blue);font-size:12px;cursor:pointer;padding:0">Dünger bearbeiten →</button></div>
       ${nutRows}
     </div>`:''}
     <button class="ai-fetch-btn" onclick="fetchAI()" id="ai-btn">✦ KI-Analyse abrufen</button>
-    <div id="ai-result"></div>
-    <div style="height:10px"></div>`;
+    <div id="ai-result"></div><div style="height:10px"></div>`;
 }
 
 async function fetchAI(){
   const act=active();if(!act.length){toast('Keine aktiven Zyklen.');return;}
-  const btn=document.getElementById('ai-btn');
-  btn.innerHTML='<div class="spin" style="margin:0 auto"></div>';btn.disabled=true;
+  const btn=document.getElementById('ai-btn');btn.innerHTML='<div class="spin" style="margin:0 auto"></div>';btn.disabled=true;
   const today=todayISO(),entry=S.entries[today]||{},vpd=calcVPD(parseFloat(entry.temp),parseFloat(entry.humidity));
-  const allAlerts=act.flatMap(c=>alerts(c)).map(a=>a.title).join(', ')||'keine';
+  const allAlerts=act.flatMap(c=>getAlerts(c)).map(a=>a.title).join(', ')||'keine';
+  const prodNames=(S.products||[]).map(p=>p.name).join(', ')||'keine eingerichtet';
   const ci=act.map(c=>{
     const p=phase(today,c),a=getAction(today,c);
-    return`${sym(c)} ${c.name}: Tag ${p?.day||'–'}, ${p?PHASE_NAMES[p.ph]:'–'}${p?.week?' Wo.'+p.week:''}, Gießintervall ${getInt(c,p?.ph||'bloom')} Tage, Heute: ${a?actionLabel(a):'Pause'}`;
+    return`${sym(c)} ${c.name}: Tag ${p?.day||'–'}, ${p?PN[p.ph]:'–'}${p?.week?' Wo.'+p.week:''}, Gießintervall ${getInt(c,p?.ph||'bloom')} Tage, Heute: ${a==='giess'?'Gießtag':a||'Pause'}`;
   }).join('\n');
-  const prompt=`Du bist ein Cannabis-Grow-Experte. Antworte auf Deutsch, freundlich, max. 200 Wörter.\n\nDatum: ${today}\nTemp: ${entry.temp||'?'}°C, Luftf.: ${entry.humidity||'?'}%, VPD: ${vpd!==null?vpd.toFixed(2)+' kPa':'nicht gemessen'}\nWarnungen: ${allAlerts}\n\nZyklen:\n${ci}\n\nBitte: 1) Kurze Tagesanalyse 2) Was heute konkret tun? 3) Was in 7 Tagen ansteht?`;
+  const prompt=`Du bist ein Cannabis-Grow-Experte. Antworte auf Deutsch, freundlich, max. 200 Wörter.\n\nDatum: ${today}\nTemp: ${entry.temp||'?'}°C, RLF: ${entry.humidity||'?'}%, VPD: ${vpd!==null?vpd.toFixed(2)+' kPa':'?'}\nEingesetzte Dünger: ${prodNames}\nWarnungen: ${allAlerts}\n\nZyklen:\n${ci}\n\nBitte: 1) Kurze Tagesanalyse 2) Konkrete Handlungsempfehlung 3) Was in 7 Tagen ansteht?`;
   try{
     const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})});
     const data=await res.json();
@@ -758,87 +785,44 @@ function renderSet(){
   if(sel&&draft.id!==sel.id)draft={...sel};
   const d=draft,cl=d.colorId?COLORS.find(x=>x.id===d.colorId)||COLORS[0]:COLORS[0];
 
-  const tabs=S.cycles.map(c=>`<div class="tab-item ${c.id===selId?'active':''}" onclick="selCyc('${c.id}')">
-    <span style="font-size:14px">${sym(c)}</span>
-    <span style="color:${col(c).hex}">${c.name}</span>
-  </div>`).join('');
-
+  const tabs=S.cycles.map(c=>`<div class="tab-item ${c.id===selId?'sel':''}" onclick="selCyc('${c.id}')"><span style="font-size:14px">${sym(c)}</span><span style="color:${col(c).hex}">${c.name}</span></div>`).join('');
   const colPick=COLORS.map(x=>`<div class="col-opt ${d.colorId===x.id?'sel':''}" style="background:${x.hex}" onclick="dd('colorId','${x.id}')"></div>`).join('');
   const symPick=SYMS.map(s=>`<div class="sym-opt ${d.symbol===s?'sel':''}" onclick="ddS('symbol','${s}')">${s}</div>`).join('');
 
   const durs=sel?[
     ['Anzucht','anzuchtDays',17],['Blüte','bloomDays',66],['Spülen','flushDays',9],
     ['IceFlush','iceDays',6],['Ernte','harvestDays',1],['Trocknen','dryDays',7]
-  ].map(([l,k,def])=>`<div class="dur-box"><div class="dur-lbl">${l} (Tage)</div>
-    <input class="dur-inp" type="number" value="${d[k]!==undefined?d[k]:def}" oninput="dd('${k}',this.value)"/></div>`).join(''):'';
-
-  const intSec=sel?`<div class="sub-head">Gießintervall pro Phase</div>
-    <div style="font-size:11px;color:var(--text-hint);margin-bottom:6px">Empfehlung: Anzucht 4 · Blüte 3 · Spülen 2 Tage</div>
-    <div class="dur-grid">
-      <div class="dur-box"><div class="dur-lbl">Anzucht</div><input class="dur-inp" type="number" value="${d.intAnzucht||4}" oninput="dd('intAnzucht',this.value)"/></div>
-      <div class="dur-box"><div class="dur-lbl">Blüte</div><input class="dur-inp" type="number" value="${d.intBloom||3}" oninput="dd('intBloom',this.value)"/></div>
-      <div class="dur-box"><div class="dur-lbl">Spülen</div><input class="dur-inp" type="number" value="${d.intFlush||2}" oninput="dd('intFlush',this.value)"/></div>
-    </div>`:'';
-
-  const ownSchToggle=sel?`<div class="sw-row" style="margin-top:8px">
-    <div><div style="font-size:13px;color:var(--text-sub)">Eigener Düngeplan</div>
-    <div style="font-size:11px;color:var(--text-hint)">${d.ownSchedule?'Aktiv – unten bearbeiten':'Verwendet globalen Plan'}</div></div>
-    <label class="sw"><input type="checkbox" ${d.ownSchedule?'checked':''} onchange="toggleOwnSch('${sel.id}',this.checked)"/><span class="sl"></span></label>
-  </div>`:'';
-
-  const schData=d.ownSchedule?d.ownSchedule:S.schedule;
-  const schHTML=showSch?`<div class="card" style="gap:10px;display:flex;flex-direction:column;border-color:${cl.hex}44">
-    <div class="sect-head" style="color:${cl.hex}">${d.ownSchedule?(sym(d)||'🌿')+' Eigener Düngeplan':'Globaler Düngeplan (ml/L)'}</div>
-    ${[1,2,3,4,5,6,7,8,9,10].map(w=>`<div style="display:flex;align-items:center;gap:6px;border-bottom:0.5px solid var(--border);padding-bottom:6px">
-      <span style="font-size:12px;color:${cl.hex};width:24px;font-family:var(--mono);font-weight:500">W${w}</span>
-      <div style="display:flex;gap:4px;overflow-x:auto;flex:1;padding-bottom:2px">
-        ${NUTRIENTS.map(n=>`<div style="display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0">
-          <span style="font-size:9px;color:var(--text-hint)">${n.label.split('. ')[1].substring(0,5)}</span>
-          <input style="width:38px;background:var(--card2);border:0.5px solid var(--border);border-radius:5px;padding:4px 3px;color:var(--text-sub);font-size:11px;text-align:center;font-family:var(--mono);outline:none"
-            type="number" id="sch-${w}-${n.key}" value="${schData[w]?.[n.key]??0}"/>
-        </div>`).join('')}
-      </div>
-    </div>`).join('')}
-    <button class="sav-btn" style="background:${cl.hex}" onclick="saveSch()">💾 Düngeplan speichern</button>
-    <button onclick="resetSch()" style="background:var(--red-bg);border:none;border-radius:10px;padding:10px;font-size:13px;color:var(--red);cursor:pointer;font-family:var(--font)">Standardwerte laden</button>
-  </div>`:'' ;
+  ].map(([l,k,def])=>`<div class="dur-box"><div class="dur-lbl">${l} (Tage)</div><input class="dur-inp" type="number" value="${d[k]!==undefined?d[k]:def}" oninput="dd('${k}',this.value)"/></div>`).join(''):'';
 
   document.getElementById('set-body').innerHTML=`
     <div class="card" style="gap:10px;display:flex;flex-direction:column">
-      <div style="display:flex;align-items:center;justify-content:space-between">
-        <div class="sect-head">Meine Zyklen</div>
-        <button class="add-btn" onclick="addCyc()">＋ Neu</button>
-      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between"><div class="sect-head">Meine Zyklen</div><button class="add-btn" onclick="addCyc()">＋ Neu</button></div>
       <div class="tab-row">${tabs}</div>
       ${sel?`<div style="display:flex;flex-direction:column;gap:8px;margin-top:4px">
-        <div class="sub-head">Farbe</div>
-        <div class="pick-row">${colPick}</div>
-        <div class="sub-head">Symbol</div>
-        <div class="pick-row">${symPick}</div>
-        <div class="inp-wrap"><div class="inp-label">Name</div>
-          <input class="inp-field" value="${d.name||''}" oninput="dd('name',this.value)" style="border-color:${cl.hex}66"/></div>
-        <div class="inp-wrap"><div class="inp-label">Standort / Zelt</div>
-          <input class="inp-field" value="${d.location||''}" oninput="dd('location',this.value)"/></div>
-        <div class="sw-row">
-          <span style="font-size:13px;color:var(--text-sub)">Aktiv</span>
-          <label class="sw"><input type="checkbox" ${sel.active?'checked':''} onchange="toggleAct('${sel.id}',this.checked)"/><span class="sl"></span></label>
+        <div class="sub-head">Farbe</div><div class="pick-row">${colPick}</div>
+        <div class="sub-head">Symbol</div><div class="pick-row">${symPick}</div>
+        <div class="inp-wrap"><div class="inp-label">Name</div><input class="inp-field" value="${d.name||''}" oninput="dd('name',this.value)" style="border-color:${cl.hex}66"/></div>
+        <div class="inp-wrap"><div class="inp-label">Standort / Zelt</div><input class="inp-field" value="${d.location||''}" oninput="dd('location',this.value)"/></div>
+        <div class="sw-row"><span style="font-size:13px;color:var(--text-sub)">Aktiv</span><label class="sw"><input type="checkbox" ${sel.active?'checked':''} onchange="toggleAct('${sel.id}',this.checked)"/><span class="sl"></span></label></div>
+        <div class="inp-wrap"><div class="inp-label">Startdatum</div><input class="inp-field" type="date" value="${d.startDate||''}" oninput="dd('startDate',this.value)" style="color-scheme:dark"/></div>
+        <div class="sub-head">Phasendauern</div><div class="dur-grid">${durs}</div>
+        <div class="sub-head">Gießintervall pro Phase</div>
+        <div style="font-size:11px;color:var(--text-hint);margin-bottom:4px">Empfehlung: Anzucht 4 · Blüte 3 · Spülen 2 Tage</div>
+        <div class="dur-grid">
+          <div class="dur-box"><div class="dur-lbl">Anzucht</div><input class="dur-inp" type="number" value="${d.intAnzucht||4}" oninput="dd('intAnzucht',this.value)"/></div>
+          <div class="dur-box"><div class="dur-lbl">Blüte</div><input class="dur-inp" type="number" value="${d.intBloom||3}" oninput="dd('intBloom',this.value)"/></div>
+          <div class="dur-box"><div class="dur-lbl">Spülen</div><input class="dur-inp" type="number" value="${d.intFlush||2}" oninput="dd('intFlush',this.value)"/></div>
         </div>
-        <div class="inp-wrap"><div class="inp-label">Startdatum (ändern = alle Logs verschieben)</div>
-          <input class="inp-field" type="date" value="${d.startDate||''}" oninput="dd('startDate',this.value)" style="color-scheme:dark"/></div>
-        <div class="sub-head">Phasendauern</div>
-        <div class="dur-grid">${durs}</div>
-        ${intSec}
-        ${ownSchToggle}
         <button class="sav-btn" style="background:${cl.hex}" onclick="saveDraft()">💾 ${sym(d)||'🌿'} ${d.name||'Zyklus'} speichern</button>
         <button class="del-btn" onclick="delCyc('${sel.id}')">🗑 Zyklus löschen</button>
-      </div>`:'<div style="font-size:13px;color:var(--text-muted)">Noch keine Zyklen. Erstelle einen.</div>'}
+      </div>`:'<div style="font-size:13px;color:var(--text-muted)">Noch keine Zyklen.</div>'}
     </div>
-    <div class="sec-toggle" onclick="toggleSch()">
+    <!-- DÜNGER BUTTON -->
+    <div class="sec-tog" onclick="openDuenger()" style="border-color:var(--green)44">
       <span>🧪</span>
-      <span>${sel?.ownSchedule?`${sym(sel)} Eigener Düngeplan – ${sel.name}`:'Düngeplan bearbeiten'}</span>
-      <span style="color:var(--text-muted)">${showSch?'▲':'▼'}</span>
+      <div><div>Meine Dünger & Wochenplan</div><div style="font-size:11px;color:var(--text-muted)">${(S.products||[]).length} Produkte konfiguriert</div></div>
+      <span style="color:var(--text-muted)">›</span>
     </div>
-    ${schHTML}
     <div style="height:20px"></div>`;
 }
 
@@ -847,37 +831,17 @@ function ddS(k,v){draft[k]=v;renderSet();}
 function saveDraft(){
   const c=S.cycles.find(x=>x.id===selId);if(!c)return;
   const old=c.startDate,nw=draft.startDate;
-  if(old&&nw&&old!==nw){
-    const diff=Math.round((new Date(nw)-new Date(old))/86400000);
-    if(diff)shiftAll(c.id,diff);
-  }
+  if(old&&nw&&old!==nw){const diff=Math.round((new Date(nw)-new Date(old))/86400000);if(diff)shiftAll(c.id,diff);}
   Object.assign(c,{...draft,id:c.id});
   saveS();toast(`${sym(c)} ${c.name} gespeichert ✓`);renderSet();
 }
-function saveSch(){
-  const sel=S.cycles.find(x=>x.id===selId);
-  const target=sel?.ownSchedule?sel.ownSchedule:S.schedule;
-  for(let w=1;w<=10;w++){
-    if(!target[w])target[w]={};
-    NUTRIENTS.forEach(n=>{const el=document.getElementById(`sch-${w}-${n.key}`);if(el)target[w][n.key]=parseFloat(el.value)||0;});
-  }
-  saveS();toast('Düngeplan gespeichert ✓');
-}
-function toggleOwnSch(id,checked){
-  const c=S.cycles.find(x=>x.id===id);if(!c)return;
-  c.ownSchedule=checked?JSON.parse(JSON.stringify(S.schedule)):null;
-  draft.ownSchedule=c.ownSchedule;
-  saveS();renderSet();
-  toast(checked?`${sym(c)} Eigener Plan aktiviert`:'Globaler Plan wird verwendet');
-}
 function selCyc(id){selId=id;draft={};renderSet();}
-function toggleSch(){showSch=!showSch;renderSet();}
 function addCyc(){
   const i=S.cycles.length;
   const c={id:Date.now().toString(),name:`Zyklus ${i+1}`,location:'',active:false,startDate:null,
     colorId:COLORS[i%COLORS.length].id,symbol:SYMS[i%SYMS.length],
     anzuchtDays:17,bloomDays:66,flushDays:9,iceDays:6,harvestDays:1,dryDays:7,
-    intAnzucht:4,intBloom:3,intFlush:2,ownSchedule:null};
+    intAnzucht:4,intBloom:3,intFlush:2};
   S.cycles.push(c);selId=c.id;draft={...c};saveS();renderSet();
 }
 function toggleAct(id,checked){
@@ -886,17 +850,10 @@ function toggleAct(id,checked){
   draft.active=c.active;draft.startDate=c.startDate;saveS();renderSet();
 }
 function delCyc(id){
-  if(!confirm('Zyklus und alle Logs wirklich löschen?'))return;
+  if(!confirm('Zyklus und alle Logs löschen?'))return;
   S.cycles=S.cycles.filter(x=>x.id!==id);
   Object.keys(S.entries).forEach(d=>{if(S.entries[d]?.cycleData?.[id])delete S.entries[d].cycleData[id];});
   selId=S.cycles[0]?.id||null;draft={};saveS();renderSet();toast('Zyklus gelöscht');
-}
-function resetSch(){
-  if(!confirm('Standardwerte laden?'))return;
-  const sel=S.cycles.find(x=>x.id===selId);
-  if(sel?.ownSchedule){sel.ownSchedule=JSON.parse(JSON.stringify(DEFAULT_SCH));draft.ownSchedule=sel.ownSchedule;}
-  else S.schedule=JSON.parse(JSON.stringify(DEFAULT_SCH));
-  saveS();renderSet();toast('Standardwerte geladen');
 }
 
 // ============================================================
@@ -904,10 +861,8 @@ function resetSch(){
 // ============================================================
 function openEntry(iso){
   editISO=iso;
-  // Back button goes to where we came from
-  document.getElementById('entry-back-btn').onclick=()=>goTo(entryFrom);
-  document.getElementById('entry-title').textContent=
-    `Eintrag – ${new Date(iso+'T12:00:00').toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'})}`;
+  document.getElementById('entry-back').onclick=()=>goTo(entryFrom);
+  document.getElementById('entry-ttl').textContent=`Eintrag – ${new Date(iso+'T12:00:00').toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'})}`;
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById('scr-entry').classList.add('active');
   renderEntry(iso);
@@ -919,73 +874,70 @@ function renderEntry(iso){
 
   const vpdBox=vpd!==null?`<div class="vpd-box"><div>
     <div style="font-size:10px;color:#3a7a7a;margin-bottom:2px">VPD (automatisch)</div>
-    <div style="display:flex;align-items:baseline;gap:3px">
-      <span class="vpd-val" id="vpd-v">${vpd.toFixed(2)}</span>
-      <span style="font-size:11px;color:#3a7a7a"> kPa</span>
-    </div>
+    <div style="display:flex;align-items:baseline;gap:3px"><span class="vpd-val" id="vpd-v">${vpd.toFixed(2)}</span><span style="font-size:11px;color:#3a7a7a"> kPa</span></div>
     <span class="vpd-pill" id="vpd-p" style="background:${z.bg};color:${z.color}">${z.label}</span>
   </div>
-  <div style="display:flex;flex-direction:column;gap:3px;width:90px">
-    <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--text-hint)"><span>Anzucht</span><span>Blüte</span><span>Stress</span></div>
+  <div style="display:flex;flex-direction:column;gap:3px;width:88px">
+    <div style="display:flex;justify-content:space-between;font-size:8px;color:var(--text-hint)"><span>Anzucht</span><span>Blüte</span><span>Stress</span></div>
     <div class="vpd-scale"><div class="vpd-seg" style="background:#1e3a6e"></div><div class="vpd-seg" style="background:#1e6e3a"></div><div class="vpd-seg" style="background:#6e4a1e"></div></div>
     <div class="vpd-mrow"><div class="vpd-marker" id="vpd-m" style="left:${Math.min(95,z.pct)}%"></div></div>
-    <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--text-hint)"><span>0.4</span><span>0.8</span><span>1.2</span><span>1.8</span></div>
+    <div style="display:flex;justify-content:space-between;font-size:8px;color:var(--text-hint)"><span>0.4</span><span>0.8</span><span>1.2</span><span>1.8</span></div>
   </div></div>`:
-  `<div style="background:var(--teal-bg);border:0.5px solid var(--teal-bd);border-radius:10px;padding:10px 12px;font-size:12px;color:var(--text-muted)">Temperatur &amp; Luftfeuchtigkeit eingeben → VPD</div>`;
+  `<div style="background:var(--teal-bg);border:0.5px solid var(--teal-bd);border-radius:10px;padding:10px 12px;font-size:12px;color:var(--text-muted)">Temperatur &amp; Luftfeuchtigkeit → VPD</div>`;
 
   const blocks=act.map(c=>{
     const p=phase(iso,c),a=getAction(iso,c);
     const cl=col(c),s=sym(c);
     const cd=saved.cycleData?.[c.id]||{};
-    const nut=getNutrients(iso,c);
-    const phLabel=p?PHASE_NAMES[p.ph]:'–';
+    const phLabel=p?PN[p.ph]:'–';
+    const wk=p?Math.min(p.week||1,10):1;
+    const doses=getWeekDoses(c.id,wk);
 
     // Gießtag indicator
-    const giessInfo=a?`<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:${cl.hex}11;border-radius:8px;margin-bottom:6px">
-      <span style="font-size:20px">${actionIcon(a)}</span>
+    const giessCard=a?`<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:${cl.hex}11;border:0.5px solid ${cl.hex}33;border-radius:10px;margin-bottom:6px">
+      <span style="font-size:22px">${{'giess':'🪣','spuelen':'🚿','ice':'❄️','ernte':'✂️','trocknen':'🍃'}[a]||'💤'}</span>
       <div>
-        <div style="font-size:13px;font-weight:500;color:${cl.hex}">${a==='giess-naehr'?'Gießtag mit Nährstoffen':a==='giess-wasser'?'Gießtag – nur Wasser':actionLabel(a).split(' ')[0]}</div>
-        <div style="font-size:11px;color:var(--text-muted)">Intervall: alle ${getInt(c,p?.ph||'bloom')} Tage</div>
+        <div style="font-size:13px;font-weight:500;color:${cl.hex}">${a==='giess'?'Gießtag – heute gießen':a==='spuelen'?'Spültag – nur klares Wasser':a==='ice'?'IceFlush – sehr kaltes Wasser':a==='ernte'?'Erntetag! ✂️':'Trocknungsphase'}</div>
+        ${a==='giess'?`<div style="font-size:11px;color:var(--text-muted)">Intervall: alle ${getInt(c,p?.ph||'bloom')} Tage · Woche ${wk}</div>`:''}
       </div>
     </div>`:'';
 
-    const nutSection=nut?`
-      <div class="tbl-hdr" style="background:${cl.dk};border:0.5px solid ${cl.hex}44;border-bottom:none;border-radius:10px 10px 0 0">
-        <span style="font-size:12px;font-weight:500;color:#fff">Nährstofflösung (ml/L)</span>
-        <span class="pill" style="background:${cl.hex}22;color:${cl.hex};font-size:10px">${phLabel}${p?.week?' Wo.'+p.week:''}</span>
+    // Nutrient table from week plan
+    const prodRows=(S.products||[]).map(prod=>{
+      const planDose=doses[prod.id]||0;
+      const loggedDose=cd.doses?.[prod.id]||'';
+      return`<div class="nut-row-tbl">
+        <div style="display:flex;align-items:center;gap:6px"><div style="width:8px;height:8px;border-radius:50%;background:${prod.color};flex-shrink:0"></div><span class="nt-name">${prod.name}</span></div>
+        <span class="nt-hint" style="color:${prod.color}88">${planDose>0?planDose:'–'}</span>
+        <input class="nt-inp" style="border-color:${prod.color}44" type="number" step="0.1" value="${loggedDose}" placeholder="${planDose||'0'}" onchange="uDose('${c.id}','${prod.id}',this.value)"/>
+      </div>`;
+    }).join('');
+
+    const nutSection=a==='giess'?`
+      <div class="nut-tbl-hdr" style="background:${cl.dk};border:0.5px solid ${cl.hex}44;border-bottom:none">
+        <span style="font-size:12px;font-weight:500;color:#fff">Nährstoffe (${(S.products||[]).length === 0?'keine Produkte':'Ist-Eingabe vs. Plan'})</span>
+        <button onclick="openDuenger()" style="background:none;border:none;color:${cl.hex};font-size:11px;cursor:pointer;padding:0">Plan ✏</button>
       </div>
-      <div class="tbl-wrap" style="border-color:${cl.hex}33">
-        <div class="tbl-head" style="background:${cl.dk}">
-          <span class="th" style="color:${cl.hex}">Nährstoff</span>
-          <span class="th" style="text-align:right;color:${cl.hex}88">Empf.</span>
-          <span class="th" style="text-align:right;color:${cl.hex}">Eingabe</span>
+      <div class="nut-tbl-wrap" style="border-color:${cl.hex}33;background:var(--surface)">
+        <div class="nut-tbl-head" style="background:${cl.dk}">
+          <span class="nth" style="color:${cl.hex}">Produkt</span>
+          <span class="nth" style="text-align:right;color:${cl.hex}88">Plan</span>
+          <span class="nth" style="text-align:right;color:${cl.hex}">Gegeben</span>
         </div>
-        ${NUTRIENTS.map(n=>{
-          const hint=nut[n.key]??0,val=cd.nutrients?.[n.key]||'';
-          return`<div class="tbl-row"><span class="t-name">${n.label}</span>
-            <span class="t-hint" style="color:${cl.hex}66">${hint}</span>
-            <input class="t-inp" type="number" value="${val}" placeholder="${hint}"
-              onchange="uEN('${c.id}','${n.key}',this.value)" style="border-color:${cl.hex}33"/></div>`;
-        }).join('')}
+        ${prodRows||`<div style="padding:10px 12px;font-size:12px;color:var(--text-muted)">Noch keine Dünger konfiguriert. <span style="color:var(--blue);cursor:pointer" onclick="openDuenger()">Jetzt einrichten →</span></div>`}
       </div>`:'';
 
-    // Smart hint
-    const al=alerts(c)[0];
-    const hintBox=al?`<div style="background:${cl.dk};border:0.5px solid ${cl.hex}33;border-radius:9px;padding:8px 11px;display:flex;gap:7px;align-items:flex-start">
-      <span style="font-size:14px">${al.icon}</span>
-      <div style="font-size:12px;color:${cl.hex}cc;line-height:1.5"><b style="color:${cl.hex}">Hinweis:</b> ${al.text}</div>
-    </div>`:
-    z?`<div style="background:var(--teal-bg);border:0.5px solid var(--teal-bd);border-radius:9px;padding:8px 11px;font-size:12px;color:#7ab88a;line-height:1.5">💡 ${z.hint}</div>`:'';
+    const al=getAlerts(c)[0];
+    const hint=al?`<div style="background:${cl.dk};border:0.5px solid ${cl.hex}33;border-radius:9px;padding:8px 11px;display:flex;gap:7px;align-items:flex-start;margin-top:4px"><span style="font-size:14px">${al.icon}</span><div style="font-size:12px;color:${cl.hex}cc;line-height:1.5"><b style="color:${cl.hex}">Hinweis:</b> ${al.text}</div></div>`:
+    z?`<div style="background:var(--teal-bg);border:0.5px solid var(--teal-bd);border-radius:9px;padding:8px 11px;font-size:12px;color:#7ab88a;margin-top:4px">💡 ${z.hint}</div>`:'';
 
     return`
       <div style="display:flex;align-items:center;gap:8px;margin-top:8px;margin-bottom:4px">
         <span style="font-size:20px">${s}</span>
-        <div>
-          <div style="font-size:13px;font-weight:500;color:${cl.hex}">${c.name}${c.location?' · '+c.location:''}</div>
-          <div style="font-size:11px;color:var(--text-muted)">${phLabel}${p?.week?' Wo.'+p.week:''} · Tag ${p?.day||'–'}</div>
-        </div>
+        <div><div style="font-size:13px;font-weight:500;color:${cl.hex}">${c.name}${c.location?' · '+c.location:''}</div>
+        <div style="font-size:11px;color:var(--text-muted)">${phLabel}${p?.week?' Wo.'+p.week:''} · Tag ${p?.day||'–'}</div></div>
       </div>
-      ${giessInfo}
+      ${giessCard}
       ${nutSection}
       <div class="row2" style="margin-top:4px">
         <div class="inp-wrap"><div class="inp-label">Wasser gesamt (ml)</div>
@@ -995,23 +947,21 @@ function renderEntry(iso){
           <input class="inp-field" type="number" step="0.1" value="${cd.ph||''}" placeholder="6.2"
             onchange="uEF('${c.id}','ph',this.value)"/></div>
       </div>
-      <div class="note-wrap" style="border-color:${cl.hex}33">
+      <div class="note-wrap" style="border-color:${cl.hex}33;margin-top:4px">
         <div class="inp-label" style="margin-bottom:3px">Notizen</div>
         <textarea class="note-ta" placeholder="z. B. Blätter leicht gelb, Licht angepasst..."
           onchange="uEF('${c.id}','notes',this.value)">${cd.notes||''}</textarea>
       </div>
-      ${hintBox}`;
+      ${hint}`;
   }).join('');
 
-  const noActive=act.length===0?`<div class="empty-state"><div class="empty-icon">🌱</div><div style="font-size:13px;color:var(--text-muted)">Keine aktiven Zyklen.</div><button style="background:var(--green-bg);border:0.5px solid var(--green-dk);border-radius:10px;padding:10px 20px;font-size:13px;color:var(--green);cursor:pointer;font-family:var(--font)" onclick="goTo('set')">Zyklus erstellen</button></div>`:'';
+  const noActive=act.length===0?`<div class="empty-state"><div style="font-size:40px;opacity:0.3">🌱</div><div style="font-size:13px;color:var(--text-muted)">Keine aktiven Zyklen.</div><button style="background:var(--green-bg);border:0.5px solid var(--green-dk);border-radius:10px;padding:10px 20px;font-size:13px;color:var(--green);cursor:pointer;font-family:var(--font)" onclick="goTo('set')">Zyklus erstellen</button></div>`:'';
 
   document.getElementById('entry-body').innerHTML=`
     <div class="sect-head">Umgebung</div>
     <div class="row2">
-      <div class="inp-wrap"><div class="inp-label">Temperatur (°C)</div>
-        <input class="inp-field" type="number" value="${temp}" placeholder="z. B. 23" id="et" oninput="uEnv()"/></div>
-      <div class="inp-wrap"><div class="inp-label">Luftfeuchtigkeit (%)</div>
-        <input class="inp-field" type="number" value="${rh}" placeholder="z. B. 48" id="er" oninput="uEnv()"/></div>
+      <div class="inp-wrap"><div class="inp-label">Temperatur (°C)</div><input class="inp-field" type="number" value="${temp}" placeholder="z. B. 23" id="et" oninput="uEnv()"/></div>
+      <div class="inp-wrap"><div class="inp-label">Luftfeuchtigkeit (%)</div><input class="inp-field" type="number" value="${rh}" placeholder="z. B. 48" id="er" oninput="uEnv()"/></div>
     </div>
     <div id="vpd-c">${vpdBox}</div>
     ${noActive}${blocks}
@@ -1033,19 +983,17 @@ function uEnv(){
 function ensE(cId){
   if(!S.entries[editISO])S.entries[editISO]={temp:'',humidity:'',cycleData:{}};
   if(!S.entries[editISO].cycleData)S.entries[editISO].cycleData={};
-  if(!S.entries[editISO].cycleData[cId])S.entries[editISO].cycleData[cId]={nutrients:{}};
-  if(!S.entries[editISO].cycleData[cId].nutrients)S.entries[editISO].cycleData[cId].nutrients={};
+  if(!S.entries[editISO].cycleData[cId])S.entries[editISO].cycleData[cId]={doses:{},water:'',ph:'',notes:''};
+  if(!S.entries[editISO].cycleData[cId].doses)S.entries[editISO].cycleData[cId].doses={};
 }
-function uEN(cId,k,v){ensE(cId);S.entries[editISO].cycleData[cId].nutrients[k]=v;}
+function uDose(cId,prodId,val){ensE(cId);S.entries[editISO].cycleData[cId].doses[prodId]=parseFloat(val)||0;}
 function uEF(cId,f,v){ensE(cId);S.entries[editISO].cycleData[cId][f]=v;}
 function saveEntry(){
   if(!editISO)return;
   if(S.cycles.length>0)ensE(S.cycles[0].id);
   S.entries[editISO].temp=document.getElementById('et')?.value||'';
   S.entries[editISO].humidity=document.getElementById('er')?.value||'';
-  saveS();
-  toast('Gespeichert ✓');
-  setTimeout(()=>goTo(entryFrom),400);
+  saveS();toast('Gespeichert ✓');setTimeout(()=>goTo(entryFrom),400);
 }
 
 // ============================================================
@@ -1054,8 +1002,7 @@ function saveEntry(){
 loadS();calDate=new Date();
 goTo('dash');
 history.pushState(null,'',location.href);
-
-// Swipe calendar – ONCE on the screen element
+// Swipe calendar once
 (function(){
   const scr=document.getElementById('scr-cal');
   let sx=0,sy=0,st=0;
