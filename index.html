@@ -45,9 +45,9 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-famil
 .stat-val{font-size:20px;font-weight:500;color:var(--text);}
 .stat-unit{font-size:11px;color:var(--text-hint);}
 .phase-pill{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:500;}
-.prog-bg{height:4px;background:var(--border);border-radius:4px;overflow:hidden;}
-.prog-fill{height:100%;border-radius:4px;transition:width 0.3s;}
-.cycle-card{background:var(--card);border-radius:14px;border:0.5px solid var(--border);padding:14px;display:flex;flex-direction:column;gap:10px;cursor:pointer;}
+.prog-bg{height:5px;background:var(--border);border-radius:4px;overflow:hidden;}
+.prog-fill{height:100%;border-radius:4px;transition:width 0.4s;}
+.cycle-card{border-radius:14px;border:0.5px solid var(--border);padding:14px;display:flex;flex-direction:column;gap:10px;cursor:pointer;}
 .c-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
 .c-name{font-size:14px;font-weight:500;color:var(--text);flex:1;}
 .c-day{font-size:12px;color:var(--text-muted);}
@@ -66,10 +66,10 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-famil
 .vpd-marker-row{position:relative;height:8px;}
 .vpd-marker{position:absolute;top:0;width:2px;height:10px;background:#fff;border-radius:2px;transition:left 0.3s;}
 .vpd-nums{display:flex;justify-content:space-between;font-size:9px;color:var(--text-hint);}
-.tbl-header-row{background:var(--green-mid);border-radius:10px 10px 0 0;border:0.5px solid var(--border-g);padding:8px 12px;display:flex;align-items:center;justify-content:space-between;}
-.tbl-header-title{font-size:12px;font-weight:500;color:#8de0a8;}
+.tbl-header-row{border-radius:10px 10px 0 0;padding:8px 12px;display:flex;align-items:center;justify-content:space-between;}
+.tbl-header-title{font-size:12px;font-weight:500;color:#fff;}
 .tbl-wrap{background:var(--surface);border:0.5px solid var(--border);border-top:none;border-radius:0 0 10px 10px;overflow:hidden;}
-.tbl-head{display:grid;grid-template-columns:1fr 52px 56px;background:var(--green-mid);padding:5px 10px;border-bottom:0.5px solid var(--border);}
+.tbl-head{display:grid;grid-template-columns:1fr 52px 56px;padding:5px 10px;border-bottom:0.5px solid var(--border);}
 .th{font-size:11px;color:var(--green);font-weight:500;}
 .th:not(:first-child){text-align:right;}
 .tbl-row{display:grid;grid-template-columns:1fr 52px 56px;padding:5px 10px;border-bottom:0.5px solid #1e1e1e;align-items:center;}
@@ -83,33 +83,41 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-famil
 .note-wrap{background:var(--surface);border:0.5px solid var(--border);border-radius:10px;padding:8px 10px;display:flex;flex-direction:column;gap:4px;}
 .note-ta{background:#1c1c1c;border:0.5px solid var(--border);border-radius:7px;padding:8px 10px;color:#aaa;font-size:12px;font-family:var(--font);width:100%;min-height:68px;resize:none;outline:none;line-height:1.6;}
 .note-ta:focus{border-color:var(--green-hint);}
-.ai-strip{background:var(--green-bg);border:0.5px solid #1e3d28;border-radius:9px;padding:8px 11px;display:flex;gap:7px;align-items:flex-start;}
-.ai-dot{width:6px;height:6px;border-radius:50%;background:var(--green);flex-shrink:0;margin-top:3px;}
-.ai-txt{font-size:12px;color:#7ab88a;line-height:1.6;flex:1;}
-.ai-txt b{color:var(--green);font-weight:500;}
+.ai-strip{border-radius:9px;padding:8px 11px;display:flex;gap:7px;align-items:flex-start;}
+.ai-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:3px;}
+.ai-txt{font-size:12px;line-height:1.6;flex:1;}
+.ai-txt b{font-weight:500;}
 .big-save{background:var(--green-dk);border:none;border-radius:10px;padding:13px;font-size:14px;font-weight:500;color:#d0f0e0;width:100%;cursor:pointer;font-family:var(--font);}
+/* CALENDAR */
 .cal-day-header{display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:5px;}
 .cal-day-lbl{text-align:center;font-size:11px;color:var(--text-muted);}
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;}
 .cal-cell{aspect-ratio:0.85;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;position:relative;border:0.5px solid transparent;user-select:none;padding:2px;}
-.cal-cell.today{border:2px solid var(--green)!important;}
+.cal-cell.today{border:2px solid #fff!important;}
 .cal-num{font-size:13px;color:var(--text-sub);font-weight:600;line-height:1;}
-.cal-cell.today .cal-num{color:var(--green);}
-.cal-tag{font-size:8px;color:rgba(255,255,255,0.7);line-height:1;margin-top:1px;white-space:nowrap;overflow:hidden;max-width:100%;text-align:center;}
-.cal-icon{font-size:13px;line-height:1;margin-bottom:1px;}
-.cal-dot{width:4px;height:4px;border-radius:50%;position:absolute;bottom:2px;right:3px;}
+.cal-cell.today .cal-num{color:#fff;font-weight:700;}
+.cal-tag{font-size:8px;color:rgba(255,255,255,0.75);line-height:1;margin-top:1px;white-space:nowrap;overflow:hidden;max-width:96%;text-align:center;}
+.cal-icon{font-size:12px;line-height:1;margin-bottom:1px;}
+.cal-dot{width:5px;height:5px;border-radius:50%;position:absolute;bottom:2px;right:3px;background:rgba(255,255,255,0.8);}
 .cal-legend{display:flex;flex-wrap:wrap;gap:8px;padding:6px 0;}
 .legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-muted);}
-.legend-dot{width:8px;height:8px;border-radius:50%;}
+.legend-dot{width:10px;height:10px;border-radius:50%;}
+/* SMART ALERT */
+.alert-card{border-radius:12px;padding:10px 14px;display:flex;gap:10px;align-items:flex-start;margin-bottom:2px;}
+.alert-icon{font-size:18px;flex-shrink:0;}
+.alert-body{flex:1;}
+.alert-title{font-size:12px;font-weight:500;margin-bottom:2px;}
+.alert-text{font-size:11px;opacity:0.8;line-height:1.5;}
+/* SETTINGS */
 .tab-row{display:flex;gap:6px;flex-wrap:wrap;}
-.tab-item{display:flex;align-items:center;gap:5px;background:var(--surface);border-radius:8px;padding:6px 12px;border:0.5px solid var(--border);cursor:pointer;font-size:12px;color:var(--text-muted);font-family:var(--font);}
+.tab-item{display:flex;align-items:center;gap:6px;background:var(--surface);border-radius:8px;padding:6px 12px;border:0.5px solid var(--border);cursor:pointer;font-size:12px;color:var(--text-muted);font-family:var(--font);}
 .tab-item.active{border-color:var(--green);background:var(--green-bg);color:var(--green);}
-.tab-dot{width:6px;height:6px;border-radius:50%;}
+.tab-sym{font-size:14px;}
 .dur-grid{display:flex;flex-wrap:wrap;gap:8px;}
 .dur-box{display:flex;flex-direction:column;gap:3px;width:calc(33% - 6px);}
 .dur-lbl{font-size:11px;color:var(--text-hint);}
 .dur-inp{background:var(--card2);border:0.5px solid var(--border);border-radius:7px;padding:6px;color:var(--text-sub);font-size:13px;text-align:center;width:100%;outline:none;font-family:var(--mono);}
-.sub-head{font-size:11px;color:var(--text-hint);font-weight:500;letter-spacing:0.04em;margin-top:8px;margin-bottom:2px;}
+.sub-head{font-size:11px;color:var(--text-hint);font-weight:500;letter-spacing:0.04em;margin-top:8px;margin-bottom:4px;}
 .switch-row{display:flex;align-items:center;justify-content:space-between;padding:4px 0;}
 .switch{position:relative;width:44px;height:26px;cursor:pointer;}
 .switch input{opacity:0;width:0;height:0;}
@@ -121,14 +129,21 @@ input:checked+.slider:before{transform:translateX(18px);background:var(--green);
 .section-toggle{background:var(--card);border-radius:12px;border:0.5px solid var(--border);padding:14px;display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px;color:var(--text);}
 .section-toggle span{flex:1;}
 .add-btn{display:flex;align-items:center;gap:5px;background:var(--green-bg);border:0.5px solid var(--green-dk);border-radius:8px;padding:6px 12px;font-size:12px;color:var(--green);cursor:pointer;font-family:var(--font);}
-.save-settings-btn{background:var(--green-dk);border:none;border-radius:10px;padding:12px;font-size:13px;font-weight:500;color:#d0f0e0;width:100%;cursor:pointer;font-family:var(--font);margin-top:6px;}
+.save-settings-btn{border:none;border-radius:10px;padding:12px;font-size:13px;font-weight:500;color:#d0f0e0;width:100%;cursor:pointer;font-family:var(--font);margin-top:6px;}
+/* COLOR/SYMBOL PICKER */
+.picker-row{display:flex;gap:8px;flex-wrap:wrap;margin:4px 0;}
+.picker-opt{width:36px;height:36px;border-radius:50%;border:2px solid transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;transition:transform 0.15s;}
+.picker-opt.selected{border-color:#fff;transform:scale(1.15);}
+.sym-opt{width:36px;height:36px;border-radius:10px;background:var(--card2);border:2px solid transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;transition:transform 0.15s;}
+.sym-opt.selected{border-color:#fff;transform:scale(1.15);}
+/* AI */
 .ai-fetch-btn{background:var(--green-bg);border:0.5px solid var(--green-dk);border-radius:12px;padding:14px;text-align:center;cursor:pointer;font-size:14px;color:var(--green);font-weight:500;font-family:var(--font);width:100%;}
 .ai-result-card{background:var(--card);border-radius:14px;border:0.5px solid var(--border-g);padding:14px;display:flex;flex-direction:column;gap:10px;}
 .nut-row{display:flex;align-items:center;gap:8px;}
 .nut-name{font-size:12px;color:var(--text-muted);width:90px;flex-shrink:0;}
 .nut-bar{flex:1;height:4px;background:var(--border);border-radius:2px;overflow:hidden;}
-.nut-fill{height:100%;background:var(--green);border-radius:2px;}
-.nut-val{font-size:12px;color:#c8f0d8;font-weight:500;width:50px;text-align:right;font-family:var(--mono);}
+.nut-fill{height:100%;border-radius:2px;}
+.nut-val{font-size:12px;font-weight:500;width:50px;text-align:right;font-family:var(--mono);}
 .empty-state{display:flex;flex-direction:column;align-items:center;gap:10px;padding:30px 20px;text-align:center;}
 .empty-icon{font-size:40px;opacity:0.3;}
 .empty-text{font-size:13px;color:var(--text-muted);}
@@ -161,16 +176,16 @@ input:checked+.slider:before{transform:translateX(18px);background:var(--green);
   </div>
   <div class="screen" id="screen-calendar">
     <div class="topbar" style="padding-top:max(12px,env(safe-area-inset-top))">
-      <button onclick="changeMonth(-1)" style="background:none;border:none;color:var(--green);font-size:24px;cursor:pointer;padding:0 8px;">‹</button>
+      <button onclick="changeMonth(-1)" style="background:none;border:none;color:var(--green);font-size:26px;cursor:pointer;padding:0 10px;line-height:1">‹</button>
       <span style="font-size:16px;font-weight:500;color:var(--text)" id="cal-month-label">–</span>
-      <button onclick="changeMonth(1)" style="background:none;border:none;color:var(--green);font-size:24px;cursor:pointer;padding:0 8px;">›</button>
+      <button onclick="changeMonth(1)" style="background:none;border:none;color:var(--green);font-size:26px;cursor:pointer;padding:0 10px;line-height:1">›</button>
     </div>
     <div class="scroll" id="calendar-scroll"></div>
     <nav class="bottom-nav" id="nav-calendar"></nav>
   </div>
   <div class="screen" id="screen-ai">
     <div class="topbar" style="padding-top:max(12px,env(safe-area-inset-top))">
-      <span class="app-title">KI-Coach</span>
+      <span class="app-title">✦ KI-Coach</span>
     </div>
     <div class="scroll" id="ai-scroll"></div>
     <nav class="bottom-nav" id="nav-ai"></nav>
@@ -191,11 +206,37 @@ input:checked+.slider:before{transform:translateX(18px);background:var(--green);
     <div class="scroll" id="entry-scroll"></div>
   </div>
 </div>
-<div id="ctx-overlay" onclick="closeCtxMenu()"></div>
+<div id="ctx-overlay" onclick="closeCtx()"></div>
 <div id="ctx-menu"></div>
 <div id="toast"></div>
 <script>
-const STORAGE_KEY='growsmart_data';
+// ============================================================
+// CYCLE COLORS & SYMBOLS
+// ============================================================
+const CYCLE_COLORS = [
+  {id:'c1',hex:'#4caf70',dark:'#0d2a16'},  // grün
+  {id:'c2',hex:'#5aabf0',dark:'#0a1e30'},  // blau
+  {id:'c3',hex:'#e8884a',dark:'#2a1500'},  // orange
+  {id:'c4',hex:'#b06ac8',dark:'#1e0830'},  // lila
+  {id:'c5',hex:'#f0d050',dark:'#2a2000'},  // gelb
+  {id:'c6',hex:'#e06060',dark:'#2a0a0a'},  // rot
+  {id:'c7',hex:'#5adada',dark:'#082222'},  // türkis
+  {id:'c8',hex:'#a0c840',dark:'#182200'},  // hellgrün
+];
+const CYCLE_SYMBOLS = ['🌿','🌸','🍀','🌴','🌵','🍁','🌾','⭐','🔥','💎'];
+
+function getCycleColor(c){
+  return CYCLE_COLORS.find(x=>x.id===c.colorId)||CYCLE_COLORS[0];
+}
+function getCycleSymbol(c){ return c.symbol||'🌿'; }
+
+// Phase-specific action icons
+const ACTION_ICONS={water_anzucht:'💧',water:'💧',feed:'🧪',flush:'🚿',ice:'❄️',harvest:'✂️',dry:'🍃',start:'🏁'};
+
+// ============================================================
+// STATE & STORAGE
+// ============================================================
+const STORAGE_KEY='growsmart_v2';
 const DEFAULT_SCHEDULE={
   1:{root_juice:4,bio_grow:0,bio_bloom:0,top_max:0,bio_heaven:2,alg_a_mic:0,acti_vera:0,calmag:0.3},
   2:{root_juice:0,bio_grow:2,bio_bloom:0,top_max:0,bio_heaven:2,alg_a_mic:0,acti_vera:2,calmag:0.3},
@@ -208,27 +249,46 @@ const DEFAULT_SCHEDULE={
   9:{root_juice:0,bio_grow:4,bio_bloom:4,top_max:4,bio_heaven:5,alg_a_mic:4,acti_vera:5,calmag:0.5},
   10:{root_juice:0,bio_grow:4,bio_bloom:4,top_max:4,bio_heaven:5,alg_a_mic:4,acti_vera:5,calmag:0.5}
 };
+
 let state={cycles:[],entries:{},schedule:JSON.parse(JSON.stringify(DEFAULT_SCHEDULE))};
-let currentTab='dashboard',calViewDate=new Date(),editingDate=null,showSchedule=false,selectedCycleId=null,lastBackTime=0,settingsDraft={};
+let currentTab='dashboard',calViewDate=new Date(),editingDate=null;
+let showSchedule=false,selectedCycleId=null,lastBackTime=0,settingsDraft={};
+
 const NUTRIENTS=[
   {key:'root_juice',label:'1. Root-Juice'},{key:'bio_grow',label:'2. Bio-Grow'},
   {key:'bio_bloom',label:'3. Bio-Bloom'},{key:'top_max',label:'4. Top-Max'},
   {key:'bio_heaven',label:'5. Bio-Heaven'},{key:'alg_a_mic',label:'6. Alg-A-Mic'},
   {key:'acti_vera',label:'7. Acti-Vera'},{key:'calmag',label:'8. Calmag'}
 ];
-const PHASE_CFG={
-  anzucht:{label:'Anzucht',color:'#5aabf0',bg:'#0d1e2e'},
-  bloom:{label:'Blüte',color:'#4caf70',bg:'#0d1e0d'},
-  flush:{label:'Spülen',color:'#c8b44a',bg:'#2a2a0d'},
-  ice:{label:'IceFlush',color:'#5adada',bg:'#0d1e1e'},
-  harvest:{label:'Ernte',color:'#b06ac8',bg:'#1a0d2a'},
-  dry:{label:'Trocknen',color:'#b08a4a',bg:'#1e1a0d'}
-};
-const ACTION_COLORS={water_anzucht:'#1e3a6e',water:'#163a7a',feed:'#1e6e3a',flush:'#5a5a10',ice:'#1a5a5a',harvest:'#5a1e6e',dry:'#3a2a10'};
 
-function loadState(){try{const s=localStorage.getItem(STORAGE_KEY);if(s){const p=JSON.parse(s);state=Object.assign({cycles:[],entries:{},schedule:JSON.parse(JSON.stringify(DEFAULT_SCHEDULE))},p);}}catch(e){}}
+const PHASE_LABELS={anzucht:'Anzucht',bloom:'Blüte',flush:'Spülen',ice:'IceFlush',harvest:'Ernte',dry:'Trocknen'};
+
+// Phase recommended intervals (smart defaults)
+const PHASE_INTERVALS={anzucht:4,bloom:3,flush:2,ice:2};
+
+function loadState(){
+  try{
+    const s=localStorage.getItem(STORAGE_KEY);
+    if(s){const p=JSON.parse(s);state=Object.assign({cycles:[],entries:{},schedule:JSON.parse(JSON.stringify(DEFAULT_SCHEDULE))},p);}
+    // migrate old key
+    else{
+      const old=localStorage.getItem('growsmart_data');
+      if(old){const p=JSON.parse(old);state=Object.assign({cycles:[],entries:{},schedule:JSON.parse(JSON.stringify(DEFAULT_SCHEDULE))},p);}
+    }
+  }catch(e){}
+  // ensure every cycle has color+symbol
+  state.cycles.forEach((c,i)=>{
+    if(!c.colorId)c.colorId=CYCLE_COLORS[i%CYCLE_COLORS.length].id;
+    if(!c.symbol)c.symbol=CYCLE_SYMBOLS[i%CYCLE_SYMBOLS.length];
+    // ensure individual schedule
+    if(!c.schedule)c.schedule=null; // null = use global
+  });
+}
 function saveState(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(state));}catch(e){}}
 
+// ============================================================
+// TOAST
+// ============================================================
 let toastTimer=null;
 function showToast(msg,dur=2200){
   const el=document.getElementById('toast');
@@ -237,6 +297,9 @@ function showToast(msg,dur=2200){
   toastTimer=setTimeout(()=>el.classList.remove('show'),dur);
 }
 
+// ============================================================
+// GROW LOGIC
+// ============================================================
 function todayISO(){return new Date().toISOString().split('T')[0];}
 
 function getPhase(iso,c){
@@ -253,22 +316,90 @@ function getPhase(iso,c){
   if(diff<=d)return{phase:'dry',day:diff+1,week:null,total:d};
   return null;
 }
+
+// Smart interval: use cycle-specific if set, else phase default, else global
+function getInterval(c,phase){
+  if(c.intervalAnzucht&&phase==='anzucht')return c.intervalAnzucht;
+  if(c.intervalBloom&&phase==='bloom')return c.intervalBloom;
+  if(c.intervalFlush&&phase==='flush')return c.intervalFlush;
+  return PHASE_INTERVALS[phase]||3;
+}
+
 function getRec(iso,c){
   const p=getPhase(iso,c);if(!p)return null;
-  if(['flush','ice','harvest','dry'].includes(p.phase))return{action:p.phase,nutrients:null};
-  const wk=Math.min(p.week||1,10),sch=state.schedule[wk]||state.schedule[1];
-  return{action:p.phase==='anzucht'?'water_anzucht':(p.day%2===0?'feed':'water'),
-    nutrients:p.phase==='anzucht'?{...sch,bio_bloom:0,top_max:0}:sch,week:wk};
+  if(['harvest','dry'].includes(p.phase))return{action:p.phase,nutrients:null};
+  if(p.phase==='ice')return{action:'ice',nutrients:null};
+  if(p.phase==='flush')return{action:'flush',nutrients:null};
+  const interval=getInterval(c,p.phase);
+  const isWaterDay=(p.day-1)%interval===0;
+  if(!isWaterDay)return null; // not a watering day
+  const wk=Math.min(p.week||1,10);
+  const sch=c.schedule?c.schedule[wk]:state.schedule[wk]||state.schedule[1];
+  if(p.phase==='anzucht'){
+    return{action:'water_anzucht',nutrients:{...sch,bio_bloom:0,top_max:0},week:wk};
+  }
+  // alternate feed/water in bloom based on day
+  const feedDay=Math.floor((p.day-1)/interval)%2===0;
+  return{action:feedDay?'feed':'water',nutrients:feedDay?sch:null,week:wk};
 }
-function isWaterDay(iso,c){const r=getRec(iso,c);return r&&['water_anzucht','water','feed','flush','ice'].includes(r.action);}
+
+function isWaterDay(iso,c){
+  const r=getRec(iso,c);
+  return r&&['water_anzucht','water','feed','flush','ice'].includes(r.action);
+}
+
+// Smart overdue detection
+function getDaysSinceLastWatering(c,fromISO){
+  const dates=Object.keys(state.entries).filter(d=>{
+    const e=state.entries[d];
+    return e?.cycleData?.[c.id]?.water&&d<=fromISO;
+  }).sort();
+  if(!dates.length)return null;
+  const last=dates[dates.length-1];
+  return Math.floor((new Date(fromISO)-new Date(last))/86400000);
+}
+
+// Smart alerts generator
+function getSmartAlerts(c){
+  const today=todayISO();
+  const p=getPhase(today,c);
+  if(!p||!c.active)return[];
+  const alerts=[];
+  const interval=getInterval(c,p.phase);
+  const daysSince=getDaysSinceLastWatering(c,today);
+  // Overdue watering
+  if(daysSince!==null&&daysSince>interval+1){
+    alerts.push({type:'warn',icon:'⚠️',title:`${c.name}: Gießen überfällig!`,text:`Letztes Gießen vor ${daysSince} Tagen. Intervall: ${interval} Tage.`});
+  }
+  // Upcoming phase change
+  const phaseEnds={anzucht:c.anzuchtDays||17,bloom:(c.anzuchtDays||17)+(c.bloomDays||66)};
+  const totalDays=p.total;
+  const daysLeft=totalDays-p.day+1;
+  if(p.phase==='bloom'&&daysLeft<=7){
+    alerts.push({type:'info',icon:'🚿',title:`${c.name}: Spülung in ${daysLeft} Tagen`,text:'Spülphase vorbereiten: kein Dünger mehr kaufen.'});
+  }
+  if(p.phase==='flush'){
+    const flushLeft=(c.flushDays||9)-(p.day-((c.anzuchtDays||17)+(c.bloomDays||66)));
+    alerts.push({type:'info',icon:'❄️',title:`${c.name}: IceFlush in Kürze`,text:`Noch ca. ${Math.max(0,flushLeft)} Tage Spülen.`});
+  }
+  if(p.phase==='ice'||p.phase==='harvest'){
+    alerts.push({type:'success',icon:'✂️',title:`${c.name}: Ernte nähert sich!`,text:'Trichome checken, Lupe bereithalten.'});
+  }
+  // Week milestone
+  if(p.phase==='bloom'&&p.week&&p.week>=6&&p.day%7===1){
+    alerts.push({type:'tip',icon:'💡',title:`${c.name}: Woche ${p.week} – Spätblüte`,text:'Jetzt Calmag erhöhen, auf Nährstoffmangel achten.'});
+  }
+  return alerts;
+}
+
 function calcVPD(t,rh){if(isNaN(t)||isNaN(rh))return null;return Math.round(0.6108*Math.exp(17.27*t/(t+237.3))*(1-rh/100)*100)/100;}
 function getVPDZone(v){
   if(v===null)return null;
-  if(v<0.4)return{label:'Zu feucht',color:'#7a7af0',bg:'#1e1e3a',hint:'VPD zu niedrig – Luftzirkulation erhöhen!',pct:Math.round(v/0.4*15)};
-  if(v<0.8)return{label:'Anzucht – optimal',color:'#5aabf0',bg:'#0d1e2e',hint:'VPD ideal für Anzucht.',pct:Math.round(15+(v-0.4)/0.4*35)};
+  if(v<0.4)return{label:'Zu feucht',color:'#7a7af0',bg:'#1e1e3a',hint:'VPD zu niedrig – Schimmelgefahr! Belüftung erhöhen.',pct:Math.round(v/0.4*15)};
+  if(v<0.8)return{label:'Anzucht – optimal',color:'#5aabf0',bg:'#0d1e2e',hint:'VPD ideal für Anzucht und Vegetationsphase.',pct:Math.round(15+(v-0.4)/0.4*35)};
   if(v<1.2)return{label:'Blüte – optimal',color:'#4caf70',bg:'#0d1e0d',hint:'VPD perfekt für die Blütephase!',pct:Math.round(50+(v-0.8)/0.4*25)};
-  if(v<1.6)return{label:'Obere Grenze',color:'#c8a04a',bg:'#2a1e0d',hint:'VPD etwas hoch – Luftfeuchtigkeit erhöhen.',pct:Math.round(75+(v-1.2)/0.4*15)};
-  return{label:'Pflanzenstress!',color:'#e06060',bg:'#2a0d0d',hint:'VPD kritisch – sofort anpassen!',pct:Math.min(97,Math.round(90+(v-1.6)*10))};
+  if(v<1.6)return{label:'Obere Grenze',color:'#c8a04a',bg:'#2a1e0d',hint:'VPD zu hoch – Luftfeuchtigkeit leicht erhöhen.',pct:Math.round(75+(v-1.2)/0.4*15)};
+  return{label:'Pflanzenstress!',color:'#e06060',bg:'#2a0d0d',hint:'VPD kritisch – sofort Luftfeuchtigkeit anpassen!',pct:Math.min(97,Math.round(90+(v-1.6)*10))};
 }
 function daysToHarvest(c){
   if(!c.startDate)return null;
@@ -299,7 +430,9 @@ function shiftEntries(cId,days){
   });
 }
 
+// ============================================================
 // NAV
+// ============================================================
 const TABS=['dashboard','calendar','ai','settings'];
 const TICONS={dashboard:'🌿',calendar:'📅',ai:'✦',settings:'⚙'};
 const TLABELS={dashboard:'Übersicht',calendar:'Kalender',ai:'KI-Coach',settings:'Einst.'};
@@ -325,33 +458,83 @@ window.addEventListener('popstate',()=>{
   showToast('Nochmal drücken zum Beenden');
 });
 
+// ============================================================
 // DASHBOARD
+// ============================================================
 function renderDash(){
   const active=getActive(),today=todayISO();
   const todayFmt=new Date().toLocaleDateString('de-DE',{weekday:'long',day:'2-digit',month:'long'});
+
+  // Collect all smart alerts
+  const allAlerts=active.flatMap(c=>getSmartAlerts(c));
+  const alertColors={warn:'background:#2a1a0a;border-color:#8a5a20',info:'background:#0a1a2a;border-color:#2a5a8a',success:'background:#0a2a0a;border-color:#2a6a2a',tip:'background:#1a1a0a;border-color:#6a6a20'};
+  const alertsHTML=allAlerts.map(a=>`<div class="alert-card" style="${alertColors[a.type]||alertColors.info};border:0.5px solid"><span class="alert-icon">${a.icon}</span><div class="alert-body"><div class="alert-title" style="color:var(--text)">${a.title}</div><div class="alert-text" style="color:var(--text-sub)">${a.text}</div></div></div>`).join('');
+
   const tasks=active.map(c=>{
     const p=getPhase(today,c),r=getRec(today,c);
-    const cfg=PHASE_CFG[p?.phase]||PHASE_CFG.bloom;
-    return`<div style="display:flex;align-items:center;gap:8px"><div style="width:8px;height:8px;border-radius:50%;background:${cfg.color};flex-shrink:0"></div><div><div style="font-size:13px;font-weight:500;color:var(--text)">${c.name}</div><div style="font-size:12px;color:var(--text-muted)">Tag ${p?.day||'–'}${p?.week?` · Wo. ${p.week}`:''} · ${aLabel(r?.action)}</div></div></div>`;
+    const col=getCycleColor(c),sym=getCycleSymbol(c);
+    return`<div style="display:flex;align-items:center;gap:8px;padding:4px 0">
+      <span style="font-size:16px">${sym}</span>
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:500;color:var(--text)">${c.name}${c.location?` <span style="color:var(--text-muted);font-size:11px">· ${c.location}</span>`:''}</div>
+        <div style="font-size:12px;color:var(--text-muted)">Tag ${p?.day||'–'}${p?.week?` · Wo. ${p.week}`:''} · <span style="color:${col.hex}">${r?aLabel(r.action):'Pause'}</span></div>
+      </div>
+    </div>`;
   }).join('');
+
   const fc=active[0],hi=fc?daysToHarvest(fc):null;
   const stats=`<div class="stat-row">
     <div class="stat-box"><div class="stat-lbl">Zyklen</div><div class="stat-val">${active.length}</div></div>
     <div class="stat-box"><div class="stat-lbl">Heute</div><div class="stat-val" style="color:var(--blue);font-size:15px">${active.length>0?aLabel(getRec(today,active[0])?.action):'–'}</div></div>
     <div class="stat-box"><div class="stat-lbl">Ernte in</div><div class="stat-val">${hi!==null?hi:'–'}<span class="stat-unit"> d</span></div></div>
   </div>`;
+
   const cards=active.map(c=>{
-    const p=getPhase(today,c),r=getRec(today,c),cfg=PHASE_CFG[p?.phase]||PHASE_CFG.bloom;
+    const p=getPhase(today,c),r=getRec(today,c);
+    const col=getCycleColor(c),sym=getCycleSymbol(c);
     const pct=p?Math.round(p.day/(p.total+1)*100):0;
     const sf=c.startDate?new Date(c.startDate+'T12:00:00').toLocaleDateString('de-DE'):'–';
-    return`<div class="cycle-card" onclick="openEntry('${today}')"><div style="display:flex;align-items:center;gap:10px"><div class="c-dot" style="background:${cfg.color}"></div><div class="c-name">${c.name}${c.location?` – ${c.location}`:''}</div><div class="c-day">Tag ${p?.day||'–'}</div></div><div style="display:flex;gap:6px"><span class="phase-pill" style="background:${cfg.bg};color:${cfg.color}">${cfg.label}${p?.week?` Wo. ${p.week}`:''}</span>${r?.action==='feed'?`<span class="phase-pill" style="background:var(--green-bg);color:var(--green)">Düngertag</span>`:''}</div><div><div class="prog-bg"><div class="prog-fill" style="width:${pct}%;background:${cfg.color}"></div></div><div style="display:flex;justify-content:space-between;margin-top:4px"><span style="font-size:11px;color:var(--text-hint)">Start ${sf}</span><span style="font-size:11px;color:var(--text-hint)">${pct}%</span></div></div></div>`;
+    const phaseLabel=p?PHASE_LABELS[p.phase]:'–';
+    return`<div class="cycle-card" style="background:${col.dark};border-color:${col.hex}44" onclick="openEntry('${today}')">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:20px">${sym}</span>
+        <div style="flex:1">
+          <div class="c-name">${c.name}${c.location?` – ${c.location}`:''}</div>
+          <div style="font-size:12px;color:${col.hex}">${phaseLabel}${p?.week?` Woche ${p.week}`:''} · Tag ${p?.day||'–'}</div>
+        </div>
+        <div style="text-align:right">
+          ${r?`<div style="font-size:18px">${ACTION_ICONS[r.action]||''}</div><div style="font-size:11px;color:${col.hex}">${aLabel(r.action)}</div>`:'<div style="font-size:11px;color:var(--text-hint)">Pause</div>'}
+        </div>
+      </div>
+      <div>
+        <div class="prog-bg"><div class="prog-fill" style="width:${pct}%;background:${col.hex}"></div></div>
+        <div style="display:flex;justify-content:space-between;margin-top:4px">
+          <span style="font-size:11px;color:var(--text-hint)">Start ${sf}</span>
+          <span style="font-size:11px;color:${col.hex}">${pct}%</span>
+        </div>
+      </div>
+    </div>`;
   }).join('');
-  const empty=active.length===0?`<div class="empty-state"><div class="empty-icon">🌱</div><div class="empty-text">Noch keine aktiven Zyklen.</div><button class="empty-btn" onclick="goTo('settings')">Zyklus erstellen</button></div>`:'';
-  document.getElementById('dashboard-scroll').innerHTML=`<div class="card" style="gap:8px;display:flex;flex-direction:column"><div style="font-size:12px;color:var(--green);font-weight:500">${todayFmt}</div>${active.length===0?'<div style="font-size:13px;color:var(--text-muted)">Keine aktiven Zyklen.</div>':tasks}</div>${stats}<div class="sect-head">Meine Zyklen</div>${empty}${cards}<div style="height:10px"></div>`;
+
+  const empty=active.length===0?`<div class="empty-state"><div class="empty-icon">🌱</div><div class="empty-text">Noch keine aktiven Zyklen.<br>Erstelle deinen ersten in Einstellungen.</div><button class="empty-btn" onclick="goTo('settings')">Zyklus erstellen</button></div>`:'';
+
+  document.getElementById('dashboard-scroll').innerHTML=`
+    <div class="card" style="gap:8px;display:flex;flex-direction:column">
+      <div style="font-size:12px;color:var(--green);font-weight:500">${todayFmt}</div>
+      ${active.length===0?'<div style="font-size:13px;color:var(--text-muted)">Keine aktiven Zyklen.</div>':tasks}
+    </div>
+    ${alertsHTML}
+    ${stats}
+    <div class="sect-head">Meine Zyklen</div>
+    ${empty}${cards}
+    <div style="height:10px"></div>`;
 }
 
+// ============================================================
 // CALENDAR
+// ============================================================
 const MNAMES=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+
 function renderCal(){
   const y=calViewDate.getFullYear(),m=calViewDate.getMonth();
   document.getElementById('cal-month-label').textContent=`${MNAMES[m]} ${y}`;
@@ -359,44 +542,80 @@ function renderCal(){
   const fd=new Date(y,m,1).getDay(),dim=new Date(y,m+1,0).getDate(),off=fd===0?6:fd-1;
   let cells='';
   for(let i=0;i<off;i++)cells+='<div></div>';
+
   for(let d=1;d<=dim;d++){
     const iso=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
     const isToday=iso===today,hasEntry=!!state.entries[iso];
-    const wc=active.filter(c=>isWaterDay(iso,c));
-    let bg='background:var(--surface);';
-    if(wc.length===1){const r=getRec(iso,wc[0]);bg=`background:${ACTION_COLORS[r.action]||'#1e3a6e'};`;}
-    else if(wc.length>=2){
-      const r1=getRec(iso,wc[0]),r2=getRec(iso,wc[1]);
-      bg=`background:linear-gradient(135deg,${ACTION_COLORS[r1.action]||'#1e3a6e'} 50%,${ACTION_COLORS[r2.action]||'#1e6e3a'} 50%);`;
-    }
-    // Icon for the action
-    const actionR = wc.length>0 ? getRec(iso, wc[0]) : null;
-    const iconMap = {water_anzucht:'💧',water:'💧',feed:'🧪',flush:'🚿',ice:'❄️',harvest:'✂️',dry:'🍃'};
-    const calIcon = actionR ? (iconMap[actionR.action]||'') : '';
-    // Tag day label - show if any active cycle covers this day
-    const anyPhase = active.map(c=>getPhase(iso,c)).filter(Boolean);
-    const tagLabel = anyPhase.length>0 ? `Tag ${anyPhase[0].day}` : '';
-    // Start day flag
-    const isStartDay = active.some(c=>c.startDate===iso);
 
-    cells+=`<div class="cal-cell ${isToday?'today':''}" style="${bg}"
+    // Collect watering cycles for this day
+    const waterCycles=active.filter(c=>isWaterDay(iso,c));
+    const anyPhase=active.map(c=>({c,p:getPhase(iso,c)})).filter(x=>x.p);
+
+    let bgStyle='background:#181818;';
+    let borderStyle='border-color:transparent;';
+
+    if(waterCycles.length===1){
+      const col=getCycleColor(waterCycles[0]);
+      bgStyle=`background:${col.dark};`;
+      borderStyle=`border-color:${col.hex}88;`;
+    } else if(waterCycles.length>=2){
+      const col1=getCycleColor(waterCycles[0]),col2=getCycleColor(waterCycles[1]);
+      bgStyle=`background:linear-gradient(135deg,${col1.dark} 50%,${col2.dark} 50%);`;
+      borderStyle=`border-color:${col1.hex}66;`;
+    }
+
+    // Icon: start day > action > nothing
+    const isStart=active.some(c=>c.startDate===iso);
+    let icon='';
+    if(isStart){icon='🏁';}
+    else if(waterCycles.length>0){
+      const r=getRec(iso,waterCycles[0]);
+      icon=ACTION_ICONS[r?.action]||'';
+    }
+
+    // Tag label from first active cycle
+    const tagInfo=anyPhase[0];
+    const tagLabel=tagInfo?`T${tagInfo.p.day}`:'';
+
+    // Color for tag text - use cycle color
+    const tagColor=waterCycles.length>0?getCycleColor(waterCycles[0]).hex:(tagInfo?getCycleColor(tagInfo.c).hex:'rgba(255,255,255,0.5)');
+
+    cells+=`<div class="cal-cell ${isToday?'today':''}" style="${bgStyle}${borderStyle}"
       onclick="openEntry('${iso}')"
       ontouchstart="startLP('${iso}',event)" ontouchend="cancelLP()" ontouchmove="cancelLP()">
-      ${isStartDay?`<span class="cal-icon">🏁</span>`:calIcon?`<span class="cal-icon">${calIcon}</span>`:''}
+      ${icon?`<span class="cal-icon">${icon}</span>`:''}
       <span class="cal-num">${d}</span>
-      ${tagLabel?`<span class="cal-tag">${tagLabel}</span>`:''}
-      ${hasEntry?`<div class="cal-dot" style="background:var(--green)"></div>`:''}
+      ${tagLabel?`<span class="cal-tag" style="color:${tagColor}">${tagLabel}</span>`:''}
+      ${hasEntry?`<div class="cal-dot"></div>`:''}
     </div>`;
   }
-  const legend=[
-    {c:ACTION_COLORS.water_anzucht,l:'Wasser'},{c:ACTION_COLORS.feed,l:'Dünger'},
-    {c:ACTION_COLORS.flush,l:'Spülen'},{c:ACTION_COLORS.ice,l:'IceFlush'},{c:ACTION_COLORS.harvest,l:'Ernte'}
-  ].map(x=>`<div class="legend-item"><div class="legend-dot" style="background:${x.c}"></div>${x.l}</div>`).join('');
-  document.getElementById('calendar-scroll').innerHTML=`<div class="cal-day-header">${['Mo','Di','Mi','Do','Fr','Sa','So'].map(x=>`<div class="cal-day-lbl">${x}</div>`).join('')}</div><div class="cal-grid">${cells}</div><div class="cal-legend">${legend}</div><div style="height:10px"></div>`;
-}
-function changeMonth(dir){calViewDate=new Date(calViewDate.getFullYear(),calViewDate.getMonth()+dir,1);renderCal();}
 
-// LONG PRESS
+  // Legend with cycle colors
+  const legendItems=active.map(c=>{
+    const col=getCycleColor(c),sym=getCycleSymbol(c);
+    return`<div class="legend-item"><div class="legend-dot" style="background:${col.hex}"></div>${sym} ${c.name}</div>`;
+  }).join('');
+
+  const actionLegend=[
+    {i:'💧',l:'Wasser'},{i:'🧪',l:'Dünger'},{i:'🚿',l:'Spülen'},{i:'❄️',l:'Ice'},{i:'✂️',l:'Ernte'}
+  ].map(x=>`<div class="legend-item"><span style="font-size:12px">${x.i}</span>${x.l}</div>`).join('');
+
+  document.getElementById('calendar-scroll').innerHTML=`
+    <div class="cal-day-header">${['Mo','Di','Mi','Do','Fr','Sa','So'].map(x=>`<div class="cal-day-lbl">${x}</div>`).join('')}</div>
+    <div class="cal-grid">${cells}</div>
+    <div class="cal-legend" style="border-top:0.5px solid var(--border);padding-top:8px;margin-top:4px">${legendItems}</div>
+    <div class="cal-legend">${actionLegend}</div>
+    <div style="height:10px"></div>`;
+}
+
+function changeMonth(dir){
+  calViewDate=new Date(calViewDate.getFullYear(),calViewDate.getMonth()+dir,1);
+  renderCal();
+}
+
+// ============================================================
+// LONG PRESS CONTEXT MENU
+// ============================================================
 let lpTimer=null;
 function startLP(iso,e){lpTimer=setTimeout(()=>{lpTimer=null;showCtx(iso,e);},600);}
 function cancelLP(){if(lpTimer){clearTimeout(lpTimer);lpTimer=null;}}
@@ -406,19 +625,23 @@ function showCtx(iso,e){
   const df=new Date(iso+'T12:00:00').toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'});
   let items=[];
   active.forEach(c=>{
+    const sym=getCycleSymbol(c),col=getCycleColor(c);
     const p=getPhase(iso,c);if(!p)return;
-    items.push(`<div class="ctx-item green" onclick="shiftFrom('${c.id}','${iso}',1)"><i class="ctx-icon">+1d</i>${c.name}: Zyklus +1 Tag</div>`);
-    items.push(`<div class="ctx-item" onclick="shiftFrom('${c.id}','${iso}',-1)"><i class="ctx-icon">-1d</i>${c.name}: Zyklus -1 Tag</div>`);
+    items.push(`<div class="ctx-item" style="color:${col.hex}" onclick="shiftFrom('${c.id}','${iso}',1)"><i class="ctx-icon">+1d</i>${sym} ${c.name} – +1 Tag</div>`);
+    items.push(`<div class="ctx-item" style="color:${col.hex}" onclick="shiftFrom('${c.id}','${iso}',-1)"><i class="ctx-icon">-1d</i>${sym} ${c.name} – -1 Tag</div>`);
   });
   if(items.length)items.push('<div class="ctx-divider"></div>');
   state.cycles.filter(c=>!c.active).forEach(c=>{
-    items.push(`<div class="ctx-item green" onclick="startOn('${c.id}','${iso}')"><i class="ctx-icon">▶</i>${c.name} hier starten</div>`);
+    const sym=getCycleSymbol(c);
+    items.push(`<div class="ctx-item green" onclick="startOn('${c.id}','${iso}')"><i class="ctx-icon">▶</i>${sym} ${c.name} starten</div>`);
   });
   active.forEach(c=>{
-    items.push(`<div class="ctx-item red" onclick="stopC('${c.id}')"><i class="ctx-icon">■</i>${c.name} beenden</div>`);
+    const sym=getCycleSymbol(c);
+    items.push(`<div class="ctx-item red" onclick="stopC('${c.id}')"><i class="ctx-icon">■</i>${sym} ${c.name} beenden</div>`);
   });
-  if(active.length||state.cycles.filter(c=>!c.active).length)items.push('<div class="ctx-divider"></div>');
+  if(items.length)items.push('<div class="ctx-divider"></div>');
   items.push(`<div class="ctx-item" onclick="openEntry('${iso}');closeCtx()"><i class="ctx-icon">✏</i>Eintrag ${df} öffnen</div>`);
+
   const menu=document.getElementById('ctx-menu');
   menu.innerHTML=`<div style="font-size:11px;color:var(--text-hint);padding:8px 16px 2px;font-weight:500">${df}</div>`+items.join('');
   const t=e?.touches?.[0]||e?.changedTouches?.[0];
@@ -428,7 +651,6 @@ function showCtx(iso,e){
   menu.classList.add('show');document.getElementById('ctx-overlay').classList.add('show');
 }
 function closeCtx(){document.getElementById('ctx-menu').classList.remove('show');document.getElementById('ctx-overlay').classList.remove('show');}
-// alias for onclick
 function closeCtxMenu(){closeCtx();}
 
 function shiftFrom(cId,iso,days){
@@ -438,40 +660,78 @@ function shiftFrom(cId,iso,days){
   const ns=new Date(c.startDate+'T12:00:00');ns.setDate(ns.getDate()+days);
   c.startDate=ns.toISOString().split('T')[0];
   saveState();renderCal();
-  showToast(`${c.name} um ${days>0?'+':''}${days} Tag verschoben`);
+  showToast(`${getCycleSymbol(c)} ${c.name}: ${days>0?'+':''}${days} Tag`);
 }
 function startOn(cId,iso){
   closeCtx();
   const c=state.cycles.find(x=>x.id===cId);if(!c)return;
   c.active=true;c.startDate=iso;saveState();renderCal();
-  showToast(`${c.name} gestartet`);
+  showToast(`${getCycleSymbol(c)} ${c.name} gestartet!`);
   setTimeout(()=>{selectedCycleId=cId;settingsDraft={};goTo('settings');},1000);
 }
 function stopC(cId){
   closeCtx();
   const c=state.cycles.find(x=>x.id===cId);if(!c)return;
   if(!confirm(`"${c.name}" wirklich beenden?`))return;
-  c.active=false;c.startDate=null;saveState();renderCal();showToast(`${c.name} beendet`);
+  c.active=false;c.startDate=null;saveState();renderCal();
+  showToast(`${getCycleSymbol(c)} ${c.name} beendet`);
 }
 
-// AI
+// ============================================================
+// AI COACH
+// ============================================================
 function renderAI(){
   const active=getActive(),today=todayISO(),entry=state.entries[today]||{};
   const vpd=calcVPD(parseFloat(entry.temp),parseFloat(entry.humidity)),vpdZ=getVPDZone(vpd);
+
   const rows=active.map(c=>{
-    const p=getPhase(today,c),r=getRec(today,c),cfg=PHASE_CFG[p?.phase]||PHASE_CFG.bloom;
-    return`<div style="display:flex;align-items:center;gap:8px"><div style="width:8px;height:8px;border-radius:50%;background:${cfg.color}"></div><div style="flex:1"><div style="font-size:13px;font-weight:500;color:var(--text)">${c.name} – Tag ${p?.day||'–'}</div><div style="font-size:12px;color:var(--text-muted)">${cfg.label}${p?.week?` · Wo. ${p.week}`:''} · ${aLabel(r?.action)}</div></div></div>`;
+    const p=getPhase(today,c),r=getRec(today,c);
+    const col=getCycleColor(c),sym=getCycleSymbol(c);
+    return`<div style="display:flex;align-items:center;gap:8px;padding:3px 0">
+      <span style="font-size:16px">${sym}</span>
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:500;color:var(--text)">${c.name} – Tag ${p?.day||'–'}</div>
+        <div style="font-size:12px;color:${col.hex}">${p?PHASE_LABELS[p.phase]:'–'}${p?.week?` · Wo. ${p.week}`:''} · ${r?aLabel(r.action):'Pause'}</div>
+      </div>
+    </div>`;
   }).join('');
+
   const fc=active[0],rec=fc?getRec(today,fc):null;
-  const nutRows=rec?.nutrients?NUTRIENTS.map(n=>{const v=rec.nutrients[n.key]||0;return`<div class="nut-row"><span class="nut-name">${n.label}</span><div class="nut-bar"><div class="nut-fill" style="width:${Math.round(v/5*100)}%"></div></div><span class="nut-val">${v} ml/L</span></div>`;}).join(''):`<div style="font-size:12px;color:var(--text-muted)">Kein Düngertag heute.</div>`;
-  document.getElementById('ai-scroll').innerHTML=`<div class="card" style="gap:8px;display:flex;flex-direction:column"><div class="sect-head">Status heute</div>${active.length===0?'<div style="font-size:13px;color:var(--text-muted)">Keine aktiven Zyklen.</div>':rows}${vpd!==null?`<div style="display:flex;align-items:center;gap:8px;margin-top:4px"><span style="font-size:13px;color:var(--text-sub)">${entry.temp}°C &nbsp;${entry.humidity}%</span><span class="phase-pill" style="background:${vpdZ?.bg};color:${vpdZ?.color}">VPD ${vpd.toFixed(2)} kPa</span></div>`:'<div style="font-size:12px;color:var(--text-muted)">Noch kein Eintrag heute.</div>'}</div>${fc?`<div class="card" style="gap:8px;display:flex;flex-direction:column"><div class="sect-head">Empfehlung – ${fc.name}</div>${nutRows}</div>`:''}<button class="ai-fetch-btn" onclick="fetchAI()" id="ai-btn">✦ KI-Analyse abrufen</button><div id="ai-result"></div><div style="height:10px"></div>`;
+  const col=fc?getCycleColor(fc):null;
+  const nutRows=rec?.nutrients?NUTRIENTS.map(n=>{
+    const v=rec.nutrients[n.key]||0;
+    return`<div class="nut-row">
+      <span class="nut-name">${n.label}</span>
+      <div class="nut-bar"><div class="nut-fill" style="width:${Math.round(v/5*100)}%;background:${col?.hex||'var(--green)'}"></div></div>
+      <span class="nut-val" style="color:${col?.hex||'var(--green)'}">${v} ml/L</span>
+    </div>`;
+  }).join(''):`<div style="font-size:12px;color:var(--text-muted)">Kein Düngertag heute.</div>`;
+
+  document.getElementById('ai-scroll').innerHTML=`
+    <div class="card" style="gap:8px;display:flex;flex-direction:column">
+      <div class="sect-head">Status heute</div>
+      ${active.length===0?'<div style="font-size:13px;color:var(--text-muted)">Keine aktiven Zyklen.</div>':rows}
+      ${vpd!==null?`<div style="display:flex;align-items:center;gap:8px;margin-top:4px">
+        <span style="font-size:13px;color:var(--text-sub)">${entry.temp}°C &nbsp;${entry.humidity}%</span>
+        <span class="phase-pill" style="background:${vpdZ?.bg};color:${vpdZ?.color}">VPD ${vpd.toFixed(2)} kPa</span>
+      </div>`:'<div style="font-size:12px;color:var(--text-muted)">Noch kein Eintrag heute.</div>'}
+    </div>
+    ${fc?`<div class="card" style="gap:8px;display:flex;flex-direction:column;border-color:${col.hex}44">
+      <div class="sect-head">${getCycleSymbol(fc)} ${fc.name} – Empfehlung heute</div>
+      ${nutRows}
+    </div>`:''}
+    <button class="ai-fetch-btn" onclick="fetchAI()" id="ai-btn">✦ KI-Analyse abrufen</button>
+    <div id="ai-result"></div>
+    <div style="height:10px"></div>`;
 }
+
 async function fetchAI(){
   const active=getActive();if(!active.length){showToast('Keine aktiven Zyklen.');return;}
   const btn=document.getElementById('ai-btn');btn.innerHTML='<div class="spinner" style="margin:0 auto"></div>';btn.disabled=true;
   const today=todayISO(),entry=state.entries[today]||{},vpd=calcVPD(parseFloat(entry.temp),parseFloat(entry.humidity));
-  const ci=active.map(c=>{const p=getPhase(today,c),r=getRec(today,c);return`${c.name}: Tag ${p?.day||'–'}, Phase ${p?.phase||'–'}, Woche ${p?.week||'–'}, Aktion: ${r?.action||'–'}`;}).join('\n');
-  const prompt=`Du bist ein erfahrener Cannabis-Grow-Assistent. Antworte Deutsch, freundlich, max. 180 Wörter.\nDatum: ${today}\nTemp: ${entry.temp||'?'}°C, RLF: ${entry.humidity||'?'}%, VPD: ${vpd!==null?vpd.toFixed(2)+' kPa':'?'}\nZyklen:\n${ci}\nGib: 1) Tagesanalyse 2) Empfehlungen heute 3) Vorschau 7 Tage`;
+  const ci=active.map(c=>{const p=getPhase(today,c),r=getRec(today,c);return`${c.name}: Tag ${p?.day||'–'}, Phase ${p?PHASE_LABELS[p.phase]:'–'}, Wo. ${p?.week||'–'}, Aktion: ${r?aLabel(r.action):'Pause'}, Intervall: ${getInterval(c,p?.phase||'bloom')} Tage`;}).join('\n');
+  const alerts=active.flatMap(c=>getSmartAlerts(c)).map(a=>a.title).join(', ');
+  const prompt=`Du bist ein Cannabis-Grow-Experte. Antworte auf Deutsch, freundlich, max. 200 Wörter.\n\nDatum: ${today}\nTemp: ${entry.temp||'?'}°C, RLF: ${entry.humidity||'?'}%, VPD: ${vpd!==null?vpd.toFixed(2)+' kPa':'?'}\nAktive Warnungen: ${alerts||'keine'}\nZyklen:\n${ci}\n\nGib: 1) Kurze Tagesanalyse 2) Konkrete Empfehlung 3) Was in 7 Tagen ansteht. Sei präzise und praktisch.`;
   try{
     const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})});
     const data=await res.json();
@@ -481,18 +741,134 @@ async function fetchAI(){
   btn.innerHTML='✦ KI-Analyse abrufen';btn.disabled=false;
 }
 
+// ============================================================
 // SETTINGS
+// ============================================================
 function renderSettings(){
   if(!selectedCycleId&&state.cycles.length>0)selectedCycleId=state.cycles[0].id;
   const sel=state.cycles.find(c=>c.id===selectedCycleId);
   if(sel&&settingsDraft.id!==sel.id)settingsDraft={...sel};
   const d=settingsDraft;
-  const tabs=state.cycles.map(c=>`<div class="tab-item ${c.id===selectedCycleId?'active':''}" onclick="selCycle('${c.id}')"><div class="tab-dot" style="background:${c.active?'var(--green)':'var(--text-hint)'}"></div>${c.name}</div>`).join('');
-  const durs=sel?[['Anzucht','anzuchtDays'],['Blüte','bloomDays'],['Spülen','flushDays'],['IceFlush','iceDays'],['Ernte','harvestDays'],['Trocknen','dryDays']].map(([l,k])=>`<div class="dur-box"><div class="dur-lbl">${l} (Tage)</div><input class="dur-inp" type="number" value="${d[k]||0}" oninput="dd('${k}',this.value)"/></div>`).join(''):'';
-  const schHTML=showSchedule?`<div class="card" style="gap:10px;display:flex;flex-direction:column"><div class="sect-head">Düngeplan (ml/L)</div>${[1,2,3,4,5,6,7,8,9,10].map(w=>`<div style="display:flex;align-items:center;gap:6px;border-bottom:0.5px solid var(--border);padding-bottom:6px"><span style="font-size:12px;color:var(--green);width:26px;font-family:var(--mono);font-weight:500">W${w}</span><div style="display:flex;gap:4px;overflow-x:auto;flex:1;padding-bottom:2px">${NUTRIENTS.map(n=>`<div style="display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0"><span style="font-size:9px;color:var(--text-hint)">${n.label.split('. ')[1].substring(0,5)}</span><input style="width:38px;background:var(--card2);border:0.5px solid var(--border);border-radius:5px;padding:4px 3px;color:var(--text-sub);font-size:11px;text-align:center;font-family:var(--mono);outline:none" type="number" id="sch-${w}-${n.key}" value="${state.schedule[w]?.[n.key]??0}"/></div>`).join('')}</div></div>`).join('')}<button class="save-settings-btn" onclick="saveSchedule()">💾 Düngeplan speichern</button><button onclick="resetSch()" style="background:var(--red-bg);border:none;border-radius:10px;padding:10px;font-size:13px;color:var(--red);cursor:pointer;font-family:var(--font);margin-top:2px">Standardwerte laden</button></div>`:'';
-  document.getElementById('settings-scroll').innerHTML=`<div class="card" style="gap:10px;display:flex;flex-direction:column"><div style="display:flex;align-items:center;justify-content:space-between"><div class="sect-head">Meine Zyklen</div><button class="add-btn" onclick="addCycle()">＋ Neu</button></div><div class="tab-row">${tabs}</div>${sel?`<div style="display:flex;flex-direction:column;gap:8px;margin-top:4px"><div class="inp-wrap"><div class="inp-label">Name</div><input class="inp-field" value="${d.name||''}" oninput="dd('name',this.value)"/></div><div class="inp-wrap"><div class="inp-label">Standort</div><input class="inp-field" value="${d.location||''}" oninput="dd('location',this.value)"/></div><div class="switch-row"><span style="font-size:13px;color:var(--text-sub)">Aktiv</span><label class="switch"><input type="checkbox" ${sel.active?'checked':''} onchange="toggleAct('${sel.id}',this.checked)"/><span class="slider"></span></label></div><div class="inp-wrap"><div class="inp-label">Startdatum (ändern verschiebt alle Logs)</div><input class="inp-field" type="date" value="${d.startDate||''}" oninput="dd('startDate',this.value)" style="color-scheme:dark"/></div><div class="sub-head">Phasendauern</div><div class="dur-grid">${durs}</div><div class="sub-head">Bewässerungsintervall</div><div class="dur-grid"><div class="dur-box"><div class="dur-lbl">Anzucht (Tage)</div><input class="dur-inp" type="number" value="${d.waterIntervalAnzucht||4}" oninput="dd('waterIntervalAnzucht',this.value)"/></div><div class="dur-box"><div class="dur-lbl">Blüte (Tage)</div><input class="dur-inp" type="number" value="${d.waterIntervalBloom||3}" oninput="dd('waterIntervalBloom',this.value)"/></div></div><button class="save-settings-btn" onclick="saveDraft()">💾 Zyklus speichern</button><button class="del-btn" onclick="delCycle('${sel.id}')">🗑 Zyklus löschen</button></div>`:'<div style="font-size:13px;color:var(--text-muted)">Noch keine Zyklen.</div>'}</div><div class="section-toggle" onclick="toggleSch()"><span>🧪</span><span>Düngeplan bearbeiten</span><span style="color:var(--text-muted)">${showSchedule?'▲':'▼'}</span></div>${schHTML}<div style="height:20px"></div>`;
+
+  const tabs=state.cycles.map(c=>`
+    <div class="tab-item ${c.id===selectedCycleId?'active':''}" onclick="selCycle('${c.id}')">
+      <span class="tab-sym">${getCycleSymbol(c)}</span>
+      <span style="color:${getCycleColor(c).hex}">${c.name}</span>
+    </div>`).join('');
+
+  const colorPicker=CYCLE_COLORS.map(col=>`
+    <div class="picker-opt ${d.colorId===col.id?'selected':''}" style="background:${col.hex}" onclick="dd('colorId','${col.id}')"></div>`
+  ).join('');
+
+  const symPicker=CYCLE_SYMBOLS.map(sym=>`
+    <div class="sym-opt ${d.symbol===sym?'selected':''}" onclick="dd('symbol','${sym}')">${sym}</div>`
+  ).join('');
+
+  const selCol=getCycleColor(d);
+
+  const durs=sel?[
+    ['Anzucht','anzuchtDays'],['Blüte','bloomDays'],['Spülen','flushDays'],
+    ['IceFlush','iceDays'],['Ernte','harvestDays'],['Trocknen','dryDays']
+  ].map(([l,k])=>`<div class="dur-box"><div class="dur-lbl">${l} (Tage)</div><input class="dur-inp" type="number" value="${d[k]||0}" oninput="dd('${k}',this.value)"/></div>`).join(''):'';
+
+  // Phase-specific intervals with smart suggestions
+  const intervalSection=sel?`
+    <div class="sub-head">Bewässerungsintervall (Tage)</div>
+    <div class="dur-grid">
+      <div class="dur-box">
+        <div class="dur-lbl">Anzucht (Empf. ${PHASE_INTERVALS.anzucht})</div>
+        <input class="dur-inp" type="number" value="${d.intervalAnzucht||PHASE_INTERVALS.anzucht}" oninput="dd('intervalAnzucht',this.value)"/>
+      </div>
+      <div class="dur-box">
+        <div class="dur-lbl">Blüte (Empf. ${PHASE_INTERVALS.bloom})</div>
+        <input class="dur-inp" type="number" value="${d.intervalBloom||PHASE_INTERVALS.bloom}" oninput="dd('intervalBloom',this.value)"/>
+      </div>
+      <div class="dur-box">
+        <div class="dur-lbl">Spülen (Empf. ${PHASE_INTERVALS.flush})</div>
+        <input class="dur-inp" type="number" value="${d.intervalFlush||PHASE_INTERVALS.flush}" oninput="dd('intervalFlush',this.value)"/>
+      </div>
+    </div>`:'';
+
+  // Individual schedule toggle
+  const hasOwnSchedule=!!(d.schedule);
+  const scheduleToggle=sel?`
+    <div class="switch-row" style="margin-top:8px">
+      <span style="font-size:13px;color:var(--text-sub)">Eigener Düngeplan für diesen Zyklus</span>
+      <label class="switch"><input type="checkbox" ${hasOwnSchedule?'checked':''} onchange="toggleOwnSchedule('${sel.id}',this.checked)"/><span class="slider"></span></label>
+    </div>
+    ${hasOwnSchedule?`<div style="font-size:11px;color:var(--text-hint);margin-top:2px">Dieser Zyklus hat seinen eigenen Düngeplan. Unten bearbeiten.</div>`:`<div style="font-size:11px;color:var(--text-hint);margin-top:2px">Verwendet den globalen Düngeplan.</div>`}`:'';
+
+  const scheduleData=hasOwnSchedule?d.schedule:state.schedule;
+  const schHTML=showSchedule?`
+    <div class="card" style="gap:10px;display:flex;flex-direction:column;${hasOwnSchedule?`border-color:${selCol.hex}44`:''}"">
+      <div class="sect-head">${hasOwnSchedule?`${getCycleSymbol(d)} Eigener Düngeplan – ${d.name||'Zyklus'}`:'Globaler Düngeplan (ml/L)'}</div>
+      ${[1,2,3,4,5,6,7,8,9,10].map(w=>`
+        <div style="display:flex;align-items:center;gap:6px;border-bottom:0.5px solid var(--border);padding-bottom:6px">
+          <span style="font-size:12px;color:${hasOwnSchedule?selCol.hex:'var(--green)'};width:26px;font-family:var(--mono);font-weight:500">W${w}</span>
+          <div style="display:flex;gap:4px;overflow-x:auto;flex:1;padding-bottom:2px">
+            ${NUTRIENTS.map(n=>`
+              <div style="display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0">
+                <span style="font-size:9px;color:var(--text-hint)">${n.label.split('. ')[1].substring(0,5)}</span>
+                <input style="width:38px;background:var(--card2);border:0.5px solid var(--border);border-radius:5px;padding:4px 3px;color:var(--text-sub);font-size:11px;text-align:center;font-family:var(--mono);outline:none"
+                  type="number" id="sch-${w}-${n.key}" value="${scheduleData[w]?.[n.key]??0}"/>
+              </div>`).join('')}
+          </div>
+        </div>`).join('')}
+      <button class="save-settings-btn" style="background:${hasOwnSchedule?selCol.hex:'var(--green-dk)'}" onclick="saveSchedule()">💾 Düngeplan speichern</button>
+      <button onclick="resetSch()" style="background:var(--red-bg);border:none;border-radius:10px;padding:10px;font-size:13px;color:var(--red);cursor:pointer;font-family:var(--font);margin-top:2px">Standardwerte laden</button>
+    </div>`:'' ;
+
+  document.getElementById('settings-scroll').innerHTML=`
+    <div class="card" style="gap:10px;display:flex;flex-direction:column">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div class="sect-head">Meine Zyklen</div>
+        <button class="add-btn" onclick="addCycle()">＋ Neu</button>
+      </div>
+      <div class="tab-row">${tabs}</div>
+      ${sel?`<div style="display:flex;flex-direction:column;gap:8px;margin-top:4px">
+
+        <div class="sub-head">Farbe</div>
+        <div class="picker-row">${colorPicker}</div>
+        <div class="sub-head">Symbol</div>
+        <div class="picker-row">${symPicker}</div>
+
+        <div class="inp-wrap"><div class="inp-label">Name</div>
+          <input class="inp-field" value="${d.name||''}" oninput="dd('name',this.value)" style="border-color:${selCol.hex}66"/></div>
+        <div class="inp-wrap"><div class="inp-label">Standort / Zelt</div>
+          <input class="inp-field" value="${d.location||''}" oninput="dd('location',this.value)"/></div>
+
+        <div class="switch-row">
+          <span style="font-size:13px;color:var(--text-sub)">Aktiv</span>
+          <label class="switch"><input type="checkbox" ${sel.active?'checked':''} onchange="toggleAct('${sel.id}',this.checked)"/><span class="slider"></span></label>
+        </div>
+        <div class="inp-wrap">
+          <div class="inp-label">Startdatum (ändern verschiebt alle Logs)</div>
+          <input class="inp-field" type="date" value="${d.startDate||''}" oninput="dd('startDate',this.value)" style="color-scheme:dark"/>
+        </div>
+
+        <div class="sub-head">Phasendauern</div>
+        <div class="dur-grid">${durs}</div>
+        ${intervalSection}
+        ${scheduleToggle}
+
+        <button class="save-settings-btn" style="background:${selCol.hex}" onclick="saveDraft()">💾 ${getCycleSymbol(d)} ${d.name||'Zyklus'} speichern</button>
+        <button class="del-btn" onclick="delCycle('${sel.id}')">🗑 Zyklus löschen</button>
+      </div>`:'<div style="font-size:13px;color:var(--text-muted)">Noch keine Zyklen.</div>'}
+    </div>
+    <div class="section-toggle" onclick="toggleSch()">
+      <span>🧪</span>
+      <span>${sel?.schedule?`${getCycleSymbol(sel)} Eigener Düngeplan`:'Düngeplan bearbeiten'}</span>
+      <span style="color:var(--text-muted)">${showSchedule?'▲':'▼'}</span>
+    </div>
+    ${schHTML}
+    <div style="height:20px"></div>`;
 }
-function dd(k,v){settingsDraft[k]=isNaN(v)||v===''?v:Number(v);}
+
+function dd(k,v){
+  settingsDraft[k]=isNaN(v)||v===''?v:Number(v);
+  // live color preview for color/symbol pickers
+  if(k==='colorId'||k==='symbol') renderSettings();
+}
 function saveDraft(){
   const c=state.cycles.find(x=>x.id===selectedCycleId);if(!c)return;
   const oldS=c.startDate,newS=settingsDraft.startDate;
@@ -501,17 +877,44 @@ function saveDraft(){
     if(diff)shiftEntries(c.id,diff);
   }
   Object.assign(c,{...settingsDraft,id:c.id});
-  saveState();showToast('Zyklus gespeichert ✓');renderSettings();
+  saveState();showToast(`${getCycleSymbol(c)} ${c.name} gespeichert ✓`);renderSettings();
 }
 function saveSchedule(){
-  for(let w=1;w<=10;w++){if(!state.schedule[w])state.schedule[w]={};NUTRIENTS.forEach(n=>{const el=document.getElementById(`sch-${w}-${n.key}`);if(el)state.schedule[w][n.key]=parseFloat(el.value)||0;});}
+  const sel=state.cycles.find(x=>x.id===selectedCycleId);
+  const target=sel?.schedule?sel.schedule:state.schedule;
+  for(let w=1;w<=10;w++){
+    if(!target[w])target[w]={};
+    NUTRIENTS.forEach(n=>{const el=document.getElementById(`sch-${w}-${n.key}`);if(el)target[w][n.key]=parseFloat(el.value)||0;});
+  }
   saveState();showToast('Düngeplan gespeichert ✓');
+}
+function toggleOwnSchedule(id,checked){
+  const c=state.cycles.find(x=>x.id===id);if(!c)return;
+  if(checked){
+    c.schedule=JSON.parse(JSON.stringify(state.schedule));
+    settingsDraft.schedule=c.schedule;
+  } else {
+    c.schedule=null;settingsDraft.schedule=null;
+  }
+  saveState();renderSettings();
+  showToast(checked?`${getCycleSymbol(c)} Eigener Plan aktiviert`:'Globaler Plan wird verwendet');
 }
 function selCycle(id){selectedCycleId=id;settingsDraft={};renderSettings();}
 function toggleSch(){showSchedule=!showSchedule;renderSettings();}
 function addCycle(){
-  const c={id:Date.now().toString(),name:`Zyklus ${state.cycles.length+1}`,location:'',active:false,startDate:null,anzuchtDays:17,bloomDays:66,flushDays:9,iceDays:6,harvestDays:1,dryDays:7,waterIntervalAnzucht:4,waterIntervalBloom:3};
-  state.cycles.push(c);selectedCycleId=c.id;settingsDraft={...c};saveState();renderSettings();
+  const idx=state.cycles.length;
+  const c={
+    id:Date.now().toString(),
+    name:`Zyklus ${idx+1}`,
+    location:'',active:false,startDate:null,
+    colorId:CYCLE_COLORS[idx%CYCLE_COLORS.length].id,
+    symbol:CYCLE_SYMBOLS[idx%CYCLE_SYMBOLS.length],
+    anzuchtDays:17,bloomDays:66,flushDays:9,iceDays:6,harvestDays:1,dryDays:7,
+    intervalAnzucht:4,intervalBloom:3,intervalFlush:2,
+    schedule:null
+  };
+  state.cycles.push(c);selectedCycleId=c.id;settingsDraft={...c};
+  saveState();renderSettings();
 }
 function toggleAct(id,checked){
   const c=state.cycles.find(x=>x.id===id);if(!c)return;
@@ -526,10 +929,15 @@ function delCycle(id){
 }
 function resetSch(){
   if(!confirm('Standardwerte laden?'))return;
-  state.schedule=JSON.parse(JSON.stringify(DEFAULT_SCHEDULE));saveState();renderSettings();showToast('Standardwerte geladen');
+  const sel=state.cycles.find(x=>x.id===selectedCycleId);
+  if(sel?.schedule){sel.schedule=JSON.parse(JSON.stringify(DEFAULT_SCHEDULE));settingsDraft.schedule=sel.schedule;}
+  else{state.schedule=JSON.parse(JSON.stringify(DEFAULT_SCHEDULE));}
+  saveState();renderSettings();showToast('Standardwerte geladen');
 }
 
-// ENTRY
+// ============================================================
+// ENTRY SCREEN
+// ============================================================
 function openTodayEntry(){openEntry(todayISO());}
 function openEntry(iso){
   editingDate=iso;
@@ -542,15 +950,77 @@ function renderEntry(iso){
   const active=getActive(),saved=state.entries[iso]||{},temp=saved.temp||'',rh=saved.humidity||'';
   const vpd=calcVPD(parseFloat(temp),parseFloat(rh)),vpdZ=getVPDZone(vpd);
   const vpdHTML=vpd!==null?`<div class="vpd-box"><div><div class="vpd-lbl">VPD (automatisch)</div><div style="display:flex;align-items:baseline;gap:3px"><span class="vpd-val" id="vpd-num">${vpd.toFixed(2)}</span><span style="font-size:11px;color:#3a7a7a"> kPa</span></div><span class="vpd-pill" id="vpd-pill" style="background:${vpdZ.bg};color:${vpdZ.color}">${vpdZ.label}</span></div><div class="vpd-scale-wrap"><div style="display:flex;justify-content:space-between;font-size:9px;color:var(--text-hint)"><span>Anzucht</span><span>Blüte</span><span>Stress</span></div><div class="vpd-scale"><div class="vpd-seg" style="background:#1e3a6e"></div><div class="vpd-seg" style="background:#1e6e3a"></div><div class="vpd-seg" style="background:#6e4a1e"></div></div><div class="vpd-marker-row"><div class="vpd-marker" id="vpd-mk" style="left:${Math.min(95,vpdZ.pct)}%"></div></div><div class="vpd-nums"><span>0.4</span><span>0.8</span><span>1.2</span><span>1.8</span></div></div></div>`:`<div style="background:var(--teal-bg);border:0.5px solid var(--teal-bd);border-radius:10px;padding:10px 12px;font-size:12px;color:var(--text-muted)">Temp &amp; Luftfeuchte eingeben für VPD</div>`;
+
   const blocks=active.map(c=>{
-    const p=getPhase(iso,c),r=getRec(iso,c),cfg=PHASE_CFG[p?.phase]||PHASE_CFG.bloom,cd=saved.cycleData?.[c.id]||{};
-    const nutRows=NUTRIENTS.map(n=>{const hint=r?.nutrients?.[n.key]??0,val=cd.nutrients?.[n.key]||'';return`<div class="tbl-row"><span class="t-name">${n.label}</span><span class="t-hint">${hint}</span><input class="t-inp" type="number" value="${val}" placeholder="${hint}" onchange="uEN('${c.id}','${n.key}',this.value)"/></div>`;}).join('');
-    const ai=vpdZ?`<div class="ai-strip"><div class="ai-dot"></div><div class="ai-txt"><b>KI-Hinweis:</b> ${vpdZ.hint}${r?.action==='feed'?' Düngertag!':''}${r?.action==='flush'?' Spülphase – kein Dünger!':''}</div></div>`:'';
-    return`<div class="sect-head">${c.name}${c.location?` – ${c.location}`:''} · Tag ${p?.day||'–'}</div><div class="tbl-header-row"><span class="tbl-header-title">Nährstofflösung (ml/L)</span><span class="phase-pill" style="background:${cfg.bg};color:${cfg.color};font-size:10px">${cfg.label}${p?.week?` Wo. ${p.week}`:''}</span></div><div class="tbl-wrap"><div class="tbl-head"><span class="th">Nährstoff</span><span class="th" style="text-align:right">Empf.</span><span class="th" style="text-align:right">Eingabe</span></div>${nutRows}</div><div class="row2" style="margin-top:2px"><div class="inp-wrap"><div class="inp-label">Wasser gesamt (ml)</div><input class="inp-field" type="number" value="${cd.water||''}" placeholder="z. B. 3500" onchange="uEF('${c.id}','water',this.value)"/></div><div style="width:76px;flex-shrink:0"><div class="inp-label">pH-Wert</div><input class="inp-field" type="number" step="0.1" value="${cd.ph||''}" placeholder="6.2" onchange="uEF('${c.id}','ph',this.value)"/></div></div><div class="note-wrap"><div class="inp-label" style="margin-bottom:3px">Notizen</div><textarea class="note-ta" placeholder="z. B. Blätter leicht gelb..." onchange="uEF('${c.id}','notes',this.value)">${cd.notes||''}</textarea></div>${ai}`;
+    const p=getPhase(iso,c),r=getRec(iso,c),cd=saved.cycleData?.[c.id]||{};
+    const col=getCycleColor(c),sym=getCycleSymbol(c);
+    const phaseLabel=p?PHASE_LABELS[p.phase]:'–';
+    const schData=c.schedule||(state.schedule);
+    const nutRows=NUTRIENTS.map(n=>{
+      const hint=r?.nutrients?.[n.key]??0,val=cd.nutrients?.[n.key]||'';
+      return`<div class="tbl-row"><span class="t-name">${n.label}</span><span class="t-hint" style="color:${col.hex}88">${hint}</span><input class="t-inp" type="number" value="${val}" placeholder="${hint}" onchange="uEN('${c.id}','${n.key}',this.value)" style="border-color:${col.hex}44"/></div>`;
+    }).join('');
+
+    // Smart hint for this cycle
+    const alerts=getSmartAlerts(c);
+    const hint=alerts.length>0?alerts[0].text:(vpdZ?vpdZ.hint:'');
+    const hintIcon=alerts.length>0?alerts[0].icon:(vpdZ?'💧':'');
+
+    return`
+      <div style="display:flex;align-items:center;gap:8px;margin-top:6px;margin-bottom:4px">
+        <span style="font-size:18px">${sym}</span>
+        <div>
+          <div class="sect-head" style="color:${col.hex}">${c.name}${c.location?` – ${c.location}`:''}</div>
+          <div style="font-size:11px;color:var(--text-muted)">${phaseLabel}${p?.week?` Wo. ${p.week}`:''} · Tag ${p?.day||'–'} · Intervall ${getInterval(c,p?.phase||'bloom')} Tage</div>
+        </div>
+      </div>
+      <div class="tbl-header-row" style="background:${col.dark};border-color:${col.hex}44;border:0.5px solid">
+        <span class="tbl-header-title">Nährstofflösung (ml/L)</span>
+        <span class="phase-pill" style="background:${col.hex}22;color:${col.hex}">${phaseLabel}${p?.week?` Wo. ${p.week}`:''}</span>
+      </div>
+      <div class="tbl-wrap" style="border-color:${col.hex}33">
+        <div class="tbl-head" style="background:${col.dark}">
+          <span class="th" style="color:${col.hex}">Nährstoff</span>
+          <span class="th" style="text-align:right;color:${col.hex}">Empf.</span>
+          <span class="th" style="text-align:right;color:${col.hex}">Eingabe</span>
+        </div>
+        ${nutRows}
+      </div>
+      <div class="row2" style="margin-top:4px">
+        <div class="inp-wrap"><div class="inp-label">Wasser (ml)</div>
+          <input class="inp-field" type="number" value="${cd.water||''}" placeholder="z. B. 3500"
+            onchange="uEF('${c.id}','water',this.value)" style="border-color:${col.hex}44"/></div>
+        <div style="width:80px;flex-shrink:0"><div class="inp-label">pH-Wert</div>
+          <input class="inp-field" type="number" step="0.1" value="${cd.ph||''}" placeholder="6.2"
+            onchange="uEF('${c.id}','ph',this.value)"/></div>
+      </div>
+      <div class="note-wrap" style="border-color:${col.hex}33">
+        <div class="inp-label" style="margin-bottom:3px">Notizen</div>
+        <textarea class="note-ta" placeholder="z. B. Blätter leicht gelb, Licht angepasst..."
+          onchange="uEF('${c.id}','notes',this.value)">${cd.notes||''}</textarea>
+      </div>
+      ${hint?`<div class="ai-strip" style="background:${col.dark};border-color:${col.hex}44;border:0.5px solid">
+        <div class="ai-dot" style="background:${col.hex}"></div>
+        <div class="ai-txt" style="color:${col.hex}cc"><b style="color:${col.hex}">Hinweis:</b> ${hintIcon} ${hint}</div>
+      </div>`:''}`;
   }).join('');
+
   const noActive=active.length===0?`<div class="empty-state"><div class="empty-icon">🌱</div><div class="empty-text">Keine aktiven Zyklen.</div><button class="empty-btn" onclick="goTo('settings')">Zyklus erstellen</button></div>`:'';
-  document.getElementById('entry-scroll').innerHTML=`<div class="sect-head">Umgebung</div><div class="row2"><div class="inp-wrap"><div class="inp-label">Temperatur (°C)</div><input class="inp-field" type="number" value="${temp}" placeholder="z. B. 23" id="entry-temp" oninput="uEnvLive()"/></div><div class="inp-wrap"><div class="inp-label">Luftfeuchtigkeit (%)</div><input class="inp-field" type="number" value="${rh}" placeholder="z. B. 48" id="entry-rh" oninput="uEnvLive()"/></div></div><div id="vpd-c">${vpdHTML}</div>${noActive}${blocks}<button class="big-save" onclick="saveEntry()">Speichern</button><div style="height:20px"></div>`;
+
+  document.getElementById('entry-scroll').innerHTML=`
+    <div class="sect-head">Umgebung</div>
+    <div class="row2">
+      <div class="inp-wrap"><div class="inp-label">Temperatur (°C)</div>
+        <input class="inp-field" type="number" value="${temp}" placeholder="z. B. 23" id="entry-temp" oninput="uEnvLive()"/></div>
+      <div class="inp-wrap"><div class="inp-label">Luftfeuchtigkeit (%)</div>
+        <input class="inp-field" type="number" value="${rh}" placeholder="z. B. 48" id="entry-rh" oninput="uEnvLive()"/></div>
+    </div>
+    <div id="vpd-c">${vpdHTML}</div>
+    ${noActive}${blocks}
+    <button class="big-save" onclick="saveEntry()">Speichern</button>
+    <div style="height:20px"></div>`;
 }
+
 function uEnvLive(){
   const t=parseFloat(document.getElementById('entry-temp')?.value),rh=parseFloat(document.getElementById('entry-rh')?.value);
   const vpd=calcVPD(t,rh),z=getVPDZone(vpd);
@@ -571,28 +1041,28 @@ function uEN(cId,key,val){ensureEntry(cId);state.entries[editingDate].cycleData[
 function uEF(cId,field,val){ensureEntry(cId);state.entries[editingDate].cycleData[cId][field]=val;}
 function saveEntry(){
   if(!editingDate)return;
-  ensureEntry(state.cycles[0]?.id||'_');
+  if(state.cycles.length>0)ensureEntry(state.cycles[0].id);
   state.entries[editingDate].temp=document.getElementById('entry-temp')?.value||'';
   state.entries[editingDate].humidity=document.getElementById('entry-rh')?.value||'';
   saveState();showToast('Gespeichert ✓');setTimeout(()=>goTo('dashboard'),400);
 }
 
+// ============================================================
 // INIT
+// ============================================================
 loadState();calViewDate=new Date();
-renderTab('dashboard');document.getElementById('nav-dashboard').innerHTML=buildNav('dashboard');
+renderTab('dashboard');
+document.getElementById('nav-dashboard').innerHTML=buildNav('dashboard');
 history.pushState(null,'',location.href);
-// Init swipe ONCE on the calendar screen (not on scroll which rebuilds)
+// Swipe – register ONCE on the calendar screen element
 (function(){
-  const screen=document.getElementById('screen-calendar');
-  let sx=0,sy=0,sTime=0;
-  screen.addEventListener('touchstart',e=>{
-    sx=e.touches[0].clientX;sy=e.touches[0].clientY;sTime=Date.now();
-  },{passive:true});
-  screen.addEventListener('touchend',e=>{
-    if(Date.now()-sTime>500)return; // ignore long press
-    const dx=e.changedTouches[0].clientX-sx;
-    const dy=e.changedTouches[0].clientY-sy;
-    if(Math.abs(dx)>60&&Math.abs(dx)>Math.abs(dy)*1.8){changeMonth(dx<0?1:-1);}
+  const scr=document.getElementById('screen-calendar');
+  let sx=0,sy=0,st=0;
+  scr.addEventListener('touchstart',e=>{sx=e.touches[0].clientX;sy=e.touches[0].clientY;st=Date.now();},{passive:true});
+  scr.addEventListener('touchend',e=>{
+    if(Date.now()-st>500)return;
+    const dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy;
+    if(Math.abs(dx)>60&&Math.abs(dx)>Math.abs(dy)*1.8)changeMonth(dx<0?1:-1);
   },{passive:true});
 })();
 </script>
