@@ -433,6 +433,7 @@ input:checked + .sl:before { transform: translateX(18px); background: var(--gree
   <div class="screen" id="scr-set">
     <div class="topbar" style="padding-top:max(12px,env(safe-area-inset-top))">
       <span class="app-title">⚙ Einstellungen</span>
+      <button class="icon-btn" onclick="goTo('cal')" style="font-size:18px" title="Zum Kalender">📅</button>
     </div>
     <div class="scroll" id="set-body"></div>
     <nav class="bottom-nav" id="nav-set"></nav>
@@ -511,32 +512,41 @@ const START_ICON = '🌰';
 const FERT_PRESETS = {
   biobizz: {
     name: 'BioBizz (Light-Mix)',
-    mixOrder: ['Root·Juice','CalMag','Bio·Grow','Bio·Bloom','Top·Max'],
-    mixInfo: 'Immer einzeln einrühren. Root·Juice und CalMag zuerst, dann Basisdünger, zuletzt Booster. pH am Ende prüfen (6.2–6.5).',
+    mixOrder: ['CalMag','Bio·Grow','Bio·Bloom','Root·Juice','Bio·Heaven','Alg·A·Mic','Acti·Vera','Top·Max'],
+    mixInfo: '1. CalMag zuerst (Antagonismus-Prävention: verhindert Calciumphosphat-Ausfällung). 2. Basisdünger (NPK-Fundament bei gepuffertem Wasser). 3. Bio-Additive (sensible Aminosäuren, Algen, Enzyme – erst ins stabile Milieu). 4. Top·Max zuletzt (Humin-/Fulvosäuren als Chelator für besseren Ionentransport). pH erst am Ende auf 6.2 korrigieren.',
     products: [
-      { name: 'Root·Juice', unit: 'ml/L', color: '#5aabf0', note: 'Wurzelstimulator' },
-      { name: 'Bio·Grow',   unit: 'ml/L', color: '#4caf70', note: 'Wachstumsdünger (organisch)' },
-      { name: 'Bio·Bloom',  unit: 'ml/L', color: '#e8884a', note: 'Blütedünger (organisch)' },
-      { name: 'Top·Max',    unit: 'ml/L', color: '#b06ac8', note: 'Blütestimulator' },
-      { name: 'CalMag',     unit: 'ml/L', color: '#f0d050', note: 'Calcium & Magnesium' },
+      { name: 'CalMag',      unit: 'ml/L', color: '#f0d050', note: '① Calcium & Magnesium (immer zuerst!)' },
+      { name: 'Bio·Grow',    unit: 'ml/L', color: '#4caf70', note: '② Wachstumsdünger (organisch, NPK)' },
+      { name: 'Bio·Bloom',   unit: 'ml/L', color: '#e8884a', note: '② Blütedünger (organisch, NPK)' },
+      { name: 'Root·Juice',  unit: 'ml/L', color: '#5aabf0', note: '③ Wurzelstimulator (Mykorrhiza)' },
+      { name: 'Bio·Heaven',  unit: 'ml/L', color: '#5adada', note: '③ Aminosäuren & Energiebooster' },
+      { name: 'Alg·A·Mic',   unit: 'ml/L', color: '#a0c840', note: '③ Kaltpress-Algenextrakt (Vitalität)' },
+      { name: 'Acti·Vera',   unit: 'ml/L', color: '#e0a0f0', note: '③ Pflanzl. Enzyme (Immunsystem)' },
+      { name: 'Top·Max',     unit: 'ml/L', color: '#b06ac8', note: '④ Humin-/Fulvosäuren (Chelator, zuletzt!)' },
     ],
     schedule: {
-      1:{}, 2:{'Bio·Grow':2,'Root·Juice':4}, 3:{'Bio·Grow':3,'Bio·Bloom':1,'Root·Juice':4,'CalMag':1},
-      4:{'Bio·Grow':3,'Bio·Bloom':2,'Top·Max':1,'CalMag':1}, 5:{'Bio·Grow':2,'Bio·Bloom':3,'Top·Max':1,'CalMag':1},
-      6:{'Bio·Bloom':3,'Top·Max':2,'CalMag':1}, 7:{'Bio·Bloom':4,'Top·Max':3,'CalMag':1},
-      8:{'Bio·Bloom':4,'Top·Max':4,'CalMag':1}, 9:{'Bio·Bloom':4,'Top·Max':4}, 10:{},
+      1:{},
+      2:{'Bio·Grow':2,'Root·Juice':4,'CalMag':1},
+      3:{'Bio·Grow':3,'Bio·Bloom':1,'Root·Juice':4,'CalMag':1,'Bio·Heaven':2},
+      4:{'Bio·Grow':3,'Bio·Bloom':2,'Top·Max':1,'CalMag':1,'Bio·Heaven':2,'Alg·A·Mic':1},
+      5:{'Bio·Grow':2,'Bio·Bloom':3,'Top·Max':1,'CalMag':1,'Bio·Heaven':3,'Alg·A·Mic':1},
+      6:{'Bio·Bloom':3,'Top·Max':2,'CalMag':1,'Bio·Heaven':3,'Alg·A·Mic':2},
+      7:{'Bio·Bloom':4,'Top·Max':3,'CalMag':1,'Bio·Heaven':3,'Alg·A·Mic':2},
+      8:{'Bio·Bloom':4,'Top·Max':4,'CalMag':1,'Bio·Heaven':2},
+      9:{'Bio·Bloom':4,'Top·Max':4},
+      10:{},
     },
   },
   plagron: {
     name: 'Plagron Terra',
-    mixOrder: ['Power Roots','Pure Zym','Terra Grow','Terra Bloom','Green Sensation'],
-    mixInfo: 'Mineralische Dünger direkt löslich. Einzeln einrühren, nach jedem Produkt kurz umrühren. pH 5.5–6.5.',
+    mixOrder: ['Terra Grow','Terra Bloom','Power Roots','Pure Zym','Green Sensation'],
+    mixInfo: '1. Basisdünger zuerst (mineralisch, löst sich sofort). 2. Wurzelstimulator & Enzyme (biologisch aktiv, ins stabile Milieu). 3. Green Sensation zuletzt (PK-Booster mit Chelat-Wirkung). pH 5.5–6.5.',
     products: [
-      { name: 'Terra Grow',      unit: 'ml/L', color: '#4caf70', note: 'Wachstumsdünger (mineralisch)' },
-      { name: 'Terra Bloom',     unit: 'ml/L', color: '#e8884a', note: 'Blütedünger (mineralisch)' },
-      { name: 'Power Roots',     unit: 'ml/L', color: '#5aabf0', note: 'Wurzelstimulator' },
-      { name: 'Green Sensation', unit: 'ml/L', color: '#a0c840', note: 'Blüte-Booster (letzte 4-6 Wo)' },
-      { name: 'Pure Zym',        unit: 'ml/L', color: '#f0d050', note: 'Enzympräparat' },
+      { name: 'Terra Grow',      unit: 'ml/L', color: '#4caf70', note: '① Wachstumsdünger (mineralisch)' },
+      { name: 'Terra Bloom',     unit: 'ml/L', color: '#e8884a', note: '① Blütedünger (mineralisch)' },
+      { name: 'Power Roots',     unit: 'ml/L', color: '#5aabf0', note: '② Wurzelstimulator' },
+      { name: 'Pure Zym',        unit: 'ml/L', color: '#f0d050', note: '② Enzympräparat' },
+      { name: 'Green Sensation', unit: 'ml/L', color: '#a0c840', note: '③ Blüte-Booster (letzte 4-6 Wo)' },
     ],
     schedule: {
       1:{'Terra Grow':2.5,'Power Roots':1,'Pure Zym':1}, 2:{'Terra Grow':5,'Power Roots':1,'Pure Zym':1},
@@ -548,14 +558,14 @@ const FERT_PRESETS = {
   },
   canna: {
     name: 'CANNA Terra',
-    mixOrder: ['RHIZOTONIC','CANNAZYM','CANNA Terra Vega','CANNA Terra Flores','PK 13/14'],
-    mixInfo: 'Additive zuerst (RHIZOTONIC, CANNAZYM), dann Basisdünger. PK 13/14 nur Wo 4-6 der Blüte. pH 5.5–6.5.',
+    mixOrder: ['CANNA Terra Vega','CANNA Terra Flores','PK 13/14','RHIZOTONIC','CANNAZYM'],
+    mixInfo: '1. Basisdünger zuerst (Vega oder Flores je nach Phase). 2. PK 13/14 nur Wo 4-6 der Blüte (Phosphor/Kalium-Booster). 3. RHIZOTONIC & CANNAZYM zuletzt (biologische Additive ins stabile Milieu). pH 5.5–6.5.',
     products: [
-      { name: 'CANNA Terra Vega',   unit: 'ml/L', color: '#4caf70', note: 'Wachstumsdünger' },
-      { name: 'CANNA Terra Flores', unit: 'ml/L', color: '#e8884a', note: 'Blütedünger' },
-      { name: 'CANNAZYM',           unit: 'ml/L', color: '#5adada', note: 'Enzympräparat' },
-      { name: 'RHIZOTONIC',         unit: 'ml/L', color: '#5aabf0', note: 'Wurzelstimulator' },
-      { name: 'PK 13/14',           unit: 'ml/L', color: '#b06ac8', note: 'PK-Booster (Blüte Wo 4-6)' },
+      { name: 'CANNA Terra Vega',   unit: 'ml/L', color: '#4caf70', note: '① Wachstumsdünger (NPK-Basis)' },
+      { name: 'CANNA Terra Flores', unit: 'ml/L', color: '#e8884a', note: '① Blütedünger (NPK-Basis)' },
+      { name: 'PK 13/14',           unit: 'ml/L', color: '#b06ac8', note: '② PK-Booster (Blüte Wo 4-6)' },
+      { name: 'RHIZOTONIC',         unit: 'ml/L', color: '#5aabf0', note: '③ Wurzelstimulator (Additiv)' },
+      { name: 'CANNAZYM',           unit: 'ml/L', color: '#5adada', note: '③ Enzympräparat (Additiv)' },
     ],
     schedule: {
       1:{'CANNA Terra Vega':3,'RHIZOTONIC':4,'CANNAZYM':2.5},
@@ -571,16 +581,16 @@ const FERT_PRESETS = {
   },
   hesi: {
     name: 'Hesi (Erde)',
-    mixOrder: ['Wurzel Complex','PowerZyme','TNT Complex','Blüh Complex','Phosphor Plus','SuperVit','Boost'],
-    mixInfo: 'Stimulanzien zuerst (Wurzel Complex, PowerZyme), dann Basisdünger (TNT/Blüh Complex), dann Booster. SuperVit sehr sparsam dosieren! pH reguliert sich meist durch Blüh Complex.',
+    mixOrder: ['TNT Complex','Blüh Complex','Phosphor Plus','Wurzel Complex','PowerZyme','Boost','SuperVit'],
+    mixInfo: '1. Basisdünger zuerst (TNT oder Blüh Complex – stärkste pH/EC-Veränderung). 2. PK-Booster (Phosphor Plus). 3. Bio-Additive (Wurzel Complex, PowerZyme, Boost). 4. SuperVit ganz zuletzt (hochkonzentriert, 1 Tropfen/4L!). pH reguliert sich meist durch Blüh Complex.',
     products: [
-      { name: 'TNT Complex',    unit: 'ml/L', color: '#4caf70', note: 'Wachstumsdünger (org. Stickstoff)' },
-      { name: 'Blüh Complex',   unit: 'ml/L', color: '#e8884a', note: 'Blütedünger (mit pH-Korrektor)' },
-      { name: 'Wurzel Complex', unit: 'ml/L', color: '#5aabf0', note: 'Wurzelstimulator' },
-      { name: 'Phosphor Plus',  unit: 'ml/L', color: '#b06ac8', note: 'PK-Booster ab Blüte Wo 3' },
-      { name: 'SuperVit',       unit: 'Tr/L', color: '#f0d050', note: 'Vitamine & Aminosäuren (1 Tropfen/4L!)' },
-      { name: 'PowerZyme',      unit: 'ml/L', color: '#5adada', note: 'Enzym (jedes 3. Gießen)' },
-      { name: 'Boost',          unit: 'ml/L', color: '#a0c840', note: 'Blütestimulator (1x bei Blütestart)' },
+      { name: 'TNT Complex',    unit: 'ml/L', color: '#4caf70', note: '① Wachstumsdünger (org. Stickstoff)' },
+      { name: 'Blüh Complex',   unit: 'ml/L', color: '#e8884a', note: '① Blütedünger (mit pH-Korrektor)' },
+      { name: 'Phosphor Plus',  unit: 'ml/L', color: '#b06ac8', note: '② PK-Booster ab Blüte Wo 3' },
+      { name: 'Wurzel Complex', unit: 'ml/L', color: '#5aabf0', note: '③ Wurzelstimulator (Additiv)' },
+      { name: 'PowerZyme',      unit: 'ml/L', color: '#5adada', note: '③ Enzym (jedes 3. Gießen)' },
+      { name: 'Boost',          unit: 'ml/L', color: '#a0c840', note: '③ Blütestimulator (1x bei Blütestart)' },
+      { name: 'SuperVit',       unit: 'Tr/L', color: '#f0d050', note: '④ Vitamine & Aminosäuren (zuletzt!)' },
     ],
     schedule: {
       1:{'Wurzel Complex':5,'PowerZyme':2},
@@ -644,6 +654,10 @@ function loadS() {
     if (!c.intDry)     c.intDry = RI.dry;
     // NEW: dayOffset (replaces skipDays)
     if (c.dayOffset === undefined) c.dayOffset = 0;
+    if (!c.offsetDate) c.offsetDate = c.startDate;
+    // Topping: toppingDate = Datum des Toppens, toppingPause = Ruhetage danach
+    if (c.toppingPause === undefined) c.toppingPause = 3;
+    if (!c.skippedDays) c.skippedDays = [];
   });
 
   // Remove legacy skipDays
@@ -743,33 +757,45 @@ function getInt(c, ph) {
 }
 
 /**
- * SHIFT SYSTEM V3: Virtual Start Date
+ * SHIFT SYSTEM V4: Virtual Start + Fixed Boundary
  *
- * Statt den Modulo zu manipulieren, verschieben wir den virtuellen Startpunkt.
- * offset=+1 bedeutet: tu so als hätte der Zyklus 1 Tag später angefangen.
- * Dadurch verschiebt sich das GESAMTE Raster gleichmäßig:
- * - Gießtage verschieben sich
- * - Ernte verschiebt sich
- * - Trocknung verschiebt sich
- * - Alles bewegt sich als Einheit
+ * offset=+1 = "Verschieb alles 1 Tag nach hinten" (Topf noch nass)
+ * offset=-1 = "Zieh alles 1 Tag vor" (Topf schon trocken)
  *
- * Für Vergangenheit (iso < today): offset = 0 → Originalraster
- * Für Heute + Zukunft: offset wird angewendet
+ * Wir speichern das Datum, an dem der Offset gesetzt wurde (offsetDate).
+ * - Vor offsetDate: Originalraster (offset=0)
+ * - Ab offsetDate: Verschobenes Raster (mit dayOffset)
+ *
+ * So gibt es KEINE verschwundenen Icons an der Nahtstelle,
+ * weil die Grenze fix ist und sich nicht täglich verschiebt.
  */
 function getAction(iso, c) {
   if (!c.startDate) return null;
 
-  const today = todayISO();
-  const isPast = iso < today;
-  const offset = isPast ? 0 : (c.dayOffset || 0);
+  // EINZELNE TAGE ENTFERNT: stumm geschaltet, Raster bleibt intakt
+  if (c.skippedDays && c.skippedDays.includes(iso)) {
+    return null;
+  }
 
-  // Virtueller Start: bei offset=+1 "startet" der Zyklus 1 Tag später
+  // TOPPING-PAUSE: 3 Tage nach dem Topping kein Gießen
+  if (c.toppingDate) {
+    const daysSinceTop = isoDiff(iso, c.toppingDate);
+    if (daysSinceTop >= 1 && daysSinceTop <= (c.toppingPause || 3)) {
+      return null;
+    }
+  }
+
+  // Welcher Offset gilt für dieses Datum?
+  const offsetDate = c.offsetDate || c.startDate;
+  const useOffset = iso >= offsetDate;
+  const offset = useOffset ? (c.dayOffset || 0) : 0;
+
   const virtualStart = isoPlus(c.startDate, offset);
   const diff = isoDiff(iso, virtualStart);
 
   if (diff < 0) return null;
 
-  // Phasengrenzen (basierend auf virtuellem Start)
+  // Phasengrenzen
   const a  = c.anzuchtDays || 17;
   const b  = a + (c.bloomDays || 66);
   const f  = b + (c.flushDays || 9);
@@ -786,7 +812,6 @@ function getAction(iso, c) {
   else if (diff <= dr) ph = 'dry';
   else return null;
 
-  // Phasenstart für Intervall-Berechnung
   let phStart = 0;
   if (ph === 'bloom')   phStart = a;
   if (ph === 'flush')   phStart = b;
@@ -1102,12 +1127,21 @@ function renderCal() {
     const actionDay = dayInfo.find(x => x.a);
     const phaseDay = dayInfo[0];
     const isStart = act.some(c => c.startDate === iso);
+    // Check if this is a topping rest day or skipped day
+    const isToppingRest = act.some(c => c.toppingDate && isoDiff(iso, c.toppingDate) >= 1 && isoDiff(iso, c.toppingDate) <= (c.toppingPause || 3));
+    const isToppingDay = act.some(c => c.toppingDate === iso);
+    const isSkipped = act.some(c => c.skippedDays && c.skippedDays.includes(iso));
 
     let bg = '#151515', border = 'transparent';
     if (actionDay) { const cl = col(actionDay.c); bg = cl.dk; border = cl.hex + '77'; }
+    else if (isToppingRest) { bg = '#150820'; border = 'rgba(176,106,200,0.3)'; }
+    else if (isSkipped) { bg = '#1a1010'; border = 'rgba(224,96,96,0.15)'; }
 
     let icon = '';
     if (isStart) icon = START_ICON;
+    else if (isToppingDay) icon = '✂️';
+    else if (isToppingRest) icon = '😴';
+    else if (isSkipped) icon = '🚫';
     else if (actionDay) icon = ACT_ICON[actionDay.a] || '';
 
     const tagCol = actionDay ? col(actionDay.c).hex : (phaseDay ? col(phaseDay.c).hex : 'rgba(255,255,255,0.35)');
@@ -1134,29 +1168,42 @@ function renderCal() {
     </div>
     <div class="cal-grid">${cells}</div>
     <div style="padding:6px 0;border-top:0.5px solid var(--border);margin-top:5px;display:flex;flex-wrap:wrap;gap:6px">${cycLeg}</div>
-    <div style="padding:2px 0;font-size:10px;color:var(--text-hint)">🌱 Anzucht · 💧 Gießen · 🚿 Spülen · 🧊 Ice · ✂️ Ernte · 🍂 Trocknen</div>
+    <div style="padding:2px 0;font-size:10px;color:var(--text-hint)">🌱 Anzucht · 💧 Gießen · ✂️ Topping · 😴 Ruhetag · 🚿 Spülen · 🧊 Ice · ✂️ Ernte · 🍂 Trocknen</div>
     <div style="font-size:10px;color:var(--text-hint);padding:2px 0">📌 Gedrückt halten = Gießtag verschieben</div>`;
 }
 
-function calClick(iso) { entryFrom = 'cal'; openEntry(iso); }
 function changeMonth(d) { calDate = new Date(calDate.getFullYear(), calDate.getMonth() + d, 1); renderCal(); }
 
 // =====================================================================
 //  LONG PRESS + CONTEXT MENU (NEW dayOffset-based shifting)
 // =====================================================================
 let lpT = null;
+let lpDone = false; // flag to prevent click after long-press
+let lpX = 0, lpY = 0; // stored touch coords
 
 function lpS(iso, e) {
+  lpDone = false;
+  // Store coordinates immediately before event gets recycled
+  const touch = e.touches?.[0];
+  if (touch) { lpX = touch.clientX; lpY = touch.clientY; }
   lpT = setTimeout(() => {
     lpT = null;
+    lpDone = true; // mark that long-press completed
     vibrate(30);
-    showCtx(iso, e);
+    showCtx(iso);
   }, 450);
 }
 
 function lpE() { if (lpT) { clearTimeout(lpT); lpT = null; } }
 
-function showCtx(iso, e) {
+function calClick(iso) {
+  // Don't open entry if we just did a long-press
+  if (lpDone) { lpDone = false; return; }
+  entryFrom = 'cal';
+  openEntry(iso);
+}
+
+function showCtx(iso) {
   const act = active(), df = fmtDE(iso), today = todayISO();
   let items = [];
   const isFuture = iso >= today;
@@ -1168,11 +1215,21 @@ function showCtx(iso, e) {
 
     if (isFuture && a) {
       // Gießtag in der Zukunft/heute → verschieben möglich
-      items.push(`<div class="ctx-item ctx-g" onclick="doShift('${c.id}', 1)">
-        <span class="ctx-ic">→</span>${s} ${ACT_ICON[a] || ''} Morgen statt heute
-      </div>`);
       items.push(`<div class="ctx-item ctx-b" onclick="doShift('${c.id}', -1)">
         <span class="ctx-ic">←</span>${s} ${ACT_ICON[a] || ''} Vorziehen
+      </div>`);
+      items.push(`<div class="ctx-item" style="color:var(--orange)" onclick="doShift('${c.id}', 1)">
+        <span class="ctx-ic">→</span>${s} ${ACT_ICON[a] || ''} Auf morgen verschieben
+      </div>`);
+      items.push(`<div class="ctx-item ctx-r" onclick="skipDayFromCal('${c.id}','${iso}')">
+        <span class="ctx-ic">🚫</span>${s} Gießtag entfernen
+      </div>`);
+    }
+
+    // Show restore option if this day was skipped
+    if (c.skippedDays && c.skippedDays.includes(iso)) {
+      items.push(`<div class="ctx-item ctx-g" onclick="restoreDayFromCal('${c.id}','${iso}')">
+        <span class="ctx-ic">↩</span>${s} Gießtag wiederherstellen
       </div>`);
     }
   });
@@ -1197,12 +1254,15 @@ function showCtx(iso, e) {
   items.push(`<div class="ctx-item" onclick="calClick('${iso}');closeCtx()"><span class="ctx-ic">✏</span>Eintrag öffnen</div>`);
 
   const menu = document.getElementById('ctx-m');
-  const dayInfo = act.map(c => { const p = phase(iso, c); return p ? `${sym(c)} T${p.day}` : ''; }).filter(Boolean).join(' ');
-  menu.innerHTML = `<div style="font-size:11px;color:var(--text-hint);padding:8px 16px 2px;font-weight:600">${df} ${dayInfo}</div>` + items.join('');
+  const dayInfo = act.map(c => { const p = phase(iso, c); const cl2 = col(c); return p ? `<span style="color:${cl2.hex}">${sym(c)} T${p.day}</span>` : ''; }).filter(Boolean).join(' ');
+  const actionInfo = act.map(c => { const a2 = getAction(iso, c); return a2 ? ACT_ICON[a2] : ''; }).filter(Boolean).join(' ');
+  menu.innerHTML = `<div style="padding:10px 16px 4px;display:flex;align-items:center;justify-content:space-between">
+    <span style="font-size:13px;font-weight:600;color:var(--text)">${df}</span>
+    <span style="font-size:12px">${dayInfo} ${actionInfo}</span>
+  </div>` + items.join('');
 
-  const t = e?.touches?.[0];
-  const x = t ? Math.min(Math.max(8, t.clientX), window.innerWidth - 280) : window.innerWidth / 2 - 140;
-  const y = t ? Math.min(t.clientY - 20, window.innerHeight - items.length * 48 - 40) : window.innerHeight / 2;
+  const x = lpX ? Math.min(Math.max(8, lpX), window.innerWidth - 280) : window.innerWidth / 2 - 140;
+  const y = lpY ? Math.min(lpY - 20, window.innerHeight - items.length * 48 - 40) : window.innerHeight / 2;
   menu.style.left = x + 'px';
   menu.style.top = Math.max(8, y) + 'px';
   menu.classList.add('show');
@@ -1216,29 +1276,151 @@ function closeCtx() {
 
 /**
  * Shift watering grid for a cycle.
- * days > 0: skip today → push future grid forward by 1
- * days < 0: pull future grid back by 1 (water earlier)
+ * +1 = Auf morgen verschieben (Topf noch nass)
+ * -1 = Vorziehen (Topf schon trocken)
+ *
+ * offsetDate = der Gießtag der verschoben wird.
+ * Alles VOR offsetDate bleibt im Originalraster.
+ * Alles AB offsetDate nutzt den neuen Offset.
  */
 function doShift(cId, days) {
   closeCtx();
   const c = S.cycles.find(x => x.id === cId);
   if (!c) return;
+  const today = todayISO();
+
+  // Finde den nächsten Aktionstag (den wir verschieben)
+  const actionDay = findNextActionDay(c, today);
+
+  // Block: Vorziehen nur wenn Aktionstag NACH heute liegt
+  if (days < 0 && (!actionDay || actionDay <= today)) {
+    toast('⚠ Kann nicht weiter vorziehen');
+    return;
+  }
+
+  // offsetDate: Bei Vorziehen 1 Tag VOR dem Aktionstag setzen,
+  // damit das vorgezogene Icon im Offset-Bereich landet.
+  // Bei Verschieben: der Aktionstag selbst.
+  const newBoundary = days < 0 ? isoPlus(actionDay, -1) : (actionDay || today);
+  if (!c.offsetDate || newBoundary < c.offsetDate) {
+    c.offsetDate = newBoundary;
+  }
   c.dayOffset = (c.dayOffset || 0) + days;
   saveS();
   renderCal();
   vibrate();
-  toast(days > 0 ? '→ Verschoben' : '← Vorgezogen');
+  toast(days > 0 ? '→ Auf morgen verschoben' : '← Vorgezogen');
 }
 
-/** Same as doShift but re-renders the entry screen instead of calendar */
+/** Same as doShift but re-renders the entry screen */
 function doShiftFromEntry(cId, days) {
   const c = S.cycles.find(x => x.id === cId);
   if (!c) return;
+  const today = todayISO();
+
+  const actionDay = findNextActionDay(c, today);
+
+  if (days < 0 && (!actionDay || actionDay <= today)) {
+    toast('⚠ Kann nicht weiter vorziehen');
+    return;
+  }
+
+  const newBoundary = days < 0 ? isoPlus(actionDay, -1) : (actionDay || today);
+  if (!c.offsetDate || newBoundary < c.offsetDate) {
+    c.offsetDate = newBoundary;
+  }
   c.dayOffset = (c.dayOffset || 0) + days;
   saveS();
   vibrate();
-  toast(days > 0 ? '→ Verschoben' : '← Vorgezogen');
-  // Re-render entry to show updated state
+  toast(days > 0 ? '→ Auf morgen verschoben' : '← Vorgezogen');
+  if (editISO) renderEntry(editISO);
+}
+
+/** Find the next action day from a given date (inclusive) */
+function findNextActionDay(c, from) {
+  for (let i = 0; i <= 30; i++) {
+    const iso = isoPlus(from, i);
+    if (getAction(iso, c)) return iso;
+  }
+  return null;
+}
+
+/** Skip a day from calendar context menu */
+async function skipDayFromCal(cId, iso) {
+  closeCtx();
+  const c = S.cycles.find(x => x.id === cId);
+  if (!c) return;
+  if (!c.skippedDays) c.skippedDays = [];
+  if (!c.skippedDays.includes(iso)) c.skippedDays.push(iso);
+  saveS();
+  vibrate();
+  renderCal();
+  toast('🚫 Gießtag entfernt');
+}
+
+/** Restore a skipped day from calendar context menu */
+function restoreDayFromCal(cId, iso) {
+  closeCtx();
+  const c = S.cycles.find(x => x.id === cId);
+  if (!c || !c.skippedDays) return;
+  c.skippedDays = c.skippedDays.filter(d => d !== iso);
+  saveS();
+  vibrate();
+  renderCal();
+  toast('↩ Wiederhergestellt');
+}
+
+/**
+ * Topping: Markiert den heutigen Gießtag als Topping-Tag.
+ * Die nächsten 3 Tage werden Ruhetage (kein Gießen).
+ * Ab Tag 4 geht der normale Rhythmus weiter.
+ */
+async function doTopping(cId, iso) {
+  const c = S.cycles.find(x => x.id === cId);
+  if (!c) return;
+  const ok = await customConfirm(
+    '✂️ Jetzt Toppen?',
+    `Heute gießen + toppen. Danach 3 Tage Ruhe (kein Gießen). Ab Tag 4 normaler Rhythmus.`,
+    'Toppen', 'var(--purple)'
+  );
+  if (!ok) return;
+  c.toppingDate = iso;
+  c.toppingPause = 3;
+  saveS();
+  vibrate();
+  toast('✂️ Getoppt! 3 Tage Ruhe');
+  if (editISO) renderEntry(editISO);
+}
+
+/**
+ * Einzelnen Gießtag entfernen (stumm schalten).
+ * Das Raster bleibt komplett intakt – nur dieser eine Tag wird übersprungen.
+ */
+async function skipDay(cId, iso) {
+  const c = S.cycles.find(x => x.id === cId);
+  if (!c) return;
+  const ok = await customConfirm(
+    'Gießtag entfernen?',
+    `Dieser Gießtag wird übersprungen. Das Raster bleibt unverändert – alle anderen Gießtage bleiben wo sie sind.`,
+    'Entfernen', 'var(--red)'
+  );
+  if (!ok) return;
+  if (!c.skippedDays) c.skippedDays = [];
+  if (!c.skippedDays.includes(iso)) c.skippedDays.push(iso);
+  saveS();
+  vibrate();
+  toast('🚫 Gießtag entfernt');
+  if (editISO) renderEntry(editISO);
+}
+
+/** Entfernten Gießtag wiederherstellen */
+function restoreDay(cId, iso) {
+  const c = S.cycles.find(x => x.id === cId);
+  if (!c || !c.skippedDays) return;
+  c.skippedDays = c.skippedDays.filter(d => d !== iso);
+  saveS();
+  vibrate();
+  toast('↩ Wiederhergestellt');
   if (editISO) renderEntry(editISO);
 }
 
@@ -1267,6 +1449,9 @@ async function stopC(cId) {
   c.active = false;
   c.startDate = null;
   c.dayOffset = 0;
+  c.offsetDate = null;
+  c.toppingDate = null;
+  c.skippedDays = [];
   saveS();
   renderCal();
   toast(`${sym(c)} beendet`);
@@ -1547,29 +1732,43 @@ function renderSet() {
       </div>
       <div class="tab-row">${tabs}</div>
       ${sel ? `
-        <div style="display:flex;flex-direction:column;gap:8px;margin-top:4px">
-          <div class="sub-head">Farbe</div>
-          <div class="pick-row">${colPick}</div>
-          <div class="sub-head">Symbol</div>
-          <div class="pick-row">${symPick}</div>
+        <div style="display:flex;flex-direction:column;gap:10px;margin-top:4px">
+
+          <!-- Name + Standort -->
           <div class="inp-wrap">
             <div class="inp-label">Name</div>
             <input class="inp-field" value="${d.name || ''}" oninput="dd('name',this.value)" style="border-color:${cl.hex}44"/>
           </div>
           <div class="inp-wrap">
             <div class="inp-label">Standort / Zelt</div>
-            <input class="inp-field" value="${d.location || ''}" oninput="dd('location',this.value)"/>
+            <input class="inp-field" value="${d.location || ''}" oninput="dd('location',this.value)" placeholder="z.B. Zelt 1"/>
           </div>
-          <div class="sw-row">
-            <span style="font-size:13px;color:var(--text-sub)">Aktiv</span>
-            <label class="sw"><input type="checkbox" ${sel.active ? 'checked' : ''} onchange="toggleAct('${sel.id}',this.checked)"/><span class="sl"></span></label>
+
+          <!-- Aktivierung -->
+          <div style="background:${sel.active ? cl.dk : 'var(--surface)'};border:0.5px solid ${sel.active ? cl.hex+'44' : 'var(--border)'};border-radius:12px;padding:12px 14px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:${sel.active ? '10px' : '0'}">
+              <div>
+                <div style="font-size:13px;font-weight:600;color:${sel.active ? cl.hex : 'var(--text-sub)'}">
+                  ${sel.active ? '● Aktiver Grow' : '○ Inaktiv'}
+                </div>
+                ${!sel.active ? '<div style="font-size:11px;color:var(--text-muted);margin-top:2px">Aktivieren um den Grow zu starten</div>' : ''}
+              </div>
+              <label class="sw"><input type="checkbox" ${sel.active ? 'checked' : ''} onchange="toggleAct('${sel.id}',this.checked)"/><span class="sl"></span></label>
+            </div>
+            ${sel.active ? `
+              <div class="inp-wrap">
+                <div class="inp-label">Startdatum (Tag 1)</div>
+                <input class="inp-field" type="date" value="${d.startDate || ''}" oninput="dd('startDate',this.value)" style="color-scheme:dark;border-color:${cl.hex}33"/>
+              </div>
+            ` : ''}
           </div>
-          <div class="inp-wrap">
-            <div class="inp-label">Startdatum</div>
-            <input class="inp-field" type="date" value="${d.startDate || ''}" oninput="dd('startDate',this.value)" style="color-scheme:dark"/>
-          </div>
+
+          ${sel.active ? `
+          <!-- Phasendauern -->
           <div class="sub-head">Phasendauern (Tage)</div>
           <div class="dur-grid">${durs}</div>
+
+          <!-- Gießintervalle -->
           <div class="sub-head">Gießintervall (alle X Tage)</div>
           <div class="dur-grid">
             <div class="dur-box"><div class="dur-lbl">Anzucht</div><input class="dur-inp" type="number" value="${d.intAnzucht || 4}" oninput="dd('intAnzucht',this.value)"/></div>
@@ -1581,8 +1780,28 @@ function renderSet() {
             <div class="dur-box"><div class="dur-lbl">Ernte</div><input class="dur-inp" type="number" value="${d.intErnte || 1}" oninput="dd('intErnte',this.value)"/></div>
             <div class="dur-box"><div class="dur-lbl">Trocknen</div><input class="dur-inp" type="number" value="${d.intDry || 1}" oninput="dd('intDry',this.value)"/></div>
           </div>
+          ` : ''}
+
+          <!-- Farbe + Symbol -->
+          <div class="sub-head">Farbe</div>
+          <div class="pick-row">${colPick}</div>
+          <div class="sub-head">Symbol</div>
+          <div class="pick-row">${symPick}</div>
 
           <button class="sav-btn" style="background:${cl.hex}" onclick="saveDraft()">💾 ${sym(d) || '🌱'} ${d.name || 'Zyklus'} speichern</button>
+          <!-- Reset-Optionen -->
+          <div style="margin-top:4px;padding-top:8px;border-top:0.5px solid var(--border)">
+            <div style="font-size:11px;color:var(--text-hint);margin-bottom:6px">Daten zurücksetzen</div>
+            <div style="display:flex;gap:8px">
+              <button onclick="resetNotes('${sel.id}')" style="flex:1;background:var(--surface);border:0.5px solid var(--border);border-radius:8px;padding:10px 8px;font-size:12px;color:var(--orange);cursor:pointer;font-family:var(--font);text-align:center">
+                📝 Notizen löschen
+              </button>
+              <button onclick="resetAll('${sel.id}')" style="flex:1;background:var(--surface);border:0.5px solid var(--border);border-radius:8px;padding:10px 8px;font-size:12px;color:var(--red);cursor:pointer;font-family:var(--font);text-align:center">
+                🔄 Alles zurücksetzen
+              </button>
+            </div>
+          </div>
+
           <button class="del-btn" onclick="delCyc('${sel.id}')">🗑 Zyklus löschen</button>
         </div>
       ` : '<div style="font-size:13px;color:var(--text-muted)">Erstelle deinen ersten Zyklus!</div>'}
@@ -1612,7 +1831,7 @@ function renderSet() {
 
     <div class="sec-tog" onclick="exportData()"><span>📤</span><div><div style="font-weight:500">Backup exportieren</div></div><span style="color:var(--text-muted)">›</span></div>
     <div class="sec-tog" onclick="importData()"><span>📥</span><div><div style="font-weight:500">Backup importieren</div></div><span style="color:var(--text-muted)">›</span></div>
-    <div style="text-align:center;padding:16px 0;font-size:11px;color:var(--text-hint)">GrowSmart v3.0 🌱</div>
+    <div style="text-align:center;padding:16px 0;font-size:11px;color:var(--text-hint)">GrowSmart v0.3.5 🌱</div>
     <div style="height:20px"></div>`;
 }
 
@@ -1658,7 +1877,7 @@ function addCyc() {
     symbol: SYMS[i % SYMS.length], anzuchtDays: 17, bloomDays: 66,
     flushDays: 9, iceDays: 6, harvestDays: 1, dryDays: 7,
     intAnzucht: 4, intBloom: 3, intFlush: 3, intIce: 2, intErnte: 1, intDry: 1,
-    dayOffset: 0,
+    dayOffset: 0, offsetDate: null, toppingDate: null, toppingPause: 3, skippedDays: [],
   };
   S.cycles.push(c);
   selId = c.id;
@@ -1672,11 +1891,55 @@ function toggleAct(id, checked) {
   if (!c) return;
   c.active = checked;
   if (checked && !c.startDate) c.startDate = todayISO();
-  if (!checked) { c.startDate = null; c.dayOffset = 0; }
+  if (!checked) { c.startDate = null; c.dayOffset = 0; c.offsetDate = null; c.toppingDate = null; c.skippedDays = []; }
   draft.active = c.active;
   draft.startDate = c.startDate;
   saveS();
   renderSet();
+}
+
+/** Reset only notes for a cycle */
+async function resetNotes(id) {
+  const c = S.cycles.find(x => x.id === id);
+  if (!c) return;
+  const ok = await customConfirm(
+    'Notizen löschen?',
+    `Alle Notizen für "${c.name}" werden gelöscht. Wasser, pH, Fotos und Dünger-Daten bleiben erhalten.`,
+    'Notizen löschen', 'var(--orange)'
+  );
+  if (!ok) return;
+  Object.keys(S.entries).forEach(d => {
+    if (S.entries[d]?.cycleData?.[id]) {
+      S.entries[d].cycleData[id].notes = '';
+    }
+  });
+  saveS();
+  toast('Notizen gelöscht ✓');
+}
+
+/** Reset ALL data for a cycle (notes, water, pH, photos, doses) but keep cycle config */
+async function resetAll(id) {
+  const c = S.cycles.find(x => x.id === id);
+  if (!c) return;
+  const ok = await customConfirm(
+    'Alles zurücksetzen?',
+    `Alle Einträge für "${c.name}" werden gelöscht: Notizen, Wasser, pH, Fotos, Düngerdaten. Der Zyklus selbst bleibt erhalten.`,
+    'Alles zurücksetzen'
+  );
+  if (!ok) return;
+  Object.keys(S.entries).forEach(d => {
+    if (S.entries[d]?.cycleData?.[id]) {
+      delete S.entries[d].cycleData[id];
+    }
+  });
+  // Reset offset, topping, and skipped days
+  c.dayOffset = 0;
+  c.offsetDate = null;
+  c.toppingDate = null;
+  c.skippedDays = [];
+  saveS();
+  renderSet();
+  toast('Zurückgesetzt ✓');
 }
 
 async function delCyc(id) {
@@ -1820,18 +2083,52 @@ function renderEntry(iso) {
             ${isWaterDay ? `<div style="font-size:11px;color:var(--text-muted)">Vorschlag: ~${waterSug} ml · Topf ${S.potSize || 11}L · ${getInt(c, p?.ph || 'bloom')}d Intervall</div>` : ''}
           </div>
         </div>
-        ${(isWaterDay && iso >= todayISO()) ? `<div style="display:flex;gap:6px;margin-bottom:8px">
-          <button onclick="doShiftFromEntry('${c.id}',1)" style="flex:1;background:var(--surface);border:0.5px solid var(--border);border-radius:8px;padding:8px;font-size:12px;color:var(--text-sub);cursor:pointer;font-family:var(--font);display:flex;align-items:center;justify-content:center;gap:4px">
-            → Morgen statt heute
-          </button>
-          <button onclick="doShiftFromEntry('${c.id}',-1)" style="flex:1;background:var(--surface);border:0.5px solid var(--border);border-radius:8px;padding:8px;font-size:12px;color:var(--text-sub);cursor:pointer;font-family:var(--font);display:flex;align-items:center;justify-content:center;gap:4px">
+        ${(isWaterDay && iso >= todayISO()) ? `<div style="display:flex;gap:8px;margin-bottom:4px">
+          <button onclick="doShiftFromEntry('${c.id}',-1)" style="flex:1;background:var(--blue-bg);border:0.5px solid rgba(90,171,240,0.25);border-radius:10px;padding:10px 8px;font-size:12px;color:var(--blue);cursor:pointer;font-family:var(--font);display:flex;align-items:center;justify-content:center;gap:5px">
             ← Vorziehen
           </button>
-        </div>` : ''}`
+          <button onclick="doShiftFromEntry('${c.id}',1)" style="flex:1;background:var(--orange-bg);border:0.5px solid rgba(232,136,74,0.25);border-radius:10px;padding:10px 8px;font-size:12px;color:var(--orange);cursor:pointer;font-family:var(--font);display:flex;align-items:center;justify-content:center;gap:5px">
+            Auf morgen verschieben →
+          </button>
+        </div>
+        <button onclick="skipDay('${c.id}','${iso}')" style="width:100%;background:var(--surface);border:0.5px solid var(--border);border-radius:10px;padding:8px;font-size:11px;color:var(--red);cursor:pointer;font-family:var(--font);margin-bottom:8px;opacity:0.7">
+          🚫 Diesen Gießtag entfernen
+        </button>` : ''}`
+      : (!a && p && c.toppingDate && isoDiff(iso, c.toppingDate) >= 1 && isoDiff(iso, c.toppingDate) <= (c.toppingPause || 3))
+        // Topping rest day
+        ? `<div style="padding:10px 12px;background:rgba(176,106,200,0.08);border:0.5px solid rgba(176,106,200,0.25);border-radius:10px;margin-bottom:8px;display:flex;align-items:center;gap:10px">
+            <span style="font-size:20px">✂️</span>
+            <div>
+              <div style="font-size:13px;font-weight:600;color:var(--purple)">Ruhetag nach Topping</div>
+              <div style="font-size:11px;color:var(--text-muted)">Tag ${isoDiff(iso, c.toppingDate)} von ${c.toppingPause || 3} · Kein Gießen</div>
+            </div>
+          </div>`
+      : (!a && p && c.skippedDays && c.skippedDays.includes(iso))
+        // Skipped day - show restore option
+        ? `<div style="padding:10px 12px;background:rgba(224,96,96,0.06);border:0.5px solid rgba(224,96,96,0.2);border-radius:10px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="font-size:16px">🚫</span>
+              <div>
+                <div style="font-size:12px;color:var(--red)">Gießtag entfernt</div>
+                <div style="font-size:11px;color:var(--text-muted)">Raster bleibt unverändert</div>
+              </div>
+            </div>
+            <button onclick="restoreDay('${c.id}','${iso}')" style="background:none;border:0.5px solid rgba(76,175,112,0.3);border-radius:8px;padding:6px 10px;font-size:11px;color:var(--green);cursor:pointer;font-family:var(--font)">
+              ↩ Wiederherstellen
+            </button>
+          </div>`
       : (!a && p && ['flush','ice','harvest','dry'].includes(p.ph)
         ? `<div style="padding:8px 12px;background:${cl.hex}08;border:0.5px solid ${cl.hex}1a;border-radius:10px;margin-bottom:8px;font-size:12px;color:${cl.hex}99">${PH_ICON[p.ph] || ''} ${PN[p.ph]} – kein Gießtag</div>`
         : ''
       );
+
+    // Topping button: show on Anzucht/early Bloom watering days if not yet topped
+    const canTop = isWaterDay && !c.toppingDate && p && (p.ph === 'anzucht' || (p.ph === 'bloom' && p.week <= 3)) && iso >= todayISO();
+    const toppingBtn = canTop
+      ? `<button onclick="doTopping('${c.id}','${iso}')" style="width:100%;background:rgba(176,106,200,0.08);border:0.5px solid rgba(176,106,200,0.25);border-radius:10px;padding:10px 12px;font-size:13px;color:var(--purple);cursor:pointer;font-family:var(--font);display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px">
+          ✂️ Jetzt Toppen (3 Tage Pause danach)
+        </button>`
+      : '';
 
     // === NUTRIENT / ADDITIVE TABLE ===
     // Show on ALL water days: giess, giess_anz get full nutrients
@@ -1845,17 +2142,31 @@ function renderEntry(iso) {
       const savedWater = cd.water || '';
       const waterAmt = parseFloat(savedWater) || waterSug;
 
-      const waterInput = `<div class="water-input-box">
-        <span style="font-size:18px">💧</span>
-        <div style="flex:1">
-          <div style="font-size:11px;color:var(--text-hint);margin-bottom:2px">Gießmenge (ml)</div>
-          <input class="inp-field" type="number" id="water-calc-${c.id}" value="${savedWater}" placeholder="${waterSug}"
-            style="border-color:${cl.hex}44;max-width:120px;font-size:15px;font-weight:600;font-family:var(--mono)"
-            oninput="updateCalc('${c.id}',${wk})" onchange="uEF('${c.id}','water',this.value)"/>
+      const waterInput = `<div class="water-input-box" style="flex-wrap:wrap;gap:8px">
+        <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:200px">
+          <span style="font-size:18px">💧</span>
+          <div>
+            <div style="font-size:10px;color:var(--text-hint);margin-bottom:2px">Gießmenge (ml)</div>
+            <div style="display:flex;align-items:center;gap:4px">
+              <button onclick="stepWater('${c.id}',-50,${wk})" style="width:28px;height:28px;border-radius:6px;background:var(--card2);border:0.5px solid var(--border);color:var(--text-sub);font-size:14px;cursor:pointer;font-family:var(--mono);display:flex;align-items:center;justify-content:center">−</button>
+              <input class="inp-field" type="number" step="50" id="water-calc-${c.id}" value="${savedWater}" placeholder="${waterSug}"
+                style="border-color:${cl.hex}44;width:80px;font-size:15px;font-weight:600;font-family:var(--mono);text-align:center;padding:6px 4px"
+                oninput="updateCalc('${c.id}',${wk})" onchange="uEF('${c.id}','water',this.value)"/>
+              <button onclick="stepWater('${c.id}',50,${wk})" style="width:28px;height:28px;border-radius:6px;background:var(--card2);border:0.5px solid var(--border);color:var(--text-sub);font-size:14px;cursor:pointer;font-family:var(--mono);display:flex;align-items:center;justify-content:center">+</button>
+            </div>
+          </div>
         </div>
-        <div style="text-align:right">
-          <div style="font-size:10px;color:var(--text-hint)">Topf ${S.potSize || 11}L</div>
-          <div style="font-size:10px;color:var(--text-hint)">${getInt(c, p?.ph || 'bloom')}d Intervall</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div>
+            <div style="font-size:10px;color:var(--text-hint);margin-bottom:2px">pH</div>
+            <input class="inp-field" type="number" step="0.1" value="${cd.ph || ''}" placeholder="6.2"
+              style="width:56px;font-size:15px;font-weight:600;font-family:var(--mono);text-align:center;padding:6px 4px"
+              onchange="uEF('${c.id}','ph',this.value)"/>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:10px;color:var(--text-hint)">Topf ${S.potSize || 11}L</div>
+            <div style="font-size:10px;color:var(--text-hint)">${getInt(c, p?.ph || 'bloom')}d Intervall</div>
+          </div>
         </div>
       </div>`;
 
@@ -1977,13 +2288,9 @@ function renderEntry(iso) {
       <div class="photo-add" onclick="addPhoto('${c.id}')">📷</div>
     </div>`;
 
-    // Water + pH inputs
-    // All water days now have the water-calc input above, so we just need pH here
+    // Water + pH: now integrated in water-input-box for water days
     const waterRow = isWaterDay
-      ? `<div style="width:100px;margin-top:8px">
-          <div class="inp-label">pH</div>
-          <input class="inp-field" type="number" step="0.1" value="${cd.ph || ''}" placeholder="6.2" onchange="uEF('${c.id}','ph',this.value)"/>
-        </div>`
+      ? '' // pH is already in the water-input-box above
       : `<div class="row2" style="margin-top:8px">
           <div class="inp-wrap"><div class="inp-label">Wasser (ml)</div>
             <input class="inp-field" type="number" value="${cd.water || ''}" placeholder="–"
@@ -2003,6 +2310,7 @@ function renderEntry(iso) {
         </div>
       </div>
       ${giessCard || ''}
+      ${toppingBtn}
       ${nutSection}
       ${waterRow}
       <div class="note-wrap" style="border-color:${cl.hex}33;margin-top:8px">
@@ -2053,6 +2361,19 @@ function updateCalc(cId, wk) {
       cell.textContent = (plan * ml / 1000).toFixed(1) + ' ml';
     }
   });
+}
+
+/** Step water amount by 50ml increments */
+function stepWater(cId, step, wk) {
+  const el = document.getElementById('water-calc-' + cId);
+  if (!el) return;
+  const current = parseFloat(el.value) || parseFloat(el.placeholder) || 0;
+  const newVal = Math.max(0, Math.round((current + step) / 50) * 50);
+  el.value = newVal;
+  // Trigger the same handlers
+  uEF(cId, 'water', String(newVal));
+  updateCalc(cId, wk);
+  vibrate(8);
 }
 
 function uEnv() {
