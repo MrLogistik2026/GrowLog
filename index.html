@@ -414,7 +414,10 @@ input:checked + .sl:before { transform: translateX(18px); background: var(--gree
     <div class="topbar" style="padding-top:max(12px,env(safe-area-inset-top))">
       <button onclick="changeMonth(-1)" style="background:none;border:none;color:var(--green);font-size:28px;cursor:pointer;padding:0 10px;line-height:1">‹</button>
       <span style="font-size:16px;font-weight:600" id="cal-lbl">–</span>
-      <button onclick="changeMonth(1)" style="background:none;border:none;color:var(--green);font-size:28px;cursor:pointer;padding:0 10px;line-height:1">›</button>
+      <div style="display:flex;align-items:center;gap:2px">
+        <button class="icon-btn" onclick="doUndo()" style="font-size:16px;opacity:0.6" title="Rückgängig">↩</button>
+        <button onclick="changeMonth(1)" style="background:none;border:none;color:var(--green);font-size:28px;cursor:pointer;padding:0 10px;line-height:1">›</button>
+      </div>
     </div>
     <div class="scroll" id="cal-body" style="padding:8px;gap:6px;"></div>
     <nav class="bottom-nav" id="nav-cal"></nav>
@@ -433,7 +436,10 @@ input:checked + .sl:before { transform: translateX(18px); background: var(--gree
   <div class="screen" id="scr-set">
     <div class="topbar" style="padding-top:max(12px,env(safe-area-inset-top))">
       <span class="app-title">⚙ Einstellungen</span>
-      <button class="icon-btn" onclick="goTo('cal')" style="font-size:18px" title="Zum Kalender">📅</button>
+      <div style="display:flex;gap:6px">
+        <button class="icon-btn" onclick="doUndo()" style="font-size:16px;opacity:0.6" title="Rückgängig">↩</button>
+        <button class="icon-btn" onclick="goTo('cal')" style="font-size:18px" title="Zum Kalender">📅</button>
+      </div>
     </div>
     <div class="scroll" id="set-body"></div>
     <nav class="bottom-nav" id="nav-set"></nav>
@@ -444,7 +450,10 @@ input:checked + .sl:before { transform: translateX(18px); background: var(--gree
     <div class="topbar" style="padding-top:max(12px,env(safe-area-inset-top))">
       <button class="icon-btn" id="entry-back" style="font-size:20px">←</button>
       <span class="tb-title" id="entry-ttl">Eintrag</span>
-      <button class="save-pill" onclick="saveEntry()">Speichern</button>
+      <div style="display:flex;gap:6px;align-items:center">
+        <button class="icon-btn" onclick="doUndo()" style="font-size:16px;opacity:0.6" title="Rückgängig">↩</button>
+        <button class="save-pill" onclick="saveEntry()">Speichern</button>
+      </div>
     </div>
     <div class="scroll" id="entry-body"></div>
   </div>
@@ -501,7 +510,7 @@ const PROD_COLORS = ['#4caf70','#5aabf0','#e8884a','#b06ac8','#f0d050','#e06060'
 
 // Phase names & icons
 const PN = { anzucht: 'Anzucht', bloom: 'Blüte', flush: 'Spülen', ice: 'IceFlush', harvest: 'Ernte', dry: 'Trocknen' };
-const RI = { anzucht: 4, bloom: 3, flush: 3, ice: 2, ernte: 1, dry: 1 };
+const RI = { anzucht: 3, bloom: 3, flush: 4, ice: 4, ernte: 1, dry: 1 };
 const ACT_ICON = { giess: '💧', giess_anz: '🌱', spuelen: '🚿', ice: '🧊', ernte: '✂️', trocknen: '🍂' };
 const PH_ICON = { anzucht: '🌱', bloom: '🌸', flush: '🚿', ice: '🧊', harvest: '✂️', dry: '🍂' };
 const START_ICON = '🌰';
@@ -665,7 +674,15 @@ function loadS() {
 }
 
 function saveS() {
-  try { localStorage.setItem(SK, JSON.stringify(S)); } catch (e) {}
+  try {
+    // Auto-push undo snapshot (debounced: only if last push was >2s ago)
+    const now = Date.now();
+    if (!saveS._lastUndo || now - saveS._lastUndo > 2000) {
+      pushUndo();
+      saveS._lastUndo = now;
+    }
+    localStorage.setItem(SK, JSON.stringify(S));
+  } catch (e) {}
 }
 
 // =====================================================================
@@ -712,6 +729,47 @@ function toast(m, d = 2200) {
 
 function vibrate(ms = 15) {
   try { if (navigator.vibrate) navigator.vibrate(ms); } catch (e) {}
+}
+
+// =====================================================================
+//  UNDO SYSTEM – Snapshots of state, max 20 steps
+// =====================================================================
+const UNDO_MAX = 20;
+let undoStack = [];
+
+/** Push current state onto undo stack (call BEFORE making changes) */
+function pushUndo() {
+  try {
+    undoStack.push(JSON.stringify(S));
+    if (undoStack.length > UNDO_MAX) undoStack.shift();
+  } catch (e) {}
+}
+
+/** Pop last state from undo stack and restore it */
+function doUndo() {
+  if (undoStack.length === 0) {
+    toast('↩ Nichts zum Rückgängig machen');
+    return;
+  }
+  try {
+    const prev = JSON.parse(undoStack.pop());
+    S = Object.assign({
+      cycles: [], entries: {}, products: [], weekSchedule: {}, potSize: 11,
+    }, prev);
+    saveS();
+    vibrate();
+    toast(`↩ Rückgängig (${undoStack.length} übrig)`);
+    // Re-render current screen
+    if (document.getElementById('scr-entry').classList.contains('active') && editISO) {
+      renderEntry(editISO);
+    } else if (document.getElementById('scr-cal').classList.contains('active')) {
+      renderCal();
+    } else if (document.getElementById('scr-dash').classList.contains('active')) {
+      renderDash();
+    } else if (document.getElementById('scr-set').classList.contains('active')) {
+      renderSet();
+    }
+  } catch (e) { toast('Fehler beim Rückgängig'); }
 }
 
 function todayISO() { return new Date().toISOString().split('T')[0]; }
@@ -881,14 +939,55 @@ function waterStats(c) {
   return v;
 }
 
-/** Water suggestion based on pot size and phase */
+/**
+ * Dynamische Gießmengen-Empfehlung basierend auf Grow-Phase & Tag.
+ *
+ * Volumen-Matrix (für 11L Topf):
+ * Phase 1 - Sämling (Tag 1-10):    50 → 250 ml (Ring um Sämling)
+ * Phase 2 - Etablierung (Tag 11-17): 500 → 1500 ml (Radius vergrößern)
+ * Phase 3 - Topping-Zone (Tag 18-24): 2000 → 2500 ml (ganzer Topf, kein Drain)
+ * Phase 4 - Blüte-Stretch (Tag 25+): 3000 → 3500 ml (Vollsättigung, 10-15% Drain)
+ * Spülen/IceFlush: 3500 → 4000 ml (extra Durchspülung)
+ *
+ * Skaliert proportional zur Topfgröße (Basis: 11L).
+ */
 function waterSuggestion(c, p) {
   const pot = S.potSize || 11;
-  // Realistischere Werte: ~25-30% des Topfvolumens in Blüte
-  const factor = (p?.ph === 'bloom') ? 0.3
-    : (p?.ph === 'flush' || p?.ph === 'ice') ? 0.35
-    : 0.2;
-  return Math.round(pot * factor * 1000 / 50) * 50;
+  const scale = pot / 11; // Skalierungsfaktor relativ zu 11L
+
+  if (!p) return Math.round(3000 * scale / 50) * 50;
+
+  // Spülen & IceFlush: extra viel (Durchspülung)
+  if (p.ph === 'flush' || p.ph === 'ice') {
+    return Math.round(3750 * scale / 50) * 50;
+  }
+
+  // Gesamttag im Zyklus (1-basiert)
+  const day = p.day || 1;
+
+  // Phase 1: Sämling (Tag 1-10)
+  if (day <= 10) {
+    const ml = 50 + (day - 1) * (200 / 9); // 50 → 250
+    return Math.round(ml * scale / 50) * 50;
+  }
+  // Phase 2: Etablierung (Tag 11-17/18)
+  if (day <= 18) {
+    const ml = 500 + (day - 11) * (1000 / 7); // 500 → 1500
+    return Math.round(ml * scale / 50) * 50;
+  }
+  // Phase 3: Topping-Zone / Prä-Blüte (Tag 18-24)
+  if (day <= 24) {
+    const ml = 2000 + (day - 18) * (500 / 6); // 2000 → 2500
+    return Math.round(ml * scale / 50) * 50;
+  }
+  // Phase 4: Blüte-Stretch & Volle Blüte (Tag 25+)
+  // Rampt von 3000 auf 3500 über die ersten 10 Tage, dann konstant
+  const bloomDay = day - 24;
+  if (bloomDay <= 10) {
+    const ml = 3000 + bloomDay * (500 / 10); // 3000 → 3500
+    return Math.round(ml * scale / 50) * 50;
+  }
+  return Math.round(3500 * scale / 50) * 50;
 }
 
 function getAlerts(c) {
@@ -1716,8 +1815,8 @@ function renderSet() {
   ).join('');
 
   const durs = sel ? [
-    ['Anzucht','anzuchtDays',17], ['Blüte','bloomDays',66], ['Spülen','flushDays',9],
-    ['IceFlush','iceDays',6], ['Ernte','harvestDays',1], ['Trocknen','dryDays',7],
+    ['Anzucht','anzuchtDays',18], ['Blüte','bloomDays',60], ['Spülen','flushDays',8],
+    ['IceFlush','iceDays',4], ['Ernte','harvestDays',1], ['Trocknen','dryDays',7],
   ].map(([l, k, def]) =>
     `<div class="dur-box"><div class="dur-lbl">${l}</div>
       <input class="dur-inp" type="number" value="${d[k] !== undefined ? d[k] : def}" oninput="dd('${k}',this.value)"/>
@@ -1771,12 +1870,12 @@ function renderSet() {
           <!-- Gießintervalle -->
           <div class="sub-head">Gießintervall (alle X Tage)</div>
           <div class="dur-grid">
-            <div class="dur-box"><div class="dur-lbl">Anzucht</div><input class="dur-inp" type="number" value="${d.intAnzucht || 4}" oninput="dd('intAnzucht',this.value)"/></div>
+            <div class="dur-box"><div class="dur-lbl">Anzucht</div><input class="dur-inp" type="number" value="${d.intAnzucht || 3}" oninput="dd('intAnzucht',this.value)"/></div>
             <div class="dur-box"><div class="dur-lbl">Blüte</div><input class="dur-inp" type="number" value="${d.intBloom || 3}" oninput="dd('intBloom',this.value)"/></div>
-            <div class="dur-box"><div class="dur-lbl">Spülen</div><input class="dur-inp" type="number" value="${d.intFlush || 3}" oninput="dd('intFlush',this.value)"/></div>
+            <div class="dur-box"><div class="dur-lbl">Spülen</div><input class="dur-inp" type="number" value="${d.intFlush || 4}" oninput="dd('intFlush',this.value)"/></div>
           </div>
           <div class="dur-grid" style="margin-top:6px">
-            <div class="dur-box"><div class="dur-lbl">IceFlush</div><input class="dur-inp" type="number" value="${d.intIce || 2}" oninput="dd('intIce',this.value)"/></div>
+            <div class="dur-box"><div class="dur-lbl">IceFlush</div><input class="dur-inp" type="number" value="${d.intIce || 4}" oninput="dd('intIce',this.value)"/></div>
             <div class="dur-box"><div class="dur-lbl">Ernte</div><input class="dur-inp" type="number" value="${d.intErnte || 1}" oninput="dd('intErnte',this.value)"/></div>
             <div class="dur-box"><div class="dur-lbl">Trocknen</div><input class="dur-inp" type="number" value="${d.intDry || 1}" oninput="dd('intDry',this.value)"/></div>
           </div>
@@ -1789,19 +1888,6 @@ function renderSet() {
           <div class="pick-row">${symPick}</div>
 
           <button class="sav-btn" style="background:${cl.hex}" onclick="saveDraft()">💾 ${sym(d) || '🌱'} ${d.name || 'Zyklus'} speichern</button>
-          <!-- Reset-Optionen -->
-          <div style="margin-top:4px;padding-top:8px;border-top:0.5px solid var(--border)">
-            <div style="font-size:11px;color:var(--text-hint);margin-bottom:6px">Daten zurücksetzen</div>
-            <div style="display:flex;gap:8px">
-              <button onclick="resetNotes('${sel.id}')" style="flex:1;background:var(--surface);border:0.5px solid var(--border);border-radius:8px;padding:10px 8px;font-size:12px;color:var(--orange);cursor:pointer;font-family:var(--font);text-align:center">
-                📝 Notizen löschen
-              </button>
-              <button onclick="resetAll('${sel.id}')" style="flex:1;background:var(--surface);border:0.5px solid var(--border);border-radius:8px;padding:10px 8px;font-size:12px;color:var(--red);cursor:pointer;font-family:var(--font);text-align:center">
-                🔄 Alles zurücksetzen
-              </button>
-            </div>
-          </div>
-
           <button class="del-btn" onclick="delCyc('${sel.id}')">🗑 Zyklus löschen</button>
         </div>
       ` : '<div style="font-size:13px;color:var(--text-muted)">Erstelle deinen ersten Zyklus!</div>'}
@@ -1831,7 +1917,21 @@ function renderSet() {
 
     <div class="sec-tog" onclick="exportData()"><span>📤</span><div><div style="font-weight:500">Backup exportieren</div></div><span style="color:var(--text-muted)">›</span></div>
     <div class="sec-tog" onclick="importData()"><span>📥</span><div><div style="font-weight:500">Backup importieren</div></div><span style="color:var(--text-muted)">›</span></div>
-    <div style="text-align:center;padding:16px 0;font-size:11px;color:var(--text-hint)">GrowSmart v0.3.5 🌱</div>
+
+    <div class="card" style="gap:8px;display:flex;flex-direction:column">
+      <div class="sect-head" style="color:var(--red)">Daten zurücksetzen</div>
+      <div style="font-size:11px;color:var(--text-muted);line-height:1.5">Betrifft den aktuell ausgewählten Zyklus${sel ? ` (${sym(sel)} ${sel.name})` : ''}.</div>
+      <div style="display:flex;gap:8px">
+        <button onclick="resetNotes('${sel?.id}')" style="flex:1;background:var(--surface);border:0.5px solid var(--border);border-radius:8px;padding:10px 8px;font-size:12px;color:var(--orange);cursor:pointer;font-family:var(--font);text-align:center" ${sel ? '' : 'disabled'}>
+          📝 Notizen löschen
+        </button>
+        <button onclick="resetAll('${sel?.id}')" style="flex:1;background:var(--surface);border:0.5px solid var(--border);border-radius:8px;padding:10px 8px;font-size:12px;color:var(--red);cursor:pointer;font-family:var(--font);text-align:center" ${sel ? '' : 'disabled'}>
+          🔄 Alles zurücksetzen
+        </button>
+      </div>
+    </div>
+
+    <div style="text-align:center;padding:16px 0;font-size:11px;color:var(--text-hint)">GrowSmart v0.3.6 🌱</div>
     <div style="height:20px"></div>`;
 }
 
@@ -1874,9 +1974,9 @@ function addCyc() {
   const c = {
     id: Date.now().toString(), name: `Zyklus ${i + 1}`, location: '',
     active: false, startDate: null, colorId: COLORS[i % COLORS.length].id,
-    symbol: SYMS[i % SYMS.length], anzuchtDays: 17, bloomDays: 66,
-    flushDays: 9, iceDays: 6, harvestDays: 1, dryDays: 7,
-    intAnzucht: 4, intBloom: 3, intFlush: 3, intIce: 2, intErnte: 1, intDry: 1,
+    symbol: SYMS[i % SYMS.length], anzuchtDays: 18, bloomDays: 60,
+    flushDays: 8, iceDays: 4, harvestDays: 1, dryDays: 7,
+    intAnzucht: 3, intBloom: 3, intFlush: 4, intIce: 4, intErnte: 1, intDry: 1,
     dayOffset: 0, offsetDate: null, toppingDate: null, toppingPause: 3, skippedDays: [],
   };
   S.cycles.push(c);
@@ -2159,9 +2259,9 @@ function renderEntry(iso) {
         <div style="display:flex;align-items:center;gap:8px">
           <div>
             <div style="font-size:10px;color:var(--text-hint);margin-bottom:2px">pH</div>
-            <input class="inp-field" type="number" step="0.1" value="${cd.ph || ''}" placeholder="6.2"
+            <input class="inp-field" type="number" step="0.1" min="4" max="9" value="${cd.ph || ''}" placeholder="6.2"
               style="width:56px;font-size:15px;font-weight:600;font-family:var(--mono);text-align:center;padding:6px 4px"
-              onchange="uEF('${c.id}','ph',this.value)"/>
+              onfocus="if(!this.value)this.value='6.0'" onchange="uEF('${c.id}','ph',this.value)"/>
           </div>
           <div style="text-align:right">
             <div style="font-size:10px;color:var(--text-hint)">Topf ${S.potSize || 11}L</div>
@@ -2297,7 +2397,7 @@ function renderEntry(iso) {
               onchange="uEF('${c.id}','water',this.value)" style="border-color:${cl.hex}44"/>
           </div>
           <div style="width:78px;flex-shrink:0"><div class="inp-label">pH</div>
-            <input class="inp-field" type="number" step="0.1" value="${cd.ph || ''}" placeholder="6.2" onchange="uEF('${c.id}','ph',this.value)"/>
+            <input class="inp-field" type="number" step="0.1" min="4" max="9" value="${cd.ph || ''}" placeholder="6.2" onfocus="if(!this.value)this.value='6.0'" onchange="uEF('${c.id}','ph',this.value)"/>
           </div>
         </div>`;
 
@@ -2432,7 +2532,7 @@ function saveEntry() {
   saveS();
   vibrate();
   toast('Gespeichert ✓');
-  setTimeout(() => goTo(entryFrom), 400);
+  // Stay on entry screen, don't navigate away
 }
 
 function addPhoto(cId) {
