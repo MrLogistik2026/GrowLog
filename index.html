@@ -488,7 +488,12 @@ input:checked + .sl:before { transform: translateX(18px); background: var(--gree
   font-size: 12px; font-weight: 600; cursor: pointer;
   font-family: var(--font); border: 0.5px solid transparent;
 }
-.tour-popup-btn.primary   { background: var(--green); color: #fff; border-color: var(--green); }
+.tour-popup-btn.primary   {
+  background: #1b4027; color: #fff; border-color: var(--green);
+  font-weight: 700; text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+}
+.tour-popup-btn.primary:hover  { background: #245432; }
+.tour-popup-btn.primary:active { background: #152e1c; transform: scale(0.97); }
 .tour-popup-btn.secondary { background: var(--surface); color: var(--text-sub); border-color: var(--border); }
 .tour-popup-btn.skip      { background: transparent; color: var(--text-muted); padding: 8px 10px; flex: 0 0 auto; font-size: 11px; }
 .tour-popup-step {
@@ -3050,7 +3055,7 @@ function renderSet() {
     </div>
     `}
 
-    <div style="text-align:center;padding:16px 0;font-size:11px;color:var(--text-hint)">GrowSmart v0.9.0 🌱</div>
+    <div style="text-align:center;padding:16px 0;font-size:11px;color:var(--text-hint)">GrowSmart v0.9.1 🌱</div>
     <div style="height:20px"></div>`;
 
   // Restore scroll position (goTo handles scroll-to-top on tab switch)
