@@ -77,8 +77,8 @@ input, textarea, [contenteditable] { -webkit-user-select: text; user-select: tex
   display: flex; padding-bottom: env(safe-area-inset-bottom); flex-shrink: 0;
 }
 .nav-btn {
-  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px;
-  padding: 8px 0 6px; cursor: pointer; background: none; border: none;
+  flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  padding: 8px 0 6px; min-height: 52px; cursor: pointer; background: none; border: none;
   opacity: 0.4; transition: opacity 0.2s;
 }
 .nav-btn.active { opacity: 1; }
@@ -211,9 +211,9 @@ input, textarea, [contenteditable] { -webkit-user-select: text; user-select: tex
 .tab-row { display: flex; gap: 6px; flex-wrap: wrap; }
 .tab-item {
   display: flex; align-items: center; gap: 6px;
-  background: var(--surface); border-radius: 8px; padding: 6px 12px;
+  background: var(--surface); border-radius: 8px; padding: 9px 14px;
   border: 0.5px solid var(--border); cursor: pointer; font-size: 12px;
-  color: var(--text-muted); font-family: var(--font);
+  color: var(--text-muted); font-family: var(--font); min-height: 40px;
 }
 .tab-item.sel { border-color: var(--green); background: var(--green-bg); color: var(--green); }
 
@@ -264,6 +264,16 @@ input:checked + .sl:before { transform: translateX(18px); background: var(--gree
   align-items: center; justify-content: center; font-size: 18px; transition: transform 0.15s;
 }
 .sym-opt.sel { border-color: #fff; transform: scale(1.15); }
+
+/* ===================== STEPPER BUTTONS ===================== */
+.stepper-btn {
+  width: 40px; height: 40px; border-radius: 7px;
+  background: var(--card2); border: 0.5px solid var(--border);
+  color: var(--text-sub); font-size: 16px; cursor: pointer;
+  font-family: var(--mono); display: flex;
+  align-items: center; justify-content: center; flex-shrink: 0;
+}
+.stepper-btn:active { background: var(--surface); transform: scale(0.95); }
 
 /* ===================== PRODUCT CARDS ===================== */
 .prod-card {
@@ -357,7 +367,16 @@ input:checked + .sl:before { transform: translateX(18px); background: var(--gree
 .mini-chart { display: flex; align-items: flex-end; gap: 1px; height: 24px; }
 .mini-bar { flex: 1; min-width: 2px; border-radius: 1px 1px 0 0; transition: height 0.3s; }
 .photo-grid { display: flex; gap: 6px; flex-wrap: wrap; }
-.photo-thumb { width: 52px; height: 52px; border-radius: 8px; object-fit: cover; border: 0.5px solid var(--border); cursor: pointer; }
+.photo-wrap { position: relative; width: 52px; height: 52px; }
+.photo-thumb { width: 52px; height: 52px; border-radius: 8px; object-fit: cover; border: 0.5px solid var(--border); cursor: pointer; display: block; }
+.photo-del {
+  position: absolute; top: -4px; right: -4px; width: 22px; height: 22px;
+  border-radius: 50%; background: rgba(224,96,96,0.95); border: 1.5px solid #0a0a0a;
+  color: #fff; font-size: 14px; font-weight: 700; line-height: 1; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font); padding: 0;
+}
+.photo-del:active { transform: scale(0.9); }
 .photo-add {
   width: 52px; height: 52px; border-radius: 8px; border: 1px dashed var(--border);
   display: flex; align-items: center; justify-content: center; font-size: 18px;
@@ -367,10 +386,17 @@ input:checked + .sl:before { transform: translateX(18px); background: var(--gree
 .qn-row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
 .qn-chip {
   background: var(--card2); border: 0.5px solid var(--border); border-radius: 16px;
-  padding: 5px 10px; font-size: 11px; color: var(--text-sub); cursor: pointer;
-  font-family: var(--font); white-space: nowrap;
+  padding: 7px 12px; font-size: 11px; color: var(--text-sub); cursor: pointer;
+  font-family: var(--font); white-space: nowrap; min-height: 30px;
+  display: inline-flex; align-items: center; transition: background 0.15s, border-color 0.15s, color 0.15s;
 }
-.qn-chip:active { background: var(--green-bg); border-color: var(--green-dk); color: var(--green); }
+.qn-chip:active { transform: scale(0.95); }
+.qn-chip.active {
+  background: var(--green-bg) !important;
+  border-color: var(--green-dk) !important;
+  color: var(--green) !important;
+  font-weight: 600;
+}
 .mix-step {
   display: flex; align-items: center; gap: 8px; padding: 6px 0;
   font-size: 12px; color: var(--text-sub);
@@ -405,7 +431,7 @@ input:checked + .sl:before { transform: translateX(18px); background: var(--gree
   <div class="screen active" id="scr-dash">
     <div class="topbar" style="padding-top:max(12px,env(safe-area-inset-top))">
       <span class="app-title">🌱 GrowSmart</span>
-      <button class="icon-btn" onclick="openEntry(todayISO())">＋</button>
+      <button class="icon-btn" onclick="entryFrom='dash';openEntry(todayISO())">＋</button>
     </div>
     <div class="scroll" id="dash-body"></div>
     <nav class="bottom-nav" id="nav-dash"></nav>
@@ -537,7 +563,18 @@ const PROD_COLORS = ['#4caf70','#5aabf0','#e8884a','#b06ac8','#f0d050','#e06060'
 
 // Phase names & icons
 const PN = { anzucht: 'Anzucht', bloom: 'Blüte', flush: 'Spülen', ice: 'IceFlush', harvest: 'Ernte', dry: 'Trocknen' };
-const RI = { anzucht: 3, bloom: 3, flush: 4, ice: 4, ernte: 1, dry: 1 };
+const RI = { anzucht: 3, bloom: 3, flush: 4, ice: 2, ernte: 1, dry: 1 };
+// Default phase lengths (days). Single source of truth — referenced everywhere a cycle
+// might not yet have phase durations set. Changes here propagate to new cycles and
+// all fallback calculations.
+const PHASE_DEFAULTS = {
+  anzuchtDays: 21,
+  bloomDays:   60,
+  flushDays:   8,
+  iceDays:     2,
+  harvestDays: 1,
+  dryDays:     7,
+};
 const ACT_ICON = { giess: '💧', giess_anz: '🌱', spuelen: '🚿', ice: '🧊', ernte: '✂️', trocknen: '🍂' };
 const PH_ICON = { anzucht: '🌱', bloom: '🌸', flush: '🚿', ice: '🧊', harvest: '✂️', dry: '🍂' };
 const START_ICON = '☘️';
@@ -546,12 +583,27 @@ const START_ICON = '☘️';
 //  DÜNGER PRESETS (inkl. Mischreihenfolge)
 // =====================================================================
 const FERT_PRESETS = {
-  biobizz: {
-    name: 'BioBizz Master-Plan',
-    subtitle: '11L Stofftöpfe · Light-Mix · 5–10% Drain',
+  biobizz_master: {
+    name: 'BioBizz Master (Cup-Niveau)',
+    subtitle: '11L Stofftöpfe · Light-Mix · LED · jedes Gießen · pH 6.2',
+    doseMode: 'per-watering',
     mixOrder: ['CalMag','Bio·Grow','Bio·Bloom','Root·Juice','Bio·Heaven','Alg·A·Mic','Acti·Vera','Top·Max'],
-    mixInfo: '1. CalMag zuerst ins Wasser, umrühren. 2. Basisdünger (Bio·Grow/Bio·Bloom). 3. Bio-Additive (Root·Juice, Bio·Heaven, Alg·A·Mic, Acti·Vera). 4. Top·Max zuletzt (Humin-/Fulvosäuren als Chelator). pH am Ende auf 6.4 korrigieren.',
-    drainInfo: '⚠️ DRAIN-KONTROLLE: Bei jedem Gießen 5–10% Drain erzeugen um Salzansammlungen zu vermeiden. Drain-Wasser sofort entsorgen! Falls Blattspitzen gelb/braun werden → Bio·Bloom um 20% reduzieren.',
+    mixInfo: '1. CalMag zuerst ins Wasser, umrühren. 2. Basisdünger (Bio·Grow/Bio·Bloom). 3. Bio-Additive (Root·Juice, Bio·Heaven, Alg·A·Mic, Acti·Vera). 4. Top·Max zuletzt (Humin-/Fulvosäuren als Chelator). pH am Ende auf 6.2 korrigieren.',
+    drainInfo: '⚠️ Cup-Niveau-Plan: Bewusst früher & härter Stickstoff-Cutoff (Wo 7 halbiert, Wo 8 hart auf 0) um blättrige Buds zu vermeiden. Ab Wo 8 nur noch P/K + Top·Max für dichte, trichomreiche Blüten. Bei jedem Gießen 5–10% Drain, Drain sofort entsorgen.',
+    weekFocus: {
+      1:  { phase: 'Keimung',     tip: 'Wurzel-Taxis. Kein Stickstoff! Energie kommt aus dem Keimblatt. Nur kleine Ringbewässerung.' },
+      2:  { phase: 'Vegi I',      tip: 'Etablierung. Grow-Start für erste Blätter, Root·Juice ausschleichen, Alg·A·Mic als LED-Schutz dazu.' },
+      3:  { phase: 'Vegi II',     tip: 'Topping/LST. Der perfekte Stickstoff-Sweetspot für schnelles Blattwachstum.' },
+      4:  { phase: 'Stretch I',   tip: 'Prä-Blüte. Hormonumstellung beginnt. Bloom und Top·Max starten leicht.' },
+      5:  { phase: 'Stretch II',  tip: 'Vertikales Wachstum. Die Pflanze saugt extrem viel Wasser und Nährstoffe.' },
+      6:  { phase: 'Stacking',    tip: 'Gerüstbau. Calyxen bilden sich. Stretch stoppt langsam.' },
+      7:  { phase: 'Swelling I',  tip: 'Die Stickstoff-Falle! Grow wird zwingend halbiert, um blättrige, dunkle Buds zu vermeiden.' },
+      8:  { phase: 'Swelling II', tip: 'Hard Stop für Stickstoff! Bloom liefert genug. Zusätze stoppen (Herbst-Stress einleiten).' },
+      9:  { phase: 'Ripening I',  tip: 'Trichom-Push. Nur noch reines P/K und Zucker (Top·Max) für steinhart dichte Blüten.' },
+      10: { phase: 'Ripening II', tip: 'Herbst. Bloom stark reduzieren. Die Pflanze muss die Nährstoffe aus den Sonnensegeln leersaugen.' },
+      11: { phase: 'Flush',       tip: 'Reinigung. Nur noch Wasser + leicht CalMag-Puffer. Mit ordentlich Drain gießen!' },
+      12: { phase: 'Ernte',       tip: 'Ice Flush & Dryback. Topf nach dem Flush knochentrocken werden lassen, dann ernten.' },
+    },
     products: [
       { name: 'CalMag',      unit: 'ml/L', color: '#f0d050', note: '① Calcium & Magnesium (immer zuerst!)' },
       { name: 'Bio·Grow',    unit: 'ml/L', color: '#4caf70', note: '② Wachstumsdünger (organisch, NPK)' },
@@ -563,17 +615,82 @@ const FERT_PRESETS = {
       { name: 'Top·Max',     unit: 'ml/L', color: '#b06ac8', note: '④ Humin-/Fulvosäuren (Chelator, zuletzt!)' },
     ],
     schedule: {
-      1:{'CalMag':0.3,'Root·Juice':3,'Bio·Heaven':1.5,'Acti·Vera':2},
-      2:{'CalMag':0.5,'Bio·Grow':0.8,'Root·Juice':3,'Bio·Heaven':1.5,'Acti·Vera':2,'Alg·A·Mic':1},
-      3:{'CalMag':0.5,'Bio·Grow':1.2,'Root·Juice':1.5,'Bio·Heaven':2,'Acti·Vera':2,'Alg·A·Mic':1.5},
-      4:{'CalMag':0.8,'Bio·Grow':1,'Bio·Bloom':1,'Top·Max':1,'Bio·Heaven':2,'Acti·Vera':2,'Alg·A·Mic':2},
-      5:{'CalMag':0.8,'Bio·Grow':1,'Bio·Bloom':1.5,'Top·Max':1,'Bio·Heaven':2,'Acti·Vera':2,'Alg·A·Mic':2},
-      6:{'CalMag':1,'Bio·Grow':0.75,'Bio·Bloom':2,'Top·Max':1,'Bio·Heaven':3,'Acti·Vera':2,'Alg·A·Mic':2},
-      7:{'CalMag':1,'Bio·Grow':0.5,'Bio·Bloom':2.5,'Top·Max':1,'Bio·Heaven':3,'Acti·Vera':2,'Alg·A·Mic':2},
-      8:{'CalMag':1,'Bio·Bloom':3,'Top·Max':4,'Bio·Heaven':3,'Acti·Vera':2,'Alg·A·Mic':2},
-      9:{'CalMag':1,'Bio·Bloom':3.5,'Top·Max':4,'Bio·Heaven':3,'Acti·Vera':2},
-      10:{'CalMag':0.5,'Bio·Bloom':1,'Top·Max':4,'Bio·Heaven':2},
+      1:{'CalMag':0.3,'Root·Juice':4,'Bio·Heaven':2,'Acti·Vera':2},
+      2:{'CalMag':0.5,'Bio·Grow':1,'Root·Juice':2,'Bio·Heaven':2,'Acti·Vera':2,'Alg·A·Mic':1},
+      3:{'CalMag':0.5,'Bio·Grow':1.2,'Root·Juice':1,'Bio·Heaven':2,'Acti·Vera':2,'Alg·A·Mic':1.5},
+      4:{'CalMag':0.5,'Bio·Grow':1.2,'Bio·Bloom':1,'Top·Max':1,'Bio·Heaven':2,'Acti·Vera':2,'Alg·A·Mic':1.5},
+      5:{'CalMag':0.5,'Bio·Grow':1,'Bio·Bloom':2,'Top·Max':1,'Bio·Heaven':2,'Acti·Vera':2,'Alg·A·Mic':1.5},
+      6:{'CalMag':0.5,'Bio·Grow':1,'Bio·Bloom':2.5,'Top·Max':2,'Bio·Heaven':2,'Acti·Vera':2,'Alg·A·Mic':1.5},
+      7:{'CalMag':0.5,'Bio·Grow':0.5,'Bio·Bloom':2.5,'Top·Max':2,'Bio·Heaven':2,'Acti·Vera':2,'Alg·A·Mic':1.5},
+      8:{'CalMag':0.5,'Bio·Bloom':3,'Top·Max':4},
+      9:{'CalMag':0.5,'Bio·Bloom':3.5,'Top·Max':4},
+      10:{'CalMag':0.5,'Bio·Bloom':1,'Top·Max':4},
       11:{'CalMag':0.2},
+      12:{},
+    },
+  },
+  biobizz_official: {
+    name: 'BioBizz Official',
+    subtitle: 'Offizieller Herstellerplan 2025 · Light-Mix · für Anfänger',
+    doseMode: 'weekly-split',
+    mixOrder: ['CalMag','Root·Juice','Bio·Grow','Bio·Bloom','Top·Max','Acti·Vera','Alg·A·Mic'],
+    mixInfo: 'Original BioBizz-Plan aus dem offiziellen Schedule 2025. Wochen-Gesamtdosis — die App teilt automatisch durch die Anzahl der Gießtage pro Woche auf. Reihenfolge: 1. CalMag (bei weichem Wasser/Osmose). 2. Root·Juice in der Vegetationsphase. 3. Bio·Grow/Bio·Bloom je nach Phase. 4. Top·Max ab Blüte. 5. Acti·Vera und Alg·A·Mic als Additive. pH am Ende auf 6.2–6.5 korrigieren.',
+    drainInfo: 'Quelle: biobizz.com 2025 Nutrient Schedule. ⚠️ In der Grower-Community umstritten für Spitzenqualität: Bio·Grow bis Wo 8 kann zu hohem Reststickstoff führen (blättrige, dunkle Buds). Als Start-Referenz OK, für Cup-Niveau besser den Master-Plan. Nicht jedes Gießen volle Dosis — die App verteilt die Wochendosis intelligent.',
+    products: [
+      { name: 'CalMag',      unit: 'ml/L', color: '#f0d050', note: 'Optional: nur bei weichem Wasser/Osmose' },
+      { name: 'Root·Juice',  unit: 'ml/L', color: '#5aabf0', note: 'Wurzelstimulator (nur Wo 1-2)' },
+      { name: 'Bio·Grow',    unit: 'ml/L', color: '#4caf70', note: 'Wachstumsdünger (Veg + frühe Blüte)' },
+      { name: 'Bio·Bloom',   unit: 'ml/L', color: '#e8884a', note: 'Blütedünger (ab Wo 3)' },
+      { name: 'Top·Max',     unit: 'ml/L', color: '#b06ac8', note: 'Humin-/Fulvosäuren (Blüte-Phase)' },
+      { name: 'Acti·Vera',   unit: 'ml/L', color: '#e0a0f0', note: 'Pflanzenenzyme (durchgehend 1 ml/L)' },
+      { name: 'Alg·A·Mic',   unit: 'ml/L', color: '#a0c840', note: 'Algenextrakt (Vitalität)' },
+    ],
+    schedule: {
+      // Wochen-Gesamtdosen (werden durch Gießtage/Woche geteilt)
+      1:{'Root·Juice':4,'Acti·Vera':1,'Alg·A·Mic':2},
+      2:{'Bio·Grow':1,'Root·Juice':4,'Acti·Vera':1,'Alg·A·Mic':2},
+      3:{'Bio·Grow':2,'Bio·Bloom':1,'Top·Max':1,'Acti·Vera':1,'Alg·A·Mic':2},
+      4:{'Bio·Grow':2,'Bio·Bloom':1,'Top·Max':1,'Acti·Vera':1,'Alg·A·Mic':2},
+      5:{'Bio·Grow':3,'Bio·Bloom':1,'Top·Max':1,'Acti·Vera':1,'Alg·A·Mic':3},
+      6:{'Bio·Grow':3,'Bio·Bloom':1,'Top·Max':1,'Acti·Vera':1,'Alg·A·Mic':3},
+      7:{'Bio·Grow':4,'Bio·Bloom':1,'Top·Max':1,'Acti·Vera':1,'Alg·A·Mic':4},
+      8:{'Bio·Grow':4,'Bio·Bloom':4,'Top·Max':1,'Acti·Vera':1,'Alg·A·Mic':4},
+      9:{'Bio·Bloom':4,'Top·Max':1,'Acti·Vera':1,'Alg·A·Mic':5},
+      10:{'Bio·Bloom':4,'Top·Max':1,'Acti·Vera':1,'Alg·A·Mic':5},
+      11:{},
+      12:{},
+    },
+  },
+  biobizz_light: {
+    name: 'BioBizz Light',
+    subtitle: 'Master × 50% · für vorsichtigere Grower / Einsteiger',
+    doseMode: 'per-watering',
+    mixOrder: ['CalMag','Bio·Grow','Bio·Bloom','Root·Juice','Bio·Heaven','Alg·A·Mic','Acti·Vera','Top·Max'],
+    mixInfo: 'Halbierte Dosen vom Master-Plan. Jedes Gießen düngen, aber mit 50% Dosis — gut für Einsteiger, empfindliche Genetiken, oder wenn der Master-Plan zu stark ist. Gleiche Mischreihenfolge und Stickstoff-Cutoff-Philosophie wie Master.',
+    drainInfo: '⚠️ Wenn Pflanze gesund aussieht und kräftig wächst: kann über die Zeit Richtung Master-Dosen erhöht werden. Drain immer 5–10%, Drain sofort entsorgen.',
+    products: [
+      { name: 'CalMag',      unit: 'ml/L', color: '#f0d050', note: '① Calcium & Magnesium (immer zuerst!)' },
+      { name: 'Bio·Grow',    unit: 'ml/L', color: '#4caf70', note: '② Wachstumsdünger (organisch, NPK)' },
+      { name: 'Bio·Bloom',   unit: 'ml/L', color: '#e8884a', note: '② Blütedünger (organisch, NPK)' },
+      { name: 'Root·Juice',  unit: 'ml/L', color: '#5aabf0', note: '③ Wurzelstimulator (Mykorrhiza)' },
+      { name: 'Bio·Heaven',  unit: 'ml/L', color: '#5adada', note: '③ Aminosäuren & Energiebooster' },
+      { name: 'Alg·A·Mic',   unit: 'ml/L', color: '#a0c840', note: '③ Kaltpress-Algenextrakt (Vitalität)' },
+      { name: 'Acti·Vera',   unit: 'ml/L', color: '#e0a0f0', note: '③ Pflanzl. Enzyme (Immunsystem)' },
+      { name: 'Top·Max',     unit: 'ml/L', color: '#b06ac8', note: '④ Humin-/Fulvosäuren (Chelator, zuletzt!)' },
+    ],
+    schedule: {
+      // Master × 0.5 (berechnet, nicht manuell eingetippt)
+      1:{'CalMag':0.15,'Root·Juice':2,'Bio·Heaven':1,'Acti·Vera':1},
+      2:{'CalMag':0.25,'Bio·Grow':0.5,'Root·Juice':1,'Bio·Heaven':1,'Acti·Vera':1,'Alg·A·Mic':0.5},
+      3:{'CalMag':0.25,'Bio·Grow':0.6,'Root·Juice':0.5,'Bio·Heaven':1,'Acti·Vera':1,'Alg·A·Mic':0.75},
+      4:{'CalMag':0.25,'Bio·Grow':0.6,'Bio·Bloom':0.5,'Top·Max':0.5,'Bio·Heaven':1,'Acti·Vera':1,'Alg·A·Mic':0.75},
+      5:{'CalMag':0.25,'Bio·Grow':0.5,'Bio·Bloom':1,'Top·Max':0.5,'Bio·Heaven':1,'Acti·Vera':1,'Alg·A·Mic':0.75},
+      6:{'CalMag':0.25,'Bio·Grow':0.5,'Bio·Bloom':1.25,'Top·Max':1,'Bio·Heaven':1,'Acti·Vera':1,'Alg·A·Mic':0.75},
+      7:{'CalMag':0.25,'Bio·Grow':0.25,'Bio·Bloom':1.25,'Top·Max':1,'Bio·Heaven':1,'Acti·Vera':1,'Alg·A·Mic':0.75},
+      8:{'CalMag':0.25,'Bio·Bloom':1.5,'Top·Max':2},
+      9:{'CalMag':0.25,'Bio·Bloom':1.75,'Top·Max':2},
+      10:{'CalMag':0.25,'Bio·Bloom':0.5,'Top·Max':2},
+      11:{'CalMag':0.1},
       12:{},
     },
   },
@@ -683,6 +800,11 @@ function loadS() {
   if (!S.products || !S.products.length) S.products = [];
   if (!S.weekSchedule) S.weekSchedule = {};
   if (!S.potSize) S.potSize = 11;
+  // Migrate old 'biobizz' preset key to new 'biobizz_master' (Classic was renamed to Master in v0.8.68)
+  if (S.presetKey === 'biobizz') S.presetKey = 'biobizz_master';
+  // E5: Beginner mode flag. Default: true for fresh installs (S.beginnerMode === undefined)
+  // but stays whatever user has set after that.
+  if (S.beginnerMode === undefined) S.beginnerMode = (S.cycles.length === 0);
 
   // Migrate from old offset system → offsetHistory per cycle
   S.cycles.forEach((c, i) => {
@@ -699,6 +821,7 @@ function loadS() {
     if (!c.seedType) c.seedType = 'auto';
     if (!c.lightVeg) c.lightVeg = '18/6';
     if (!c.lightBloom) c.lightBloom = '18/6';
+    if (c.archived === undefined) c.archived = false;
 
     // Migration: old dayOffset/offsetDate → offsetHistory
     if (!c.offsetHistory) {
@@ -918,12 +1041,12 @@ function phase(iso, c) {
   const diff = isoDiff(iso, c.startDate);
   if (diff < 0) return null;
 
-  const a  = c.anzuchtDays || 17;
-  const b  = a + (c.bloomDays || 66);
-  const f  = b + (c.flushDays || 9);
-  const ic = f + (c.iceDays || 6);
-  const h  = ic + (c.harvestDays || 1);
-  const dr = h + (c.dryDays || 7);
+  const a  = c.anzuchtDays || PHASE_DEFAULTS.anzuchtDays;
+  const b  = a + (c.bloomDays || PHASE_DEFAULTS.bloomDays);
+  const f  = b + (c.flushDays || PHASE_DEFAULTS.flushDays);
+  const ic = f + (c.iceDays || PHASE_DEFAULTS.iceDays);
+  const h  = ic + (c.harvestDays || PHASE_DEFAULTS.harvestDays);
+  const dr = h + (c.dryDays || PHASE_DEFAULTS.dryDays);
 
   if (diff < a)  return { ph: 'anzucht', day: diff + 1, week: Math.floor(diff / 7) + 1, total: dr, pct: Math.round(diff / dr * 100) };
   if (diff < b)  return { ph: 'bloom',   day: diff + 1, week: Math.floor((diff - a) / 7) + 1, total: dr, pct: Math.round(diff / dr * 100) };
@@ -983,12 +1106,12 @@ function getAction(iso, c) {
   if (diff < 0) return null;
 
   // Phasengrenzen
-  const a  = c.anzuchtDays || 17;
-  const b  = a + (c.bloomDays || 66);
-  const f  = b + (c.flushDays || 9);
-  const ic = f + (c.iceDays || 6);
-  const h  = ic + (c.harvestDays || 1);
-  const dr = h + (c.dryDays || 7);
+  const a  = c.anzuchtDays || PHASE_DEFAULTS.anzuchtDays;
+  const b  = a + (c.bloomDays || PHASE_DEFAULTS.bloomDays);
+  const f  = b + (c.flushDays || PHASE_DEFAULTS.flushDays);
+  const ic = f + (c.iceDays || PHASE_DEFAULTS.iceDays);
+  const h  = ic + (c.harvestDays || PHASE_DEFAULTS.harvestDays);
+  const dr = h + (c.dryDays || PHASE_DEFAULTS.dryDays);
 
   let ph;
   if (diff < a)       ph = 'anzucht';
@@ -1024,8 +1147,38 @@ function isGiessTag(iso, c) {
   return ['giess','giess_anz','spuelen','ice'].includes(getAction(iso, c) || '');
 }
 
-function getWeekDoses(cId, w) {
-  return S.weekSchedule[cId + '_w' + w] || S.weekSchedule['global_w' + w] || {};
+/**
+ * Get planned doses for a given week, with optional mode-aware scaling.
+ *
+ * When the active preset has doseMode='weekly-split' (Biobizz Official,
+ * where the schedule values represent TOTAL weekly doses), the returned
+ * doses are divided by the expected watering frequency so the user can
+ * fertilize on every watering day without overdosing.
+ *
+ * For doseMode='per-watering' (Classic, Light — where the schedule values
+ * ARE per-watering doses) the values pass through unchanged.
+ *
+ * @param {string} cId - Cycle id
+ * @param {number} w   - Week number (1-12)
+ * @param {Object} [c] - Optional cycle object, required for weekly-split to
+ *                      look up watering interval. If omitted, falls back to
+ *                      per-watering mode (raw schedule values).
+ */
+function getWeekDoses(cId, w, c) {
+  const raw = S.weekSchedule[cId + '_w' + w] || S.weekSchedule['global_w' + w] || {};
+  const preset = S.presetKey ? FERT_PRESETS[S.presetKey] : null;
+  const mode = preset?.doseMode || 'per-watering';
+  if (mode !== 'weekly-split' || !c) return raw;
+  // Pick phase-appropriate watering interval: anzucht weeks 1-2, bloom weeks 3+
+  const iv = (w <= 2) ? (c.intAnzucht || RI.anzucht) : (c.intBloom || RI.bloom);
+  const wateringsPerWeek = 7 / iv;
+  if (wateringsPerWeek <= 0) return raw;
+  const out = {};
+  Object.entries(raw).forEach(([pid, val]) => {
+    // Round to 2 decimals to keep display clean (0.8/2.33 = 0.343 → 0.34)
+    out[pid] = Math.round((val / wateringsPerWeek) * 100) / 100;
+  });
+  return out;
 }
 
 function nextGiessTag(c, from) {
@@ -1039,12 +1192,17 @@ function nextGiessTag(c, from) {
 
 function daysToHarvest(c) {
   if (!c.startDate) return null;
-  const hd = (c.anzuchtDays || 17) + (c.bloomDays || 66) + (c.flushDays || 9) + (c.iceDays || 6);
-  const diff = Math.ceil((iso12(c.startDate).getTime() + hd * 86400000 - Date.now()) / 86400000);
+  const hd = (c.anzuchtDays || PHASE_DEFAULTS.anzuchtDays) + (c.bloomDays || PHASE_DEFAULTS.bloomDays) + (c.flushDays || PHASE_DEFAULTS.flushDays) + (c.iceDays || PHASE_DEFAULTS.iceDays);
+  const harvestISO = isoPlus(c.startDate, hd);
+  const diff = isoDiff(harvestISO, todayISO());
   return diff > 0 ? diff : 0;
 }
 
-function active() { return S.cycles.filter(c => c.active && c.startDate); }
+function active() { return S.cycles.filter(c => c.active && c.startDate && !c.archived); }
+// "archived()" in the visual sense: any cycle that has a startDate but isn't currently
+// an active grow — includes both user-archived cycles and user-deactivated (stopped) ones.
+// These render faded in the calendar so historical data stays visible.
+function archived() { return S.cycles.filter(c => !c.active && c.startDate); }
 
 function calcStreak(c) {
   const today = todayISO();
@@ -1152,9 +1310,9 @@ function getAlerts(c) {
 
   // Phase-specific alerts
   if (p.ph === 'bloom') {
-    const rem = (c.bloomDays || 66) - (p.day - (c.anzuchtDays || 17));
+    const rem = (c.bloomDays || PHASE_DEFAULTS.bloomDays) - (p.day - (c.anzuchtDays || PHASE_DEFAULTS.anzuchtDays));
     if (rem > 0 && rem <= 7) out.push({ icon: '🚿', text: `Spülung in ${rem} Tagen`, type: 'info' });
-    if (p.week >= 7) out.push({ icon: '🔬', text: `Woche ${p.week} – Trichome checken!`, type: 'tip' });
+    if (p.week >= 7) out.push({ icon: '🔬', text: `Woche ${p.week} – Trichome checken!`, type: 'tip', action: 'trichome', cId: c.id });
   }
   if (p.ph === 'ice' || p.ph === 'harvest') {
     out.push({ icon: '✂️', text: 'Ernte naht!', type: 'success' });
@@ -1191,7 +1349,7 @@ function getAlerts(c) {
 
   // Smart: Estimated harvest date
   if (p.ph === 'bloom' || p.ph === 'anzucht') {
-    const totalGrowDays = (c.anzuchtDays || 18) + (c.bloomDays || 60) + (c.flushDays || 8) + (c.iceDays || 4);
+    const totalGrowDays = (c.anzuchtDays || PHASE_DEFAULTS.anzuchtDays) + (c.bloomDays || PHASE_DEFAULTS.bloomDays) + (c.flushDays || PHASE_DEFAULTS.flushDays) + (c.iceDays || PHASE_DEFAULTS.iceDays);
     const harvestISO = isoPlus(c.startDate, totalGrowDays);
     const daysLeft = isoDiff(harvestISO, today);
     if (daysLeft > 0 && daysLeft <= 14) {
@@ -1214,6 +1372,69 @@ function vpdZone(v) {
   if (v < 1.2) return { label: 'Blüte ✓', color: '#4caf70', bg: '#0d1e0d', hint: 'Optimal für Blüte!', pct: 50 + (v - 0.8) / 0.4 * 25 };
   if (v < 1.6) return { label: 'Etwas hoch', color: '#c8a04a', bg: '#2a1e0d', hint: 'RLF erhöhen.', pct: 75 + (v - 1.2) / 0.4 * 15 };
   return { label: 'Stress!', color: '#e06060', bg: '#2a0d0d', hint: 'Sofort RLF anpassen!', pct: Math.min(97, 90 + (v - 1.6) * 10) };
+}
+
+/**
+ * Plausibility warnings for the entry screen. Returns an array of
+ * {type: 'warn'|'info'|'err', text} sorted most-critical-first.
+ * Helps beginners catch typos or unreasonable values before they hurt the plant.
+ *
+ * @param {Object} cd - per-cycle data (water, ph, ec, ...)
+ * @param {Object} p  - phase info from phase()
+ * @param {Object} e  - entry (for temp, humidity)
+ * @param {Object} c  - cycle (for waterSuggestion comparison)
+ */
+function getEntryWarnings(cd, p, e, c) {
+  const out = [];
+  const waterVal = parseFloat(cd?.water);
+  const phVal = parseFloat(cd?.ph);
+  const ecVal = parseFloat(cd?.ec);
+  const tempVal = parseFloat(e?.temp);
+  const rhVal = parseFloat(e?.humidity);
+
+  // Water: too much compared to suggestion (only during growth phases)
+  if (p && waterVal > 0 && ['anzucht','bloom'].includes(p.ph)) {
+    const sug = waterSuggestion(c, p);
+    if (waterVal > sug * 2.5) {
+      out.push({ type: 'err', text: `⚠️ Sehr viel Wasser für Tag ${p.day}! Empfehlung: ~${sug} ml. Zu viel Wasser = Wurzelfäule.` });
+    } else if (waterVal > sug * 1.8) {
+      out.push({ type: 'warn', text: `💧 Viel Wasser (Empfehlung: ~${sug} ml). Sicher? Erde darf dazwischen antrocknen.` });
+    }
+  }
+
+  // pH: dangerous zones
+  if (phVal > 0) {
+    if (phVal < 5.5) out.push({ type: 'err', text: `⚠️ pH ${phVal.toFixed(1)} zu niedrig! Nährstoff-Lockout droht. Ziel: 6.2–6.5.` });
+    else if (phVal < 5.8) out.push({ type: 'warn', text: `⚠ pH ${phVal.toFixed(1)} eher niedrig. Ziel: 6.2–6.5 (Erde).` });
+    else if (phVal > 7.2) out.push({ type: 'err', text: `⚠️ pH ${phVal.toFixed(1)} zu hoch! Eisen/Mangan unerreichbar. Ziel: 6.2–6.5.` });
+    else if (phVal > 6.8) out.push({ type: 'warn', text: `⚠ pH ${phVal.toFixed(1)} eher hoch. pH-Down nutzen.` });
+  }
+
+  // EC checks (preserves existing logic but goes through central system)
+  if (ecVal > 2.5) {
+    out.push({ type: 'err', text: '⚠️ EC über 2.5! Überdüngung möglich. Nächstes Mal weniger düngen, ggf. Zwischenguss mit reinem Wasser.' });
+  } else if (ecVal > 0 && ecVal < 0.8 && p && p.ph === 'bloom') {
+    out.push({ type: 'info', text: 'ℹ️ EC unter 0.8 — Pflanze kann mehr vertragen. Dosis leicht erhöhen.' });
+  }
+
+  // Temperature (environment)
+  if (!isNaN(tempVal) && tempVal > 0) {
+    if (tempVal > 32) out.push({ type: 'err', text: `🌡️ ${tempVal}°C zu heiß! Hitzestress. Lüftung erhöhen.` });
+    else if (tempVal > 29) out.push({ type: 'warn', text: `🌡️ ${tempVal}°C hoch. Ideal: 22–28°C.` });
+    else if (tempVal < 15) out.push({ type: 'warn', text: `🌡️ ${tempVal}°C zu kalt — Wachstum stoppt. Heizen!` });
+  }
+
+  // Humidity
+  if (!isNaN(rhVal) && rhVal > 0) {
+    if (rhVal > 80) out.push({ type: 'warn', text: `💨 ${rhVal}% RLF sehr hoch — Schimmelrisiko!` });
+    else if (rhVal < 30 && p && p.ph !== 'dry') out.push({ type: 'warn', text: `💨 ${rhVal}% RLF sehr niedrig — Pflanze schließt Stomata.` });
+  }
+
+  // Sort: err > warn > info.
+  // Use ?? (nullish coalescing) not ||, because 0 || 9 === 9 would misplace err-type.
+  const order = { err: 0, warn: 1, info: 2 };
+  out.sort((a, b) => (order[a.type] ?? 9) - (order[b.type] ?? 9));
+  return out;
 }
 
 // =====================================================================
@@ -1309,6 +1530,114 @@ function getSmartTip(c, p) {
 // =====================================================================
 //  DASHBOARD
 // =====================================================================
+
+/**
+ * Returns a concrete "what to do today" instruction card for a cycle.
+ * Used on the dashboard to show beginners exactly what action to take today,
+ * with water amount, pH target, fertilizer status, and a short rationale.
+ * Returns null if nothing actionable today.
+ */
+function getTodayAction(c, p, a, iso) {
+  if (!p) return null;
+  const cl = col(c);
+  const pot = S.potSize || 11;
+  const waterMl = waterSuggestion(c, p);
+  const iv = getInt(c, p.ph);
+
+  // Determine fertilizer week same as entry screen
+  let fertWk = 1;
+  if (p.ph === 'flush' || p.ph === 'ice') fertWk = 11;
+  else if (p.ph === 'harvest' || p.ph === 'dry') fertWk = 12;
+  else {
+    const td = c.startDate ? isoDiff(iso, c.startDate) : 0;
+    fertWk = Math.max(1, Math.min(Math.floor(td / 7) + 1, 10));
+  }
+  const doses = getWeekDoses(c.id, fertWk, c);
+  const activeDoses = Object.entries(doses).filter(([, v]) => v > 0);
+
+  if (a === 'giess_anz') {
+    return {
+      title: '🌱 Heute: Anzucht gießen',
+      icon: '💧',
+      color: cl.hex,
+      steps: [
+        `Ca. <b>${waterMl} ml</b> lauwarmes Wasser (pH 6.4)`,
+        p.day <= 5 ? 'Ring um den Sämling, nicht direkt drauf' : 'Radius allmählich vergrößern',
+        activeDoses.length > 0 ? `Dünger (${fertWk >= 2 ? '½ Dosis' : 'noch keiner nötig'}): ${activeDoses.length} Produkte` : 'Noch kein Dünger',
+      ],
+      hint: 'Erde leicht feucht, nicht nass. Obere 1-2cm dürfen antrocknen.',
+    };
+  }
+  if (a === 'giess') {
+    return {
+      title: '💧 Heute: Gießtag',
+      icon: '💧',
+      color: cl.hex,
+      steps: [
+        `Ca. <b>${waterMl} ml</b> Wasser bis ~10% Drain`,
+        `pH auf <b>6.4</b> einstellen · EC im Ziel 0.8–2.0`,
+        activeDoses.length > 0
+          ? `Nährstoffe Wo. ${fertWk}: ${activeDoses.length} Produkte (siehe Eintrag)`
+          : 'Kein Plan für diese Woche',
+      ],
+      hint: p.day >= 25 ? '5–10% Drain erzeugen, Drain sofort entsorgen' : 'Noch kein Drain nötig (Topf nicht vollgesättigt)',
+    };
+  }
+  if (a === 'spuelen') {
+    return {
+      title: '🚿 Heute: Spültag',
+      icon: '🚿',
+      color: cl.hex,
+      steps: [
+        `Ca. <b>${waterMl} ml</b> reines Wasser · pH 6.4`,
+        '<b>KEIN Dünger</b> — nur klares Wasser!',
+        'Bis viel Drain unten durchläuft (durchspülen)',
+      ],
+      hint: 'Pflanze baut Nährstoffreste ab → sauberer Geschmack',
+    };
+  }
+  if (a === 'ice') {
+    return {
+      title: '🧊 Heute: IceFlush',
+      icon: '🧊',
+      color: cl.hex,
+      steps: [
+        `Eiskaltes Wasser (<10°C), ca. <b>${waterMl} ml</b>`,
+        'Kältestress fördert Trichom-Produktion',
+        'Nur in den letzten Tagen vor Ernte',
+      ],
+      hint: 'Eiswürfel direkt auf die Erde legen geht auch',
+    };
+  }
+  if (a === 'ernte') {
+    return {
+      title: '✂️ Heute: Ernte!',
+      icon: '✂️',
+      color: cl.hex,
+      steps: [
+        'Trichome final checken (70% milchig + 10%+ bernstein)',
+        'Früh am Morgen ernten (maximaler Terpengehalt)',
+        'Dunkel hängen lassen: 18–21°C, 55–65% RLF',
+      ],
+      hint: '7–14 Tage Trocknung, dann Curing in Gläsern',
+    };
+  }
+  if (a === 'trocknen') {
+    return {
+      title: '🍂 Trocknung läuft',
+      icon: '🍂',
+      color: cl.hex,
+      steps: [
+        'Täglich prüfen: Geruch, Feuchtigkeit',
+        'Stiele sollten bald knacken beim Biegen',
+        '18–21°C, 55–65% RLF halten',
+      ],
+      hint: 'Zu schnell trocken = Heu-Geschmack. Geduld!',
+    };
+  }
+  return null;
+}
+
 function renderDash() {
   const act = active(), today = todayISO();
   const fmt = new Date().toLocaleDateString('de-DE', { weekday: 'long', day: '2-digit', month: 'long' });
@@ -1317,9 +1646,15 @@ function renderDash() {
   const alertHTML = allAlerts.map(a => {
     const bg = { warn: '#1a1000', info: '#001020', success: '#001a00', tip: '#101000' }[a.type] || '#111';
     const bc = { warn: '#6a4000', info: '#004080', success: '#006000', tip: '#606000' }[a.type] || '#333';
-    return `<div class="alert" style="background:${bg};border-color:${bc}">
+    // Alerts with action=trichome jump to the trichome widget in today's entry
+    const clickable = a.action === 'trichome' && a.cId;
+    const extraAttr = clickable
+      ? ` onclick="entryFrom='dash';openEntryAndScroll('${today}','trich-${a.cId}')" style="background:${bg};border-color:${bc};cursor:pointer"`
+      : ` style="background:${bg};border-color:${bc}"`;
+    return `<div class="alert"${extraAttr}>
       <span style="font-size:16px;flex-shrink:0">${a.icon}</span>
       <div style="font-size:12px;color:var(--text-sub);line-height:1.5">${a.text}</div>
+      ${clickable ? `<span style="color:var(--yellow);font-size:16px;margin-left:auto">›</span>` : ''}
     </div>`;
   }).join('');
 
@@ -1353,6 +1688,30 @@ function renderDash() {
   const fc = act[0];
   const fcAction = fc ? getAction(today, fc) : null;
 
+  // E2: "Heute zu tun"-Cards (only for cycles with an action today)
+  const actionCards = act.map(c => {
+    const p = phase(today, c), a = getAction(today, c);
+    const td = getTodayAction(c, p, a, today);
+    if (!td) return '';
+    return `<div style="background:linear-gradient(135deg,${td.color}18,${td.color}08);border:1px solid ${td.color}55;border-radius:14px;padding:14px 16px;cursor:pointer" onclick="entryFrom='dash';openEntry('${today}')">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <span style="font-size:22px">${td.icon}</span>
+        <div style="flex:1">
+          <div style="font-size:14px;font-weight:700;color:${td.color}">${td.title}</div>
+          <div style="font-size:11px;color:var(--text-muted)">${sym(c)} ${c.name}</div>
+        </div>
+        <span style="color:${td.color};font-size:20px">›</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:4px;margin-bottom:6px">
+        ${td.steps.map((s, i) => `<div style="display:flex;gap:6px;font-size:12px;color:var(--text-sub);line-height:1.5">
+          <span style="color:${td.color};font-weight:600;flex-shrink:0">${i + 1}.</span>
+          <span>${s}</span>
+        </div>`).join('')}
+      </div>
+      ${td.hint ? `<div style="font-size:10px;color:${td.color};opacity:0.85;border-top:0.5px solid ${td.color}33;padding-top:6px;margin-top:4px;line-height:1.4">💡 ${td.hint}</div>` : ''}
+    </div>`;
+  }).filter(Boolean).join('');
+
   // Smart stats
   let avgPH = '–', totalWater = 0, harvestDate = '–';
   if (fc) {
@@ -1360,7 +1719,7 @@ function renderDash() {
     const phVals = wDates.map(d => parseFloat(S.entries[d]?.cycleData?.[fc.id]?.ph)).filter(v => v > 0);
     if (phVals.length > 0) avgPH = (phVals.reduce((a,b) => a+b, 0) / phVals.length).toFixed(1);
     totalWater = wDates.reduce((sum, d) => sum + (parseFloat(S.entries[d]?.cycleData?.[fc.id]?.water) || 0), 0);
-    const hDays = (fc.anzuchtDays||18) + (fc.bloomDays||60) + (fc.flushDays||8) + (fc.iceDays||4);
+    const hDays = (fc.anzuchtDays||PHASE_DEFAULTS.anzuchtDays) + (fc.bloomDays||PHASE_DEFAULTS.bloomDays) + (fc.flushDays||PHASE_DEFAULTS.flushDays) + (fc.iceDays||PHASE_DEFAULTS.iceDays);
     harvestDate = fmtDE(isoPlus(fc.startDate, hDays), {day:'2-digit', month:'short'});
   }
 
@@ -1391,7 +1750,7 @@ function renderDash() {
     const hasPhData = phStats.some(v => v > 0);
     const hasEcData = ecStats.some(v => v > 0);
 
-    return `<div style="background:${cl.dk};border:0.5px solid ${cl.hex}33;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:12px;cursor:pointer" onclick="openEntry('${today}')">
+    return `<div style="background:${cl.dk};border:0.5px solid ${cl.hex}33;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:12px;cursor:pointer" onclick="entryFrom='dash';openEntry('${today}')">
       <div style="display:flex;align-items:center;gap:12px">
         ${ring(pct, cl.hex)}
         <div style="flex:1">
@@ -1411,12 +1770,13 @@ function renderDash() {
           <div style="font-size:10px;color:${a ? cl.hex : 'var(--text-hint)'};font-weight:600;margin-top:1px">${a ? (a === 'giess' ? 'Gießen' : a === 'giess_anz' ? 'Gießen 🌱' : PN[a] || a) : 'Pause'}</div>
         </div>
       </div>
-      ${!a && next ? `<div style="background:${cl.hex}0c;border:0.5px solid ${cl.hex}22;border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:10px">
+      ${!a && next ? `<div onclick="event.stopPropagation();entryFrom='dash';openEntry('${next.iso}')" style="background:${cl.hex}0c;border:0.5px solid ${cl.hex}22;border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:10px;cursor:pointer">
         <span style="font-size:16px">💧</span>
         <div style="flex:1">
           <div style="font-size:12px;font-weight:500;color:${cl.hex}">Nächster Gießtag</div>
           <div style="font-size:12px;color:var(--text-sub)">${fmtDE(next.iso, { weekday: 'long', day: '2-digit', month: 'short' })} · in ${next.days}d</div>
         </div>
+        <span style="color:${cl.hex};font-size:16px">›</span>
       </div>` : ''}
       ${wS.filter(v => v > 0).length >= 3 ? `<div style="display:flex;align-items:center;gap:8px">
         <span style="font-size:10px;color:var(--text-hint);white-space:nowrap">14d 💧</span>
@@ -1455,7 +1815,7 @@ function renderDash() {
     <button style="background:var(--green);border:none;border-radius:22px;padding:14px 32px;font-size:15px;color:#fff;cursor:pointer;font-family:var(--font);font-weight:700;box-shadow:0 4px 14px rgba(76,175,112,0.3)" onclick="goTo('set')">🌱 Jetzt starten →</button>
   </div>` : '';
 
-  document.getElementById('dash-body').innerHTML = `${todayCard}${alertHTML}${stats}<div class="sect-head">Meine Zyklen</div>${empty}${cards}
+  document.getElementById('dash-body').innerHTML = `${actionCards}${todayCard}${alertHTML}${stats}<div class="sect-head">Meine Zyklen</div>${empty}${cards}
     ${act.length > 0 ? `<div class="sec-tog" onclick="openGallery()" style="margin-top:4px;border-color:rgba(176,106,200,0.15)">
       <span>📸</span>
       <div>
@@ -1475,7 +1835,7 @@ const MN = ['Januar','Februar','März','April','Mai','Juni','Juli','August','Sep
 function renderCal() {
   const y = calDate.getFullYear(), m = calDate.getMonth();
   document.getElementById('cal-lbl').textContent = `${MN[m]} ${y}`;
-  const act = active(), today = todayISO();
+  const act = active(), arch = archived(), today = todayISO();
   const fd = new Date(y, m, 1).getDay(), dim = new Date(y, m + 1, 0).getDate();
   const off = fd === 0 ? 6 : fd - 1;
 
@@ -1490,6 +1850,8 @@ function renderCal() {
     const actionDay = dayInfo.find(x => x.a);
     const phaseDay = dayInfo[0];
     const isStart = act.some(c => c.startDate === iso);
+    // Archived cycle phase info (faded)
+    const archInfo = !phaseDay ? arch.map(c => ({ c, p: phase(iso, c) })).filter(x => x.p)[0] : null;
     // Check if this is a topping rest day or skipped day
     const isToppingRest = act.some(c => c.toppingDate && isoDiff(iso, c.toppingDate) >= 1 && isoDiff(iso, c.toppingDate) <= (c.toppingPause || 3));
     const isToppingDay = act.some(c => c.toppingDate === iso);
@@ -1514,7 +1876,8 @@ function renderCal() {
       onclick="calClick('${iso}')" oncontextmenu="return false" ontouchstart="lpS('${iso}',event)" ontouchend="lpE()" ontouchmove="lpE()">
       ${icon ? `<span class="cal-icon">${icon}</span>` : ''}
       <span class="cal-num" ${isStart ? 'style="color:#f0d050;font-weight:800"' : ''}>${d}</span>
-      ${phaseDay ? `<span class="cal-tag" style="color:${tagCol}">T${phaseDay.p.day}</span>` : ''}
+      ${phaseDay ? `<span class="cal-tag" style="color:${tagCol}">T${phaseDay.p.day}</span>` : 
+        archInfo ? `<span class="cal-tag" style="color:${col(archInfo.c).hex}44;font-size:8px">T${archInfo.p.day}</span>` : ''}
       ${hasEntry ? `<div class="cal-dot"></div>` : ''}
     </div>`;
   }
@@ -1831,7 +2194,7 @@ function calcToppingOffset(c, toppingISO, pause) {
   }
 
   const diffFromStart = isoDiff(resumeDay, c.startDate);
-  const a = c.anzuchtDays || 18;
+  const a = c.anzuchtDays || PHASE_DEFAULTS.anzuchtDays;
   const iv = diffFromStart < a ? (c.intAnzucht || 3) : (c.intBloom || 3);
 
   for (let testOff = 0; testOff < iv; testOff++) {
@@ -1896,15 +2259,13 @@ async function stopC(cId) {
   if (!c) return;
   const ok = await customConfirm(
     `"${c.name}" beenden?`,
-    'Der Zyklus wird deaktiviert. Deine Daten bleiben erhalten.',
+    'Der Zyklus wird deaktiviert. Startdatum und Einträge bleiben erhalten — tippe "Archivieren" in den Einstellungen falls du die Phasen im Kalender noch sehen willst.',
     'Beenden', 'var(--red)'
   );
   if (!ok) return;
+  // Only deactivate — keep startDate, offsetHistory, toppingDate, skippedDays
+  // so past entries remain readable and phase/action renders correctly.
   c.active = false;
-  c.startDate = null;
-  c.offsetHistory = [];
-  c.toppingDate = null;
-  c.skippedDays = [];
   saveS();
   renderCal();
   toast(`${sym(c)} beendet`);
@@ -2028,6 +2389,7 @@ function renderTips() {
       <span style="color:var(--text-muted)">›</span>
     </div>
 
+    ${S.beginnerMode ? '' : `
     <!-- PPFD/DLI Light Meter -->
     <div style="background:var(--card);border:0.5px solid rgba(240,208,80,0.2);border-radius:14px;padding:14px;margin-top:4px">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
@@ -2074,6 +2436,7 @@ function renderTips() {
         💡 Sensor aktivieren: Chrome → <b>chrome://flags</b> → "Generic Sensor Extra Classes" → Enabled → Neustart
       </div>
     </div>
+    `}
     <div style="height:12px"></div>`;
 }
 
@@ -2135,17 +2498,30 @@ function renderDuenger() {
   const presetBtns = `<div style="padding:16px;background:linear-gradient(135deg, #0d1e0d, #0a1a0a);border-radius:16px;border:1px solid var(--green-dk);margin-bottom:4px">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
       <span style="font-size:20px">🧪</span>
-      <div class="sect-head" style="margin:0;font-size:12px">Dünger-Vorlage laden</div>
+      <div class="sect-head" style="margin:0;font-size:12px">BioBizz-Düngeplan laden</div>
     </div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <button onclick="loadPreset('biobizz')" style="flex:1;min-width:140px;background:${S.presetKey==='biobizz'?'var(--green-dk)':'var(--green-bg)'};border:1px solid ${S.presetKey==='biobizz'?'var(--green)':'var(--green-dk)'};border-radius:10px;padding:12px 14px;font-size:14px;color:var(--green);cursor:pointer;font-family:var(--font);font-weight:700">🌿 BioBizz Master-Plan</button>
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <button onclick="loadPreset('biobizz_master')" style="background:${S.presetKey==='biobizz_master'?'var(--green-dk)':'var(--green-bg)'};border:1px solid ${S.presetKey==='biobizz_master'?'var(--green)':'var(--green-dk)'};border-radius:10px;padding:10px 14px;font-size:13px;color:var(--green);cursor:pointer;font-family:var(--font);font-weight:700;text-align:left">
+        🏆 Master <span style="font-size:10px;font-weight:400;color:var(--text-muted)">· Cup-Niveau, jedes Gießen, früher N-Cutoff</span>
+      </button>
+      <button onclick="loadPreset('biobizz_light')" style="background:${S.presetKey==='biobizz_light'?'var(--green-dk)':'var(--green-bg)'};border:1px solid ${S.presetKey==='biobizz_light'?'var(--green)':'var(--green-dk)'};border-radius:10px;padding:10px 14px;font-size:13px;color:var(--green);cursor:pointer;font-family:var(--font);font-weight:700;text-align:left">
+        🌱 Light <span style="font-size:10px;font-weight:400;color:var(--text-muted)">· Master × 50% für Einsteiger</span>
+      </button>
+      <button onclick="loadPreset('biobizz_official')" style="background:${S.presetKey==='biobizz_official'?'var(--green-dk)':'var(--green-bg)'};border:1px solid ${S.presetKey==='biobizz_official'?'var(--green)':'var(--green-dk)'};border-radius:10px;padding:10px 14px;font-size:13px;color:var(--green);cursor:pointer;font-family:var(--font);font-weight:700;text-align:left">
+        📋 Official 2025 <span style="font-size:10px;font-weight:400;color:var(--text-muted)">· Herstellerplan, automatisch verteilt</span>
+      </button>
     </div>
-    <div style="display:flex;gap:8px;margin-top:8px;opacity:0.35;pointer-events:none">
+    <div style="display:flex;gap:8px;margin-top:10px;opacity:0.35;pointer-events:none">
       <button style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px 10px;font-size:11px;color:var(--text-muted);font-family:var(--font)">🧪 Plagron · bald</button>
       <button style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px 10px;font-size:11px;color:var(--text-muted);font-family:var(--font)">🔬 CANNA · bald</button>
       <button style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px 10px;font-size:11px;color:var(--text-muted);font-family:var(--font)">💜 Hesi · bald</button>
     </div>
-    ${activePreset ? `<div style="margin-top:10px;padding:8px 10px;background:rgba(76,175,112,0.08);border-radius:8px;font-size:11px;color:var(--green);line-height:1.4">✓ Aktiv: <b>${activePreset.name}</b>${activePreset.subtitle ? ' · ' + activePreset.subtitle : ''}</div>` : ''}
+    ${activePreset ? `<div style="margin-top:10px;padding:8px 10px;background:rgba(76,175,112,0.08);border-radius:8px;font-size:11px;color:var(--green);line-height:1.4">
+      ✓ Aktiv: <b>${activePreset.name}</b>${activePreset.subtitle ? ' · ' + activePreset.subtitle : ''}
+      ${activePreset.doseMode === 'weekly-split'
+        ? '<div style="margin-top:4px;font-size:10px;color:var(--yellow)">💡 Wochendosis-Modus: App teilt automatisch durch Gießtage/Woche</div>'
+        : '<div style="margin-top:4px;font-size:10px;color:var(--text-muted)">💡 Per-Gieß-Modus: Volle Dosis jeden Gießtag</div>'}
+    </div>` : ''}
   </div>`;
 
   // Drain info (if available)
@@ -2170,20 +2546,23 @@ function renderDuenger() {
 
   // Week schedule editor (12 weeks)
   const weekNames = {1:'Keimling',2:'Frühes Wachstum',3:'Haupt-Vegetation',4:'Vorblüte & Stretch',5:'Blüte-Übergang',6:'Blüte-Stacking',7:'Bud-Entwicklung',8:'Peak Bloom',9:'Finale Reife',10:'Herbst-Einleitung',11:'Spülen / Flush',12:'Ernte-Vorbereitung'};
+  const activeFocus = S.presetKey && FERT_PRESETS[S.presetKey]?.weekFocus || null;
   const weekPlan = `<div style="margin-top:12px;padding:12px 14px;background:var(--card);border-radius:14px;border:0.5px solid var(--border)">
     <div class="sect-head">Wochenplan</div>
     <div style="font-size:12px;color:var(--text-muted);margin:4px 0 10px;line-height:1.5">Dosis pro Woche (ml/L). Wird am Gießtag als Vorschlag angezeigt.</div>
     ${[1,2,3,4,5,6,7,8,9,10,11,12].map(w => {
       const wn = weekNames[w] || '';
+      const focus = activeFocus?.[w] || null;
       const isEmpty = !(S.products || []).some(p => (S.weekSchedule['global_w' + w]?.[p.id] || 0) > 0);
       return `
       <div style="margin-bottom:12px;${w>=11?'opacity:0.7':''}">
         <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:5px">
           <span style="font-size:12px;font-weight:600;color:var(--green)">Wo ${w}</span>
-          <span style="font-size:10px;color:var(--text-muted)">${wn}</span>
+          <span style="font-size:10px;color:var(--text-muted)">${focus ? focus.phase : wn}</span>
           ${w===11?'<span style="font-size:10px;color:var(--orange)">🚿 Nur Wasser!</span>':''}
           ${w===12?'<span style="font-size:10px;color:var(--red)">🛑 Gießstopp</span>':''}
         </div>
+        ${focus ? `<div style="font-size:11px;color:var(--yellow);line-height:1.4;margin-bottom:6px;padding:6px 8px;background:rgba(240,208,80,0.05);border-left:2px solid rgba(240,208,80,0.35);border-radius:4px">💡 ${focus.tip}</div>` : ''}
         ${(S.products || []).map(p => {
           const dose = S.weekSchedule['global_w' + w]?.[p.id] || 0;
           return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:3px">
@@ -2290,30 +2669,48 @@ function renderSet() {
   const cl = d.colorId ? COLORS.find(x => x.id === d.colorId) || COLORS[0] : COLORS[0];
 
   const tabs = S.cycles.map(c =>
-    `<div class="tab-item ${c.id === selId ? 'sel' : ''}" onclick="selCyc('${c.id}')">
+    `<div class="tab-item ${c.id === selId ? 'sel' : ''}" onclick="selCyc('${c.id}')" style="${c.archived ? 'opacity:0.5' : ''}">
       <span style="font-size:14px">${sym(c)}</span>
       <span style="color:${col(c).hex}">${c.name}</span>
+      ${c.archived ? '<span style="font-size:8px;color:var(--blue)">📦</span>' : ''}
     </div>`
   ).join('');
 
   const colPick = COLORS.map(x =>
-    `<div class="col-opt ${d.colorId === x.id ? 'sel' : ''}" style="background:${x.hex};width:28px;height:28px" onclick="dd('colorId','${x.id}')"></div>`
+    `<div class="col-opt ${d.colorId === x.id ? 'sel' : ''}" style="background:${x.hex}" onclick="dd('colorId','${x.id}')"></div>`
   ).join('');
 
   const symPick = SYMS.map(s =>
-    `<div class="sym-opt ${d.symbol === s ? 'sel' : ''}" style="width:30px;height:30px;font-size:15px" onclick="ddS('symbol','${s}')">${s}</div>`
+    `<div class="sym-opt ${d.symbol === s ? 'sel' : ''}" onclick="ddS('symbol','${s}')">${s}</div>`
   ).join('');
 
-  const durs = sel ? [
-    ['Anzucht','anzuchtDays',18], ['Blüte','bloomDays',60], ['Spülen','flushDays',8],
-    ['IceFlush','iceDays',4], ['Ernte','harvestDays',1], ['Trocknen','dryDays',7],
-  ].map(([l, k, def]) =>
+  // E5: Beginner mode shows only Anzucht+Blüte; advanced phases revealed as plant reaches them
+  const allDurs = [
+    ['Anzucht','anzuchtDays',PHASE_DEFAULTS.anzuchtDays],
+    ['Blüte','bloomDays',PHASE_DEFAULTS.bloomDays],
+    ['Spülen','flushDays',PHASE_DEFAULTS.flushDays],
+    ['IceFlush','iceDays',PHASE_DEFAULTS.iceDays],
+    ['Ernte','harvestDays',PHASE_DEFAULTS.harvestDays],
+    ['Trocknen','dryDays',PHASE_DEFAULTS.dryDays],
+  ];
+  const durList = S.beginnerMode ? allDurs.slice(0, 2) : allDurs;
+  const durs = sel ? durList.map(([l, k, def]) =>
     `<div class="dur-box"><div class="dur-lbl">${l}</div>
       <input class="dur-inp" type="number" value="${d[k] !== undefined ? d[k] : def}" oninput="dd('${k}',this.value)"/>
     </div>`
   ).join('') : '';
 
   document.getElementById('set-body').innerHTML = `
+    <!-- E5: MODUS-TOGGLE (ganz oben) -->
+    <div style="background:var(--card);border:0.5px solid ${S.beginnerMode ? 'rgba(76,175,112,0.35)' : 'var(--border)'};border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:10px">
+      <span style="font-size:18px">${S.beginnerMode ? '🎯' : '⚡'}</span>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:600;color:${S.beginnerMode ? 'var(--green)' : 'var(--text)'}">${S.beginnerMode ? 'Einsteiger-Modus' : 'Profi-Modus'}</div>
+        <div style="font-size:10px;color:var(--text-muted);line-height:1.4">${S.beginnerMode ? 'Einfache Ansicht · komplexe Optionen versteckt' : 'Alle Einstellungen sichtbar'}</div>
+      </div>
+      <label class="sw"><input type="checkbox" ${S.beginnerMode ? 'checked' : ''} onchange="toggleBeginnerMode(this.checked)"/><span class="sl"></span></label>
+    </div>
+
     <!-- 1. DÜNGER-STATUS (Top Banner — wichtigste Info) -->
     <div onclick="openDuenger()" style="background:linear-gradient(135deg, #0d1e0d, #0a1a0a);border:1px solid ${S.presetKey ? 'var(--green)' : 'var(--orange)'};border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer">
       <span style="font-size:24px">🧪</span>
@@ -2365,7 +2762,7 @@ function renderSet() {
               <select class="inp-field" style="cursor:pointer" onchange="dd('seedType',this.value);renderSet()">
                 <option value="fem" ${d.seedType==='fem'?'selected':''}>♀ Feminisiert</option>
                 <option value="auto" ${d.seedType==='auto'?'selected':''}>⚡ Automatic</option>
-                <option value="reg" ${d.seedType==='reg'?'selected':''}>♀♂ Regulär</option>
+                ${S.beginnerMode && d.seedType !== 'reg' ? '' : `<option value="reg" ${d.seedType==='reg'?'selected':''}>♀♂ Regulär</option>`}
               </select>
             </div>
             <div class="inp-wrap" style="width:90px">
@@ -2383,29 +2780,27 @@ function renderSet() {
           </div>
           ${d.seedType === 'auto' ? '<div style="font-size:10px;color:var(--teal);line-height:1.4;padding:2px 4px">⚡ Automatics: Kein Lichtwechsel nötig. Blüte startet automatisch.</div>' : ''}
 
-          <!-- GRUPPE: Aktivierung -->
+          <!-- GRUPPE: Start & Aktivierung -->
           <div style="background:${sel.active ? cl.dk : 'var(--surface)'};border:0.5px solid ${sel.active ? cl.hex+'44' : 'var(--border)'};border-radius:12px;padding:12px 14px;margin-top:8px">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:${sel.active ? '10px' : '0'}">
+            <div class="inp-wrap" style="margin-bottom:10px">
+              <div class="inp-label">📅 Startdatum (Tag 1)</div>
+              <input class="inp-field" type="date" value="${d.startDate || todayISO()}" oninput="dd('startDate',this.value)" style="color-scheme:dark;border-color:${cl.hex}33"/>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between">
               <div>
                 <div style="font-size:13px;font-weight:600;color:${sel.active ? cl.hex : 'var(--text-sub)'}">
-                  ${sel.active ? '● Aktiver Grow' : '○ Inaktiv'}
+                  ${sel.active ? '● Aktiver Grow' : '○ Grow pausiert'}
                 </div>
-                ${!sel.active ? '<div style="font-size:11px;color:var(--text-muted);margin-top:2px">Aktivieren um den Grow zu starten</div>' : ''}
+                ${!sel.active ? '<div style="font-size:10px;color:var(--text-muted);margin-top:2px">Deaktiviert — wird beim Speichern automatisch aktiviert</div>' : ''}
               </div>
               <label class="sw"><input type="checkbox" ${sel.active ? 'checked' : ''} onchange="toggleAct('${sel.id}',this.checked)"/><span class="sl"></span></label>
             </div>
-            ${sel.active ? `
-              <div class="inp-wrap">
-                <div class="inp-label">Startdatum (Tag 1)</div>
-                <input class="inp-field" type="date" value="${d.startDate || ''}" oninput="dd('startDate',this.value)" style="color-scheme:dark;border-color:${cl.hex}33"/>
-              </div>
-            ` : ''}
           </div>
 
-          ${sel.active ? `
-          <!-- GRUPPE: Phasen & Intervalle (nur wenn aktiv) -->
+          <!-- GRUPPE: Phasen & Intervalle -->
           <div class="sub-head" style="margin-top:4px">📅 Phasendauern (Tage)</div>
           <div class="dur-grid">${durs}</div>
+          ${S.beginnerMode ? '' : `
           <div class="sub-head">💧 Gießintervall (alle X Tage)</div>
           <div class="dur-grid">
             <div class="dur-box"><div class="dur-lbl">Anzucht</div><input class="dur-inp" type="number" value="${d.intAnzucht || 3}" oninput="dd('intAnzucht',this.value)"/></div>
@@ -2417,9 +2812,18 @@ function renderSet() {
             <div class="dur-box"><div class="dur-lbl">Ernte</div><input class="dur-inp" type="number" value="${d.intErnte || 1}" oninput="dd('intErnte',this.value)"/></div>
             <div class="dur-box"><div class="dur-lbl">Trocknen</div><input class="dur-inp" type="number" value="${d.intDry || 1}" oninput="dd('intDry',this.value)"/></div>
           </div>
-          ` : ''}
+          `}
 
           <button class="sav-btn" style="background:${cl.hex};margin-top:8px" onclick="saveDraft()">💾 ${sym(d) || '🌱'} ${d.name || 'Zyklus'} speichern</button>
+          ${(() => {
+            // Backfill-Button: only if active, started in the past, and has missing past watering entries
+            if (!sel.active || sel.archived || !sel.startDate) return '';
+            const missing = countMissingPastWateringDays(sel);
+            if (missing === 0) return '';
+            return `<button onclick="backfillPast('${sel.id}')" style="width:100%;background:rgba(240,208,80,0.08);border:0.5px solid rgba(240,208,80,0.3);border-radius:10px;padding:10px;font-size:13px;color:var(--yellow);cursor:pointer;font-family:var(--font);margin-top:4px">🕐 Vergangene Gießtage auto-eintragen (${missing})</button>`;
+          })()}
+          ${sel.active && !sel.archived ? `<button onclick="archiveCycle('${sel.id}')" style="width:100%;background:rgba(90,171,240,0.06);border:0.5px solid rgba(90,171,240,0.25);border-radius:10px;padding:10px;font-size:13px;color:var(--blue);cursor:pointer;font-family:var(--font);margin-top:4px">📦 Grow archivieren</button>` : ''}
+          ${sel.archived ? `<button onclick="unarchiveCycle('${sel.id}')" style="width:100%;background:rgba(76,175,112,0.06);border:0.5px solid rgba(76,175,112,0.25);border-radius:10px;padding:10px;font-size:13px;color:var(--green);cursor:pointer;font-family:var(--font);margin-top:4px">📦 Archivierung aufheben</button>` : ''}
           <button class="del-btn" onclick="delCyc('${sel.id}')">🗑 Zyklus löschen</button>
         </div>
       ` : `<div style="padding:20px 10px;text-align:center">
@@ -2475,7 +2879,13 @@ function renderSet() {
     <!-- 6. GEFAHRENZONE -->
     <div class="card" style="gap:10px;display:flex;flex-direction:column;border-color:rgba(224,96,96,0.2)">
       <div class="sect-head" style="color:var(--red)">⚠️ Gefahrenzone</div>
-      ${S.cycles.length === 0 ? '<div style="font-size:11px;color:var(--text-muted)">Keine Zyklen vorhanden.</div>' : `
+      ${S.cycles.length === 0 ? `<div style="font-size:11px;color:var(--text-muted)">Keine Zyklen vorhanden.</div>
+        ${Object.keys(S.entries).length > 0 ? `
+          <div style="background:rgba(224,96,96,0.06);border:0.5px solid rgba(224,96,96,0.2);border-radius:8px;padding:10px 12px;margin-top:4px">
+            <div style="font-size:11px;color:var(--red);margin-bottom:6px">⚠️ ${Object.keys(S.entries).length} verwaiste Einträge gefunden</div>
+            <button onclick="wipeAllEntries()" style="width:100%;background:var(--surface);border:0.5px solid rgba(224,96,96,0.4);border-radius:8px;padding:9px;font-size:12px;color:var(--red);cursor:pointer;font-family:var(--font)">🗑 Alle Einträge endgültig löschen</button>
+          </div>
+        ` : ''}` : `
         <div style="font-size:11px;color:var(--text-muted);line-height:1.5">Zyklus auswählen, dann Aktion wählen:</div>
         <div style="display:flex;flex-wrap:wrap;gap:5px">
           ${S.cycles.map(c => {
@@ -2503,7 +2913,7 @@ function renderSet() {
       `}
 
       <!-- Bulk-Aktionen: Nur inaktive Zyklen -->
-      ${S.cycles.some(c => !c.active) ? `
+      ${!S.beginnerMode && S.cycles.some(c => !c.active) ? `
         <div style="border-top:0.5px solid var(--border);padding-top:10px;margin-top:4px">
           <div style="font-size:10px;color:var(--text-hint);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;font-weight:600">Bulk-Aktionen</div>
           <button onclick="resetInactive()" style="width:100%;background:var(--surface);border:0.5px solid rgba(232,136,74,0.25);border-radius:8px;padding:10px 8px;font-size:12px;color:var(--orange);cursor:pointer;font-family:var(--font);margin-bottom:6px">
@@ -2519,6 +2929,7 @@ function renderSet() {
       </button>
     </div>
 
+    ${S.beginnerMode ? '' : `
     <!-- 7. TEST-MODUS (Entwickler — ganz unten) -->
     <div class="card" style="gap:8px;display:flex;flex-direction:column;border-color:rgba(240,208,80,0.2)">
       <div class="sect-head" style="color:var(--yellow)">🧪 Test-Modus (Entwickler)</div>
@@ -2533,8 +2944,9 @@ function renderSet() {
       </div>
       ${_debugDate ? `<div style="font-size:11px;color:var(--yellow)">⚠️ Aktiv: App denkt es ist der <b>${fmtDE(_debugDate, {weekday:'long',day:'2-digit',month:'long',year:'numeric'})}</b></div>` : ''}
     </div>
+    `}
 
-    <div style="text-align:center;padding:16px 0;font-size:11px;color:var(--text-hint)">GrowSmart v0.8.54 🌱</div>
+    <div style="text-align:center;padding:16px 0;font-size:11px;color:var(--text-hint)">GrowSmart v0.8.68 🌱</div>
     <div style="height:20px"></div>`;
 
   // Restore scroll position (goTo handles scroll-to-top on tab switch)
@@ -2548,6 +2960,15 @@ function ddS(k, v) { draft[k] = v; renderSet(); }
 function saveDraft() {
   const c = S.cycles.find(x => x.id === selId);
   if (!c) return;
+
+  // Auto-activate if not yet active and has a startDate in draft
+  if (!draft.active && draft.startDate) {
+    draft.active = true;
+  }
+  // If active but no startDate, set today
+  if (draft.active && !draft.startDate) {
+    draft.startDate = todayISO();
+  }
 
   // If start date changed, migrate entry data
   const old = c.startDate, nw = draft.startDate;
@@ -2580,11 +3001,13 @@ function addCyc() {
   const i = S.cycles.length;
   const c = {
     id: Date.now().toString(), name: `Zyklus ${i + 1}`, location: '',
-    active: false, startDate: null, colorId: COLORS[i % COLORS.length].id,
+    active: true, startDate: todayISO(), colorId: COLORS[i % COLORS.length].id,
     symbol: SYMS[i % SYMS.length], seedType: 'auto', lightVeg: '18/6', lightBloom: '18/6',
-    anzuchtDays: 18, bloomDays: 60,
-    flushDays: 8, iceDays: 4, harvestDays: 1, dryDays: 7,
-    intAnzucht: 3, intBloom: 3, intFlush: 4, intIce: 4, intErnte: 1, intDry: 1,
+    anzuchtDays: PHASE_DEFAULTS.anzuchtDays, bloomDays: PHASE_DEFAULTS.bloomDays,
+    flushDays: PHASE_DEFAULTS.flushDays, iceDays: PHASE_DEFAULTS.iceDays,
+    harvestDays: PHASE_DEFAULTS.harvestDays, dryDays: PHASE_DEFAULTS.dryDays,
+    intAnzucht: RI.anzucht, intBloom: RI.bloom, intFlush: RI.flush,
+    intIce: RI.ice, intErnte: RI.ernte, intDry: RI.dry,
     offsetHistory: [], toppingDate: null, toppingPause: 3, skippedDays: [],
   };
   S.cycles.push(c);
@@ -2592,6 +3015,7 @@ function addCyc() {
   draft = { ...c };
   saveS();
   renderSet();
+  toast(`🌱 ${c.name} erstellt — Start: ${fmtDE(c.startDate, {day:'2-digit',month:'2-digit'})}`);
 }
 
 function toggleAct(id, checked) {
@@ -2599,10 +3023,149 @@ function toggleAct(id, checked) {
   if (!c) return;
   c.active = checked;
   if (checked && !c.startDate) c.startDate = todayISO();
-  if (!checked) { c.startDate = null; c.offsetHistory = []; c.toppingDate = null; c.skippedDays = []; }
+  // Deactivating: keep data intact. Use "Archivieren" or "Löschen" for destructive actions.
   draft.active = c.active;
   draft.startDate = c.startDate;
   saveS();
+  renderSet();
+}
+
+/** E5: Toggle beginner mode. Hides advanced options throughout the UI. */
+function toggleBeginnerMode(enabled) {
+  S.beginnerMode = !!enabled;
+  saveS();
+  vibrate();
+  toast(enabled ? '🎯 Einsteiger-Modus an' : '⚡ Profi-Modus an');
+  renderSet();
+}
+
+/** Archive a grow — keeps all data but removes from active schedule */
+async function archiveCycle(id) {
+  const c = S.cycles.find(x => x.id === id);
+  if (!c) return;
+  const ok = await customConfirm(
+    '📦 Grow archivieren?',
+    `"${c.name}" wird archiviert. Im Kalender verblasst dargestellt, nicht mehr editierbar. Alle Daten bleiben erhalten. Du kannst jederzeit die Archivierung aufheben.`,
+    'Archivieren', 'var(--blue)'
+  );
+  if (!ok) return;
+  c.archived = true;
+  c.active = false; // Deactivate from watering schedule
+  draft.archived = true;
+  draft.active = false;
+  saveS();
+  vibrate();
+  toast(`📦 ${c.name} archiviert`);
+  renderSet();
+}
+
+/** Unarchive a grow — restore to editable state */
+async function unarchiveCycle(id) {
+  const c = S.cycles.find(x => x.id === id);
+  if (!c) return;
+  c.archived = false;
+  c.active = true;
+  draft.archived = false;
+  draft.active = true;
+  saveS();
+  vibrate();
+  toast(`📦 ${c.name} wieder aktiv`);
+  renderSet();
+}
+
+/**
+ * Count past watering days (giess/giess_anz/spuelen/ice) between startDate and today
+ * that have no entry yet. Used to decide whether to show the backfill button and how
+ * many days it covers.
+ */
+function countMissingPastWateringDays(c) {
+  if (!c.startDate) return 0;
+  const today = todayISO();
+  let count = 0;
+  let iter = c.startDate;
+  // Safety limit: don't iterate more than 200 days (covers longest possible grow + buffer)
+  for (let i = 0; i < 200 && iter < today; i++) {
+    const a = getAction(iter, c);
+    if (['giess','giess_anz','spuelen','ice'].includes(a)) {
+      const existing = S.entries[iter]?.cycleData?.[c.id];
+      const hasData = existing && (existing.water || existing.ph || (existing.doses && Object.values(existing.doses).some(v => v > 0)));
+      if (!hasData) count++;
+    }
+    iter = isoPlus(iter, 1);
+  }
+  return count;
+}
+
+/**
+ * Fill past watering days with planned values. Skips days that already have data
+ * (non-destructive). Computes fertilizer week per phase + day, same logic as entry render.
+ */
+async function backfillPast(id) {
+  const c = S.cycles.find(x => x.id === id);
+  if (!c || !c.startDate) return;
+  const missing = countMissingPastWateringDays(c);
+  if (missing === 0) return;
+  const ok = await customConfirm(
+    `🕐 ${missing} vergangene Gießtage auto-eintragen?`,
+    `Wasser, pH 6.4 und Plan-Dünger werden für ${missing} Gießtage zwischen ${fmtDE(c.startDate, {day:'2-digit',month:'short'})} und heute eingetragen. Bestehende Einträge bleiben unverändert.`,
+    'Auto-eintragen', 'var(--yellow)'
+  );
+  if (!ok) return;
+  
+  const today = todayISO();
+  let filled = 0;
+  let iter = c.startDate;
+  for (let i = 0; i < 200 && iter < today; i++) {
+    const a = getAction(iter, c);
+    if (['giess','giess_anz','spuelen','ice'].includes(a)) {
+      const existing = S.entries[iter]?.cycleData?.[c.id];
+      const hasData = existing && (existing.water || existing.ph || (existing.doses && Object.values(existing.doses).some(v => v > 0)));
+      if (!hasData) {
+        const p = phase(iter, c);
+        if (p) {
+          // Compute fert week: same as entry screen logic
+          let fertWk = 1;
+          if (p.ph === 'flush' || p.ph === 'ice') fertWk = 11;
+          else if (p.ph === 'harvest' || p.ph === 'dry') fertWk = 12;
+          else {
+            const td = isoDiff(iter, c.startDate);
+            fertWk = Math.max(1, Math.min(Math.floor(td / 7) + 1, 10));
+          }
+          // Ensure entry exists with proper shape
+          if (!S.entries[iter]) S.entries[iter] = { temp: '', humidity: '', cycleData: {} };
+          if (!S.entries[iter].cycleData) S.entries[iter].cycleData = {};
+          if (!S.entries[iter].cycleData[c.id]) S.entries[iter].cycleData[c.id] = { doses: {}, water: '', ph: '', ec: '', notes: '', photos: [], trichomes: null };
+          const cd = S.entries[iter].cycleData[c.id];
+          if (!cd.doses) cd.doses = {};
+          
+          const waterMl = waterSuggestion(c, p);
+          cd.water = String(waterMl);
+          cd.ph = '6.4';
+          // Only fertilizers on normal watering days
+          if (a === 'giess' || a === 'giess_anz') {
+            const doses = getWeekDoses(c.id, fertWk, c);
+            Object.entries(doses).forEach(([prodId, plan]) => {
+              if (plan > 0) {
+                const ml = Math.round((plan * waterMl / 1000) * 10) / 10;
+                cd.doses[prodId] = ml;
+              }
+            });
+          }
+          // Environment: only set if still empty
+          const e = S.entries[iter];
+          if (!e.temp || String(e.temp).trim() === '') e.temp = '23.5';
+          if (!e.humidity || String(e.humidity).trim() === '') e.humidity = '60';
+          // Mark auto-filled so user knows
+          if (!cd.notes) cd.notes = '🤖 Auto-eingetragen';
+          filled++;
+        }
+      }
+    }
+    iter = isoPlus(iter, 1);
+  }
+  saveS();
+  vibrate(20);
+  toast(`✓ ${filled} Tage eingetragen`);
   renderSet();
 }
 
@@ -2711,6 +3274,22 @@ async function wipeInactive() {
   toast(`✓ ${count} Einträge gelöscht`);
 }
 
+/** Wipe absolutely ALL entries (for when no cycles exist) */
+async function wipeAllEntries() {
+  const count = Object.keys(S.entries).length;
+  if (count === 0) { toast('Keine Einträge vorhanden'); return; }
+  const ok = await customConfirm(
+    `${count} Einträge endgültig löschen?`,
+    `Alle ${count} Tageseinträge (Wasser, pH, EC, Fotos, Notizen, Temperatur, RLF) werden unwiderruflich gelöscht. Nur durchführen wenn keine Zyklen mehr da sind!`,
+    'Alle löschen'
+  );
+  if (!ok) return;
+  S.entries = {};
+  saveS();
+  renderSet();
+  toast(`🗑 ${count} Einträge gelöscht`);
+}
+
 /** Purge all orphaned entries — entries with no active cycle data */
 async function purgeOrphans() {
   const activeCycleIds = new Set(S.cycles.map(c => c.id));
@@ -2718,7 +3297,7 @@ async function purgeOrphans() {
 
   Object.keys(S.entries).forEach(d => {
     const e = S.entries[d];
-    if (!e) return;
+    if (!e) { delete S.entries[d]; count++; return; }
 
     // Remove cycleData for non-existent cycles
     if (e.cycleData) {
@@ -2729,13 +3308,20 @@ async function purgeOrphans() {
       });
     }
 
-    // Check if entry is now empty
-    const hasCycleData = e.cycleData && Object.keys(e.cycleData).some(cId =>
-      Object.values(e.cycleData[cId] || {}).some(v =>
-        v !== '' && v !== null && v !== undefined && !(Array.isArray(v) && v.length === 0) && !(typeof v === 'object' && !Array.isArray(v) && Object.keys(v).length === 0)
-      )
-    );
-    const hasEnv = e.temp || e.humidity;
+    // Check if entry has real (non-empty) cycle data
+    const hasCycleData = e.cycleData && Object.keys(e.cycleData).some(cId => {
+      const cd = e.cycleData[cId];
+      if (!cd) return false;
+      return Object.entries(cd).some(([, v]) => {
+        if (v === '' || v === null || v === undefined || v === 0) return false;
+        if (Array.isArray(v)) return v.length > 0;
+        if (typeof v === 'object') return Object.keys(v).length > 0;
+        return true;
+      });
+    });
+
+    // Check env data: only count as real if truthy AND not empty string
+    const hasEnv = (e.temp && String(e.temp).trim() !== '') || (e.humidity && String(e.humidity).trim() !== '');
 
     if (!hasCycleData && !hasEnv) {
       delete S.entries[d];
@@ -2933,7 +3519,7 @@ function exportDiary() {
     md += `- **Status:** ${c.active ? 'Aktiv' : 'Inaktiv'}\n`;
     if (c.startDate) md += `- **Start:** ${fmtDE(c.startDate, { day:'2-digit', month:'long', year:'numeric' })}\n`;
     if (c.location) md += `- **Standort:** ${c.location}\n`;
-    md += `- **Phasen:** Anzucht ${c.anzuchtDays||18}d → Blüte ${c.bloomDays||60}d → Spülen ${c.flushDays||8}d → Ice ${c.iceDays||4}d\n`;
+    md += `- **Phasen:** Anzucht ${c.anzuchtDays||PHASE_DEFAULTS.anzuchtDays}d → Blüte ${c.bloomDays||PHASE_DEFAULTS.bloomDays}d → Spülen ${c.flushDays||PHASE_DEFAULTS.flushDays}d → Ice ${c.iceDays||PHASE_DEFAULTS.iceDays}d\n`;
     if (S.presetKey) md += `- **Düngeplan:** ${FERT_PRESETS[S.presetKey]?.name || S.presetKey}\n`;
     md += `- **Topfgröße:** ${S.potSize || 11}L\n\n`;
 
@@ -2996,14 +3582,131 @@ function exportDiary() {
 // =====================================================================
 //  ENTRY SCREEN (with SMART FERTILIZER CALCULATOR)
 // =====================================================================
-const QN = {
-  anzucht: ['Keimling sichtbar','Umgetopft','Erste Blätter','Licht angepasst','Leicht gedüngt','Erde trocken','Erde feucht'],
-  bloom:   ['Erste Blüten','Blüten wachsen','Stütze gesetzt','Blätter gelb unten','Geruch intensiv','Trichome milchig','Trichome klar','Stretch-Phase'],
-  flush:   ['Nur Wasser','pH korrigiert','Runoff klar','Vergilbung normal'],
-  ice:     ['Eiswasser gegeben','Trichome glitzern'],
-  harvest: ['Geerntet!','Wet Trim','Dry Trim','Aufgehängt'],
-  dry:     ['Trocknung läuft','Stiele knacken','In Gläser','Burping'],
+/**
+ * Maps Smart Quick Note labels to Lexikon entries. When a chip is activated
+ * for a label that has a mapping, a small "📖 Info" link is shown — so beginners
+ * can learn about what they just observed in context.
+ */
+const QN_LEX = {
+  'Blätter hängen': 'Dryback-Methode',
+  'Blätter gelblich': 'Nährstoffmangel',
+  'Untere Blätter gelb': 'Nährstoffmangel',
+  'Überwässert': 'Dryback-Methode',
+  'Umgetopft': 'Umtopfen',
+  'Stretch sichtbar': 'Lichtzyklen',
+  'Trichome klar': 'Trichom-Stadien',
+  'Trichome milchig': 'Trichom-Stadien',
+  'Trichome bernstein': 'Trichom-Stadien',
+  'Trichome glitzern': 'IceFlush',
+  'Stütze gesetzt': 'LST (Low Stress)',
+  'Nur klares Wasser': 'Spülung',
+  'Eiswasser gegeben': 'IceFlush',
+  'Wet Trim': 'Trocknung',
+  'Aufgehängt': 'Trocknung',
+  'Stiele knacken': 'Trocknung',
+  'In Gläser gefüllt': 'Curing',
+  'Burping gemacht': 'Curing',
+  'Schädling gesehen': 'Schädlinge',
 };
+
+/**
+ * Smart Quick-Actions: kontextuelle Vorschläge basierend auf
+ * Tag, Phase, und ob bestimmte Meilensteine schon markiert wurden.
+ * Gibt Array von { label, icon, type } zurück.
+ * type: 'note' (als Notiz-Tag) | 'state' (Zustand der Pflanze)
+ */
+function getSmartQuickNotes(c, p, cd, iso) {
+  if (!p) return [];
+  const out = [];
+  const day = p.day || 1;
+  const allEntries = Object.keys(S.entries).filter(d => S.entries[d]?.cycleData?.[c.id]);
+  const notesAllTime = allEntries.map(d => S.entries[d]?.cycleData?.[c.id]?.notes || '').join(' ');
+
+  // === ZUSTANDS-CHECKS (immer relevant) ===
+  out.push({ label: 'Sieht gesund aus', icon: '✅', type: 'state' });
+  out.push({ label: 'Blätter hängen', icon: '🥀', type: 'state' });
+
+  // === PHASE-SPEZIFISCH ===
+  if (p.ph === 'anzucht') {
+    // Tag 1-3: Keimung
+    if (day <= 3 && !notesAllTime.includes('Keimling sichtbar')) {
+      out.push({ label: 'Keimling sichtbar', icon: '🌱', type: 'milestone' });
+    }
+    // Tag 4-10: Erste Blätter
+    if (day >= 3 && day <= 10 && !notesAllTime.includes('Erste Blätter')) {
+      out.push({ label: 'Erste Blätter (Cotyledons)', icon: '🌿', type: 'milestone' });
+    }
+    // Tag 7-15: Echte Blätter
+    if (day >= 7 && day <= 18 && !notesAllTime.includes('Echte Blätter')) {
+      out.push({ label: 'Echte Blätter da', icon: '🍃', type: 'milestone' });
+    }
+    // Umtopfen Hinweis ab Tag 10
+    if (day >= 10 && !notesAllTime.includes('Umgetopft')) {
+      out.push({ label: 'Umgetopft', icon: '🪴', type: 'milestone' });
+    }
+    // Standard-Checks in Anzucht
+    out.push({ label: 'Blätter gelblich', icon: '🟡', type: 'state' });
+    out.push({ label: 'Überwässert', icon: '💧', type: 'state' });
+  }
+
+  if (p.ph === 'bloom') {
+    const bloomWeek = p.week || 1;
+    // Wo 1-2: Stretch + erste Blüten
+    if (bloomWeek <= 2 && !notesAllTime.includes('Erste Blüten')) {
+      out.push({ label: 'Erste Blüten', icon: '🌸', type: 'milestone' });
+    }
+    if (bloomWeek <= 2) {
+      out.push({ label: 'Stretch sichtbar', icon: '📏', type: 'state' });
+    }
+    // Wo 3-5: Buds formen sich
+    if (bloomWeek >= 2 && bloomWeek <= 5 && !notesAllTime.includes('Stütze gesetzt')) {
+      out.push({ label: 'Stütze gesetzt', icon: '🪵', type: 'milestone' });
+    }
+    // Wo 4+: Geruch
+    if (bloomWeek >= 4) {
+      out.push({ label: 'Geruch intensiv', icon: '👃', type: 'state' });
+    }
+    // Wo 6+: Trichome & Reife
+    if (bloomWeek >= 6) {
+      out.push({ label: 'Trichome klar', icon: '💎', type: 'observation' });
+      out.push({ label: 'Trichome milchig', icon: '🥛', type: 'observation' });
+    }
+    if (bloomWeek >= 7) {
+      out.push({ label: 'Trichome bernstein', icon: '🍯', type: 'observation' });
+    }
+    // Vergilbung ist ab Wo 6 normal
+    if (bloomWeek >= 6) {
+      out.push({ label: 'Untere Blätter gelb', icon: '🍂', type: 'state' });
+    }
+  }
+
+  if (p.ph === 'flush') {
+    out.push({ label: 'Nur klares Wasser', icon: '💧', type: 'action' });
+    out.push({ label: 'Runoff klar', icon: '✨', type: 'observation' });
+  }
+
+  if (p.ph === 'ice') {
+    out.push({ label: 'Eiswasser gegeben', icon: '🧊', type: 'action' });
+    out.push({ label: 'Trichome glitzern', icon: '✨', type: 'observation' });
+  }
+
+  if (p.ph === 'harvest') {
+    if (!notesAllTime.includes('Geerntet')) out.push({ label: 'Geerntet!', icon: '🏆', type: 'milestone' });
+    out.push({ label: 'Wet Trim', icon: '✂️', type: 'action' });
+    out.push({ label: 'Aufgehängt', icon: '🪢', type: 'milestone' });
+  }
+
+  if (p.ph === 'dry') {
+    out.push({ label: 'Stiele knacken', icon: '🔊', type: 'observation' });
+    out.push({ label: 'In Gläser gefüllt', icon: '🫙', type: 'milestone' });
+    out.push({ label: 'Burping gemacht', icon: '💨', type: 'action' });
+  }
+
+  // === PROBLEM-MARKER (phasenübergreifend) ===
+  out.push({ label: 'Schädling gesehen', icon: '🐛', type: 'problem' });
+
+  return out;
+}
 
 function openEntry(iso) {
   editISO = iso;
@@ -3095,7 +3798,7 @@ function renderEntry(iso) {
         wk = Math.max(1, Math.min(Math.floor(totalDay / 7) + 1, 10));
       }
     }
-    const doses = getWeekDoses(c.id, wk);
+    const doses = getWeekDoses(c.id, wk, c);
     const isWaterDay = a === 'giess' || a === 'giess_anz' || a === 'spuelen' || a === 'ice';
     const waterSug = waterSuggestion(c, p);
 
@@ -3191,17 +3894,23 @@ function renderEntry(iso) {
       const showDrain = growDay >= 25 || p?.ph === 'flush' || p?.ph === 'ice'; // Drain erst ab Vollsättigung
 
       const waterInput = `<div style="display:flex;flex-direction:column;gap:8px">
+        ${(['giess','giess_anz','spuelen','ice'].includes(a) && !parseFloat(cd.water) && !parseFloat(cd.ph))
+          ? `<button onclick="applyRecommended('${c.id}',${wk})" style="width:100%;background:linear-gradient(135deg,${cl.hex}22,${cl.hex}11);border:1px solid ${cl.hex}66;border-radius:10px;padding:10px 14px;font-size:13px;color:${cl.hex};cursor:pointer;font-family:var(--font);font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px">
+              <span style="font-size:16px">✨</span>
+              <span>Empfohlene Werte übernehmen</span>
+            </button>`
+          : ''}
         <div class="water-input-box" style="gap:10px;align-items:stretch">
           <div style="display:flex;align-items:center;gap:8px">
             <span style="font-size:18px">💧</span>
             <div>
               <div style="font-size:10px;color:var(--text-hint);margin-bottom:2px">Gießmenge (ml)</div>
               <div style="display:flex;align-items:center;gap:4px">
-                <button onclick="stepWater('${c.id}',-50,${wk})" style="width:32px;height:32px;border-radius:6px;background:var(--card2);border:0.5px solid var(--border);color:var(--text-sub);font-size:15px;cursor:pointer;font-family:var(--mono);display:flex;align-items:center;justify-content:center">−</button>
+                <button onclick="stepWater('${c.id}',-50,${wk})" class="stepper-btn">−</button>
                 <input class="inp-field" type="number" step="50" id="water-calc-${c.id}" value="${savedWater}" placeholder="${waterSug}"
                   style="border-color:${cl.hex}44;width:80px;height:32px;font-size:15px;font-weight:600;font-family:var(--mono);text-align:center;padding:6px 2px"
                   oninput="updateCalc('${c.id}',${wk});uEF('${c.id}','water',this.value)"/>
-                <button onclick="stepWater('${c.id}',50,${wk})" style="width:32px;height:32px;border-radius:6px;background:var(--card2);border:0.5px solid var(--border);color:var(--text-sub);font-size:15px;cursor:pointer;font-family:var(--mono);display:flex;align-items:center;justify-content:center">+</button>
+                <button onclick="stepWater('${c.id}',50,${wk})" class="stepper-btn">+</button>
               </div>
             </div>
           </div>
@@ -3220,11 +3929,11 @@ function renderEntry(iso) {
           <div>
             <div style="font-size:10px;color:var(--text-hint);margin-bottom:2px">pH</div>
             <div style="display:flex;align-items:center;gap:3px">
-              <button onclick="stepPH('${c.id}',-0.1)" style="width:32px;height:32px;border-radius:6px;background:var(--card2);border:0.5px solid var(--border);color:var(--text-sub);font-size:14px;cursor:pointer;font-family:var(--mono);display:flex;align-items:center;justify-content:center">−</button>
+              <button onclick="stepPH('${c.id}',-0.1)" class="stepper-btn">−</button>
               <input class="inp-field" type="number" step="0.1" min="4" max="9" id="ph-${c.id}" value="${cd.ph || ''}" placeholder="6.4"
                 style="width:52px;font-size:15px;font-weight:600;font-family:var(--mono);text-align:center;padding:6px 2px"
                 onfocus="if(!this.value)this.value='6.4'" oninput="uEF('${c.id}','ph',this.value)"/>
-              <button onclick="stepPH('${c.id}',0.1)" style="width:32px;height:32px;border-radius:6px;background:var(--card2);border:0.5px solid var(--border);color:var(--text-sub);font-size:14px;cursor:pointer;font-family:var(--mono);display:flex;align-items:center;justify-content:center">+</button>
+              <button onclick="stepPH('${c.id}',0.1)" class="stepper-btn">+</button>
             </div>
           </div>
           <div>
@@ -3238,8 +3947,14 @@ function renderEntry(iso) {
           </div>
         </div>
       </div>
-      ${(parseFloat(cd.ec) > 2.5) ? '<div style="background:rgba(224,96,96,0.08);border:0.5px solid rgba(224,96,96,0.25);border-radius:8px;padding:6px 10px;font-size:11px;color:var(--red);margin-bottom:6px">⚠️ EC über 2.5! Überdüngung möglich — nächstes Mal weniger düngen oder Zwischenguss mit reinem Wasser.</div>' : ''}
-      ${(parseFloat(cd.ec) > 0 && parseFloat(cd.ec) < 0.8 && showNutrients) ? '<div style="background:rgba(90,171,240,0.06);border:0.5px solid rgba(90,171,240,0.2);border-radius:8px;padding:6px 10px;font-size:11px;color:var(--blue);margin-bottom:6px">ℹ️ EC unter 0.8 — Pflanze kann mehr vertragen. Dosis leicht erhöhen.</div>' : ''}`;
+      ${(() => {
+        const ws = getEntryWarnings(cd, p, saved, c);
+        if (!ws.length) return '';
+        const bg = { err: 'rgba(224,96,96,0.08)', warn: 'rgba(232,136,74,0.08)', info: 'rgba(90,171,240,0.06)' };
+        const bd = { err: 'rgba(224,96,96,0.25)', warn: 'rgba(232,136,74,0.25)', info: 'rgba(90,171,240,0.2)' };
+        const fg = { err: 'var(--red)', warn: 'var(--orange)', info: 'var(--blue)' };
+        return ws.map(w => `<div style="background:${bg[w.type]};border:0.5px solid ${bd[w.type]};border-radius:8px;padding:6px 10px;font-size:11px;color:${fg[w.type]};margin-bottom:6px;line-height:1.5">${w.text}</div>`).join('');
+      })()}`;
 
       if (showNutrients) {
         // Full nutrient table with plan + calculated amounts
@@ -3265,19 +3980,29 @@ function renderEntry(iso) {
           ? S.mixOrder.filter(n => { const pr = S.products.find(p => p.name === n); return pr && (doses[pr.id] || 0) > 0; })
           : [];
         const mixSteps = activeMixProducts.length > 0
-          ? `<div style="background:var(--card);border:0.5px solid var(--border);border-top:none;border-radius:0 0 10px 10px;padding:8px 12px">
-              <div style="font-size:10px;color:var(--text-hint);margin-bottom:4px;font-weight:600">⚗️ MISCHREIHENFOLGE — antippen zum Abhaken</div>
+          ? `<div style="background:var(--card);border:0.5px solid var(--border);border-top:none;border-radius:0 0 10px 10px;padding:10px 12px">
+              <div style="font-size:10px;color:var(--text-hint);margin-bottom:6px;font-weight:600">⚗️ MISCHREIHENFOLGE</div>
               ${activeMixProducts.map((name, i) => {
                 const pr = S.products.find(p => p.name === name);
                 const d2 = doses[pr?.id] || 0;
-                const calc2 = d2 > 0 ? (d2 * waterAmt / 1000).toFixed(1) : '–';
+                const calc2 = d2 > 0 ? (d2 * waterAmt / 1000).toFixed(1) : 0;
+                // Q1: persistent check state, stored per-entry keyed by product id
+                const checked = !!(cd.mixChecks?.[pr?.id]);
                 const checkId = `mix-${c.id}-${i}`;
-                return `<div class="mix-step" id="${checkId}" onclick="toggleMixCheck('${checkId}')" style="cursor:pointer;border-radius:8px;padding:6px 4px;margin:0 -4px;transition:background 0.15s">
-                  <div class="mix-num">${i + 1}</div>
-                  <div style="width:8px;height:8px;border-radius:50%;background:${pr?.color || '#555'};flex-shrink:0"></div>
-                  <span style="flex:1">${name}</span>
-                  <span style="color:var(--green);font-family:var(--mono);font-size:11px">${calc2 !== '–' ? calc2 + ' ml' : ''}</span>
-                  <span class="mix-chk" style="font-size:16px;width:22px;text-align:center">○</span>
+                const rowStyle = checked
+                  ? 'padding:10px 8px;margin:0 -4px;border-radius:8px;transition:background 0.15s;align-items:center;cursor:pointer;background:rgba(76,175,112,0.06);opacity:0.6'
+                  : 'padding:10px 8px;margin:0 -4px;border-radius:8px;transition:background 0.15s;align-items:center;cursor:pointer';
+                return `<div class="mix-step" id="${checkId}" onclick="toggleMixCheck('${c.id}','${pr?.id}')" style="${rowStyle}">
+                  <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0">
+                    <div class="mix-chk" style="font-size:18px;width:24px;text-align:center;flex-shrink:0;color:${checked ? 'var(--green)' : ''}">${checked ? '✓' : '○'}</div>
+                    <div style="width:10px;height:10px;border-radius:50%;background:${pr?.color || '#555'};flex-shrink:0"></div>
+                    <span style="font-size:13px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name}</span>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:3px;flex-shrink:0">
+                    <button onclick="event.stopPropagation();stepMixDose('${c.id}','${pr?.id}',${wk},-0.1,${waterAmt})" style="width:26px;height:26px;border-radius:5px;background:var(--surface);border:0.5px solid var(--border);color:var(--text-sub);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:var(--mono)">−</button>
+                    <span style="color:var(--green);font-family:var(--mono);font-size:13px;font-weight:600;width:52px;text-align:center">${calc2} ml</span>
+                    <button onclick="event.stopPropagation();stepMixDose('${c.id}','${pr?.id}',${wk},0.1,${waterAmt})" style="width:26px;height:26px;border-radius:5px;background:var(--surface);border:0.5px solid var(--border);color:var(--text-sub);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:var(--mono)">+</button>
+                  </div>
                 </div>`;
               }).join('')}
             </div>`
@@ -3357,109 +4082,8 @@ function renderEntry(iso) {
       }
     }
 
-    // Smart tip
-    const tip = getSmartTip(c, p);
-    const hintHTML = tip
-      ? `<div onclick="openLexikonEntry('${tip.lex}')" style="background:${cl.hex}0a;border:0.5px solid ${cl.hex}1a;border-radius:9px;padding:8px 11px;font-size:11px;color:${cl.hex}cc;line-height:1.5;margin-top:4px;cursor:pointer;display:flex;align-items:center;gap:6px">
-          <span>💡</span><span style="flex:1">${tip.text}</span><span style="font-size:10px;color:${cl.hex}55">📖›</span>
-        </div>`
-      : '';
-
-    // Quick notes
-    const qnotes = QN[p?.ph] || [];
-    const qnHTML = qnotes.length
-      ? `<div class="qn-row">${qnotes.map(n => {
-          const already = (cd.notes || '').includes(n);
-          return `<div class="qn-chip" onclick="addQN('${c.id}',this,'${n.replace(/'/g, "\\'")}')" style="${already ? 'background:var(--green-bg);border-color:var(--green-dk);color:var(--green);font-weight:600' : ''}">${already ? '✓ ' + n : '+ ' + n}</div>`;
-        }).join('')}</div>`
-      : '';
-
-    // Trichom-Tracker: ab Blüte Woche 7
-    const showTrich = p && p.ph === 'bloom' && p.week >= 7;
-    const trich = cd.trichomes || { clear: 70, milky: 25, amber: 5 };
-
-    // Ernte-Log: show during harvest and dry phases
-    const showErnte = p && (p.ph === 'harvest' || p.ph === 'dry');
-    const ernte = cd.harvestLog || {};
-    const ernteHTML = showErnte ? `
-      <div style="background:rgba(76,175,112,0.06);border:0.5px solid rgba(76,175,112,0.2);border-radius:12px;padding:12px;margin-top:8px">
-        <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
-          <span style="font-size:14px">🏆</span>
-          <span style="font-size:12px;font-weight:600;color:var(--green)">Ernte-Log</span>
-        </div>
-        <div style="display:flex;gap:8px;margin-bottom:8px">
-          <div style="flex:1">
-            <div style="font-size:10px;color:var(--text-hint);margin-bottom:2px">Nassgewicht (g)</div>
-            <input class="inp-field" type="number" step="1" value="${ernte.wetWeight || ''}" placeholder="–"
-              style="font-size:14px;font-weight:600;font-family:var(--mono);text-align:center"
-              oninput="uHarvest('${c.id}','wetWeight',this.value)"/>
-          </div>
-          <div style="flex:1">
-            <div style="font-size:10px;color:var(--text-hint);margin-bottom:2px">Trockengewicht (g)</div>
-            <input class="inp-field" type="number" step="0.1" value="${ernte.dryWeight || ''}" placeholder="–"
-              style="font-size:14px;font-weight:600;font-family:var(--mono);text-align:center"
-              oninput="uHarvest('${c.id}','dryWeight',this.value)"/>
-          </div>
-        </div>
-        ${(ernte.wetWeight && ernte.dryWeight) ? `<div style="display:flex;gap:8px">
-          <div style="flex:1;background:var(--surface);border-radius:8px;padding:8px;text-align:center">
-            <div style="font-size:9px;color:var(--text-hint)">Trocken/Nass</div>
-            <div style="font-size:14px;font-weight:600;color:var(--green)">${(ernte.dryWeight/ernte.wetWeight*100).toFixed(0)}%</div>
-          </div>
-          <div style="flex:1;background:var(--surface);border-radius:8px;padding:8px;text-align:center">
-            <div style="font-size:9px;color:var(--text-hint)">g/Pflanze</div>
-            <div style="font-size:14px;font-weight:600;color:var(--green)">${parseFloat(ernte.dryWeight).toFixed(1)}g</div>
-          </div>
-        </div>` : ''}
-        <div style="margin-top:8px">
-          <div style="font-size:10px;color:var(--text-hint);margin-bottom:2px">Qualitäts-Notiz</div>
-          <textarea class="note-ta" style="min-height:40px" placeholder="Geruch, Dichte, Farbe, Curing-Plan..."
-            oninput="uHarvest('${c.id}','qualityNote',this.value)">${ernte.qualityNote || ''}</textarea>
-        </div>
-      </div>` : '';
-    const trichHTML = showTrich ? `
-      <div style="background:rgba(176,106,200,0.06);border:0.5px solid rgba(176,106,200,0.2);border-radius:12px;padding:12px;margin-top:8px">
-        <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
-          <span style="font-size:14px">🔬</span>
-          <span style="font-size:12px;font-weight:600;color:var(--purple)">Trichom-Check</span>
-          <span style="font-size:10px;color:var(--text-muted);margin-left:auto">Blüte Wo.${p.week}</span>
-        </div>
-        <div style="display:flex;gap:6px;margin-bottom:8px">
-          <div style="flex:1;text-align:center">
-            <div style="font-size:9px;color:var(--text-hint);margin-bottom:3px">Klar 💎</div>
-            <input type="number" min="0" max="100" step="5" value="${trich.clear}" 
-              style="width:100%;background:var(--card2);border:0.5px solid rgba(200,200,255,0.2);border-radius:6px;padding:6px;color:#aac;font-size:14px;font-weight:600;font-family:var(--mono);text-align:center;outline:none"
-              onchange="uTrich('${c.id}','clear',this.value)"/>
-          </div>
-          <div style="flex:1;text-align:center">
-            <div style="font-size:9px;color:var(--text-hint);margin-bottom:3px">Milchig 🥛</div>
-            <input type="number" min="0" max="100" step="5" value="${trich.milky}"
-              style="width:100%;background:var(--card2);border:0.5px solid rgba(255,255,255,0.15);border-radius:6px;padding:6px;color:#eee;font-size:14px;font-weight:600;font-family:var(--mono);text-align:center;outline:none"
-              onchange="uTrich('${c.id}','milky',this.value)"/>
-          </div>
-          <div style="flex:1;text-align:center">
-            <div style="font-size:9px;color:var(--text-hint);margin-bottom:3px">Bernstein 🍯</div>
-            <input type="number" min="0" max="100" step="5" value="${trich.amber}"
-              style="width:100%;background:var(--card2);border:0.5px solid rgba(232,136,74,0.25);border-radius:6px;padding:6px;color:var(--orange);font-size:14px;font-weight:600;font-family:var(--mono);text-align:center;outline:none"
-              onchange="uTrich('${c.id}','amber',this.value)"/>
-          </div>
-        </div>
-        <div style="display:flex;height:6px;border-radius:3px;overflow:hidden">
-          <div style="width:${trich.clear}%;background:rgba(170,170,255,0.5)"></div>
-          <div style="width:${trich.milky}%;background:rgba(255,255,255,0.6)"></div>
-          <div style="width:${trich.amber}%;background:var(--orange)"></div>
-        </div>
-        ${trich.milky >= 60 && trich.amber >= 10 ? '<div style="font-size:11px;color:var(--green);margin-top:6px;text-align:center">✅ Erntereif! Milchig ≥60% + Bernstein ≥10%</div>' : 
-          trich.milky >= 50 ? '<div style="font-size:11px;color:var(--yellow);margin-top:6px;text-align:center">⏳ Fast bereit — noch etwas mehr milchig/bernstein</div>' : 
-          '<div style="font-size:11px;color:var(--text-muted);margin-top:6px;text-align:center">Noch zu viel klar — Geduld!</div>'}
-      </div>` : '';
-
-    // Photos
-    const photos = cd.photos || [];
-    const photoHTML = `<div class="photo-grid">
-      ${photos.map(ph => `<img class="photo-thumb" src="${ph}" onclick="viewPhoto(this.src)"/>`).join('')}
-      <div class="photo-add" onclick="addPhoto('${c.id}')">📷</div>
-    </div>`;
+    // NOTE: Quick-Notes, Trich, Ernte, Photos are rendered in bottomBlocks below
+    // (removed duplicate rendering here to prevent visual duplicates)
 
     // Water + pH: now integrated in water-input-box for water days
     const waterRow = isWaterDay
@@ -3501,10 +4125,18 @@ function renderEntry(iso) {
       <div class="sect-head" style="margin-bottom:6px">🌡️ Umgebung</div>
       <div class="row2">
         <div class="inp-wrap"><div class="inp-label">Temperatur (°C)</div>
-          <input class="inp-field" type="number" value="${temp}" placeholder="23" id="et" oninput="uEnv()"/>
+          <div style="display:flex;align-items:center;gap:4px">
+            <button onclick="stepEnv('et',-0.1)" class="stepper-btn">−</button>
+            <input class="inp-field" type="number" step="0.1" value="${temp}" placeholder="23.5" id="et" style="flex:1;text-align:center;height:32px;font-family:var(--mono);font-weight:600" oninput="uEnv()"/>
+            <button onclick="stepEnv('et',0.1)" class="stepper-btn">+</button>
+          </div>
         </div>
         <div class="inp-wrap"><div class="inp-label">Luftfeuchtigkeit (%)</div>
-          <input class="inp-field" type="number" value="${rh}" placeholder="48" id="er" oninput="uEnv()"/>
+          <div style="display:flex;align-items:center;gap:4px">
+            <button onclick="stepEnv('er',-0.2)" class="stepper-btn">−</button>
+            <input class="inp-field" type="number" step="0.2" value="${rh}" placeholder="60" id="er" style="flex:1;text-align:center;height:32px;font-family:var(--mono);font-weight:600" oninput="uEnv()"/>
+            <button onclick="stepEnv('er',0.2)" class="stepper-btn">+</button>
+          </div>
         </div>
       </div>
       <div id="vpd-c" style="margin-top:8px">${vpdBox}</div>
@@ -3520,11 +4152,10 @@ function renderEntry(iso) {
     const showErnte = p && (p.ph === 'harvest' || p.ph === 'dry');
     const ernte = cd.harvestLog || {};
     const tip = getSmartTip(c, p);
-    const qnotes = QN[p?.ph] || [];
     const photos = cd.photos || [];
 
     const trichHTML = showTrich ? `
-      <div style="background:rgba(176,106,200,0.06);border:0.5px solid rgba(176,106,200,0.2);border-radius:12px;padding:12px;margin-top:8px">
+      <div id="trich-${c.id}" style="background:rgba(176,106,200,0.06);border:0.5px solid rgba(176,106,200,0.2);border-radius:12px;padding:12px;margin-top:8px">
         <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
           <span style="font-size:14px">🔬</span>
           <span style="font-size:12px;font-weight:600;color:var(--purple)">Trichom-Check</span>
@@ -3560,13 +4191,37 @@ function renderEntry(iso) {
         ${(ernte.wetWeight && ernte.dryWeight) ? `<div style="display:flex;gap:8px"><div style="flex:1;background:var(--surface);border-radius:8px;padding:8px;text-align:center"><div style="font-size:9px;color:var(--text-hint)">Ratio</div><div style="font-size:14px;font-weight:600;color:var(--green)">${(ernte.dryWeight/ernte.wetWeight*100).toFixed(0)}%</div></div><div style="flex:1;background:var(--surface);border-radius:8px;padding:8px;text-align:center"><div style="font-size:9px;color:var(--text-hint)">Trocken</div><div style="font-size:14px;font-weight:600;color:var(--green)">${parseFloat(ernte.dryWeight).toFixed(1)}g</div></div></div>` : ''}
       </div>` : '';
 
-    const hintHTML = tip ? `<div onclick="openLexikonEntry('${tip.lex}')" style="background:${cl.hex}0a;border:0.5px solid ${cl.hex}1a;border-radius:9px;padding:8px 11px;font-size:11px;color:${cl.hex}cc;line-height:1.5;margin-top:4px;cursor:pointer;display:flex;align-items:center;gap:6px"><span>💡</span><span style="flex:1">${tip.text}</span><span style="font-size:10px;color:${cl.hex}55">📖›</span></div>` : '';
+    const hintHTML = '';
 
-    const qnHTML = qnotes.length ? `<div class="qn-row">${qnotes.map(n => {
-      const already = (cd.notes || '').includes(n);
-      return `<div class="qn-chip" onclick="addQN('${c.id}',this,'${n.replace(/'/g, "\\'")}')" style="${already ? 'background:var(--green-bg);border-color:var(--green-dk);color:var(--green);font-weight:600' : ''}">${already ? '✓ ' + n : '+ ' + n}</div>`;
+    const smartQN2 = getSmartQuickNotes(c, p, cd, iso);
+    const _TC = {
+      milestone: { bg: 'rgba(240,208,80,0.08)', bd: 'rgba(240,208,80,0.3)', fg: 'var(--yellow)' },
+      observation: { bg: 'rgba(90,171,240,0.06)', bd: 'rgba(90,171,240,0.25)', fg: 'var(--blue)' },
+      action: { bg: 'rgba(76,175,112,0.06)', bd: 'rgba(76,175,112,0.25)', fg: 'var(--green)' },
+      state: { bg: 'var(--surface)', bd: 'var(--border)', fg: 'var(--text-sub)' },
+      problem: { bg: 'rgba(224,96,96,0.06)', bd: 'rgba(224,96,96,0.25)', fg: 'var(--red)' },
+    };
+    const qnChipsHTML = smartQN2.length ? `<div class="qn-row">${smartQN2.map(qn => {
+      const already = (cd.notes || '').includes(qn.label);
+      const tc = _TC[qn.type] || _TC.state;
+      // Base type-colored style (rendered inline). When .active class is added
+      // by addQN(), its !important rules override this to show green "checked" state.
+      const baseStyle = `background:${tc.bg};border-color:${tc.bd};color:${tc.fg}`;
+      const safeLabel = qn.label.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+      return `<div class="qn-chip${already ? ' active' : ''}" data-icon="${qn.icon}" data-label="${safeLabel}" onclick="addQN('${c.id}',this)" style="${baseStyle}">${already ? '✓ ' + qn.label : qn.icon + ' ' + qn.label}</div>`;
     }).join('')}</div>` : '';
-    const photoHTML = `<div class="photo-grid">${photos.map(ph => `<img class="photo-thumb" src="${ph}" onclick="viewPhoto(this.src)"/>`).join('')}<div class="photo-add" onclick="addPhoto('${c.id}')">📷</div></div>`;
+    // E4: For each ACTIVE chip with a lexikon mapping, show a small "📖 Info" link row.
+    // Helps beginners learn about what they just observed without leaving the entry.
+    const activeWithLex = smartQN2.filter(qn => (cd.notes || '').includes(qn.label) && QN_LEX[qn.label]);
+    const qnLexHTML = activeWithLex.length ? `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">${
+      // Dedupe: multiple chips (Trichome klar/milchig/bernstein) may point to same entry
+      [...new Map(activeWithLex.map(qn => [QN_LEX[qn.label], qn])).values()].map(qn => {
+        const target = QN_LEX[qn.label].replace(/'/g, "\\'");
+        return `<div onclick="openLexikonEntry('${target}')" style="display:inline-flex;align-items:center;gap:4px;background:rgba(176,106,200,0.08);border:0.5px solid rgba(176,106,200,0.25);border-radius:12px;padding:4px 10px;font-size:10px;color:var(--purple);cursor:pointer;font-family:var(--font)">📖 ${QN_LEX[qn.label]} ›</div>`;
+      }).join('')
+    }</div>` : '';
+    const qnHTML = qnChipsHTML + qnLexHTML;
+    const photoHTML = `<div class="photo-grid">${photos.map((ph, idx) => `<div class="photo-wrap"><img class="photo-thumb" src="${ph}" onclick="viewPhoto(this.src)"/><button class="photo-del" onclick="delPhoto('${c.id}','${iso}',${idx})" title="Foto löschen">×</button></div>`).join('')}<div class="photo-add" onclick="addPhoto('${c.id}')">📷</div></div>`;
 
     return `${trichHTML}${ernteHTML}${hintHTML}
       <div class="note-wrap" style="border-color:${cl.hex}33;margin-top:8px">
@@ -3585,11 +4240,39 @@ function renderEntry(iso) {
       </div>`
     : '';
 
+  // Archived cycles: read-only summary
+  const archBlocks = archived().map(c => {
+    const p = phase(iso, c);
+    if (!p) return '';
+    const cl = col(c);
+    const cd = saved.cycleData?.[c.id] || {};
+    const notes = cd.notes || '';
+    const water = cd.water ? cd.water + ' ml' : '';
+    const ph = cd.ph || '';
+    const ec = cd.ec || '';
+    return `<div style="background:var(--surface);border:0.5px solid var(--border);border-radius:12px;padding:12px;margin-top:8px;opacity:0.5">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+        <span style="font-size:18px">${sym(c)}</span>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:600;color:${cl.hex}">${c.name} <span style="font-size:10px;color:var(--blue)">${c.archived ? '📦 Archiv' : '○ Beendet'}</span></div>
+          <div style="font-size:11px;color:var(--text-muted)">${PH_ICON[p.ph] || ''} ${PN[p.ph]} · Tag ${p.day}</div>
+        </div>
+      </div>
+      ${water || ph || ec || notes ? `<div style="display:flex;flex-wrap:wrap;gap:8px;font-size:11px;color:var(--text-muted)">
+        ${water ? `<span>💧 ${water}</span>` : ''}
+        ${ph ? `<span>pH ${ph}</span>` : ''}
+        ${ec ? `<span>EC ${ec}</span>` : ''}
+      </div>
+      ${notes ? `<div style="font-size:11px;color:var(--text-hint);margin-top:4px;font-style:italic">${notes}</div>` : ''}` : '<div style="font-size:11px;color:var(--text-hint)">Keine Daten für diesen Tag</div>'}
+    </div>`;
+  }).join('');
+
   document.getElementById('entry-body').innerHTML = `
     ${noActive}
     ${blocks}
     ${envHTML}
     ${bottomBlocks}
+    ${archBlocks}
     <button class="big-save" style="background:${act.length > 0 ? col(act[0]).hex : 'var(--green-dk)'}" onclick="saveEntry()">💾 Speichern</button>
     <div style="height:20px"></div>`;
 }
@@ -3632,25 +4315,70 @@ function stepPH(cId, step) {
   vibrate(8);
 }
 
-/** Toggle mix step checkbox */
-function toggleMixCheck(id) {
+/** Step environment inputs (temperature/humidity) */
+function stepEnv(id, step) {
   const el = document.getElementById(id);
   if (!el) return;
-  const chk = el.querySelector('.mix-chk');
-  const done = chk.textContent === '✓';
-  if (done) {
-    chk.textContent = '○';
-    chk.style.color = '';
-    el.style.background = '';
-    el.style.opacity = '1';
-    el.style.textDecoration = '';
-  } else {
-    chk.textContent = '✓';
-    chk.style.color = 'var(--green)';
-    el.style.background = 'rgba(76,175,112,0.06)';
-    el.style.opacity = '0.6';
-  }
+  // Default if empty: 23.5°C for temp, 60% for humidity (ideal anzucht/bloom values)
+  const defaultVal = id === 'et' ? 23.5 : 60;
+  const current = parseFloat(el.value) || defaultVal;
+  // Range: temp 0-45, humidity 0-100
+  const min = 0;
+  const max = id === 'et' ? 45 : 100;
+  // Precision: 1 decimal for both temp (0.1 steps) and humidity (0.2 steps)
+  const precision = Math.abs(step) < 1 ? 10 : 1;
+  const newVal = Math.max(min, Math.min(max, Math.round((current + step) * precision) / precision));
+  el.value = newVal;
+  uEnv();
+  vibrate(8);
+}
+
+/**
+ * Toggle a mix-step check. Persisted per entry day, keyed by product id,
+ * so checks survive re-renders (e.g. after ± dose adjustment on another product).
+ * Checks are intentionally per-day: a new watering day starts fresh.
+ */
+function toggleMixCheck(cId, prodId) {
+  if (!editISO || !cId || !prodId) return;
+  ensE(cId);
+  const cd = S.entries[editISO].cycleData[cId];
+  if (!cd.mixChecks) cd.mixChecks = {};
+  cd.mixChecks[prodId] = !cd.mixChecks[prodId];
+  // Clean up the key if it was un-toggled (keeps state lean)
+  if (!cd.mixChecks[prodId]) delete cd.mixChecks[prodId];
+  saveS();
   vibrate(10);
+  // Re-render entry to reflect visual check state
+  if (editISO) renderEntry(editISO);
+}
+
+/**
+ * Adjust a fertilizer dose by ±stepMl on the DISPLAY (ml actually poured into the
+ * water can). The stored plan value (ml/L) becomes a fractional number — that's
+ * intentional. User wants to think in "poured ml", not in "concentration".
+ * If waterAmt is missing, falls back to ±0.1 ml/L plan-value steps.
+ */
+function stepMixDose(cId, prodId, wk, stepMl, waterAmt) {
+  const key = 'global_w' + wk;
+  if (!S.weekSchedule[key]) S.weekSchedule[key] = {};
+  const plan = S.weekSchedule[key][prodId] || 0;
+  let newPlan;
+  if (waterAmt && waterAmt > 0) {
+    // Current displayed ml → add step → back to ml/L
+    const currentMl = plan * waterAmt / 1000;
+    const newMl = Math.max(0, Math.round((currentMl + stepMl) * 10) / 10);
+    newPlan = newMl * 1000 / waterAmt;
+    // Keep stored plan value to a sensible precision (4 decimals is plenty)
+    newPlan = Math.round(newPlan * 10000) / 10000;
+  } else {
+    // Fallback: legacy ml/L stepping
+    newPlan = Math.max(0, Math.round((plan + stepMl) * 10) / 10);
+  }
+  S.weekSchedule[key][prodId] = newPlan;
+  saveS();
+  vibrate(8);
+  // Re-render the entry to reflect updated doses
+  if (editISO) renderEntry(editISO);
 }
 
 function uEnv() {
@@ -3677,6 +4405,46 @@ function ensE(cId) {
 
 function uDose(cId, pid, v) { ensE(cId); S.entries[editISO].cycleData[cId].doses[pid] = parseFloat(v) || 0; }
 function uEF(cId, f, v) { ensE(cId); S.entries[editISO].cycleData[cId][f] = v; }
+
+/**
+ * Apply one-click recommended values for a watering day:
+ * sets water to the suggestion, pH to 6.4, and writes all planned fertilizer
+ * doses (ml/L × water / 1000) as the logged amounts. Skips flush day fertilizers
+ * since flush = water only. Fires toast on success.
+ */
+function applyRecommended(cId, wk) {
+  if (!editISO) return;
+  const c = S.cycles.find(x => x.id === cId);
+  if (!c) return;
+  const p = phase(editISO, c);
+  const a = getAction(editISO, c);
+  if (!p || !a) return;
+  ensE(cId);
+  const cd = S.entries[editISO].cycleData[cId];
+  // Water: use suggestion
+  const waterMl = waterSuggestion(c, p);
+  cd.water = String(waterMl);
+  // pH: 6.4 standard target
+  cd.ph = '6.4';
+  // Fertilizers: only on normal watering days (giess, giess_anz), not flush/ice
+  if (a === 'giess' || a === 'giess_anz') {
+    const doses = getWeekDoses(cId, wk, c);
+    Object.entries(doses).forEach(([prodId, plan]) => {
+      if (plan > 0) {
+        const ml = Math.round((plan * waterMl / 1000) * 10) / 10;
+        cd.doses[prodId] = ml;
+      }
+    });
+  }
+  // Environment: only set if empty (don't overwrite real measurements)
+  const e = S.entries[editISO];
+  if (!e.temp || String(e.temp).trim() === '') e.temp = '23.5';
+  if (!e.humidity || String(e.humidity).trim() === '') e.humidity = '60';
+  saveS();
+  vibrate(15);
+  toast('✨ Empfohlene Werte übernommen');
+  renderEntry(editISO);
+}
 function uTrich(cId, field, v) {
   ensE(cId);
   if (!S.entries[editISO].cycleData[cId].trichomes) S.entries[editISO].cycleData[cId].trichomes = { clear: 70, milky: 25, amber: 5 };
@@ -3688,23 +4456,37 @@ function uHarvest(cId, field, v) {
   S.entries[editISO].cycleData[cId].harvestLog[field] = v;
 }
 
-function addQN(cId, el, text) {
+function addQN(cId, el, textArg) {
   ensE(cId);
+  // Read label from data-label (preferred) or fall back to argument for backwards compat.
+  // This avoids fragile apostrophe escaping in onclick handlers.
+  const text = textArg || el.dataset.label || '';
+  if (!text) return;
+  const icon = el.dataset.icon || '+';
   const ta = document.getElementById('note-' + cId);
   const ex = ta?.value || S.entries[editISO].cycleData[cId].notes || '';
-  // Check if already added to avoid duplicates
+
+  // TOGGLE: if already added, remove it
   if (ex.includes(text)) {
-    toast('Schon hinzugefügt');
+    let nv = ex.replace(new RegExp('(,\\s*)?' + text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '(,\\s*)?', 'g'),
+      (match, before, after) => (before && after) ? ', ' : '');
+    nv = nv.replace(/^,\s*/, '').replace(/,\s*$/, '').replace(/,\s*,/g, ',').trim();
+
+    S.entries[editISO].cycleData[cId].notes = nv;
+    if (ta) ta.value = nv;
+    el.classList.remove('active');
+    el.textContent = icon + ' ' + text;
+    vibrate(8);
+    toast('− ' + text);
     return;
   }
+
+  // ADD
   const nv = ex.trim() ? (ex.trim() + ', ' + text) : text;
   S.entries[editISO].cycleData[cId].notes = nv;
   if (ta) ta.value = nv;
-  el.style.background = 'var(--green-bg)';
-  el.style.borderColor = 'var(--green-dk)';
-  el.style.color = 'var(--green)';
-  el.style.fontWeight = '600';
-  if (!el.textContent.startsWith('✓')) el.textContent = '✓ ' + el.textContent.replace(/^\+\s?/, '');
+  el.classList.add('active');
+  el.textContent = '✓ ' + text;
   vibrate(10);
   toast('✓ ' + text);
 }
@@ -3758,9 +4540,30 @@ function addPhoto(cId) {
         ensE(cId);
         if (!S.entries[editISO].cycleData[cId].photos) S.entries[editISO].cycleData[cId].photos = [];
         S.entries[editISO].cycleData[cId].photos.push(compressed);
+        // Quota probe: saveS() swallows errors, so we do one explicit write here
+        // to detect QuotaExceededError and roll back cleanly. If the probe succeeds,
+        // saveS() will redo the write (with orphan cleanup & undo push) — a small
+        // cost in exchange for proper user-visible quota handling.
+        try {
+          localStorage.setItem(SK, JSON.stringify(S));
+        } catch (err) {
+          S.entries[editISO].cycleData[cId].photos.pop(); // rollback in-memory state
+          if (err && (err.name === 'QuotaExceededError' || err.code === 22)) {
+            customConfirm(
+              '💾 Speicher voll!',
+              'Der Browser-Speicher reicht nicht mehr für weitere Fotos. Bitte lösche einige alte Fotos oder exportiere ein Backup (JSON) und starte danach frisch. Dein aktuelles Foto wurde nicht gespeichert.',
+              'Verstanden', 'var(--orange)'
+            );
+          } else {
+            toast('⚠ Foto konnte nicht gespeichert werden');
+          }
+          return;
+        }
+        // Probe succeeded — commit via saveS (undo push, flash, etc.)
         saveS();
         renderEntry(editISO);
         toast('✓ Foto gespeichert');
+        maybeWarnStorageQuota();
       };
       img.onerror = () => toast('⚠ Foto konnte nicht geladen werden');
       img.src = ev.target.result;
@@ -3769,6 +4572,55 @@ function addPhoto(cId) {
     r.readAsDataURL(f);
   };
   inp.click();
+}
+
+/** Delete a specific photo from a cycle's entry */
+async function delPhoto(cId, iso, idx) {
+  const cd = S.entries[iso]?.cycleData?.[cId];
+  if (!cd?.photos || idx < 0 || idx >= cd.photos.length) return;
+  const ok = await customConfirm(
+    'Foto löschen?',
+    'Dieses Foto wird entfernt. Kann nicht rückgängig gemacht werden (außer über Undo).',
+    'Löschen', 'var(--red)'
+  );
+  if (!ok) return;
+  cd.photos.splice(idx, 1);
+  saveS();
+  renderEntry(iso);
+  vibrate();
+  toast('🗑 Foto gelöscht');
+}
+
+/** Delete a photo from the gallery view (re-renders gallery instead of entry) */
+async function delPhotoFromGallery(cId, iso, idx) {
+  const cd = S.entries[iso]?.cycleData?.[cId];
+  if (!cd?.photos || idx < 0 || idx >= cd.photos.length) return;
+  const ok = await customConfirm(
+    'Foto löschen?',
+    'Dieses Foto wird entfernt. Kann nicht rückgängig gemacht werden (außer über Undo).',
+    'Löschen', 'var(--red)'
+  );
+  if (!ok) return;
+  cd.photos.splice(idx, 1);
+  saveS();
+  renderGallery();
+  vibrate();
+  toast('🗑 Foto gelöscht');
+}
+
+/** Estimate localStorage usage. Warns user if >3 MB. */
+let _lastQuotaWarn = 0;
+function maybeWarnStorageQuota() {
+  try {
+    const size = (localStorage.getItem(SK) || '').length;
+    // Each char in a serialized JSON is ~1 byte (ASCII) or 2 (UTF-16 in memory, 1 stored).
+    const mb = size / 1048576;
+    const now = Date.now();
+    if (mb > 3.5 && now - _lastQuotaWarn > 300000) { // max 1 warn per 5min
+      _lastQuotaWarn = now;
+      toast(`⚠ Speicher ${mb.toFixed(1)} MB — bald voll. Alte Fotos löschen?`, 4500);
+    }
+  } catch (e) {}
 }
 
 function viewPhoto(src) {
@@ -3912,10 +4764,16 @@ function renderGallery() {
     return `<div>
       <div class="sect-head">${MN[parseInt(m)-1]} ${y} · ${photos.length} Fotos</div>
       <div style="display:flex;flex-wrap:wrap;gap:4px">
-        ${photos.map(p => `<div style="position:relative">
-          <img src="${p.src}" style="width:72px;height:72px;border-radius:8px;object-fit:cover;cursor:pointer;border:0.5px solid var(--border)" onclick="viewPhoto(this.src)"/>
-          <div style="position:absolute;bottom:2px;left:2px;font-size:8px;color:#fff;background:rgba(0,0,0,0.6);padding:1px 4px;border-radius:4px">${fmtDE(p.date)}</div>
-        </div>`).join('')}
+        ${photos.map(p => {
+          // Find the photo's index in its cycle's daily array to enable delete
+          const cd = S.entries[p.date]?.cycleData?.[p.cId];
+          const idx = cd?.photos ? cd.photos.indexOf(p.src) : -1;
+          return `<div class="photo-wrap" style="width:72px;height:72px">
+            <img src="${p.src}" style="width:72px;height:72px;border-radius:8px;object-fit:cover;cursor:pointer;border:0.5px solid var(--border);display:block" onclick="viewPhoto(this.src)"/>
+            <div style="position:absolute;bottom:2px;left:2px;font-size:8px;color:#fff;background:rgba(0,0,0,0.6);padding:1px 4px;border-radius:4px;pointer-events:none">${fmtDE(p.date)}</div>
+            ${idx >= 0 ? `<button class="photo-del" onclick="delPhotoFromGallery('${p.cId}','${p.date}',${idx})" title="Foto löschen">×</button>` : ''}
+          </div>`;
+        }).join('')}
       </div>
     </div>`;
   }).join('') + '<div style="height:20px"></div>';
@@ -4039,6 +4897,81 @@ history.pushState(null, '', location.href);
     const dy = e.changedTouches[0].clientY - sy;
     if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.8) changeMonth(dx < 0 ? 1 : -1);
   }, { passive: true });
+})();
+
+// =====================================================================
+//  LONG-PRESS FOR STEPPER BUTTONS
+//  Hold down +/- to rapidly increment. After 400ms the click auto-repeats
+//  every 100ms, accelerating to 50ms after 1.5s.
+// =====================================================================
+(function() {
+  let heldBtn = null;
+  let startTimer = null;
+  let repeatTimer = null;
+  let startTime = 0;
+
+  function isStepperBtn(el) {
+    if (!el || !el.onclick) return false;
+    if (el.classList && el.classList.contains('stepper-btn')) return true;
+    // Mix-dose stepper buttons have inline style but onclick contains stepMixDose
+    const oc = el.getAttribute && el.getAttribute('onclick');
+    if (oc && oc.indexOf('stepMixDose(') !== -1) return true;
+    return false;
+  }
+
+  function fireClick(el) {
+    if (!el || !el.onclick) return;
+    // Synthesize a minimal event object so stopPropagation calls don't crash
+    const fakeEvt = { stopPropagation: () => {}, preventDefault: () => {} };
+    try { el.onclick.call(el, fakeEvt); } catch (e) { /* ignore */ }
+  }
+
+  function stopHold() {
+    if (startTimer) { clearTimeout(startTimer); startTimer = null; }
+    if (repeatTimer) { clearInterval(repeatTimer); repeatTimer = null; }
+    heldBtn = null;
+  }
+
+  function startHold(el) {
+    stopHold();
+    heldBtn = el;
+    startTime = Date.now();
+    // After 400ms, start repeating
+    startTimer = setTimeout(() => {
+      if (!heldBtn) return;
+      repeatTimer = setInterval(() => {
+        if (!heldBtn) { clearInterval(repeatTimer); return; }
+        fireClick(heldBtn);
+        // Accelerate: after 1.5s of holding, switch to faster interval
+        if (Date.now() - startTime > 1900 && repeatTimer) {
+          clearInterval(repeatTimer);
+          repeatTimer = setInterval(() => {
+            if (!heldBtn) { clearInterval(repeatTimer); return; }
+            fireClick(heldBtn);
+          }, 50);
+        }
+      }, 100);
+    }, 400);
+  }
+
+  document.addEventListener('mousedown', e => {
+    const el = e.target.closest('button');
+    if (isStepperBtn(el)) startHold(el);
+  }, true);
+  document.addEventListener('touchstart', e => {
+    const el = e.target.closest('button');
+    if (isStepperBtn(el)) startHold(el);
+  }, { passive: true, capture: true });
+
+  ['mouseup', 'mouseleave', 'touchend', 'touchcancel', 'blur'].forEach(ev => {
+    document.addEventListener(ev, stopHold, true);
+  });
+  // Also stop if we scroll — Android often fires touchstart on scroll start
+  document.addEventListener('touchmove', () => {
+    // Only cancel if we're within the startup period (before repeat kicked in)
+    // If repeat is already running, user probably wants to keep going
+    if (startTimer && !repeatTimer) stopHold();
+  }, { passive: true, capture: true });
 })();
 </script>
 </body>
