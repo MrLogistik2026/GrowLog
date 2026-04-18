@@ -421,6 +421,89 @@ input:checked + .sl:before { transform: translateX(18px); background: var(--gree
   border-radius: 8px; padding: 8px 12px; font-size: 11px; color: var(--green);
   margin-top: 6px; text-align: center;
 }
+
+/* ============================================================== */
+/* Tour: overlay + popup + highlight                               */
+/* ============================================================== */
+.tour-overlay {
+  position: fixed; inset: 0; z-index: 9998;
+  background: rgba(0, 0, 0, 0.65);
+  pointer-events: auto;
+  opacity: 0; transition: opacity 0.25s;
+}
+.tour-overlay.visible { opacity: 1; }
+.tour-hole {
+  position: fixed; z-index: 9999;
+  border-radius: 12px;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.65),
+              0 0 0 2px var(--green),
+              0 0 20px rgba(76, 175, 112, 0.4);
+  pointer-events: none;
+  transition: all 0.3s ease-out;
+  animation: tour-pulse 2s infinite ease-in-out;
+}
+@keyframes tour-pulse {
+  0%, 100% { box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.65),
+                          0 0 0 2px var(--green),
+                          0 0 15px rgba(76, 175, 112, 0.35); }
+  50%      { box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.65),
+                          0 0 0 3px var(--green),
+                          0 0 25px rgba(76, 175, 112, 0.55); }
+}
+.tour-popup {
+  position: fixed; z-index: 10000;
+  background: var(--card); border: 1px solid var(--green-dk);
+  border-radius: 14px; padding: 14px 16px;
+  max-width: 300px; width: calc(100vw - 32px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  font-family: var(--font);
+  animation: tour-pop-in 0.3s ease-out;
+}
+@keyframes tour-pop-in {
+  from { opacity: 0; transform: scale(0.9) translateY(8px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+.tour-popup-arrow {
+  position: absolute; width: 12px; height: 12px;
+  background: var(--card); border: 1px solid var(--green-dk);
+  transform: rotate(45deg);
+}
+.tour-popup-arrow.top    { top: -7px;    left: 50%; margin-left: -6px; border-bottom: none; border-right: none; }
+.tour-popup-arrow.bottom { bottom: -7px; left: 50%; margin-left: -6px; border-top: none; border-left: none; }
+.tour-popup-arrow.left   { left: -7px;   top: 50%;  margin-top: -6px;  border-right: none; border-top: none; }
+.tour-popup-arrow.right  { right: -7px;  top: 50%;  margin-top: -6px;  border-left: none; border-bottom: none; }
+.tour-popup-title {
+  font-size: 13px; font-weight: 700; color: var(--green);
+  margin-bottom: 6px; display: flex; align-items: center; gap: 6px;
+}
+.tour-popup-body {
+  font-size: 12px; color: var(--text-sub); line-height: 1.55;
+  margin-bottom: 12px;
+}
+.tour-popup-btns {
+  display: flex; gap: 6px; align-items: center;
+}
+.tour-popup-btn {
+  flex: 1; padding: 8px 12px; border-radius: 8px;
+  font-size: 12px; font-weight: 600; cursor: pointer;
+  font-family: var(--font); border: 0.5px solid transparent;
+}
+.tour-popup-btn.primary   { background: var(--green); color: #fff; border-color: var(--green); }
+.tour-popup-btn.secondary { background: var(--surface); color: var(--text-sub); border-color: var(--border); }
+.tour-popup-btn.skip      { background: transparent; color: var(--text-muted); padding: 8px 10px; flex: 0 0 auto; font-size: 11px; }
+.tour-popup-step {
+  font-size: 10px; color: var(--text-hint); margin-left: auto;
+}
+/* Step indicator dots */
+.tour-dots {
+  display: flex; justify-content: center; gap: 4px; margin-bottom: 10px;
+}
+.tour-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--border); transition: all 0.2s;
+}
+.tour-dot.active { background: var(--green); transform: scale(1.3); }
+.tour-dot.done   { background: var(--green-dk); }
 </style>
 </head>
 <body>
@@ -509,6 +592,16 @@ input:checked + .sl:before { transform: translateX(18px); background: var(--gree
       <div></div>
     </div>
     <div class="scroll" id="lexikon-body"></div>
+  </div>
+
+  <!-- How-to -->
+  <div class="screen" id="scr-howto">
+    <div class="topbar" style="padding-top:max(12px,env(safe-area-inset-top))">
+      <button class="icon-btn" onclick="goTo('tips')" style="font-size:20px">←</button>
+      <span class="app-title">🎓 How-to</span>
+      <div></div>
+    </div>
+    <div class="scroll" id="howto-body"></div>
   </div>
 
   <!-- Foto-Galerie -->
@@ -623,7 +716,7 @@ const FERT_PRESETS = {
       6:{'CalMag':0.5,'Bio·Grow':1,'Bio·Bloom':2.5,'Top·Max':2,'Bio·Heaven':2,'Acti·Vera':2,'Alg·A·Mic':1.5},
       7:{'CalMag':0.5,'Bio·Grow':0.5,'Bio·Bloom':2.5,'Top·Max':2,'Bio·Heaven':2,'Acti·Vera':2,'Alg·A·Mic':1.5},
       8:{'CalMag':0.5,'Bio·Bloom':3,'Top·Max':4},
-      9:{'CalMag':0.5,'Bio·Bloom':3.5,'Top·Max':4},
+      9:{'CalMag':0.5,'Bio·Bloom':3,'Top·Max':4},
       10:{'CalMag':0.5,'Bio·Bloom':1,'Top·Max':4},
       11:{'CalMag':0.2},
       12:{},
@@ -663,10 +756,10 @@ const FERT_PRESETS = {
   },
   biobizz_light: {
     name: 'BioBizz Light',
-    subtitle: 'Master × 50% · für vorsichtigere Grower / Einsteiger',
+    subtitle: 'Master × 50% · CalMag voll für LED · für Einsteiger',
     doseMode: 'per-watering',
     mixOrder: ['CalMag','Bio·Grow','Bio·Bloom','Root·Juice','Bio·Heaven','Alg·A·Mic','Acti·Vera','Top·Max'],
-    mixInfo: 'Halbierte Dosen vom Master-Plan. Jedes Gießen düngen, aber mit 50% Dosis — gut für Einsteiger, empfindliche Genetiken, oder wenn der Master-Plan zu stark ist. Gleiche Mischreihenfolge und Stickstoff-Cutoff-Philosophie wie Master.',
+    mixInfo: 'Halbierte Dosen vom Master-Plan — mit einer Ausnahme: CalMag ist nicht reduziert, weil unter LED der Bedarf gleich hoch ist. Jedes Gießen düngen. Gut für Einsteiger, empfindliche Genetiken, oder wenn der Master-Plan zu stark ist.',
     drainInfo: '⚠️ Wenn Pflanze gesund aussieht und kräftig wächst: kann über die Zeit Richtung Master-Dosen erhöht werden. Drain immer 5–10%, Drain sofort entsorgen.',
     products: [
       { name: 'CalMag',      unit: 'ml/L', color: '#f0d050', note: '① Calcium & Magnesium (immer zuerst!)' },
@@ -679,18 +772,18 @@ const FERT_PRESETS = {
       { name: 'Top·Max',     unit: 'ml/L', color: '#b06ac8', note: '④ Humin-/Fulvosäuren (Chelator, zuletzt!)' },
     ],
     schedule: {
-      // Master × 0.5 (berechnet, nicht manuell eingetippt)
-      1:{'CalMag':0.15,'Root·Juice':2,'Bio·Heaven':1,'Acti·Vera':1},
-      2:{'CalMag':0.25,'Bio·Grow':0.5,'Root·Juice':1,'Bio·Heaven':1,'Acti·Vera':1,'Alg·A·Mic':0.5},
-      3:{'CalMag':0.25,'Bio·Grow':0.6,'Root·Juice':0.5,'Bio·Heaven':1,'Acti·Vera':1,'Alg·A·Mic':0.75},
-      4:{'CalMag':0.25,'Bio·Grow':0.6,'Bio·Bloom':0.5,'Top·Max':0.5,'Bio·Heaven':1,'Acti·Vera':1,'Alg·A·Mic':0.75},
-      5:{'CalMag':0.25,'Bio·Grow':0.5,'Bio·Bloom':1,'Top·Max':0.5,'Bio·Heaven':1,'Acti·Vera':1,'Alg·A·Mic':0.75},
-      6:{'CalMag':0.25,'Bio·Grow':0.5,'Bio·Bloom':1.25,'Top·Max':1,'Bio·Heaven':1,'Acti·Vera':1,'Alg·A·Mic':0.75},
-      7:{'CalMag':0.25,'Bio·Grow':0.25,'Bio·Bloom':1.25,'Top·Max':1,'Bio·Heaven':1,'Acti·Vera':1,'Alg·A·Mic':0.75},
-      8:{'CalMag':0.25,'Bio·Bloom':1.5,'Top·Max':2},
-      9:{'CalMag':0.25,'Bio·Bloom':1.75,'Top·Max':2},
-      10:{'CalMag':0.25,'Bio·Bloom':0.5,'Top·Max':2},
-      11:{'CalMag':0.1},
+      // Master × 0.5 für die meisten Werte — CalMag verdoppelt (×1.0 statt ×0.5) wegen LED-Bedarf
+      1:{'CalMag':0.3,'Root·Juice':2,'Bio·Heaven':1,'Acti·Vera':1},
+      2:{'CalMag':0.5,'Bio·Grow':0.5,'Root·Juice':1,'Bio·Heaven':1,'Acti·Vera':1,'Alg·A·Mic':0.5},
+      3:{'CalMag':0.5,'Bio·Grow':0.6,'Root·Juice':0.5,'Bio·Heaven':1,'Acti·Vera':1,'Alg·A·Mic':0.75},
+      4:{'CalMag':0.5,'Bio·Grow':0.6,'Bio·Bloom':0.5,'Top·Max':0.5,'Bio·Heaven':1,'Acti·Vera':1,'Alg·A·Mic':0.75},
+      5:{'CalMag':0.5,'Bio·Grow':0.5,'Bio·Bloom':1,'Top·Max':0.5,'Bio·Heaven':1,'Acti·Vera':1,'Alg·A·Mic':0.75},
+      6:{'CalMag':0.5,'Bio·Grow':0.5,'Bio·Bloom':1.25,'Top·Max':1,'Bio·Heaven':1,'Acti·Vera':1,'Alg·A·Mic':0.75},
+      7:{'CalMag':0.5,'Bio·Grow':0.25,'Bio·Bloom':1.25,'Top·Max':1,'Bio·Heaven':1,'Acti·Vera':1,'Alg·A·Mic':0.75},
+      8:{'CalMag':0.5,'Bio·Bloom':1.5,'Top·Max':2},
+      9:{'CalMag':0.5,'Bio·Bloom':1.5,'Top·Max':2},
+      10:{'CalMag':0.5,'Bio·Bloom':0.5,'Top·Max':2},
+      11:{'CalMag':0.2},
       12:{},
     },
   },
@@ -1483,6 +1576,9 @@ window.addEventListener('popstate', () => {
     goTo('set'); history.pushState(null, '', location.href); return;
   }
   if (document.getElementById('scr-lexikon').classList.contains('active')) {
+    goTo('tips'); history.pushState(null, '', location.href); return;
+  }
+  if (document.getElementById('scr-howto').classList.contains('active')) {
     goTo('tips'); history.pushState(null, '', location.href); return;
   }
   if (document.getElementById('scr-gallery').classList.contains('active')) {
@@ -2388,6 +2484,14 @@ function renderTips() {
       </div>
       <span style="color:var(--text-muted)">›</span>
     </div>
+    <div class="sec-tog" onclick="openHowto()" style="border-color:rgba(90,171,240,0.2);margin-top:4px">
+      <span>🎓</span>
+      <div>
+        <div style="font-weight:500">How-to: Die App bedienen</div>
+        <div style="font-size:11px;color:var(--text-muted)">Schritt-für-Schritt-Anleitung</div>
+      </div>
+      <span style="color:var(--text-muted)">›</span>
+    </div>
 
     ${S.beginnerMode ? '' : `
     <!-- PPFD/DLI Light Meter -->
@@ -2946,7 +3050,7 @@ function renderSet() {
     </div>
     `}
 
-    <div style="text-align:center;padding:16px 0;font-size:11px;color:var(--text-hint)">GrowSmart v0.8.68 🌱</div>
+    <div style="text-align:center;padding:16px 0;font-size:11px;color:var(--text-hint)">GrowSmart v0.9.0 🌱</div>
     <div style="height:20px"></div>`;
 
   // Restore scroll position (goTo handles scroll-to-top on tab switch)
@@ -4719,6 +4823,137 @@ function renderLexikon(highlightTitle) {
 }
 
 // =====================================================================
+//  HOW-TO (App-Anleitung)
+// =====================================================================
+const HOWTO = [
+  { cat: '🚀 Loslegen', items: [
+    { t: 'Was ist GrowSmart?',
+      txt: 'Dein digitales Grow-Tagebuch. Die App erinnert dich an Gießtage, rechnet deine Dünger-Dosen aus, warnt bei kritischen Werten und hält eine komplette Historie deines Zyklus fest. Alles läuft direkt auf deinem Handy — keine Registrierung, keine Cloud, deine Daten bleiben lokal.' },
+    { t: 'App auf dem Handy installieren',
+      txt: '<b>Android (Chrome/Samsung Internet):</b> Öffne die App-URL im Browser → Menü (drei Punkte) → "Zum Startbildschirm hinzufügen". Danach startet die App wie eine richtige App, auch offline.<br><br><b>iPhone (Safari):</b> URL öffnen → "Teilen"-Button (Quadrat mit Pfeil) → "Zum Home-Bildschirm". Achtung: unter iOS kann die App bei längerer Nichtnutzung den Speicher verlieren. Lieber regelmäßig Backups machen (siehe "Daten exportieren").' },
+    { t: 'Einsteiger- oder Profi-Modus?',
+      txt: 'Ganz oben in den Einstellungen ist ein Umschalter. <b>🎯 Einsteiger-Modus:</b> versteckt komplexe Optionen (Gießintervall-Editor, PPFD-Schätzer, Bulk-Aktionen, Test-Modus, erweiterte Phasen). Perfekt wenn du einfach loslegen willst. <b>⚡ Profi-Modus:</b> alle Einstellungen sichtbar. Du kannst jederzeit zwischen den beiden umschalten — der Modus ändert nur was angezeigt wird, nicht was gespeichert wird.' },
+  ]},
+  { cat: '🌱 Ersten Zyklus anlegen', items: [
+    { t: 'Neuen Zyklus erstellen',
+      txt: '<b>Einstellungen → + Neu.</b> Gib einen Namen ein (z.B. den Strain-Namen), wähle eine Farbe und ein Symbol — das hilft später im Kalender die Zyklen zu unterscheiden. Samentyp auswählen: <b>⚡ Automatic</b> blüht von selbst nach ca. 3 Wochen, <b>♀ Feminisiert</b> braucht einen Licht-Umschaltpunkt. Startdatum: der Tag an dem du gekeimt oder den Samen eingepflanzt hast.' },
+    { t: 'Phasendauern verstehen',
+      txt: 'Die Default-Werte passen für einen typischen Autoflower-Zyklus: 21 Tage Anzucht → 60 Tage Blüte → 8 Tage Spülen → 2 Tage IceFlush → 1 Tag Ernte → 7 Tage Trocknen. Im Einsteiger-Modus siehst du nur Anzucht + Blüte, der Rest ist versteckt bis die Phase erreicht wird. Wenn dein Strain anders drauf ist (z.B. Photoperiode oder bekannt schneller blühend), passe die Tage an.' },
+    { t: 'Gießintervall',
+      txt: 'Standard: alle 3 Tage gießen in Anzucht und Blüte. Das passt für 11L-Stofftöpfe. Kleinere Töpfe brauchen häufiger Wasser (alle 1-2 Tage), größere seltener. Im Einsteiger-Modus versteckt — nur Profis sollten das ändern.' },
+  ]},
+  { cat: '🧪 Düngeplan wählen', items: [
+    { t: 'Master, Light oder Official?',
+      txt: '<b>🏆 Master:</b> Cup-Niveau, jedes Gießen volle Dosis. Früher & härter Stickstoff-Cutoff (Wo 7 halbiert, Wo 8 Hard Stop) für dichte, trichomreiche Blüten ohne blättrige Buds. Das ist der Standard-Plan für Erfahrene.<br><br><b>🌱 Light:</b> Master × 50%. Für Einsteiger oder empfindliche Genetiken. <b>Wichtig:</b> CalMag bleibt voll (nicht halbiert) weil LED-Licht den Bedarf nicht senkt.<br><br><b>📋 Official 2025:</b> Der offizielle BioBizz-Herstellerplan mit Wochen-Gesamtdosen — die App teilt automatisch durch die Anzahl deiner Gießtage pro Woche. Gibt eine Warnung wegen der umstrittenen langen Bio·Grow-Phase bis Woche 8.' },
+    { t: 'Plan laden',
+      txt: '<b>Einstellungen → Dünger & Wochenplan → Button deiner Wahl antippen.</b> Ein Bestätigungsdialog warnt dass deine aktuellen Dünger-Einstellungen überschrieben werden. Danach siehst du in der Mischreihenfolge welche Produkte gebraucht werden und den Wochenplan mit den Dosen pro Liter.' },
+    { t: 'Dosen anpassen',
+      txt: 'Im Wochenplan-Editor kannst du jede Woche einzeln tunen. Die Änderungen gelten nur für den <b>aktuell gewählten Zyklus</b> wenn du unten einen Zyklus ausgewählt hast, sonst global für alle neuen Zyklen. Die ±-Buttons ändern den Wert in 0.1-ml/L-Schritten.' },
+    { t: 'Per-Gieß vs. Wochen-Modus',
+      txt: 'Unter dem aktiven Plan siehst du einen Hinweis: <b>Per-Gieß-Modus</b> (Master, Light) heißt die Zahlen sind schon für jeden Gießtag gedacht. <b>Wochendosis-Modus</b> (Official) heißt es ist die Gesamtmenge pro Woche und die App teilt durch deine Gießfrequenz — bei Intervall 3 also durch ca. 2.3 Güsse/Woche.' },
+  ]},
+  { cat: '💧 Täglicher Workflow', items: [
+    { t: 'Dashboard verstehen',
+      txt: 'Auf dem Home-Screen siehst du oben deine <b>"Heute zu tun"-Karte</b> wenn heute ein Gießtag ist — mit konkreten Schritten (wieviel ml Wasser, pH-Ziel, Dünger). Darunter Warnungen, dann eine Statistik-Box, dann deine Zyklen als bunte Karten mit Fortschritts-Ring. An Pausen-Tagen zeigt die Karte den nächsten Gießtag mit einem klickbaren Pfeil — direkt dahin springen um Notizen vorzubereiten.' },
+    { t: 'Eintrag öffnen',
+      txt: 'Drei Wege: <b>(1)</b> Tippe auf die Zyklus-Karte oder die Heute-Karte → öffnet heute. <b>(2)</b> + Button oben rechts → heute. <b>(3)</b> Kalender → Datum antippen → dieser Tag. Der Zurück-Button ist kontextsensitiv: vom Dashboard gekommen führt er zurück zum Dashboard, vom Kalender gekommen zurück zum Kalender.' },
+    { t: '✨ Empfohlene Werte übernehmen',
+      txt: 'An einem Gießtag, wenn Wasser und pH noch leer sind, erscheint oben im Eintrag ein prominenter Button in der Zyklusfarbe. Ein Klick setzt: Wassermenge nach Empfehlung, pH 6.4, alle Dünger nach Plan in ml ausgerechnet, Temp 23.5°C und RLF 60% (nur falls leer — deine echten Messwerte werden nie überschrieben). Spart dir auf Gießtagen den manuellen Eintrag.' },
+    { t: 'pH und EC eingeben',
+      txt: 'Die ±-Buttons gehen in 0.1-Schritten. Tippe den Wert, oder drücke lang auf + oder − um schnell hoch/runter zu zählen. Die Ziele (pH 6.2–6.5, EC 0.8–2.0) stehen rechts daneben. Bei Abweichungen erscheint eine farbige Warnung: Orange für Grenzwertig, Rot für gefährlich.' },
+    { t: 'Dünger abhaken beim Mischen',
+      txt: 'Im Nährstoff-Abschnitt siehst du die Mischreihenfolge mit konkreten ml-Werten für deine Gießmenge. Tippe irgendwo auf eine Zeile um den Haken zu setzen — die ganze Zeile ist klickbar, nicht nur das ○. Die Haken bleiben erhalten auch wenn du zwischendurch an einem anderen Dünger die ± klickst, und setzen sich am nächsten Gießtag automatisch zurück. Die ±-Buttons ändern den Plan in 0.1-ml-Schritten (auf dem Display gerechnet).' },
+    { t: 'Umgebung: Temperatur & Luftfeuchte',
+      txt: 'Unten im Eintrag. Temperatur in 0.1°C-Schritten, Luftfeuchte in 0.2%-Schritten. Daraus rechnet die App automatisch den <b>VPD</b> (Vapour Pressure Deficit) — der Balken zeigt ob die Werte für Anzucht/Blüte passen.' },
+    { t: 'Fotos & Notizen',
+      txt: 'Foto-Button öffnet die Kamera oder Galerie. Jedes Foto hat ein rotes × zum Löschen. Bei mehr als ~3.5 MB Speicher warnt die App dass der Platz eng wird. Im Notiz-Feld kannst du frei schreiben — oder die Smart-Note-Chips antippen für häufige Beobachtungen. Einige Chips (z.B. "Blätter gelblich") zeigen dann einen 📖-Link zum passenden Lexikon-Eintrag.' },
+    { t: 'Vergangene Tage auto-eintragen',
+      txt: 'Wenn du mitten im Zyklus startest: <b>Einstellungen → Zyklus auswählen → 🕐 Vergangene Gießtage auto-eintragen.</b> Die App zählt alle Gießtage zwischen Startdatum und heute die noch keinen Eintrag haben und füllt sie mit Planwerten (Wasser, pH 6.4, Dünger, Umgebungs-Defaults) und markiert sie mit "🤖 Auto-eingetragen" in den Notizen. Bestehende Einträge bleiben unverändert.' },
+  ]},
+  { cat: '🚿 Besondere Phasen', items: [
+    { t: 'Spülen (Wo 9-10 im Master-Plan)',
+      txt: 'Nur klares Wasser, kein Dünger mehr. Ziel: die Pflanze soll Nährstoffreste aus dem Substrat verbrauchen. Im Eintrag siehst du den "Spülen"-Hinweis. Gieße reichlich bis viel Drain unten durchläuft. Bei einem 11L-Topf sollten mindestens 1L Drain erzeugt werden. Drain sofort entsorgen, nie zurückgießen.' },
+    { t: 'IceFlush',
+      txt: 'Eiskaltes Wasser (<10°C) in den letzten 1-2 Tagen vor der Ernte. Der Kältestress soll die Trichom-Produktion nochmal pushen und kann lila Verfärbungen auslösen. Praktisch: Eiswürfel direkt auf die Erde legen.' },
+    { t: 'Trichom-Check',
+      txt: 'Ab Blüte-Woche 6-7 mit einer Lupe (60x oder mehr) die Trichome an den Blüten anschauen. <b>Klar</b> = zu früh. <b>Milchig</b> = THC-Peak (euphorische Wirkung). <b>Bernstein</b> = abgebaut zu CBN (sedierend). Ideal zur Ernte: ~70% milchig + 20-30% bernstein. Im Eintrag gibt es ein Trichom-Widget mit Prozent-Schiebern um deine Beobachtung festzuhalten.' },
+    { t: 'Ernte',
+      txt: 'Früh am Morgen ernten, bevor die Lampen angehen (maximaler Terpengehalt). Äste abschneiden, grob entblättern, dann kopfüber aufhängen. Die App wechselt automatisch in die Trocknungs-Phase.' },
+    { t: 'Trocknen',
+      txt: '18–21°C, 55–65% RLF. Dauert 7–14 Tage. Stiele sollten knacken beim Biegen, nicht brechen. Zu schnell = Heu-Geschmack (zu wenig Abbau von Chlorophyll). Danach <b>Curing</b> in Einmachgläsern: erste Woche täglich 15 Min öffnen ("Burping"), dann alle 2–3 Tage. Minimum 2 Wochen, ideal 4–8 Wochen.' },
+  ]},
+  { cat: '🛠️ Werkzeuge im Tipps-Tab', items: [
+    { t: 'Grow-Lexikon',
+      txt: 'Kompakte Erklärungen zu ~25 Begriffen: pH, EC, VPD, NPK, CalMag, Trichom-Stadien, IceFlush, Spülung, Schädlinge, etc. Einträge sind aufklappbar. Viele Smart-Notes im Eintrag-Screen verlinken direkt zum passenden Lexikon-Eintrag.' },
+    { t: 'Tipps',
+      txt: 'Phasen-spezifische Kurztipps — je nach Zyklus-Stand zeigt die App relevante Hinweise (z.B. "Woche 3: Topping-Fenster offen!" oder "Blüte Wo 7: Trichome kontrollieren"). Viele Tipps sind klickbar und öffnen den Lexikon-Eintrag.' },
+    { t: 'PPFD/DLI-Schätzer (nur Profi-Modus)',
+      txt: 'Misst die Licht-Intensität mit dem Lichtsensor deines Handys und rechnet in PPFD (µmol/m²/s) und DLI (mol/m²/d) um. Ziele: Anzucht 200–400, Blüte 600–900, DLI 30–45. Funktioniert nur wenn dein Handy einen Lichtsensor hat und Chrome mit aktiviertem "Generic Sensor Extra Classes"-Flag läuft.' },
+  ]},
+  { cat: '⚙️ Einstellungen & Datenpflege', items: [
+    { t: 'Zyklus archivieren/löschen',
+      txt: '<b>Archivieren</b> (blau): Zyklus wird inaktiv aber alle Daten bleiben. Gut nach dem Ernten um die Historie zu behalten. <b>Löschen</b> (rot): weg ist weg, alle Einträge und Fotos dieses Zyklus werden mit gelöscht. Vorsicht!' },
+    { t: 'Daten exportieren',
+      txt: 'Einstellungen ganz unten → Export. Lädt eine JSON-Datei mit allen Zyklen, Einträgen, Fotos und Einstellungen herunter. Am besten regelmäßig machen, besonders wenn du iOS nutzt. Die Datei kannst du per Mail an dich selbst schicken oder in eine Cloud legen.' },
+    { t: 'Daten importieren',
+      txt: 'Einstellungen → Import. JSON-Datei auswählen die du vorher exportiert hast. Alle aktuellen Daten werden ersetzt — vorher am besten nochmal exportieren als Sicherung.' },
+    { t: 'Gefahrenzone (Profi-Modus)',
+      txt: 'Nur im Profi-Modus sichtbar. <b>Notizen löschen:</b> entfernt nur Textnotizen eines Zyklus, lässt Werte und Fotos. <b>Alle Daten eines Zyklus löschen:</b> Wasser, pH, EC, Dosen, Fotos — komplett. <b>Verwaiste Einträge bereinigen:</b> löscht Entry-Daten zu Zyklen die nicht mehr existieren. Immer mit Bestätigung.' },
+  ]},
+  { cat: '❓ Troubleshooting', items: [
+    { t: 'Die App zeigt komische Werte oder ist durcheinander',
+      txt: 'Manchmal hilft: App komplett schließen und neu öffnen (aus den zuletzt verwendeten Apps wischen, nicht nur Homescreen). Wenn das nichts bringt: Exportieren → Browser-Cache leeren → neu installieren → importieren. Die JSON-Datei ist dein Rettungsanker.' },
+    { t: 'Vergangene Einträge lassen sich nicht mehr ändern',
+      txt: 'Alle vergangenen Tage sollten vollständig editierbar sein — tippe auf den Tag im Kalender und dann auf die Werte. Wenn ein Feld grau/inaktiv wirkt: das ist ein Anzeigeproblem, trotzdem reintippen reicht meist. Falls hartnäckig: in den Einstellungen neu den Zyklus auswählen, dann nochmal probieren.' },
+    { t: 'Foto-Upload scheitert',
+      txt: 'Wenn die App eine Speicherwarnung zeigt (>3.5 MB): alte Fotos löschen (Galerie → Foto → rotes ×) oder die App exportieren und die Bilder vorher rausholen. Der lokale Speicher ist pro Browser/App begrenzt, meistens 5–10 MB.' },
+    { t: 'Die ±-Buttons sind zu klein zum Treffen',
+      txt: 'Alle Stepper-Buttons unterstützen Long-Press — halte den Finger drauf statt viele Einzel-Klicks. Nach 400ms beginnt die Auto-Wiederholung, nach ~2 Sekunden wird sie schneller.' },
+    { t: 'Benachrichtigungen fehlen',
+      txt: 'Aktuell hat die App keine Push-Benachrichtigungen (PWA-Limitation auf iOS). Erinnerungen musst du selbst setzen — z.B. über die Handy-interne Erinnerungs-App auf deine üblichen Gießzeiten.' },
+  ]},
+  { cat: '📝 Feedback geben', items: [
+    { t: 'Was gut funktioniert / was nicht',
+      txt: 'Wenn dir etwas begegnet was seltsam ist — eine Funktion die du erwartet hast und nicht findest, ein Wert der sich nicht übernimmt, eine Warnung die unsinnig scheint — notier dir das mit Datum und was du grad gemacht hast. Je konkreter, desto besser lässt es sich nachstellen.' },
+    { t: 'Was verwirrt',
+      txt: 'Wenn Formulierungen unklar sind, Icons nicht sprechen, oder du nicht weißt was ein Knopf macht — das ist auch Feedback. Die App soll auch für Leute ohne Profi-Wissen bedienbar sein. Lieber zu viel Rückmeldung als zu wenig.' },
+    { t: 'Vorschläge',
+      txt: 'Was fehlt dir? Was würde dir die Arbeit erleichtern? Auch Kleinigkeiten zählen. Und wenn etwas anders gelöst sein sollte als es jetzt ist — beschreib ruhig wie du es lieber hättest.' },
+  ]},
+];
+
+function openHowto() {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('scr-howto').classList.add('active');
+  renderHowto();
+}
+
+function renderHowto() {
+  document.getElementById('howto-body').innerHTML = `
+    <div style="padding:14px 16px;background:linear-gradient(135deg, rgba(90,171,240,0.08), rgba(176,106,200,0.05));border:0.5px solid rgba(90,171,240,0.25);border-radius:14px;margin-bottom:8px">
+      <div style="font-size:14px;font-weight:700;color:var(--blue);margin-bottom:4px">🎓 Willkommen!</div>
+      <div style="font-size:12px;color:var(--text-sub);line-height:1.6">Hier findest du alles was du brauchst um die App zu bedienen. Von ganz einfachen Schritten (App installieren, ersten Zyklus anlegen) bis zu fortgeschrittenen Funktionen (Backfill, Profi-Modus, PPFD-Messung). Die Sektionen sind nach Arbeits-Ablauf sortiert — lies einfach durch oder spring zu dem was dich gerade interessiert.</div>
+    </div>
+  ` + HOWTO.map(cat => `
+    <div style="margin-bottom:4px">
+      <div class="sect-head" style="font-size:12px;padding:10px 0 6px">${cat.cat}</div>
+      ${cat.items.map(item => `
+        <div style="background:var(--card);border:0.5px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:6px">
+          <div onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none';this.querySelector('.htgl').textContent=this.nextElementSibling.style.display==='none'?'▸':'▾'" 
+            style="padding:10px 14px;cursor:pointer;display:flex;align-items:center;gap:8px">
+            <div style="flex:1;font-size:13px;font-weight:500;color:var(--text)">${item.t}</div>
+            <span class="htgl" style="color:var(--text-muted);font-size:14px">▸</span>
+          </div>
+          <div style="display:none;padding:0 14px 12px">
+            <div style="font-size:12px;color:var(--text-sub);line-height:1.7">${item.txt}</div>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `).join('') + '<div style="height:20px"></div>';
+}
+
+// =====================================================================
 //  FOTO-GALERIE
 // =====================================================================
 function openGallery() {
@@ -4973,6 +5208,293 @@ history.pushState(null, '', location.href);
     if (startTimer && !repeatTimer) stopHold();
   }, { passive: true, capture: true });
 })();
+
+// =====================================================================
+//  TOUR ENGINE
+//  Guided onboarding with overlay + popup + highlight.
+//
+//  A tour is an array of step objects:
+//  {
+//    target: '#css-selector'       // element to highlight (optional for intro/outro)
+//    tab: 'dash'|'cal'|'tips'|'set' // auto-switch to this tab before step
+//    title: '🎯 Schritt-Titel'
+//    body: 'Erklärungstext'
+//    arrow: 'auto'|'top'|'bottom'|'left'|'right'  // popup arrow direction
+//    waitFor: 'click'|null         // null = show "Weiter" button; 'click' = wait for user tap on target
+//    skipBack: true                // hide back button (e.g. after screen switch)
+//  }
+// =====================================================================
+const Tour = (function() {
+  let active = null;        // current tour definition
+  let stepIdx = 0;
+  let overlay = null;
+  let hole = null;
+  let popup = null;
+  let resizeObs = null;
+  let actionListener = null;
+  let actionTarget = null;
+
+  function byId(s) { return document.querySelector(s); }
+
+  function buildDom() {
+    overlay = document.createElement('div');
+    overlay.className = 'tour-overlay';
+    document.body.appendChild(overlay);
+    hole = document.createElement('div');
+    hole.className = 'tour-hole';
+    document.body.appendChild(hole);
+    popup = document.createElement('div');
+    popup.className = 'tour-popup';
+    document.body.appendChild(popup);
+    // A click on the overlay itself does nothing (prevents app interaction outside tour)
+    overlay.addEventListener('click', (e) => {
+      // Clicks only pass through if they're inside the popup (which has higher z-index)
+      e.stopPropagation();
+    }, true);
+  }
+
+  function destroyDom() {
+    [overlay, hole, popup].forEach(el => { if (el && el.parentNode) el.parentNode.removeChild(el); });
+    overlay = hole = popup = null;
+    if (actionListener && actionTarget) {
+      actionTarget.removeEventListener('click', actionListener, true);
+    }
+    actionListener = actionTarget = null;
+  }
+
+  function positionHole(target) {
+    if (!target || !hole) { if (hole) hole.style.display = 'none'; return; }
+    const r = target.getBoundingClientRect();
+    hole.style.display = 'block';
+    hole.style.left = (r.left - 4) + 'px';
+    hole.style.top = (r.top - 4) + 'px';
+    hole.style.width = (r.width + 8) + 'px';
+    hole.style.height = (r.height + 8) + 'px';
+  }
+
+  function positionPopup(target, arrowHint) {
+    if (!popup) return;
+    // Make sure popup has been rendered so we can measure it
+    popup.style.left = '0px';
+    popup.style.top = '0px';
+    const pr = popup.getBoundingClientRect();
+    const vw = window.innerWidth, vh = window.innerHeight;
+    const margin = 12;
+
+    if (!target) {
+      // Center on screen
+      popup.style.left = Math.round((vw - pr.width) / 2) + 'px';
+      popup.style.top = Math.round((vh - pr.height) / 2) + 'px';
+      const arrow = popup.querySelector('.tour-popup-arrow');
+      if (arrow) arrow.style.display = 'none';
+      return;
+    }
+    const tr = target.getBoundingClientRect();
+    // Pick arrow direction: if hint given and it fits, use it; else auto
+    let dir = arrowHint || 'auto';
+    const spaceTop = tr.top;
+    const spaceBottom = vh - tr.bottom;
+    const spaceLeft = tr.left;
+    const spaceRight = vw - tr.right;
+    if (dir === 'auto') {
+      if (spaceBottom >= pr.height + margin + 16) dir = 'top'; // popup below target, arrow on top
+      else if (spaceTop >= pr.height + margin + 16) dir = 'bottom';
+      else if (spaceRight >= pr.width + margin + 16) dir = 'left';
+      else if (spaceLeft >= pr.width + margin + 16) dir = 'right';
+      else dir = 'top'; // fallback
+    }
+    // Position popup based on direction
+    let left, top;
+    if (dir === 'top') {
+      top = tr.bottom + margin;
+      left = tr.left + tr.width / 2 - pr.width / 2;
+    } else if (dir === 'bottom') {
+      top = tr.top - pr.height - margin;
+      left = tr.left + tr.width / 2 - pr.width / 2;
+    } else if (dir === 'left') {
+      left = tr.right + margin;
+      top = tr.top + tr.height / 2 - pr.height / 2;
+    } else { // right
+      left = tr.left - pr.width - margin;
+      top = tr.top + tr.height / 2 - pr.height / 2;
+    }
+    // Clamp to viewport
+    left = Math.max(margin, Math.min(left, vw - pr.width - margin));
+    top = Math.max(margin, Math.min(top, vh - pr.height - margin));
+    popup.style.left = Math.round(left) + 'px';
+    popup.style.top = Math.round(top) + 'px';
+
+    // Update arrow position + visibility
+    const arrow = popup.querySelector('.tour-popup-arrow');
+    if (arrow) {
+      arrow.className = 'tour-popup-arrow ' + dir;
+      arrow.style.display = 'block';
+    }
+  }
+
+  function renderStep() {
+    if (!active || !popup) return;
+    const step = active.steps[stepIdx];
+    if (!step) return;
+
+    // Tab switch if requested
+    if (step.tab && typeof tab !== 'undefined' && tab !== step.tab) {
+      goTo(step.tab);
+    }
+
+    // Scroll target into view if it exists
+    setTimeout(() => {
+      const target = step.target ? byId(step.target) : null;
+      if (target) {
+        const r = target.getBoundingClientRect();
+        if (r.top < 60 || r.bottom > window.innerHeight - 60) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }
+      // After scroll settles, render
+      setTimeout(() => doRender(step), 300);
+    }, step.tab ? 200 : 0);
+  }
+
+  function doRender(step) {
+    const target = step.target ? byId(step.target) : null;
+    positionHole(target);
+
+    // Build popup content
+    const dots = active.steps.map((_, i) => {
+      const cls = i === stepIdx ? 'active' : (i < stepIdx ? 'done' : '');
+      return `<div class="tour-dot ${cls}"></div>`;
+    }).join('');
+
+    const isFirst = stepIdx === 0;
+    const isLast = stepIdx === active.steps.length - 1;
+    const waiting = step.waitFor === 'click';
+
+    popup.innerHTML = `
+      <div class="tour-popup-arrow"></div>
+      <div class="tour-dots">${dots}</div>
+      <div class="tour-popup-title">${step.title || ''}</div>
+      <div class="tour-popup-body">${step.body || ''}</div>
+      <div class="tour-popup-btns">
+        ${!isFirst && !step.skipBack ? '<button class="tour-popup-btn secondary" data-act="back">← Zurück</button>' : ''}
+        ${waiting
+          ? '<button class="tour-popup-btn secondary" data-act="skip-wait">Weiter →</button>'
+          : `<button class="tour-popup-btn primary" data-act="next">${isLast ? 'Fertig ✓' : 'Weiter →'}</button>`}
+        ${!isLast ? '<button class="tour-popup-btn skip" data-act="end">Tour beenden</button>' : ''}
+      </div>
+    `;
+
+    // Wire up buttons
+    popup.querySelectorAll('[data-act]').forEach(btn => {
+      btn.onclick = (e) => {
+        e.stopPropagation();
+        const a = btn.getAttribute('data-act');
+        if (a === 'next' || a === 'skip-wait') nextStep();
+        else if (a === 'back') prevStep();
+        else if (a === 'end') end();
+      };
+    });
+
+    // Position popup AFTER it's in DOM and has dimensions
+    requestAnimationFrame(() => positionPopup(target, step.arrow));
+
+    // If this step waits for click on target, wire listener
+    cleanupActionListener();
+    if (waiting && target) {
+      actionTarget = target;
+      actionListener = (e) => {
+        // Let the actual app click happen, then advance
+        setTimeout(() => nextStep(), 50);
+      };
+      target.addEventListener('click', actionListener, true);
+    }
+  }
+
+  function cleanupActionListener() {
+    if (actionListener && actionTarget) {
+      actionTarget.removeEventListener('click', actionListener, true);
+    }
+    actionListener = actionTarget = null;
+  }
+
+  function nextStep() {
+    cleanupActionListener();
+    if (!active) return;
+    if (stepIdx >= active.steps.length - 1) { end(); return; }
+    stepIdx++;
+    renderStep();
+  }
+
+  function prevStep() {
+    cleanupActionListener();
+    if (!active || stepIdx === 0) return;
+    stepIdx--;
+    renderStep();
+  }
+
+  function start(tourDef) {
+    if (active) end(); // end any previous tour
+    active = tourDef;
+    stepIdx = 0;
+    if (!overlay) buildDom();
+    overlay.classList.add('visible');
+    renderStep();
+    // Reposition on resize/orientation
+    const onResize = () => { if (active) renderStep(); };
+    window.addEventListener('resize', onResize);
+    Tour._onResize = onResize;
+  }
+
+  function end() {
+    cleanupActionListener();
+    active = null;
+    stepIdx = 0;
+    if (overlay) overlay.classList.remove('visible');
+    if (Tour._onResize) {
+      window.removeEventListener('resize', Tour._onResize);
+      Tour._onResize = null;
+    }
+    // Fade out then destroy
+    setTimeout(() => destroyDom(), 300);
+    // Mark completed in state
+    if (typeof S !== 'undefined' && typeof saveS === 'function') {
+      S._tourCompleted = true;
+      saveS();
+    }
+  }
+
+  return { start, end, nextStep, prevStep,
+    // test/debug accessors
+    _state: () => ({ active: !!active, stepIdx, stepCount: active ? active.steps.length : 0 }),
+  };
+})();
+
+// =====================================================================
+//  TOUR: Test tour for framework validation (Session 1)
+//  A 4-step mini tour that just shows text — no action-waiter yet.
+//  Manually startable via Tour.start(TOUR_TEST) or startTestTour().
+// =====================================================================
+const TOUR_TEST = {
+  id: 'test',
+  steps: [
+    { title: '🎓 Willkommen!', body: 'Das ist eine Test-Tour um zu prüfen dass das Tour-System funktioniert. Sie zeigt nur ein paar Bildschirme — keine Aktionen nötig.' },
+    { tab: 'dash', target: '.topbar', title: '📱 Dashboard', body: 'Hier oben siehst du den App-Titel und den + Button um einen neuen Eintrag zu öffnen.', arrow: 'top' },
+    { tab: 'cal', target: '#scr-cal .topbar', title: '📅 Kalender', body: 'Hier findest du alle Tage deines Zyklus farblich markiert. Tippe auf einen Tag um den Eintrag zu öffnen.', arrow: 'top' },
+    { tab: 'tips', target: '#scr-tips', title: '✅ Fertig!', body: 'Wenn du das siehst, funktioniert das Tour-Framework. In den nächsten Sessions bauen wir hier echte geführte Schritt-für-Schritt-Abläufe ein.' },
+  ],
+};
+
+function startTestTour() {
+  Tour.start(TOUR_TEST);
+}
+
+// Auto-start: if no active cycles AND tour hasn't been completed, run test tour on app load
+setTimeout(() => {
+  if (typeof S !== 'undefined' && !S._tourCompleted && (!S.cycles || S.cycles.filter(c => c.active).length === 0)) {
+    // Delay a bit so the initial dashboard render is settled
+    setTimeout(() => startTestTour(), 800);
+  }
+}, 100);
 </script>
 </body>
 </html>
