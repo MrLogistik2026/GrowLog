@@ -427,15 +427,15 @@ input:checked + .sl:before { transform: translateX(18px); background: var(--gree
 /* ============================================================== */
 .tour-overlay {
   position: fixed; inset: 0; z-index: 9998;
-  background: rgba(0, 0, 0, 0.65);
-  pointer-events: auto;
+  background: rgba(0, 0, 0, 0.35);
+  pointer-events: none;
   opacity: 0; transition: opacity 0.25s;
 }
 .tour-overlay.visible { opacity: 1; }
 .tour-hole {
   position: fixed; z-index: 9999;
   border-radius: 12px;
-  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.65),
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.35),
               0 0 0 2px var(--green),
               0 0 20px rgba(76, 175, 112, 0.4);
   pointer-events: none;
@@ -443,10 +443,10 @@ input:checked + .sl:before { transform: translateX(18px); background: var(--gree
   animation: tour-pulse 2s infinite ease-in-out;
 }
 @keyframes tour-pulse {
-  0%, 100% { box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.65),
+  0%, 100% { box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.35),
                           0 0 0 2px var(--green),
                           0 0 15px rgba(76, 175, 112, 0.35); }
-  50%      { box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.65),
+  50%      { box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.35),
                           0 0 0 3px var(--green),
                           0 0 25px rgba(76, 175, 112, 0.55); }
 }
@@ -577,6 +577,7 @@ input:checked + .sl:before { transform: translateX(18px); background: var(--gree
       </div>
     </div>
     <div class="scroll" id="entry-body"></div>
+    <nav class="bottom-nav" id="nav-entry"></nav>
   </div>
 
   <!-- Dünger Manager -->
@@ -870,6 +871,7 @@ let S = {
   potSize: 11, presetKey: null, mixOrder: null, mixInfo: null,
 };
 let tab = 'dash', calDate = new Date(), editISO = null, entryFrom = 'dash';
+let _entryDirty = false; // Tracks whether the current entry has unsaved changes
 let selId = null, draft = {}, lastBack = 0, editProd = null;
 let _dzSel = null; // Danger Zone selected cycle
 let _setScrollY = null; // Settings scroll restore
@@ -1542,9 +1544,10 @@ const TABS = ['dash','cal','tips','set'];
 const TICO = { dash: '🌱', cal: '📅', tips: '💡', set: '⚙' };
 const TLBL = { dash: 'Home', cal: 'Kalender', tips: 'Tipps', set: 'Einst.' };
 
-function buildNav(t) {
+function buildNav(t, onClickFn) {
+  const handler = onClickFn || `goTo('__X__')`;
   return TABS.map(x =>
-    `<button class="nav-btn ${x === t ? 'active' : ''}" onclick="goTo('${x}')">
+    `<button class="nav-btn ${x === t ? 'active' : ''}" data-tab="${x}" onclick="${handler.replace('__X__', x)}">
       <span class="nav-icon">${TICO[x]}</span>
       <span class="nav-label">${TLBL[x]}</span>
     </button>`
@@ -1913,7 +1916,11 @@ function renderDash() {
       <b style="color:var(--text-sub)">3.</b> BioBizz-Düngeplan laden<br>
       <b style="color:var(--text-sub)">4.</b> Zyklus starten — los geht's!
     </div>
-    <button style="background:var(--green);border:none;border-radius:22px;padding:14px 32px;font-size:15px;color:#fff;cursor:pointer;font-family:var(--font);font-weight:700;box-shadow:0 4px 14px rgba(76,175,112,0.3)" onclick="goTo('set')">🌱 Jetzt starten →</button>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center">
+      <button id="welcome-start-btn" style="background:var(--green);border:none;border-radius:22px;padding:14px 28px;font-size:15px;color:#fff;cursor:pointer;font-family:var(--font);font-weight:700;box-shadow:0 4px 14px rgba(76,175,112,0.3)" onclick="goTo('set')">🌱 Jetzt starten →</button>
+      <button onclick="goTo('tips');setTimeout(openHowto,100)" style="background:var(--surface);border:1px solid var(--green-dk);border-radius:22px;padding:13px 22px;font-size:13px;color:var(--green);cursor:pointer;font-family:var(--font);font-weight:600">📖 Erst nachlesen</button>
+    </div>
+    <div style="font-size:10px;color:var(--text-hint);margin-top:12px;line-height:1.5;max-width:260px">💡 Tipp: Unter "📖 Erst nachlesen" findest du eine komplette Anleitung mit 9 Kapiteln — und auch geführte Touren durch die App.</div>
   </div>` : '';
 
   document.getElementById('dash-body').innerHTML = `${actionCards}${todayCard}${alertHTML}${stats}<div class="sect-head">Meine Zyklen</div>${empty}${cards}
@@ -2837,7 +2844,7 @@ function renderSet() {
     <div class="card" style="gap:10px;display:flex;flex-direction:column;border-color:${sel ? cl.hex+'33' : 'var(--border)'}">
       <div style="display:flex;align-items:center;justify-content:space-between">
         <div class="sect-head" style="margin:0">🌱 Meine Zyklen</div>
-        <button class="add-btn" onclick="addCyc()">＋ Neu</button>
+        <button id="add-cyc-btn" class="add-btn" onclick="addCyc()">＋ Neu</button>
       </div>
       <div class="tab-row">${tabs}</div>
       ${sel ? `
@@ -2846,11 +2853,11 @@ function renderSet() {
           <!-- GRUPPE: Identität -->
           <div class="inp-wrap">
             <div class="inp-label">Name</div>
-            <input class="inp-field" value="${d.name || ''}" oninput="dd('name',this.value)" style="border-color:${cl.hex}44"/>
+            <input id="cyc-name-input" class="inp-field" value="${d.name || ''}" oninput="dd('name',this.value)" style="border-color:${cl.hex}44"/>
           </div>
           <div class="inp-wrap">
             <div class="inp-label">Standort / Zelt</div>
-            <input class="inp-field" value="${d.location || ''}" oninput="dd('location',this.value)" placeholder="z.B. Zelt 1"/>
+            <input id="cyc-location-input" class="inp-field" value="${d.location || ''}" oninput="dd('location',this.value)" placeholder="z.B. Zelt 1"/>
           </div>
           <div style="display:flex;gap:10px;align-items:flex-start">
             <div style="flex:1">
@@ -2868,7 +2875,7 @@ function renderSet() {
           <div style="display:flex;gap:8px">
             <div class="inp-wrap" style="flex:1">
               <div class="inp-label">Samentyp</div>
-              <select class="inp-field" style="cursor:pointer" onchange="dd('seedType',this.value);renderSet()">
+              <select id="cyc-seed-select" class="inp-field" style="cursor:pointer" onchange="dd('seedType',this.value);renderSet()">
                 <option value="fem" ${d.seedType==='fem'?'selected':''}>♀ Feminisiert</option>
                 <option value="auto" ${d.seedType==='auto'?'selected':''}>⚡ Automatic</option>
                 ${S.beginnerMode && d.seedType !== 'reg' ? '' : `<option value="reg" ${d.seedType==='reg'?'selected':''}>♀♂ Regulär</option>`}
@@ -2893,7 +2900,7 @@ function renderSet() {
           <div style="background:${sel.active ? cl.dk : 'var(--surface)'};border:0.5px solid ${sel.active ? cl.hex+'44' : 'var(--border)'};border-radius:12px;padding:12px 14px;margin-top:8px">
             <div class="inp-wrap" style="margin-bottom:10px">
               <div class="inp-label">📅 Startdatum (Tag 1)</div>
-              <input class="inp-field" type="date" value="${d.startDate || todayISO()}" oninput="dd('startDate',this.value)" style="color-scheme:dark;border-color:${cl.hex}33"/>
+              <input id="cyc-start-input" class="inp-field" type="date" value="${d.startDate || todayISO()}" oninput="dd('startDate',this.value)" style="color-scheme:dark;border-color:${cl.hex}33"/>
             </div>
             <div style="display:flex;align-items:center;justify-content:space-between">
               <div>
@@ -3055,7 +3062,7 @@ function renderSet() {
     </div>
     `}
 
-    <div style="text-align:center;padding:16px 0;font-size:11px;color:var(--text-hint)">GrowSmart v0.9.1 🌱</div>
+    <div style="text-align:center;padding:16px 0;font-size:11px;color:var(--text-hint)">GrowSmart v0.8.87 🌱</div>
     <div style="height:20px"></div>`;
 
   // Restore scroll position (goTo handles scroll-to-top on tab switch)
@@ -3819,11 +3826,34 @@ function getSmartQuickNotes(c, p, cd, iso) {
 
 function openEntry(iso) {
   editISO = iso;
-  document.getElementById('entry-back').onclick = () => goTo(entryFrom);
+  _entryDirty = false;
+  document.getElementById('entry-back').onclick = () => navFromEntry(entryFrom);
   _updateEntryTitle(iso);
+  // Render bottom nav (no tab is "active" since we're in entry screen)
+  document.getElementById('nav-entry').innerHTML = buildNav('__none__', `navFromEntry('__X__')`);
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('scr-entry').classList.add('active');
   renderEntry(iso);
+}
+
+/**
+ * Navigate away from entry screen. If there are unsaved changes, ask first.
+ * Simple 2-button: OK = Save & go / Cancel = Stay here.
+ */
+function navFromEntry(targetTab) {
+  if (!_entryDirty) {
+    goTo(targetTab);
+    return;
+  }
+  const choice = confirm(
+    'Du hast ungespeicherte Änderungen.\n\n' +
+    'Speichern und weiter? (OK)\n' +
+    'Hier bleiben? (Abbrechen)'
+  );
+  if (choice) {
+    saveEntry();
+    setTimeout(() => goTo(targetTab), 50);
+  }
 }
 
 function _updateEntryTitle(iso) {
@@ -4491,6 +4521,7 @@ function stepMixDose(cId, prodId, wk, stepMl, waterAmt) {
 }
 
 function uEnv() {
+  _entryDirty = true;
   const t = parseFloat(document.getElementById('et')?.value);
   const r = parseFloat(document.getElementById('er')?.value);
   const v = calcVPD(t, r), z = vpdZone(v);
@@ -4512,8 +4543,8 @@ function ensE(cId) {
   if (!S.entries[editISO].cycleData[cId].photos) S.entries[editISO].cycleData[cId].photos = [];
 }
 
-function uDose(cId, pid, v) { ensE(cId); S.entries[editISO].cycleData[cId].doses[pid] = parseFloat(v) || 0; }
-function uEF(cId, f, v) { ensE(cId); S.entries[editISO].cycleData[cId][f] = v; }
+function uDose(cId, pid, v) { _entryDirty = true; ensE(cId); S.entries[editISO].cycleData[cId].doses[pid] = parseFloat(v) || 0; }
+function uEF(cId, f, v) { _entryDirty = true; ensE(cId); S.entries[editISO].cycleData[cId][f] = v; }
 
 /**
  * Apply one-click recommended values for a watering day:
@@ -4616,6 +4647,7 @@ function saveEntry() {
   });
 
   saveS();
+  _entryDirty = false;
   vibrate();
   toast('Gespeichert ✓');
   // Re-render to activate VPD display with saved temp/humidity
@@ -4934,28 +4966,155 @@ function openHowto() {
 }
 
 function renderHowto() {
-  document.getElementById('howto-body').innerHTML = `
-    <div style="padding:14px 16px;background:linear-gradient(135deg, rgba(90,171,240,0.08), rgba(176,106,200,0.05));border:0.5px solid rgba(90,171,240,0.25);border-radius:14px;margin-bottom:8px">
-      <div style="font-size:14px;font-weight:700;color:var(--blue);margin-bottom:4px">🎓 Willkommen!</div>
-      <div style="font-size:12px;color:var(--text-sub);line-height:1.6">Hier findest du alles was du brauchst um die App zu bedienen. Von ganz einfachen Schritten (App installieren, ersten Zyklus anlegen) bis zu fortgeschrittenen Funktionen (Backfill, Profi-Modus, PPFD-Messung). Die Sektionen sind nach Arbeits-Ablauf sortiert — lies einfach durch oder spring zu dem was dich gerade interessiert.</div>
-    </div>
-  ` + HOWTO.map(cat => `
+  const q = (document.getElementById('howto-search')?.value || '').trim();
+  // Full render (rebuilds DOM including search field). Called on open.
+  _renderHowtoFull(q);
+}
+
+/**
+ * Called live as user types — only re-renders the results/info section,
+ * keeping the search input DOM-stable so the mobile keyboard stays open
+ * and the cursor doesn't jump.
+ */
+function _onHowtoSearchInput(q) {
+  const query = (q || '').trim();
+  const resultsEl = document.getElementById('howto-results');
+  if (!resultsEl) { renderHowto(); return; }
+  resultsEl.innerHTML = _buildHowtoResults(query);
+  // Toggle the X button
+  const clearBtn = document.getElementById('howto-search-clear');
+  if (clearBtn) clearBtn.style.display = query ? 'flex' : 'none';
+  // Toggle the tours section at the bottom
+  const toursEl = document.getElementById('howto-tours');
+  if (toursEl) toursEl.style.display = query ? 'none' : 'block';
+}
+
+/**
+ * Normalize a string for search matching.
+ * Lowercase, strip HTML, replace German umlauts so "düngen"/"duengen"/"DÜNGEN" all match.
+ */
+function _normSearch(s) {
+  if (!s) return '';
+  return String(s)
+    .replace(/<[^>]+>/g, ' ')
+    .toLowerCase()
+    .replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function _escRegex(s) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/**
+ * Highlight all case-insensitive occurrences of `query` in `html`, without breaking tags.
+ */
+function _highlightMatches(html, query) {
+  if (!query) return html;
+  const parts = html.split(/(<[^>]+>)/g);
+  return parts.map(p => {
+    if (p.startsWith('<')) return p;
+    const re = new RegExp(_escRegex(query), 'gi');
+    return p.replace(re, m => `<mark style="background:rgba(240,208,80,0.35);color:var(--text);padding:1px 2px;border-radius:3px">${m}</mark>`);
+  }).join('');
+}
+
+/** Build the info box + filtered chapters HTML (no search field, no tours) */
+function _buildHowtoResults(query) {
+  const totalEntries = HOWTO.reduce((sum, cat) => sum + cat.items.length, 0);
+  const normQuery = _normSearch(query);
+
+  let matchedCats = HOWTO;
+  let matchCount = totalEntries;
+  if (normQuery) {
+    matchedCats = HOWTO.map(cat => ({
+      cat: cat.cat,
+      items: cat.items.filter(item => {
+        const hay = _normSearch(item.t + ' ' + item.txt + ' ' + cat.cat);
+        return hay.includes(normQuery);
+      })
+    })).filter(cat => cat.items.length > 0);
+    matchCount = matchedCats.reduce((s, c) => s + c.items.length, 0);
+  }
+
+  const infoBox = normQuery
+    ? `<div style="padding:12px 14px;background:var(--card);border:0.5px solid var(--green-dk);border-radius:12px;margin-bottom:10px">
+         <div style="font-size:12px;color:var(--green);font-weight:600">🔍 ${matchCount} ${matchCount === 1 ? 'Treffer' : 'Treffer'} für „${query.replace(/</g, '&lt;')}"</div>
+         ${matchCount === 0 ? '<div style="font-size:11px;color:var(--text-muted);margin-top:4px;line-height:1.5">Nichts gefunden. Probier: <i>wasser, pH, düngen, ernte, trocknen, spülen, trichome, lexikon</i></div>' : ''}
+       </div>`
+    : `<div style="padding:14px 16px;background:linear-gradient(135deg, rgba(90,171,240,0.08), rgba(176,106,200,0.05));border:0.5px solid rgba(90,171,240,0.25);border-radius:14px;margin-bottom:10px">
+         <div style="font-size:14px;font-weight:700;color:var(--blue);margin-bottom:4px">📖 Anleitung zum Nachlesen</div>
+         <div style="font-size:12px;color:var(--text-sub);line-height:1.6">${HOWTO.length} Kapitel · ${totalEntries} Einträge. Tipp auf eine Überschrift um den Text auf- oder zuzuklappen, oder benutz die Suche oben. Weiter unten findest du auch interaktive Touren.</div>
+       </div>`;
+
+  const entriesOpen = !!normQuery;
+  const bodyDisplay = entriesOpen ? 'block' : 'none';
+  const toggleIcon = entriesOpen ? '▾' : '▸';
+
+  const chapters = matchedCats.map(cat => `
     <div style="margin-bottom:4px">
       <div class="sect-head" style="font-size:12px;padding:10px 0 6px">${cat.cat}</div>
-      ${cat.items.map(item => `
-        <div style="background:var(--card);border:0.5px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:6px">
-          <div onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none';this.querySelector('.htgl').textContent=this.nextElementSibling.style.display==='none'?'▸':'▾'" 
+      ${cat.items.map(item => {
+        const titleHTML = _highlightMatches(item.t, query);
+        const bodyHTML = _highlightMatches(item.txt, query);
+        return `<div style="background:var(--card);border:0.5px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:6px">
+          <div onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none';this.querySelector('.htgl').textContent=this.nextElementSibling.style.display==='none'?'▸':'▾'"
             style="padding:10px 14px;cursor:pointer;display:flex;align-items:center;gap:8px">
-            <div style="flex:1;font-size:13px;font-weight:500;color:var(--text)">${item.t}</div>
-            <span class="htgl" style="color:var(--text-muted);font-size:14px">▸</span>
+            <div style="flex:1;font-size:13px;font-weight:500;color:var(--text)">${titleHTML}</div>
+            <span class="htgl" style="color:var(--text-muted);font-size:14px">${toggleIcon}</span>
           </div>
-          <div style="display:none;padding:0 14px 12px">
-            <div style="font-size:12px;color:var(--text-sub);line-height:1.7">${item.txt}</div>
+          <div style="display:${bodyDisplay};padding:0 14px 12px">
+            <div style="font-size:12px;color:var(--text-sub);line-height:1.7">${bodyHTML}</div>
           </div>
-        </div>
-      `).join('')}
+        </div>`;
+      }).join('')}
     </div>
-  `).join('') + '<div style="height:20px"></div>';
+  `).join('');
+
+  return infoBox + chapters;
+}
+
+function _renderHowtoFull(query) {
+  const tourDoneNote = (typeof S !== 'undefined' && S._tourCompleted)
+    ? '<div style="font-size:10px;color:var(--text-hint);margin-top:6px">✓ Tour bereits abgeschlossen · neu starten um nochmal durchzugehen</div>'
+    : '';
+  const q = query || '';
+
+  const searchField = `
+    <div style="position:relative;margin-bottom:10px">
+      <input
+        id="howto-search"
+        type="search"
+        placeholder="🔍 Suchen (z.B. wasser, pH, ernte, dünger…)"
+        value="${q.replace(/"/g, '&quot;')}"
+        oninput="_onHowtoSearchInput(this.value)"
+        autocomplete="off"
+        style="width:100%;background:var(--card);border:0.5px solid var(--border);border-radius:10px;padding:10px 36px 10px 12px;font-size:13px;color:var(--text);font-family:var(--font);outline:none"
+      />
+      <button id="howto-search-clear" onclick="document.getElementById('howto-search').value='';_onHowtoSearchInput('');document.getElementById('howto-search').focus()" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:var(--surface);border:0.5px solid var(--border);border-radius:50%;width:24px;height:24px;font-size:12px;color:var(--text-muted);cursor:pointer;font-family:var(--font);padding:0;display:${q ? 'flex' : 'none'};align-items:center;justify-content:center" title="Suche löschen">×</button>
+    </div>`;
+
+  const toursSection = `
+    <div id="howto-tours" style="padding:14px 16px;background:linear-gradient(135deg, rgba(76,175,112,0.10), rgba(76,175,112,0.03));border:1px solid var(--green-dk);border-radius:14px;margin-bottom:12px;display:${q ? 'none' : 'block'}">
+      <div style="font-size:14px;font-weight:700;color:var(--green);margin-bottom:4px">▶ Interaktive Touren</div>
+      <div style="font-size:12px;color:var(--text-sub);line-height:1.6;margin-bottom:10px">Lieber geführt werden als lesen? Die Touren zeigen dir die App Schritt für Schritt mit Popups und Highlights.</div>
+      <button onclick="restartOnboardingTour()" style="width:100%;background:#1b4027;color:#fff;border:1px solid var(--green);border-radius:10px;padding:12px 14px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);text-shadow:0 1px 2px rgba(0,0,0,0.4);margin-bottom:10px">🎓 Überblick-Tour starten</button>
+      <div style="font-size:11px;color:var(--text-muted);font-weight:600;margin-bottom:6px;margin-top:4px">Mini-Tutorials (zum selber Tippen):</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+        <button onclick="startNavTour()" style="background:var(--card);color:var(--green);border:1px solid var(--green-dk);border-radius:10px;padding:10px 8px;font-size:11px;font-weight:600;cursor:pointer;font-family:var(--font);line-height:1.3">🧭 Navigation<br><span style="font-size:9px;font-weight:400;color:var(--text-muted)">Die 4 Tabs kennenlernen</span></button>
+        <button onclick="startEntryTour()" style="background:var(--card);color:var(--green);border:1px solid var(--green-dk);border-radius:10px;padding:10px 8px;font-size:11px;font-weight:600;cursor:pointer;font-family:var(--font);line-height:1.3">📝 Eintrag öffnen<br><span style="font-size:9px;font-weight:400;color:var(--text-muted)">Täglicher Workflow</span></button>
+        <button onclick="startCreateCycleTour()" style="background:var(--card);color:var(--green);border:1px solid var(--green-dk);border-radius:10px;padding:10px 8px;font-size:11px;font-weight:600;cursor:pointer;font-family:var(--font);grid-column:span 2;line-height:1.3">🌱 Ersten Zyklus vollständig anlegen<br><span style="font-size:9px;font-weight:400;color:var(--text-muted)">~8 Schritte · legt echten Zyklus an</span></button>
+        <button onclick="startInteractiveTutorial()" style="background:var(--card);color:var(--text-muted);border:1px solid var(--border);border-radius:10px;padding:8px;font-size:10px;font-weight:500;cursor:pointer;font-family:var(--font);grid-column:span 2;line-height:1.3;opacity:0.75">🎯 Erster Zyklus — Kurzversion (nur 3 Schritte)</button>
+      </div>
+      ${tourDoneNote}
+    </div>`;
+
+  document.getElementById('howto-body').innerHTML =
+    searchField +
+    toursSection +
+    `<div id="howto-results">${_buildHowtoResults(q)}</div>` +
+    '<div style="height:20px"></div>';
 }
 
 // =====================================================================
@@ -5239,7 +5398,22 @@ const Tour = (function() {
   let actionListener = null;
   let actionTarget = null;
 
-  function byId(s) { return document.querySelector(s); }
+  // Find element by selector. If multiple elements match, prefer one inside the currently
+  // active screen — this handles duplicated elements like nav buttons that exist per-screen.
+  function byId(s) {
+    const all = document.querySelectorAll(s);
+    if (all.length === 0) return null;
+    if (all.length === 1) return all[0];
+    // Multiple matches: find one inside .screen.active
+    const activeScreen = document.querySelector('.screen.active');
+    if (activeScreen) {
+      for (const el of all) {
+        if (activeScreen.contains(el)) return el;
+      }
+    }
+    // Fallback: first match
+    return all[0];
+  }
 
   function buildDom() {
     overlay = document.createElement('div');
@@ -5251,11 +5425,8 @@ const Tour = (function() {
     popup = document.createElement('div');
     popup.className = 'tour-popup';
     document.body.appendChild(popup);
-    // A click on the overlay itself does nothing (prevents app interaction outside tour)
-    overlay.addEventListener('click', (e) => {
-      // Clicks only pass through if they're inside the popup (which has higher z-index)
-      e.stopPropagation();
-    }, true);
+    // Overlay is pointer-events: none in CSS. Only popup + hole sit on top visually.
+    // Clicks reach the underlying app, which is what action-waiter steps need.
   }
 
   function destroyDom() {
@@ -5284,7 +5455,7 @@ const Tour = (function() {
     popup.style.top = '0px';
     const pr = popup.getBoundingClientRect();
     const vw = window.innerWidth, vh = window.innerHeight;
-    const margin = 12;
+    const margin = 16;
 
     if (!target) {
       // Center on screen
@@ -5349,6 +5520,7 @@ const Tour = (function() {
 
     // Scroll target into view if it exists
     setTimeout(() => {
+      if (!active) return; // Tour ended during scroll wait
       const target = step.target ? byId(step.target) : null;
       if (target) {
         const r = target.getBoundingClientRect();
@@ -5357,11 +5529,15 @@ const Tour = (function() {
         }
       }
       // After scroll settles, render
-      setTimeout(() => doRender(step), 300);
+      setTimeout(() => {
+        if (!active) return; // Tour ended during render wait
+        doRender(step);
+      }, 300);
     }, step.tab ? 200 : 0);
   }
 
   function doRender(step) {
+    if (!active || !popup) return;
     const target = step.target ? byId(step.target) : null;
     positionHole(target);
 
@@ -5373,17 +5549,27 @@ const Tour = (function() {
 
     const isFirst = stepIdx === 0;
     const isLast = stepIdx === active.steps.length - 1;
-    const waiting = step.waitFor === 'click';
+    const waiting = step.waitFor === 'click' || step.waitFor === 'input' || step.waitFor === 'change';
+    const isInputMode = step.waitFor === 'input';
+
+    // For input-mode steps, seed the preview with the current field value
+    let initialPreview = '';
+    if (isInputMode && step.target) {
+      const tgt = byId(step.target);
+      const v = (tgt && tgt.value || '').trim();
+      initialPreview = v ? '📝 ' + v.replace(/</g, '&lt;') : '📝 <span style="color:var(--text-hint)">(noch leer, tipp ins Feld)</span>';
+    }
 
     popup.innerHTML = `
       <div class="tour-popup-arrow"></div>
       <div class="tour-dots">${dots}</div>
       <div class="tour-popup-title">${step.title || ''}</div>
       <div class="tour-popup-body">${step.body || ''}</div>
+      ${isInputMode ? `<div class="tour-input-preview" style="margin:-4px 0 10px;padding:8px 10px;background:var(--surface);border-radius:8px;font-size:12px;color:var(--text-muted);word-break:break-word;min-height:16px">${initialPreview}</div>` : ''}
       <div class="tour-popup-btns">
         ${!isFirst && !step.skipBack ? '<button class="tour-popup-btn secondary" data-act="back">← Zurück</button>' : ''}
         ${waiting
-          ? '<button class="tour-popup-btn secondary" data-act="skip-wait">Weiter →</button>'
+          ? '<button class="tour-popup-btn primary" data-act="skip-wait">Weiter →</button>'
           : `<button class="tour-popup-btn primary" data-act="next">${isLast ? 'Fertig ✓' : 'Weiter →'}</button>`}
         ${!isLast ? '<button class="tour-popup-btn skip" data-act="end">Tour beenden</button>' : ''}
       </div>
@@ -5403,21 +5589,83 @@ const Tour = (function() {
     // Position popup AFTER it's in DOM and has dimensions
     requestAnimationFrame(() => positionPopup(target, step.arrow));
 
-    // If this step waits for click on target, wire listener
+    // Wire up action waiter.
+    // Supported modes:
+    //   waitFor: 'click'  — wait for a click/tap on target (default for backward compat)
+    //   waitFor: 'input'  — wait for text input; optional step.waitValue(val) predicate
+    //                       Debounced: advances only after user stops typing for ~1.2s
+    //   waitFor: 'change' — wait for select/radio/checkbox change; optional step.waitValue(val)
+    // If step.waitValue is provided, it's called with the current field value; only advance on true.
     cleanupActionListener();
     if (waiting && target) {
       actionTarget = target;
-      actionListener = (e) => {
-        // Let the actual app click happen, then advance
-        setTimeout(() => nextStep(), 50);
+      const mode = step.waitFor; // 'click' | 'input' | 'change'
+      const eventName = (mode === 'input') ? 'input'
+                      : (mode === 'change') ? 'change'
+                      : 'click';
+      const predicate = step.waitValue || (() => true);
+      let fired = false;
+      let debounceTimer = null;
+      let enterHandler = null;
+      // Helper: advance immediately, cleaning up + closing keyboard
+      const advance = () => {
+        fired = true;
+        if (debounceTimer) { clearTimeout(debounceTimer); debounceTimer = null; }
+        // Blur the input so the mobile keyboard closes
+        if (actionTarget && typeof actionTarget.blur === 'function') {
+          try { actionTarget.blur(); } catch (_) {}
+        }
+        cleanupActionListener();
+        const delay = step.advanceDelay || 300;
+        setTimeout(() => { if (active) nextStep(); }, delay);
       };
-      target.addEventListener('click', actionListener, true);
+      actionListener = (e) => {
+        if (fired) return;
+        const val = (mode === 'click') ? null : (e.target && e.target.value);
+        // For 'input' mode: live-update the popup preview, but NEVER auto-advance.
+        // User must press Enter or tap "Weiter →" button to confirm.
+        if (mode === 'input') {
+          const preview = popup && popup.querySelector('.tour-input-preview');
+          if (preview) {
+            const shown = (val || '').trim() || '<span style="color:var(--text-hint)">(noch leer)</span>';
+            preview.innerHTML = '📝 ' + shown.replace(/</g, '&lt;');
+            // Highlight whether predicate is met, so user knows Enter will work
+            const ok = predicate(val);
+            preview.style.color = ok ? 'var(--green)' : 'var(--text-muted)';
+          }
+          return; // never auto-advance on input
+        }
+        // For click/change: advance immediately after optional predicate check
+        if (mode !== 'click' && !predicate(val)) return;
+        advance();
+      };
+      target.addEventListener(eventName, actionListener, true);
+      actionTarget._tourEventName = eventName;
+      // For 'input' mode: Enter key is the primary confirmation
+      if (mode === 'input') {
+        enterHandler = (e) => {
+          if (fired) return;
+          if (e.key !== 'Enter' && e.keyCode !== 13) return;
+          const latestVal = actionTarget && actionTarget.value;
+          if (!predicate(latestVal)) return; // condition not met — ignore Enter
+          e.preventDefault();
+          advance();
+        };
+        target.addEventListener('keydown', enterHandler, true);
+        actionTarget._tourEnterHandler = enterHandler;
+      }
     }
   }
 
   function cleanupActionListener() {
     if (actionListener && actionTarget) {
-      actionTarget.removeEventListener('click', actionListener, true);
+      const eventName = actionTarget._tourEventName || 'click';
+      actionTarget.removeEventListener(eventName, actionListener, true);
+      delete actionTarget._tourEventName;
+    }
+    if (actionTarget && actionTarget._tourEnterHandler) {
+      actionTarget.removeEventListener('keydown', actionTarget._tourEnterHandler, true);
+      delete actionTarget._tourEnterHandler;
     }
     actionListener = actionTarget = null;
   }
@@ -5444,10 +5692,19 @@ const Tour = (function() {
     if (!overlay) buildDom();
     overlay.classList.add('visible');
     renderStep();
-    // Reposition on resize/orientation
-    const onResize = () => { if (active) renderStep(); };
-    window.addEventListener('resize', onResize);
-    Tour._onResize = onResize;
+    // Reposition (lightweight, no full re-render) on resize/scroll/focus events.
+    // Keyboard opening often triggers resize on Android; focus fires just before.
+    const reposition = () => {
+      if (!active) return;
+      const step = active.steps[stepIdx];
+      if (!step) return;
+      const target = step.target ? byId(step.target) : null;
+      positionHole(target);
+      requestAnimationFrame(() => positionPopup(target, step.arrow));
+    };
+    window.addEventListener('resize', reposition);
+    window.addEventListener('scroll', reposition, true);
+    Tour._reposition = reposition;
   }
 
   function end() {
@@ -5455,9 +5712,14 @@ const Tour = (function() {
     active = null;
     stepIdx = 0;
     if (overlay) overlay.classList.remove('visible');
-    if (Tour._onResize) {
-      window.removeEventListener('resize', Tour._onResize);
-      Tour._onResize = null;
+    if (Tour._reposition) {
+      window.removeEventListener('resize', Tour._reposition);
+      window.removeEventListener('scroll', Tour._reposition, true);
+      Tour._reposition = null;
+    }
+    // Blur any focused input so the mobile keyboard closes
+    if (document.activeElement && typeof document.activeElement.blur === 'function') {
+      try { document.activeElement.blur(); } catch (_) {}
     }
     // Fade out then destroy
     setTimeout(() => destroyDom(), 300);
@@ -5475,29 +5737,344 @@ const Tour = (function() {
 })();
 
 // =====================================================================
-//  TOUR: Test tour for framework validation (Session 1)
-//  A 4-step mini tour that just shows text — no action-waiter yet.
-//  Manually startable via Tour.start(TOUR_TEST) or startTestTour().
+//  TOUR: Onboarding — App-Überblick für Neu-User (Session 2)
+//  Zeigt in ~10 Schritten alle Haupt-Bereiche der App ohne Aktion-Waiter.
+//  Kommt in Session 3+ interaktiver Teil für den ersten Zyklus.
 // =====================================================================
-const TOUR_TEST = {
-  id: 'test',
+const TOUR_ONBOARDING = {
+  id: 'onboarding',
   steps: [
-    { title: '🎓 Willkommen!', body: 'Das ist eine Test-Tour um zu prüfen dass das Tour-System funktioniert. Sie zeigt nur ein paar Bildschirme — keine Aktionen nötig.' },
-    { tab: 'dash', target: '.topbar', title: '📱 Dashboard', body: 'Hier oben siehst du den App-Titel und den + Button um einen neuen Eintrag zu öffnen.', arrow: 'top' },
-    { tab: 'cal', target: '#scr-cal .topbar', title: '📅 Kalender', body: 'Hier findest du alle Tage deines Zyklus farblich markiert. Tippe auf einen Tag um den Eintrag zu öffnen.', arrow: 'top' },
-    { tab: 'tips', target: '#scr-tips', title: '✅ Fertig!', body: 'Wenn du das siehst, funktioniert das Tour-Framework. In den nächsten Sessions bauen wir hier echte geführte Schritt-für-Schritt-Abläufe ein.' },
+    {
+      title: '🌱 Willkommen bei GrowSmart!',
+      body: 'Schön dass du hier bist! Diese kurze Tour (ca. 2 Minuten) zeigt dir worum es in der App geht und wo du was findest. Keine Aktionen nötig — einfach "Weiter" klicken. Du kannst die Tour jederzeit beenden und später im Tipps-Tab neu starten.',
+    },
+    {
+      tab: 'dash',
+      target: '#scr-dash.active .topbar',
+      arrow: 'top',
+      title: '🏠 Dein Dashboard',
+      body: 'Das ist deine Hauptseite. Hier siehst du alle aktiven Zyklen auf einen Blick, was heute zu tun ist, und wichtige Warnungen. Oben der App-Titel, rechts das + um schnell zu einem Eintrag zu springen.',
+    },
+    {
+      tab: 'dash',
+      target: '#welcome-start-btn',
+      arrow: 'bottom',
+      title: '🚀 Der Start-Knopf',
+      body: 'Wenn du noch keinen Zyklus angelegt hast, siehst du hier diesen Button. Ein Tipp und du wirst in die Einstellungen geleitet wo du deinen ersten Zyklus erstellen kannst. Das machst du nach der Tour.',
+    },
+    {
+      tab: 'cal',
+      target: '#scr-cal.active .topbar',
+      arrow: 'top',
+      title: '📅 Der Kalender',
+      body: 'Alle Tage deines Zyklus farblich markiert: Gießtage, Spültage, IceFlush, Ernte, Trocknung. Tippe auf einen Tag um den Eintrag zu öffnen — da trägst du pH, EC, Wassermenge, Dünger und Notizen ein.',
+    },
+    {
+      tab: 'tips',
+      target: '#scr-tips.active .topbar',
+      arrow: 'top',
+      title: '💡 Tipps & Lexikon',
+      body: 'Hier bist du gerade. Phasen-spezifische Tipps passen sich an deinen aktuellen Zyklus-Stand an. Unten findest du das Grow-Lexikon mit Erklärungen zu Begriffen wie pH, EC, VPD, Trichom-Stadien und mehr.',
+    },
+    {
+      tab: 'tips',
+      target: '.sec-tog',
+      arrow: 'top',
+      title: '🎓 Diese How-to-Sektion',
+      body: 'Von hier aus kannst du die Tour jederzeit neu starten (wenn du dich nochmal durchleiten lassen willst) und findest eine Textversion aller Anleitungen. Wenn du eine Funktion nicht verstehst, schau hier nach.',
+    },
+    {
+      tab: 'set',
+      target: '#scr-set.active .topbar',
+      arrow: 'top',
+      title: '⚙️ Einstellungen',
+      body: 'Hier legst du neue Zyklen an, wählst deinen Düngeplan (Master, Light oder Official), konfigurierst Phasendauern, und kannst deine Daten exportieren/importieren. Oben siehst du Undo/Redo falls du etwas versehentlich änderst.',
+    },
+    {
+      tab: 'set',
+      target: '#scr-set.active .bottom-nav',
+      arrow: 'bottom',
+      title: '🧭 Navigation',
+      body: 'Unten ist die Tab-Leiste: Home (Dashboard), Kalender, Tipps und Einstellungen. Die aktive Seite ist hervorgehoben. So bewegst du dich durch die App.',
+    },
+    {
+      tab: 'tips',
+      target: '#scr-tips.active',
+      title: '📦 Alles an einem Ort',
+      body: 'Das war der Überblick! Deine Daten bleiben lokal auf deinem Gerät — keine Cloud, keine Registrierung. Ein regelmäßiger Export (Einstellungen → ganz unten) sichert deine Einträge und Fotos.',
+    },
+    {
+      title: '✅ Los geht\'s!',
+      body: 'Fertig! Du kennst jetzt die Hauptbereiche. Als nächster Schritt: Gehe ins Einstellungen-Tab und lege deinen ersten Zyklus an. Bei Fragen findest du die komplette Anleitung im Tipps-Tab → How-to. Viel Erfolg beim Growen!',
+    },
   ],
 };
 
-function startTestTour() {
-  Tour.start(TOUR_TEST);
+function startOnboardingTour() {
+  Tour.start(TOUR_ONBOARDING);
 }
 
-// Auto-start: if no active cycles AND tour hasn't been completed, run test tour on app load
+// =====================================================================
+//  TOUR: Interactive Mini-Tutorial (Session 3)
+//  A short "learn by doing" tour where the user actually taps elements.
+//  Currently 3 steps — validates the action-waiter infrastructure.
+//  Session 4 will expand to full "create a cycle" workflow.
+// =====================================================================
+const TOUR_INTERACTIVE = {
+  id: 'interactive',
+  steps: [
+    {
+      tab: 'dash',
+      title: '🎯 Jetzt zum Anfassen!',
+      body: 'Diese kurze Tour zeigt dir die App durch echte Aktionen. Ich sage dir was du tippen sollst — du machst es wirklich. Keine Sorge, nichts wird dauerhaft gespeichert bevor du es bestätigst. Bereit?',
+    },
+    {
+      tab: 'dash',
+      target: '.nav-btn[data-tab="set"]',
+      arrow: 'bottom',
+      waitFor: 'click',
+      advanceDelay: 300,
+      title: '👆 Tippe auf "Einst."',
+      body: 'Unten in der Navigation findest du vier Tabs. Tippe jetzt auf den letzten — das Zahnrad-Symbol mit "Einst.". Dort kümmerst du dich um Zyklen und Düngepläne.',
+    },
+    {
+      target: '#add-cyc-btn',
+      arrow: 'bottom',
+      waitFor: 'click',
+      advanceDelay: 400,
+      title: '➕ Klick auf "＋ Neu"',
+      body: 'Gut gemacht! Du bist in den Einstellungen. Oben siehst du den Bereich "🌱 Meine Zyklen" mit einem "＋ Neu"-Button. Tippe drauf um einen neuen Zyklus-Entwurf anzulegen.',
+    },
+    {
+      title: '✅ Bestens!',
+      body: 'Das war die interaktive Kurz-Tour. Du siehst jetzt das Zyklus-Anlege-Formular. Fülle es nach Belieben aus oder verlasse es wieder — nichts wird gespeichert bevor du explizit speicherst. Später bauen wir noch eine längere Tour ein die dich komplett durch den ersten Zyklus begleitet.',
+    },
+  ],
+};
+
+function startInteractiveTour() {
+  Tour.start(TOUR_INTERACTIVE);
+}
+
+// =====================================================================
+//  TOUR: Navigation lernen (Session 4, Tour A)
+//  User tippt selbst durch die 4 Tabs.
+// =====================================================================
+const TOUR_NAV = {
+  id: 'nav',
+  steps: [
+    {
+      tab: 'dash',
+      title: '🧭 Navigation lernen',
+      body: 'In dieser kurzen Tour tippst du dich selbst durch die vier Tabs der App. Du lernst dabei wo was ist. Nichts wird gespeichert oder verändert. Bereit?',
+    },
+    {
+      tab: 'dash',
+      target: '.nav-btn[data-tab="cal"]',
+      arrow: 'bottom',
+      waitFor: 'click',
+      advanceDelay: 300,
+      title: '👆 Tipp auf "Kalender"',
+      body: 'Unten in der Tab-Leiste ist das Kalender-Symbol (📅). Tipp drauf. Hier siehst du später alle Tage deines Zyklus farblich markiert.',
+    },
+    {
+      tab: 'cal',
+      target: '.nav-btn[data-tab="tips"]',
+      arrow: 'bottom',
+      waitFor: 'click',
+      advanceDelay: 300,
+      title: '👆 Weiter zu "Tipps"',
+      body: 'Jetzt das Lampen-Symbol (💡). Hier findest du Phasen-Tipps, das Grow-Lexikon und dieses How-to.',
+    },
+    {
+      tab: 'tips',
+      target: '.nav-btn[data-tab="set"]',
+      arrow: 'bottom',
+      waitFor: 'click',
+      advanceDelay: 300,
+      title: '👆 Und jetzt "Einst."',
+      body: 'Das Zahnrad (⚙). Hier legst du Zyklen an, wählst Düngepläne und machst Daten-Backups.',
+    },
+    {
+      tab: 'set',
+      target: '.nav-btn[data-tab="dash"]',
+      arrow: 'bottom',
+      waitFor: 'click',
+      advanceDelay: 300,
+      title: '👆 Zurück nach Hause',
+      body: 'Zum Abschluss wieder das Pflanzen-Symbol (🌱). Das ist dein Dashboard — die Startseite.',
+    },
+    {
+      tab: 'dash',
+      title: '✅ Geschafft!',
+      body: 'Du kennst jetzt alle vier Tabs: Home, Kalender, Tipps, Einstellungen. Die Tab-Leiste ist immer unten und zeigt mit einem grünen Akzent wo du gerade bist.',
+    },
+  ],
+};
+
+function startNavTour() {
+  goTo('dash');
+  setTimeout(() => Tour.start(TOUR_NAV), 300);
+}
+
+// =====================================================================
+//  TOUR: Eintrag öffnen (Session 4, Tour B)
+//  Zeigt den täglichen Workflow: Eintrag öffnen und wieder schließen.
+//  Benötigt einen aktiven Zyklus — prüft das beim Start.
+// =====================================================================
+const TOUR_ENTRY = {
+  id: 'entry',
+  steps: [
+    {
+      tab: 'dash',
+      title: '📝 Täglicher Eintrag',
+      body: 'Jeden Tag — egal ob Gieß-Tag oder nicht — kannst du einen Eintrag öffnen um pH, Wassermenge, Temperatur und Notizen zu speichern. In dieser Tour zeigen wir wie das geht. Nichts wird gespeichert.',
+    },
+    {
+      tab: 'dash',
+      target: '#scr-dash.active .topbar',
+      arrow: 'top',
+      title: '📍 Schneller Weg: + oben rechts',
+      body: 'Oben rechts in jeder Tab-Leiste siehst du ein + Symbol. Das öffnet immer den heutigen Eintrag. Gleich probierst du das.',
+    },
+    {
+      tab: 'cal',
+      title: '📅 Oder über den Kalender',
+      body: 'Der zweite Weg führt über den Kalender. Jedes Feld ist antippbar und öffnet den Eintrag für genau diesen Tag. Gut um vergangene Tage nachzutragen oder in die Zukunft zu schauen.',
+    },
+    {
+      tab: 'cal',
+      target: '#scr-cal.active .scroll',
+      arrow: 'top',
+      title: '🎯 Such dir einen Tag aus',
+      body: 'Nach dieser Tour: tipp irgendeinen Tag an — probier es aus. Die Farbe des Tages zeigt schon an worum es an dem Tag geht: grün für Gießen, blau für Spülen, usw.',
+    },
+    {
+      title: '✅ Das war\'s schon',
+      body: 'Im Eintrag selbst findest du Wasser-Menge, pH, EC, Temperatur, Luftfeuchte, Dünger und ein Notizfeld. An Gießtagen gibt es den ✨-Button oben der alle Werte automatisch nach Plan ausfüllt. Einfach mal ausprobieren.',
+    },
+  ],
+};
+
+function startEntryTour() {
+  // Check: tour only makes sense if there's an active cycle
+  const hasActive = typeof S !== 'undefined' && S.cycles && S.cycles.filter(c => c.active).length > 0;
+  if (!hasActive) {
+    alert('Diese Tour zeigt wie man einen täglichen Eintrag öffnet — dafür brauchst du erst einen aktiven Zyklus. Leg einen in den Einstellungen an und probier dann nochmal.');
+    return;
+  }
+  goTo('dash');
+  setTimeout(() => Tour.start(TOUR_ENTRY), 300);
+}
+
+// =====================================================================
+//  TOUR: Zyklus vollständig anlegen (Session 5, Teil 2)
+//  Der große Flow — führt den User durch einen kompletten Zyklus-Setup.
+//  HONEST DISCLAIMER: Ein echter Zyklus wird erstellt. Der User kann ihn
+//  am Ende behalten oder über die Einstellungen wieder löschen.
+// =====================================================================
+const TOUR_CREATE_CYCLE = {
+  id: 'create-cycle',
+  steps: [
+    {
+      tab: 'dash',
+      title: '🌱 Ersten Zyklus anlegen',
+      body: '<b>Achtung, ehrlich gesagt:</b> Diese Tour legt einen echten Zyklus an. Den kannst du am Ende entweder behalten oder in den Einstellungen unten wieder löschen (roter "Zyklus löschen"-Button). Bereit loszulegen?',
+    },
+    {
+      tab: 'dash',
+      target: '.nav-btn[data-tab="set"]',
+      arrow: 'bottom',
+      waitFor: 'click',
+      advanceDelay: 400,
+      title: '👆 Tipp auf "Einst."',
+      body: 'Unten rechts in der Tab-Leiste das Zahnrad. Dort legst du Zyklen an.',
+    },
+    {
+      tab: 'set',
+      target: '#add-cyc-btn',
+      arrow: 'bottom',
+      waitFor: 'click',
+      advanceDelay: 500,
+      title: '➕ "＋ Neu" drücken',
+      body: 'Oben im Bereich "🌱 Meine Zyklen" findest du den Plus-Button. Tipp drauf. Damit wird dein Zyklus erstellt (mit Standard-Name "Zyklus X") und du kannst ihn gleich anpassen.',
+    },
+    {
+      tab: 'set',
+      target: '#cyc-name-input',
+      arrow: 'bottom',
+      waitFor: 'input',
+      waitValue: (v) => v && v.trim().length >= 2 && !/^Zyklus \d+$/.test(v.trim()),
+      advanceDelay: 400,
+      title: '✏️ Gib deinem Zyklus einen Namen',
+      body: 'Tipp einen Namen ins Feld unter dem Popup — z.B. "Sensi Amnesia XXL" oder "Tent 1 Spring". Drücke <b>Enter</b> auf der Tastatur oder den <b>"Weiter →"</b> Button um zu bestätigen.',
+    },
+    {
+      tab: 'set',
+      target: '#cyc-seed-select',
+      arrow: 'bottom',
+      waitFor: 'change',
+      advanceDelay: 400,
+      title: '🌿 Samentyp wählen',
+      body: 'Ist deine Genetik <b>Automatic</b> (blüht von selbst nach ~3 Wochen) oder <b>Feminisiert</b> (braucht Lichtumschaltung)? Tipp auf das Select-Feld und wähl eine Option. Nach der Auswahl geht die Tour weiter.',
+    },
+    {
+      tab: 'set',
+      target: '#cyc-start-input',
+      arrow: 'bottom',
+      title: '📅 Startdatum prüfen',
+      body: 'Hier steht standardmäßig das heutige Datum — das ist für einen Zyklus den du gerade keimst oder einpflanzt korrekt. Wenn deine Pflanze schon älter ist, ändere das Datum (für die Tour musst du aber nichts ändern). Klick weiter wenn du fertig bist.',
+    },
+    {
+      tab: 'set',
+      title: '🧪 Nächster Schritt: Düngeplan',
+      body: 'Wenn du weiter scrollst kommst du zum Bereich "🧪 Dünger & Wochenplan". Dort wählst du einen der drei BioBizz-Pläne (Master für Cup-Niveau, Light für Einsteiger, Official als Herstellerplan). Das machst du nach der Tour.',
+    },
+    {
+      tab: 'set',
+      target: '.nav-btn[data-tab="dash"]',
+      arrow: 'bottom',
+      waitFor: 'click',
+      advanceDelay: 400,
+      title: '🏠 Zurück zum Dashboard',
+      body: 'Tipp unten links auf das Pflanzen-Symbol. Dort siehst du jetzt deinen neuen Zyklus als bunte Karte mit Fortschritts-Ring.',
+    },
+    {
+      tab: 'dash',
+      title: '✅ Geschafft!',
+      body: 'Dein Zyklus ist angelegt. Von jetzt an siehst du hier deine Gieß-Erinnerungen, und der Kalender zeigt deine Phasen. <b>Wenn du nicht weiter machen willst:</b> Einstellungen öffnen, Zyklus auswählen, nach unten scrollen, rot markierten "Zyklus löschen"-Button drücken. Viel Erfolg!',
+    },
+  ],
+};
+
+function startCreateCycleTour() {
+  goTo('dash');
+  setTimeout(() => Tour.start(TOUR_CREATE_CYCLE), 300);
+}
+
+/** Reset state + start interactive tour (for manual button in how-to). */
+function startInteractiveTutorial() {
+  // Go to dashboard first so tour starts from a known state
+  goTo('dash');
+  setTimeout(() => startInteractiveTour(), 300);
+}
+
+/** Reset + start tour (for the manual "Tour starten" button in how-to). */
+function restartOnboardingTour() {
+  if (typeof S !== 'undefined') {
+    S._tourCompleted = false;
+    saveS();
+  }
+  // Go to dashboard first so tour starts from a known state
+  goTo('dash');
+  setTimeout(() => startOnboardingTour(), 300);
+}
+
+// Auto-start: if no active cycles AND tour hasn't been completed, run onboarding on app load
 setTimeout(() => {
   if (typeof S !== 'undefined' && !S._tourCompleted && (!S.cycles || S.cycles.filter(c => c.active).length === 0)) {
     // Delay a bit so the initial dashboard render is settled
-    setTimeout(() => startTestTour(), 800);
+    setTimeout(() => startOnboardingTour(), 800);
   }
 }, 100);
 </script>
