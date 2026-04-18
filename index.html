@@ -872,6 +872,7 @@ let S = {
 };
 let tab = 'dash', calDate = new Date(), editISO = null, entryFrom = 'dash';
 let _entryDirty = false; // Tracks whether the current entry has unsaved changes
+let _tipsSnapshot = []; // Snapshot of current tips for meta-search
 let selId = null, draft = {}, lastBack = 0, editProd = null;
 let _dzSel = null; // Danger Zone selected cycle
 let _setScrollY = null; // Settings scroll restore
@@ -2415,6 +2416,7 @@ function renderTips() {
     { icon: '🪴', text: 'Nicht zu nah ans Licht = keine bleichen Spitzen.', cat: 'Grundlagen', lex: 'Lichtabstand' },
   ];
   tips = [...tips, ...gen.sort(() => Math.random() - 0.5).slice(0, 5)];
+  _tipsSnapshot = tips; // expose current tips to search
 
   const cats = [...new Set(tips.map(t => t.cat))];
 
@@ -2475,7 +2477,25 @@ function renderTips() {
       </div>
     </div>`;
 
-  document.getElementById('tips-body').innerHTML = `
+  // Search state (persists across re-renders of the search results only)
+  const searchValue = document.getElementById('tips-search')?.value || '';
+  const searchField = `
+    <div style="position:relative;margin-bottom:10px">
+      <input
+        id="tips-search"
+        type="search"
+        placeholder="🔍 Alles durchsuchen (Tipps, Lexikon, How-to)…"
+        value="${searchValue.replace(/"/g, '&quot;')}"
+        oninput="_onTipsSearchInput(this.value)"
+        autocomplete="off"
+        style="width:100%;background:var(--card);border:0.5px solid var(--border);border-radius:10px;padding:10px 36px 10px 12px;font-size:13px;color:var(--text);font-family:var(--font);outline:none"
+      />
+      <button id="tips-search-clear" onclick="document.getElementById('tips-search').value='';_onTipsSearchInput('');document.getElementById('tips-search').focus()" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:var(--surface);border:0.5px solid var(--border);border-radius:50%;width:24px;height:24px;font-size:12px;color:var(--text-muted);cursor:pointer;font-family:var(--font);padding:0;display:${searchValue ? 'flex' : 'none'};align-items:center;justify-content:center" title="Suche löschen">×</button>
+    </div>
+    <div id="tips-search-results" style="display:${searchValue ? 'block' : 'none'}"></div>
+  `;
+
+  document.getElementById('tips-body').innerHTML = searchField + `<div id="tips-normal" style="display:${searchValue ? 'none' : 'block'}">
     <div style="font-size:13px;color:var(--text-sub);line-height:1.6">Tipps basierend auf deinem Grow-Status.</div>
     ${guideHTML}
     ${cats.map(cat => `
@@ -2553,7 +2573,136 @@ function renderTips() {
       </div>
     </div>
     `}
-    <div style="height:12px"></div>`;
+    <div style="height:12px"></div>
+  </div>`;
+
+  // If there was a query before the full re-render (e.g. phase change triggered renderTips),
+  // restore search results so the user doesn't lose their context.
+  if (searchValue) {
+    _onTipsSearchInput(searchValue);
+  }
+}
+
+/**
+ * Meta-search handler for Tips tab.
+ * Searches across _tipsSnapshot (current tips) + LEXIKON + HOWTO in one go.
+ * DOM-stable: only updates #tips-search-results, keeps search input intact
+ * so mobile keyboard stays open.
+ */
+function _onTipsSearchInput(q) {
+  const query = (q || '').trim();
+  const normQuery = _normSearch(query);
+  const resultsEl = document.getElementById('tips-search-results');
+  const normalEl = document.getElementById('tips-normal');
+  const clearBtn = document.getElementById('tips-search-clear');
+  if (!resultsEl || !normalEl) return;
+
+  // Toggle visibility
+  normalEl.style.display = query ? 'none' : 'block';
+  resultsEl.style.display = query ? 'block' : 'none';
+  if (clearBtn) clearBtn.style.display = query ? 'flex' : 'none';
+
+  if (!query) {
+    resultsEl.innerHTML = '';
+    return;
+  }
+
+  // --- Collect matches from three sources ---
+
+  // 1. Tips (from current snapshot)
+  const tipHits = (_tipsSnapshot || []).filter(t => {
+    const hay = _normSearch((t.text || '') + ' ' + (t.cat || ''));
+    return hay.includes(normQuery);
+  });
+
+  // 2. Lexikon entries
+  const lexHits = [];
+  if (typeof LEXIKON !== 'undefined') {
+    LEXIKON.forEach(cat => {
+      cat.items.forEach(item => {
+        const hay = _normSearch((item.t || '') + ' ' + (item.txt || '') + ' ' + cat.cat);
+        if (hay.includes(normQuery)) {
+          lexHits.push({ title: item.t, text: item.txt, cat: cat.cat });
+        }
+      });
+    });
+  }
+
+  // 3. How-to entries
+  const howtoHits = [];
+  if (typeof HOWTO !== 'undefined') {
+    HOWTO.forEach(cat => {
+      cat.items.forEach(item => {
+        const hay = _normSearch((item.t || '') + ' ' + (item.txt || '') + ' ' + cat.cat);
+        if (hay.includes(normQuery)) {
+          howtoHits.push({ title: item.t, text: item.txt, cat: cat.cat });
+        }
+      });
+    });
+  }
+
+  const totalHits = tipHits.length + lexHits.length + howtoHits.length;
+
+  // --- Build output HTML ---
+
+  const headerHTML = `
+    <div style="padding:12px 14px;background:var(--card);border:0.5px solid var(--green-dk);border-radius:12px;margin-bottom:10px">
+      <div style="font-size:12px;color:var(--green);font-weight:600">🔍 ${totalHits} ${totalHits === 1 ? 'Treffer' : 'Treffer'} für „${query.replace(/</g, '&lt;')}"</div>
+      ${totalHits === 0 ? '<div style="font-size:11px;color:var(--text-muted);margin-top:4px;line-height:1.5">Nichts gefunden. Probier: <i>pH, calmag, drain, trichome, ernte, trocknen, spülen, schimmel</i></div>' : `<div style="font-size:10px;color:var(--text-muted);margin-top:4px">💡 ${tipHits.length} Tipps · 📖 ${lexHits.length} Lexikon · 🎓 ${howtoHits.length} How-to</div>`}
+    </div>`;
+
+  // Tips section
+  const tipsSection = tipHits.length > 0 ? `
+    <div class="sect-head" style="font-size:12px;padding:10px 0 6px">💡 Tipps</div>
+    ${tipHits.map(t => `
+      <div class="tip-card" ${t.lex ? `onclick="openLexikonEntry('${t.lex}')" style="cursor:pointer"` : ''}>
+        <span style="font-size:18px;flex-shrink:0">${t.icon}</span>
+        <div style="flex:1;font-size:12px;color:var(--green);line-height:1.6">${_highlightMatches(t.text, query)}</div>
+        ${t.lex ? '<span style="font-size:10px;color:var(--text-hint)">📖›</span>' : ''}
+      </div>
+    `).join('')}` : '';
+
+  // Lexikon section
+  const lexSection = lexHits.length > 0 ? `
+    <div class="sect-head" style="font-size:12px;padding:10px 0 6px">📖 Lexikon</div>
+    ${lexHits.map(h => `
+      <div onclick="openLexikonEntry('${h.title.replace(/'/g, "\\'")}')" style="background:var(--card);border:0.5px solid rgba(176,106,200,0.2);border-radius:10px;padding:10px 12px;margin-bottom:6px;cursor:pointer">
+        <div style="font-size:10px;color:var(--text-hint);margin-bottom:2px">${h.cat}</div>
+        <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px">${_highlightMatches(h.title, query)}</div>
+        <div style="font-size:11px;color:var(--text-sub);line-height:1.5">${_highlightMatches(_snippet(h.text, query, 140), query)}</div>
+      </div>
+    `).join('')}` : '';
+
+  // How-to section
+  const howtoSection = howtoHits.length > 0 ? `
+    <div class="sect-head" style="font-size:12px;padding:10px 0 6px">🎓 How-to</div>
+    ${howtoHits.map(h => `
+      <div onclick="openHowto();setTimeout(()=>{const s=document.getElementById('howto-search');if(s){s.value='${query.replace(/'/g, "\\'").replace(/"/g, '&quot;')}';_onHowtoSearchInput('${query.replace(/'/g, "\\'").replace(/"/g, '&quot;')}')}},150)" style="background:var(--card);border:0.5px solid rgba(90,171,240,0.2);border-radius:10px;padding:10px 12px;margin-bottom:6px;cursor:pointer">
+        <div style="font-size:10px;color:var(--text-hint);margin-bottom:2px">${h.cat}</div>
+        <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px">${_highlightMatches(h.title, query)}</div>
+        <div style="font-size:11px;color:var(--text-sub);line-height:1.5">${_highlightMatches(_snippet(h.text, query, 140), query)}</div>
+      </div>
+    `).join('')}` : '';
+
+  resultsEl.innerHTML = headerHTML + tipsSection + lexSection + howtoSection;
+}
+
+/**
+ * Extract a snippet of text around the first match of query, stripping HTML.
+ * Returns up to maxLen chars centered on the match, with "…" prefixes/suffixes as needed.
+ */
+function _snippet(html, query, maxLen) {
+  const txt = String(html).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+  const normTxt = _normSearch(txt);
+  const normQuery = _normSearch(query);
+  if (!normQuery) return txt.slice(0, maxLen) + (txt.length > maxLen ? '…' : '');
+  const idx = normTxt.indexOf(normQuery);
+  if (idx < 0) return txt.slice(0, maxLen) + (txt.length > maxLen ? '…' : '');
+  const start = Math.max(0, idx - Math.floor(maxLen / 3));
+  const end = Math.min(txt.length, start + maxLen);
+  const prefix = start > 0 ? '…' : '';
+  const suffix = end < txt.length ? '…' : '';
+  return prefix + txt.slice(start, end) + suffix;
 }
 
 // =====================================================================
@@ -3062,7 +3211,7 @@ function renderSet() {
     </div>
     `}
 
-    <div style="text-align:center;padding:16px 0;font-size:11px;color:var(--text-hint)">GrowSmart v0.8.87 🌱</div>
+    <div style="text-align:center;padding:16px 0;font-size:11px;color:var(--text-hint)">GrowSmart v0.8.88 🌱</div>
     <div style="height:20px"></div>`;
 
   // Restore scroll position (goTo handles scroll-to-top on tab switch)
