@@ -138,7 +138,8 @@ input, textarea, [contenteditable] { -webkit-user-select: text; user-select: tex
 .cal-num { font-size: 14px; color: var(--text-sub); font-weight: 700; line-height: 1; }
 .cal-cell.today .cal-num { color: #fff; }
 .cal-tag { font-size: 7.5px; color: rgba(255,255,255,0.6); line-height: 1; margin-top: 1px; text-align: center; }
-.cal-icon { font-size: 13px; line-height: 1; margin-bottom: 1px; }
+.cal-icon { font-size: 13px; line-height: 1; margin-bottom: 1px; display: inline-flex; align-items: center; justify-content: center; height: 16px; width: 16px; }
+.cal-icon svg { width: 100%; height: 100%; display: block; }
 .cal-dot { width: 4px; height: 4px; border-radius: 50%; position: absolute; bottom: 2px; right: 3px; background: rgba(255,255,255,0.7); }
 
 /* ===================== NUTRIENT TABLE ===================== */
@@ -675,8 +676,379 @@ const PHASE_DEFAULTS = {
   dryDays:     7,
 };
 const ACT_ICON = { giess: '💧', giess_anz: '🌱', spuelen: '🚿', ice: '🧊', ernte: '✂️', trocknen: '🍂' };
+
+// =====================================================================
+//  CALENDAR ICONS (v0.8.92) — SVG replacements for 3 semantically weak emojis.
+//  Only used in calendar cells. Text contexts (tips, context menus, etc.)
+//  continue using ACT_ICON emoji so nothing else needs touching.
+// =====================================================================
+const CAL_SVG = {
+  spuelen:
+    '<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;display:block">' +
+    '<path d="M8 18 L10 26 Q10 28 12 28 L20 28 Q22 28 22 26 L24 18 Z" fill="none" stroke="#5ab0d8" stroke-width="1.8" stroke-linejoin="round"/>' +
+    '<line x1="7" y1="18" x2="25" y2="18" stroke="#5ab0d8" stroke-width="1.8" stroke-linecap="round"/>' +
+    '<circle cx="13" cy="30" r="1.2" fill="#5ab0d8"/>' +
+    '<circle cx="16" cy="30.5" r="1.4" fill="#5ab0d8"/>' +
+    '<circle cx="19" cy="30" r="1.2" fill="#5ab0d8"/>' +
+    '<path d="M16 8 Q13 12 13 15 A3 3 0 0 0 19 15 Q19 12 16 8 Z" fill="#5ab0d8" opacity="0.9"/>' +
+    '</svg>',
+  ernte:
+    '<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;display:block">' +
+    '<ellipse cx="12" cy="14" rx="5" ry="7" fill="#6a8848" stroke="#f0c050" stroke-width="1.5"/>' +
+    '<ellipse cx="9" cy="19" rx="2.5" ry="3.5" fill="#6a8848"/>' +
+    '<ellipse cx="15" cy="19" rx="2.5" ry="3.5" fill="#6a8848"/>' +
+    '<line x1="12" y1="22" x2="14" y2="26" stroke="#8a6830" stroke-width="1.5" stroke-linecap="round"/>' +
+    '<g transform="translate(24 10) rotate(30)">' +
+      '<path d="M-6 -1.5 L1 0 L-6 1.5 Z" fill="#f0c050" stroke="#d4a848" stroke-width="0.5"/>' +
+      '<path d="M-6 1.5 L1 0 L-6 -1 Z" fill="#f0c050" stroke="#d4a848" stroke-width="0.5" transform="scale(1 -1) translate(0 -1)"/>' +
+      '<circle cx="0" cy="0" r="1" fill="#d4a848"/>' +
+      '<circle cx="4" cy="-2" r="2" fill="none" stroke="#f0c050" stroke-width="1"/>' +
+      '<circle cx="4" cy="2" r="2" fill="none" stroke="#f0c050" stroke-width="1"/>' +
+    '</g>' +
+    '</svg>',
+  trocknen:
+    '<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;display:block">' +
+    '<line x1="3" y1="8" x2="29" y2="8" stroke="#8a6830" stroke-width="1.5" stroke-linecap="round"/>' +
+    '<line x1="10" y1="8" x2="10" y2="13" stroke="#6a4820" stroke-width="0.8"/>' +
+    '<line x1="16" y1="8" x2="16" y2="12" stroke="#6a4820" stroke-width="0.8"/>' +
+    '<line x1="22" y1="8" x2="22" y2="13" stroke="#6a4820" stroke-width="0.8"/>' +
+    '<ellipse cx="10" cy="18" rx="3" ry="5" fill="#8a6830" stroke="#c88a48" stroke-width="1"/>' +
+    '<ellipse cx="16" cy="17" rx="2.5" ry="4" fill="#8a6830" stroke="#c88a48" stroke-width="1"/>' +
+    '<ellipse cx="22" cy="18" rx="3" ry="5" fill="#8a6830" stroke="#c88a48" stroke-width="1"/>' +
+    '<ellipse cx="8" cy="22" rx="1.2" ry="1.8" fill="#8a6830"/>' +
+    '<ellipse cx="12" cy="22" rx="1.2" ry="1.8" fill="#8a6830"/>' +
+    '<ellipse cx="20" cy="22" rx="1.2" ry="1.8" fill="#8a6830"/>' +
+    '<ellipse cx="24" cy="22" rx="1.2" ry="1.8" fill="#8a6830"/>' +
+    '</svg>',
+};
+
+/**
+ * Get icon HTML for a calendar cell. Returns SVG string for actions with
+ * dedicated designs (spuelen/ernte/trocknen), else falls back to emoji.
+ */
+function calActionIcon(a) {
+  if (CAL_SVG[a]) return CAL_SVG[a];
+  return ACT_ICON[a] || '';
+}
 const PH_ICON = { anzucht: '🌱', bloom: '🌸', flush: '🚿', ice: '🧊', harvest: '✂️', dry: '🍂' };
 const START_ICON = '☘️';
+
+// =====================================================================
+//  STAGE ICONS (9 stages as inline SVG strings, v0.8.90)
+//  Each icon uses a 100x100 viewBox so it scales to any size via width/height.
+//  stageForCycle(cyc, iso) returns which stage number (1-9) applies.
+// =====================================================================
+const STAGE_ICONS = {
+  1: /* Keimung */
+    '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">' +
+    '<defs>' +
+      '<radialGradient id="g_seed1" cx="0.35" cy="0.3" r="0.75"><stop offset="0" stop-color="#a88860"/><stop offset="0.5" stop-color="#6a4a28"/><stop offset="1" stop-color="#2a1808"/></radialGradient>' +
+      '<linearGradient id="g_soil1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4a3020"/><stop offset="1" stop-color="#2a1810"/></linearGradient>' +
+    '</defs>' +
+    '<path d="M8 62 L92 62 L92 82 L8 82 Z" fill="url(#g_soil1)" opacity="0.4"/>' +
+    '<g fill="#1a0e06" opacity="0.6"><circle cx="18" cy="70" r="1"/><circle cx="30" cy="74" r="0.8"/><circle cx="55" cy="68" r="1.2"/><circle cx="72" cy="76" r="0.9"/><circle cx="82" cy="70" r="0.7"/><circle cx="42" cy="78" r="0.8"/></g>' +
+    '<ellipse cx="50" cy="52" rx="13" ry="10" fill="url(#g_seed1)"/>' +
+    '<path d="M40 52 Q50 48 60 52" stroke="#1a0e06" stroke-width="1.2" fill="none"/>' +
+    '<ellipse cx="44" cy="46" rx="4" ry="2.5" fill="#c8a878" opacity="0.5"/>' +
+    '<path d="M50 60 Q52 68 48 76 Q50 84 54 88" stroke="#f0e0b8" stroke-width="2.2" fill="none" stroke-linecap="round"/>' +
+    '<g stroke="#f0e0b8" stroke-width="0.8" fill="none" opacity="0.7" stroke-linecap="round"><path d="M49 66 L44 70"/><path d="M50 72 L55 75"/><path d="M49 80 L44 82"/><path d="M51 84 L56 86"/></g>' +
+    '<path d="M50 42 L50 38" stroke="#8FE5A8" stroke-width="1.5" stroke-linecap="round" opacity="0.8"/>' +
+    '<circle cx="50" cy="37" r="1.2" fill="#8FE5A8" opacity="0.9"/>' +
+    '</svg>',
+
+  2: /* Sämling */
+    '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">' +
+    '<defs>' +
+      '<linearGradient id="g_cotyl2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9FE8B5"/><stop offset="1" stop-color="#5FC088"/></linearGradient>' +
+      '<linearGradient id="g_tleaf2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7FDC9A"/><stop offset="1" stop-color="#4CAF70"/></linearGradient>' +
+      '<linearGradient id="g_soil2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a2818"/><stop offset="1" stop-color="#1a0e06"/></linearGradient>' +
+    '</defs>' +
+    '<path d="M12 80 Q30 72 50 72 Q70 72 88 80 L88 92 L12 92 Z" fill="url(#g_soil2)"/>' +
+    '<g fill="#0a0503" opacity="0.7"><circle cx="22" cy="82" r="0.8"/><circle cx="38" cy="78" r="0.6"/><circle cx="62" cy="80" r="0.9"/><circle cx="76" cy="84" r="0.7"/></g>' +
+    '<path d="M50 44 Q50 54 50 72" stroke="#5FC088" stroke-width="2" fill="none" stroke-linecap="round"/>' +
+    '<ellipse cx="37" cy="44" rx="10" ry="5" fill="url(#g_cotyl2)" transform="rotate(-10 37 44)"/>' +
+    '<ellipse cx="63" cy="44" rx="10" ry="5" fill="url(#g_cotyl2)" transform="rotate(10 63 44)"/>' +
+    '<path d="M28 44 L47 44" stroke="#4CAF70" stroke-width="0.5" opacity="0.5"/>' +
+    '<path d="M53 44 L72 44" stroke="#4CAF70" stroke-width="0.5" opacity="0.5"/>' +
+    '<g fill="url(#g_tleaf2)">' +
+      '<path d="M50 30 Q44 28 40 25 L41 27 L38 26 L40 29 L37 30 L40 31 Q44 33 50 32 Z"/>' +
+      '<path d="M50 30 Q56 28 60 25 L59 27 L62 26 L60 29 L63 30 L60 31 Q56 33 50 32 Z"/>' +
+    '</g>' +
+    '<circle cx="50" cy="28" r="1.5" fill="#9FE8B5"/>' +
+    '<path d="M50 28 L50 24" stroke="#9FE8B5" stroke-width="1" stroke-linecap="round"/>' +
+    '</svg>',
+
+  3: /* Vegetation */
+    '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">' +
+    '<defs><linearGradient id="g_vfan3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7FDC9A"/><stop offset="0.5" stop-color="#4CAF70"/><stop offset="1" stop-color="#2e5a3f"/></linearGradient></defs>' +
+    '<path d="M10 88 L90 88" stroke="#3A2815" stroke-width="3" stroke-linecap="round" opacity="0.6"/>' +
+    '<path d="M50 22 Q50 50 50 88" stroke="#5FC088" stroke-width="4" stroke-linecap="round" fill="none"/>' +
+    '<path d="M50 22 Q50 50 50 88" stroke="#3A8550" stroke-width="2" fill="none"/>' +
+    '<g stroke="#4CAF70" stroke-width="2.5" stroke-linecap="round">' +
+      '<line x1="50" y1="72" x2="28" y2="66"/><line x1="50" y1="72" x2="72" y2="66"/>' +
+      '<line x1="50" y1="52" x2="28" y2="46"/><line x1="50" y1="52" x2="72" y2="46"/>' +
+      '<line x1="50" y1="34" x2="34" y2="28"/><line x1="50" y1="34" x2="66" y2="28"/>' +
+    '</g>' +
+    '<g transform="translate(28 66) rotate(-30)"><path d="M0 0 Q-4 -12 -2 -22 Q0 -16 0 -8 Q2 -16 4 -22 Q2 -12 0 0 Q-2 -8 -10 -12 Q-6 -6 -2 -4 Q-10 -4 -14 -6 Q-8 -2 -2 0 Z" fill="url(#g_vfan3)"/><line x1="0" y1="0" x2="0" y2="-20" stroke="#2e5a3f" stroke-width="0.5" opacity="0.7"/></g>' +
+    '<g transform="translate(72 66) rotate(30)"><path d="M0 0 Q-4 -12 -2 -22 Q0 -16 0 -8 Q2 -16 4 -22 Q2 -12 0 0 Q-2 -8 -10 -12 Q-6 -6 -2 -4 Q-10 -4 -14 -6 Q-8 -2 -2 0 Z" fill="url(#g_vfan3)" transform="scale(-1 1)"/><line x1="0" y1="0" x2="0" y2="-20" stroke="#2e5a3f" stroke-width="0.5" opacity="0.7"/></g>' +
+    '<g transform="translate(28 46) rotate(-40)"><path d="M0 0 Q-3 -10 -1 -18 Q1 -14 1 -7 Q3 -14 5 -18 Q3 -10 0 0 Q-2 -7 -9 -10 Q-5 -5 -1 -3 Q-9 -3 -12 -5 Q-7 -2 -1 0 Z" fill="url(#g_vfan3)"/></g>' +
+    '<g transform="translate(72 46) rotate(40)"><path d="M0 0 Q-3 -10 -1 -18 Q1 -14 1 -7 Q3 -14 5 -18 Q3 -10 0 0 Q-2 -7 -9 -10 Q-5 -5 -1 -3 Q-9 -3 -12 -5 Q-7 -2 -1 0 Z" fill="url(#g_vfan3)" transform="scale(-1 1)"/></g>' +
+    '<g transform="translate(34 28) rotate(-50)"><path d="M0 0 Q-2 -8 0 -14 Q2 -10 2 -5 Q3 -10 5 -14 Q3 -8 0 0 Q-2 -5 -7 -8 Q-4 -4 0 -2 Z" fill="url(#g_vfan3)"/></g>' +
+    '<g transform="translate(66 28) rotate(50)"><path d="M0 0 Q-2 -8 0 -14 Q2 -10 2 -5 Q3 -10 5 -14 Q3 -8 0 0 Q-2 -5 -7 -8 Q-4 -4 0 -2 Z" fill="url(#g_vfan3)" transform="scale(-1 1)"/></g>' +
+    '<g transform="translate(50 22)"><path d="M0 0 Q-3 -8 -1 -16 Q1 -12 1 -5 Q3 -12 5 -16 Q3 -8 0 0 Q-3 -8 1 -16 Q-1 -12 -1 -5 Q-3 -12 -5 -16 Q-3 -8 0 0 Z" fill="url(#g_vfan3)"/></g>' +
+    '</svg>',
+
+  4: /* Pre-Flower / Stretch */
+    '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">' +
+    '<defs><linearGradient id="g_sleaf4" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7FDC9A"/><stop offset="1" stop-color="#3A8550"/></linearGradient></defs>' +
+    '<path d="M12 92 L88 92" stroke="#3A2815" stroke-width="3" stroke-linecap="round" opacity="0.6"/>' +
+    '<path d="M50 10 Q50 50 50 92" stroke="#5FC088" stroke-width="4" stroke-linecap="round" fill="none"/>' +
+    '<path d="M50 10 Q50 50 50 92" stroke="#3A8550" stroke-width="2" fill="none"/>' +
+    '<g stroke="#4CAF70" stroke-width="2.5" stroke-linecap="round">' +
+      '<line x1="50" y1="76" x2="26" y2="70"/><line x1="50" y1="76" x2="74" y2="70"/>' +
+      '<line x1="50" y1="54" x2="28" y2="48"/><line x1="50" y1="54" x2="72" y2="48"/>' +
+      '<line x1="50" y1="34" x2="32" y2="28"/><line x1="50" y1="34" x2="68" y2="28"/>' +
+    '</g>' +
+    '<g transform="translate(26 70) rotate(-30)"><path d="M0 0 Q-3 -9 -1 -16 Q1 -12 1 -6 Q3 -12 5 -16 Q3 -9 0 0 Q-2 -6 -8 -9 Q-5 -4 -1 -3 Z" fill="url(#g_sleaf4)"/></g>' +
+    '<g transform="translate(74 70) rotate(30)"><path d="M0 0 Q-3 -9 -1 -16 Q1 -12 1 -6 Q3 -12 5 -16 Q3 -9 0 0 Q-2 -6 -8 -9 Q-5 -4 -1 -3 Z" fill="url(#g_sleaf4)" transform="scale(-1 1)"/></g>' +
+    '<g transform="translate(28 48) rotate(-35)"><path d="M0 0 Q-3 -9 -1 -16 Q1 -12 1 -6 Q3 -12 5 -16 Q3 -9 0 0 Q-2 -6 -8 -9 Q-5 -4 -1 -3 Z" fill="url(#g_sleaf4)"/></g>' +
+    '<g transform="translate(72 48) rotate(35)"><path d="M0 0 Q-3 -9 -1 -16 Q1 -12 1 -6 Q3 -12 5 -16 Q3 -9 0 0 Q-2 -6 -8 -9 Q-5 -4 -1 -3 Z" fill="url(#g_sleaf4)" transform="scale(-1 1)"/></g>' +
+    '<g transform="translate(32 28) rotate(-45)"><path d="M0 0 Q-2 -7 0 -13 Q2 -10 2 -5 Q3 -10 5 -13 Q3 -7 0 0 Q-2 -5 -7 -7 Q-4 -3 0 -2 Z" fill="url(#g_sleaf4)"/></g>' +
+    '<g transform="translate(68 28) rotate(45)"><path d="M0 0 Q-2 -7 0 -13 Q2 -10 2 -5 Q3 -10 5 -13 Q3 -7 0 0 Q-2 -5 -7 -7 Q-4 -3 0 -2 Z" fill="url(#g_sleaf4)" transform="scale(-1 1)"/></g>' +
+    '<g stroke="#f0f6f0" stroke-width="0.9" fill="none" stroke-linecap="round" opacity="0.9">' +
+      '<path d="M48 10 Q46 6 44 4"/><path d="M52 10 Q54 6 56 4"/><path d="M50 8 L50 2"/><path d="M47 12 Q44 11 42 11"/><path d="M53 12 Q56 11 58 11"/>' +
+    '</g>' +
+    '<circle cx="50" cy="10" r="2" fill="#5FC088"/>' +
+    '</svg>',
+
+  5: /* Frühe Blüte */
+    '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">' +
+    '<defs>' +
+      '<linearGradient id="g_ebud5" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9FE8B5"/><stop offset="0.6" stop-color="#5FC088"/><stop offset="1" stop-color="#3A8550"/></linearGradient>' +
+      '<linearGradient id="g_efan5" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5FC088"/><stop offset="1" stop-color="#2e5a3f"/></linearGradient>' +
+    '</defs>' +
+    '<path d="M12 92 L88 92" stroke="#3A2815" stroke-width="3" stroke-linecap="round" opacity="0.6"/>' +
+    '<path d="M50 22 Q50 60 50 92" stroke="#5FC088" stroke-width="4" stroke-linecap="round" fill="none"/>' +
+    '<path d="M50 22 Q50 60 50 92" stroke="#3A8550" stroke-width="2" fill="none"/>' +
+    '<g transform="translate(26 68) rotate(-30)"><path d="M0 0 Q-4 -11 -2 -20 Q0 -15 0 -7 Q2 -15 4 -20 Q2 -11 0 0 Q-2 -7 -9 -11 Q-5 -5 -1 -3 Q-9 -3 -12 -5 Q-7 -2 -1 0 Z" fill="url(#g_efan5)"/></g>' +
+    '<g transform="translate(74 68) rotate(30)"><path d="M0 0 Q-4 -11 -2 -20 Q0 -15 0 -7 Q2 -15 4 -20 Q2 -11 0 0 Q-2 -7 -9 -11 Q-5 -5 -1 -3 Q-9 -3 -12 -5 Q-7 -2 -1 0 Z" fill="url(#g_efan5)" transform="scale(-1 1)"/></g>' +
+    '<g transform="translate(28 46) rotate(-40)"><path d="M0 0 Q-3 -9 -1 -16 Q1 -12 1 -6 Q3 -12 5 -16 Q3 -9 0 0 Q-2 -6 -8 -9 Q-5 -4 -1 -3 Z" fill="url(#g_efan5)"/></g>' +
+    '<g transform="translate(72 46) rotate(40)"><path d="M0 0 Q-3 -9 -1 -16 Q1 -12 1 -6 Q3 -12 5 -16 Q3 -9 0 0 Q-2 -6 -8 -9 Q-5 -4 -1 -3 Z" fill="url(#g_efan5)" transform="scale(-1 1)"/></g>' +
+    '<g fill="url(#g_ebud5)">' +
+      '<ellipse cx="50" cy="32" rx="6" ry="10"/><ellipse cx="50" cy="20" rx="4.5" ry="8"/>' +
+      '<ellipse cx="40" cy="38" rx="4" ry="6"/><ellipse cx="60" cy="38" rx="4" ry="6"/>' +
+      '<circle cx="48" cy="28" r="1.8" opacity="0.7"/><circle cx="52" cy="30" r="1.8" opacity="0.7"/>' +
+      '<circle cx="50" cy="24" r="1.5" opacity="0.7"/><circle cx="46" cy="36" r="1.5" opacity="0.7"/><circle cx="54" cy="36" r="1.5" opacity="0.7"/>' +
+    '</g>' +
+    '<g stroke="#f0f6f0" stroke-width="0.9" fill="none" stroke-linecap="round" opacity="0.95">' +
+      '<path d="M48 22 Q46 18 44 16"/><path d="M52 22 Q54 18 56 16"/><path d="M50 18 L50 12"/><path d="M50 14 L48 10"/><path d="M50 14 L52 10"/>' +
+      '<path d="M46 28 Q43 26 41 26"/><path d="M54 28 Q57 26 59 26"/><path d="M48 32 Q45 31 43 31"/><path d="M52 32 Q55 31 57 31"/>' +
+      '<path d="M40 34 Q37 32 35 31"/><path d="M60 34 Q63 32 65 31"/><path d="M38 40 Q35 40 33 41"/><path d="M62 40 Q65 40 67 41"/>' +
+    '</g>' +
+    '</svg>',
+
+  6: /* Späte Blüte */
+    '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">' +
+    '<defs>' +
+      '<linearGradient id="g_lbud6" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8FD8A5"/><stop offset="0.5" stop-color="#5FC088"/><stop offset="1" stop-color="#2e5a3f"/></linearGradient>' +
+      '<linearGradient id="g_yfan6" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f0d860"/><stop offset="0.5" stop-color="#c8a840"/><stop offset="1" stop-color="#8a7028"/></linearGradient>' +
+      '<linearGradient id="g_ygfan6" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b8c860"/><stop offset="0.6" stop-color="#8aa848"/><stop offset="1" stop-color="#5a7030"/></linearGradient>' +
+      '<linearGradient id="g_dgfan6" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4CAF70"/><stop offset="1" stop-color="#2e5a3f"/></linearGradient>' +
+      '<radialGradient id="g_tglow6" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#f5f0c8" stop-opacity="0.5"/><stop offset="1" stop-color="#f5f0c8" stop-opacity="0"/></radialGradient>' +
+    '</defs>' +
+    '<path d="M12 92 L88 92" stroke="#3A2815" stroke-width="3" stroke-linecap="round" opacity="0.6"/>' +
+    '<path d="M50 22 Q50 60 50 92" stroke="#5FC088" stroke-width="4" stroke-linecap="round" fill="none"/>' +
+    '<path d="M50 22 Q50 60 50 92" stroke="#3A8550" stroke-width="2" fill="none"/>' +
+    '<g transform="translate(24 80) rotate(-35)"><path d="M0 0 Q-4 -11 -2 -20 Q0 -15 0 -7 Q2 -15 4 -20 Q2 -11 0 0 Q-2 -7 -9 -11 Q-5 -5 -1 -3 Q-9 -3 -12 -5 Q-7 -2 -1 0 Z" fill="url(#g_yfan6)"/><line x1="0" y1="0" x2="0" y2="-18" stroke="#6a5020" stroke-width="0.5" opacity="0.7"/></g>' +
+    '<g transform="translate(76 80) rotate(35)"><path d="M0 0 Q-4 -11 -2 -20 Q0 -15 0 -7 Q2 -15 4 -20 Q2 -11 0 0 Q-2 -7 -9 -11 Q-5 -5 -1 -3 Q-9 -3 -12 -5 Q-7 -2 -1 0 Z" fill="url(#g_yfan6)" transform="scale(-1 1)"/><line x1="0" y1="0" x2="0" y2="-18" stroke="#6a5020" stroke-width="0.5" opacity="0.7"/></g>' +
+    '<g transform="translate(24 62) rotate(-30)"><path d="M0 0 Q-3 -9 -1 -16 Q1 -12 1 -6 Q3 -12 5 -16 Q3 -9 0 0 Q-2 -6 -8 -9 Q-5 -4 -1 -3 Z" fill="url(#g_ygfan6)"/></g>' +
+    '<g transform="translate(76 62) rotate(30)"><path d="M0 0 Q-3 -9 -1 -16 Q1 -12 1 -6 Q3 -12 5 -16 Q3 -9 0 0 Q-2 -6 -8 -9 Q-5 -4 -1 -3 Z" fill="url(#g_ygfan6)" transform="scale(-1 1)"/></g>' +
+    '<g transform="translate(28 46) rotate(-40)"><path d="M0 0 Q-3 -8 -1 -14 Q1 -11 1 -5 Q3 -11 5 -14 Q3 -8 0 0 Q-2 -5 -7 -8 Q-4 -3 0 -2 Z" fill="url(#g_dgfan6)"/></g>' +
+    '<g transform="translate(72 46) rotate(40)"><path d="M0 0 Q-3 -8 -1 -14 Q1 -11 1 -5 Q3 -11 5 -14 Q3 -8 0 0 Q-2 -5 -7 -8 Q-4 -3 0 -2 Z" fill="url(#g_dgfan6)" transform="scale(-1 1)"/></g>' +
+    '<circle cx="50" cy="28" r="26" fill="url(#g_tglow6)"/>' +
+    '<g fill="url(#g_lbud6)">' +
+      '<ellipse cx="50" cy="28" rx="9" ry="14"/><ellipse cx="50" cy="14" rx="6" ry="10"/>' +
+      '<ellipse cx="36" cy="36" rx="6" ry="9"/><ellipse cx="64" cy="36" rx="6" ry="9"/>' +
+      '<circle cx="47" cy="22" r="2.2" opacity="0.6"/><circle cx="53" cy="24" r="2.2" opacity="0.6"/>' +
+      '<circle cx="48" cy="32" r="2" opacity="0.6"/><circle cx="52" cy="34" r="2" opacity="0.6"/>' +
+      '<circle cx="50" cy="18" r="2" opacity="0.6"/><circle cx="33" cy="34" r="1.8" opacity="0.6"/>' +
+      '<circle cx="39" cy="38" r="1.8" opacity="0.6"/><circle cx="61" cy="34" r="1.8" opacity="0.6"/>' +
+      '<circle cx="67" cy="38" r="1.8" opacity="0.6"/>' +
+    '</g>' +
+    '<g stroke="#d18f50" stroke-width="0.9" fill="none" stroke-linecap="round" opacity="0.9">' +
+      '<path d="M48 16 Q46 12 44 10"/><path d="M52 16 Q54 12 56 10"/><path d="M50 10 L50 4"/><path d="M50 6 L48 2"/>' +
+      '<path d="M46 24 Q43 22 41 22"/><path d="M54 24 Q57 22 59 22"/>' +
+      '<path d="M46 30 Q43 29 41 29"/><path d="M54 30 Q57 29 59 29"/>' +
+    '</g>' +
+    '<g stroke="#e8b878" stroke-width="0.8" fill="none" stroke-linecap="round" opacity="0.8">' +
+      '<path d="M35 32 Q32 30 30 30"/><path d="M65 32 Q68 30 70 30"/><path d="M37 42 Q34 42 32 43"/><path d="M63 42 Q66 42 68 43"/>' +
+    '</g>' +
+    '<g fill="#f5f0c8">' +
+      '<circle cx="47" cy="20" r="0.9"/><circle cx="53" cy="18" r="0.9"/><circle cx="48" cy="26" r="0.7"/><circle cx="52" cy="28" r="0.7"/>' +
+      '<circle cx="45" cy="32" r="0.6"/><circle cx="55" cy="32" r="0.6"/><circle cx="50" cy="34" r="0.5"/><circle cx="50" cy="12" r="0.7"/>' +
+      '<circle cx="48" cy="16" r="0.5"/><circle cx="52" cy="14" r="0.5"/><circle cx="35" cy="34" r="0.6"/><circle cx="39" cy="38" r="0.5"/>' +
+      '<circle cx="61" cy="34" r="0.6"/><circle cx="65" cy="38" r="0.5"/><circle cx="33" cy="40" r="0.4"/><circle cx="67" cy="40" r="0.4"/>' +
+    '</g>' +
+    '<g fill="#ffffff" opacity="0.9"><circle cx="50" cy="20" r="0.5"/><circle cx="48" cy="30" r="0.4"/><circle cx="52" cy="22" r="0.4"/></g>' +
+    '</svg>',
+
+  7: /* Spülphase */
+    '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">' +
+    '<defs>' +
+      '<linearGradient id="g_fbud7" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b8c890"/><stop offset="0.6" stop-color="#80a070"/><stop offset="1" stop-color="#556838"/></linearGradient>' +
+      '<linearGradient id="g_bleaf7" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b8a048"/><stop offset="0.5" stop-color="#8a7028"/><stop offset="1" stop-color="#5a4820"/></linearGradient>' +
+      '<linearGradient id="g_yleaf7" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e8d050"/><stop offset="0.5" stop-color="#b89030"/><stop offset="1" stop-color="#7a5818"/></linearGradient>' +
+    '</defs>' +
+    '<path d="M12 92 L88 92" stroke="#3A2815" stroke-width="3" stroke-linecap="round" opacity="0.6"/>' +
+    '<path d="M50 22 Q50 60 50 92" stroke="#b89840" stroke-width="4" stroke-linecap="round" fill="none"/>' +
+    '<path d="M50 22 Q50 60 50 92" stroke="#8a7030" stroke-width="2" fill="none"/>' +
+    '<g transform="translate(22 82) rotate(-40)"><path d="M0 0 Q-4 -11 -2 -20 Q0 -15 0 -7 Q2 -15 4 -20 Q2 -11 0 0 Q-2 -7 -9 -11 Q-5 -5 -1 -3 Z" fill="url(#g_bleaf7)"/></g>' +
+    '<g transform="translate(78 82) rotate(40)"><path d="M0 0 Q-4 -11 -2 -20 Q0 -15 0 -7 Q2 -15 4 -20 Q2 -11 0 0 Q-2 -7 -9 -11 Q-5 -5 -1 -3 Z" fill="url(#g_bleaf7)" transform="scale(-1 1)"/></g>' +
+    '<g transform="translate(24 62) rotate(-30)"><path d="M0 0 Q-4 -11 -2 -20 Q0 -15 0 -7 Q2 -15 4 -20 Q2 -11 0 0 Q-2 -7 -9 -11 Q-5 -5 -1 -3 Z" fill="url(#g_yleaf7)"/></g>' +
+    '<g transform="translate(76 62) rotate(30)"><path d="M0 0 Q-4 -11 -2 -20 Q0 -15 0 -7 Q2 -15 4 -20 Q2 -11 0 0 Q-2 -7 -9 -11 Q-5 -5 -1 -3 Z" fill="url(#g_yleaf7)" transform="scale(-1 1)"/></g>' +
+    '<g transform="translate(28 46) rotate(-40)"><path d="M0 0 Q-3 -8 -1 -14 Q1 -11 1 -5 Q3 -11 5 -14 Q3 -8 0 0 Q-2 -5 -7 -8 Q-4 -3 0 -2 Z" fill="url(#g_yleaf7)"/></g>' +
+    '<g transform="translate(72 46) rotate(40)"><path d="M0 0 Q-3 -8 -1 -14 Q1 -11 1 -5 Q3 -11 5 -14 Q3 -8 0 0 Q-2 -5 -7 -8 Q-4 -3 0 -2 Z" fill="url(#g_yleaf7)" transform="scale(-1 1)"/></g>' +
+    '<g fill="url(#g_fbud7)"><ellipse cx="50" cy="28" rx="9" ry="14"/><ellipse cx="50" cy="14" rx="6" ry="10"/><ellipse cx="36" cy="36" rx="6" ry="9"/><ellipse cx="64" cy="36" rx="6" ry="9"/></g>' +
+    '<g fill="#6ab0d8" opacity="0.85">' +
+      '<path d="M16 10 Q12 18 12 22 A4 4 0 0 0 20 22 Q20 18 16 10 Z"/>' +
+      '<path d="M84 10 Q80 18 80 22 A4 4 0 0 0 88 22 Q88 18 84 10 Z"/>' +
+      '<path d="M16 42 Q14 48 14 51 A3 3 0 0 0 20 51 Q20 48 16 42 Z"/>' +
+    '</g>' +
+    '<g stroke="#c88850" stroke-width="0.9" fill="none" stroke-linecap="round" opacity="0.8">' +
+      '<path d="M48 16 Q46 12 44 10"/><path d="M52 16 Q54 12 56 10"/><path d="M50 10 L50 4"/>' +
+      '<path d="M46 26 Q44 24 42 24"/><path d="M54 26 Q56 24 58 24"/>' +
+    '</g>' +
+    '</svg>',
+
+  8: /* Ernte */
+    '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">' +
+    '<defs>' +
+      '<linearGradient id="g_hbud8" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9ab890"/><stop offset="0.6" stop-color="#687848"/><stop offset="1" stop-color="#3a4820"/></linearGradient>' +
+      '<linearGradient id="g_smetal" x1="0" y1="0" x2="0.5" y2="1"><stop offset="0" stop-color="#e8f0ea"/><stop offset="1" stop-color="#8a9890"/></linearGradient>' +
+    '</defs>' +
+    '<g fill="url(#g_hbud8)">' +
+      '<ellipse cx="32" cy="42" rx="13" ry="18"/><ellipse cx="22" cy="50" rx="7" ry="10"/><ellipse cx="42" cy="50" rx="7" ry="10"/><ellipse cx="32" cy="28" rx="8" ry="12"/>' +
+      '<circle cx="28" cy="36" r="2.5" opacity="0.55"/><circle cx="36" cy="38" r="2.5" opacity="0.55"/><circle cx="32" cy="48" r="2.2" opacity="0.55"/><circle cx="26" cy="46" r="2" opacity="0.55"/>' +
+    '</g>' +
+    '<g stroke="#a06830" stroke-width="0.9" fill="none" stroke-linecap="round" opacity="0.85">' +
+      '<path d="M28 32 Q26 28 24 26"/><path d="M36 32 Q38 28 40 26"/><path d="M32 30 L32 22"/>' +
+      '<path d="M28 42 Q26 40 24 40"/><path d="M36 42 Q38 40 40 40"/>' +
+    '</g>' +
+    '<g fill="#e8e0a0" opacity="0.8"><circle cx="30" cy="34" r="0.8"/><circle cx="34" cy="32" r="0.7"/><circle cx="32" cy="40" r="0.6"/><circle cx="28" cy="48" r="0.6"/><circle cx="36" cy="48" r="0.6"/></g>' +
+    '<path d="M32 60 L40 70" stroke="#4a3818" stroke-width="2.5" stroke-linecap="round"/>' +
+    '<g transform="translate(68 52) rotate(40)">' +
+      '<path d="M-22 -3 L2 0 L-22 2 Z" fill="url(#g_smetal)" stroke="#7a8878" stroke-width="0.6"/>' +
+      '<path d="M-22 3 L2 0 L-22 -2 Z" fill="url(#g_smetal)" stroke="#7a8878" stroke-width="0.6"/>' +
+      '<circle cx="0" cy="0" r="2.5" fill="#4CAF70"/><circle cx="0" cy="0" r="1" fill="#2e5a3f"/>' +
+      '<ellipse cx="10" cy="-6" rx="7" ry="4.5" fill="none" stroke="#4CAF70" stroke-width="2.5"/>' +
+      '<ellipse cx="10" cy="6" rx="7" ry="4.5" fill="none" stroke="#4CAF70" stroke-width="2.5"/>' +
+    '</g>' +
+    '<g fill="#5a7030" opacity="0.6">' +
+      '<path d="M58 76 Q54 78 52 82 Q56 80 60 80 Z"/>' +
+      '<path d="M70 82 Q66 84 64 88 Q68 86 72 86 Z"/>' +
+    '</g>' +
+    '</svg>',
+
+  9: /* Trocknung / Curing */
+    '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">' +
+    '<defs>' +
+      '<linearGradient id="g_dbud9" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a89058"/><stop offset="0.6" stop-color="#7a6030"/><stop offset="1" stop-color="#4a3818"/></linearGradient>' +
+      '<linearGradient id="g_jar9" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#aab8a8" stop-opacity="0.3"/><stop offset="1" stop-color="#6a7868" stop-opacity="0.3"/></linearGradient>' +
+    '</defs>' +
+    '<line x1="6" y1="16" x2="94" y2="16" stroke="#8a7040" stroke-width="2"/>' +
+    '<line x1="22" y1="16" x2="22" y2="28" stroke="#5a4a20" stroke-width="1"/>' +
+    '<line x1="50" y1="16" x2="50" y2="26" stroke="#5a4a20" stroke-width="1"/>' +
+    '<line x1="78" y1="16" x2="78" y2="28" stroke="#5a4a20" stroke-width="1"/>' +
+    '<g fill="url(#g_dbud9)">' +
+      '<ellipse cx="22" cy="40" rx="7" ry="12"/><ellipse cx="17" cy="48" rx="3.5" ry="6"/><ellipse cx="27" cy="48" rx="3.5" ry="6"/>' +
+      '<circle cx="20" cy="38" r="1.8" opacity="0.55"/><circle cx="24" cy="42" r="1.8" opacity="0.55"/>' +
+      '<ellipse cx="50" cy="38" rx="6" ry="10"/><ellipse cx="46" cy="45" rx="3" ry="5"/><ellipse cx="54" cy="45" rx="3" ry="5"/>' +
+      '<circle cx="48" cy="36" r="1.5" opacity="0.55"/><circle cx="52" cy="40" r="1.5" opacity="0.55"/>' +
+      '<ellipse cx="78" cy="40" rx="7" ry="12"/><ellipse cx="73" cy="48" rx="3.5" ry="6"/><ellipse cx="83" cy="48" rx="3.5" ry="6"/>' +
+      '<circle cx="76" cy="38" r="1.8" opacity="0.55"/><circle cx="80" cy="42" r="1.8" opacity="0.55"/>' +
+    '</g>' +
+    '<g stroke="#8a6830" stroke-width="0.6" fill="none" stroke-linecap="round" opacity="0.55">' +
+      '<path d="M20 52 Q19 55 18 57"/><path d="M24 52 Q25 55 26 57"/><path d="M48 49 L48 52"/><path d="M52 49 L52 52"/><path d="M76 52 Q75 55 74 57"/><path d="M80 52 Q81 55 82 57"/>' +
+    '</g>' +
+    '<g transform="translate(34 68)">' +
+      '<rect x="-2" y="0" width="36" height="5" rx="2" fill="#6a7870" stroke="#4a5850" stroke-width="0.5"/>' +
+      '<rect x="0" y="4" width="32" height="2" fill="#4a5850"/>' +
+      '<rect x="2" y="6" width="28" height="22" rx="2" fill="url(#g_jar9)" stroke="#8aa8a0" stroke-width="1.5"/>' +
+      '<rect x="5" y="9" width="3" height="16" rx="1.5" fill="#ffffff" opacity="0.2"/>' +
+      '<g fill="url(#g_dbud9)">' +
+        '<ellipse cx="10" cy="18" rx="3.5" ry="3.5"/><ellipse cx="18" cy="17" rx="3" ry="3"/><ellipse cx="24" cy="20" rx="2.8" ry="2.8"/>' +
+        '<ellipse cx="13" cy="24" rx="2.5" ry="2.5"/><ellipse cx="20" cy="23" rx="2.8" ry="2.8"/>' +
+      '</g>' +
+      '<rect x="10" y="9" width="10" height="2.5" rx="0.5" fill="#c8d0c0" opacity="0.7"/>' +
+    '</g>' +
+    '</svg>',
+};
+
+const STAGE_NAMES = {
+  1: 'Keimung', 2: 'Sämling', 3: 'Vegetation', 4: 'Pre-Flower',
+  5: 'Frühe Blüte', 6: 'Späte Blüte', 7: 'Spülphase',
+  8: 'Ernte', 9: 'Trocknung',
+};
+
+/**
+ * Map a cycle's current position (date + phase config) to stage number 1-9.
+ * Rules:
+ *  - Stage 1-2 live inside phase "anzucht" (first 5/14 days)
+ *  - Stage 3-4 also within anzucht for photoperiod (vegetation + pre-flower)
+ *  - Stage 5-6 within phase "bloom" (early/late split)
+ *  - Stage 7: phase "flush"
+ *  - Stage 8: phase "harvest"
+ *  - Stage 9: phase "dry" or "ice"
+ * For Automatics, "anzucht" only covers 21 days and bloom is shorter,
+ * so we use shorter thresholds.
+ */
+function stageForCycle(cyc, iso) {
+  if (!cyc || !cyc.startDate) return null;
+  const p = phase(iso || todayISO(), cyc);
+  if (!p) return null;
+  const day = p.day; // 1-based day in the cycle
+  const ph = p.ph;
+  const isAuto = (cyc.seedType || '').toLowerCase().indexOf('auto') >= 0;
+
+  if (ph === 'anzucht') {
+    // Subdivide germination → seedling → vegetation → pre-flower
+    if (day <= 5) return 1;                  // Keimung
+    if (day <= 14) return 2;                 // Sämling
+    if (isAuto) {
+      // Autos move through veg quickly; stretch starts ~day 21
+      if (day <= 21) return 3;               // Vegetation
+      return 4;                              // Pre-Flower / Stretch
+    }
+    // Photoperiod: longer veg
+    const anzuchtLen = cyc.anzuchtDays || PHASE_DEFAULTS.anzuchtDays;
+    const stretchStart = Math.max(35, anzuchtLen - 14);
+    if (day < stretchStart) return 3;        // Vegetation
+    return 4;                                // Pre-Flower / Stretch
+  }
+
+  if (ph === 'bloom') {
+    const bloomLen = cyc.bloomDays || PHASE_DEFAULTS.bloomDays;
+    const bloomDay = day - (cyc.anzuchtDays || PHASE_DEFAULTS.anzuchtDays);
+    // First ~40% early flower, rest late flower
+    if (bloomDay <= Math.ceil(bloomLen * 0.4)) return 5;
+    return 6;
+  }
+
+  if (ph === 'flush') return 7;
+  if (ph === 'harvest') return 8;
+  if (ph === 'ice' || ph === 'dry') return 9;
+  return null;
+}
+
+/**
+ * Get stage icon SVG string for a cycle at a given date.
+ * Returns empty string if no stage applies.
+ */
+function stageIconFor(cyc, iso) {
+  const s = stageForCycle(cyc, iso);
+  return (s && STAGE_ICONS[s]) || '';
+}
+
 
 // =====================================================================
 //  DÜNGER PRESETS (inkl. Mischreihenfolge)
@@ -733,7 +1105,7 @@ const FERT_PRESETS = {
     subtitle: 'Offizieller Herstellerplan 2025 · Light-Mix · für Anfänger',
     doseMode: 'weekly-split',
     mixOrder: ['CalMag','Root·Juice','Bio·Grow','Bio·Bloom','Top·Max','Acti·Vera','Alg·A·Mic'],
-    mixInfo: 'Original BioBizz-Plan aus dem offiziellen Schedule 2025. Wochen-Gesamtdosis — die App teilt automatisch durch die Anzahl der Gießtage pro Woche auf. Reihenfolge: 1. CalMag (bei weichem Wasser/Osmose). 2. Root·Juice in der Vegetationsphase. 3. Bio·Grow/Bio·Bloom je nach Phase. 4. Top·Max ab Blüte. 5. Acti·Vera und Alg·A·Mic als Additive. pH am Ende auf 6.2–6.5 korrigieren.',
+    mixInfo: 'Original BioBizz-Plan aus dem offiziellen Schedule 2025. Wochen-Gesamtdosis — die App teilt automatisch durch die Anzahl der Gießtage pro Woche auf. Reihenfolge: 1. CalMag (bei weichem Wasser/Osmose). 2. Root·Juice in der Vegetationsphase. 3. Bio·Grow/Bio·Bloom je nach Phase. 4. Top·Max ab Blüte. 5. Acti·Vera und Alg·A·Mic als Additive. pH am Ende auf 6.2–6.4 korrigieren.',
     drainInfo: 'Quelle: biobizz.com 2025 Nutrient Schedule. ⚠️ In der Grower-Community umstritten für Spitzenqualität: Bio·Grow bis Wo 8 kann zu hohem Reststickstoff führen (blättrige, dunkle Buds). Als Start-Referenz OK, für Cup-Niveau besser den Master-Plan. Nicht jedes Gießen volle Dosis — die App verteilt die Wochendosis intelligent.',
     products: [
       { name: 'CalMag',      unit: 'ml/L', color: '#f0d050', note: 'Optional: nur bei weichem Wasser/Osmose' },
@@ -976,7 +1348,19 @@ function saveS() {
     }
     localStorage.setItem(SK, JSON.stringify(S));
     _flashSaved();
-  } catch (e) {}
+  } catch (e) {
+    // Quota exceeded is the critical case we need to surface to the user
+    if (e && (e.name === 'QuotaExceededError' || e.code === 22)) {
+      // Rate-limit: only warn once per 5min (same throttle as maybeWarnStorageQuota)
+      const now = Date.now();
+      if (!saveS._lastQuotaErr || now - saveS._lastQuotaErr > 300000) {
+        saveS._lastQuotaErr = now;
+        toast('⚠ Speicher voll — Eintrag nicht gesichert! Bitte Foto-Löschen oder JSON-Export nutzen.');
+      }
+    }
+    // Other errors (DOMException in private mode, etc.) silently ignored —
+    // nothing sensible we can do, and we don't want to spam toasts.
+  }
 }
 
 // Subtle save indicator - shows a small dot briefly
@@ -1466,12 +1850,22 @@ function calcVPD(t, rh) {
   return Math.round(0.6108 * Math.exp(17.27 * t / (t + 237.3)) * (1 - rh / 100) * 100) / 100;
 }
 
-function vpdZone(v) {
+/**
+ * VPD zone labels + styling. Optional second arg: phase info {ph, week}
+ * from phase(). When phase is late bloom (bloom week 7+), the zone 1.4-1.6
+ * is marked as intentional Cup-Niveau (Trichom-Boost) rather than "too high".
+ */
+function vpdZone(v, phaseInfo) {
   if (v === null) return null;
+  const isLateBloom = phaseInfo && phaseInfo.ph === 'bloom' && (phaseInfo.week || 0) >= 7;
   if (v < 0.4) return { label: 'Zu feucht', color: '#7a7af0', bg: '#1e1e3a', hint: 'Lüfter an!', pct: v / 0.4 * 15 };
   if (v < 0.8) return { label: 'Anzucht ✓', color: '#5aabf0', bg: '#0d1e2e', hint: 'Ideal für Sämlinge.', pct: 15 + (v - 0.4) / 0.4 * 35 };
   if (v < 1.2) return { label: 'Blüte ✓', color: '#4caf70', bg: '#0d1e0d', hint: 'Optimal für Blüte!', pct: 50 + (v - 0.8) / 0.4 * 25 };
-  if (v < 1.6) return { label: 'Etwas hoch', color: '#c8a04a', bg: '#2a1e0d', hint: 'RLF erhöhen.', pct: 75 + (v - 1.2) / 0.4 * 15 };
+  if (v < 1.6) {
+    return isLateBloom
+      ? { label: 'Spätblüte ✓', color: '#4caf70', bg: '#0d1e0d', hint: 'Cup-Niveau: Trichom-Boost durch milden Trockenstress.', pct: 75 + (v - 1.2) / 0.4 * 15 }
+      : { label: 'Etwas hoch', color: '#c8a04a', bg: '#2a1e0d', hint: 'RLF erhöhen (in Spätblüte OK als Cup-Niveau).', pct: 75 + (v - 1.2) / 0.4 * 15 };
+  }
   return { label: 'Stress!', color: '#e06060', bg: '#2a0d0d', hint: 'Sofort RLF anpassen!', pct: Math.min(97, 90 + (v - 1.6) * 10) };
 }
 
@@ -1503,12 +1897,12 @@ function getEntryWarnings(cd, p, e, c) {
     }
   }
 
-  // pH: dangerous zones
+  // pH: dangerous zones + Cup-Niveau Grenzbereich-Warnungen
   if (phVal > 0) {
-    if (phVal < 5.5) out.push({ type: 'err', text: `⚠️ pH ${phVal.toFixed(1)} zu niedrig! Nährstoff-Lockout droht. Ziel: 6.2–6.5.` });
-    else if (phVal < 5.8) out.push({ type: 'warn', text: `⚠ pH ${phVal.toFixed(1)} eher niedrig. Ziel: 6.2–6.5 (Erde).` });
-    else if (phVal > 7.2) out.push({ type: 'err', text: `⚠️ pH ${phVal.toFixed(1)} zu hoch! Eisen/Mangan unerreichbar. Ziel: 6.2–6.5.` });
-    else if (phVal > 6.8) out.push({ type: 'warn', text: `⚠ pH ${phVal.toFixed(1)} eher hoch. pH-Down nutzen.` });
+    if (phVal < 5.5) out.push({ type: 'err', text: `⚠️ pH ${phVal.toFixed(1)} zu niedrig! Nährstoff-Lockout droht. Ziel: 6.2–6.4.` });
+    else if (phVal < 6.0) out.push({ type: 'warn', text: `⚠ pH ${phVal.toFixed(1)} unter 6.0 — Ca/Mg werden blockiert (Lockout). Ziel: 6.2–6.4.` });
+    else if (phVal > 7.2) out.push({ type: 'err', text: `⚠️ pH ${phVal.toFixed(1)} zu hoch! Eisen/Mangan unerreichbar. Ziel: 6.2–6.4.` });
+    else if (phVal > 6.5) out.push({ type: 'warn', text: `⚠ pH ${phVal.toFixed(1)} über 6.5 — Eisen/Mangan/Phosphor werden blockiert. pH-Down nutzen. Ziel: 6.2–6.4.` });
   }
 
   // EC checks (preserves existing logic but goes through central system)
@@ -1518,16 +1912,18 @@ function getEntryWarnings(cd, p, e, c) {
     out.push({ type: 'info', text: 'ℹ️ EC unter 0.8 — Pflanze kann mehr vertragen. Dosis leicht erhöhen.' });
   }
 
-  // Temperature (environment)
+  // Temperature (environment) — Cup-Niveau thresholds
   if (!isNaN(tempVal) && tempVal > 0) {
-    if (tempVal > 32) out.push({ type: 'err', text: `🌡️ ${tempVal}°C zu heiß! Hitzestress. Lüftung erhöhen.` });
-    else if (tempVal > 29) out.push({ type: 'warn', text: `🌡️ ${tempVal}°C hoch. Ideal: 22–28°C.` });
-    else if (tempVal < 15) out.push({ type: 'warn', text: `🌡️ ${tempVal}°C zu kalt — Wachstum stoppt. Heizen!` });
+    if (tempVal > 32) out.push({ type: 'err', text: `🌡️ ${tempVal}°C zu heiß! Hitzestress (Taco-Blätter). Lüftung erhöhen.` });
+    else if (tempVal > 29) out.push({ type: 'warn', text: `🌡️ ${tempVal}°C hoch — Stoffwechsel bremst. Ideal: 22–28°C.` });
+    else if (tempVal < 15) out.push({ type: 'err', text: `🌡️ ${tempVal}°C zu kalt — Wachstum stoppt, Wurzelschäden drohen. Heizen!` });
+    else if (tempVal < 18) out.push({ type: 'warn', text: `🌡️ ${tempVal}°C unter 18°C — Phosphor-Lockout droht, lila/rote Verfärbungen möglich.` });
   }
 
   // Humidity
   if (!isNaN(rhVal) && rhVal > 0) {
-    if (rhVal > 80) out.push({ type: 'warn', text: `💨 ${rhVal}% RLF sehr hoch — Schimmelrisiko!` });
+    if (rhVal > 80) out.push({ type: 'err', text: `💨 ${rhVal}% RLF sehr hoch — Schimmelrisiko! Lüftung maximal.` });
+    else if (rhVal > 70) out.push({ type: 'warn', text: `💨 ${rhVal}% RLF über 70 — Aktivkohlefilter kann kondensieren und Geruch durchlassen.` });
     else if (rhVal < 30 && p && p.ph !== 'dry') out.push({ type: 'warn', text: `💨 ${rhVal}% RLF sehr niedrig — Pflanze schließt Stomata.` });
   }
 
@@ -1616,17 +2012,17 @@ function ring(pct, color, sz = 56) {
 function getSmartTip(c, p) {
   if (!p) return null;
   const tips = {
-    'anzucht_1': { text: 'Erde feucht halten, kein Dünger.', lex: 'Dryback-Methode' },
+    'anzucht_1': { text: 'Erde feucht halten, kein Dünger.', lex: 'Dryback (Trocken-Nass-Zyklus)' },
     'anzucht_2': { text: 'Leichter Dünger (25-50%) möglich.', lex: 'NPK' },
     'anzucht_3': { text: 'Umtopfen prüfen!', lex: 'Umtopfen' },
     'bloom_1':   { text: 'Blüte gestartet! PK erhöhen.', lex: 'NPK' },
     'bloom_3':   { text: 'Blüten formen sich. Stützen!', lex: 'LST (Low Stress)' },
-    'bloom_5':   { text: 'Peak-Blüte. Rhythmus halten!', lex: 'Dryback-Methode' },
-    'bloom_7':   { text: 'Trichome kontrollieren – Lupe!', lex: 'Trichom-Stadien' },
+    'bloom_5':   { text: 'Peak-Blüte. Rhythmus halten!', lex: 'Dryback (Trocken-Nass-Zyklus)' },
+    'bloom_7':   { text: 'Trichome kontrollieren – Lupe!', lex: 'Trichom-Analyse (Ernte-Trigger)' },
     'bloom_9':   { text: 'Letzte Woche vor Spülung.', lex: 'Spülung' },
     'flush':     { text: 'Nur klares Wasser. pH 6.4.', lex: 'Spülung' },
     'ice':       { text: 'Eiswasser (<10°C) für Trichome.', lex: 'IceFlush' },
-    'harvest':   { text: 'Ernten! Dunkel stellen, schneiden.', lex: 'Trichom-Stadien' },
+    'harvest':   { text: 'Ernten! Dunkel stellen, schneiden.', lex: 'Trichom-Analyse (Ernte-Trigger)' },
     'dry':       { text: '18-21°C, 55-65% RLF. Nicht zu schnell!', lex: 'Trocknung' },
   };
   return tips[p.week ? `${p.ph}_${p.week}` : p.ph] || null;
@@ -1720,7 +2116,7 @@ function getTodayAction(c, p, a, iso) {
       icon: '✂️',
       color: cl.hex,
       steps: [
-        'Trichome final checken (70% milchig + 10%+ bernstein)',
+        'Trichome final checken (90% milchig + max 10% bernstein)',
         'Früh am Morgen ernten (maximaler Terpengehalt)',
         'Dunkel hängen lassen: 18–21°C, 55–65% RLF',
       ],
@@ -1831,7 +2227,7 @@ function renderDash() {
   const stats = act.length > 0 ? `<div class="stat-row">
     <div class="stat-box"><div class="stat-lbl">Ernte in</div><div class="stat-val">${fc ? daysToHarvest(fc) : '–'}<span class="stat-unit"> d</span></div></div>
     <div class="stat-box"><div class="stat-lbl">Heute</div><div class="stat-val" style="font-size:22px">${fcAction ? ACT_ICON[fcAction] || '💤' : '💤'}</div></div>
-    <div class="stat-box"><div class="stat-lbl">Ø pH</div><div class="stat-val" style="color:${avgPH !== '–' && parseFloat(avgPH) >= 6.2 && parseFloat(avgPH) <= 6.6 ? 'var(--green)' : avgPH !== '–' ? 'var(--orange)' : 'var(--text-hint)'}">${avgPH}</div></div>
+    <div class="stat-box"><div class="stat-lbl">Ø pH</div><div class="stat-val" style="color:${avgPH !== '–' && parseFloat(avgPH) >= 6.2 && parseFloat(avgPH) <= 6.4 ? 'var(--green)' : avgPH !== '–' ? 'var(--orange)' : 'var(--text-hint)'}">${avgPH}</div></div>
   </div>
   <div class="stat-row" style="margin-top:6px">
     <div class="stat-box"><div class="stat-lbl">Gesamt 💧</div><div class="stat-val">${totalWater > 0 ? (totalWater/1000).toFixed(1) : '–'}<span class="stat-unit"> L</span></div></div>
@@ -1855,16 +2251,20 @@ function renderDash() {
     const hasPhData = phStats.some(v => v > 0);
     const hasEcData = ecStats.some(v => v > 0);
 
+    const stgNum = stageForCycle(c, today);
+    const stgIcon = stgNum ? STAGE_ICONS[stgNum] : '';
+    const stgName = stgNum ? STAGE_NAMES[stgNum] : null;
+
     return `<div style="background:${cl.dk};border:0.5px solid ${cl.hex}33;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:12px;cursor:pointer" onclick="entryFrom='dash';openEntry('${today}')">
       <div style="display:flex;align-items:center;gap:12px">
         ${ring(pct, cl.hex)}
         <div style="flex:1">
           <div style="display:flex;align-items:center;gap:5px;margin-bottom:2px">
-            <span style="font-size:16px">${s}</span>
+            ${stgIcon ? `<span style="width:22px;height:22px;display:inline-flex;flex-shrink:0">${stgIcon}</span>` : `<span style="font-size:16px">${s}</span>`}
             <span style="font-size:14px;font-weight:600">${c.name}</span>
             ${c.location ? `<span style="font-size:11px;color:var(--text-muted)">· ${c.location}</span>` : ''}
           </div>
-          <div style="font-size:12px;color:${cl.hex};font-weight:500">${PH_ICON[p?.ph] || ''} ${p ? PN[p.ph] : '–'}${p?.week ? ' Wo.' + p.week : ''} · Tag ${p?.day || '–'}</div>
+          <div style="font-size:12px;color:${cl.hex};font-weight:500">${stgName || (p ? PN[p.ph] : '–')}${p?.week ? ' · Wo. ' + p.week : ''} · Tag ${p?.day || '–'}</div>
           <div style="display:flex;gap:8px;margin-top:3px;align-items:center">
             ${streak > 0 ? `<span class="streak">🔥 ${streak}</span>` : ''}
             <span style="font-size:10px;color:var(--text-muted)">Start ${sf}</span>
@@ -1924,7 +2324,11 @@ function renderDash() {
     <div style="font-size:10px;color:var(--text-hint);margin-top:12px;line-height:1.5;max-width:260px">💡 Tipp: Unter "📖 Erst nachlesen" findest du eine komplette Anleitung mit 9 Kapiteln — und auch geführte Touren durch die App.</div>
   </div>` : '';
 
+  // Charts section per active cycle (between Meine Zyklen and Foto-Galerie)
+  const chartsHTML = act.map(c => buildChartsSection(c.id)).join('');
+
   document.getElementById('dash-body').innerHTML = `${actionCards}${todayCard}${alertHTML}${stats}<div class="sect-head">Meine Zyklen</div>${empty}${cards}
+    ${chartsHTML}
     ${act.length > 0 ? `<div class="sec-tog" onclick="openGallery()" style="margin-top:4px;border-color:rgba(176,106,200,0.15)">
       <span>📸</span>
       <div>
@@ -1966,8 +2370,22 @@ function renderCal() {
     const isToppingDay = act.some(c => c.toppingDate === iso);
     const isSkipped = act.some(c => c.skippedDays && c.skippedDays.includes(iso));
 
+    // Action-type color mapping (v0.8.91): highlight key events beyond just emoji
+    // Gießen stays in cycle-color. Ernte = gold. Spülen = light-blue. Ice = teal. Trocknen = amber.
+    const ACT_COLORS = {
+      ernte:    { bg: '#2a1f08', border: '#f0c050aa' },  // gold/amber — high-value event
+      spuelen:  { bg: '#082028', border: '#5ab0d888' },  // light blue — water-related
+      ice:      { bg: '#0a2428', border: '#6fdce088' },  // teal — cold
+      trocknen: { bg: '#1f1408', border: '#c88a4888' },  // warm brown — drying
+    };
+
     let bg = '#151515', border = 'transparent';
     if (isStart) { bg = '#1e1a04'; border = '#f0d050aa'; }
+    else if (actionDay && ACT_COLORS[actionDay.a]) {
+      // Use special color for key actions (ernte, spuelen, ice, trocknen)
+      bg = ACT_COLORS[actionDay.a].bg;
+      border = ACT_COLORS[actionDay.a].border;
+    }
     else if (actionDay) { const cl = col(actionDay.c); bg = cl.dk; border = cl.hex + '77'; }
     else if (isToppingRest) { bg = '#150820'; border = 'rgba(176,106,200,0.3)'; }
     else if (isSkipped) { bg = '#1a1010'; border = 'rgba(224,96,96,0.15)'; }
@@ -1977,7 +2395,7 @@ function renderCal() {
     else if (isToppingDay) icon = '✂️';
     else if (isToppingRest) icon = '😴';
     else if (isSkipped) icon = '🚫';
-    else if (actionDay) icon = ACT_ICON[actionDay.a] || '';
+    else if (actionDay) icon = calActionIcon(actionDay.a);
 
     const tagCol = actionDay ? col(actionDay.c).hex : (phaseDay ? col(phaseDay.c).hex : 'rgba(255,255,255,0.35)');
 
@@ -2008,11 +2426,16 @@ function renderCal() {
       <span style="color:#f0d050">☘️ Start</span>
       <span>🌱 Anzucht</span>
       <span>💧 Gießen</span>
-      <span>🚿 Spülen</span>
+      <span style="display:inline-flex;align-items:center;gap:3px"><span style="width:14px;height:14px;display:inline-flex">${CAL_SVG.spuelen}</span> Spülen</span>
       <span>🧊 Ice</span>
-      <span>✂️ Topping/Ernte</span>
+      <span>✂️ Topping</span>
+      <span style="display:inline-flex;align-items:center;gap:3px"><span style="width:14px;height:14px;display:inline-flex">${CAL_SVG.ernte}</span> Ernte</span>
       <span>😴 Ruhetag</span>
-      <span>🍂 Trocknen</span>
+      <span style="display:inline-flex;align-items:center;gap:3px"><span style="width:14px;height:14px;display:inline-flex">${CAL_SVG.trocknen}</span> Trocknen</span>
+    </div>
+    <div style="padding:4px 0 2px;display:flex;flex-wrap:wrap;gap:4px 10px;font-size:10px;color:var(--text-hint)">
+      <span style="color:#f0c050">Ernte-Tag (gold)</span>
+      <span style="color:#5ab0d8">Spülen (blau)</span>
     </div>
     <div style="font-size:10px;color:var(--text-hint);padding:2px 0">📌 Gedrückt halten = Gießtag verschieben</div>`;
 }
@@ -2057,8 +2480,9 @@ function showCtx(iso) {
     const p = phase(iso, c);
     if (!p) return;
     const s = sym(c), a = getAction(iso, c);
+    const lockReason = isToppingLocked(c, iso);
 
-    if (isFuture && a) {
+    if (isFuture && a && !lockReason) {
       // Gießtag in der Zukunft/heute → verschieben möglich
       items.push(`<div class="ctx-item ctx-b" onclick="doShift('${c.id}', -1, '${iso}')">
         <span class="ctx-ic">←</span>${s} ${ACT_ICON[a] || ''} Vorziehen
@@ -2068,6 +2492,11 @@ function showCtx(iso) {
       </div>`);
       items.push(`<div class="ctx-item ctx-r" onclick="skipDayFromCal('${c.id}','${iso}')">
         <span class="ctx-ic">🚫</span>${s} Gießtag entfernen
+      </div>`);
+    } else if (isFuture && a && lockReason) {
+      // Gießtag liegt im Topping-Fenster — gesperrt, Hinweis zeigen
+      items.push(`<div class="ctx-item" style="opacity:0.7;cursor:default;background:rgba(240,208,80,0.06);border-color:rgba(240,208,80,0.2)">
+        <span class="ctx-ic">🔒</span><div style="font-size:11px;line-height:1.4">${s} Verschieben gesperrt<br><span style="font-size:10px;color:var(--text-muted)">${lockReason}</span></div>
       </div>`);
     }
 
@@ -2120,6 +2549,29 @@ function closeCtx() {
 }
 
 /**
+ * Checks if a watering day is "locked" from shifting because of a planned topping.
+ * Returns a string with the reason if locked, null otherwise.
+ *
+ * The rule: A watering 2–4h before topping is critical for clean healing. Once set,
+ * do not move it. Also: the days immediately around the topping date are off-limits
+ * for rhythm changes because the whole topping-sequence is pre-planned.
+ *
+ * Locked windows:
+ *   - The topping date itself (already a rest-day, but block explicitly)
+ *   - The day BEFORE topping (that's the "Gieß vor Topping"-day)
+ *   - Any day within the topping rest period (toppingDate + 1 … toppingDate + pause)
+ */
+function isToppingLocked(c, iso) {
+  if (!c || !c.toppingDate) return null;
+  const diff = isoDiff(iso, c.toppingDate);
+  const pause = c.toppingPause || 3;
+  if (diff === 0) return 'Topping-Tag — nicht verschieben.';
+  if (diff === -1) return 'Gieß-Tag vor dem Topping — muss 2–4h vor dem Schnitt liegen (Turgordruck).';
+  if (diff >= 1 && diff <= pause) return 'Ruhetag nach Topping — Rhythmus läuft nach der Pause weiter.';
+  return null;
+}
+
+/**
  * Shift watering grid for a cycle.
  * +1 = Auf morgen verschieben (Topf noch nass)
  * -1 = Vorziehen (Topf schon trocken)
@@ -2138,6 +2590,10 @@ function doShift(cId, days, actionISO) {
   // Falls nicht übergeben (Fallback): nächsten Gießtag ab heute suchen
   const actionDay = actionISO || findNextActionDay(c, today);
   if (!actionDay) { toast('⚠ Kein Gießtag gefunden'); return; }
+
+  // Guard: Lock around topping (Turgordruck, Stress, Nährstoffe)
+  const lockReason = isToppingLocked(c, actionDay);
+  if (lockReason) { toast('🚫 ' + lockReason); return; }
 
   // Block: Vorziehen nur wenn Aktionstag NACH heute liegt
   if (days < 0 && actionDay <= today) {
@@ -2168,6 +2624,10 @@ function doShiftFromEntry(cId, days) {
 
   const actionDay = findNextActionDay(c, today);
   if (!actionDay) { toast('⚠ Kein Gießtag gefunden'); return; }
+
+  // Guard: Lock around topping
+  const lockReason = isToppingLocked(c, actionDay);
+  if (lockReason) { toast('🚫 ' + lockReason); return; }
 
   if (days < 0 && actionDay <= today) {
     toast('⚠ Kann nicht weiter vorziehen');
@@ -2386,7 +2846,9 @@ async function stopC(cId) {
 function renderTips() {
   const act = active(), today = todayISO(), entry = S.entries[today] || {};
   const vpd = calcVPD(parseFloat(entry.temp), parseFloat(entry.humidity));
-  const z = vpdZone(vpd);
+  // Use first active cycle's phase for VPD zone context (Cup-Niveau Spätblüte mode)
+  const p4vpd = act.length > 0 ? phase(today, act[0]) : null;
+  const z = vpdZone(vpd, p4vpd);
   let tips = [];
 
   if (vpd !== null && z) {
@@ -2402,17 +2864,17 @@ function renderTips() {
   });
 
   const gen = [
-    { icon: '💧', text: 'pH immer 6.2–6.5 (Erde), Ziel: 6.4. Hydro: 5.5–6.0.', cat: 'Grundlagen', lex: 'pH-Wert' },
-    { icon: '🌡️', text: 'Tag: 22–28°C, Nacht: 18–22°C. Max 30°C!', cat: 'Grundlagen', lex: 'VPD' },
-    { icon: '💨', text: 'Gute Luftzirkulation = kein Schimmel.', cat: 'Grundlagen', lex: 'Schimmel' },
-    { icon: '🔬', text: 'Trichome: klar=früh, milchig=perfekt, bernstein=couchlock.', cat: 'Ernte', lex: 'Trichom-Stadien' },
+    { icon: '💧', text: 'pH immer 6.2–6.4 (Erde), Ziel: 6.4. Hydro: 5.5–6.0.', cat: 'Grundlagen', lex: 'pH-Wert' },
+    { icon: '🌡️', text: 'Tag: 22–28°C, Nacht: 18–22°C. Max 30°C!', cat: 'Grundlagen', lex: 'VPD (Vapour Pressure Deficit)' },
+    { icon: '💨', text: 'Gute Luftzirkulation = kein Schimmel.', cat: 'Grundlagen', lex: 'Schimmel (Botrytis)' },
+    { icon: '🔬', text: 'Trichome: klar=früh, milchig=perfekt, bernstein=couchlock.', cat: 'Ernte', lex: 'Trichom-Analyse (Ernte-Trigger)' },
     { icon: '✂️', text: 'Wet Trim oder Dry Trim – beide Methoden haben Vorteile.', cat: 'Ernte', lex: 'Trocknung' },
     { icon: '🍂', text: 'Trocknung: 7-14 Tage, 18-21°C, 55-65% RLF.', cat: 'Ernte', lex: 'Trocknung' },
-    { icon: '🫙', text: 'Curing: 2+ Wochen in Gläsern, täglich öffnen.', cat: 'Nach Ernte', lex: 'Curing' },
+    { icon: '🫙', text: 'Curing: 2+ Wochen in Gläsern, täglich öffnen.', cat: 'Nach Ernte', lex: 'Curing (Veredelung)' },
     { icon: '🧪', text: 'Immer mit halber Dosis starten!', cat: 'Nährstoffe', lex: 'NPK' },
     { icon: '☘️', text: 'Gelbe untere Blätter in Blüte = normal.', cat: 'Nährstoffe', lex: 'Nährstoffmangel' },
     { icon: '🌙', text: 'Dunkelphase heilig! Kein Licht = kein Zwittern.', cat: 'Blüte', lex: 'Lichtzyklen' },
-    { icon: '🐛', text: 'Blattunterseiten kontrollieren – Schädlinge!', cat: 'Pflanzenschutz', lex: 'Schädlinge' },
+    { icon: '🐛', text: 'Blattunterseiten kontrollieren – Schädlinge!', cat: 'Pflanzenschutz', lex: 'Spinnmilben (Tetranychidae)' },
     { icon: '🪴', text: 'Nicht zu nah ans Licht = keine bleichen Spitzen.', cat: 'Grundlagen', lex: 'Lichtabstand' },
   ];
   tips = [...tips, ...gen.sort(() => Math.random() - 0.5).slice(0, 5)];
@@ -2468,7 +2930,7 @@ function renderTips() {
       </div>
       <div style="padding:0 12px 12px">
       <div style="display:flex;flex-direction:column;gap:6px;font-size:11px;color:var(--text-sub);line-height:1.6">
-        <div>🎯 <b>pH-Wert:</b> Fertige Mischung immer auf 6.4 einstellen (Bereich 6.2–6.5)</div>
+        <div>🎯 <b>pH-Wert:</b> Fertige Mischung immer auf 6.4 einstellen (Bereich 6.2–6.4)</div>
         <div>⚗️ <b>Reihenfolge:</b> Erst CalMag → umrühren → dann Rest der Nährstoffe</div>
         <div>🚿 <b>Drain:</b> 5–10% Drain bei jedem Guss um Salzansammlungen zu vermeiden</div>
         <div>📉 <b>Überdüngung:</b> Gelbe/braune Blattspitzen? Bio·Bloom um 20% reduzieren</div>
@@ -3211,7 +3673,7 @@ function renderSet() {
     </div>
     `}
 
-    <div style="text-align:center;padding:16px 0;font-size:11px;color:var(--text-hint)">GrowSmart v0.8.88 🌱</div>
+    <div style="text-align:center;padding:16px 0;font-size:11px;color:var(--text-hint)">GrowSmart v0.8.99 🌱</div>
     <div style="height:20px"></div>`;
 
   // Restore scroll position (goTo handles scroll-to-top on tab switch)
@@ -3853,15 +4315,15 @@ function exportDiary() {
  * can learn about what they just observed in context.
  */
 const QN_LEX = {
-  'Blätter hängen': 'Dryback-Methode',
+  'Blätter hängen': 'Dryback (Trocken-Nass-Zyklus)',
   'Blätter gelblich': 'Nährstoffmangel',
   'Untere Blätter gelb': 'Nährstoffmangel',
-  'Überwässert': 'Dryback-Methode',
+  'Überwässert': 'Dryback (Trocken-Nass-Zyklus)',
   'Umgetopft': 'Umtopfen',
   'Stretch sichtbar': 'Lichtzyklen',
-  'Trichome klar': 'Trichom-Stadien',
-  'Trichome milchig': 'Trichom-Stadien',
-  'Trichome bernstein': 'Trichom-Stadien',
+  'Trichome klar': 'Trichom-Analyse (Ernte-Trigger)',
+  'Trichome milchig': 'Trichom-Analyse (Ernte-Trigger)',
+  'Trichome bernstein': 'Trichom-Analyse (Ernte-Trigger)',
   'Trichome glitzern': 'IceFlush',
   'Stütze gesetzt': 'LST (Low Stress)',
   'Nur klares Wasser': 'Spülung',
@@ -3869,9 +4331,9 @@ const QN_LEX = {
   'Wet Trim': 'Trocknung',
   'Aufgehängt': 'Trocknung',
   'Stiele knacken': 'Trocknung',
-  'In Gläser gefüllt': 'Curing',
-  'Burping gemacht': 'Curing',
-  'Schädling gesehen': 'Schädlinge',
+  'In Gläser gefüllt': 'Curing (Veredelung)',
+  'Burping gemacht': 'Curing (Veredelung)',
+  'Schädling gesehen': 'Spinnmilben (Tetranychidae)',
 };
 
 /**
@@ -4013,13 +4475,26 @@ function _updateEntryTitle(iso) {
 }
 
 /** Navigate to prev/next day in entry screen */
+/** Navigate to prev/next day in entry screen. Prompts if there are unsaved changes. */
 function entryNav(dir) {
   if (!editISO) return;
-  const newISO = isoPlus(editISO, dir);
-  editISO = newISO;
-  _updateEntryTitle(newISO);
-  renderEntry(newISO);
-  vibrate(8);
+  const doNav = () => {
+    const newISO = isoPlus(editISO, dir);
+    editISO = newISO;
+    _updateEntryTitle(newISO);
+    renderEntry(newISO);
+    vibrate(8);
+  };
+  if (!_entryDirty) { doNav(); return; }
+  const choice = confirm(
+    'Du hast ungespeicherte Änderungen.\n\n' +
+    'Speichern und zum nächsten Tag? (OK)\n' +
+    'Hier bleiben? (Abbrechen)'
+  );
+  if (choice) {
+    saveEntry();
+    setTimeout(doNav, 50);
+  }
 }
 
 // Swipe on entry screen
@@ -4041,7 +4516,9 @@ function renderEntry(iso) {
   const temp = saved.temp || '';
   const rh = saved.humidity || '';
   const vpd = calcVPD(parseFloat(temp), parseFloat(rh));
-  const z = vpdZone(vpd);
+  // Pass phase for Cup-Niveau Spätblüte zone logic (first active cycle as reference)
+  const p4vpd = act.length > 0 ? phase(iso, act[0]) : null;
+  const z = vpdZone(vpd, p4vpd);
 
   const vpdBox = vpd !== null
     ? `<div class="vpd-box">
@@ -4278,7 +4755,7 @@ function renderEntry(iso) {
                 const checked = !!(cd.mixChecks?.[pr?.id]);
                 const checkId = `mix-${c.id}-${i}`;
                 const rowStyle = checked
-                  ? 'padding:10px 8px;margin:0 -4px;border-radius:8px;transition:background 0.15s;align-items:center;cursor:pointer;background:rgba(76,175,112,0.06);opacity:0.6'
+                  ? 'padding:10px 8px;margin:0 -4px;border-radius:8px;transition:background 0.15s;align-items:center;cursor:pointer;opacity:0.55'
                   : 'padding:10px 8px;margin:0 -4px;border-radius:8px;transition:background 0.15s;align-items:center;cursor:pointer';
                 return `<div class="mix-step" id="${checkId}" onclick="toggleMixCheck('${c.id}','${pr?.id}')" style="${rowStyle}">
                   <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0">
@@ -4673,7 +5150,10 @@ function uEnv() {
   _entryDirty = true;
   const t = parseFloat(document.getElementById('et')?.value);
   const r = parseFloat(document.getElementById('er')?.value);
-  const v = calcVPD(t, r), z = vpdZone(v);
+  // Phase-aware VPD zone: Spätblüte gets different zone labels (Cup-Niveau)
+  const actL = active();
+  const p4vpd = editISO && actL.length > 0 ? phase(editISO, actL[0]) : null;
+  const v = calcVPD(t, r), z = vpdZone(v, p4vpd);
   if (v !== null && z) {
     const vv = document.getElementById('vpd-v');
     const vp = document.getElementById('vpd-p');
@@ -4923,45 +5403,119 @@ function viewPhoto(src) {
 // =====================================================================
 const LEXIKON = [
   { cat: '🌱 Grundlagen', items: [
-    { t: 'pH-Wert', txt: 'Maß für Säure/Base der Nährlösung. Cannabis in Erde: 6.2–6.5, Ziel 6.4. Zu hoch oder niedrig blockiert Nährstoffaufnahme (Lockout).' },
-    { t: 'EC-Wert', txt: 'Electrical Conductivity — misst die Salzkonzentration im Wasser. Ideal: 0.8–2.0 in der Blüte. Über 2.5 = Überdüngung.' },
-    { t: 'VPD', txt: 'Vapour Pressure Deficit — Verhältnis von Temperatur zu Luftfeuchtigkeit. Steuert Transpiration. Anzucht: 0.4–0.8, Blüte: 0.8–1.2 kPa.' },
+    { t: 'pH-Wert', txt: '<b>Mechanik:</b> Wurzeln nehmen Nährstoffe als gelöste Ionen auf. Dieser <b>Kationenaustausch</b> funktioniert in Torf- und Erdsubstraten nur in einem hochspezifischen elektrischen Milieu.<br><br><b>Der Sweetspot (6.2–6.4):</b> Fällt der pH unter 6.0, werden <b>Calcium und Magnesium blockiert</b> (Lockout) — selbst wenn sie im Substrat vorhanden sind. Steigt er über 6.5, blockiert das System <b>Eisen, Mangan und Phosphor</b>.<br><br>Das enge Fenster 6.2–6.4 ist der biochemische Kompromiss, bei dem alle Makro- und Mikronährstoffe <b>zeitgleich maximal bioverfügbar</b> sind. Ziel: 6.4. Hydro-Systeme (Canna/Advanced): 5.5–6.5.' },
+    { t: 'EC-Wert (Osmotischer Druck)', txt: '<b>Mechanik:</b> Pflanzen nehmen Wasser primär durch <b>Osmose</b> auf — Wasser wandert von niedriger zu höherer Salzkonzentration.<br><br><b>Die Gefahr der Versalzung:</b> Übersteigt die Nährstoffkonzentration im Substrat einen kritischen Wert (oft ab EC > 2.5), <b>kehrt sich der osmotische Druck um</b>. Das Substrat entzieht den Wurzeln aktiv das Wasser. Die Pflanze "verbrennt" von innen heraus (<i>Nutrient Burn</i>) und vertrocknet bei nasser Erde.<br><br><b>Praxis:</b> Ideal 0.8–2.0 je nach Phase. Über 2.5 sofort reduzieren oder Zwischenguss mit reinem Wasser.' },
+    { t: 'VPD (Vapour Pressure Deficit)', txt: '<b>Mechanik:</b> Auf der Blattunterseite regulieren <b>Schließzellen (Stomata)</b> den Gasaustausch. Sie öffnen sich um CO₂ aufzunehmen, wobei unweigerlich Wasser verdunstet. Dieser <b>Transpirationssog</b> zieht Wasser und Nährstoffe aus den Wurzeln bis in die Triebspitzen.<br><br><b>VPD zu niedrig (zu feucht/kalt):</b> Die Pflanze kann nicht verdunsten. Der Nährstofftransport — besonders von unbeweglichem <b>Calcium</b> — stagniert.<br><br><b>VPD zu hoch (zu trocken/heiß):</b> Die Pflanze verliert kritische Mengen Wasser, schließt aus Schutz die Stomata, stoppt die Photosynthese — Wachstum blockiert vollständig.<br><br><b>Zielwerte:</b> Anzucht 0.4–0.8 · frühe/mittlere Blüte 0.8–1.2 kPa.<br><br><b>Cup-Level Steuerung:</b> In der <b>Spätblüte</b> wird der VPD gezielt auf <b>1.4–1.6 kPa</b> erhöht. Dieser milde, kontrollierte Trockenstress zwingt die Pflanze, sich durch eine massive <b>Überproduktion von Harz (Trichomen)</b> vor Austrocknung zu schützen.' },
+    { t: 'PPFD & DLI (Licht-Matrix)', txt: '<b>PPFD (Photosynthetische Photonenflussdichte):</b> Der <i>Echtzeit-Tacho</i> des Lichts — misst exakt wie viele nutzbare Photonen pro Sekunde auf einem Quadratmeter Blätterdach einschlagen. Zu viel PPFD ohne adäquate CO₂- und Temperaturwerte führt zum Ausbleichen der Chloroplasten (<i>Light Bleach</i>).<br><br><b>DLI (Tageslichtintegral):</b> Der <i>metabolische Tages-Tank</i> der Pflanze. Cannabis summiert die absorbierten Photonen über die gesamte Lichtphase. Ist das tägliche DLI-Limit erreicht (z.B. ~45 mol/m²/d in der Peak-Blüte), kann die Pflanze an diesem Tag <b>keine weitere Biomasse</b> durch Photosynthese generieren.<br><br><b>Richtwerte PPFD:</b> Anzucht 200–400 · Vegi 400–600 · Blüte 600–900 µmol/m²/s.<br><b>DLI-Ziele:</b> Anzucht 15–25 · Vegi 25–35 · Blüte 30–45 mol/m²/d.' },
+    { t: 'Transpiration (Hydraulische Pumpe)', txt: '<b>Mechanik:</b> Transpiration ist weit mehr als nur das "Schwitzen" der Pflanze — es ist der <b>primäre Motor für den Wassertransport</b> entgegen der Schwerkraft. Wasser verdunstet durch die <b>Stomata</b> (Spaltöffnungen) der Blätter und erzeugt einen extremen Unterdruck im <b>Xylem</b> (den Leitbahnen). Dieser <i>Transpirationssog</i> zieht wie ein physikalisches Vakuum Wasser und gelöste Nährstoffe aus den Wurzeln bis in die obersten Triebspitzen.<br><br><b>Kühlfunktion:</b> Durch die Verdunstungskälte (Phasenübergang von flüssig zu gasförmig) kühlt die Pflanze ihre Blattoberfläche. Ohne Transpiration würden die Blätter unter hochintensiven LEDs schlichtweg <b>überhitzen</b>.<br><br><b>Konsequenz:</b> Wer VPD ignoriert, stoppt diesen Motor — Nährstofftransport und Kühlung fallen gleichzeitig aus.' },
+    { t: 'Photosynthese (Metabolischer Reaktor)', txt: '<b>Mechanik:</b> Der Prozess, bei dem Lichtenergie in chemische Energie umgewandelt wird. Photonen treffen auf das <b>Chlorophyll</b> (die grünen Pigmente in den Chloroplasten). Diese Energie wird genutzt, um Wasser (H₂O) aus den Wurzeln und Kohlendioxid (CO₂) aus der Luft in <b>Glukose</b> (Zucker) umzuwandeln. Als Abfallprodukt entsteht Sauerstoff (O₂).<br><br><b>Biomasse-Produktion:</b> Die erzeugte Glukose ist der <b>universelle Baustoff</b> der Pflanze. Sie wird entweder sofort zur Energiegewinnung verbrannt oder in Zellulose (Struktur) und komplexe Kohlenhydrate (Blütenmasse, Terpene, Harz) umgewandelt.<br><br><b>Grenzen:</b> Photosynthese braucht alle drei Inputs gleichzeitig — Licht (PPFD), CO₂, Wasser. Fehlt einer, limitiert er den ganzen Prozess (Liebig-Minimum).' },
+    { t: 'Makro- vs. Mikronährstoffe & Mobilität', txt: '<b>Makronährstoffe (Kraftstoff):</b> Elemente die die Pflanze in großen Mengen benötigt. <b>Primär:</b> Stickstoff (N), Phosphor (P), Kalium (K). <b>Sekundär:</b> Calcium (Ca), Magnesium (Mg), Schwefel (S).<br><br><b>Mikronährstoffe (Katalysatoren):</b> Spurenelemente in winzigen Dosen, aber essenziell für enzymatische Prozesse: Eisen (Fe), Mangan (Mn), Zink (Zn), Kupfer (Cu), Bor (B), Molybdän (Mo).<br><br><b>Mobilität — der Diagnose-Schlüssel:</b><br><b>Mobile Nährstoffe</b> (N, P, K, Mg): Die Pflanze kann diese bei Mangel aus alten, unteren Blättern abziehen und in die neuen Triebe umleiten. <b>Mangel zeigt sich zuerst unten</b>.<br><b>Immobile Nährstoffe</b> (Ca, Fe, S, Mn, Zn, B, Cu, Mo): Einmal in der Zelle verbaut, nicht mehr transportierbar. <b>Mangel zeigt sich zwingend an den neuen, obersten Trieben</b>.<br><br><b>Praxis:</b> Bei gelben Blattspitzen oben → Calcium/Eisen-Problem. Bei Vergilbung unten → Stickstoff oder Magnesium.' },
+    { t: 'Kationenaustauschkapazität (KAK/CEC)', txt: '<b>Mechanik:</b> Die KAK beschreibt die Fähigkeit eines Substrats, <b>positiv geladene Ionen</b> (Kationen wie Ca²⁺, Mg²⁺, K⁺) wie ein Magnet an sich zu binden und sie vor dem Auswaschen zu schützen.<br><br><b>Substrat-Puffer:</b><br>• <b>Torf- und erdreiche Substrate</b> (Light-Mix, All-Mix) haben eine <b>hohe KAK</b>. Sie speichern Nährstoffe und geben sie bedarfsgerecht ab, puffern pH- und EC-Schwankungen ab.<br>• <b>Inerte Substrate</b> wie Kokos (Coco) oder Steinwolle haben eine <b>sehr geringe KAK</b>. Hier muss der Grower die Nährstoffzufuhr bei jedem Gießen exakt steuern — kein Puffer, keine Fehler-Toleranz.<br><br><b>Konsequenz:</b> Bio-Grower bevorzugen hohe KAK (entspannter). Hydro/Coco-Grower fahren mit niedriger KAK (mehr Kontrolle, weniger Pufferung).' },
     { t: 'Substrattypen', txt: 'Light-Mix (wenig vorgedüngt, für Dauerdüngung), All-Mix (6 Wo vorgedüngt), Coco (inert, volle Kontrolle), Perlite (Drainage-Zusatz).' },
+    { t: 'Cannabinoide', txt: '<b>Die aktiven chemischen Verbindungen</b> der Pflanze:<br><br><b>THC (Tetrahydrocannabinol):</b> Psychoaktiv, schmerzstillend. Das bekannteste Cannabinoid.<br><br><b>CBD (Cannabidiol):</b> <b>Nicht-psychoaktiv</b>, stark entzündungshemmend und antipsychotisch. Balanciert die THC-Wirkung.<br><br><b>CBG (Cannabigerol):</b> Die <b>"Mutter-Zelle"</b> — aus ihr werden alle anderen Cannabinoide synthetisiert. Nicht-psychoaktiv.<br><br><b>CBN (Cannabinol):</b> Ein <b>Abbauprodukt von THC</b> (entsteht durch Oxidation). Wirkt stark <b>sedierend und schlaffördernd</b>. Deshalb: mehr Amber-Trichome = mehr CBN = Couchlock.' },
+    { t: 'Terpene (Aroma-Profile)', txt: '<b>Leicht flüchtige Kohlenwasserstoffe</b>, die <b>Geruch, Geschmack und Wirkungsrichtung</b> (Entourage-Effekt) bestimmen.<br><br><b>Die wichtigsten:</b><br><br><b>Myrcen:</b> Erdig, moschusartig — sorgt für den <i>"Couch-Lock"</i>-Effekt. Häufigstes Terpen in Indica.<br><br><b>Limonen:</b> Zitrusartig, <b>aufhellend und stimulierend</b>. Häufig in Sativa.<br><br><b>Pinen:</b> Nach Kiefernnadeln riechend. <b>Fördert Fokus, öffnet die Bronchien</b>. Wirkt der Kurzzeit-Gedächtnisschwäche entgegen.<br><br><b>Caryophyllen:</b> Pfeffrig, würzig. Das <b>einzige Terpen, das direkt an das Endocannabinoid-System</b> (CB2-Rezeptoren) andockt und Stress lindert.<br><br><b>Wichtig:</b> Terpene sind <b>hitze- und lichtempfindlich</b>. Dunkle, kühle Lagerung erhält das Profil.' },
   ]},
   { cat: '💧 Bewässerung', items: [
-    { t: 'Dryback-Methode', txt: 'Gießen nach Topfgewicht statt Kalender. Vollsättigung → Trocknen auf 30–35% Restgewicht → erneut gießen. Sauerstoff-Kick für Wurzeln.' },
+    { t: 'Dryback (Trocken-Nass-Zyklus)', txt: '<b>Definition:</b> Professionelles Gießen orientiert sich am <b>Topfgewicht</b>, nicht am Kalender. Das Substrat wird zwischen den Güssen gezielt angetrocknet.<br><br><b>Wirkungsweise:</b> Wurzeln brauchen <b>Sauerstoff</b>. Wenn die Pflanze Wasser aufnimmt und es verdunstet, entsteht im Boden leichter Unterdruck — der frischen Sauerstoff tief in die Wurzelzone zieht. Gießt man zu früh, bleibt die Erde nass, der Sauerstoff fehlt, Wurzeln können ersticken oder faulen.<br><br><b>Der Dryback-Faktor:</b> Das Warten auf ein Restgewicht von <b>30–35 %</b> der maximalen Sättigung ist essenziell. Feucht genug um den Welkepunkt zu vermeiden, aber trocken genug um leichten Stress auszulösen. Dieser Stress <b>triggert die massenhafte Ausschüttung von Wuchshormonen</b> in den Wurzelspitzen. Dauerfeuchte erzieht hingegen ein schwaches, ineffizientes Wurzelsystem.' },
+    { t: 'Air-Pruning (luftdurchlässige Töpfe)', txt: '<b>Mechanik:</b> In luftdurchlässigen Gefäßen wie <b>Stofftöpfen</b> wachsen Wurzeln an den Rand, kommen mit Luft in Kontakt, <b>sterben an der Spitze natürlich ab</b> und verzweigen sich massiv im Inneren.<br><br><b>Ergebnis:</b> Statt weniger großer Wurzeln bildet sich ein dichtes Netzwerk aus vielen feinen Wurzeln. Deutlich mehr Oberfläche für Nährstoff- und Wasseraufnahme als in Plastiktöpfen. Kein "Rootbound"-Problem.<br><br><b>Praxis:</b> Stofftopf + Dryback + gute Lüftung = optimales Wurzelsystem.' },
+    { t: 'Sauerstoff-Sog', txt: '<b>Mechanik:</b> Wenn hochporöse Substrate durch die Transpiration der Pflanze Wasser verlieren, entsteht im Wurzelballen ein <b>mikroskopisches Vakuum</b>. Dieser Unterdruck saugt aktiv frischen, atmosphärischen Sauerstoff tief in das Medium.<br><br><b>Symbiose:</b> <b>Aerobe Bodenbakterien</b> und <b>Mykorrhiza-Pilze</b>, die für die Aufspaltung organischer Nährstoffe verantwortlich sind, benötigen diesen Sauerstoff zwingend zum Überleben und Arbeiten.<br><br><b>Konsequenz:</b> Ohne Dryback = kein Sog = keine aerobe Mikrobiologie = keine organische Düngung. Bio-Produkte (Alg·A·Mic, Acti·Vera, Bio·Heaven) funktionieren nur im lebendigen Boden.' },
+    { t: 'Turgordruck', txt: '<b>Mechanik:</b> Da Pflanzen kein Knochenskelett haben, wird ihre Stabilität durch den <b>Wasserdruck in den Zellvakuolen</b> erzeugt (Turgor). Prall = stabil, welk = erschlafft.<br><br><b>Klinische Relevanz:</b> Maximaler Turgordruck ist die absolute Grundvoraussetzung für <b>High Stress Training</b> (Topping, Fimming, Supercropping). Nur bei vollem Zellinnendruck gelingen <b>saubere, chirurgische Schnitte</b>, die eine schnelle Wundheilung garantieren und Infektionen vermeiden.<br><br><b>Praxis:</b> Vor jedem HST-Eingriff 2–4h vorher volle Wässerung. Bei durstiger Pflanze quetscht die Schere die Zellen statt sauber zu trennen — längere Heilung, mehr Stress.' },
+    { t: 'Wasser-Härte & Umkehrosmose', txt: '<b>Mechanik:</b> Leitungswasser enthält regional stark schwankende Mengen an gelösten Mineralien — primär <b>Calcium- und Magnesiumcarbonat</b> (Kalk). Dies definiert die <b>Wasserhärte</b> und den Grund-EC-Wert deines Gießwassers.<br><br><b>Das Puffer-Problem:</b> Zu viel Carbonathärte (<b>Alkalinität</b>) bindet Säuren und treibt den pH-Wert im Substrat unweigerlich in die Höhe — was in einem <b>Lockout</b> endet. Hartes Wasser = pH driftet nach oben, Eisen/Mangan werden blockiert.<br><br><b>Umkehrosmose (RO):</b> Auf Cup-Niveau wird oft eine <b>RO-Anlage</b> genutzt. Sie presst Wasser durch eine Membran und filtert bis zu <b>99 % aller Mineralien</b> heraus. Das Resultat ist reines Wasser (EC 0.0). Die <b>perfekte, leere Leinwand</b> um Nährstoffe und CalMag exakt auf das Milligramm genau zu dosieren.<br><br><b>Wichtig bei RO:</b> Weil alle Mineralien weg sind, muss CalMag <b>immer</b> dazu. Ohne CalMag → sofortiger Ca/Mg-Mangel.' },
     { t: 'Drain-Kontrolle', txt: '5–10% Drain bei jedem Guss erzeugen. Verhindert Salzansammlungen. Drain-Wasser sofort entsorgen, nie zurückgießen.' },
     { t: 'Umtopfen', txt: 'Von klein nach groß: Jiffy → 0.5L → 3L → 11L. Umtopfen wenn Wurzeln am Boden sichtbar. Nie in der Blüte umtopfen.' },
+    { t: 'Bottom-Watering (Tauchen)', txt: '<b>Mechanik:</b> Bewässerung erfolgt <b>nicht von oben</b>, sondern über <b>Untersetzer oder Kapillarmatten</b>. Die Pflanze saugt das Wasser durch die <b>Kapillarkraft der Erde</b> nach oben.<br><br><b>Vorteile:</b><br>• Fördert <b>tiefes Wurzelwachstum</b> (Wurzeln wachsen zum Wasser)<br>• Oberste Erdschicht bleibt <b>trocken</b> → Trauermücken haben <b>keinen Brutplatz</b><br>• Gleichmäßigere Durchfeuchtung des gesamten Ballens<br><br><b>Praxis:</b> Topf in flaches Wasserbad (2–3 cm) stellen. Nach 10–30 Min rausnehmen wenn das Substrat die Feuchte spürbar nach oben gezogen hat. Nicht überdauern → Wurzelfäule-Risiko.' },
+    { t: 'Runoff-EC (Drain-Messung)', txt: '<b>Kritische Diagnose-Methode</b> bei Nährstoffproblemen.<br><br><b>Mechanik:</b> Man misst den <b>EC des Gießwassers</b> (Inflow) und vergleicht ihn mit dem <b>EC des abgelaufenen Wassers</b> (Runoff/Drain, 5–10% Drain-Menge).<br><br><b>Interpretation:</b><br>• <b>Runoff-EC ≈ Inflow-EC:</b> Alles gut, Pflanze nimmt im Gleichgewicht auf.<br>• <b>Runoff-EC massiv höher:</b> <b>Salze akkumulieren</b> im Topf → Versalzung → Flushen nötig.<br>• <b>Runoff-EC niedriger:</b> Pflanze ist hungrig, Dosis erhöhen.<br><br><b>Praxis:</b> Einmal pro Woche messen reicht. Zeigt Trends früher als sichtbare Symptome.' },
+    { t: 'Wassertemperatur', txt: '<b>Gießwasser muss zwingend zwischen 18 und 22 °C</b> temperiert sein.<br><br><b>Unter 18°C:</b> Wurzeln erleiden einen <b>Kälteschock</b> und stellen die Arbeit ein. Nährstoffaufnahme stoppt sofort.<br><br><b>Über 22°C:</b> Der im Wasser <b>gelöste Sauerstoff sinkt drastisch ab</b>. Das Risiko für <b>Pythium (Wurzelfäule)</b> steigt.<br><br><b>Praxis:</b> Gießwasser am Vortag vorbereiten und im Zelt stehen lassen — passt sich automatisch der Raumtemperatur an. Bei Winter-Zimmern: vor dem Gießen mit der Hand prüfen, ggf. kurz aufheizen.' },
   ]},
   { cat: '🧪 Nährstoffe', items: [
     { t: 'NPK', txt: 'Stickstoff (N) für Wachstum, Phosphor (P) für Wurzeln/Blüten, Kalium (K) für Stoffwechsel. Anzucht: mehr N, Blüte: mehr P+K.' },
     { t: 'CalMag', txt: 'Calcium + Magnesium. Immer ZUERST ins Wasser (verhindert Ausfällung). Besonders wichtig bei weichem Wasser und LED.' },
     { t: 'Nährstoffmangel', txt: 'N-Mangel: untere Blätter gelb. P-Mangel: lila Stängel. K-Mangel: braune Blattränder. Ca-Mangel: braune Flecken. Mg-Mangel: Intervenalchlorose.' },
     { t: 'Überdüngung', txt: 'Verbrannte Blattspitzen (gelb/braun). Sofort: Dosis um 20% reduzieren. Schwer: Zwischenguss mit reinem Wasser.' },
-    { t: 'Mischreihenfolge', txt: '1. CalMag → 2. Basisdünger (NPK) → 3. Bio-Additive → 4. Humin-/Fulvosäuren. pH erst am Ende korrigieren.' },
+    { t: 'Mischreihenfolge', txt: '<b>1.</b> Wasser (RO) → <b>2.</b> CalMag → <b>3.</b> Basisdünger (NPK) → <b>4.</b> Bio-Additive → <b>5.</b> Humin-/Fulvosäuren → <b>6.</b> pH-Korrektur.<br><br>Humin-/Fulvosäuren immer zuletzt, da sie das pH stark verschieben. pH-Einstellung erst nach allen anderen Zusätzen.' },
+    { t: 'Bio vs. Mineralisch', txt: '<b>Die Substrat-Philosophie:</b><br><br><b>Bio (Organisch):</b> Man füttert <b>nicht die Pflanze</b>, sondern das <b>Bodenleben</b> (Mikroorganismen). Diese zersetzen das organische Material und machen es für die Pflanze verfügbar. Wirkt <b>zeitverzögert</b>, baut einen starken Puffer auf, ist <b>extrem fehlerverzeihend</b>.<br><br><b>Mineralisch:</b> Man füttert die Pflanze <b>direkt mit sofort verfügbaren Ionen</b>. Erlaubt <b>chirurgisch präzises Crop Steering</b>, birgt aber bei Fehlern das sofortige Risiko von Versalzung und Wurzelverbrennung.<br><br><b>Praxis:</b> Bio = Einsteiger-freundlich, fehlertolerant, langsamer Reaktionszeit. Mineralisch = präzise, schnell, aber unbarmherzig bei Fehlern.' },
+    { t: 'Silizium (Zellwand-Verstärker)', txt: '<b>Oft vernachlässigtes Element:</b> Silizium wird in die <b>Zellwände eingebaut</b> und bildet einen <b>physischen Panzer</b>.<br><br><b>Wirkung:</b><br>• <b>Mechanische Stabilität</b> — dicke Stämme, die schwere Colas tragen können<br>• <b>Resistenz gegen beißende Schädlinge</b> (Raupen, Käfer)<br>• <b>Hitze-Toleranz</b> — Blätter halten höhere Temperaturen aus<br><br><b>Praxis:</b> Si-Additive in Veg und früher Blüte dosieren. Silizium muss <b>vor allen anderen Nährstoffen</b> ins Wasser (sonst flockt es aus).' },
+    { t: 'Humin- & Fulvosäuren (Chelatoren)', txt: '<b>Organische Moleküle</b>, die sich wie <b>Klauen um Nährstoff-Ionen legen</b> (<i>Chelatbildung</i>) und diese aktiv durch die Zellmembranen der Wurzeln transportieren.<br><br><b>Funktion:</b> Verbessern die Nährstoffaufnahme besonders bei Mikro-Nährstoffen (Eisen, Mangan, Zink) drastisch.<br><br><b>Kritische Mischreihenfolge:</b> Immer <b>als Letztes</b> hinzufügen — sie verschieben das pH-Gleichgewicht der Lösung stark.<br><br><b>Praxis:</b> In BioBizz-Plänen ist das <b>Top·Max</b>. Zuletzt rein, dann pH prüfen und einstellen.' },
+    { t: 'Enzyme (Katalysatoren)', txt: '<b>Mechanik:</b> Enzyme (z.B. <b>Zellulasen</b>) spalten <b>abgestorbene Wurzelmasse</b> im Substrat auf und wandeln sie in verwertbare Kohlenhydrate um.<br><br><b>Wirkung:</b><br>• <b>Reinigt die Wurzelzone</b> — keine tote Biomasse mehr<br>• <b>Verhindert Fäulnis</b> (Pythium/Wurzelfäule)<br>• <b>Maximiert die Nährstoffaufnahme</b> durch saubere, aktive Wurzeln<br><br><b>Praxis:</b> Regelmäßig in kleinen Dosen (z.B. Cannazym, Sensizym). Besonders wichtig bei Recycling-Substrat oder langen Zyklen.' },
+    { t: 'Mykorrhiza (Symbiose-Pilze)', txt: '<b>Spezialisierte Bodenpilze</b>, die in die Pflanzenwurzeln <b>eindringen oder sie ummanteln</b>. Sie vergrößern die aktive Absorptionsfläche des Wurzelsystems <b>um bis zu 700 %</b>.<br><br><b>Die Symbiose:</b> Im Austausch liefert die Pflanze dem Pilz <b>durch Photosynthese erzeugten Zucker</b>.<br><br><b>Praxis:</b><br>• <b>Einmal ausbringen</b> — Pilze leben mit der Pflanze, keine Nachdosierung nötig<br>• <b>Direkt an die Wurzel</b> beim Umtopfen oder Einpflanzen<br>• <b>Nicht mit chemischen Fungiziden</b> kombinieren — tötet die Mykorrhiza' },
+    { t: 'Nährstoff-Lockout', txt: '<b>Der Systemkollaps:</b> Nährstoffe sind im Substrat <b>reichlich vorhanden</b> — die Pflanze kann sie aber <b>nicht aufnehmen</b>.<br><br><b>Drei Ursachen (immer abiotisch):</b><br>1. <b>pH außerhalb 6.2–6.4</b> (Erde) — Kationenaustausch blockiert<br>2. <b>EC zu hoch</b> — Substrat versalzt, osmotischer Druck kehrt sich um<br>3. <b>Sauerstoffmangel</b> — Wurzeln können nicht atmen, Aufnahme stoppt<br><br><b>Symptome:</b> Mangelerscheinungen trotz normaler Düngung. Typisch: gelbe Blätter, stagnierendes Wachstum, braune Flecken.<br><br><b>Lösung:</b> Ursache identifizieren (pH messen, EC messen, Drainage prüfen) → beheben, nicht mehr düngen. Bei Versalzung: Flushen.' },
+    { t: 'Flushen (Zwischenguss)', txt: '<b>Nicht zu verwechseln mit der finalen Spülung</b> vor der Ernte!<br><br><b>Mechanik:</b> Das Substrat wird gezielt mit <b>leichter Enzym-Lösung oder pH-reguliertem Wasser</b> durchgespült — um <b>toxische Salz-Akkumulationen</b> zu entfernen und den <b>EC-Wert im Boden zu resetten</b>.<br><br><b>Wann:</b> Bei Überdüngung, Lockout durch Versalzung, oder als präventive Reinigung nach 4–6 Wochen intensiver Düngung.<br><br><b>Praxis:</b> 2–3x das Topfvolumen mit sauberem Wasser durchspülen (bei 11L Topf ≈ 20–30L Wasser). Drain-EC messen — sollte niedriger als Inflow sein. Danach normale Düngung fortsetzen.' },
   ]},
   { cat: '💡 Licht', items: [
     { t: 'Lichtzyklen', txt: 'Anzucht/Veg: 18h Licht / 6h Dunkel. Blüte: 12/12 — Dunkelphase absolut einhalten! Licht in der Nacht = Zwittern.' },
     { t: 'Lichtabstand', txt: 'LED zu nah = Lichtbrand (gebleichte Spitzen). Zu weit = Stretching. Handtest: Hand auf Pflanzenhöhe, 30s — zu heiß? Höher!' },
+    { t: 'Lampen-Typen (LED / HPS / CFL)', txt: '<b>LED (Light Emitting Diode):</b> Der <b>moderne Cup-Standard</b>. Bietet ein steuerbares Vollspektrum, höchste Photonen-Effizienz (µmol/J) und geringe Wärmeabstrahlung — was präzises VPD-Management ermöglicht.<br><br><b>HPS (High Pressure Sodium / NDL):</b> Veralteter Standard. Produziert massiv <b>Infrarotstrahlung (Hitze)</b>, was das Blätterdach verbrennt und die Raumklimakontrolle extrem erschwert.<br><br><b>CFL (Kompaktleuchtstoffröhre):</b> Ineffizient für die Blüte — maximal noch für die <b>früheste Anzucht oder Klone</b> nutzbar.' },
+    { t: 'Lichtspektrum & Emerson-Effekt', txt: '<b>Blaues Licht (400–500 nm):</b> Hält die Internodienabstände kurz — Kompaktwuchs in der Veg-Phase.<br><br><b>Rotes Licht (600–700 nm):</b> Treibt die <b>Blütenmasse-Produktion</b> an.<br><br><b>Der Emerson-Effekt:</b> Die simultane Bestrahlung mit <b>tiefrotem (680 nm)</b> und <b>fernrotem Licht (730 nm / Far-Red)</b> stimuliert zwei verschiedene Photosysteme gleichzeitig. Die Photosyntheserate steigt dadurch <b>überproportional an</b> (Synergie-Effekt).<br><br><b>Praxis:</b> Moderne LED-Vollspektrum-Lampen decken all diese Wellenlängen ab. Zusätzliche Far-Red-Emitter am Ende der Lichtphase können den Übergang in die Dunkelheit beschleunigen.' },
+    { t: 'UV-Bestrahlung (UV-A / UV-B)', txt: '<b>Mechanik:</b> Gezielter <b>abiotischer Stress</b> in der Spätblüte. UV-B-Strahlung schädigt zelluläre Strukturen.<br><br><b>Abwehrreaktion:</b> Als <i>"pflanzliche Sonnencreme"</i> produziert die Pflanze massiv <b>sekundäre Metaboliten</b> — der <b>Harzbesatz und die Cannabinoid-Konzentration steigen signifikant</b>.<br><br><b>Praxis:</b> Nur in den letzten 2–4 Wochen der Blüte einsetzen. Überdosierung führt zu echten Strahlenschäden. Schutzbrille beim Arbeiten im Grow-Zelt ist bei UV-B Pflicht.' },
+    { t: 'Photoperiode (18/6 vs. 12/12)', txt: '<b>Definition:</b> Das Verhältnis von Licht- zu Dunkelstunden.<br><br><b>18/6:</b> Hält <b>photoperiodische Genetik</b> in der vegetativen Phase. Die Pflanze wächst kontinuierlich, keine Blütenbildung.<br><br><b>12/12:</b> Die Umstellung simuliert den <b>nahenden Herbst</b> und triggert hormonell die Blütephase. Der Zeitpunkt bestimmt die finale Größe der Pflanze.<br><br><b>Autoflower:</b> Unabhängig von der Photoperiode — daher oft dauerhaft 18/6 oder sogar 20/4 (mehr Photonen = mehr Ertrag, solange die Pflanze die Intensität verkraftet).' },
+    { t: 'Störlicht & absolute Dunkelphase', txt: '<b>Mechanik:</b> In der 12-stündigen Nachtphase baut die Pflanze das Blühhormon <b>Florigen</b> auf. Selbst <b>minimale Lichtverschmutzung</b> (z.B. eine Standby-LED, eine blinkende Steckdose, Straßenlicht durch einen Spalt) <b>zerstört dieses Hormon sofort</b>.<br><br><b>Konsequenzen:</b><br>• <b>Zwitterbildung (Hermaphroditismus)</b> — die Pflanze bildet zusätzlich männliche Blüten, bestäubt sich selbst, produziert Samen statt Harz.<br>• <b>Re-Vegging (Ergrünen)</b> — die Pflanze fällt in die Wachstumsphase zurück, Blüten werden aufgelöst.<br><br><b>Praxis:</b> Grow-Zelt wirklich lichtdicht machen. Alle Standby-Leuchten abkleben. In der Dunkelphase das Zelt nicht öffnen — eine grüne Arbeitslampe ist für kurze Checks OK, weißes Licht nie.' },
+  ]},
+  { cat: '💨 Klima & Umgebung', items: [
+    { t: 'CO₂-Anreicherung', txt: '<b>Standard-Atmosphäre:</b> ~400 ppm CO₂. Auf Cup-Niveau wird auf <b>1000–1500 ppm</b> angehoben.<br><br><b>Die harte Regel:</b> CO₂ ist nur sinnvoll, wenn <b>Licht und Temperatur am absoluten Limit</b> gefahren werden:<br>• <b>PPFD > 1000 µmol/m²/s</b><br>• <b>Temperatur 28–30°C</b><br><br><b>Warum:</b> Die Pflanze kann <b>nur so viel CO₂ verstoffwechseln</b>, wie Licht und Wärme erlauben. Zu viel CO₂ ohne passendes Licht = Verschwendung oder sogar Schaden.<br><br><b>Praxis:</b> Für Hobby-Grower meist <b>nicht sinnvoll</b> — braucht CO₂-Flasche, Sensoren, Regelung, abgedichtetes Zelt. Lohnt erst bei kommerziellem Setup oder fortgeschrittenen Indoor-Profis.' },
+    { t: 'Luftwechselrate (Abluft)', txt: '<b>Mechanik:</b> Wie oft das gesamte Luftvolumen des Zeltes pro Stunde ausgetauscht werden muss. Richtwert: <b>30–60 Mal pro Stunde</b>.<br><br><b>Funktion:</b> Eine korrekt dimensionierte <b>Abluftanlage (m³/h)</b> ist der <b>primäre Schutz</b> gegen:<br>• <b>Hitzestau</b> (Temperatur > 30°C)<br>• <b>Luftfeuchtigkeitsbedingte Pilzinfektionen</b> (Botrytis, Mehltau)<br>• CO₂-Mangel (verbrauchte Luft)<br><br><b>Berechnung:</b> Zelt-Volumen (m³) × 40 = benötigte Abluftleistung in m³/h.<br>Beispiel: 1×1×2m-Zelt = 2m³ × 40 = <b>80 m³/h</b> (als Minimum, mit Filter 120+).<br><br><b>Praxis:</b> Abluft regelbar machen (Drehzahlregler oder EC-Lüfter). Dauerlauf minimal, Volllast bei Hitze.' },
+    { t: 'Oszillatoren & Clip-Fans (Umluft)', txt: '<b>Interne Ventilatoren</b>, die <b>keinen Luftaustausch</b>, sondern <b>Luftbewegung</b> erzeugen.<br><br><b>Zwei Funktionen:</b><br><br><b>1. Mikroklima-Auflösung:</b> Zerstört <b>feuchte Luftschichten</b> rund um die Blüten — verhindert Schimmelnester und Mehltau.<br><br><b>2. Stamm-Training:</b> Der mechanische Reiz des Windes simuliert <b>Umweltstress</b>. Die Pflanze reagiert mit verstärkter <b>Zellulose-Einlagerung</b> → dicke, belastbare Stämme, die schwere Colas tragen.<br><br><b>Praxis:</b> Clip-Fans an mehreren Positionen, oszillierend. Nicht direkt auf einen Punkt pusten (Windbrand), lieber sanfte Bewegung durchs Canopy. Immer laufen lassen — auch in der Dunkelphase.' },
+    { t: 'Aktivkohlefilter (AKF)', txt: '<b>Geruchsmanagement:</b> Ein <b>Zylinder gefüllt mit hochporöser Aktivkohle</b>, durch den die Abluft gesaugt wird. Die <b>Terpen-Moleküle verfangen sich in den Poren</b>.<br><br><b>⚠ Kritische Grenze:</b> Steigt die <b>RLF im Zelt über 70 %</b>, <b>kondensiert Wasser in der Kohle</b>, die Poren verkleben — und der <b>Filter verliert sofort seine neutralisierende Wirkung</b>.<br><br><b>Praxis:</b><br>• AKF muss <b>vor dem Abluft-Lüfter</b> sitzen (Druckseite oder Saugseite je nach Setup)<br>• <b>Lebensdauer:</b> 12–24 Monate bei normalem Betrieb<br>• <b>RLF unter 70%</b> halten — sonst ist der AKF nutzlos und der Geruch durchbricht<br>• Neuer AKF vor großen Zyklen einplanen' },
+    { t: 'Grow-Tent vs. Grow-Room', txt: '<b>Tent (Zelt):</b> Ein <b>in sich geschlossenes, leicht zu steuerndes Mikroklima</b>.<br>• <b>Vorteile:</b> Hohe Effizienz durch stark reflektierende Innenwände (<b>Mylar</b>). Billig, flexibel, leicht auf/abbaubar. Temperatur und RLF schnell steuerbar.<br>• <b>Nachteile:</b> Begrenztes Volumen, limitiert die Anzahl Pflanzen.<br><br><b>Room (Raum):</b> Erfordert <b>komplexe, oft industrielle Klimatechnik</b> (große Entfeuchter, Klimaanlagen).<br>• <b>Vorteile:</b> Mehr Platz, mehr Pflanzen, mehr Ertrag.<br>• <b>Nachteile:</b> Das <b>große Luftvolumen reagiert träge</b> — Parameter-Änderungen dauern. Höhere Kosten, aufwendiger.<br><br><b>Empfehlung:</b> Für Hobby-Grow ist das Zelt der Standard. Room erst wenn Volumen oder Pflanzenzahl das sinnvoll machen.' },
+  ]},
+  { cat: '🧬 Genetik & Entwicklung', items: [
+    { t: 'Genotyp vs. Phänotyp', txt: '<b>Genotyp:</b> Der im Samen festgeschriebene, <b>unveränderliche genetische Code</b> (die DNA-Blaupause).<br><br><b>Phänotyp:</b> Das tatsächliche, <b>physische Erscheinungsbild</b> der Pflanze — Geruch, Farbe, Harzbesatz, Ertrag.<br><br><b>Die Gleichung:</b> <i>Phänotyp = Genotyp + Umweltbedingungen</i>. Selbst zehn Samen derselben Mutterpflanze (gleicher Genotyp) wachsen leicht unterschiedlich.<br><br><b>Das Prinzip des Crop Steerings:</b> Unser gesamtes Cup-Level-Setup (VPD, PPFD, Drybacks, pH, EC) dient nur einem Zweck — die Umweltbedingungen so perfekt zu steuern, dass die Pflanze das <b>absolute Maximum ihres genetischen Potenzials</b> ausbilden muss. Gute Genetik + schlechte Umgebung = mittelmäßiger Phänotyp. Gute Genetik + perfekte Umgebung = das Beste was dieser Samen hergeben kann.' },
+    { t: 'Photoperiodismus (Automatic vs. Photoperiodisch)', txt: '<b>Die botanische Klarstellung:</b> Die Begriffe "Feminisiert" und "Automatic" schließen sich <b>nicht aus</b>. Feminisiert bedeutet nur, dass der Samen zu 99.9 % <b>weiblich</b> ist — das ist eine Aussage über das <b>Geschlecht</b>. Der wahre Unterschied liegt im <b>Auslöser der Blüte</b>:<br><br><b>Photoperiodisch:</b> Diese Pflanzen besitzen ein <b>Phytochrom-System</b>. Sie messen die Dauer der <b>ununterbrochenen Dunkelheit</b>. Solange sie >14 Stunden Licht bekommen, bleiben sie in der Wachstumsphase. Erst wenn der Grower das Licht auf 12/12 umstellt, suggeriert dies den nahenden Herbst — und die Blüte beginnt. Das bietet <b>maximale Kontrolle über die Größe</b> der Pflanze.<br><br><b>Autoflowering (Automatic):</b> Durch das Einkreuzen von <b>Cannabis Ruderalis</b> (an extrem kurze sibirische Sommer angepasst) wurde der Pflanze der Photoperiodismus <b>weggezüchtet</b>. Sie blüht rein nach <b>chronologischem Alter</b> (meist ab Woche 3–4), unabhängig vom Lichtzyklus. Sie verzeiht dadurch <b>keine Fehler</b> oder Wachstumsstopps in der frühen Phase.<br><br><b>In der App:</b> Bei Automatic ist kein Licht-Umschaltpunkt nötig — die Blüte startet von selbst. Bei Feminisiert (photoperiodisch) erinnert die App an die 12/12-Umschaltung.' },
+    { t: 'Indica vs. Sativa vs. Ruderalis', txt: '<b>Indica:</b> Evolutionär angepasst an das raue <b>Bergklima Zentralasiens</b> (Hindu Kush).<br>Morphologie: breitblättrig, gedrungener buschiger Wuchs, dichte Blüten, <b>kurze Blütezeit (7–9 Wochen)</b>. Sehr widerstandsfähig.<br><br><b>Sativa:</b> Evolutionär angepasst an <b>feucht-heiße, äquatoriale Zonen</b>.<br>Morphologie: schmalblättrig, enormes Längenwachstum (<b>Stretch</b>), offene und luftige Blütenstruktur (Schutz vor Schimmel), <b>sehr lange Blütezeit (10–14+ Wochen)</b>. Sensibel gegenüber Stickstoffüberschuss.<br><br><b>Ruderalis:</b> Die <b>sibirische Wildform</b>. Produziert kaum Terpene oder Cannabinoide und bleibt sehr klein. Wird in der modernen Zucht ausschließlich wegen ihres <b>"Autoflower"-Gens</b> genutzt.<br><br><b>Praxis-Hybride:</b> Reine Indica/Sativa sind selten — die meisten modernen Strains sind Kreuzungen mit spezifischen Verhältnissen (z.B. "70% Sativa / 30% Indica"). Das erklärt Blütezeit und Wuchs-Charakter.' },
   ]},
   { cat: '✂️ Training', items: [
-    { t: 'Topping', txt: 'Haupttrieb über dem 4.–5. Nodium abschneiden. Erzeugt 2 Haupttriebe statt 1. Nur in der Veg, danach 3 Tage Ruhe.' },
-    { t: 'LST (Low Stress)', txt: 'Triebe sanft herunterbiegen und fixieren. Gleichmäßiges Kronendach = mehr Licht = mehr Blüten. Jederzeit möglich.' },
-    { t: 'HST (High Stress)', txt: 'Supercropping: Stängel vorsichtig knicken (nicht brechen). Verdickung = stärkerer Transport. Nur für Erfahrene.' },
+    { t: 'Apikaldominanz & Auxin', txt: '<b>Die Evolutionsfalle:</b> Cannabis hat den natürlichen Drang, einen <b>dominanten Haupttrieb</b> zu bilden — um in der Natur Konkurrenten zu überragen. Dieser Wuchs wird chemisch durch das Hormon <b>Auxin</b> gesteuert, welches in der obersten Spitze produziert wird und das Wachstum aller darunterliegenden Triebe <b>hemmt</b>.<br><br><b>Konsequenz:</b> Unter stationären Kunstlichtquellen ist diese Wuchsform <b>hochgradig ineffizient</b> — ein riesiger Haupttrieb bekommt das meiste Licht, die Seitentriebe kümmern dahin. Durch gezieltes Training (Topping, LST, SCROG) wird die Apikaldominanz gebrochen.' },
+    { t: 'Topping', txt: '<b>Definition:</b> Technik der Pflanzenmanipulation, bei der die oberste Wachstumsspitze (das <b>apikale Meristem</b>) des Haupttriebs mit einer sterilen Schere entfernt wird.<br><br><b>Wirkungsweise:</b> Cannabis wächst natürlich in Tannenbaum-Form, weil die oberste Spitze das Hormon <b>Auxin</b> produziert. Das Hormon wandert nach unten und hemmt das Wachstum der Seitentriebe (<i>Apikaldominanz</i>). Wird die Spitze entfernt, stoppt die Auxin-Produktion schlagartig. Die Pflanze leitet ihre Energie in die darunterliegenden Seitentriebe um.<br><br><b>Ergebnis:</b> Statt einem großen Haupttrieb entwickelt die Pflanze <b>zwei neue Haupttriebe</b> und wächst breiter und buschiger — mehr Lichtausbeute, mehr Ertrag. Schnitt über dem 4.–5. Nodium, nur in der Vegi, danach 3 Tage Ruhe.' },
+    { t: 'Reihenfolge: Gießen vor Topping', txt: 'Bei einem geplanten Topping muss die Pflanze <b>zwingend vorher gegossen werden</b> (idealerweise 2–4 Stunden vor dem Schnitt). Umgekehrt = starker Stress und Wachstumsverzögerung.<br><br><b>1. Zellspannung (Turgordruck):</b> Eine gut gewässerte Pflanze hat pralle, feste Zellen. Der Schnitt durch einen wassergefüllten Stängel ist sauber und glatt. Bei einer durstigen Pflanze ist das Gewebe weich — die Schere quetscht die Zellen statt sie sauber zu trennen, was die Wundheilung verschlechtert.<br><br><b>2. Stressvermeidung:</b> Der Dryback bedeutet für die Pflanze schon leichten Trockenstress. Das Abschneiden der Spitze ist massiver mechanischer Stress. Kombiniert = Überlebensmodus, Wachstum stoppt vorübergehend.<br><br><b>3. Nährstoffverfügbarkeit:</b> Nach dem Schnitt muss die Pflanze die Wunde heilen und Energie in die neuen Triebe leiten. Dafür braucht sie Wasser und gelöste Nährstoffe. Wenn kurz vor dem Toppen gegossen wurde, stehen diese in den Leitbahnen abrufbereit bereit.<br><br><b>Praxis:</b> Am Morgen vor dem Topping volles Gießen (mit Plan-Dünger) → 2–4h warten → Topping am frühen Nachmittag → keine Düngung mehr heute → 3 Tage Ruhe ohne Gießen.' },
+    { t: 'Canopy-Management', txt: '<b>Das Prinzip:</b> Lichtintensität nimmt <b>im Quadrat zur Entfernung</b> ab. Ein Trieb der 10 cm näher an der Lampe ist, bekommt nicht 10% mehr Licht — sondern erheblich mehr.<br><br><b>Das Ziel:</b> Canopy-Management (z.B. <b>LST</b> = Low Stress Training oder <b>SCROG</b> = Screen of Green) zielt darauf ab, alle Triebspitzen auf ein <b>exakt horizontales Niveau</b> zu manipulieren. So erhält jeder Trieb die <b>identische PPFD-Dosis</b>.<br><br><b>Ergebnis:</b> Multiple, <b>gleichwertige Hauptblüten</b> statt einer Kolatrieb + vielen unterentwickelten Seitentrieben. Deutlich höherer und konsistenterer Ertrag.' },
+    { t: 'LST (Low Stress)', txt: 'Triebe sanft herunterbiegen und fixieren. Gleichmäßiges Kronendach = mehr Licht = mehr Blüten. Jederzeit möglich. Teil des Canopy-Managements.' },
+    { t: 'HST (High Stress)', txt: '<b>Supercropping:</b> Gezieltes Quetschen des Stamminneren (Stängel vorsichtig knicken, nicht brechen). Erzeugt einen <b>Kallus</b> (Verdickung), der den Nährstofftransport <b>dauerhaft stärkt</b>. Nur für Erfahrene. Voller Turgordruck ist Voraussetzung.' },
+    { t: 'Defoliation (Entlaubung)', txt: '<b>Parasitäre Biomasse:</b> Blätter im stark beschatteten <b>unteren Drittel</b> der Pflanze verbrauchen metabolisch <b>mehr Energie als sie durch Photosynthese generieren</b>. Sie agieren als <i>Ertragsparasiten</i>.<br><br><b>Die Intervention:</b> Durch systematisches Entfernen dieser Biomasse leitet die Pflanze Nährstoffe — insbesondere <b>Phosphor und Kalium</b> in der Blütephase — zwingend nach oben in die Blütenstände.<br><br><b>Bonus:</b> Reduzierte Transpirationsfläche ermöglicht eine <b>präzise Kontrolle der Raumluftfeuchtigkeit</b> — wichtig für Schimmelprävention in der Spätblüte.<br><br><b>Praxis:</b> Schubweise und gezielt (nie mehr als 30% der Blätter auf einmal). Optimale Zeitpunkte: Tag der Blüte-Umschaltung + vor der Peak-Blüte.' },
+    { t: 'Fimming (F.I.M.)', txt: '<b>Name:</b> "Fuck I Missed" — entstanden als Fehler beim Topping, heute eigenständige Technik.<br><br><b>Mechanik:</b> Statt den Haupttrieb komplett zu entfernen, werden nur <b>70–80 % der neuen Triebspitze</b> durchtrennt — quasi ein schlampiges Topping mit Absicht.<br><br><b>Ergebnis:</b> Die Pflanze bildet oft <b>4 (oder mehr) neue Haupttriebe</b> statt nur 2 wie beim Topping. Höheres Ertragspotenzial, aber auch höheres Risiko einer asymmetrischen Entwicklung.<br><br><b>Praxis:</b> Selbe Regeln wie beim Topping — Turgordruck maximal, steriles Werkzeug, 2–4h vorher gießen.' },
+    { t: 'SCROG (Screen of Green)', txt: '<b>Mechanik:</b> Nutzung eines <b>horizontalen Netzes</b> über der Pflanze. Jeder Zweig wird gezielt unter das Netz gewebt, bis das gesamte Raster gefüllt ist.<br><br><b>Ergebnis:</b> Das <b>perfekte, lückenlose Kronendach</b> (Canopy) für maximale Lichtausbeute auf einer <b>exakten Höhe</b>. Keine Trieb-Spitze schattet eine andere ab — jeder bekommt die identische PPFD-Dosis.<br><br><b>Praxis:</b> Netz auf ~20 cm über dem Topf spannen. Ab Veg-Ende damit beginnen. Wenn das Netz voll ist = Umstellung auf 12/12. Passt ideal zu photoperiodischen Strains (Auto hat zu wenig Zeit dafür).' },
+    { t: 'SOG (Sea of Green)', txt: '<b>Das Gegenteil von SCROG:</b> Sehr viele Pflanzen auf engem Raum mit extrem kurzer (oder gar keiner) Veg-Phase.<br><br><b>Ziel:</b> Pro Pflanze nur eine einzige, <b>massive Hauptcola</b> zu züchten. Kein Training, keine Topping — reine Kolatrieb-Dominanz ausnutzen.<br><br><b>Vorteil:</b> <b>Maximiert die Geschwindigkeit</b> des Grow-Zyklus. Schneller Turnover, weniger Pflanzenmanagement pro Pflanze.<br><br><b>Ideal für:</b> Klone (identische Genetik = gleichmäßiges Canopy) und Autoflower (kurze Veg-Phase passt zur SOG-Logik).' },
+    { t: 'Mainlining / Manifolding', txt: '<b>Radikale Trainingsmethode:</b> Die Pflanze wird <b>mehrfach getoppt und symmetrisch aufgespalten</b> — wie ein Verteilerrohr (Manifold).<br><br><b>Ziel:</b> <b>Perfekte hydraulische Symmetrie</b>. Jeder Trieb hat den <b>exakt gleichen Abstand zur Wurzel</b>, wodurch die Nährstoffe absolut gleichmäßig verteilt werden.<br><br><b>Ergebnis:</b> 4, 8, 16 oder 32 gleich große Hauptcolas je nach Aufspaltungsgrad. Extrem gleichmäßiger Ertrag, aber hoher Zeitaufwand und nur für photoperiodische Strains geeignet (braucht lange Veg-Phase).' },
+    { t: 'Monster Cropping', txt: '<b>Mechanik:</b> Das Nehmen von Stecklingen (Klonen) von einer Pflanze, die sich bereits <b>2–3 Wochen in der Blüte</b> befindet.<br><br><b>Ergebnis:</b> Wird der Klon zurück ins vegetative Licht (18/6) gestellt, <b>mutiert er beim Re-Vegging</b> zu einem <b>extrem buschigen Monster</b> mit unzähligen Seitentrieben. Die blütenaktivierten Hormone bleiben teils erhalten, sorgen für hohe Triebdichte.<br><br><b>Praxis:</b> Nur für fortgeschrittene Grower. Das Re-Vegging dauert 2–4 Wochen mit zwittriger Wuchsform (Blatt-Mutationen), bevor normales Wachstum einsetzt.' },
+    { t: 'Pflanzen-Stütze (Yo-Yos & Netze)', txt: '<b>Problem:</b> In der Spätblüte werden Cup-Level Colas <b>so schwer</b>, dass sie ihre eigene Struktur zerstören. Stängel knicken unter der Biomasse ein.<br><br><b>Konsequenz:</b> Ein geknickter Stängel <b>klemmt den Nährstofffluss ab</b> — die betroffene Cola hört auf zu reifen.<br><br><b>Lösungen:</b><br>• <b>Yo-Yos:</b> Rollen mit Haken, die an der Zelt-Decke befestigt werden. Flexibel einstellbar, greifen einzelne Triebe.<br>• <b>Stütznetze:</b> Horizontale Netze (auch nach SCROG), die die gesamte Canopy tragen.<br>• <b>Bambusstäbe:</b> Klassisch, für einzelne schwere Triebe.' },
+  ]},
+  { cat: '🌸 Lebensphasen', items: [
+    { t: 'Keimung', txt: '<b>Der embryonale Start:</b> Der Samen nimmt durch <b>Osmose</b> Wasser auf, die Schale platzt, die <b>Pfahlwurzel (Radicula)</b> bricht durch.<br><br><b>Milieu:</b> Findet im <b>feuchten, aber sauerstoffreichen</b> Umfeld statt (z.B. Jiffy oder Zewa-Methode). Stauwasser = kein Sauerstoff = Schimmel, kein Keimen.<br><br><b>Zeit:</b> 24–72h bis die Wurzel sichtbar ist. Bei Autoflower unbedingt <b>direkt in den Endtopf</b> — Umtopfen stresst, kostet Tage.' },
+    { t: 'Sämlingsphase', txt: '<b>Definition:</b> Von der Entfaltung der <b>Keimblätter (Kotyledonen)</b> bis zur Bildung der ersten echten, mehrfingrigen Blätter.<br><br><b>Besonderheit:</b> Die Pflanze hat <b>kein etabliertes Wurzelsystem</b> und reagiert extrem sensibel auf:<br>• <b>Hohen EC-Wert</b> (Düngersalze) — Sämlinge brauchen kaum Dünger<br>• <b>Falschen VPD</b> — zu niedrig = Kondensation/Schimmel, zu hoch = Austrocknung<br><br><b>Praxis:</b> VPD 0.4–0.8 kPa. Nur ganz leicht wässern (Spritzflasche oder wenige ml). Kein Dünger in den ersten 7–10 Tagen.' },
+    { t: 'Vegetationsphase', txt: '<b>Fokus:</b> Rein auf <b>Biomasse- und Wurzelaufbau</b>. Die Pflanze baut Strukturen auf die sie später in der Blüte braucht.<br><br><b>Nährstoffbedarf:</b> Hoher <b>Stickstoffbedarf (N)</b> für Blattmasse und Chlorophyll. NPK-Verhältnis in Richtung hoher N.<br><br><b>Training-Fenster:</b> Hier finden <b>alle primären Trainings-Interventionen</b> statt — Topping, Fimming, LST, SCROG-Aufbau, Mainlining. Danach stoppt das Strukturwachstum.<br><br><b>Dauer:</b> Bei Photoperiodisch frei wählbar (4–8 Wochen typisch). Bei Autoflower fix ~21 Tage.' },
+    { t: 'Stretch (Pre-Flower)', txt: '<b>Definition:</b> Die ersten <b>10–21 Tage nach der Umstellung auf 12/12</b> (bzw. beim Autoflower: Tag 21–35).<br><br><b>Mechanik:</b> Ein massiver, <b>hormonell gesteuerter Höhenwachstumsschub</b>. Pflanzen können ihre Größe <b>verdoppeln bis verdreifachen</b>.<br><br><b>Finale Festlegung:</b> Der <b>internodiale Abstand</b> (Abstand zwischen den Blatt-Etagen) wird final bestimmt. Danach wächst kein Längenwachstum mehr — nur noch Blütenfüllung.<br><br><b>Konsequenz:</b> Spätestens jetzt muss die Lampen-Höhe und Stütz-Planung stehen. Canopy-Management entscheidet sich hier.' },
+    { t: 'Blüte-Phasen (früh / mittel / spät)', txt: '<b>Frühe Blüte (Woche 1–3):</b> Transition. Umstellung von Wachstum auf Reproduktion. Weiße <b>Stigmen/Pistils</b> (Härchen) bilden sich. Stretch läuft parallel.<br><br><b>Mittlere Blüte (Woche 4–6):</b> <b>Bulk-Phase</b>. Das Höhenwachstum stoppt komplett. Der Nährstoffbedarf dreht sich <b>von Stickstoff (N) massiv hin zu Phosphor und Kalium (P/K)</b>. <b>Kelche (Calyxe)</b> schwellen an.<br><br><b>Späte Blüte (Ripening / Woche 7+):</b> Das <b>Ausreifen</b>. Harzproduktion erreicht ihr Maximum, Terpene werden stark volatil (flüchtig). Cup-Level VPD auf 1.4–1.6 kPa anheben für Trichom-Boost.' },
+    { t: 'Reife (Seneszenz)', txt: '<b>Der programmierte Zelltod:</b> Die Pflanze stellt die <b>Nährstoffaufnahme ein</b> (oder wird aktiv geflusht).<br><br><b>Sichtbare Zeichen:</b> <b>Chlorophyll wird abgebaut</b> — die grüne Farbe der Blätter verschwindet. Dadurch werden die im Blatt verborgenen <b>Anthocyane</b> (rote/violette Farbpigmente) sichtbar.<br><br><b>Interpretation:</b> Gelbe und lila Verfärbungen am Ende der Blüte sind <b>kein Mangel</b> sondern das <b>natürliche Ende des Lebenszyklus</b>. Die Pflanze verschiebt die letzten Nährstoffe aus den Blättern in die Blüten.<br><br><b>Ernte-Signal:</b> In Kombination mit milchigen Trichomen = optimaler Erntezeitpunkt.' },
   ]},
   { cat: '🔬 Ernte', items: [
-    { t: 'Trichom-Stadien', txt: 'Klar = zu früh (kaum Wirkung). Milchig = THC-Peak (euphorisch). Bernstein = CBN (sedierend/couchlock). Ideal: 70% milchig + 20% bernstein.' },
-    { t: 'Spülung', txt: 'Letzte 1–2 Wochen nur reines Wasser. Pflanze baut Nährstoffreste ab. Saubererer Geschmack beim Rauchen.' },
-    { t: 'IceFlush', txt: 'Eiswasser (< 10°C) in den letzten Tagen. Stress-Reaktion fördert Trichom-Produktion und lila Verfärbung.' },
+    { t: 'Trichom-Analyse (Ernte-Trigger)', txt: '<b>Die einzig valide Methode</b> zur Erntebestimmung. Die harzigen Drüsenköpfe (<b>Trichome</b>) werden mit einem <b>Taschenmikroskop (60x+)</b> analysiert.<br><br><b>Stadien:</b><br>• <b>Klar:</b> Unreif, nur Vorstufen produziert.<br>• <b>Milchig/Trüb:</b> <b>Peak THC-A</b>. Maximale Potenz.<br>• <b>Bernsteinfarben:</b> THC-A degradiert durch Oxidation zu <b>CBN</b> (sedierender Couchlock-Effekt).<br><br><b>Cup-Standard:</b> <b>90% milchig, max 10% bernstein</b> — nie mehr. Mehr Amber = mehr CBN-Abbau = Potenz-Verlust. Für mehr Euphorie: früher ernten (weniger Amber). Für mehr Sedierung: Trocken- und Curing-Zyklus länger, nicht später ernten.' },
+    { t: 'Dunkelphase vor der Ernte (48–72h)', txt: '<b>Abschließender abiotischer Stressor:</b> Die <b>absolute Dunkelheit</b> kurz vor der Ernte (48–72 Stunden).<br><br><b>Wirkung:</b><br>• <b>Schützt flüchtige Terpene</b> vor Verdampfung durch Licht/Hitze<br>• <b>Stoppt die Photosynthese</b> — Stärkeabbau in den Blättern wird gefördert<br>• Soll eine letzte Harz-Erhöhung triggern (umstritten, aber gängige Praxis)<br><br><b>Praxis:</b> Zelt 48–72h vor dem Schnitt komplett dunkel halten. Temperatur etwas absenken. Kein Gießen mehr.' },
+    { t: 'Wet Trim vs. Dry Trim', txt: '<b>Wet Trim:</b> Maniküren der <b>nassen Pflanze direkt nach dem Schnitt</b>.<br>• <b>Vorteil:</b> Schneller, Blätter stehen ab und sind leicht zu entfernen.<br>• <b>Nachteil:</b> Die Blätter bluten <b>Chlorophyll aus</b> — kratziger Geschmack. Die Blüten trocknen oft <b>zu schnell</b>.<br><br><b>Dry Trim (Cup-Standard):</b> Die Pflanze wird im Ganzen (<b>inkl. Blätter</b>) kopfüber getrocknet, erst nach der Trocknung manikürt.<br>• <b>Vorteil:</b> Blätter legen sich wie ein <b>Schutzmantel</b> um die Blüten. Langsame, schonende Trocknung (10–14 Tage), <b>Terpene maximal erhalten</b>.<br>• <b>Nachteil:</b> Aufwendigeres Maniküren (trockene Blätter kleben).' },
+    { t: 'Spülung', txt: 'Letzte <b>7–14 Tage nur reines Wasser</b>. Pflanze baut Nährstoffdepots und Chlorophyll ab. Sauberer Geschmack beim Rauchen, keine bitteren Noten.' },
+    { t: 'IceFlush', txt: 'Eiswasser (<10°C) in den <b>letzten 48h vor der Ernte</b>. Frost-Simulation stresst die Pflanze und pusht Harz (Trichome) und lila Farben (Anthocyane).' },
+    { t: 'Wurzelschnitt (Splitting)', txt: '<b>Extreme und umstrittene Stressmethode</b> kurz vor der Ernte.<br><br><b>Mechanik:</b> Durch <b>physische Verletzung des Stammes oder der Wurzeln</b> (Splitting) soll in den letzten 48 Stunden eine <b>panikartige Not-Harzproduktion</b> erzwungen werden. Die Pflanze glaubt zu sterben und pumpt alles in die Blüten.<br><br><b>Realität:</b> Die wissenschaftliche Evidenz ist dünn. In der Praxis oft mehr Risiko (Pflanze welkt vorzeitig) als Ertrag. Nicht Cup-Standard — <b>eher ein Experiment für Fortgeschrittene</b>.' },
   ]},
   { cat: '🍂 Nach der Ernte', items: [
-    { t: 'Trocknung', txt: '7–14 Tage, 18–21°C, 55–65% RLF. Dunkel, gute Luftzirkulation. Stiele knacken = fertig. Zu schnell = Heu-Geschmack.' },
-    { t: 'Curing', txt: 'In Einmachgläser, 60–65% RLF. Erste Woche: täglich 15 Min öffnen (Burping). Dann alle 2–3 Tage. Minimum 2 Wochen, ideal 4–8.' },
+    { t: 'Trocknung', txt: '7–14 Tage, 18–21°C, 55–65% RLF. Dunkel, gute Luftzirkulation. Stiele knacken = fertig. Zu schnell = Heu-Geschmack. Dry Trim (ungeschnitten) ist Cup-Standard.' },
+    { t: 'Curing (Veredelung)', txt: '<b>Nach der Trocknung:</b> Blüten haben ca. <b>10–12% Restfeuchte</b> erreicht. Jetzt werden sie <b>luftdicht in Gläsern</b> gelagert.<br><br><b>Mechanik:</b> <b>Mikrobielle und enzymatische Prozesse</b> brechen in den folgenden Wochen <b>restliches Chlorophyll und Zucker ab</b>. Dieser Prozess eliminiert das "kratzige" Heu-Aroma.<br><br><b>Praxis:</b> Erste Woche täglich 15 Min öffnen (<b>Burping</b>). Dann alle 2–3 Tage. <b>Minimum 2 Wochen, ideal 4–8 Wochen</b>. Bei 60–65% RLF im Glas.' },
+    { t: 'Dekarboxylierung', txt: '<b>Der biochemische Schlüssel:</b> Cannabis produziert <b>kein psychoaktives THC</b>, sondern die <b>nicht-psychoaktive Säure THC-A</b>.<br><br><b>Mechanik:</b> Erst durch <b>Hitze</b> (beim Rauchen, Verdampfen oder Backen) spaltet sich ein <b>Kohlendioxid-Molekül (CO₂)</b> ab. Aus THC-A wird <b>psychoaktives THC</b>.<br><br><b>Konsequenz:</b> Frische, ungetrocknete Blüten sind <b>kaum wirksam</b>. Auch nach der Trocknung braucht es Hitze zur Aktivierung. Beim Backen von Edibles muss vorher dekarboxyliert werden (ca. 110°C, 30–40 Min im Ofen).' },
+    { t: 'Aroma-Entwicklung (Terpen-Reifung)', txt: '<b>Während des Curings</b> stabilisieren sich die Terpene. Das molekulare Profil reift — ähnlich wie bei einem guten Wein.<br><br><b>Mechanik:</b><br>• <b>Monoterpene</b> (leicht, flüchtig — z.B. Limonen, Myrcen) verflüchtigen sich langsam<br>• <b>Sesquiterpene</b> (schwerer, stabiler — z.B. Caryophyllen) treten in den Vordergrund<br><br><b>Ergebnis:</b> Die Aromatik wird <b>komplexer, runder, reifer</b>. Erste Woche noch "grasig", nach 4–8 Wochen voll entwickelt.' },
+    { t: 'Feuchtigkeits-Regulatoren (Boveda / Integra)', txt: '<b>Zwei-Wege-Membranen</b>, die im Curing-Glas platziert werden.<br><br><b>Mechanik:</b> Sie <b>geben Feuchtigkeit ab oder nehmen sie auf</b> — um ein permanentes, perfektes Mikroklima von exakt <b>58 % oder 62 % RLF</b> zu garantieren.<br><br><b>Vorteil:</b><br>• <b>Schimmelbildung ausgeschlossen</b> (zu feucht)<br>• <b>Terpene konserviert</b> (zu trocken = Heu-Aroma)<br>• Wartungsarm — kein tägliches Burping mehr nötig nach der initialen Curing-Woche.<br><br><b>Welche Größe:</b> 62% für Lagerung, 58% für Long-Term. Größe je nach Glas-Volumen.' },
     { t: 'Lagerung', txt: 'Dunkel, kühl (15–20°C), trocken (58–62% RLF). Boveda-Packs halten RLF konstant. Kein Plastik, kein Licht.' },
   ]},
   { cat: '🐛 Probleme', items: [
-    { t: 'Schimmel', txt: 'Botrytis (Grauschimmel) in dichten Buds. Vorbeugung: gute Luftzirkulation, RLF unter 60% in der Blüte. Befallene Stellen sofort entfernen.' },
-    { t: 'Schädlinge', txt: 'Trauermücken: Gelbtafeln + Neem. Spinnmilben: Blattunterseiten prüfen, Neemöl. Thripse: blaue Klebefallen.' },
+    { t: 'Trauermücken (Sciaridae)', txt: '<b>Kleine schwarze Fliegen.</b> Die Fliegen selbst sind harmlos, aber ihre <b>Larven fressen die feinen Wurzelhaare</b> der Pflanze — das ist das eigentliche Problem.<br><br><b>Ursache:</b> Mangelhafter Dryback. <b>Dauerfeuchtes Substrat</b> = perfekter Brutplatz.<br><br><b>Bekämpfung:</b><br>• <b>Gelbtafeln</b> — fangen die adulten Fliegen<br>• <b>Nematoden</b> (Steinernema feltiae) im Gießwasser gegen die Larven<br>• <b>BTI-Bakterien</b> (Bacillus thuringiensis) — biologisch, sicher<br>• <b>Oberste Erdschicht trocken halten</b> (Bottom-Watering hilft präventiv)' },
+    { t: 'Spinnmilben (Tetranychidae)', txt: '<b>Mikroskopisch kleine Milben</b>, die meist auf der <b>Blattunterseite</b> sitzen und den Zellsaft aussaugen.<br><br><b>Frühsymptome:</b><br>• Winzige <b>weiße Punkte</b> auf den Blättern<br>• Später <b>feine Netze</b> um die Blüten<br>• Spröde, trockene Blätter trotz Bewässerung<br><br><b>Explodieren bei:</b> trockenem, heißem Klima (VPD zu hoch). Eine Population verdoppelt sich alle 3 Tage.<br><br><b>Bekämpfung:</b><br>• <b>Raubmilben</b> (Phytoseiulus persimilis) — biologischer Gegenspieler<br>• <b>Neemöl</b> — nur in der Wachstumsphase sprühen! Niemals auf Blüten.<br>• <b>Luftfeuchte erhöhen</b> kurzfristig als Präventiv-Maßnahme' },
+    { t: 'Thripse', txt: '<b>Winzige, längliche Insekten</b>, die die Blattzellen aussaugen.<br><br><b>Symptome:</b><br>• <b>Silbrig-glänzende Flecken</b> auf den Blättern<br>• <b>Winzige schwarze Kot-Punkte</b><br>• Verformungen neuer Blätter<br><br><b>Bekämpfung:</b><br>• <b>Blautafeln</b> (Thripse reagieren auf Blau — nicht Gelb wie Trauermücken!)<br>• <b>Raubmilben</b> oder <b>Florfliegenlarven</b> (biologische Gegenspieler)<br>• Neemöl in Veg' },
+    { t: 'Echter Mehltau', txt: '<b>Pilz</b>, der sich als <b>abwischbarer, weißer mehliger Belag</b> auf der Blattoberseite zeigt.<br><br><b>Tritt auf bei:</b><br>• Starken Temperaturschwankungen <b>Tag/Nacht</b><br>• Mangelnder <b>Umluft</b> (stehende Luftschichten)<br>• Zu hoher Luftfeuchte bei zu warmer Temperatur<br><br><b>Wichtig:</b> Ist ein <b>systemischer Pilz</b> — dringt in die Pflanze ein. Abwischen reicht nicht.<br><br><b>Prävention & Behandlung:</b> Luftbewegung (Clip-Fans), Tag/Nacht-Differenz unter 8°C halten, bei Befall biologische Fungizide (Milchsäure, Bacillus-Präparate) in Veg. In der Blüte: befallene Blätter entfernen.' },
+    { t: 'Wurzelfäule (Pythium)', txt: '<b>Pathogener Pilz</b>, der durch <b>Sauerstoffmangel im Wurzelbereich</b> (Staunässe) entsteht.<br><br><b>Symptome:</b><br>• Wurzeln verfärben sich <b>braun</b> (gesund = weiß)<br>• Werden <b>schleimig</b><br>• <b>Stinken modrig</b><br>• Oberirdisch: Pflanze welkt trotz nasser Erde<br><br><b>Ursachen:</b> Zu enges Gießintervall, zu großer Topf relativ zur Pflanze, schlechte Drainage, Wassertemperatur >22°C (weniger gelöster Sauerstoff).<br><br><b>Behandlung:</b> Substrat trocknen lassen, Enzyme einsetzen (zersetzen totes Wurzelmaterial), in schweren Fällen umtopfen in frisches Substrat.' },
+    { t: 'Lichtbrand (Phototoxizität)', txt: '<b>PPFD übersteigt die Verarbeitungskapazität</b> der Pflanze.<br><br><b>Symptome:</b><br>• Obere Blätter und Blüten <b>bleichen aus</b> (weiß oder gelb)<br>• <b>Oft ohne Hitzesymptome</b> — das unterscheidet es von Hitzestress!<br>• Tritt direkt unter der Lampe auf, nicht im Rand<br><br><b>Ursache:</b> Moderne <b>hochintensive LEDs</b> bei zu geringem Abstand. Besonders in der Spätblüte wenn die Pflanze näher an die Lampe wächst.<br><br><b>Lösung:</b> Lampe <b>höher hängen</b> (10–15 cm) oder dimmen. Handtest: Hand auf Pflanzenhöhe, 30s — zu heiß oder zu hell? Mehr Abstand.' },
+    { t: 'Hitzestress', txt: '<b>Ab ca. 30 °C</b> (ohne CO₂-Zusatz).<br><br><b>Klassisches Symptom:</b> Die <b>Blattränder rollen sich nach oben ein</b> — das sogenannte <i>"Taco-Blatt"</i>. Die Pflanze minimiert die Transpirationsfläche um Feuchtigkeitsverlust zu reduzieren.<br><br><b>Folgen:</b> Stomata schließen sich → CO₂-Aufnahme stoppt → Photosynthese stagniert → Wachstum stoppt.<br><br><b>Sofortmaßnahmen:</b><br>• <b>Abluft erhöhen</b><br>• Lampen-Abstand vergrößern<br>• Ggf. temporär auf Nacht-Zyklus umstellen (Licht aus wenn es tagsüber zu warm ist)<br>• Verdunstungskühlung (feuchter Boden im Zelt-Aufstellraum)' },
+    { t: 'Kältestress', txt: '<b>Temperaturen unter 18 °C</b> verlangsamen den Stoffwechsel massiv.<br><br><b>Typisches Problem:</b> <b>Temperaturbedingter Phosphor-Lockout</b> — die Pflanze kann P nicht mehr aufnehmen.<br><br><b>Symptome:</b><br>• <b>Violette oder rote Stängel und Blätter</b><br>• Langsames Wachstum<br>• Hängen der Blätter<br><br><b>⚠ Wichtige Unterscheidung:</b> Rote Blätter <b>am Ende der Blüte</b> können <b>genetisch gewollt</b> sein (Anthocyan-Aktivierung bei kühlen Nächten). In der <b>Veg-Phase</b> sind sie <b>fast immer ein Warnsignal</b>.<br><br><b>Lösung:</b> Heizung (Heizmatte, Raumheizung). Besonders kritisch in der Nacht-Phase im Winter.' },
+    { t: 'Schimmel (Botrytis)', txt: 'Botrytis (Grauschimmel) in dichten Buds. Vorbeugung: gute Luftzirkulation, RLF unter 60% in der Blüte. Befallene Stellen sofort entfernen — Pilz-Sporen verbreiten sich schnell.' },
+  ]},
+  { cat: '🔧 Werkzeug & Setup', items: [
+    { t: 'pH-Messgerät', txt: '<b>Hochsensibles Instrument.</b> Die <b>Glassonde</b> eines digitalen pH-Meters darf <b>niemals austrocknen</b> und muss zwingend in einer speziellen <b>KCl-Aufbewahrungslösung</b> gelagert werden — <b>niemals in destilliertem Wasser!</b><br><br><b>Kalibrierung:</b> Regelmäßig mit <b>Pufferlösungen</b> (meist pH 4.0 und 7.0) kalibrieren. Vor jedem kritischen Grow-Zyklus neu kalibrieren.<br><br><b>Praxis:</b><br>• <b>Aufbewahrungslösung</b> immer im Kappenraum halten<br>• Nach jeder Messung mit destilliertem Wasser abspülen, dann zurück in KCl<br>• Sonde <b>nie trocken reiben</b> — nur sanft tupfen<br>• Günstige Meter sind OK für den Einstieg, aber Kalibrierung häufiger nötig' },
+    { t: 'EC-Messgerät', txt: '<b>Mechanik:</b> Misst den <b>elektrischen Widerstand</b> der Nährlösung und rechnet diesen in den EC-Wert (oder ppm) um.<br><br><b>Robuster als pH-Meter</b> — keine spezielle Aufbewahrung nötig. Aber:<br><br><b>Pflege:</b> Die <b>Elektroden müssen regelmäßig</b> von anhaftenden Nährsalzen gereinigt werden, sonst <b>Fehlmessungen</b>.<br><br><b>Praxis:</b> Nach Gebrauch mit destilliertem Wasser abspülen. Bei hartnäckigen Salzablagerungen kurz in verdünntem Essig (1%) einlegen. Kalibrieren mit EC-Pufferlösung (meist EC 1.41 oder 2.77).' },
+    { t: 'Timer / Smartplug', txt: '<b>Das Kontrollzentrum der Photoperiode.</b><br><br><b>Mechanische Zeitschaltuhren:</b> Fehleranfällig, ungenau — eine Minute Drift pro Tag ist normal, über Wochen kann das zur Photoperioden-Störung führen.<br><br><b>Digitale Smartplugs:</b> <b>Sekundengenaues Schalten</b>, oft mit WiFi-Steuerung. Teils sogar mit <b>Stromverbrauchs-Aufzeichnung</b> — zur <b>Verifikation der exakten DLI-Werte</b> und Strombilanz.<br><br><b>Empfehlung:</b><br>• Qualitativ hochwertige Smartplugs (Shelly, Gosund)<br>• <b>Zwei getrennte Timer</b>: einer für Licht, einer für Abluft<br>• Reservelampe oder Notfall-Switch falls Timer ausfällt<br>• Bei Photoperiodisch: Uhrzeit immer checken nach Sommer/Winterzeit-Umstellung' },
   ]},
 ];
 
@@ -5046,7 +5600,7 @@ const HOWTO = [
     { t: '✨ Empfohlene Werte übernehmen',
       txt: 'An einem Gießtag, wenn Wasser und pH noch leer sind, erscheint oben im Eintrag ein prominenter Button in der Zyklusfarbe. Ein Klick setzt: Wassermenge nach Empfehlung, pH 6.4, alle Dünger nach Plan in ml ausgerechnet, Temp 23.5°C und RLF 60% (nur falls leer — deine echten Messwerte werden nie überschrieben). Spart dir auf Gießtagen den manuellen Eintrag.' },
     { t: 'pH und EC eingeben',
-      txt: 'Die ±-Buttons gehen in 0.1-Schritten. Tippe den Wert, oder drücke lang auf + oder − um schnell hoch/runter zu zählen. Die Ziele (pH 6.2–6.5, EC 0.8–2.0) stehen rechts daneben. Bei Abweichungen erscheint eine farbige Warnung: Orange für Grenzwertig, Rot für gefährlich.' },
+      txt: 'Die ±-Buttons gehen in 0.1-Schritten. Tippe den Wert, oder drücke lang auf + oder − um schnell hoch/runter zu zählen. Die Ziele (pH 6.2–6.4, EC 0.8–2.0) stehen rechts daneben. Bei Abweichungen erscheint eine farbige Warnung: Orange für Grenzwertig, Rot für gefährlich.' },
     { t: 'Dünger abhaken beim Mischen',
       txt: 'Im Nährstoff-Abschnitt siehst du die Mischreihenfolge mit konkreten ml-Werten für deine Gießmenge. Tippe irgendwo auf eine Zeile um den Haken zu setzen — die ganze Zeile ist klickbar, nicht nur das ○. Die Haken bleiben erhalten auch wenn du zwischendurch an einem anderen Dünger die ± klickst, und setzen sich am nächsten Gießtag automatisch zurück. Die ±-Buttons ändern den Plan in 0.1-ml-Schritten (auf dem Display gerechnet).' },
     { t: 'Umgebung: Temperatur & Luftfeuchte',
@@ -5062,7 +5616,7 @@ const HOWTO = [
     { t: 'IceFlush',
       txt: 'Eiskaltes Wasser (<10°C) in den letzten 1-2 Tagen vor der Ernte. Der Kältestress soll die Trichom-Produktion nochmal pushen und kann lila Verfärbungen auslösen. Praktisch: Eiswürfel direkt auf die Erde legen.' },
     { t: 'Trichom-Check',
-      txt: 'Ab Blüte-Woche 6-7 mit einer Lupe (60x oder mehr) die Trichome an den Blüten anschauen. <b>Klar</b> = zu früh. <b>Milchig</b> = THC-Peak (euphorische Wirkung). <b>Bernstein</b> = abgebaut zu CBN (sedierend). Ideal zur Ernte: ~70% milchig + 20-30% bernstein. Im Eintrag gibt es ein Trichom-Widget mit Prozent-Schiebern um deine Beobachtung festzuhalten.' },
+      txt: 'Ab Blüte-Woche 6-7 mit einer Lupe (60x oder mehr) die Trichome an den Blüten anschauen. <b>Klar</b> = zu früh. <b>Milchig</b> = THC-Peak (euphorische Wirkung). <b>Bernstein</b> = abgebaut zu CBN (sedierend). Ideal zur Ernte: 90% milchig + max 10% bernstein. Mehr Amber = Potenz-Verlust. Im Eintrag gibt es ein Trichom-Widget mit Prozent-Schiebern um deine Beobachtung festzuhalten.' },
     { t: 'Ernte',
       txt: 'Früh am Morgen ernten, bevor die Lampen angehen (maximaler Terpengehalt). Äste abschneiden, grob entblättern, dann kopfüber aufhängen. Die App wechselt automatisch in die Trocknungs-Phase.' },
     { t: 'Trocknen',
@@ -5070,7 +5624,7 @@ const HOWTO = [
   ]},
   { cat: '🛠️ Werkzeuge im Tipps-Tab', items: [
     { t: 'Grow-Lexikon',
-      txt: 'Kompakte Erklärungen zu ~25 Begriffen: pH, EC, VPD, NPK, CalMag, Trichom-Stadien, IceFlush, Spülung, Schädlinge, etc. Einträge sind aufklappbar. Viele Smart-Notes im Eintrag-Screen verlinken direkt zum passenden Lexikon-Eintrag.' },
+      txt: 'Kompakte Erklärungen zu über 91 Begriffen: pH, EC, VPD, NPK, CalMag, Trichom-Analyse, IceFlush, Spülung, Schädlinge, etc. Einträge sind aufklappbar. Viele Smart-Notes im Eintrag-Screen verlinken direkt zum passenden Lexikon-Eintrag.' },
     { t: 'Tipps',
       txt: 'Phasen-spezifische Kurztipps — je nach Zyklus-Stand zeigt die App relevante Hinweise (z.B. "Woche 3: Topping-Fenster offen!" oder "Blüte Wo 7: Trichome kontrollieren"). Viele Tipps sind klickbar und öffnen den Lexikon-Eintrag.' },
     { t: 'PPFD/DLI-Schätzer (nur Profi-Modus)',
@@ -5142,6 +5696,292 @@ function _onHowtoSearchInput(q) {
  * Normalize a string for search matching.
  * Lowercase, strip HTML, replace German umlauts so "düngen"/"duengen"/"DÜNGEN" all match.
  */
+// =====================================================================
+//  CHARTS: Zeitreihen-Visualisierung pro Zyklus (v0.8.89)
+//  Eigene SVG-Implementierung, kein externes Chart-Library nötig.
+// =====================================================================
+
+/**
+ * Collect a time-series of a specific metric from a cycle's entries.
+ * Returns an array of {day, iso, val, phase} sorted by day.
+ * Skips days without the metric set (or where value is empty/NaN).
+ */
+function collectMetric(cycleId, field, subfield) {
+  const cyc = S.cycles.find(c => c.id === cycleId);
+  if (!cyc || !cyc.startDate) return [];
+  const points = [];
+  Object.keys(S.entries || {}).forEach(iso => {
+    const e = S.entries[iso];
+    if (!e) return;
+    let val;
+    if (subfield) {
+      // cycleData field (e.g. 'ph', 'ec', 'water')
+      val = e.cycleData && e.cycleData[cycleId] && e.cycleData[cycleId][subfield];
+    } else {
+      // top-level (e.g. 'temp', 'humidity')
+      val = e[field];
+    }
+    const num = parseFloat(val);
+    if (isNaN(num)) return;
+    const day = isoDiff(iso, cyc.startDate);
+    if (day < 0) return;
+    const ph = phase(iso, cyc);
+    points.push({ day, iso, val: num, phase: ph ? ph.ph : null });
+  });
+  points.sort((a, b) => a.day - b.day);
+  return points;
+}
+
+/**
+ * Collect VPD time-series. VPD is computed from temp + humidity on each day
+ * that has both values.
+ */
+function collectVPDSeries(cycleId) {
+  const cyc = S.cycles.find(c => c.id === cycleId);
+  if (!cyc || !cyc.startDate) return [];
+  const points = [];
+  Object.keys(S.entries || {}).forEach(iso => {
+    const e = S.entries[iso];
+    if (!e) return;
+    const t = parseFloat(e.temp);
+    const r = parseFloat(e.humidity);
+    if (isNaN(t) || isNaN(r)) return;
+    const v = calcVPD(t, r);
+    if (v === null) return;
+    const day = isoDiff(iso, cyc.startDate);
+    if (day < 0) return;
+    const ph = phase(iso, cyc);
+    points.push({ day, iso, val: v, phase: ph ? ph.ph : null });
+  });
+  points.sort((a, b) => a.day - b.day);
+  return points;
+}
+
+/**
+ * Build an SVG line or bar chart for a time-series.
+ *
+ * config: {
+ *   title: string,
+ *   unit: string,               // e.g. 'pH', 'mS/cm', 'kPa', 'L'
+ *   min: number, max: number,   // Y-axis range
+ *   zones: [{from, to, color, label}]  // optional background zones
+ *   type: 'line' | 'bar',
+ *   chartId: string             // unique DOM id for tooltip targeting
+ * }
+ */
+function buildChart(points, totalDays, config) {
+  const W = 320, H = 140;
+  const padL = 32, padR = 10, padT = 10, padB = 22;
+  const innerW = W - padL - padR;
+  const innerH = H - padT - padB;
+
+  // Map data coords to SVG coords
+  const xMax = Math.max(totalDays || 1, 1);
+  const xAt = (day) => padL + (day / xMax) * innerW;
+  const yAt = (v) => padT + innerH - ((v - config.min) / (config.max - config.min)) * innerH;
+
+  // Zones as background rects
+  const zoneHTML = (config.zones || []).map(z => {
+    const y1 = yAt(z.to);
+    const y2 = yAt(z.from);
+    const h = y2 - y1;
+    return `<rect x="${padL}" y="${y1}" width="${innerW}" height="${h}" fill="${z.color}" opacity="0.12"/>`;
+  }).join('');
+
+  // Y-axis grid + labels (4 lines)
+  const ySteps = 4;
+  let gridHTML = '';
+  for (let i = 0; i <= ySteps; i++) {
+    const v = config.min + (config.max - config.min) * (i / ySteps);
+    const y = yAt(v);
+    gridHTML += `<line x1="${padL}" y1="${y}" x2="${W - padR}" y2="${y}" stroke="#2a3b2a" stroke-width="0.5" opacity="0.5"/>`;
+    gridHTML += `<text x="${padL - 4}" y="${y + 3}" font-size="9" text-anchor="end" fill="#8a9a8a" font-family="monospace">${v.toFixed(config.decimals ?? 1)}</text>`;
+  }
+
+  // X-axis labels (every ~20% of width)
+  let xLabelHTML = '';
+  const xLabelSteps = 4;
+  for (let i = 0; i <= xLabelSteps; i++) {
+    const day = Math.round((xMax * i) / xLabelSteps);
+    const x = xAt(day);
+    xLabelHTML += `<text x="${x}" y="${H - 6}" font-size="9" text-anchor="middle" fill="#8a9a8a" font-family="monospace">T${day}</text>`;
+  }
+
+  // Data rendering
+  let dataHTML = '';
+  if (points.length === 0) {
+    dataHTML = `<text x="${W/2}" y="${H/2}" font-size="11" text-anchor="middle" fill="#5a6a5a" font-family="system-ui">Noch keine Daten</text>`;
+  } else if (config.type === 'bar') {
+    // Bar chart (for water amounts)
+    const barWidth = Math.max(2, innerW / xMax * 0.6);
+    dataHTML = points.map((p, i) => {
+      const x = xAt(p.day);
+      const y = yAt(p.val);
+      const h = yAt(config.min) - y;
+      return `<rect class="chart-bar-${config.chartId}" data-idx="${i}" x="${x - barWidth/2}" y="${y}" width="${barWidth}" height="${h}" fill="#4CAF70" opacity="0.75" onclick="showChartTooltip('${config.chartId}', ${i}, event)" style="cursor:pointer"/>`;
+    }).join('');
+  } else {
+    // Line chart
+    if (points.length > 1) {
+      const pathD = points.map((p, i) => {
+        const cmd = i === 0 ? 'M' : 'L';
+        return `${cmd}${xAt(p.day).toFixed(1)},${yAt(p.val).toFixed(1)}`;
+      }).join(' ');
+      dataHTML += `<path d="${pathD}" fill="none" stroke="#4CAF70" stroke-width="1.5"/>`;
+    }
+    dataHTML += points.map((p, i) => {
+      return `<circle class="chart-pt-${config.chartId}" data-idx="${i}" cx="${xAt(p.day).toFixed(1)}" cy="${yAt(p.val).toFixed(1)}" r="5" fill="#4CAF70" stroke="#0a1a0a" stroke-width="1.5" onclick="showChartTooltip('${config.chartId}', ${i}, event)" style="cursor:pointer"/>`;
+    }).join('');
+  }
+
+  // Tooltip container (absolute positioned inside wrapper)
+  const pointsJSON = JSON.stringify(points).replace(/'/g, '&#39;').replace(/"/g, '&quot;');
+  return `
+    <div style="position:relative" data-chart-points="${pointsJSON}" data-chart-unit="${config.unit || ''}" id="chart-wrap-${config.chartId}">
+      <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block" xmlns="http://www.w3.org/2000/svg">
+        ${zoneHTML}
+        ${gridHTML}
+        ${xLabelHTML}
+        ${dataHTML}
+      </svg>
+      <div id="chart-tt-${config.chartId}" style="display:none;position:absolute;background:#0a1a0a;border:1px solid #4CAF70;border-radius:6px;padding:6px 8px;font-size:11px;color:#e0f0e0;pointer-events:none;white-space:nowrap;z-index:10;box-shadow:0 2px 8px rgba(0,0,0,0.5)"></div>
+    </div>
+  `;
+}
+
+/**
+ * Show tooltip for a chart point. Called from onclick on circle/rect elements.
+ */
+function showChartTooltip(chartId, idx, ev) {
+  ev.stopPropagation();
+  const wrap = document.getElementById('chart-wrap-' + chartId);
+  const tt = document.getElementById('chart-tt-' + chartId);
+  if (!wrap || !tt) return;
+  const rawPoints = wrap.getAttribute('data-chart-points');
+  const unit = wrap.getAttribute('data-chart-unit') || '';
+  let points;
+  try {
+    points = JSON.parse(rawPoints.replace(/&#39;/g, "'").replace(/&quot;/g, '"'));
+  } catch (_) { return; }
+  const p = points[idx];
+  if (!p) return;
+
+  // Phase labels
+  const phaseLabels = { anzucht: 'Anzucht', bloom: 'Blüte', flush: 'Spülen', ice: 'Ice', harvest: 'Ernte', dry: 'Trocknung' };
+  const phLabel = p.phase ? phaseLabels[p.phase] || p.phase : '';
+
+  tt.innerHTML = `
+    <div style="font-weight:600;color:#4CAF70">${fmtDE(p.iso, { day: '2-digit', month: '2-digit', year: 'numeric' })}</div>
+    <div style="color:#b0c0b0;font-size:10px;margin-top:2px">Tag ${p.day + 1}${phLabel ? ' · ' + phLabel : ''}</div>
+    <div style="margin-top:3px;font-family:monospace;font-size:13px"><b>${p.val.toFixed(2)}</b> ${unit}</div>
+  `;
+
+  // Position tooltip near click point, clamped to wrapper bounds
+  const wrapRect = wrap.getBoundingClientRect();
+  let left = ev.clientX - wrapRect.left + 8;
+  let top = ev.clientY - wrapRect.top - 10;
+  tt.style.display = 'block';
+  // Clamp after rendering so we have dimensions
+  const ttRect = tt.getBoundingClientRect();
+  if (left + ttRect.width > wrapRect.width - 4) left = wrapRect.width - ttRect.width - 4;
+  if (left < 4) left = 4;
+  if (top + ttRect.height > wrapRect.height - 4) top = wrapRect.height - ttRect.height - 4;
+  if (top < 0) top = 4;
+  tt.style.left = left + 'px';
+  tt.style.top = top + 'px';
+}
+
+/**
+ * Hide all chart tooltips (called when clicking outside).
+ */
+function hideChartTooltips() {
+  document.querySelectorAll('[id^="chart-tt-"]').forEach(tt => { tt.style.display = 'none'; });
+}
+// Set up global click-outside handler
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('[id^="chart-wrap-"]')) hideChartTooltips();
+});
+
+/**
+ * Build the complete charts section for a cycle.
+ * Returns HTML string with all 4 charts or a "not enough data" notice.
+ */
+function buildChartsSection(cycleId) {
+  const cyc = S.cycles.find(c => c.id === cycleId);
+  if (!cyc || !cyc.startDate) return '';
+
+  const phData = collectMetric(cycleId, null, 'ph');
+  const ecData = collectMetric(cycleId, null, 'ec');
+  const waterData = collectMetric(cycleId, null, 'water');
+  const vpdData = collectVPDSeries(cycleId);
+
+  const minPoints = 3;
+  const total = Math.max(phData.length, ecData.length, waterData.length, vpdData.length);
+  if (total < minPoints) {
+    return `<div style="background:var(--card);border:0.5px solid var(--border);border-radius:12px;padding:14px 16px;margin-top:4px">
+      <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px">📈 Verlauf & Charts</div>
+      <div style="font-size:11px;color:var(--text-muted);line-height:1.5">Noch nicht genug Daten. Ab <b>${minPoints} Einträgen</b> mit Werten (pH, EC, Temperatur, Luftfeuchte oder Wasser) siehst du hier die Verläufe.</div>
+    </div>`;
+  }
+
+  // Figure out cycle total days (up to end of dry phase)
+  const a = cyc.anzuchtDays || PHASE_DEFAULTS.anzuchtDays;
+  const b = a + (cyc.bloomDays || PHASE_DEFAULTS.bloomDays);
+  const f = b + (cyc.flushDays || PHASE_DEFAULTS.flushDays);
+  const ic = f + (cyc.iceDays || PHASE_DEFAULTS.iceDays);
+  const h = ic + (cyc.harvestDays || PHASE_DEFAULTS.harvestDays);
+  const dr = h + (cyc.dryDays || PHASE_DEFAULTS.dryDays);
+
+  // Chart configs
+  const phChart = buildChart(phData, dr, {
+    title: 'pH-Verlauf', unit: 'pH', min: 5.0, max: 7.5, decimals: 1,
+    zones: [{ from: 6.2, to: 6.4, color: '#4CAF70' }],
+    type: 'line', chartId: 'ph-' + cycleId,
+  });
+  const ecChart = buildChart(ecData, dr, {
+    title: 'EC-Verlauf', unit: 'mS/cm', min: 0, max: 3.0, decimals: 1,
+    zones: [{ from: 1.2, to: 2.2, color: '#4CAF70' }],
+    type: 'line', chartId: 'ec-' + cycleId,
+  });
+  const vpdChart = buildChart(vpdData, dr, {
+    title: 'VPD-Verlauf', unit: 'kPa', min: 0, max: 2.0, decimals: 2,
+    zones: [{ from: 0.8, to: 1.2, color: '#4CAF70' }],
+    type: 'line', chartId: 'vpd-' + cycleId,
+  });
+  const waterMax = Math.max(5, ...waterData.map(p => p.val)) * 1.1;
+  const waterChart = buildChart(waterData, dr, {
+    title: 'Wassermenge', unit: 'L', min: 0, max: waterMax, decimals: 1,
+    type: 'bar', chartId: 'water-' + cycleId,
+  });
+
+  // Layout — each chart is independently collapsible, all start collapsed
+  return `
+    <div class="sect-head" style="margin-top:4px">📈 Verlauf & Charts</div>
+    ${_chartBlock('📊 pH-Verlauf', phData.length, 'Grüner Bereich: 6.2–6.4 (Erde, ideal) · tipp auf Punkt für Details', phChart)}
+    ${_chartBlock('📊 EC-Verlauf', ecData.length, 'Grüner Bereich: 1.2–2.2 mS/cm (typisch Vegi→Blüte)', ecChart)}
+    ${_chartBlock('📊 VPD-Verlauf', vpdData.length, 'Grüner Bereich: 0.8–1.2 kPa (Blüte optimal) · Cup-Niveau Spätblüte: gezielt 1.4–1.6 für Trichom-Boost · aus Temp + Luftfeuchte berechnet', vpdChart)}
+    ${_chartBlock('📊 Wassermenge', waterData.length, 'Bar = Liter pro Gießtag', waterChart)}
+  `;
+}
+
+function _chartBlock(label, count, legend, chartHTML) {
+  // Each chart is its own collapsible accordion block, starts closed.
+  return `
+    <div style="background:var(--card);border:0.5px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:6px">
+      <div onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none';this.querySelector('.ctgl').textContent=this.nextElementSibling.style.display==='none'?'▸':'▾'"
+        style="padding:10px 14px;cursor:pointer;display:flex;align-items:center;gap:8px">
+        <div style="flex:1;font-size:13px;font-weight:600;color:var(--text)">${label}</div>
+        <span style="font-size:9px;color:var(--text-hint)">${count} ${count === 1 ? 'Punkt' : 'Punkte'}</span>
+        <span class="ctgl" style="color:var(--text-muted);font-size:14px">▸</span>
+      </div>
+      <div style="display:none;padding:4px 10px 12px">
+        <div style="font-size:9px;color:var(--text-hint);margin-bottom:6px;line-height:1.4">${legend}</div>
+        ${chartHTML}
+      </div>
+    </div>`;
+}
+
+
 function _normSearch(s) {
   if (!s) return '';
   return String(s)
@@ -5923,7 +6763,7 @@ const TOUR_ONBOARDING = {
       target: '#scr-tips.active .topbar',
       arrow: 'top',
       title: '💡 Tipps & Lexikon',
-      body: 'Hier bist du gerade. Phasen-spezifische Tipps passen sich an deinen aktuellen Zyklus-Stand an. Unten findest du das Grow-Lexikon mit Erklärungen zu Begriffen wie pH, EC, VPD, Trichom-Stadien und mehr.',
+      body: 'Hier bist du gerade. Phasen-spezifische Tipps passen sich an deinen aktuellen Zyklus-Stand an. Unten findest du das Grow-Lexikon mit Erklärungen zu Begriffen wie pH, EC, VPD, Trichom-Analyse und mehr.',
     },
     {
       tab: 'tips',
