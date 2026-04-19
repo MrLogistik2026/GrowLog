@@ -1244,6 +1244,7 @@ let S = {
 };
 let tab = 'dash', calDate = new Date(), editISO = null, entryFrom = 'dash';
 let _entryDirty = false; // Tracks whether the current entry has unsaved changes
+let _entrySnapshot = null; // Deep-clone of entry state on openEntry — enables proper "Verwerfen" restore
 let _tipsSnapshot = []; // Snapshot of current tips for meta-search
 let selId = null, draft = {}, lastBack = 0, editProd = null;
 let _dzSel = null; // Danger Zone selected cycle
@@ -4438,6 +4439,9 @@ function getSmartQuickNotes(c, p, cd, iso) {
 function openEntry(iso) {
   editISO = iso;
   _entryDirty = false;
+  // Deep-clone snapshot so "Verwerfen" can restore the pre-edit state.
+  // We only clone the one day's entry — not the whole S — which is cheap.
+  _entrySnapshot = S.entries[iso] ? JSON.parse(JSON.stringify(S.entries[iso])) : null;
   document.getElementById('entry-back').onclick = () => navFromEntry(entryFrom);
   _updateEntryTitle(iso);
   // Render bottom nav (no tab is "active" since we're in entry screen)
@@ -4448,23 +4452,77 @@ function openEntry(iso) {
 }
 
 /**
+ * Restore the entry state from the snapshot taken on open.
+ * Called when user picks "Verwerfen & weiter" in the dirty prompt.
+ */
+function _restoreEntrySnapshot() {
+  if (!editISO) return;
+  if (_entrySnapshot === null) {
+    // No entry existed before editing — remove any data that was added
+    delete S.entries[editISO];
+  } else {
+    S.entries[editISO] = JSON.parse(JSON.stringify(_entrySnapshot));
+  }
+  _entryDirty = false;
+  saveS();
+}
+
+/**
  * Navigate away from entry screen. If there are unsaved changes, ask first.
  * Simple 2-button: OK = Save & go / Cancel = Stay here.
  */
-function navFromEntry(targetTab) {
+/**
+ * Prompts the user when trying to leave the entry screen with unsaved changes.
+ * Returns a Promise that resolves to one of:
+ *   'save'     — save & proceed
+ *   'discard'  — discard changes & proceed (was the missing option!)
+ *   'cancel'   — stay on entry, do nothing
+ */
+function _entryDirtyPrompt() {
+  return new Promise((resolve) => {
+    // Build inline overlay (keeps this modal independent of customConfirm state)
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:10002;background:rgba(0,0,0,0.75);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;padding:20px;animation:modalIn 0.2s ease';
+    overlay.innerHTML = `
+      <div style="background:var(--card);border:0.5px solid var(--border);border-radius:18px;padding:24px;max-width:340px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.6)">
+        <div style="font-size:15px;font-weight:600;color:var(--text);margin-bottom:8px">💾 Ungespeicherte Änderungen</div>
+        <div style="font-size:13px;color:var(--text-sub);line-height:1.6;margin-bottom:18px">
+          Du hast diesen Eintrag bearbeitet. Was möchtest du tun?
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <button data-act="save" style="padding:12px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);border:none;background:var(--green);color:#fff">✓ Speichern & weiter</button>
+          <button data-act="discard" style="padding:12px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);border:none;background:var(--orange);color:#fff">✗ Verwerfen & weiter</button>
+          <button data-act="cancel" style="padding:12px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);background:var(--card2);color:var(--text-sub);border:0.5px solid var(--border)">← Hier bleiben</button>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+
+    const done = (choice) => {
+      overlay.remove();
+      resolve(choice);
+    };
+    overlay.querySelectorAll('[data-act]').forEach(btn => {
+      btn.onclick = (e) => { e.stopPropagation(); done(btn.getAttribute('data-act')); };
+    });
+    // Tap backdrop = cancel
+    overlay.onclick = (e) => { if (e.target === overlay) done('cancel'); };
+  });
+}
+
+async function navFromEntry(targetTab) {
   if (!_entryDirty) {
     goTo(targetTab);
     return;
   }
-  const choice = confirm(
-    'Du hast ungespeicherte Änderungen.\n\n' +
-    'Speichern und weiter? (OK)\n' +
-    'Hier bleiben? (Abbrechen)'
-  );
-  if (choice) {
+  const choice = await _entryDirtyPrompt();
+  if (choice === 'save') {
     saveEntry();
     setTimeout(() => goTo(targetTab), 50);
+  } else if (choice === 'discard') {
+    _restoreEntrySnapshot();
+    goTo(targetTab);
   }
+  // cancel: stay
 }
 
 function _updateEntryTitle(iso) {
@@ -4476,25 +4534,27 @@ function _updateEntryTitle(iso) {
 
 /** Navigate to prev/next day in entry screen */
 /** Navigate to prev/next day in entry screen. Prompts if there are unsaved changes. */
-function entryNav(dir) {
+async function entryNav(dir) {
   if (!editISO) return;
   const doNav = () => {
     const newISO = isoPlus(editISO, dir);
     editISO = newISO;
+    // New day = new snapshot (state was just saved or discarded)
+    _entrySnapshot = S.entries[newISO] ? JSON.parse(JSON.stringify(S.entries[newISO])) : null;
     _updateEntryTitle(newISO);
     renderEntry(newISO);
     vibrate(8);
   };
   if (!_entryDirty) { doNav(); return; }
-  const choice = confirm(
-    'Du hast ungespeicherte Änderungen.\n\n' +
-    'Speichern und zum nächsten Tag? (OK)\n' +
-    'Hier bleiben? (Abbrechen)'
-  );
-  if (choice) {
+  const choice = await _entryDirtyPrompt();
+  if (choice === 'save') {
     saveEntry();
     setTimeout(doNav, 50);
+  } else if (choice === 'discard') {
+    _restoreEntrySnapshot();
+    doNav();
   }
+  // cancel: stay
 }
 
 // Swipe on entry screen
@@ -4703,9 +4763,13 @@ function renderEntry(iso) {
           </div>
           <div>
             <div style="font-size:10px;color:var(--text-hint);margin-bottom:2px">EC</div>
-            <input class="inp-field" type="number" step="0.1" min="0" max="5" value="${cd.ec || ''}" placeholder="1.2"
-              style="width:52px;height:32px;font-size:15px;font-weight:600;font-family:var(--mono);text-align:center;padding:6px 2px"
-              oninput="uEF('${c.id}','ec',this.value)"/>
+            <div style="display:flex;align-items:center;gap:3px">
+              <button onclick="stepEC('${c.id}',-0.1)" class="stepper-btn">−</button>
+              <input class="inp-field" type="number" step="0.1" min="0" max="5" id="ec-${c.id}" value="${cd.ec || ''}" placeholder="1.4"
+                style="width:52px;font-size:15px;font-weight:600;font-family:var(--mono);text-align:center;padding:6px 2px"
+                oninput="uEF('${c.id}','ec',this.value)"/>
+              <button onclick="stepEC('${c.id}',0.1)" class="stepper-btn">+</button>
+            </div>
           </div>
           <div style="flex:1;text-align:right;font-size:10px;color:var(--text-hint);line-height:1.5">
             Ziel: pH 6.4 · EC 0.8–2.0<br>Drain entsorgen!
@@ -4928,11 +4992,11 @@ function renderEntry(iso) {
         </div>
         <div style="display:flex;gap:6px;margin-bottom:8px">
           <div style="flex:1;text-align:center"><div style="font-size:9px;color:var(--text-hint);margin-bottom:3px">Klar 💎</div>
-            <input type="number" min="0" max="100" step="5" value="${trich.clear}" style="width:100%;background:var(--card2);border:0.5px solid rgba(200,200,255,0.2);border-radius:6px;padding:6px;color:#aac;font-size:14px;font-weight:600;font-family:var(--mono);text-align:center;outline:none" onchange="uTrich('${c.id}','clear',this.value)"/></div>
+            <input type="number" min="0" max="100" step="1" value="${trich.clear}" style="width:100%;background:var(--card2);border:0.5px solid rgba(200,200,255,0.2);border-radius:6px;padding:6px;color:#aac;font-size:14px;font-weight:600;font-family:var(--mono);text-align:center;outline:none" onchange="uTrich('${c.id}','clear',this.value)"/></div>
           <div style="flex:1;text-align:center"><div style="font-size:9px;color:var(--text-hint);margin-bottom:3px">Milchig 🥛</div>
-            <input type="number" min="0" max="100" step="5" value="${trich.milky}" style="width:100%;background:var(--card2);border:0.5px solid rgba(255,255,255,0.15);border-radius:6px;padding:6px;color:#eee;font-size:14px;font-weight:600;font-family:var(--mono);text-align:center;outline:none" onchange="uTrich('${c.id}','milky',this.value)"/></div>
+            <input type="number" min="0" max="100" step="1" value="${trich.milky}" style="width:100%;background:var(--card2);border:0.5px solid rgba(255,255,255,0.15);border-radius:6px;padding:6px;color:#eee;font-size:14px;font-weight:600;font-family:var(--mono);text-align:center;outline:none" onchange="uTrich('${c.id}','milky',this.value)"/></div>
           <div style="flex:1;text-align:center"><div style="font-size:9px;color:var(--text-hint);margin-bottom:3px">Bernstein 🍯</div>
-            <input type="number" min="0" max="100" step="5" value="${trich.amber}" style="width:100%;background:var(--card2);border:0.5px solid rgba(232,136,74,0.25);border-radius:6px;padding:6px;color:var(--orange);font-size:14px;font-weight:600;font-family:var(--mono);text-align:center;outline:none" onchange="uTrich('${c.id}','amber',this.value)"/></div>
+            <input type="number" min="0" max="100" step="1" value="${trich.amber}" style="width:100%;background:var(--card2);border:0.5px solid rgba(232,136,74,0.25);border-radius:6px;padding:6px;color:var(--orange);font-size:14px;font-weight:600;font-family:var(--mono);text-align:center;outline:none" onchange="uTrich('${c.id}','amber',this.value)"/></div>
         </div>
         <div style="display:flex;height:6px;border-radius:3px;overflow:hidden">
           <div style="width:${trich.clear}%;background:rgba(170,170,255,0.5)"></div>
@@ -5080,13 +5144,33 @@ function stepPH(cId, step) {
   vibrate(8);
 }
 
+/**
+ * Step EC value up/down by step amount. Default 1.4 (middle of Cup-Standard 0.8-2.0).
+ * Treats empty or zero as "use default" to match stepEnv/stepPH behaviour:
+ * user sees placeholder 1.4 and expects next + to land on 1.5, not 0.1.
+ */
+function stepEC(cId, step) {
+  const el = document.getElementById('ec-' + cId);
+  if (!el) return;
+  const raw = parseFloat(el.value);
+  const current = (isNaN(raw) || raw === 0) ? 1.4 : raw;
+  const newVal = Math.max(0, Math.min(5, Math.round((current + step) * 10) / 10));
+  el.value = newVal;
+  uEF(cId, 'ec', String(newVal));
+  vibrate(8);
+}
+
 /** Step environment inputs (temperature/humidity) */
 function stepEnv(id, step) {
   const el = document.getElementById(id);
   if (!el) return;
-  // Default if empty: 23.5°C for temp, 60% for humidity (ideal anzucht/bloom values)
+  // Default if empty OR zero: 23.5°C for temp, 60% for humidity.
+  // Treating 0 as "use default" is intentional: a user seeing the placeholder
+  // 23.5 expects the next + to go to 23.6, not 0.1. A genuine 0°C is not a
+  // realistic grow scenario anyway.
   const defaultVal = id === 'et' ? 23.5 : 60;
-  const current = parseFloat(el.value) || defaultVal;
+  const raw = parseFloat(el.value);
+  const current = (isNaN(raw) || raw === 0) ? defaultVal : raw;
   // Range: temp 0-45, humidity 0-100
   const min = 0;
   const max = id === 'et' ? 45 : 100;
@@ -5277,6 +5361,8 @@ function saveEntry() {
 
   saveS();
   _entryDirty = false;
+  // Refresh snapshot: saved state is now the new baseline for future discard
+  _entrySnapshot = S.entries[editISO] ? JSON.parse(JSON.stringify(S.entries[editISO])) : null;
   vibrate();
   toast('Gespeichert ✓');
   // Re-render to activate VPD display with saved temp/humidity
