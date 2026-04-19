@@ -591,6 +591,21 @@ input:checked + .sl:before { transform: translateX(18px); background: var(--gree
     <div class="scroll" id="duenger-body"></div>
   </div>
 
+  <!-- Welcome / First-run screen -->
+  <div class="screen" id="scr-welcome">
+    <div class="scroll" id="welcome-body" style="padding-top:max(20px,env(safe-area-inset-top))"></div>
+  </div>
+
+  <!-- Cycle Wizard (Anfänger-Flow für neuen Zyklus) -->
+  <div class="screen" id="scr-wizard">
+    <div class="topbar" style="padding-top:max(12px,env(safe-area-inset-top))">
+      <button class="icon-btn" onclick="closeWizard()" style="font-size:20px">✕</button>
+      <span class="app-title" id="wiz-title">🌱 Neuer Zyklus</span>
+      <button class="icon-btn" onclick="skipToExpertForm()" style="font-size:14px;color:var(--text-muted);padding:0 10px">Profi →</button>
+    </div>
+    <div class="scroll" id="wiz-body"></div>
+  </div>
+
   <!-- Lexikon -->
   <div class="screen" id="scr-lexikon">
     <div class="topbar" style="padding-top:max(12px,env(safe-area-inset-top))">
@@ -1280,6 +1295,38 @@ function loadS() {
   // but stays whatever user has set after that.
   if (S.beginnerMode === undefined) S.beginnerMode = (S.cycles.length === 0);
 
+  // v0.9 Fertilizer plan migration: legacy had global products+schedule.
+  // Now each plan is a named entity in S.fertPlans {id, name, products, weekSchedule,
+  // mixOrder, mixInfo, drainInfo, presetKey}. Cycles reference one via c.fertPlanId.
+  // On migration, wrap existing global data into a single "Mein Plan" entry.
+  if (!S.fertPlans) {
+    S.fertPlans = [];
+    const hasLegacyData = (S.products && S.products.length > 0)
+      || (S.weekSchedule && Object.keys(S.weekSchedule).length > 0)
+      || S.presetKey;
+    if (hasLegacyData) {
+      const legacyName = S.presetKey
+        ? (typeof FERT_PRESETS !== 'undefined' ? FERT_PRESETS[S.presetKey]?.name : null) || 'Mein Plan'
+        : 'Mein Plan';
+      // Extract weeks with 'global_w' prefix; ignore cycle-specific overrides for now
+      const legacySched = {};
+      Object.entries(S.weekSchedule || {}).forEach(([key, val]) => {
+        if (key.startsWith('global_w')) legacySched[key.replace('global_', '')] = val;
+      });
+      S.fertPlans.push({
+        id: 'fp_legacy_' + Date.now(),
+        name: legacyName,
+        products: (S.products || []).map(p => ({...p})),
+        schedule: legacySched,
+        mixOrder: S.mixOrder ? [...S.mixOrder] : [],
+        mixInfo: S.mixInfo || '',
+        drainInfo: S.drainInfo || null,
+        presetKey: S.presetKey || null,
+        createdAt: Date.now(),
+      });
+    }
+  }
+
   // Migrate from old offset system → offsetHistory per cycle
   S.cycles.forEach((c, i) => {
     if (!c.colorId)    c.colorId = COLORS[i % COLORS.length].id;
@@ -1296,6 +1343,21 @@ function loadS() {
     if (!c.lightVeg) c.lightVeg = '18/6';
     if (!c.lightBloom) c.lightBloom = '18/6';
     if (c.archived === undefined) c.archived = false;
+
+    // Outdoor-support migration: legacy cycles default to indoor.
+    // growType: 'indoor' | 'outdoor'
+    // hemisphere: 'north' | 'south' — used for outdoor photoperiod phase derivation.
+    // phaseMode: vestigial field — not user-facing anymore. Outdoor-Photoperiode
+    //   nutzt IMMER saisonale Ableitung (via bloomStartDate). Feld bleibt nur
+    //   aus Rückwärtskompatibilität im Datenmodell, wird aber nicht gelesen.
+    if (!c.growType) c.growType = 'indoor';
+    if (!c.hemisphere) c.hemisphere = 'north';
+    if (!c.phaseMode) c.phaseMode = 'days';
+
+    // v0.9: assign fertPlanId. If a legacy plan was migrated, all old cycles use it.
+    if (!c.fertPlanId) {
+      c.fertPlanId = S.fertPlans.length > 0 ? S.fertPlans[0].id : null;
+    }
 
     // Migration: old dayOffset/offsetDate → offsetHistory
     if (!c.offsetHistory) {
@@ -1315,8 +1377,95 @@ function loadS() {
   delete S.skipDays;
 }
 
+/**
+ * Return the fertilizer plan for a cycle (by cycle object or cycleId).
+ * If no cycle/plan found, returns null.
+ */
+function getPlanForCycle(cycOrId) {
+  if (!S.fertPlans) return null;
+  const c = typeof cycOrId === 'string' ? S.cycles.find(x => x.id === cycOrId) : cycOrId;
+  if (!c || !c.fertPlanId) return null;
+  return S.fertPlans.find(p => p.id === c.fertPlanId) || null;
+}
+
+/**
+ * Return the plan currently being shown/edited in the Dünger screen.
+ * Priority: user's active-plan selection > first active cycle's plan > first plan.
+ * Returns null only if there are no plans at all.
+ */
+function getActivePlan() {
+  if (!S.fertPlans || !S.fertPlans.length) return null;
+  if (S._activePlanId) {
+    const found = S.fertPlans.find(p => p.id === S._activePlanId);
+    if (found) return found;
+  }
+  // Fall back: plan of first active cycle
+  const act = (S.cycles || []).filter(c => c.active && !c.archived);
+  if (act.length > 0) {
+    const byCyc = getPlanForCycle(act[0]);
+    if (byCyc) return byCyc;
+  }
+  return S.fertPlans[0];
+}
+
+/**
+ * Mirror the active plan into legacy global fields (S.products, S.weekSchedule,
+ * S.mixOrder, S.mixInfo, S.drainInfo, S.presetKey) so existing read-sites keep
+ * working without a big-bang refactor. Call this before any render of
+ * Dünger screen or entry that shows doses. Call also after mutations that
+ * modify global fields — syncGlobalsToActivePlan() does the inverse.
+ */
+function syncActivePlanToGlobals() {
+  const plan = getActivePlan();
+  if (!plan) {
+    // No plan at all: reset globals to empty
+    S.products = [];
+    S.weekSchedule = {};
+    S.mixOrder = [];
+    S.mixInfo = '';
+    S.drainInfo = null;
+    S.presetKey = null;
+    return;
+  }
+  S.products = plan.products || [];
+  // Legacy weekSchedule uses 'global_wN' keys; plan stores 'wN'
+  const legacy = {};
+  Object.entries(plan.schedule || {}).forEach(([k, v]) => {
+    legacy[k.startsWith('w') ? 'global_' + k : k] = v;
+  });
+  S.weekSchedule = legacy;
+  S.mixOrder = plan.mixOrder || [];
+  S.mixInfo = plan.mixInfo || '';
+  S.drainInfo = plan.drainInfo || null;
+  S.presetKey = plan.presetKey || null;
+}
+
+/**
+ * Inverse of syncActivePlanToGlobals(): copy legacy global fields back into
+ * the currently active plan. Call after any code that wrote to S.products /
+ * S.weekSchedule / S.mixOrder etc., so the plan stays the source of truth.
+ */
+function syncGlobalsToActivePlan() {
+  const plan = getActivePlan();
+  if (!plan) return;
+  plan.products = (S.products || []).map(p => ({...p}));
+  // Extract 'global_wN' → 'wN' for plan storage
+  const sched = {};
+  Object.entries(S.weekSchedule || {}).forEach(([k, v]) => {
+    if (k.startsWith('global_w')) sched[k.replace('global_', '')] = v;
+  });
+  plan.schedule = sched;
+  plan.mixOrder = [...(S.mixOrder || [])];
+  plan.mixInfo = S.mixInfo || '';
+  plan.drainInfo = S.drainInfo || null;
+  plan.presetKey = S.presetKey || null;
+  plan.updatedAt = Date.now();
+}
+
 function saveS() {
   try {
+    // Sync: legacy global fields → active plan (plan is source of truth)
+    syncGlobalsToActivePlan();
     // Consolidate offsetHistory (only when needed)
     S.cycles.forEach(c => {
       if (c.offsetHistory && c.offsetHistory.length > 1) {
@@ -1521,8 +1670,121 @@ function fmtDE(iso, o) { return iso12(iso).toLocaleDateString('de-DE', o || { da
 //  GROW LOGIC
 // =====================================================================
 
+/**
+ * Bestimmt das Blüte-Start-Datum für einen Zyklus.
+ *
+ * Das ist der biologisch korrekte Ansatz für Photoperioden (Indoor + Outdoor):
+ * Die Pflanze geht nicht nach Tagen seit Keimung in die Blüte, sondern durch
+ * einen expliziten Trigger (Lichtwechsel Indoor / Sonnenwende Outdoor).
+ *
+ * Rückgabe (ISO-Datum oder null):
+ *   1. Explizit gesetzt (c.bloomStartDate) → das Datum direkt
+ *   2. Outdoor-Photoperiode → max(Sonnenwende, startDate + 6 Wochen)
+ *      (Pflanze braucht mindestens 6 Wochen Vegi; wer früh sät, blüht zur
+ *       Sonnenwende; wer spät sät, blüht 6 Wochen nach Keimung — das ist
+ *       dann nach der Sonnenwende, suboptimal aber realistisch.)
+ *   3. Sonst (Autos, tagbasiert, Indoor ohne explizites Datum) → null
+ *      Dann greift die klassische Tag-basierte Phase-Logik.
+ */
+function _computeBloomStartDate(c) {
+  if (!c || !c.startDate) return null;
+
+  // Explizit vom User gesetzt (Indoor: beim Licht-Umschalten; Outdoor: manuell falls anders gewünscht)
+  if (c.bloomStartDate) return c.bloomStartDate;
+
+  // Auto-Ableitung nur für Outdoor-Photoperiode.
+  // phaseMode wird nicht mehr gefragt — Outdoor-Photoperiode nutzt IMMER saisonale Ableitung.
+  if (c.growType !== 'outdoor') return null;
+  if ((c.seedType || '').toLowerCase().indexOf('auto') >= 0) return null;
+
+  const start = iso12(c.startDate);
+  const isSouth = c.hemisphere === 'south';
+  const startYear = start.getFullYear();
+
+  // Nächstgelegene Sonnenwende ≥ startDate:
+  //   Nord: 21. Juni; Süd: 21. Dezember
+  const month = isSouth ? 11 : 5;
+  const candidate1 = new Date(startYear, month, 21, 12);
+  const candidate2 = new Date(startYear + 1, month, 21, 12);
+  const solstice = (candidate1 >= start) ? candidate1 : candidate2;
+
+  // Minimum 6 Wochen (42 Tage) Vegi — sonst ist die Pflanze zu jung
+  const minVegi = new Date(start.getTime() + 42 * 86400000);
+
+  const bloomStart = solstice >= minVegi ? solstice : minVegi;
+
+  // Zurück nach ISO-String
+  const yyyy = bloomStart.getFullYear();
+  const mm = String(bloomStart.getMonth() + 1).padStart(2, '0');
+  const dd = String(bloomStart.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
+}
+
+/**
+ * Datumbasierte Phase-Ableitung: kennt Vegi-bis-Blüte-Start und dann fixe
+ * Phasen-Längen ab Blüte-Start (wie bei c.bloomDays etc., nur dass der
+ * Vegi-Anteil variabel ist statt fix 21 Tage).
+ *
+ * Rückgabe: gleiche Form wie phase(), oder null wenn nicht anwendbar.
+ */
+function _datebasedPhase(iso, c) {
+  const bloomStart = _computeBloomStartDate(c);
+  if (!bloomStart) return null;
+
+  const d = iso12(iso);
+  const start = iso12(c.startDate);
+  const bs = iso12(bloomStart);
+  if (d < start) return null;
+
+  const bloomLen = c.bloomDays || PHASE_DEFAULTS.bloomDays; // 60
+  const flushLen = c.flushDays || PHASE_DEFAULTS.flushDays; // 8
+  const harvestLen = c.harvestDays || PHASE_DEFAULTS.harvestDays; // 1
+  const dryLen = c.dryDays || PHASE_DEFAULTS.dryDays; // 7
+  // Outdoor: kein IceFlush
+  const iceLen = c.growType === 'outdoor' ? 0 : (c.iceDays || PHASE_DEFAULTS.iceDays);
+
+  const msPerDay = 86400000;
+  const flushStart = new Date(bs.getTime() + bloomLen * msPerDay);
+  const iceStart   = new Date(flushStart.getTime() + flushLen * msPerDay);
+  const harvestStart = new Date(iceStart.getTime() + iceLen * msPerDay);
+  const dryStart     = new Date(harvestStart.getTime() + harvestLen * msPerDay);
+  const dryEnd       = new Date(dryStart.getTime() + dryLen * msPerDay);
+
+  const diffDays = Math.round((d - start) / msPerDay);
+  const totalDays = Math.max(1, Math.round((dryEnd - start) / msPerDay));
+  const pct = Math.min(100, Math.round(diffDays / totalDays * 100));
+
+  if (d < bs) {
+    // Vegi (inkl. Anzucht-Start); Woche seit startDate
+    const week = Math.floor(diffDays / 7) + 1;
+    return { ph: 'anzucht', day: diffDays + 1, week, total: totalDays, pct };
+  }
+  if (d < flushStart) {
+    const bloomDayIdx = Math.round((d - bs) / msPerDay);
+    return { ph: 'bloom', day: diffDays + 1, week: Math.floor(bloomDayIdx / 7) + 1, total: totalDays, pct };
+  }
+  if (d < iceStart) {
+    return { ph: 'flush', day: diffDays + 1, week: null, total: totalDays, pct };
+  }
+  if (iceLen > 0 && d < harvestStart) {
+    return { ph: 'ice', day: diffDays + 1, week: null, total: totalDays, pct };
+  }
+  if (d < dryStart) {
+    return { ph: 'harvest', day: diffDays + 1, week: null, total: totalDays, pct };
+  }
+  if (d < dryEnd) {
+    return { ph: 'dry', day: diffDays + 1, week: null, total: totalDays, pct };
+  }
+  return null;
+}
+
 /** Returns the current phase for a given date and cycle */
 function phase(iso, c) {
+  if (!c) return null;
+  // Datum-basierte Phase (Outdoor-Photoperiode oder Indoor mit explizitem bloomStartDate)
+  const dated = _datebasedPhase(iso, c);
+  if (dated) return dated;
+
   if (!c.startDate) return null;
   const diff = isoDiff(iso, c.startDate);
   if (diff < 0) return null;
@@ -1530,7 +1792,9 @@ function phase(iso, c) {
   const a  = c.anzuchtDays || PHASE_DEFAULTS.anzuchtDays;
   const b  = a + (c.bloomDays || PHASE_DEFAULTS.bloomDays);
   const f  = b + (c.flushDays || PHASE_DEFAULTS.flushDays);
-  const ic = f + (c.iceDays || PHASE_DEFAULTS.iceDays);
+  // Outdoor skips IceFlush phase (Indoor Cup-Niveau trick, not practical outside)
+  const iceLen = c.growType === 'outdoor' ? 0 : (c.iceDays || PHASE_DEFAULTS.iceDays);
+  const ic = f + iceLen;
   const h  = ic + (c.harvestDays || PHASE_DEFAULTS.harvestDays);
   const dr = h + (c.dryDays || PHASE_DEFAULTS.dryDays);
 
@@ -1591,11 +1855,32 @@ function getAction(iso, c) {
 
   if (diff < 0) return null;
 
-  // Phasengrenzen
+  // Datum-basierte Phase (Outdoor-Photoperiode oder Indoor mit explizitem bloomStartDate).
+  // Wir leiten die Phase aus phase() ab und berechnen den Gieß-Rhythmus anhand der
+  // Tage seit Zyklus-Start (einfach, unabhängig vom Phase-Übergang).
+  // Outdoor: Regen kann jeden Gießtag ersetzen, der User skippt dann einzeln.
+  const dated = _datebasedPhase(iso, c);
+  if (dated) {
+    const ph = dated.ph;
+    const iv = getInt(c, ph);
+    if (diff % iv === 0) {
+      if (ph === 'anzucht') return 'giess_anz';
+      if (ph === 'bloom')   return 'giess';
+      if (ph === 'flush')   return 'spuelen';
+      if (ph === 'ice')     return 'ice';
+      if (ph === 'harvest') return 'ernte';
+      if (ph === 'dry')     return 'trocknen';
+    }
+    return null;
+  }
+
+  // Phasengrenzen (tag-basiert, klassisch)
   const a  = c.anzuchtDays || PHASE_DEFAULTS.anzuchtDays;
   const b  = a + (c.bloomDays || PHASE_DEFAULTS.bloomDays);
   const f  = b + (c.flushDays || PHASE_DEFAULTS.flushDays);
-  const ic = f + (c.iceDays || PHASE_DEFAULTS.iceDays);
+  // Outdoor skips IceFlush (same logic as phase())
+  const iceLen = c.growType === 'outdoor' ? 0 : (c.iceDays || PHASE_DEFAULTS.iceDays);
+  const ic = f + iceLen;
   const h  = ic + (c.harvestDays || PHASE_DEFAULTS.harvestDays);
   const dr = h + (c.dryDays || PHASE_DEFAULTS.dryDays);
 
@@ -1664,6 +1949,68 @@ function getWeekDoses(cId, w, c) {
     // Round to 2 decimals to keep display clean (0.8/2.33 = 0.343 → 0.34)
     out[pid] = Math.round((val / wateringsPerWeek) * 100) / 100;
   });
+  return out;
+}
+
+/**
+ * Check if a product unit is per-litre (scales with water) or absolute (fixed amount).
+ * Per-litre: "ml/L", "g/L", "Tropfen/L", "Tr/L"
+ * Absolute:  "ml", "g"
+ */
+function isPerLitre(unit) {
+  return !!(unit && /\/L\b/.test(unit));
+}
+
+/**
+ * Display unit extracted from a full unit string.
+ * "ml/L" → "ml", "g/L" → "g", "Tropfen/L" → "Tropfen", "Tr/L" → "Tr", "g" → "g", "ml" → "ml"
+ */
+function displayUnit(unit) {
+  if (!unit) return 'ml';
+  return unit.replace(/\/L\b/, '').trim() || 'ml';
+}
+
+/**
+ * Calculate the amount of fertilizer to add, based on:
+ *  - plan: the planned dose (number, in product's unit)
+ *  - waterMl: water volume in ml
+ *  - unit: product unit (ml/L, g/L, Tr/L, ml, g)
+ * Returns the amount in the product's display unit (ml, g, Tropfen/Tr).
+ * For "/L" units: scales with water (plan × waterMl / 1000).
+ * For absolute units: returns plan as-is regardless of water amount.
+ */
+function calcDose(plan, waterMl, unit) {
+  if (!plan || plan <= 0) return 0;
+  if (isPerLitre(unit)) {
+    return Math.round((plan * waterMl / 1000) * 10) / 10;
+  }
+  // Absolute: fixed amount per watering, independent of water volume
+  return Math.round(plan * 10) / 10;
+}
+
+/**
+ * Return S.products sorted by S.mixOrder (if defined).
+ * Products not in mixOrder are appended at the end in their original order.
+ * When mixOrder is empty, products are returned as-is.
+ * This single helper keeps week plan, nutrient table, additives list etc.
+ * in a consistent order — the one the user set in "Mischreihenfolge".
+ */
+function orderedProducts() {
+  const prods = S.products || [];
+  if (!S.mixOrder || S.mixOrder.length === 0) return prods;
+  // Build map name → product for fast lookup
+  const byName = new Map(prods.map(p => [p.name, p]));
+  const out = [];
+  const seen = new Set();
+  // First: products in mixOrder
+  for (const name of S.mixOrder) {
+    const p = byName.get(name);
+    if (p && !seen.has(p.id)) { out.push(p); seen.add(p.id); }
+  }
+  // Then: any products not yet seen (e.g. freshly added before mixOrder-sync catches up)
+  for (const p of prods) {
+    if (!seen.has(p.id)) out.push(p);
+  }
   return out;
 }
 
@@ -1816,7 +2163,8 @@ function getAlerts(c) {
   }
 
   // Smart: Light schedule (dynamic based on seedType)
-  if (c.seedType !== 'auto') {
+  // Outdoor skips this — the sun's photoperiod handles the transition.
+  if (c.seedType !== 'auto' && c.growType !== 'outdoor') {
     // Feminisiert/Regulär: remind to switch light when bloom starts
     if (p.ph === 'bloom' && p.week === 1 && c.lightVeg !== c.lightBloom) {
       out.push({ icon: '💡', text: `Licht von ${c.lightVeg || '18/6'} auf ${c.lightBloom || '18/6'} umstellen!`, type: 'warn' });
@@ -1852,22 +2200,25 @@ function calcVPD(t, rh) {
 }
 
 /**
- * VPD zone labels + styling. Optional second arg: phase info {ph, week}
- * from phase(). When phase is late bloom (bloom week 7+), the zone 1.4-1.6
- * is marked as intentional Cup-Niveau (Trichom-Boost) rather than "too high".
+ * VPD zone labels + styling. Optional args:
+ *   - phaseInfo {ph, week}: late bloom (bloom wk 7+) 1.4-1.6 is Cup-Niveau (intentional)
+ *   - growType: 'outdoor' skips actionable hints ("Lüfter an", "RLF erhöhen") since
+ *               the user can't control the weather — only informational labels remain.
  */
-function vpdZone(v, phaseInfo) {
+function vpdZone(v, phaseInfo, growType) {
   if (v === null) return null;
   const isLateBloom = phaseInfo && phaseInfo.ph === 'bloom' && (phaseInfo.week || 0) >= 7;
-  if (v < 0.4) return { label: 'Zu feucht', color: '#7a7af0', bg: '#1e1e3a', hint: 'Lüfter an!', pct: v / 0.4 * 15 };
+  const outdoor = growType === 'outdoor';
+  if (v < 0.4) return { label: 'Zu feucht', color: '#7a7af0', bg: '#1e1e3a', hint: outdoor ? 'Hohe Luftfeuchte — Schimmelrisiko beobachten.' : 'Lüfter an!', pct: v / 0.4 * 15 };
   if (v < 0.8) return { label: 'Anzucht ✓', color: '#5aabf0', bg: '#0d1e2e', hint: 'Ideal für Sämlinge.', pct: 15 + (v - 0.4) / 0.4 * 35 };
   if (v < 1.2) return { label: 'Blüte ✓', color: '#4caf70', bg: '#0d1e0d', hint: 'Optimal für Blüte!', pct: 50 + (v - 0.8) / 0.4 * 25 };
   if (v < 1.6) {
-    return isLateBloom
-      ? { label: 'Spätblüte ✓', color: '#4caf70', bg: '#0d1e0d', hint: 'Cup-Niveau: Trichom-Boost durch milden Trockenstress.', pct: 75 + (v - 1.2) / 0.4 * 15 }
-      : { label: 'Etwas hoch', color: '#c8a04a', bg: '#2a1e0d', hint: 'RLF erhöhen (in Spätblüte OK als Cup-Niveau).', pct: 75 + (v - 1.2) / 0.4 * 15 };
+    if (isLateBloom) {
+      return { label: 'Spätblüte ✓', color: '#4caf70', bg: '#0d1e0d', hint: 'Cup-Niveau: Trichom-Boost durch milden Trockenstress.', pct: 75 + (v - 1.2) / 0.4 * 15 };
+    }
+    return { label: 'Etwas hoch', color: '#c8a04a', bg: '#2a1e0d', hint: outdoor ? 'Trockener Tag — häufiger gießen falls heiß.' : 'RLF erhöhen (in Spätblüte OK als Cup-Niveau).', pct: 75 + (v - 1.2) / 0.4 * 15 };
   }
-  return { label: 'Stress!', color: '#e06060', bg: '#2a0d0d', hint: 'Sofort RLF anpassen!', pct: Math.min(97, 90 + (v - 1.6) * 10) };
+  return { label: 'Stress!', color: '#e06060', bg: '#2a0d0d', hint: outdoor ? 'Sehr trocken — Schattenplatz und Wasser prüfen.' : 'Sofort RLF anpassen!', pct: Math.min(97, 90 + (v - 1.6) * 10) };
 }
 
 /**
@@ -2800,6 +3151,23 @@ async function skipDay(cId, iso) {
   if (editISO) renderEntry(editISO);
 }
 
+/**
+ * Outdoor: User markiert den Tag als "Regen hat gegossen" — Gieß-Plan bleibt
+ * unverändert, nur dieser eine Tag gilt als erledigt ohne eigenes Gießen.
+ * Technisch identisch zu skipDay (beide nutzen skippedDays), aber mit
+ * positivem Framing: kein Confirm-Dialog, anderer Toast.
+ */
+function rainSkip(cId, iso) {
+  const c = S.cycles.find(x => x.id === cId);
+  if (!c) return;
+  if (!c.skippedDays) c.skippedDays = [];
+  if (!c.skippedDays.includes(iso)) c.skippedDays.push(iso);
+  saveS();
+  vibrate(8);
+  toast('☔ Regen-Tag markiert — Plan läuft weiter');
+  if (editISO) renderEntry(editISO);
+}
+
 /** Entfernten Gießtag wiederherstellen */
 function restoreDay(cId, iso) {
   const c = S.cycles.find(x => x.id === cId);
@@ -2849,7 +3217,8 @@ function renderTips() {
   const vpd = calcVPD(parseFloat(entry.temp), parseFloat(entry.humidity));
   // Use first active cycle's phase for VPD zone context (Cup-Niveau Spätblüte mode)
   const p4vpd = act.length > 0 ? phase(today, act[0]) : null;
-  const z = vpdZone(vpd, p4vpd);
+  const gt4vpd = act.length > 0 ? act[0].growType : 'indoor';
+  const z = vpdZone(vpd, p4vpd, gt4vpd);
   let tips = [];
 
   if (vpd !== null && z) {
@@ -3172,6 +3541,8 @@ function _snippet(html, query, maxLen) {
 //  DÜNGER MANAGER
 // =====================================================================
 function openDuenger() {
+  // Ensure legacy globals reflect the active plan (needed after cycle switches etc.)
+  syncActivePlanToGlobals();
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('scr-duenger').classList.add('active');
   renderDuenger();
@@ -3190,6 +3561,10 @@ function renderDuenger() {
       <button onclick="delProduct('${p.id}')" style="background:none;border:none;color:var(--red);font-size:13px;cursor:pointer;padding:4px 8px">🗑</button>
     </div>
   `).join('');
+
+  // Inline "+ Produkt hinzufügen" button shown below the list when products exist.
+  // Empty-state case uses a larger button (see empty state below).
+  const addBtnInline = prods.length > 0 ? `<button onclick="addProduct()" style="background:transparent;border:1px dashed var(--border);color:var(--blue);padding:10px;border-radius:10px;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font);width:100%;margin-top:4px">＋ Weiteres Produkt hinzufügen</button>` : '';
 
   const ef = editProd ? `<div class="card" style="border-color:rgba(90,171,240,0.3)">
     <div class="sect-head" style="color:var(--blue)">${editProd === 'new' ? 'Neues Produkt' : 'Bearbeiten'}</div>
@@ -3226,7 +3601,7 @@ function renderDuenger() {
   const presetBtns = `<div style="padding:16px;background:linear-gradient(135deg, #0d1e0d, #0a1a0a);border-radius:16px;border:1px solid var(--green-dk);margin-bottom:4px">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
       <span style="font-size:20px">🧪</span>
-      <div class="sect-head" style="margin:0;font-size:12px">BioBizz-Düngeplan laden</div>
+      <div class="sect-head" style="margin:0;font-size:12px">Düngeplan wählen</div>
     </div>
     <div style="display:flex;flex-direction:column;gap:6px">
       <button onclick="loadPreset('biobizz_master')" style="background:${S.presetKey==='biobizz_master'?'var(--green-dk)':'var(--green-bg)'};border:1px solid ${S.presetKey==='biobizz_master'?'var(--green)':'var(--green-dk)'};border-radius:10px;padding:10px 14px;font-size:13px;color:var(--green);cursor:pointer;font-family:var(--font);font-weight:700;text-align:left">
@@ -3244,12 +3619,31 @@ function renderDuenger() {
       <button style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px 10px;font-size:11px;color:var(--text-muted);font-family:var(--font)">🔬 CANNA · bald</button>
       <button style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px 10px;font-size:11px;color:var(--text-muted);font-family:var(--font)">💜 Hesi · bald</button>
     </div>
+    <div style="margin-top:10px;padding-top:10px;border-top:0.5px solid var(--border)">
+      ${(() => {
+        const prodCount = (S.products || []).length;
+        const hasPreset = !!S.presetKey;
+        const hasCustomPlan = !hasPreset && prodCount > 0;
+        if (hasCustomPlan) {
+          // User already has a custom plan — button should clearly warn
+          return `<button onclick="startCustomPlan()" style="width:100%;background:rgba(224,96,96,0.06);border:1px solid rgba(224,96,96,0.25);border-radius:10px;padding:10px 14px;font-size:13px;color:var(--red);cursor:pointer;font-family:var(--font);font-weight:700;text-align:left">
+            ⚠ Plan zurücksetzen <span style="font-size:10px;font-weight:400;color:var(--text-muted)">· Alle ${prodCount} Produkte löschen</span>
+          </button>`;
+        }
+        // Preset active or empty state — standard button
+        return `<button onclick="startCustomPlan()" style="width:100%;background:rgba(176,106,200,0.08);border:1px solid rgba(176,106,200,0.3);border-radius:10px;padding:10px 14px;font-size:13px;color:var(--purple);cursor:pointer;font-family:var(--font);font-weight:700;text-align:left">
+          ✨ Eigenen Plan starten <span style="font-size:10px;font-weight:400;color:var(--text-muted)">· Für Profis mit eigenem Dünger</span>
+        </button>`;
+      })()}
+    </div>
     ${activePreset ? `<div style="margin-top:10px;padding:8px 10px;background:rgba(76,175,112,0.08);border-radius:8px;font-size:11px;color:var(--green);line-height:1.4">
       ✓ Aktiv: <b>${activePreset.name}</b>${activePreset.subtitle ? ' · ' + activePreset.subtitle : ''}
       ${activePreset.doseMode === 'weekly-split'
         ? '<div style="margin-top:4px;font-size:10px;color:var(--yellow)">💡 Wochendosis-Modus: App teilt automatisch durch Gießtage/Woche</div>'
         : '<div style="margin-top:4px;font-size:10px;color:var(--text-muted)">💡 Per-Gieß-Modus: Volle Dosis jeden Gießtag</div>'}
-    </div>` : ''}
+    </div>` : (S.presetKey === null && (S.products||[]).length > 0 ? `<div style="margin-top:10px;padding:8px 10px;background:rgba(176,106,200,0.08);border-radius:8px;font-size:11px;color:var(--purple);line-height:1.4">
+      ✨ <b>Eigener Plan</b> aktiv. Dünger und Reihenfolge frei konfigurierbar.
+    </div>` : '')}
   </div>`;
 
   // Drain info (if available)
@@ -3258,19 +3652,35 @@ function renderDuenger() {
   </div>` : '';
 
   // Mix order display
-  const mixHTML = S.mixOrder ? `<div style="padding:10px 14px;background:var(--card);border-radius:14px;border:0.5px solid var(--border)">
-    <div class="sect-head">Mischreihenfolge${S.presetKey ? ' – ' + FERT_PRESETS[S.presetKey]?.name : ''}</div>
-    <div style="font-size:11px;color:var(--text-muted);margin:4px 0 8px;line-height:1.5">${S.mixInfo || ''}</div>
+  const isCustomPlan = !S.presetKey;
+  const mixHTML = (S.mixOrder && S.mixOrder.length > 0) ? `<div style="padding:10px 14px;background:var(--card);border-radius:14px;border:0.5px solid var(--border)">
+    <div class="sect-head">Mischreihenfolge${S.presetKey ? ' – ' + FERT_PRESETS[S.presetKey]?.name : ' (eigener Plan)'}</div>
+    ${isCustomPlan ? `
+      <textarea id="mix-info-edit" placeholder="Beschreibe deine Mischreihenfolge (optional). Z.B. Reihenfolge der Produkte, pH-Einstellung, besondere Hinweise..."
+        oninput="updateMixInfo(this.value)"
+        style="width:100%;background:var(--card2);border:0.5px solid var(--border);border-radius:8px;padding:8px 10px;font-size:11px;color:var(--text-sub);font-family:var(--font);line-height:1.5;margin:6px 0 10px;resize:vertical;min-height:48px;outline:none">${(S.mixInfo || '').replace(/"/g, '&quot;')}</textarea>
+    ` : `
+      <div style="font-size:11px;color:var(--text-muted);margin:4px 0 8px;line-height:1.5">${S.mixInfo || ''}</div>
+    `}
     ${S.mixOrder.map((name, i) => {
       const prod = S.products.find(p => p.name === name);
-      return `<div class="mix-step">
+      const isFirst = i === 0;
+      const isLast = i === S.mixOrder.length - 1;
+      return `<div class="mix-step" style="position:relative">
         <div class="mix-num">${i + 1}</div>
         <div style="width:8px;height:8px;border-radius:50%;background:${prod?.color || '#555'};flex-shrink:0"></div>
-        <span>${name}</span>
+        <span style="flex:1">${name}</span>
         <span style="color:var(--text-hint);font-size:11px">${prod?.unit || ''}</span>
+        ${isCustomPlan ? `
+          <button onclick="moveMixStep(${i},-1)" ${isFirst ? 'disabled' : ''} style="width:24px;height:24px;border-radius:5px;background:var(--surface);border:0.5px solid var(--border);color:${isFirst ? 'var(--text-hint)' : 'var(--purple)'};font-size:12px;cursor:${isFirst ? 'default' : 'pointer'};opacity:${isFirst ? '0.3' : '1'};display:flex;align-items:center;justify-content:center;font-family:var(--font)" title="Nach oben">↑</button>
+          <button onclick="moveMixStep(${i},1)" ${isLast ? 'disabled' : ''} style="width:24px;height:24px;border-radius:5px;background:var(--surface);border:0.5px solid var(--border);color:${isLast ? 'var(--text-hint)' : 'var(--purple)'};font-size:12px;cursor:${isLast ? 'default' : 'pointer'};opacity:${isLast ? '0.3' : '1'};display:flex;align-items:center;justify-content:center;font-family:var(--font)" title="Nach unten">↓</button>
+        ` : ''}
       </div>`;
     }).join('')}
-  </div>` : '';
+  </div>` : (isCustomPlan && (S.products || []).length > 0 ? `<div style="padding:10px 14px;background:var(--card);border-radius:14px;border:0.5px solid var(--border)">
+    <div class="sect-head">Mischreihenfolge (eigener Plan)</div>
+    <div style="font-size:11px;color:var(--text-muted);margin-top:4px">Füge Produkte hinzu — sie erscheinen hier automatisch in der Reihenfolge und können dann per ↑/↓ umsortiert werden.</div>
+  </div>` : '');
 
   // Week schedule editor (12 weeks)
   const weekNames = {1:'Keimling',2:'Frühes Wachstum',3:'Haupt-Vegetation',4:'Vorblüte & Stretch',5:'Blüte-Übergang',6:'Blüte-Stacking',7:'Bud-Entwicklung',8:'Peak Bloom',9:'Finale Reife',10:'Herbst-Einleitung',11:'Spülen / Flush',12:'Ernte-Vorbereitung'};
@@ -3291,7 +3701,7 @@ function renderDuenger() {
           ${w===12?'<span style="font-size:10px;color:var(--red)">🛑 Gießstopp</span>':''}
         </div>
         ${focus ? `<div style="font-size:11px;color:var(--yellow);line-height:1.4;margin-bottom:6px;padding:6px 8px;background:rgba(240,208,80,0.05);border-left:2px solid rgba(240,208,80,0.35);border-radius:4px">💡 ${focus.tip}</div>` : ''}
-        ${(S.products || []).map(p => {
+        ${orderedProducts().map(p => {
           const dose = S.weekSchedule['global_w' + w]?.[p.id] || 0;
           return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:3px">
             <div style="width:8px;height:8px;border-radius:50%;background:${p.color};flex-shrink:0"></div>
@@ -3307,8 +3717,49 @@ function renderDuenger() {
     <button class="sav-btn" style="background:var(--green-dk)" onclick="saveS();toast('Gespeichert ✓')">💾 Plan speichern</button>
   </div>`;
 
-  document.getElementById('duenger-body').innerHTML = `${presetBtns}${drainHTML}${ef}
-    <div style="display:flex;flex-direction:column;gap:8px">${rows || '<div style="font-size:13px;color:var(--text-muted);padding:20px;text-align:center">Lade eine Vorlage oder tippe + für eigene Produkte.</div>'}</div>
+  // Plan-Auswahl-Leiste: Übersicht über alle gespeicherten Pläne, mit
+  // Aktivieren/Umbenennen/Duplizieren/Löschen. Erscheint nur wenn mindestens
+  // ein Plan existiert (bei frischer Installation wird beim ersten Speichern ein Plan angelegt).
+  const plans = S.fertPlans || [];
+  const activePlan = getActivePlan();
+  const activeId = activePlan?.id;
+  const cyclesUsing = (id) => (S.cycles || []).filter(c => c.fertPlanId === id && !c.archived).length;
+
+  const planBar = plans.length > 0 ? `<div style="padding:14px;background:linear-gradient(135deg, #0d1a2e, #0a1020);border-radius:14px;border:1px solid rgba(90,171,240,0.3);margin-bottom:8px">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+      <span style="font-size:18px">📋</span>
+      <div class="sect-head" style="margin:0;font-size:12px;color:var(--blue)">Düngepläne</div>
+      <button onclick="addFertPlan()" style="margin-left:auto;background:var(--blue);color:#fff;border:none;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:600;cursor:pointer;font-family:var(--font)">＋ Neuer Plan</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:6px">
+      ${plans.map(pl => {
+        const isActive = pl.id === activeId;
+        const nUsing = cyclesUsing(pl.id);
+        return `<div style="display:flex;align-items:center;gap:6px;background:${isActive ? 'rgba(90,171,240,0.12)' : 'var(--card2)'};border:0.5px solid ${isActive ? 'var(--blue)' : 'var(--border)'};border-radius:10px;padding:8px 10px">
+          <div onclick="switchFertPlan('${pl.id}')" style="flex:1;min-width:0;cursor:pointer">
+            <div style="font-size:13px;font-weight:600;color:${isActive ? 'var(--blue)' : 'var(--text)'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+              ${isActive ? '● ' : ''}${pl.name}
+            </div>
+            <div style="font-size:10px;color:var(--text-muted);margin-top:1px">
+              ${(pl.products || []).length} Produkt${(pl.products || []).length === 1 ? '' : 'e'} · ${nUsing} Zyklus${nUsing === 1 ? '' : 'se'}
+            </div>
+          </div>
+          <button onclick="renameFertPlan('${pl.id}')" title="Umbenennen" style="background:none;border:none;color:var(--text-muted);font-size:14px;cursor:pointer;padding:4px 6px">✏</button>
+          <button onclick="duplicateFertPlan('${pl.id}')" title="Duplizieren" style="background:none;border:none;color:var(--text-muted);font-size:14px;cursor:pointer;padding:4px 6px">⎘</button>
+          ${plans.length > 1 ? `<button onclick="deleteFertPlan('${pl.id}')" title="Löschen" style="background:none;border:none;color:var(--red);font-size:13px;cursor:pointer;padding:4px 6px">🗑</button>` : ''}
+        </div>`;
+      }).join('')}
+    </div>
+  </div>` : `<div style="padding:16px;background:var(--card);border:0.5px dashed var(--border);border-radius:14px;margin-bottom:8px;text-align:center">
+    <div style="font-size:13px;color:var(--text-muted);margin-bottom:10px">Noch kein Düngeplan. Lade unten eine Vorlage oder erstelle einen eigenen.</div>
+    <button onclick="addFertPlan()" style="background:var(--blue);color:#fff;border:none;border-radius:10px;padding:10px 18px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font)">＋ Ersten Plan anlegen</button>
+  </div>`;
+
+  document.getElementById('duenger-body').innerHTML = `${planBar}${presetBtns}${drainHTML}${ef}
+    <div style="display:flex;flex-direction:column;gap:8px">${rows || `<div style="padding:20px;text-align:center;background:var(--card);border:0.5px dashed var(--border);border-radius:12px">
+      <div style="font-size:13px;color:var(--text-muted);margin-bottom:12px;line-height:1.5">Noch keine Produkte angelegt.<br>Lade oben eine Vorlage oder lege eigene Produkte an.</div>
+      <button onclick="addProduct()" style="background:var(--blue);color:#fff;border:none;border-radius:10px;padding:10px 18px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font)">＋ Produkt hinzufügen</button>
+    </div>`}${addBtnInline}</div>
     ${mixHTML}${weekPlan}<div style="height:20px"></div>`;
 }
 
@@ -3317,30 +3768,254 @@ let _pColor = PROD_COLORS[0];
 async function loadPreset(key) {
   const pr = FERT_PRESETS[key];
   if (!pr) return;
-  const ok = await customConfirm(
-    `"${pr.name}" laden?`,
-    'Produkte & Wochenplan werden ersetzt. Deine aktuellen Dünger-Einstellungen gehen verloren.',
-    'Laden', 'var(--green)'
-  );
+
+  // Check ob schon ein Plan mit diesem Preset existiert
+  const existing = (S.fertPlans || []).find(p => p.presetKey === key);
+
+  let confirmTitle, confirmBody, confirmBtn;
+  if (existing) {
+    // Plan mit diesem Preset existiert → wechsle dahin
+    confirmTitle = `Zu "${existing.name}" wechseln?`;
+    confirmBody = 'Dieser Plan existiert bereits. Wir wechseln einfach dahin, deine anderen Pläne bleiben unverändert.';
+    confirmBtn = 'Wechseln';
+  } else {
+    // Kein Plan mit diesem Preset → neuen anlegen (alte Pläne bleiben)
+    confirmTitle = `"${pr.name}" laden?`;
+    confirmBody = 'Ein neuer Düngeplan wird angelegt und aktiviert. Deine bestehenden Pläne bleiben erhalten.';
+    confirmBtn = 'Plan anlegen';
+  }
+
+  const ok = await customConfirm(confirmTitle, confirmBody, confirmBtn, 'var(--green)');
   if (!ok) return;
 
-  S.products = pr.products.map((p, i) => ({ id: 'p' + Date.now() + i, ...p }));
-  S.weekSchedule = {};
-  Object.entries(pr.schedule).forEach(([w, doses]) => {
+  if (existing) {
+    // Einfach aktivieren
+    syncGlobalsToActivePlan(); // pending edits sichern
+    S._activePlanId = existing.id;
+    syncActivePlanToGlobals(); // aus dem Plan laden
+    saveS();
+    renderDuenger();
+    toast(`✓ Zu "${existing.name}" gewechselt`);
+    return;
+  }
+
+  // Neuen Plan mit Preset-Daten anlegen
+  if (!S.fertPlans) S.fertPlans = [];
+
+  // Vor dem Anlegen pending edits des aktuellen Plans persistieren
+  syncGlobalsToActivePlan();
+
+  const newId = 'fp_' + Date.now();
+  const products = pr.products.map((p, i) => ({ id: 'p' + Date.now() + '_' + i, ...p }));
+  const schedule = {};
+  Object.entries(pr.schedule || {}).forEach(([w, doses]) => {
     const mapped = {};
-    Object.entries(doses).forEach(([name, dose]) => {
-      const prod = S.products.find(p => p.name === name);
+    Object.entries(doses || {}).forEach(([name, dose]) => {
+      const prod = products.find(p => p.name === name);
       if (prod) mapped[prod.id] = dose;
     });
-    S.weekSchedule['global_w' + w] = mapped;
+    schedule['w' + w] = mapped;
   });
-  S.presetKey = key;
-  S.mixOrder = pr.mixOrder;
-  S.mixInfo = pr.mixInfo;
-  S.drainInfo = pr.drainInfo || null;
+
+  S.fertPlans.push({
+    id: newId,
+    name: pr.name,
+    products,
+    schedule,
+    mixOrder: pr.mixOrder ? [...pr.mixOrder] : [],
+    mixInfo: pr.mixInfo || '',
+    drainInfo: pr.drainInfo || null,
+    presetKey: key,
+    createdAt: Date.now(),
+  });
+
+  S._activePlanId = newId;
+  syncActivePlanToGlobals(); // globals aus dem neuen Plan laden
   saveS();
   renderDuenger();
-  toast(`${pr.name} geladen ✓`);
+  toast(`✓ "${pr.name}" angelegt`);
+}
+
+/**
+ * Start a blank custom plan — for Profis with their own fertilizer system.
+ * Clears products, schedule, preset key, mix order and mix info so the user
+ * starts from a clean slate and builds up.
+ */
+async function startCustomPlan() {
+  const prodCount = (S.products || []).length;
+  const hasPreset = !!S.presetKey;
+  const hasCustomPlan = !hasPreset && prodCount > 0;
+
+  if (hasCustomPlan) {
+    // User already has their own plan — extra-careful warning
+    const ok = await customConfirm(
+      '⚠ Eigenen Plan zurücksetzen?',
+      `Du hast aktuell einen eigenen Plan mit ${prodCount} Produkt${prodCount === 1 ? '' : 'en'}.\n\nAlle Produkte, Mischreihenfolge, Mix-Info und der gesamte Wochenplan werden dauerhaft gelöscht.`,
+      'Alles löschen', 'var(--red)'
+    );
+    if (!ok) return;
+  } else if (hasPreset) {
+    // Preset is loaded — standard warning
+    const ok = await customConfirm(
+      'Eigenen Plan starten?',
+      `Die Vorlage "${FERT_PRESETS[S.presetKey]?.name || S.presetKey}" und alle Anpassungen werden gelöscht. Du startest danach mit leerem Plan.`,
+      'Neu starten', 'var(--purple)'
+    );
+    if (!ok) return;
+  }
+  // else: nothing to lose — skip confirm entirely
+  // Ensure at least one plan exists
+  if (!S.fertPlans || S.fertPlans.length === 0) {
+    S.fertPlans = [{
+      id: 'fp_' + Date.now(), name: 'Mein Plan',
+      products: [], schedule: {}, mixOrder: [], mixInfo: '', drainInfo: null, presetKey: null,
+      createdAt: Date.now(),
+    }];
+    S._activePlanId = S.fertPlans[0].id;
+  }
+  S.products = [];
+  S.weekSchedule = {};
+  S.presetKey = null;
+  S.mixOrder = [];
+  S.mixInfo = '';
+  S.drainInfo = null;
+  saveS();
+  renderDuenger();
+  toast('✨ Leerer Plan bereit — füge deine Produkte hinzu');
+}
+
+// =====================================================================
+//  FERT PLAN MANAGEMENT — multiple named plans, each cycle references one
+// =====================================================================
+
+/** Prompt user for a plan name. Returns trimmed string or null if cancelled/empty. */
+async function _promptPlanName(title, defaultVal) {
+  return new Promise((resolve) => {
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:10002;background:rgba(0,0,0,0.75);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;padding:20px;animation:modalIn 0.2s ease';
+    overlay.innerHTML = `
+      <div style="background:var(--card);border:0.5px solid var(--border);border-radius:18px;padding:24px;max-width:340px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.6)">
+        <div style="font-size:15px;font-weight:600;color:var(--text);margin-bottom:12px">${title}</div>
+        <input id="_planNameInp" type="text" value="${(defaultVal || '').replace(/"/g, '&quot;')}" placeholder="z.B. BioBizz Outdoor, Hydro Mineral..." style="width:100%;padding:10px;border-radius:8px;background:var(--card2);border:0.5px solid var(--border);color:var(--text);font-size:13px;font-family:var(--font);outline:none;box-sizing:border-box;margin-bottom:14px"/>
+        <div style="display:flex;gap:10px">
+          <button data-act="cancel" style="flex:1;padding:12px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);background:var(--card2);color:var(--text-sub);border:0.5px solid var(--border)">Abbrechen</button>
+          <button data-act="ok" style="flex:1;padding:12px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);border:none;background:var(--blue);color:#fff">OK</button>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+    const inp = overlay.querySelector('#_planNameInp');
+    setTimeout(() => inp.focus(), 50);
+    const done = (val) => { overlay.remove(); resolve(val); };
+    overlay.querySelector('[data-act="cancel"]').onclick = () => done(null);
+    overlay.querySelector('[data-act="ok"]').onclick = () => {
+      const v = (inp.value || '').trim();
+      done(v || null);
+    };
+    inp.onkeydown = (e) => {
+      if (e.key === 'Enter') {
+        const v = (inp.value || '').trim();
+        done(v || null);
+      } else if (e.key === 'Escape') {
+        done(null);
+      }
+    };
+  });
+}
+
+/** Add a new empty plan, make it active, and re-render. */
+async function addFertPlan() {
+  const name = await _promptPlanName('Neuer Düngeplan', '');
+  if (!name) return;
+  if (!S.fertPlans) S.fertPlans = [];
+  const id = 'fp_' + Date.now();
+  S.fertPlans.push({
+    id, name,
+    products: [],
+    schedule: {},
+    mixOrder: [],
+    mixInfo: '',
+    drainInfo: null,
+    presetKey: null,
+    createdAt: Date.now(),
+  });
+  S._activePlanId = id;
+  syncActivePlanToGlobals();
+  saveS();
+  renderDuenger();
+  toast(`✓ Plan "${name}" angelegt`);
+}
+
+/** Switch the active plan in the Dünger screen. */
+function switchFertPlan(id) {
+  // Persist any pending edits on the current plan first
+  syncGlobalsToActivePlan();
+  S._activePlanId = id;
+  syncActivePlanToGlobals();
+  saveS();
+  renderDuenger();
+  vibrate(8);
+}
+
+/** Rename the plan with given id. */
+async function renameFertPlan(id) {
+  const plan = (S.fertPlans || []).find(p => p.id === id);
+  if (!plan) return;
+  const newName = await _promptPlanName('Plan umbenennen', plan.name);
+  if (!newName || newName === plan.name) return;
+  plan.name = newName;
+  saveS();
+  renderDuenger();
+  toast(`✓ Umbenannt in "${newName}"`);
+}
+
+/** Duplicate a plan and make the copy active. */
+async function duplicateFertPlan(id) {
+  const plan = (S.fertPlans || []).find(p => p.id === id);
+  if (!plan) return;
+  const newName = await _promptPlanName('Plan duplizieren', plan.name + ' (Kopie)');
+  if (!newName) return;
+  const copy = JSON.parse(JSON.stringify(plan));
+  copy.id = 'fp_' + Date.now();
+  copy.name = newName;
+  copy.createdAt = Date.now();
+  delete copy.updatedAt;
+  S.fertPlans.push(copy);
+  S._activePlanId = copy.id;
+  syncActivePlanToGlobals();
+  saveS();
+  renderDuenger();
+  toast(`✓ Dupliziert als "${newName}"`);
+}
+
+/** Delete a plan. Fails if any cycle uses it (confirms first). */
+async function deleteFertPlan(id) {
+  const plan = (S.fertPlans || []).find(p => p.id === id);
+  if (!plan) return;
+  if ((S.fertPlans || []).length <= 1) {
+    toast('⚠ Mindestens ein Plan muss erhalten bleiben');
+    return;
+  }
+  const usedBy = (S.cycles || []).filter(c => c.fertPlanId === id && !c.archived);
+  const warn = usedBy.length > 0
+    ? `⚠ ${usedBy.length} Zyklus${usedBy.length === 1 ? '' : 'se'} nutzen diesen Plan. Diese werden auf den ersten verbleibenden Plan umgestellt.`
+    : 'Dieser Plan wird dauerhaft gelöscht.';
+  const ok = await customConfirm(
+    `"${plan.name}" löschen?`,
+    warn,
+    'Löschen', 'var(--red)'
+  );
+  if (!ok) return;
+  // Reassign cycles to another plan
+  const fallback = S.fertPlans.find(p => p.id !== id);
+  S.cycles.forEach(c => { if (c.fertPlanId === id) c.fertPlanId = fallback ? fallback.id : null; });
+  // Remove the plan
+  S.fertPlans = S.fertPlans.filter(p => p.id !== id);
+  // If it was active, pick another
+  if (S._activePlanId === id) S._activePlanId = fallback ? fallback.id : null;
+  syncActivePlanToGlobals();
+  saveS();
+  renderDuenger();
+  toast(`✓ "${plan.name}" gelöscht`);
 }
 
 function selPC(c) {
@@ -3367,9 +4042,20 @@ function saveProd() {
   const unit = document.getElementById('punit')?.value || 'ml/L';
   if (editProd === 'new') {
     S.products.push({ id: 'p' + Date.now(), name, note, unit, color: _pColor });
+    // Auto-append to mixOrder if one exists (custom plan or preset-derived)
+    if (S.mixOrder && !S.mixOrder.includes(name)) {
+      S.mixOrder.push(name);
+    }
   } else {
     const p = S.products.find(x => x.id === editProd);
-    if (p) Object.assign(p, { name, note, unit, color: _pColor });
+    if (p) {
+      // Update mixOrder entry if name changed
+      if (S.mixOrder && p.name !== name) {
+        const idx = S.mixOrder.indexOf(p.name);
+        if (idx !== -1) S.mixOrder[idx] = name;
+      }
+      Object.assign(p, { name, note, unit, color: _pColor });
+    }
   }
   editProd = null;
   saveS();
@@ -3380,10 +4066,39 @@ function saveProd() {
 async function delProduct(id) {
   const ok = await customConfirm('Produkt löschen?', 'Dieses Dünger-Produkt wird entfernt.', 'Löschen');
   if (!ok) return;
+  const p = S.products.find(x => x.id === id);
   S.products = S.products.filter(x => x.id !== id);
+  // Keep mixOrder in sync
+  if (S.mixOrder && p) {
+    S.mixOrder = S.mixOrder.filter(n => n !== p.name);
+  }
   saveS();
   renderDuenger();
   toast('Gelöscht');
+}
+
+/**
+ * Move a product in mixOrder up (-1) or down (+1).
+ * Clamps to valid range. Used for custom-plan profi workflow.
+ */
+function moveMixStep(idx, delta) {
+  if (!S.mixOrder || !S.mixOrder.length) return;
+  const newIdx = idx + delta;
+  if (newIdx < 0 || newIdx >= S.mixOrder.length) return;
+  const tmp = S.mixOrder[idx];
+  S.mixOrder[idx] = S.mixOrder[newIdx];
+  S.mixOrder[newIdx] = tmp;
+  saveS();
+  renderDuenger();
+  vibrate(8);
+}
+
+/**
+ * Update mixInfo text from the textarea. Called on blur/input.
+ */
+function updateMixInfo(val) {
+  S.mixInfo = val || '';
+  saveS();
 }
 
 // =====================================================================
@@ -3421,7 +4136,9 @@ function renderSet() {
     ['Ernte','harvestDays',PHASE_DEFAULTS.harvestDays],
     ['Trocknen','dryDays',PHASE_DEFAULTS.dryDays],
   ];
-  const durList = S.beginnerMode ? allDurs.slice(0, 2) : allDurs;
+  // Outdoor: hide IceFlush row (not used, only confuses)
+  const durListAll = (sel && sel.growType === 'outdoor') ? allDurs.filter(d => d[1] !== 'iceDays') : allDurs;
+  const durList = S.beginnerMode ? durListAll.slice(0, 2) : durListAll;
   const durs = sel ? durList.map(([l, k, def]) =>
     `<div class="dur-box"><div class="dur-lbl">${l}</div>
       <input class="dur-inp" type="number" value="${d[k] !== undefined ? d[k] : def}" oninput="dd('${k}',this.value)"/>
@@ -3440,23 +4157,32 @@ function renderSet() {
     </div>
 
     <!-- 1. DÜNGER-STATUS (Top Banner — wichtigste Info) -->
-    <div onclick="openDuenger()" style="background:linear-gradient(135deg, #0d1e0d, #0a1a0a);border:1px solid ${S.presetKey ? 'var(--green)' : 'var(--orange)'};border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer">
-      <span style="font-size:24px">🧪</span>
-      <div style="flex:1;min-width:0">
-        <div style="font-size:14px;font-weight:700;color:${S.presetKey ? 'var(--green)' : 'var(--orange)'}">Dünger & Wochenplan</div>
-        ${S.presetKey
-          ? `<div style="font-size:11px;color:var(--text-muted);margin-top:2px">● <b style="color:var(--green)">${FERT_PRESETS[S.presetKey]?.name || S.presetKey}</b> aktiv · ${(S.products || []).length} Produkte · 12 Wochen</div>`
-          : `<div style="font-size:11px;color:var(--orange);margin-top:2px">⚠ Noch kein Düngeplan — Tippen für BioBizz</div>`
-        }
-      </div>
-      <span style="color:${S.presetKey ? 'var(--green)' : 'var(--orange)'};font-size:20px">›</span>
-    </div>
+    ${(() => {
+      const prodCount = (S.products || []).length;
+      const hasPreset = !!S.presetKey;
+      const hasCustomPlan = !hasPreset && prodCount > 0;
+      const hasAnyPlan = hasPreset || hasCustomPlan;
+      const planLabel = hasPreset
+        ? `<b style="color:var(--green)">${FERT_PRESETS[S.presetKey]?.name || S.presetKey}</b> aktiv · ${prodCount} Produkte · 12 Wochen`
+        : hasCustomPlan
+        ? `<b style="color:var(--purple)">✨ Eigener Plan</b> · ${prodCount} Produkte · 12 Wochen`
+        : '⚠ Noch kein Düngeplan — Tippen für Vorlage oder eigenen Plan';
+      const accent = hasPreset ? 'var(--green)' : hasCustomPlan ? 'var(--purple)' : 'var(--orange)';
+      return `<div onclick="openDuenger()" style="background:linear-gradient(135deg, #0d1e0d, #0a1a0a);border:1px solid ${accent};border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer">
+        <span style="font-size:24px">🧪</span>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:14px;font-weight:700;color:${accent}">Dünger & Wochenplan</div>
+          <div style="font-size:11px;color:${hasAnyPlan ? 'var(--text-muted)' : 'var(--orange)'};margin-top:2px">${hasAnyPlan ? '●' : ''} ${planLabel}</div>
+        </div>
+        <span style="color:${accent};font-size:20px">›</span>
+      </div>`;
+    })()}
 
     <!-- 2. ZYKLEN (Hauptbereich) -->
     <div class="card" style="gap:10px;display:flex;flex-direction:column;border-color:${sel ? cl.hex+'33' : 'var(--border)'}">
       <div style="display:flex;align-items:center;justify-content:space-between">
         <div class="sect-head" style="margin:0">🌱 Meine Zyklen</div>
-        <button id="add-cyc-btn" class="add-btn" onclick="addCyc()">＋ Neu</button>
+        <button id="add-cyc-btn" class="add-btn" onclick="openCycleWizard()">＋ Neu</button>
       </div>
       <div class="tab-row">${tabs}</div>
       ${sel ? `
@@ -3483,6 +4209,42 @@ function renderSet() {
           </div>
 
           <!-- GRUPPE: Genetik & Licht -->
+          <!-- GRUPPE: Indoor/Outdoor — Grow-Typ -->
+          <div class="sub-head" style="margin-top:8px">🏠 Grow-Typ</div>
+          <div style="display:flex;gap:6px;background:var(--card2);border:0.5px solid var(--border);border-radius:10px;padding:4px">
+            <button onclick="dd('growType','indoor');renderSet()" style="flex:1;background:${d.growType!=='outdoor'?'var(--green-dk)':'transparent'};border:none;color:${d.growType!=='outdoor'?'var(--green)':'var(--text-muted)'};padding:10px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font)">🏠 Indoor</button>
+            <button onclick="dd('growType','outdoor');renderSet()" style="flex:1;background:${d.growType==='outdoor'?'var(--green-dk)':'transparent'};border:none;color:${d.growType==='outdoor'?'var(--green)':'var(--text-muted)'};padding:10px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font)">☀️ Outdoor</button>
+          </div>
+          ${d.growType === 'outdoor' ? `
+            <div class="inp-wrap" style="margin-top:8px">
+              <div class="inp-label">🌍 Hemisphäre</div>
+              <select class="inp-field" style="cursor:pointer" onchange="dd('hemisphere',this.value)">
+                <option value="north" ${d.hemisphere!=='south'?'selected':''}>Nord (Blüte Juni–Okt)</option>
+                <option value="south" ${d.hemisphere==='south'?'selected':''}>Süd (Blüte Dez–April)</option>
+              </select>
+            </div>
+            <div style="font-size:10px;color:var(--teal);line-height:1.4;padding:4px 4px 0">☀️ Outdoor: VPD-Warnungen, 12/12-Reminder und IceFlush ausgeblendet. ${(d.seedType||'').indexOf('auto')>=0 ? 'Autos zählen Tage unabhängig von der Sonnenwende.' : 'Blüte startet automatisch bei Sonnenwende oder nach 6 Wochen Vegi — je nachdem was später kommt.'}</div>
+          ` : ''}
+
+          <!-- GRUPPE: Düngeplan-Zuweisung -->
+          <div class="sub-head" style="margin-top:8px">🧪 Düngeplan</div>
+          ${(() => {
+            const plans = S.fertPlans || [];
+            if (plans.length === 0) {
+              return `<div style="padding:10px 12px;background:var(--card2);border:0.5px dashed var(--border);border-radius:10px;font-size:11px;color:var(--text-muted);line-height:1.4">
+                Noch kein Plan angelegt. Gehe zu Einstellungen → Dünger und lege einen Plan an.
+              </div>`;
+            }
+            return `<div class="inp-wrap">
+              <select class="inp-field" style="cursor:pointer" onchange="dd('fertPlanId',this.value);renderSet()">
+                ${plans.map(pl => `<option value="${pl.id}" ${d.fertPlanId === pl.id ? 'selected' : ''}>${pl.name} · ${(pl.products || []).length} Produkt${(pl.products || []).length === 1 ? '' : 'e'}</option>`).join('')}
+              </select>
+              <div style="font-size:10px;color:var(--text-hint);line-height:1.4;padding:4px 4px 0">
+                Dieser Zyklus nutzt den gewählten Düngeplan. Plan-Produkte und Wochenplan bearbeitest du unter <span style="color:var(--blue)">Dünger</span>.
+              </div>
+            </div>`;
+          })()}
+
           <div class="sub-head" style="margin-top:8px">🌿 Genetik & Licht</div>
           <div style="display:flex;gap:8px">
             <div class="inp-wrap" style="flex:1">
@@ -3493,6 +4255,7 @@ function renderSet() {
                 ${S.beginnerMode && d.seedType !== 'reg' ? '' : `<option value="reg" ${d.seedType==='reg'?'selected':''}>♀♂ Regulär</option>`}
               </select>
             </div>
+            ${d.growType !== 'outdoor' ? `
             <div class="inp-wrap" style="width:90px">
               <div class="inp-label">Licht Veg</div>
               <select class="inp-field" style="cursor:pointer" onchange="dd('lightVeg',this.value)">
@@ -3505,8 +4268,53 @@ function renderSet() {
                 ${['12/12','18/6','20/4','24/0'].map(v => `<option value="${v}" ${d.lightBloom===v?'selected':''}>${v}</option>`).join('')}
               </select>
             </div>
+            ` : ''}
           </div>
-          ${d.seedType === 'auto' ? '<div style="font-size:10px;color:var(--teal);line-height:1.4;padding:2px 4px">⚡ Automatics: Kein Lichtwechsel nötig. Blüte startet automatisch.</div>' : ''}
+          ${d.growType === 'outdoor' ? '<div style="font-size:10px;color:var(--teal);line-height:1.4;padding:2px 4px">☀️ Outdoor: Sonne steuert den Lichtrhythmus automatisch — keine Einstellung nötig.</div>' : ''}
+          ${d.seedType === 'auto' && d.growType !== 'outdoor' ? '<div style="font-size:10px;color:var(--teal);line-height:1.4;padding:2px 4px">⚡ Automatics: Kein Lichtwechsel nötig. Blüte startet automatisch.</div>' : ''}
+          ${d.seedType === 'auto' && d.growType === 'outdoor' ? '<div style="font-size:10px;color:var(--teal);line-height:1.4;padding:2px 4px">⚡ Auto + Outdoor: Zählt weiter Tage unabhängig von der Sonnenwende.</div>' : ''}
+
+          <!-- Photoperiode: Blüte-Start-Datum (Indoor manuell, Outdoor auto ableitbar) -->
+          ${d.seedType !== 'auto' ? (() => {
+            // Auto-berechnet für Outdoor-Photoperiode (immer, ohne phaseMode)
+            const autoBloomDate = (d.growType === 'outdoor')
+              ? (() => {
+                  if (!d.startDate) return null;
+                  const start = iso12(d.startDate);
+                  const isSouth = d.hemisphere === 'south';
+                  const month = isSouth ? 11 : 5;
+                  const c1 = new Date(start.getFullYear(), month, 21, 12);
+                  const c2 = new Date(start.getFullYear() + 1, month, 21, 12);
+                  const solstice = (c1 >= start) ? c1 : c2;
+                  const minVegi = new Date(start.getTime() + 42 * 86400000);
+                  const bs = solstice >= minVegi ? solstice : minVegi;
+                  const yyyy = bs.getFullYear();
+                  const mm = String(bs.getMonth() + 1).padStart(2, '0');
+                  const dd2 = String(bs.getDate()).padStart(2, '0');
+                  return `${yyyy}-${mm}-${dd2}`;
+                })()
+              : null;
+            const effectiveBloomDate = d.bloomStartDate || autoBloomDate;
+            const isAuto = !d.bloomStartDate && autoBloomDate;
+
+            let hint = '';
+            if (d.growType === 'outdoor') {
+              if (isAuto) {
+                hint = `<span style="color:var(--green)">☀️ Automatisch berechnet</span> aus max(Sonnenwende, 6 Wochen nach Start). Bei Bedarf manuell überschreiben.`;
+              } else if (d.bloomStartDate) {
+                hint = `✏ Manuell gesetzt — automatische Berechnung überschrieben.`;
+              }
+            } else {
+              hint = `💡 Setze das Datum an dem du auf 12/12 umschaltest (Indoor) oder leer lassen für tagbasierte Phasen.`;
+            }
+
+            return `<div class="sub-head" style="margin-top:8px">🌸 Blüte-Start</div>
+              <div class="inp-wrap">
+                <input class="inp-field" type="date" value="${effectiveBloomDate || ''}" oninput="dd('bloomStartDate',this.value)" style="color-scheme:dark"/>
+                <div style="font-size:10px;color:var(--text-hint);line-height:1.4;padding:4px 4px 0">${hint}</div>
+                ${d.bloomStartDate ? `<button onclick="dd('bloomStartDate','');renderSet()" style="background:none;border:none;color:var(--red);font-size:11px;cursor:pointer;padding:6px 4px;margin-top:4px;font-family:var(--font)">⚠ Auf automatisch zurücksetzen</button>` : ''}
+              </div>`;
+          })() : ''}
 
           <!-- GRUPPE: Start & Aktivierung -->
           <div style="background:${sel.active ? cl.dk : 'var(--surface)'};border:0.5px solid ${sel.active ? cl.hex+'44' : 'var(--border)'};border-radius:12px;padding:12px 14px;margin-top:8px">
@@ -3557,7 +4365,7 @@ function renderSet() {
       ` : `<div style="padding:20px 10px;text-align:center">
         <div style="font-size:36px;opacity:0.3;margin-bottom:6px">🌱</div>
         <div style="font-size:13px;color:var(--text-muted);margin-bottom:10px">Erstelle deinen ersten Zyklus!</div>
-        <button onclick="addCyc()" style="background:var(--green);border:none;border-radius:10px;padding:10px 20px;font-size:13px;color:#fff;cursor:pointer;font-family:var(--font);font-weight:600">＋ Neuer Zyklus</button>
+        <button onclick="openCycleWizard()" style="background:var(--green);border:none;border-radius:10px;padding:10px 20px;font-size:13px;color:#fff;cursor:pointer;font-family:var(--font);font-weight:600">＋ Neuer Zyklus</button>
       </div>`}
     </div>
 
@@ -3725,25 +4533,590 @@ function saveDraft() {
 
 function selCyc(id) { selId = id; draft = {}; renderSet(); }
 
-function addCyc() {
+// =====================================================================
+//  WELCOME / FIRST-RUN — Erstbenutzer-Flow
+// =====================================================================
+
+/**
+ * Prüft ob der Welcome-Screen gezeigt werden soll.
+ * Bedingung: App noch nie richtig benutzt (keine Zyklen) UND Welcome noch nicht gesehen.
+ */
+function shouldShowWelcome() {
+  if (S._welcomeSeen) return false;
+  if ((S.cycles || []).length > 0) return false;
+  return true;
+}
+
+function showWelcome() {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('scr-welcome').classList.add('active');
+  _renderWelcome();
+}
+
+function _renderWelcome() {
+  document.getElementById('welcome-body').innerHTML = `
+    <div style="padding:24px 20px 40px;max-width:520px;margin:0 auto">
+
+      <div style="text-align:center;margin-bottom:28px">
+        <div style="font-size:72px;margin-bottom:8px">🌱</div>
+        <h1 style="font-size:28px;font-weight:800;color:var(--green);margin:0 0 8px;letter-spacing:-0.5px">GrowSmart</h1>
+        <div style="font-size:14px;color:var(--text-muted);line-height:1.5">Dein Grow-Begleiter vom Samen bis zur Ernte</div>
+      </div>
+
+      <div style="background:var(--card);border:0.5px solid var(--border);border-radius:16px;padding:18px;margin-bottom:24px">
+        <div style="font-size:13px;color:var(--text-sub);line-height:1.7">
+          Diese App plant dir <b style="color:var(--text)">alles Wichtige</b> für deinen Cannabis-Grow:
+        </div>
+        <div style="margin-top:12px;display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;align-items:center;gap:12px;font-size:13px;color:var(--text-sub)">
+            <span style="font-size:20px">💧</span><span>Wann du gießen musst — auf den Tag</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;font-size:13px;color:var(--text-sub)">
+            <span style="font-size:20px">🧪</span><span>Welcher Dünger wie viel — per Wochenplan</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;font-size:13px;color:var(--text-sub)">
+            <span style="font-size:20px">🌸</span><span>Wann welche Phase — Anzucht, Blüte, Ernte</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;font-size:13px;color:var(--text-sub)">
+            <span style="font-size:20px">📸</span><span>Foto-Tagebuch und Notizen</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;font-size:13px;color:var(--text-sub)">
+            <span style="font-size:20px">📖</span><span>Lexikon mit Erklärungen zu allem</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="font-size:12px;color:var(--text-hint);text-align:center;margin-bottom:16px;line-height:1.5">
+        Wähle wie du starten willst:
+      </div>
+
+      <button onclick="welcomeStartWizard()" style="display:block;width:100%;background:var(--green);color:#fff;border:none;border-radius:14px;padding:18px;margin-bottom:10px;font-size:16px;font-weight:700;cursor:pointer;font-family:var(--font);text-align:left">
+        <div style="display:flex;align-items:center;gap:14px">
+          <span style="font-size:28px">🌱</span>
+          <div style="flex:1">
+            <div style="font-size:16px;font-weight:800">Meinen ersten Grow einrichten</div>
+            <div style="font-size:11px;font-weight:500;opacity:0.85;margin-top:2px">Geführt durch 5 einfache Fragen — empfohlen</div>
+          </div>
+          <span style="font-size:20px;opacity:0.8">›</span>
+        </div>
+      </button>
+
+      <button onclick="welcomeStartDemo()" style="display:block;width:100%;background:var(--card);color:var(--text);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--font);text-align:left">
+        <div style="display:flex;align-items:center;gap:14px">
+          <span style="font-size:24px">🎓</span>
+          <div style="flex:1">
+            <div style="font-size:14px;font-weight:700">Demo-Zyklus anschauen</div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:2px">Sehe wie die App mit Beispiel-Daten aussieht</div>
+          </div>
+          <span style="font-size:18px;color:var(--text-muted)">›</span>
+        </div>
+      </button>
+
+      <button onclick="welcomeSkip()" style="display:block;width:100%;background:transparent;color:var(--text-muted);border:none;padding:14px;font-size:12px;cursor:pointer;font-family:var(--font);text-align:center">
+        Erstmal nur gucken →
+      </button>
+
+      <div style="font-size:10px;color:var(--text-hint);text-align:center;margin-top:28px;line-height:1.5;padding:0 20px">
+        Alle Daten bleiben auf deinem Gerät. Keine Anmeldung, kein Cloud-Zwang, keine Werbung.
+      </div>
+    </div>
+  `;
+}
+
+/** Welcome-Buttons: immer erst _welcomeSeen setzen, dann Ziel öffnen */
+function welcomeStartWizard() {
+  S._welcomeSeen = true;
+  saveS();
+  openCycleWizard();
+}
+
+function welcomeSkip() {
+  S._welcomeSeen = true;
+  saveS();
+  goTo('dash');
+}
+
+/**
+ * Legt einen vollständigen Demo-Zyklus an — damit der User sofort sieht wie die App
+ * mit echten Daten aussieht. Der Zyklus ist klar als "Demo" markiert, so dass der
+ * User ihn später einfach löschen oder ersetzen kann.
+ */
+function welcomeStartDemo() {
+  S._welcomeSeen = true;
+
+  // Start-Datum: heute minus 25 Tage, damit die Pflanze schon in der Blüte ist
+  // und der User Gieß/Dünger-Aktionen direkt sehen kann.
+  const demoStart = new Date();
+  demoStart.setDate(demoStart.getDate() - 25);
+  const demoStartISO = demoStart.toISOString().split('T')[0];
+
+  // Falls noch kein Düngeplan existiert: lege eine einfache BioBizz Light Vorlage an
+  // als Demo-Plan. Das erspart dem User die Preset-Frage beim Demo.
+  if (!S.fertPlans || S.fertPlans.length === 0) {
+    const biolight = FERT_PRESETS?.biobizz_light;
+    if (biolight) {
+      const demoPlanId = 'fp_demo_' + Date.now();
+      const products = biolight.products.map((p, i) => ({ id: 'p' + Date.now() + '_' + i, ...p }));
+      const schedule = {};
+      Object.entries(biolight.schedule || {}).forEach(([w, doses]) => {
+        const mapped = {};
+        Object.entries(doses || {}).forEach(([name, dose]) => {
+          const prod = products.find(p => p.name === name);
+          if (prod) mapped[prod.id] = dose;
+        });
+        schedule['w' + w] = mapped;
+      });
+      S.fertPlans = [{
+        id: demoPlanId,
+        name: biolight.name,
+        products, schedule,
+        mixOrder: biolight.mixOrder ? [...biolight.mixOrder] : [],
+        mixInfo: biolight.mixInfo || '',
+        drainInfo: biolight.drainInfo || null,
+        presetKey: 'biobizz_light',
+        createdAt: Date.now(),
+      }];
+      S._activePlanId = demoPlanId;
+      syncActivePlanToGlobals();
+    }
+  }
+
+  // Demo-Zyklus anlegen
+  addCyc({
+    name: 'Demo-Zyklus (zum Erkunden)',
+    growType: 'indoor',
+    seedType: 'auto',
+    startDate: demoStartISO,
+    potSize: 11,
+    fertPlanId: S.fertPlans?.[0]?.id || null,
+  });
+
+  // Ein paar Demo-Einträge der letzten Tage für realistischen Einstieg
+  const cycleId = S.cycles[S.cycles.length - 1]?.id;
+  if (cycleId) {
+    const demoEntries = [
+      { daysBack: 10, temp: 24.5, hum: 58, ph: 6.3, note: 'Pflanze sieht super aus, erstes Blütenansatz-Zeichen.' },
+      { daysBack: 7, temp: 25.0, hum: 55, ph: 6.2, ec: 1.2, note: 'Leicht angedüngt, alles im grünen Bereich.' },
+      { daysBack: 4, temp: 24.8, hum: 56, ph: 6.3, ec: 1.4 },
+      { daysBack: 1, temp: 25.2, hum: 54, ph: 6.2, ec: 1.5, note: 'Blüten entwickeln sich schön.' },
+    ];
+    demoEntries.forEach(e => {
+      const d = new Date();
+      d.setDate(d.getDate() - e.daysBack);
+      const iso = d.toISOString().split('T')[0];
+      if (!S.entries[iso]) S.entries[iso] = {};
+      const ent = S.entries[iso];
+      if (e.temp) ent.temp = e.temp;
+      if (e.hum) ent.humidity = e.hum;
+      if (!ent.cycleData) ent.cycleData = {};
+      if (!ent.cycleData[cycleId]) ent.cycleData[cycleId] = {};
+      if (e.ph) ent.cycleData[cycleId].ph = e.ph;
+      if (e.ec) ent.cycleData[cycleId].ec = e.ec;
+      if (e.note) ent.cycleData[cycleId].note = e.note;
+    });
+  }
+
+  saveS();
+  goTo('dash');
+  toast('🎓 Demo-Zyklus angelegt — du kannst ihn jederzeit löschen');
+}
+
+
+
+// =====================================================================
+//  CYCLE WIZARD — Anfänger-freundlicher Flow für neuen Zyklus
+// =====================================================================
+
+/**
+ * Wizard-State: step 0-5, answers akkumulieren Schritt für Schritt.
+ * Wird bei openCycleWizard() resettet.
+ */
+let _wizStep = 0;
+let _wizAnswers = {};
+
+function openCycleWizard() {
+  _wizStep = 0;
+  _wizAnswers = {};
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('scr-wizard').classList.add('active');
+  _renderWiz();
+}
+
+function closeWizard() {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('scr-set').classList.add('active');
+  renderSet();
+}
+
+/** Profi-Bypass: direkt ins klassische Formular, Zyklus sofort anlegen */
+function skipToExpertForm() {
+  closeWizard();
+  addCyc();
+}
+
+function _wizNext() {
+  _wizStep++;
+  _renderWiz();
+}
+
+function _wizBack() {
+  if (_wizStep > 0) { _wizStep--; _renderWiz(); }
+}
+
+function _wizAnswer(key, value) {
+  _wizAnswers[key] = value;
+  _wizNext();
+}
+
+function _renderWiz() {
+  const body = document.getElementById('wiz-body');
+  const a = _wizAnswers;
+
+  // Skip-Logic: bei Outdoor kein Samentyp-Screen für Licht-Zyklus, bei Indoor
+  // kein Outdoor-Timing-Screen. Screens werden in _wizScreens zusammengesetzt.
+  const screens = [
+    _wizStepWelcome,
+    _wizStepLocation,   // 1: drinnen / draußen
+    _wizStepSeedOrTiming, // 2: je nach (1): Samentyp oder Outdoor-Timing
+    _wizStepPotSize,    // 3: Topfgröße (mit Empfehlung)
+    _wizStepFertPlan,   // 4: Düngeplan
+    _wizStepNameSummary, // 5: Name + Zusammenfassung
+  ];
+  const idx = Math.max(0, Math.min(_wizStep, screens.length - 1));
+  const progressHTML = idx > 0 ? `<div style="height:3px;background:var(--border);border-radius:2px;margin:0 16px 12px">
+    <div style="height:100%;background:var(--green);border-radius:2px;width:${(idx / (screens.length - 1)) * 100}%;transition:width 0.3s"></div>
+  </div>` : '';
+
+  body.innerHTML = progressHTML + screens[idx](a);
+}
+
+// Screen 0 — Willkommen
+function _wizStepWelcome(a) {
+  return `<div style="padding:24px 20px">
+    <div style="font-size:48px;text-align:center;margin-bottom:12px">🌱</div>
+    <h1 style="font-size:22px;font-weight:700;color:var(--green);text-align:center;margin:0 0 12px">Willkommen!</h1>
+    <p style="font-size:14px;line-height:1.6;color:var(--text-sub);text-align:center;margin:0 0 24px">
+      Lass uns deinen neuen Zyklus einrichten.<br>Ich frage dich <b>5 einfache Sachen</b> — dauert keine Minute.
+    </p>
+    <button onclick="_wizNext()" style="width:100%;background:var(--green);color:#fff;border:none;border-radius:12px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;font-family:var(--font)">Los geht's →</button>
+    <button onclick="skipToExpertForm()" style="width:100%;background:transparent;color:var(--text-muted);border:none;padding:14px;font-size:12px;cursor:pointer;font-family:var(--font);margin-top:8px">Ich kenne mich aus — direkt zum Formular</button>
+  </div>`;
+}
+
+// Screen 1 — Wo wächst die Pflanze?
+function _wizStepLocation(a) {
+  return `<div style="padding:20px">
+    <h2 style="font-size:20px;font-weight:700;margin:0 0 6px">Wo wächst deine Pflanze?</h2>
+    <p style="font-size:13px;color:var(--text-muted);margin:0 0 20px">Das bestimmt wie die App Gießen und Blüte-Zeitpunkte plant.</p>
+
+    <button onclick="_wizAnswer('growType','indoor')" style="display:block;width:100%;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:10px;cursor:pointer;text-align:left;font-family:var(--font)">
+      <div style="display:flex;align-items:center;gap:14px">
+        <span style="font-size:32px">🏠</span>
+        <div style="flex:1">
+          <div style="font-size:16px;font-weight:700;color:var(--text)">Drinnen</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:3px;line-height:1.4">Grow-Zelt, Schrank, Zimmer mit Lampe</div>
+        </div>
+        <span style="color:var(--text-muted);font-size:18px">›</span>
+      </div>
+    </button>
+
+    <button onclick="_wizAnswer('growType','outdoor')" style="display:block;width:100%;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:10px;cursor:pointer;text-align:left;font-family:var(--font)">
+      <div style="display:flex;align-items:center;gap:14px">
+        <span style="font-size:32px">☀️</span>
+        <div style="flex:1">
+          <div style="font-size:16px;font-weight:700;color:var(--text)">Draußen</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:3px;line-height:1.4">Garten, Balkon, Gewächshaus mit Sonne</div>
+        </div>
+        <span style="color:var(--text-muted);font-size:18px">›</span>
+      </div>
+    </button>
+
+    <button onclick="_wizBack()" style="width:100%;background:transparent;color:var(--text-muted);border:none;padding:14px;font-size:12px;cursor:pointer;font-family:var(--font);margin-top:8px">← Zurück</button>
+  </div>`;
+}
+
+// Screen 2 — je nach growType: Samentyp oder Outdoor-Timing
+function _wizStepSeedOrTiming(a) {
+  if (a.growType === 'outdoor') {
+    return _wizStepOutdoorTiming(a);
+  }
+  return _wizStepSeedType(a);
+}
+
+function _wizStepSeedType(a) {
+  return `<div style="padding:20px">
+    <h2 style="font-size:20px;font-weight:700;margin:0 0 6px">Welche Samen hast du?</h2>
+    <p style="font-size:13px;color:var(--text-muted);margin:0 0 20px">Steht meistens auf der Samen-Tüte.</p>
+
+    <button onclick="_wizAnswer('seedType','auto')" style="display:block;width:100%;background:linear-gradient(135deg, rgba(76,175,112,0.1), transparent);border:1px solid rgba(76,175,112,0.35);border-radius:14px;padding:16px;margin-bottom:10px;cursor:pointer;text-align:left;font-family:var(--font)">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px">
+        <span style="font-size:26px">⚡</span>
+        <div style="font-size:15px;font-weight:700;color:var(--green)">Automatic</div>
+        <span style="background:rgba(76,175,112,0.2);color:var(--green);font-size:10px;padding:2px 8px;border-radius:6px;font-weight:600;margin-left:auto">Für Anfänger</span>
+      </div>
+      <div style="font-size:12px;color:var(--text-sub);line-height:1.5">Blüht nach ~3 Wochen <b>automatisch</b>. Kein Lichtwechsel nötig. Einfachster Weg zum Erfolg.</div>
+    </button>
+
+    <button onclick="_wizAnswer('seedType','fem')" style="display:block;width:100%;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:10px;cursor:pointer;text-align:left;font-family:var(--font)">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px">
+        <span style="font-size:26px">♀</span>
+        <div style="font-size:15px;font-weight:700;color:var(--text)">Feminisiert</div>
+      </div>
+      <div style="font-size:12px;color:var(--text-sub);line-height:1.5">Du entscheidest wann die Blüte startet — durch <b>Lichtwechsel auf 12 Std an / 12 Std aus</b>. Mehr Kontrolle, etwas komplexer.</div>
+    </button>
+
+    <button onclick="_wizAnswer('seedType','reg')" style="display:block;width:100%;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:10px;cursor:pointer;text-align:left;font-family:var(--font)">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px">
+        <span style="font-size:26px">♀♂</span>
+        <div style="font-size:15px;font-weight:700;color:var(--text)">Regulär</div>
+        <span style="background:rgba(232,136,74,0.15);color:var(--orange);font-size:10px;padding:2px 8px;border-radius:6px;font-weight:600;margin-left:auto">Für Profis</span>
+      </div>
+      <div style="font-size:12px;color:var(--text-sub);line-height:1.5">Kann männlich oder weiblich werden. Nur nötig wenn du eigene Samen ziehen willst.</div>
+    </button>
+
+    <button onclick="_wizBack()" style="width:100%;background:transparent;color:var(--text-muted);border:none;padding:14px;font-size:12px;cursor:pointer;font-family:var(--font);margin-top:8px">← Zurück</button>
+  </div>`;
+}
+
+function _wizStepOutdoorTiming(a) {
+  // Monats-Empfehlung basierend auf heute
+  const month = new Date().getMonth() + 1; // 1-12
+  let recText = '';
+  let recType = 'info';
+  if (month >= 1 && month <= 3) {
+    recText = '❄️ Noch zu früh zum Rausstellen (Frostgefahr). Perfekter Zeitpunkt um drinnen vorzuziehen.';
+    recType = 'info';
+  } else if (month === 4) {
+    recText = '🌤️ Bald! Sobald nachts stabil über 10°C — dann raus. Vorziehen drinnen ist jetzt sinnvoll.';
+    recType = 'tip';
+  } else if (month === 5) {
+    recText = '✅ Perfekter Zeitpunkt! Jetzt direkt in die Erde oder aus der Vorzucht rausstellen.';
+    recType = 'success';
+  } else if (month === 6) {
+    recText = '⚡ Noch machbar, aber wähle eine schnelle Sorte (Automatic oder kurze Blütezeit).';
+    recType = 'tip';
+  } else if (month === 7) {
+    recText = '⚠️ Spät. Nur noch Automatics schaffen es vor dem ersten Frost.';
+    recType = 'warn';
+  } else {
+    recText = '🍂 Zu spät für Outdoor dieses Jahr. Plane für nächstes Frühjahr oder wechsle zu Indoor.';
+    recType = 'warn';
+  }
+  const recBg = { info: 'rgba(90,171,240,0.1)', tip: 'rgba(240,208,80,0.1)', success: 'rgba(76,175,112,0.1)', warn: 'rgba(232,136,74,0.1)' }[recType];
+  const recBorder = { info: 'rgba(90,171,240,0.35)', tip: 'rgba(240,208,80,0.35)', success: 'rgba(76,175,112,0.35)', warn: 'rgba(232,136,74,0.35)' }[recType];
+  const recColor = { info: 'var(--blue)', tip: 'var(--yellow)', success: 'var(--green)', warn: 'var(--orange)' }[recType];
+
+  return `<div style="padding:20px">
+    <h2 style="font-size:20px;font-weight:700;margin:0 0 6px">Wann fängst du an?</h2>
+    <p style="font-size:13px;color:var(--text-muted);margin:0 0 16px">Wähle den Zeitpunkt an dem deine Pflanze "Tag 1" hat.</p>
+
+    <div style="background:${recBg};border:1px solid ${recBorder};border-radius:12px;padding:12px 14px;margin-bottom:16px">
+      <div style="font-size:12px;color:${recColor};line-height:1.5">${recText}</div>
+    </div>
+
+    <button onclick="_wizAnswer('startOption','today')" style="display:block;width:100%;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:10px;cursor:pointer;text-align:left;font-family:var(--font)">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:4px">
+        <span style="font-size:24px">🌱</span>
+        <div style="font-size:14px;font-weight:700;color:var(--text)">Heute direkt in die Erde</div>
+      </div>
+      <div style="font-size:11px;color:var(--text-muted);line-height:1.4">Saat kommt heute in Topf oder Boden.</div>
+    </button>
+
+    <button onclick="_wizAnswer('startOption','prevegged')" style="display:block;width:100%;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:10px;cursor:pointer;text-align:left;font-family:var(--font)">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:4px">
+        <span style="font-size:24px">🌿</span>
+        <div style="font-size:14px;font-weight:700;color:var(--text)">Schon vorgezogen — setze jetzt raus</div>
+      </div>
+      <div style="font-size:11px;color:var(--text-muted);line-height:1.4">Pflanze ist schon gewachsen, kommt jetzt ins Freie. Du kannst das Start-Datum später anpassen.</div>
+    </button>
+
+    <button onclick="_wizAnswer('startOption','later')" style="display:block;width:100%;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:10px;cursor:pointer;text-align:left;font-family:var(--font)">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:4px">
+        <span style="font-size:24px">📅</span>
+        <div style="font-size:14px;font-weight:700;color:var(--text)">Ich plane nur — nicht jetzt</div>
+      </div>
+      <div style="font-size:11px;color:var(--text-muted);line-height:1.4">Zyklus anlegen, Startdatum manuell festlegen.</div>
+    </button>
+
+    <button onclick="_wizBack()" style="width:100%;background:transparent;color:var(--text-muted);border:none;padding:14px;font-size:12px;cursor:pointer;font-family:var(--font);margin-top:8px">← Zurück</button>
+  </div>`;
+}
+
+// Screen 3 — Topfgröße mit Empfehlung
+function _wizStepPotSize(a) {
+  // Empfehlung je nach wachsender Konstellation
+  let rec;
+  if (a.growType === 'outdoor') {
+    rec = { size: 30, range: '25–50 L', reason: 'Outdoor braucht großen Wurzelraum für kräftige Pflanzen und natürliche Pufferung.' };
+  } else if (a.seedType === 'auto') {
+    rec = { size: 11, range: '7–15 L', reason: 'Automatics bleiben kleiner und brauchen keinen riesigen Topf.' };
+  } else {
+    rec = { size: 19, range: '15–25 L', reason: 'Photoperiode-Pflanzen drinnen werden größer — genug Platz für die Wurzeln.' };
+  }
+
+  return `<div style="padding:20px">
+    <h2 style="font-size:20px;font-weight:700;margin:0 0 6px">Wie groß ist dein Topf?</h2>
+    <p style="font-size:13px;color:var(--text-muted);margin:0 0 16px">In Litern. Das hilft bei der Gießmenge.</p>
+
+    <div style="background:rgba(76,175,112,0.08);border:1px solid rgba(76,175,112,0.3);border-radius:12px;padding:12px 14px;margin-bottom:16px">
+      <div style="font-size:11px;color:var(--green);font-weight:600;margin-bottom:4px">💡 Empfehlung für dich</div>
+      <div style="font-size:13px;color:var(--text);margin-bottom:3px"><b>${rec.range}</b> ist ideal</div>
+      <div style="font-size:11px;color:var(--text-sub);line-height:1.4">${rec.reason}</div>
+    </div>
+
+    <div class="inp-wrap" style="margin-bottom:12px">
+      <div class="inp-label">Topfgröße in Litern</div>
+      <input id="wiz-pot" class="inp-field" type="number" value="${a.potSize || rec.size}" min="1" max="200" oninput="_wizAnswers.potSize=Number(this.value)||${rec.size}"/>
+    </div>
+
+    <div style="display:flex;gap:8px;margin-bottom:16px">
+      <button onclick="_wizAnswers.potSize=${rec.size};document.getElementById('wiz-pot').value=${rec.size}" style="flex:1;background:var(--card2);border:0.5px solid var(--border);border-radius:10px;padding:10px;font-size:12px;color:var(--text);cursor:pointer;font-family:var(--font)">Empfehlung: ${rec.size}L</button>
+      ${a.growType === 'outdoor' ? `<button onclick="_wizAnswers.potSize=50;document.getElementById('wiz-pot').value=50" style="flex:1;background:var(--card2);border:0.5px solid var(--border);border-radius:10px;padding:10px;font-size:12px;color:var(--text);cursor:pointer;font-family:var(--font)">Groß: 50L</button>` : `<button onclick="_wizAnswers.potSize=11;document.getElementById('wiz-pot').value=11" style="flex:1;background:var(--card2);border:0.5px solid var(--border);border-radius:10px;padding:10px;font-size:12px;color:var(--text);cursor:pointer;font-family:var(--font)">Standard: 11L</button>`}
+    </div>
+
+    <button onclick="_wizNext()" style="width:100%;background:var(--green);color:#fff;border:none;border-radius:12px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;font-family:var(--font)">Weiter →</button>
+    <button onclick="_wizBack()" style="width:100%;background:transparent;color:var(--text-muted);border:none;padding:14px;font-size:12px;cursor:pointer;font-family:var(--font);margin-top:8px">← Zurück</button>
+  </div>`;
+}
+
+// Screen 4 — Düngeplan
+function _wizStepFertPlan(a) {
+  const plans = S.fertPlans || [];
+  const planOptions = plans.map(p => `
+    <button onclick="_wizAnswer('fertPlanId','${p.id}')" style="display:block;width:100%;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:8px;cursor:pointer;text-align:left;font-family:var(--font)">
+      <div style="font-size:13px;font-weight:600;color:var(--text)">${p.name}</div>
+      <div style="font-size:11px;color:var(--text-muted);margin-top:2px">${(p.products || []).length} Produkt${(p.products || []).length === 1 ? '' : 'e'}</div>
+    </button>
+  `).join('');
+
+  return `<div style="padding:20px">
+    <h2 style="font-size:20px;font-weight:700;margin:0 0 6px">Düngeplan?</h2>
+    <p style="font-size:13px;color:var(--text-muted);margin:0 0 16px">Welchen Plan soll dieser Zyklus nutzen?</p>
+
+    ${plans.length > 0 ? `<div style="margin-bottom:12px">
+      <div style="font-size:11px;color:var(--text-muted);font-weight:600;margin-bottom:8px">Vorhandene Pläne:</div>
+      ${planOptions}
+    </div>` : ''}
+
+    <button onclick="_wizAnswer('fertPlanId',null)" style="display:block;width:100%;background:var(--card2);border:1px dashed var(--border);border-radius:12px;padding:14px;cursor:pointer;text-align:center;font-family:var(--font);color:var(--text-muted);font-size:12px">
+      ⏭ Noch keinen Plan — später einrichten
+    </button>
+
+    <button onclick="_wizBack()" style="width:100%;background:transparent;color:var(--text-muted);border:none;padding:14px;font-size:12px;cursor:pointer;font-family:var(--font);margin-top:8px">← Zurück</button>
+  </div>`;
+}
+
+// Screen 5 — Name + Zusammenfassung + Erstellen
+function _wizStepNameSummary(a) {
+  const i = S.cycles.length;
+  const defaultName = a.name || `Zyklus ${i + 1}`;
+  const startDateInfo = _wizResolveStartDate(a);
+  const planName = a.fertPlanId
+    ? ((S.fertPlans || []).find(p => p.id === a.fertPlanId)?.name || '–')
+    : '(noch keiner)';
+  const seedLabel = { auto: '⚡ Automatic', fem: '♀ Feminisiert', reg: '♀♂ Regulär' }[a.seedType] || '–';
+
+  return `<div style="padding:20px">
+    <h2 style="font-size:20px;font-weight:700;margin:0 0 6px">Fast fertig!</h2>
+    <p style="font-size:13px;color:var(--text-muted);margin:0 0 20px">Gib deinem Zyklus einen Namen und los geht's.</p>
+
+    <div class="inp-wrap" style="margin-bottom:20px">
+      <div class="inp-label">Name des Zyklus</div>
+      <input id="wiz-name" class="inp-field" type="text" value="${(a.name || '').replace(/"/g, '&quot;') || defaultName.replace(/"/g, '&quot;')}" placeholder="z.B. ${defaultName}" oninput="_wizAnswers.name=this.value"/>
+    </div>
+
+    <div style="background:var(--card);border:0.5px solid var(--border);border-radius:12px;padding:14px;margin-bottom:20px">
+      <div style="font-size:11px;color:var(--text-muted);font-weight:600;margin-bottom:8px">📋 Deine Einstellungen</div>
+      <div style="font-size:12px;color:var(--text);line-height:1.8">
+        <div>${a.growType === 'outdoor' ? '☀️ Outdoor' : '🏠 Indoor'}</div>
+        ${a.seedType ? `<div>${seedLabel}</div>` : ''}
+        <div>📅 Start: <b>${fmtDE(startDateInfo.date, { day:'2-digit', month:'long', year:'numeric' })}</b></div>
+        <div>🪴 Topf: <b>${a.potSize || 11} L</b></div>
+        <div>🧪 Düngeplan: <b>${planName}</b></div>
+      </div>
+    </div>
+
+    <button onclick="_wizFinish()" style="width:100%;background:var(--green);color:#fff;border:none;border-radius:12px;padding:16px;font-size:16px;font-weight:700;cursor:pointer;font-family:var(--font)">🌱 Zyklus erstellen</button>
+    <button onclick="_wizBack()" style="width:100%;background:transparent;color:var(--text-muted);border:none;padding:14px;font-size:12px;cursor:pointer;font-family:var(--font);margin-top:8px">← Zurück</button>
+  </div>`;
+}
+
+/** Löst aus den Wizard-Antworten ein ISO-Startdatum ab. */
+function _wizResolveStartDate(a) {
+  if (a.startOption === 'today' || !a.startOption) {
+    return { date: todayISO(), note: 'Heute' };
+  }
+  if (a.startOption === 'prevegged') {
+    // 3 Wochen zurück als Standard-Annahme für vorgezogene Pflanzen
+    const d = new Date();
+    d.setDate(d.getDate() - 21);
+    return { date: d.toISOString().split('T')[0], note: 'Vor 3 Wochen (anpassbar)' };
+  }
+  if (a.startOption === 'later') {
+    return { date: todayISO(), note: 'Manuell anpassen' };
+  }
+  return { date: todayISO(), note: 'Heute' };
+}
+
+/** Wizard abschließen: Zyklus anlegen, aktiver Pflanzen-Typ, los */
+function _wizFinish() {
+  const a = _wizAnswers;
+  const startInfo = _wizResolveStartDate(a);
+
+  // Indoor: Seed-Type kam, draußen kam es nicht — Default auto für Outdoor
+  const seedType = a.seedType || (a.growType === 'outdoor' ? 'fem' : 'auto');
+
+  const overrides = {
+    name: a.name || undefined,
+    growType: a.growType || 'indoor',
+    seedType,
+    startDate: startInfo.date,
+    potSize: a.potSize,
+    fertPlanId: a.fertPlanId !== undefined ? a.fertPlanId : null,
+  };
+
+  addCyc(overrides);
+  closeWizard();
+  toast(`🌱 Dein neuer Zyklus ist bereit!`);
+}
+
+function addCyc(overrides) {
+  const o = overrides || {};
   const i = S.cycles.length;
   const c = {
-    id: Date.now().toString(), name: `Zyklus ${i + 1}`, location: '',
-    active: true, startDate: todayISO(), colorId: COLORS[i % COLORS.length].id,
-    symbol: SYMS[i % SYMS.length], seedType: 'auto', lightVeg: '18/6', lightBloom: '18/6',
+    id: Date.now().toString(),
+    name: o.name || `Zyklus ${i + 1}`,
+    location: o.location || '',
+    active: true,
+    startDate: o.startDate || todayISO(),
+    colorId: COLORS[i % COLORS.length].id,
+    symbol: SYMS[i % SYMS.length],
+    seedType: o.seedType || 'auto',
+    lightVeg: o.lightVeg || '18/6',
+    lightBloom: o.lightBloom || '18/6',
     anzuchtDays: PHASE_DEFAULTS.anzuchtDays, bloomDays: PHASE_DEFAULTS.bloomDays,
     flushDays: PHASE_DEFAULTS.flushDays, iceDays: PHASE_DEFAULTS.iceDays,
     harvestDays: PHASE_DEFAULTS.harvestDays, dryDays: PHASE_DEFAULTS.dryDays,
     intAnzucht: RI.anzucht, intBloom: RI.bloom, intFlush: RI.flush,
     intIce: RI.ice, intErnte: RI.ernte, intDry: RI.dry,
     offsetHistory: [], toppingDate: null, toppingPause: 3, skippedDays: [],
+    // Outdoor-support fields
+    growType: o.growType || 'indoor',
+    hemisphere: o.hemisphere || 'north',
+    phaseMode: 'days',
+    // v0.9: inherit the plan that's currently active in the Dünger screen.
+    // If none exists, falls back to first plan. If no plans at all → null (user assigns later).
+    fertPlanId: o.fertPlanId !== undefined ? o.fertPlanId : (S._activePlanId || (S.fertPlans && S.fertPlans[0]?.id) || null),
   };
+  // Pot size: if wizard supplied one, save globally (TODO: per-cycle field in later iteration)
+  if (o.potSize) S.potSize = o.potSize;
   S.cycles.push(c);
   selId = c.id;
   draft = { ...c };
   saveS();
   renderSet();
   toast(`🌱 ${c.name} erstellt — Start: ${fmtDE(c.startDate, {day:'2-digit',month:'2-digit'})}`);
+  return c;
 }
 
 function toggleAct(id, checked) {
@@ -3874,8 +5247,8 @@ async function backfillPast(id) {
             const doses = getWeekDoses(c.id, fertWk, c);
             Object.entries(doses).forEach(([prodId, plan]) => {
               if (plan > 0) {
-                const ml = Math.round((plan * waterMl / 1000) * 10) / 10;
-                cd.doses[prodId] = ml;
+                const prod = (S.products || []).find(p => p.id === prodId);
+                cd.doses[prodId] = calcDose(plan, waterMl, prod?.unit);
               }
             });
           }
@@ -4249,6 +5622,7 @@ function exportDiary() {
     if (c.location) md += `- **Standort:** ${c.location}\n`;
     md += `- **Phasen:** Anzucht ${c.anzuchtDays||PHASE_DEFAULTS.anzuchtDays}d → Blüte ${c.bloomDays||PHASE_DEFAULTS.bloomDays}d → Spülen ${c.flushDays||PHASE_DEFAULTS.flushDays}d → Ice ${c.iceDays||PHASE_DEFAULTS.iceDays}d\n`;
     if (S.presetKey) md += `- **Düngeplan:** ${FERT_PRESETS[S.presetKey]?.name || S.presetKey}\n`;
+    else if ((S.products || []).length > 0) md += `- **Düngeplan:** ✨ Eigener Plan · ${S.products.length} Produkte\n`;
     md += `- **Topfgröße:** ${S.potSize || 11}L\n\n`;
 
     // Entries sorted by date
@@ -4277,13 +5651,13 @@ function exportDiary() {
       if (cd.ec) md += ` · EC ${cd.ec}`;
       if (cd.water || cd.ph || cd.ec) md += `\n`;
 
-      // Doses
+      // Doses (cd.doses stores the calculated amount in display unit, not per-litre plan)
       const doseEntries = Object.entries(cd.doses || {}).filter(([,v]) => v > 0);
       if (doseEntries.length > 0) {
         md += `- 🧪 Dünger: `;
         md += doseEntries.map(([pid, v]) => {
           const prod = S.products.find(p => p.id === pid);
-          return `${prod?.name || pid} ${v} ${prod?.unit || 'ml/L'}`;
+          return `${prod?.name || pid} ${v} ${displayUnit(prod?.unit)}`;
         }).join(', ');
         md += `\n`;
       }
@@ -4578,7 +5952,8 @@ function renderEntry(iso) {
   const vpd = calcVPD(parseFloat(temp), parseFloat(rh));
   // Pass phase for Cup-Niveau Spätblüte zone logic (first active cycle as reference)
   const p4vpd = act.length > 0 ? phase(iso, act[0]) : null;
-  const z = vpdZone(vpd, p4vpd);
+  const gt4vpd = act.length > 0 ? act[0].growType : 'indoor';
+  const z = vpdZone(vpd, p4vpd, gt4vpd);
 
   const vpdBox = vpd !== null
     ? `<div class="vpd-box">
@@ -4650,6 +6025,9 @@ function renderEntry(iso) {
             Auf morgen verschieben →
           </button>
         </div>
+        ${c.growType === 'outdoor' ? `<button onclick="rainSkip('${c.id}','${iso}')" style="width:100%;background:linear-gradient(135deg, rgba(90,171,240,0.15), rgba(90,171,240,0.08));border:0.5px solid rgba(90,171,240,0.4);border-radius:10px;padding:10px;font-size:12px;color:var(--blue);cursor:pointer;font-family:var(--font);margin-bottom:8px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:6px">
+          ☔ Regen heute — Gießen nicht nötig
+        </button>` : ''}
         <button onclick="skipDay('${c.id}','${iso}')" style="width:100%;background:var(--surface);border:0.5px solid var(--border);border-radius:10px;padding:8px;font-size:11px;color:var(--red);cursor:pointer;font-family:var(--font);margin-bottom:8px;opacity:0.7">
           🚫 Diesen Gießtag entfernen
         </button>` : ''}`
@@ -4787,19 +6165,20 @@ function renderEntry(iso) {
 
       if (showNutrients) {
         // Full nutrient table with plan + calculated amounts
-        const prodRows = (S.products || []).map(prod => {
+        const prodRows = orderedProducts().map(prod => {
           const plan = doses[prod.id] || 0;
           const logged = cd.doses?.[prod.id] || '';
-          const calcMl = plan > 0 ? (plan * waterAmt / 1000).toFixed(1) : '–';
+          const calcVal = plan > 0 ? calcDose(plan, waterAmt, prod.unit).toFixed(1) : '–';
+          const dUnit = displayUnit(prod.unit);
           return `<div class="nut-row-tbl">
             <div style="display:flex;align-items:center;gap:6px">
               <div style="width:8px;height:8px;border-radius:50%;background:${prod.color};flex-shrink:0"></div>
               <span class="nt-name">${prod.name}</span>
             </div>
             <span class="nt-hint" style="color:${prod.color}88">${plan > 0 ? (plan + ' ' + (prod.unit || 'ml/L')) : '–'}</span>
-            <span class="nt-calc" data-cycle="${c.id}" data-prod="${prod.id}" data-plan="${plan}" data-unit="${prod.unit || 'ml/L'}">${calcMl !== '–' ? calcMl + ' ml' : '–'}</span>
+            <span class="nt-calc" data-cycle="${c.id}" data-prod="${prod.id}" data-plan="${plan}" data-unit="${prod.unit || 'ml/L'}">${calcVal !== '–' ? calcVal + ' ' + dUnit : '–'}</span>
             <input class="nt-inp" style="border-color:${prod.color}44" type="number" step="0.1"
-              value="${logged}" placeholder="${calcMl !== '–' ? calcMl : '0'}"
+              value="${logged}" placeholder="${calcVal !== '–' ? calcVal : '0'}"
               oninput="uDose('${c.id}','${prod.id}',this.value)"/>
           </div>`;
         }).join('');
@@ -4814,7 +6193,8 @@ function renderEntry(iso) {
               ${activeMixProducts.map((name, i) => {
                 const pr = S.products.find(p => p.name === name);
                 const d2 = doses[pr?.id] || 0;
-                const calc2 = d2 > 0 ? (d2 * waterAmt / 1000).toFixed(1) : 0;
+                const calc2 = d2 > 0 ? calcDose(d2, waterAmt, pr?.unit).toFixed(1) : 0;
+                const dispUnit = displayUnit(pr?.unit);
                 // Q1: persistent check state, stored per-entry keyed by product id
                 const checked = !!(cd.mixChecks?.[pr?.id]);
                 const checkId = `mix-${c.id}-${i}`;
@@ -4829,7 +6209,7 @@ function renderEntry(iso) {
                   </div>
                   <div style="display:flex;align-items:center;gap:3px;flex-shrink:0">
                     <button onclick="event.stopPropagation();stepMixDose('${c.id}','${pr?.id}',${wk},-0.1,${waterAmt})" style="width:26px;height:26px;border-radius:5px;background:var(--surface);border:0.5px solid var(--border);color:var(--text-sub);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:var(--mono)">−</button>
-                    <span style="color:var(--green);font-family:var(--mono);font-size:13px;font-weight:600;width:52px;text-align:center">${calc2} ml</span>
+                    <span style="color:var(--green);font-family:var(--mono);font-size:13px;font-weight:600;width:58px;text-align:center">${calc2} ${dispUnit}</span>
                     <button onclick="event.stopPropagation();stepMixDose('${c.id}','${pr?.id}',${wk},0.1,${waterAmt})" style="width:26px;height:26px;border-radius:5px;background:var(--surface);border:0.5px solid var(--border);color:var(--text-sub);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:var(--mono)">+</button>
                   </div>
                 </div>`;
@@ -4882,7 +6262,7 @@ function renderEntry(iso) {
 
         // Still show product inputs so user can log additives (CalMag, pH-Down etc.)
         const addRows = (S.products || []).length > 0
-          ? (S.products || []).map(prod => {
+          ? orderedProducts().map(prod => {
               const logged = cd.doses?.[prod.id] || '';
               return `<div class="nut-row-tbl" style="grid-template-columns:1fr 60px">
                 <div style="display:flex;align-items:center;gap:6px">
@@ -4937,7 +6317,9 @@ function renderEntry(iso) {
               <span style="background:${cl.hex}22;border:0.5px solid ${cl.hex}44;border-radius:6px;padding:2px 8px;font-size:11px;font-weight:600;color:${cl.hex}">${PH_ICON[p?.ph] || ''} ${p ? PN[p.ph] : '–'}</span>
               <span style="font-size:12px;color:var(--text-sub);font-weight:500">Tag ${p?.day || '–'}</span>
               <span style="font-size:11px;color:var(--text-muted)">Wo ${wk}</span>
-              <span style="background:rgba(240,208,80,0.1);border:0.5px solid rgba(240,208,80,0.25);border-radius:5px;padding:1px 6px;font-size:10px;color:var(--yellow)">💡 ${p && (p.ph === 'anzucht') ? (c.lightVeg || '18/6') : (c.lightBloom || '18/6')}</span>
+              ${c.growType === 'outdoor'
+                ? `<span style="background:rgba(240,160,60,0.1);border:0.5px solid rgba(240,160,60,0.3);border-radius:5px;padding:1px 6px;font-size:10px;color:#f0a03c">☀️ Outdoor</span>`
+                : `<span style="background:rgba(240,208,80,0.1);border:0.5px solid rgba(240,208,80,0.25);border-radius:5px;padding:1px 6px;font-size:10px;color:var(--yellow)">💡 ${p && (p.ph === 'anzucht') ? (c.lightVeg || '18/6') : (c.lightBloom || '18/6')}</span>`}
             </div>
           </div>
         </div>
@@ -5211,16 +6593,18 @@ function stepMixDose(cId, prodId, wk, stepMl, waterAmt) {
   const key = 'global_w' + wk;
   if (!S.weekSchedule[key]) S.weekSchedule[key] = {};
   const plan = S.weekSchedule[key][prodId] || 0;
+  const prod = (S.products || []).find(p => p.id === prodId);
+  const perLitre = isPerLitre(prod?.unit);
   let newPlan;
-  if (waterAmt && waterAmt > 0) {
-    // Current displayed ml → add step → back to ml/L
-    const currentMl = plan * waterAmt / 1000;
-    const newMl = Math.max(0, Math.round((currentMl + stepMl) * 10) / 10);
-    newPlan = newMl * 1000 / waterAmt;
+  if (perLitre && waterAmt && waterAmt > 0) {
+    // Per-litre unit: current displayed amount → add step → back to per-litre plan
+    const currentAmt = plan * waterAmt / 1000;
+    const newAmt = Math.max(0, Math.round((currentAmt + stepMl) * 10) / 10);
+    newPlan = newAmt * 1000 / waterAmt;
     // Keep stored plan value to a sensible precision (4 decimals is plenty)
     newPlan = Math.round(newPlan * 10000) / 10000;
   } else {
-    // Fallback: legacy ml/L stepping
+    // Absolute unit OR missing water: step the plan value directly
     newPlan = Math.max(0, Math.round((plan + stepMl) * 10) / 10);
   }
   S.weekSchedule[key][prodId] = newPlan;
@@ -5237,7 +6621,8 @@ function uEnv() {
   // Phase-aware VPD zone: Spätblüte gets different zone labels (Cup-Niveau)
   const actL = active();
   const p4vpd = editISO && actL.length > 0 ? phase(editISO, actL[0]) : null;
-  const v = calcVPD(t, r), z = vpdZone(v, p4vpd);
+  const gt4vpd = actL.length > 0 ? actL[0].growType : 'indoor';
+  const v = calcVPD(t, r), z = vpdZone(v, p4vpd, gt4vpd);
   if (v !== null && z) {
     const vv = document.getElementById('vpd-v');
     const vp = document.getElementById('vpd-p');
@@ -5284,8 +6669,8 @@ function applyRecommended(cId, wk) {
     const doses = getWeekDoses(cId, wk, c);
     Object.entries(doses).forEach(([prodId, plan]) => {
       if (plan > 0) {
-        const ml = Math.round((plan * waterMl / 1000) * 10) / 10;
-        cd.doses[prodId] = ml;
+        const prod = (S.products || []).find(p => p.id === prodId);
+        cd.doses[prodId] = calcDose(plan, waterMl, prod?.unit);
       }
     });
   }
@@ -6352,8 +7737,15 @@ function stopPPFD() {
 //  INIT
 // =====================================================================
 loadS();
+// Initial sync: active plan → legacy globals for compatibility with existing read-sites
+syncActivePlanToGlobals();
 calDate = new Date();
-goTo('dash');
+// First-run: show welcome screen if user has never created a cycle and hasn't seen it
+if (shouldShowWelcome()) {
+  showWelcome();
+} else {
+  goTo('dash');
+}
 history.pushState(null, '', location.href);
 
 // Swipe navigation for calendar
