@@ -515,6 +515,10 @@ input:checked + .sl:before { transform: translateX(18px); background: var(--gree
 }
 .tour-dot.active { background: var(--green); transform: scale(1.3); }
 .tour-dot.done   { background: var(--green-dk); }
+
+/* Advanced controls (Undo/Redo, Test-Mode usw.) — nur im Profi-Modus sichtbar. */
+.advanced-ctl { display: flex; }
+body.beginner .advanced-ctl { display: none !important; }
 </style>
 </head>
 <body>
@@ -526,8 +530,10 @@ input:checked + .sl:before { transform: translateX(18px); background: var(--gree
     <div class="topbar" style="padding-top:max(12px,env(safe-area-inset-top))">
       <span class="app-title">🌱 GrowSmart</span>
       <div style="display:flex;gap:4px;align-items:center">
-        <button onclick="doUndo()" style="background:var(--surface);border:0.5px solid var(--border);border-radius:8px;padding:5px 8px;font-size:10px;color:var(--text-sub);cursor:pointer;font-family:var(--font)" title="Rückgängig">↩</button>
-        <button onclick="doRedo()" style="background:var(--surface);border:0.5px solid var(--border);border-radius:8px;padding:5px 8px;font-size:10px;color:var(--text-sub);cursor:pointer;font-family:var(--font)" title="Wiederholen">↪</button>
+        <div class="advanced-ctl" style="display:flex;gap:4px">
+          <button onclick="doUndo()" style="background:var(--surface);border:0.5px solid var(--border);border-radius:8px;padding:5px 8px;font-size:10px;color:var(--text-sub);cursor:pointer;font-family:var(--font)" title="Rückgängig">↩</button>
+          <button onclick="doRedo()" style="background:var(--surface);border:0.5px solid var(--border);border-radius:8px;padding:5px 8px;font-size:10px;color:var(--text-sub);cursor:pointer;font-family:var(--font)" title="Wiederholen">↪</button>
+        </div>
         <button class="icon-btn" onclick="entryFrom='dash';openEntry(todayISO())">＋</button>
       </div>
     </div>
@@ -539,12 +545,12 @@ input:checked + .sl:before { transform: translateX(18px); background: var(--gree
   <div class="screen" id="scr-cal">
     <div class="topbar" style="padding-top:max(12px,env(safe-area-inset-top))">
       <button onclick="changeMonth(-1)" style="background:none;border:none;color:var(--green);font-size:28px;cursor:pointer;padding:0 8px;line-height:1">‹</button>
-      <div style="display:flex;align-items:center;gap:12px">
-        <button onclick="doUndo()" style="background:var(--surface);border:0.5px solid var(--border);border-radius:8px;padding:6px 10px;font-size:12px;color:var(--text-sub);cursor:pointer;font-family:var(--font);display:flex;align-items:center;gap:3px">↩ Undo</button>
-        <span style="font-size:15px;font-weight:600" id="cal-lbl">–</span>
-        <button onclick="doRedo()" style="background:var(--surface);border:0.5px solid var(--border);border-radius:8px;padding:6px 10px;font-size:12px;color:var(--text-sub);cursor:pointer;font-family:var(--font);display:flex;align-items:center;gap:3px">Redo ↪</button>
-      </div>
+      <span style="font-size:16px;font-weight:700;flex:1;text-align:center" id="cal-lbl">–</span>
       <button onclick="changeMonth(1)" style="background:none;border:none;color:var(--green);font-size:28px;cursor:pointer;padding:0 8px;line-height:1">›</button>
+      <div class="advanced-ctl" style="gap:4px;margin-left:4px">
+        <button onclick="doUndo()" style="background:var(--surface);border:0.5px solid var(--border);border-radius:8px;padding:5px 8px;font-size:10px;color:var(--text-sub);cursor:pointer;font-family:var(--font)" title="Rückgängig">↩</button>
+        <button onclick="doRedo()" style="background:var(--surface);border:0.5px solid var(--border);border-radius:8px;padding:5px 8px;font-size:10px;color:var(--text-sub);cursor:pointer;font-family:var(--font)" title="Wiederholen">↪</button>
+      </div>
     </div>
     <div class="scroll" id="cal-body" oncontextmenu="return false" style="padding:8px;gap:6px;"></div>
     <nav class="bottom-nav" id="nav-cal"></nav>
@@ -554,7 +560,7 @@ input:checked + .sl:before { transform: translateX(18px); background: var(--gree
   <div class="screen" id="scr-tips">
     <div class="topbar" style="padding-top:max(12px,env(safe-area-inset-top))">
       <span class="app-title">💡 Grow-Tipps</span>
-      <div style="display:flex;gap:4px;align-items:center">
+      <div class="advanced-ctl" style="gap:4px;align-items:center">
         <button onclick="doUndo()" style="background:var(--surface);border:0.5px solid var(--border);border-radius:8px;padding:5px 8px;font-size:10px;color:var(--text-sub);cursor:pointer;font-family:var(--font)" title="Rückgängig">↩</button>
         <button onclick="doRedo()" style="background:var(--surface);border:0.5px solid var(--border);border-radius:8px;padding:5px 8px;font-size:10px;color:var(--text-sub);cursor:pointer;font-family:var(--font)" title="Wiederholen">↪</button>
       </div>
@@ -568,7 +574,7 @@ input:checked + .sl:before { transform: translateX(18px); background: var(--gree
     <div class="topbar" style="padding-top:max(12px,env(safe-area-inset-top))">
       <button class="icon-btn" onclick="goTo('cal')" style="font-size:20px" title="Zum Kalender">📅</button>
       <span class="app-title">⚙ Einstellungen</span>
-      <div style="display:flex;gap:6px">
+      <div class="advanced-ctl" style="gap:6px">
         <button onclick="doUndo()" style="background:var(--surface);border:0.5px solid var(--border);border-radius:8px;padding:5px 10px;font-size:11px;color:var(--text-sub);cursor:pointer;font-family:var(--font)">↩ Undo</button>
         <button onclick="doRedo()" style="background:var(--surface);border:0.5px solid var(--border);border-radius:8px;padding:5px 10px;font-size:11px;color:var(--text-sub);cursor:pointer;font-family:var(--font)">Redo ↪</button>
       </div>
@@ -581,12 +587,14 @@ input:checked + .sl:before { transform: translateX(18px); background: var(--gree
   <div class="screen" id="scr-entry">
     <div class="topbar" style="padding-top:max(12px,env(safe-area-inset-top));gap:6px">
       <button class="icon-btn" id="entry-back" style="font-size:22px;padding:4px 8px">←</button>
-      <button onclick="entryNav(-1)" style="background:var(--surface);border:0.5px solid var(--border);border-radius:8px;color:var(--green);font-size:16px;cursor:pointer;padding:5px 10px;font-weight:600">‹</button>
+      <button onclick="entryNav(-1)" title="Vorheriger Tag" style="background:var(--surface);border:0.5px solid var(--border);border-radius:8px;color:var(--green);font-size:16px;cursor:pointer;padding:5px 10px;font-weight:600">‹</button>
       <div id="entry-ttl" style="flex:1;text-align:center;font-size:14px;font-weight:600;color:var(--text)">Eintrag</div>
-      <button onclick="entryNav(1)" style="background:var(--surface);border:0.5px solid var(--border);border-radius:8px;color:var(--green);font-size:16px;cursor:pointer;padding:5px 10px;font-weight:600">›</button>
+      <button onclick="entryNav(1)" title="Nächster Tag" style="background:var(--surface);border:0.5px solid var(--border);border-radius:8px;color:var(--green);font-size:16px;cursor:pointer;padding:5px 10px;font-weight:600">›</button>
       <div style="display:flex;gap:4px;align-items:center">
-        <button onclick="doUndo()" style="background:var(--surface);border:0.5px solid var(--border);border-radius:8px;padding:5px 8px;font-size:10px;color:var(--text-sub);cursor:pointer;font-family:var(--font)">↩ Undo</button>
-        <button onclick="doRedo()" style="background:var(--surface);border:0.5px solid var(--border);border-radius:8px;padding:5px 8px;font-size:10px;color:var(--text-sub);cursor:pointer;font-family:var(--font)">Redo ↪</button>
+        <div class="advanced-ctl" style="gap:4px">
+          <button onclick="doUndo()" style="background:var(--surface);border:0.5px solid var(--border);border-radius:8px;padding:5px 8px;font-size:10px;color:var(--text-sub);cursor:pointer;font-family:var(--font)">↩ Undo</button>
+          <button onclick="doRedo()" style="background:var(--surface);border:0.5px solid var(--border);border-radius:8px;padding:5px 8px;font-size:10px;color:var(--text-sub);cursor:pointer;font-family:var(--font)">Redo ↪</button>
+        </div>
         <button class="save-pill" onclick="saveEntry()">Speichern</button>
       </div>
     </div>
@@ -614,7 +622,7 @@ input:checked + .sl:before { transform: translateX(18px); background: var(--gree
     <div class="topbar" style="padding-top:max(12px,env(safe-area-inset-top))">
       <button class="icon-btn" onclick="closeWizard()" style="font-size:20px">✕</button>
       <span class="app-title" id="wiz-title">🌱 Neuer Zyklus</span>
-      <button class="icon-btn" onclick="skipToExpertForm()" style="font-size:14px;color:var(--text-muted);padding:0 10px">Profi →</button>
+      <button class="icon-btn advanced-ctl" onclick="skipToExpertForm()" style="font-size:14px;color:var(--text-muted);padding:0 10px">Profi →</button>
     </div>
     <div class="scroll" id="wiz-body"></div>
   </div>
@@ -1463,7 +1471,7 @@ function loadS() {
     if (c.intIce === undefined)     c.intIce = RI.ice;
     if (c.intErnte === undefined)   c.intErnte = RI.ernte;
     if (c.intDry === undefined)     c.intDry = RI.dry;
-    if (c.toppingPause === undefined) c.toppingPause = 3;
+    if (c.toppingPause === undefined) c.toppingPause = 2;
     if (!c.skippedDays) c.skippedDays = [];
     if (!c.seedType) c.seedType = 'auto';
     if (!c.lightVeg) c.lightVeg = '18/6';
@@ -2597,7 +2605,7 @@ function doUndo() {
     }, prev);
     S.cycles.forEach(c => {
       if (!c.offsetHistory) c.offsetHistory = [];
-      if (c.toppingPause === undefined) c.toppingPause = 3;
+      if (c.toppingPause === undefined) c.toppingPause = 2;
       if (!c.skippedDays) c.skippedDays = [];
       delete c.dayOffset; delete c.offsetDate;
     });
@@ -2624,7 +2632,7 @@ function doRedo() {
     }, next);
     S.cycles.forEach(c => {
       if (!c.offsetHistory) c.offsetHistory = [];
-      if (c.toppingPause === undefined) c.toppingPause = 3;
+      if (c.toppingPause === undefined) c.toppingPause = 2;
       if (!c.skippedDays) c.skippedDays = [];
       delete c.dayOffset; delete c.offsetDate;
     });
@@ -2649,9 +2657,17 @@ function setDebugDate(v) {
   _debugDate = v || null;
   vibrate();
   toast(_debugDate ? `🧪 Datum: ${fmtDE(_debugDate, {day:'2-digit',month:'short',year:'numeric'})}` : '🧪 Echtes Datum');
-  renderSet();
-  // Refresh all screens
+  // calDate synchronisieren mit dem neuen "heute"
   calDate = _debugDate ? iso12(_debugDate) : new Date();
+  // Alle Screens neu rendern damit Dashboard, Kalender, Entry etc. das neue Datum nutzen
+  renderSet();
+  if (typeof renderDash === 'function') renderDash();
+  if (typeof renderCal === 'function') renderCal();
+  // Entry-Screen nur refreshen wenn gerade offen
+  const entryView = document.getElementById('entry-view');
+  if (entryView && entryView.style && entryView.style.display !== 'none' && typeof renderEntry === 'function') {
+    try { renderEntry(todayISO()); } catch(e) { /* entry might not be on today */ }
+  }
 }
 function iso12(iso) { return new Date(iso + 'T12:00:00'); }
 function isoPlus(iso, d) { const o = iso12(iso); o.setDate(o.getDate() + d); return o.toISOString().split('T')[0]; }
@@ -3073,7 +3089,12 @@ function calcStreak(c) {
   for (let i = 0; i < 90; i++) {
     const iso = isoPlus(today, -i);
     if (isGiessTag(iso, c)) {
-      if (S.entries[iso]?.cycleData?.[c.id]?.water) s++;
+      // Ein Gießtag zählt für den Streak wenn:
+      // - Wassermenge eingetragen wurde, ODER
+      // - Der User "Erledigt" auf dem Dashboard geklickt hat (_doneTodo)
+      // Das verhindert dass der Streak bricht wenn jemand nur schnell abhakt.
+      const cd = S.entries[iso]?.cycleData?.[c.id];
+      if (cd && (cd.water || cd._doneTodo)) s++;
       else break;
     }
   }
@@ -3102,6 +3123,50 @@ function waterStats(c) {
  * Skaliert proportional zur Topfgröße (Basis: 11L).
  */
 function waterSuggestion(c, p) {
+  // Helper: berechnet die "rohe" biophysikalische Empfehlung (ohne Personalisierung)
+  const rawSuggestion = () => _waterSuggestionRaw(c, p);
+
+  const raw = rawSuggestion();
+
+  // PERSONALISIERUNG: Wenn der User in den letzten Gießtagen systematisch mehr
+  // (oder weniger) gegossen hat als empfohlen, passt sich die App an.
+  // Wir nehmen das Verhältnis aus den letzten 3 tatsächlich gegossenen Tagen und
+  // bilden ein gleitendes Mittel. So wirken einmalige Abweichungen nicht zu stark.
+  if (c && c.id && p && S.entries) {
+    const today = todayISO();
+    const recentRatios = [];
+    // Rückwärts durch die letzten 30 Tage gehen, bis 3 relevante Gießtage gefunden sind
+    for (let i = 1; i <= 30 && recentRatios.length < 3; i++) {
+      const iso = isoPlus(today, -i);
+      const cd = S.entries[iso]?.cycleData?.[c.id];
+      if (!cd?.water) continue;
+      const userMl = parseFloat(cd.water);
+      if (!userMl || userMl < 50) continue; // Ignoriere Tag-1 (0 ml) und absurd niedrige
+      const pPast = phase(iso, c);
+      if (!pPast) continue;
+      const expectedMl = _waterSuggestionRaw(c, pPast);
+      if (!expectedMl) continue;
+      const ratio = userMl / expectedMl;
+      // Clamp auf sinnvollen Bereich — wer mal deutlich weniger gießt (z.B. weil Erde
+      // noch feucht war) soll nicht die ganze Zukunft nach unten ziehen.
+      if (ratio >= 0.5 && ratio <= 2.0) {
+        recentRatios.push(ratio);
+      }
+    }
+    if (recentRatios.length >= 2) {
+      const avgRatio = recentRatios.reduce((a, b) => a + b, 0) / recentRatios.length;
+      // Sanfte Anpassung: Nur anwenden wenn Abweichung >10% ist, sonst Default lassen.
+      // So wird nicht bei jeder kleinen Variation alles umgerechnet.
+      if (Math.abs(avgRatio - 1.0) > 0.1) {
+        return Math.round(raw * avgRatio / 50) * 50;
+      }
+    }
+  }
+  return raw;
+}
+
+// Interne rohe Empfehlung ohne Personalisierung — Basis für Personalisierungs-Berechnung
+function _waterSuggestionRaw(c, p) {
   const pot = S.potSize || 11;
   const scale = pot / 11; // Skalierungsfaktor relativ zu 11L
   // Outdoor-Pflanzen haben mehr Blattmasse + Sonne/Wind = mehr Verdunstung.
@@ -3406,6 +3471,31 @@ function getAlerts(c) {
   if (p.ph === 'bloom' && p.day === 1) milestones.push({ key: 'bloom_start', icon: '🌸', text: 'Blütenphase startet! Ab jetzt kein Stickstoff mehr hochdrehen, die Pflanze stretcht noch 2-3 Wochen.', type: 'milestone' });
   if (p.ph === 'bloom' && daysSinceStart && p.week === 4) milestones.push({ key: 'bloom_wk4', icon: '✨', text: 'Woche 4 Blüte — die ersten echten Blütenansätze werden sichtbar!', type: 'milestone' });
 
+  // PHASE-ÜBERGANG-VORSCHAU: 3 Tage vor einem wichtigen Phasenwechsel rechtzeitig hinweisen.
+  // Wir schauen welche Phase in 3 Tagen aktiv sein wird und vergleichen mit heute.
+  // So bekommt der User Zeit sich vorzubereiten (Licht umstellen, Spülwasser bereit, etc.).
+  const p3 = phase(isoPlus(today, 3), c);
+  if (p3 && p && p3.ph !== p.ph) {
+    const transitionKey = `prev_${p.ph}_to_${p3.ph}`;
+    let hint = null;
+    if (p3.ph === 'bloom' && p.ph === 'anzucht') {
+      hint = c.seedType === 'fem'
+        ? { icon: '🌸', text: 'In 3 Tagen: <b>Blüte-Start</b>. Wenn Photoperiode — Licht auf 12/12 umstellen!' }
+        : { icon: '🌸', text: 'In 3 Tagen: <b>Blüte beginnt</b>. Automatic — du musst nichts tun, die Pflanze macht das selber.' };
+    } else if (p3.ph === 'flush') {
+      hint = { icon: '🚿', text: 'In 3 Tagen: <b>Spülphase</b> beginnt. Ab dann nur noch klares Wasser, kein Dünger mehr.' };
+    } else if (p3.ph === 'ice') {
+      hint = { icon: '🧊', text: 'In 3 Tagen: <b>IceFlush-Zeit</b>! Kalt-Wasser-Behandlung für extra Harz. Wasser einfrieren oder stark abkühlen.' };
+    } else if (p3.ph === 'harvest') {
+      hint = { icon: '✂️', text: 'In 3 Tagen: <b>Erntetag</b>! Check die Trichome jetzt täglich mit der Lupe. Schere, Handschuhe und Trocken-Ort bereitlegen.' };
+    } else if (p3.ph === 'dry') {
+      hint = { icon: '🍂', text: 'In 3 Tagen: <b>Trocknung</b>. Ziel: 18–21°C, 55–65% RLF für 7–14 Tage. Aufhängen an einer Schnur.' };
+    }
+    if (hint && !c._milestones?.[transitionKey]) {
+      milestones.push({ key: transitionKey, ...hint, type: 'milestone' });
+    }
+  }
+
   milestones.forEach(m => {
     // Nur anzeigen wenn noch nicht gesehen UND es heute passt. Die Speicherung
     // erfolgt erst wenn der User die Karte via dismissMilestone entfernt.
@@ -3630,6 +3720,17 @@ window.addEventListener('popstate', () => {
   if (document.getElementById('scr-gallery').classList.contains('active')) {
     goTo('dash'); history.pushState(null, '', location.href); return;
   }
+  // Wizard: wie ✕-Button reagieren (zum Ursprung zurück)
+  const scrWizard = document.getElementById('scr-wizard');
+  if (scrWizard && scrWizard.classList.contains('active')) {
+    closeWizard(); history.pushState(null, '', location.href); return;
+  }
+  // Welcome-Screen: Hardware-Back soll die App nicht gleich verlassen,
+  // stattdessen als "Skip" behandeln (User markiert Welcome als gesehen).
+  const scrWelcome = document.getElementById('scr-welcome');
+  if (scrWelcome && scrWelcome.classList.contains('active')) {
+    welcomeSkip(); history.pushState(null, '', location.href); return;
+  }
   const now = Date.now();
   if (now - lastBack < 2000) return;
   lastBack = now;
@@ -3688,6 +3789,11 @@ function plainSentence(action, c, p, waterMl) {
   const isOutdoor = c.growType === 'outdoor';
   const isVorzucht = p && p.ph === 'vorzucht';
   const isVegiOut = p && p.ph === 'vegi_out';
+  // Tag 1 der Anzucht: Biologisch setzt man den Samen in leicht angefeuchtete Erde
+  // und gießt NICHT. Die App sollte das klar kommunizieren statt nur Wasser-ml zu empfehlen.
+  if ((action === 'giess_anz' || action === 'giess') && p && p.day === 1 && (p.ph === 'anzucht' || p.ph === 'vorzucht')) {
+    return `Heute setzt du deinen Samen in leicht angefeuchtete Erde. <b>Nicht nachgießen</b> — der Samen braucht nur feuchte Erde um zu keimen. Zu viel Wasser ertränkt ihn. Trag einfach <b>0 ml</b> ein und mach morgen weiter.`;
+  }
   if (action === 'giess_anz') {
     if (isVorzucht) {
       return `Gib deiner vorgezogenen Pflanze heute etwa <b>${waterMl} ml</b> lauwarmes Wasser — sie ist noch drinnen, du musst nicht aufs Wetter achten.`;
@@ -4075,6 +4181,20 @@ function renderDash() {
   const fmt = new Date().toLocaleDateString('de-DE', { weekday: 'long', day: '2-digit', month: 'long' });
   const allAlerts = act.flatMap(c => getAlerts(c));
 
+  // Demo-Banner: wenn noch mindestens ein Demo-Zyklus aktiv ist, klare Option
+  // zum Beenden anbieten. Der User soll die Demo jederzeit mit einem Klick
+  // komplett loswerden können — ohne in den Einstellungen suchen zu müssen.
+  const demoBanner = hasDemoCycle() ? `
+    <div style="background:linear-gradient(135deg,rgba(240,208,80,0.12),rgba(240,208,80,0.04));border:1px solid rgba(240,208,80,0.4);border-radius:12px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:10px">
+      <span style="font-size:22px;flex-shrink:0">🎓</span>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:12px;color:var(--text);font-weight:600">Du bist im Demo-Modus</div>
+        <div style="font-size:11px;color:var(--text-muted);line-height:1.4;margin-top:2px">Fertig mit Erkunden? Demo löschen und eigenen Zyklus starten.</div>
+      </div>
+      <button onclick="endDemoMode()" style="background:var(--yellow);border:none;color:#000;font-size:11px;padding:8px 12px;border-radius:8px;cursor:pointer;font-family:var(--font);font-weight:700;white-space:nowrap">✕ Demo beenden</button>
+    </div>
+  ` : '';
+
   const alertHTML = allAlerts.map(a => {
     // Milestones haben ihren eigenen Look — grün-gradient mit Dismiss-Button.
     if (a.type === 'milestone') {
@@ -4138,7 +4258,11 @@ function renderDash() {
     }).join('')}
   </div>` : '';
 
-  const fc = act[0];
+  // Fokus-Zyklus (fc) für Stats: bevorzugt einen Zyklus mit einer Aktion heute.
+  // Sonst nimmt die App einfach den ersten aktiven Zyklus. Das sorgt bei mehreren
+  // Zyklen dafür dass die relevanteste Karte zuerst angezeigt wird.
+  const cycleWithAction = act.find(c => getAction(today, c));
+  const fc = cycleWithAction || act[0];
   const fcAction = fc ? getAction(today, fc) : null;
 
   // E2: "Heute zu tun"-Cards (only for cycles with an action today)
@@ -4196,31 +4320,54 @@ function renderDash() {
     </div>`;
   }).filter(Boolean).join('');
 
-  // Smart stats
+  // Smart stats — einmaliger Durchlauf statt 3 separater Iterationen
+  // (filter → map/filter → reduce). Bei vielen Entries wirkt sich das aus.
   let avgPH = '–', totalWater = 0, harvestDate = '–';
   if (fc) {
-    const wDates = Object.keys(S.entries).filter(d => S.entries[d]?.cycleData?.[fc.id]?.water).sort();
-    const phVals = wDates.map(d => parseFloat(S.entries[d]?.cycleData?.[fc.id]?.ph)).filter(v => v > 0);
-    if (phVals.length > 0) avgPH = (phVals.reduce((a,b) => a+b, 0) / phVals.length).toFixed(1);
-    totalWater = wDates.reduce((sum, d) => sum + (parseFloat(S.entries[d]?.cycleData?.[fc.id]?.water) || 0), 0);
+    let phSum = 0, phCount = 0;
+    const allDates = Object.keys(S.entries);
+    for (let i = 0; i < allDates.length; i++) {
+      const cd = S.entries[allDates[i]]?.cycleData?.[fc.id];
+      if (!cd?.water) continue;
+      totalWater += parseFloat(cd.water) || 0;
+      const phVal = parseFloat(cd.ph);
+      if (phVal > 0) { phSum += phVal; phCount++; }
+    }
+    if (phCount > 0) avgPH = (phSum / phCount).toFixed(1);
     const hDays = (fc.anzuchtDays||PHASE_DEFAULTS.anzuchtDays) + (fc.bloomDays||PHASE_DEFAULTS.bloomDays) + (fc.flushDays||PHASE_DEFAULTS.flushDays) + (fc.iceDays||PHASE_DEFAULTS.iceDays);
     harvestDate = fmtDE(isoPlus(fc.startDate, hDays), {day:'2-digit', month:'short'});
   }
+
+  // Bei mehreren aktiven Zyklen: Label zeigen auf welchen Zyklus sich die Stats beziehen.
+  // Sonst wäre "Gesamt 39L" bei 3 Zyklen missverständlich.
+  const multiCycLabel = act.length > 1 && fc ? `
+    <div style="font-size:10px;color:var(--text-muted);padding:2px 4px 4px;display:flex;align-items:center;gap:6px">
+      <span>${sym(fc)} <b style="color:${col(fc).hex}">${fc.name}</b></span>
+      <span style="color:var(--text-hint)">· Werte beziehen sich auf diesen Zyklus</span>
+    </div>
+  ` : '';
 
   const stats = act.length > 0 ? (S.beginnerMode ? `<div class="stat-row">
     <div class="stat-box"><div class="stat-lbl">Ernte in</div><div class="stat-val">${fc ? daysToHarvest(fc) : '–'}<span class="stat-unit"> d</span></div></div>
     <div class="stat-box"><div class="stat-lbl">Heute</div><div class="stat-val" style="font-size:22px">${fcAction ? ACT_ICON[fcAction] || '💤' : '💤'}</div></div>
     <div class="stat-box"><div class="stat-lbl">Erntedatum</div><div class="stat-val" style="font-size:14px">${harvestDate}</div></div>
-  </div>` : `<div class="stat-row">
-    <div class="stat-box"><div class="stat-lbl">Ernte in</div><div class="stat-val">${fc ? daysToHarvest(fc) : '–'}<span class="stat-unit"> d</span></div></div>
-    <div class="stat-box"><div class="stat-lbl">Heute</div><div class="stat-val" style="font-size:22px">${fcAction ? ACT_ICON[fcAction] || '💤' : '💤'}</div></div>
-    <div class="stat-box"><div class="stat-lbl">Ø pH</div><div class="stat-val" style="color:${avgPH !== '–' && parseFloat(avgPH) >= 6.2 && parseFloat(avgPH) <= 6.4 ? 'var(--green)' : avgPH !== '–' ? 'var(--orange)' : 'var(--text-hint)'}">${avgPH}</div></div>
-  </div>
-  <div class="stat-row" style="margin-top:6px">
-    <div class="stat-box"><div class="stat-lbl">Gesamt 💧</div><div class="stat-val">${totalWater > 0 ? (totalWater/1000).toFixed(1) : '–'}<span class="stat-unit"> L</span></div></div>
-    <div class="stat-box"><div class="stat-lbl">Erntedatum</div><div class="stat-val" style="font-size:14px">${harvestDate}</div></div>
-    <div class="stat-box"><div class="stat-lbl">Streak</div><div class="stat-val">${fc ? calcStreak(fc) : 0}<span class="stat-unit"> 🔥</span></div></div>
-  </div>`) : '';
+  </div>` : (() => {
+    const streak = fc ? calcStreak(fc) : 0;
+    // Streak: bei 0 einen Dash zeigen statt "0 🔥" — motivierender als demotivierender Startzustand.
+    const streakDisplay = streak > 0
+      ? `${streak}<span class="stat-unit"> 🔥</span>`
+      : `<span style="color:var(--text-hint)">–</span>`;
+    return `<div class="stat-row">
+      <div class="stat-box"><div class="stat-lbl">Ernte in</div><div class="stat-val">${fc ? daysToHarvest(fc) : '–'}<span class="stat-unit"> d</span></div></div>
+      <div class="stat-box"><div class="stat-lbl">Heute</div><div class="stat-val" style="font-size:22px">${fcAction ? ACT_ICON[fcAction] || '💤' : '💤'}</div></div>
+      <div class="stat-box"><div class="stat-lbl">Ø pH</div><div class="stat-val" style="color:${avgPH !== '–' && parseFloat(avgPH) >= 6.2 && parseFloat(avgPH) <= 6.4 ? 'var(--green)' : avgPH !== '–' ? 'var(--orange)' : 'var(--text-hint)'}">${avgPH}</div></div>
+    </div>
+    <div class="stat-row" style="margin-top:6px">
+      <div class="stat-box"><div class="stat-lbl">Gesamt 💧</div><div class="stat-val">${totalWater > 0 ? (totalWater/1000).toFixed(1) : '–'}<span class="stat-unit"> L</span></div></div>
+      <div class="stat-box"><div class="stat-lbl">Erntedatum</div><div class="stat-val" style="font-size:14px">${harvestDate}</div></div>
+      <div class="stat-box"><div class="stat-lbl">Streak</div><div class="stat-val">${streakDisplay}</div></div>
+    </div>`;
+  })()) : '';
 
   const cards = act.map(c => {
     const p = phase(today, c), a = getAction(today, c), cl = col(c), s = sym(c);
@@ -4311,11 +4458,14 @@ function renderDash() {
     <div style="font-size:13px;color:var(--text-muted);line-height:1.7;margin-bottom:18px;max-width:280px">
       Dein erster Grow ist schnell eingerichtet — wir führen dich durch 5 einfache Fragen.
     </div>
-    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center">
-      <button id="welcome-start-btn" style="background:var(--green);border:none;border-radius:22px;padding:14px 28px;font-size:15px;color:#fff;cursor:pointer;font-family:var(--font);font-weight:700;box-shadow:0 4px 14px rgba(76,175,112,0.3)" onclick="openCycleWizard()">🌱 Jetzt starten →</button>
-      <button onclick="goTo('tips');setTimeout(openHowto,100)" style="background:var(--surface);border:1px solid var(--green-dk);border-radius:22px;padding:13px 22px;font-size:13px;color:var(--green);cursor:pointer;font-family:var(--font);font-weight:600">📖 Erst nachlesen</button>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center;margin-bottom:12px">
+      <button id="welcome-start-btn" style="background:var(--green);border:none;border-radius:22px;padding:14px 28px;font-size:15px;color:#fff;cursor:pointer;font-family:var(--font);font-weight:700;box-shadow:0 4px 14px rgba(76,175,112,0.3)" onclick="openCycleWizard('dash')">🌱 Jetzt starten →</button>
     </div>
-    <div style="font-size:10px;color:var(--text-hint);margin-top:12px;line-height:1.5;max-width:260px">💡 Tipp: Unter "📖 Erst nachlesen" findest du eine komplette Anleitung mit 9 Kapiteln — und auch geführte Touren durch die App.</div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center">
+      <button onclick="welcomeStartDemo()" style="background:rgba(240,208,80,0.1);border:1px solid rgba(240,208,80,0.4);border-radius:20px;padding:10px 18px;font-size:12px;color:var(--yellow);cursor:pointer;font-family:var(--font);font-weight:600">🎓 Demo ansehen</button>
+      <button onclick="goTo('tips');setTimeout(openHowto,100)" style="background:var(--surface);border:1px solid var(--green-dk);border-radius:20px;padding:10px 18px;font-size:12px;color:var(--green);cursor:pointer;font-family:var(--font);font-weight:600">📖 Erst nachlesen</button>
+    </div>
+    <div style="font-size:10px;color:var(--text-hint);margin-top:16px;line-height:1.5;max-width:280px">💡 Tipp: Die <b>Demo</b> zeigt einen kompletten 60-Tage-Zyklus mit echten Daten — perfekt um die App kennenzulernen.</div>
   </div>` : '';
 
   // Charts section per active cycle (between Meine Zyklen and Foto-Galerie)
@@ -4345,7 +4495,7 @@ function renderDash() {
       <span style="color:var(--red);font-size:14px">›</span>
     </div>` : '';
 
-  document.getElementById('dash-body').innerHTML = `${actionCards}${todayCard}${alertHTML}${weatherWidget()}${stats}<div class="sect-head">Meine Zyklen</div>${empty}${cards}
+  document.getElementById('dash-body').innerHTML = `${demoBanner}${actionCards}${todayCard}${alertHTML}${weatherWidget()}${multiCycLabel}${stats}<div class="sect-head">Meine Zyklen</div>${empty}${cards}
     ${chartsHTML}
     ${act.length > 0 ? `<div class="sec-tog" onclick="openGallery()" style="margin-top:4px;border-color:rgba(176,106,200,0.15)">
       <span>📸</span>
@@ -4446,7 +4596,10 @@ function renderCal() {
     <div style="padding:4px 0 2px;display:flex;flex-wrap:wrap;gap:4px 10px;font-size:10px;color:var(--text-hint)">
       <span>💧 Gießen</span>
       <span>✂️ Topping</span>
+      <span>😴 Ruhetag</span>
+      <span style="display:inline-flex;align-items:center;gap:3px"><span style="width:14px;height:14px;display:inline-flex">${CAL_SVG.spuelen}</span> Spülen</span>
       <span style="display:inline-flex;align-items:center;gap:3px"><span style="width:14px;height:14px;display:inline-flex">${CAL_SVG.ernte}</span> Ernte</span>
+      <span style="display:inline-flex;align-items:center;gap:3px"><span style="width:14px;height:14px;display:inline-flex">${CAL_SVG.trocknen}</span> Trocknen</span>
     </div>
     <div style="font-size:10px;color:var(--text-hint);padding:2px 0">💡 Tipp: Auf einen Tag tippen zeigt alle Optionen</div>
     ` : `
@@ -6147,7 +6300,20 @@ function renderSet() {
           </div>
           `}
 
-          <button class="sav-btn" style="background:${cl.hex};margin-top:8px" onclick="saveDraft()">💾 ${sym(d) || '🌱'} ${d.name || 'Zyklus'} speichern</button>
+          ${(() => {
+            // Save-Button nur anzeigen wenn draft tatsächlich vom gespeicherten Zyklus abweicht.
+            // So sieht der Anfänger keinen riesigen "Speichern"-Button wenn es nichts zu speichern gibt.
+            const isDirty = sel && Object.keys(draft).some(k => {
+              // ID ignorieren, interne Felder ignorieren
+              if (k === 'id' || k.startsWith('_')) return false;
+              return JSON.stringify(draft[k]) !== JSON.stringify(sel[k]);
+            });
+            if (isDirty) {
+              return `<button class="sav-btn" style="background:${cl.hex};margin-top:8px" onclick="saveDraft()">💾 Änderungen sichern</button>`;
+            }
+            // Gespeichert-Indikator (dezent, informativ)
+            return `<div style="margin-top:8px;padding:8px 12px;background:rgba(76,175,112,0.06);border:0.5px solid rgba(76,175,112,0.2);border-radius:10px;font-size:11px;color:var(--text-muted);text-align:center">✓ Alle Änderungen gespeichert</div>`;
+          })()}
           ${(() => {
             // Backfill-Button: only if active, started in the past, and has missing past watering entries
             if (!sel.active || sel.archived || !sel.startDate) return '';
@@ -6190,6 +6356,7 @@ function renderSet() {
         <label class="sw"><input type="checkbox" ${S.notifyEnabled ? 'checked' : ''} onchange="toggleNotify(this.checked)"/><span class="sl"></span></label>
       </div>
       ${S.notifyEnabled ? '<div style="font-size:11px;color:var(--green)">✓ Aktiv — Erinnerung kommt am Vorabend um 20:00</div>' : ''}
+      <div style="font-size:10px;color:var(--text-hint);line-height:1.5;padding:4px 0 0;border-top:0.5px solid var(--border);margin-top:2px">ℹ Tipp: Am zuverlässigsten funktioniert das wenn du die App zum Startbildschirm hinzugefügt hast. Bei komplett geschlossenem Browser kann der Handy-System-Timer die Erinnerung eventuell verpassen.</div>
     </div>
 
     <!-- 5. DATEN (Export/Backup) -->
@@ -6226,6 +6393,13 @@ function renderSet() {
     </div>
 
     <!-- RECHTLICHES -->
+    ${S.beginnerMode ? `
+    <div onclick="showLegalInfo()" style="padding:10px 14px;background:var(--card);border:0.5px solid var(--border);border-radius:10px;cursor:pointer;display:flex;align-items:center;gap:10px;margin-top:4px">
+      <span style="font-size:14px">⚖️</span>
+      <div style="flex:1;font-size:11px;color:var(--text-muted)">Haftungsausschluss & Datenschutz</div>
+      <span style="color:var(--text-hint);font-size:12px">›</span>
+    </div>
+    ` : `
     <div class="card" style="gap:8px;display:flex;flex-direction:column">
       <div class="sect-head">⚖️ Rechtliches &amp; Haftung</div>
       <div class="sec-tog" onclick="showLegalInfo()" style="border-color:var(--border);margin:0">
@@ -6238,6 +6412,7 @@ function renderSet() {
       </div>
       ${S._disclaimerAcceptedAt ? `<div style="font-size:10px;color:var(--text-hint);text-align:center;padding:2px">✓ Angenommen am ${fmtDE(new Date(S._disclaimerAcceptedAt).toISOString().split('T')[0], { day:'2-digit', month:'long', year:'numeric' })}</div>` : ''}
     </div>
+    `}
 
     <!-- 6. GEFAHRENZONE -->
     <div class="card" style="gap:10px;display:flex;flex-direction:column;border-color:rgba(224,96,96,0.2)">
@@ -6304,19 +6479,19 @@ function renderSet() {
     </div>
 
     ${S.beginnerMode ? '' : `
-    <!-- 7. TEST-MODUS (Entwickler — ganz unten) -->
-    <div class="card" style="gap:8px;display:flex;flex-direction:column;border-color:rgba(240,208,80,0.2)">
-      <div class="sect-head" style="color:var(--yellow)">🧪 Test-Modus (Entwickler)</div>
-      <div style="font-size:11px;color:var(--text-muted);line-height:1.5">Datum manuell setzen um die App zu testen. Leer = echtes Datum.</div>
+    <!-- 7. DATUM SIMULIEREN (Profi-Feature — ganz unten) -->
+    <div class="card" style="gap:8px;display:flex;flex-direction:column;border-color:${_debugDate ? 'var(--yellow)' : 'rgba(240,208,80,0.2)'};${_debugDate ? 'background:rgba(240,208,80,0.05)' : ''}">
+      <div class="sect-head" style="color:var(--yellow)">🧪 Datum simulieren</div>
+      <div style="font-size:11px;color:var(--text-muted);line-height:1.5">Tu so als wäre ein anderes Datum heute — um zu sehen wie die App in Zukunft oder Vergangenheit aussieht. Nützlich zum Planen.</div>
       <div class="row2" style="align-items:flex-end">
         <div class="inp-wrap">
           <div class="inp-label">Simuliertes Datum</div>
-          <input class="inp-field" type="date" id="debug-date" value="${_debugDate || ''}" style="color-scheme:dark;border-color:rgba(240,208,80,0.3)"
+          <input class="inp-field" type="date" id="debug-date" value="${_debugDate || ''}" style="color-scheme:dark;border-color:${_debugDate ? 'var(--yellow)' : 'rgba(240,208,80,0.3)'}"
             onchange="setDebugDate(this.value)"/>
         </div>
-        <button onclick="setDebugDate('')" style="background:var(--surface);border:0.5px solid var(--border);border-radius:8px;padding:9px 14px;font-size:12px;color:var(--text-sub);cursor:pointer;font-family:var(--font);white-space:nowrap;margin-bottom:0">Reset</button>
+        <button onclick="setDebugDate('')" style="background:${_debugDate ? 'var(--yellow)' : 'var(--surface)'};border:0.5px solid ${_debugDate ? 'var(--yellow)' : 'var(--border)'};border-radius:8px;padding:9px 14px;font-size:12px;color:${_debugDate ? '#000' : 'var(--text-sub)'};cursor:pointer;font-family:var(--font);white-space:nowrap;margin-bottom:0;font-weight:${_debugDate ? '700' : '400'}">${_debugDate ? '✕ Aus' : 'Reset'}</button>
       </div>
-      ${_debugDate ? `<div style="font-size:11px;color:var(--yellow)">⚠️ Aktiv: App denkt es ist der <b>${fmtDE(_debugDate, {weekday:'long',day:'2-digit',month:'long',year:'numeric'})}</b></div>` : ''}
+      ${_debugDate ? `<div style="font-size:11px;color:var(--yellow);font-weight:600">⚠️ Aktiv: App denkt es ist der <b>${fmtDE(_debugDate, {weekday:'long',day:'2-digit',month:'long',year:'numeric'})}</b></div>` : ''}
     </div>
     `}
 
@@ -6369,7 +6544,31 @@ function saveDraft() {
   renderSet();
 }
 
-function selCyc(id) { selId = id; draft = {}; renderSet(); }
+async function selCyc(id) {
+  // Wenn der User ungespeicherte Änderungen am aktuellen Zyklus hat, erst fragen.
+  const currentCycle = S.cycles.find(c => c.id === selId);
+  if (currentCycle && draft && draft.id === selId) {
+    const isDirty = Object.keys(draft).some(k => {
+      if (k === 'id' || k.startsWith('_')) return false;
+      return JSON.stringify(draft[k]) !== JSON.stringify(currentCycle[k]);
+    });
+    if (isDirty) {
+      const keep = await customConfirm(
+        'Ungespeicherte Änderungen',
+        `Am Zyklus "${currentCycle.name}" hast du Änderungen die noch nicht gespeichert sind. Sichern vor dem Wechsel?`,
+        'Sichern & wechseln',
+        'var(--green)'
+      );
+      if (keep) {
+        saveDraft();
+      }
+      // Egal ob gespeichert oder nicht: weiter zum neuen Zyklus
+    }
+  }
+  selId = id;
+  draft = {};
+  renderSet();
+}
 
 // =====================================================================
 //  WELCOME / FIRST-RUN — Erstbenutzer-Flow
@@ -6637,11 +6836,9 @@ function _renderWelcome() {
   `;
 }
 
-/** Welcome-Buttons: immer erst _welcomeSeen setzen, dann Ziel öffnen */
+/** Welcome-Buttons: Demo+Skip setzen sofort _welcomeSeen; Wizard setzt es erst beim Finish */
 function welcomeStartWizard() {
-  S._welcomeSeen = true;
-  saveS();
-  openCycleWizard();
+  openCycleWizard('welcome');
 }
 
 function welcomeSkip() {
@@ -6655,24 +6852,107 @@ function welcomeSkip() {
  * mit echten Daten aussieht. Der Zyklus ist klar als "Demo" markiert, so dass der
  * User ihn später einfach löschen oder ersetzen kann.
  */
+/**
+ * Erkennt einen Demo-Zyklus an seinem Namen. Der Demo-Zyklus wird von
+ * welcomeStartDemo() mit einem festen Namen angelegt.
+ */
+function isDemoCycle(c) {
+  return c && typeof c.name === 'string' && c.name.startsWith('Demo-Zyklus');
+}
+
+function hasDemoCycle() {
+  return (S.cycles || []).some(c => isDemoCycle(c) && !c.archived);
+}
+
+/**
+ * Beendet den Demo-Modus: löscht ALLE Demo-Zyklen und ihre Einträge.
+ * Der dazugehörige Demo-Düngeplan bleibt erhalten (falls der User den Plan
+ * weiterverwenden will), wird aber deselektiert wenn er nur vom Demo genutzt wurde.
+ */
+/**
+ * Startet den Demo-Modus aus dem How-to heraus. Wenn bereits ein Demo-Zyklus
+ * existiert, navigiert die Funktion einfach zum Dashboard (damit der User
+ * seinen laufenden Demo weiterschauen kann, ohne ihn zu überschreiben).
+ * Sonst wird ein neuer Demo-Zyklus angelegt via welcomeStartDemo().
+ */
+function _howtoStartDemo() {
+  if (hasDemoCycle()) {
+    goTo('dash');
+    toast('🎓 Dein Demo-Zyklus läuft bereits — du bist schon drin!');
+    return;
+  }
+  welcomeStartDemo();
+}
+
+async function endDemoMode() {
+  const ok = await customConfirm(
+    'Demo beenden?',
+    'Alle Demo-Daten (Zyklus, Einträge, Notizen, Dünger-Plan) werden komplett gelöscht. Du startest mit einer leeren App.',
+    'Demo löschen',
+    'var(--red)'
+  );
+  if (!ok) return;
+
+  const demoCycles = (S.cycles || []).filter(isDemoCycle);
+  const demoIds = new Set(demoCycles.map(c => c.id));
+
+  // Einträge bereinigen: nur die cycleData der Demo-Zyklen löschen, andere behalten
+  Object.keys(S.entries).forEach(iso => {
+    const ent = S.entries[iso];
+    if (!ent || !ent.cycleData) return;
+    demoIds.forEach(id => { delete ent.cycleData[id]; });
+    // Wenn ein Eintrag jetzt komplett leer ist (keine cycleData und keine parent-Werte), weg damit
+    const hasAnyCycleData = Object.keys(ent.cycleData).length > 0;
+    const hasParentData = ent.temp || ent.humidity || ent.notes;
+    if (!hasAnyCycleData && !hasParentData) {
+      delete S.entries[iso];
+    }
+  });
+
+  // Zyklen rauswerfen
+  S.cycles = (S.cycles || []).filter(c => !isDemoCycle(c));
+
+  // Demo-Düngeplan auch rauswerfen (ID-Prefix "fp_demo_"). Wenn der User einen
+  // eigenen Plan angelegt hat, bleibt der. Aktiven Plan entsprechend umschalten.
+  if (S.fertPlans && S.fertPlans.length) {
+    S.fertPlans = S.fertPlans.filter(p => !p.id || !p.id.startsWith('fp_demo_'));
+    // Wenn der aktive Plan gelöscht wurde: auf ersten übrigen Plan schalten oder null
+    if (S._activePlanId && !S.fertPlans.some(p => p.id === S._activePlanId)) {
+      S._activePlanId = S.fertPlans[0]?.id || null;
+      if (typeof syncActivePlanToGlobals === 'function') syncActivePlanToGlobals();
+    }
+  }
+
+  saveS();
+  toast('🎓 Demo beendet. Leg jetzt deinen eigenen Zyklus an!');
+  renderDash();
+}
+
 function welcomeStartDemo() {
   S._welcomeSeen = true;
 
-  // Start-Datum: heute minus 25 Tage, damit die Pflanze schon in der Blüte ist
-  // und der User Gieß/Dünger-Aktionen direkt sehen kann.
+  // Start-Datum: heute minus 60 Tage (~8,5 Wochen).
+  // Das deckt den kompletten Auto-Lebenszyklus ab:
+  //  Tag 1-21:  Anzucht (Keimung → Sämling → frühe Vegetation)
+  //  Tag 22:    Topping (idealer Zeitpunkt nach 4-5 Nodien)
+  //  Tag 22-30: Vorblüte / Stretch
+  //  Tag 30-52: Volle Blüte (Stacking → Peak → Reife)
+  //  Tag 53-58: Spülung (Flush-Feature)
+  //  Tag 59-60: IceFlush / Ernte-Fenster
+  // So sieht der User ALLE Phasen + Features der App auf einmal in Aktion.
   const demoStart = new Date();
-  demoStart.setDate(demoStart.getDate() - 25);
+  demoStart.setDate(demoStart.getDate() - 60);
   const demoStartISO = demoStart.toISOString().split('T')[0];
 
-  // Falls noch kein Düngeplan existiert: lege eine einfache BioBizz Light Vorlage an
-  // als Demo-Plan. Das erspart dem User die Preset-Frage beim Demo.
+  // Falls noch kein Düngeplan existiert: BioBizz Master (Cup-Niveau) Vorlage anlegen
+  // Master statt Light, damit die Demo den Profi-Plan zeigt mit allen Features.
   if (!S.fertPlans || S.fertPlans.length === 0) {
-    const biolight = FERT_PRESETS?.biobizz_light;
-    if (biolight) {
+    const biomaster = FERT_PRESETS?.biobizz_master;
+    if (biomaster) {
       const demoPlanId = 'fp_demo_' + Date.now();
-      const products = biolight.products.map((p, i) => ({ id: 'p' + Date.now() + '_' + i, ...p }));
+      const products = biomaster.products.map((p, i) => ({ id: 'p' + Date.now() + '_' + i, ...p }));
       const schedule = {};
-      Object.entries(biolight.schedule || {}).forEach(([w, doses]) => {
+      Object.entries(biomaster.schedule || {}).forEach(([w, doses]) => {
         const mapped = {};
         Object.entries(doses || {}).forEach(([name, dose]) => {
           const prod = products.find(p => p.name === name);
@@ -6682,12 +6962,12 @@ function welcomeStartDemo() {
       });
       S.fertPlans = [{
         id: demoPlanId,
-        name: biolight.name,
+        name: biomaster.name,
         products, schedule,
-        mixOrder: biolight.mixOrder ? [...biolight.mixOrder] : [],
-        mixInfo: biolight.mixInfo || '',
-        drainInfo: biolight.drainInfo || null,
-        presetKey: 'biobizz_light',
+        mixOrder: biomaster.mixOrder ? [...biomaster.mixOrder] : [],
+        mixInfo: biomaster.mixInfo || '',
+        drainInfo: biomaster.drainInfo || null,
+        presetKey: 'biobizz_master',
         createdAt: Date.now(),
       }];
       S._activePlanId = demoPlanId;
@@ -6695,7 +6975,13 @@ function welcomeStartDemo() {
     }
   }
 
-  // Demo-Zyklus anlegen
+  // Topping-Datum: Tag 22 (38 Tage vor heute)
+  const toppingDate = new Date(demoStart);
+  toppingDate.setDate(toppingDate.getDate() + 21);  // Tag 22
+  const toppingISO = toppingDate.toISOString().split('T')[0];
+
+  // Demo-Zyklus anlegen — ein Auto-Zyklus mit Standard-Phasen-Längen
+  // (21 Anzucht + 35 Blüte + 3 Flush + 1 Ice + 1 Ernte + 7 Trocknen = 68 Tage gesamt)
   addCyc({
     name: 'Demo-Zyklus (zum Erkunden)',
     growType: 'indoor',
@@ -6705,34 +6991,145 @@ function welcomeStartDemo() {
     fertPlanId: S.fertPlans?.[0]?.id || null,
   });
 
-  // Ein paar Demo-Einträge der letzten Tage für realistischen Einstieg
   const cycleId = S.cycles[S.cycles.length - 1]?.id;
-  if (cycleId) {
-    const demoEntries = [
-      { daysBack: 10, temp: 24.5, hum: 58, ph: 6.3, note: 'Pflanze sieht super aus, erstes Blütenansatz-Zeichen.' },
-      { daysBack: 7, temp: 25.0, hum: 55, ph: 6.2, ec: 1.2, note: 'Leicht angedüngt, alles im grünen Bereich.' },
-      { daysBack: 4, temp: 24.8, hum: 56, ph: 6.3, ec: 1.4 },
-      { daysBack: 1, temp: 25.2, hum: 54, ph: 6.2, ec: 1.5, note: 'Blüten entwickeln sich schön.' },
-    ];
-    demoEntries.forEach(e => {
-      const d = new Date();
-      d.setDate(d.getDate() - e.daysBack);
-      const iso = d.toISOString().split('T')[0];
-      if (!S.entries[iso]) S.entries[iso] = {};
-      const ent = S.entries[iso];
-      if (e.temp) ent.temp = e.temp;
-      if (e.hum) ent.humidity = e.hum;
-      if (!ent.cycleData) ent.cycleData = {};
-      if (!ent.cycleData[cycleId]) ent.cycleData[cycleId] = {};
-      if (e.ph) ent.cycleData[cycleId].ph = e.ph;
-      if (e.ec) ent.cycleData[cycleId].ec = e.ec;
-      if (e.note) ent.cycleData[cycleId].note = e.note;
-    });
+  if (!cycleId) { saveS(); goTo('dash'); return; }
+
+  // Phase-Längen für Demo etwas anpassen: Anzucht 21, Blüte 35 (damit Tag 60 knapp vor Flush)
+  const cycRef = S.cycles.find(c => c.id === cycleId);
+  if (cycRef) {
+    cycRef.toppingDate = toppingISO;
+    cycRef.toppingPause = 2;
+    cycRef.anzuchtDays = 21;
+    cycRef.bloomDays = 35;
+    cycRef.flushDays = 5;
+    cycRef.iceDays = 2;
+    cycRef.harvestDays = 1;
+    cycRef.dryDays = 7;
   }
+
+  // === REALISTISCHE GIESS-HISTORIE über 60 Tage ===
+  // Alle 3 Tage ein Gießtag (Standard-Rhythmus). Topping-Pause Tag 23-24
+  // wird durch die App-Logik automatisch gehandhabt, wir überspringen dort.
+  const plan = S.fertPlans[0];
+  const products = plan?.products || [];
+  const sched = plan?.schedule || {};
+
+  // Wasser-Kurve: biologisch korrekt über Lebenszyklus.
+  // Tag 1: Samen in vorher leicht feucht gemachte Erde setzen — KEIN Gießen.
+  // Tag 4-10: Sprühflaschen-Phase (30-150 ml), Sämling bildet Wurzeln aus.
+  // Tag 13-21: Vegi-Start, Durst steigt schnell (350-1000 ml).
+  // Tag 22-28: Stretch, Pflanze wird groß (1500-2500 ml).
+  // Tag 31-52: Blüte-Peak (2500-3000 ml, stabile Phase).
+  // Tag 55-58: Flush mit viel Wasser (3500 ml, spült Salze).
+  // Werte für 11L-Stofftopf Indoor — entspricht 15-25% Topfvolumen im Peak.
+  const waterForDay = (dayNum) => {
+    if (dayNum === 1)   return 0;                                // Samen setzen — kein Gießen
+    if (dayNum === 4)   return 30;                               // Erste kleine Sprühgabe
+    if (dayNum === 7)   return 80;                               // Keimling steht
+    if (dayNum === 10)  return 150;                              // Erstes Blattpaar
+    if (dayNum === 13)  return 350;                              // 3. Nodium
+    if (dayNum === 16)  return 600;                              // Kräftiges Wachstum
+    if (dayNum === 19)  return 1000;                             // Vor Topping gut gewässert
+    if (dayNum === 22)  return 1500;                             // Topping-Tag (vor dem Schnitt)
+    if (dayNum <= 28)   return 1800 + (dayNum - 28) * 100;       // 1800-2500 Stretch
+    if (dayNum <= 45)   return 2500 + Math.min((dayNum - 28) * 30, 500);  // 2500-3000 Blüte
+    if (dayNum <= 55)   return 3000;                             // Reife stabil
+    return 3500;                                                 // Flush mit viel Wasser
+  };
+
+  // pH-Kurve: stabil zwischen 6.2 und 6.4 (perfekter Grower)
+  const phForDay = (dayNum) => {
+    const cycle = [6.2, 6.3, 6.4, 6.3, 6.3, 6.2, 6.4, 6.3, 6.2, 6.3];
+    return cycle[dayNum % cycle.length];
+  };
+
+  // EC-Kurve: Null in früher Anzucht, rampt hoch durch Düngung, Peak Blüte, dann Flush zeigt Runoff-EC
+  const ecForDay = (dayNum) => {
+    if (dayNum <= 7) return '';                                  // Sämling ohne Dünger
+    if (dayNum <= 14) return (0.8 + (dayNum - 8) * 0.05).toFixed(1);   // 0.8-1.1
+    if (dayNum <= 21) return (1.1 + (dayNum - 14) * 0.05).toFixed(1);  // 1.1-1.5
+    if (dayNum <= 35) return (1.5 + (dayNum - 21) * 0.03).toFixed(1);  // 1.5-1.9
+    if (dayNum <= 52) return (1.9 + Math.min((dayNum - 35) * 0.01, 0.2)).toFixed(1); // 1.9-2.1
+    if (dayNum <= 58) return (2.0 - (dayNum - 52) * 0.2).toFixed(1);   // Flush: 2.0→0.8
+    return (0.5).toFixed(1);
+  };
+
+  // Generiere Einträge alle 3 Tage (Standard-Gießintervall ab Tag 1)
+  // Gieß-Logik: Tag 1, 4, 7, 10, 13, 16, 19, 22 (vor Topping!), 25 (nach 2-Tage-Pause), 28, …
+  // Mit toppingPause=2 fällt kein regulärer Gießtag in die Pause (Tag 23/24 still, 25 wieder regulär).
+  for (let dayNum = 1; dayNum <= 60; dayNum += 3) {
+
+    const d = new Date(demoStart);
+    d.setDate(d.getDate() + dayNum - 1);
+    const iso = d.toISOString().split('T')[0];
+
+    if (!S.entries[iso]) S.entries[iso] = {};
+    const ent = S.entries[iso];
+    if (!ent.cycleData) ent.cycleData = {};
+    if (!ent.cycleData[cycleId]) ent.cycleData[cycleId] = { doses: {}, water: '', ph: '', ec: '', notes: '', photos: [], trichomes: null };
+    const cd = ent.cycleData[cycleId];
+
+    // Wassermenge: frühe Tage exakt (kleine Werte), ab Tag 13 auf 50er gerundet
+    const w = waterForDay(dayNum);
+    cd.water = String(dayNum <= 10 ? w : Math.round(w / 50) * 50);
+    cd.ph = dayNum === 1 ? '' : String(phForDay(dayNum));  // Tag 1: kein pH messen (kein Gießen)
+    cd.ec = ecForDay(dayNum);
+
+    // Temp/RLF entwickelt sich phasen-passend:
+    // - Anzucht: 24-25°C, 60-65% (höher für Sämlinge)
+    // - Vegi: 23-25°C, 55-60%
+    // - Blüte: 22-24°C, 50-55% (kühler + trockener für Harz)
+    // - späte Blüte: 20-23°C, 45-50% (Trichom-Schutz)
+    let tempBase, rhBase;
+    if (dayNum <= 14)      { tempBase = 24; rhBase = 62; }
+    else if (dayNum <= 25) { tempBase = 24; rhBase = 58; }
+    else if (dayNum <= 40) { tempBase = 23; rhBase = 52; }
+    else                    { tempBase = 22; rhBase = 48; }
+    ent.temp = (tempBase + ((dayNum * 7) % 5) * 0.3).toFixed(1);
+    ent.humidity = String(rhBase + ((dayNum * 3) % 6));
+
+    // Dünger-Dosen aus Wochenplan
+    if (dayNum >= 8) {
+      const week = Math.max(1, Math.min(Math.ceil(dayNum / 7), 12));
+      const weekSched = sched['w' + week] || {};
+      cd.doses = { ...weekSched };
+    }
+  }
+
+  // === MEILENSTEIN-NOTIZEN (auf Gieß-Tage oder dazwischen für Beobachtungen) ===
+  // Notizen-Tage sind bewusst sowohl an Gieß-Tagen (1, 4, 7, 19, 22, 28...) als auch
+  // dazwischen (z.B. Tag 14) möglich — ein Notiz-Eintrag ohne Gieß-Daten ist normal
+  // für Beobachtungs-Tage.
+  const notes = {
+    1:  'Samen in Jiffy gesetzt. Erde vorher leicht angefeuchtet — heute nicht nachgegossen. Nur abwarten.',
+    4:  'Erste Keimung sichtbar! Kleines Köpfchen drückt durch die Erde. Erste Sprühgabe mit 30ml.',
+    7:  'Erstes Blattpaar komplett ausgebildet. Pflanze steht stabil, alles gut.',
+    14: '2 Wochen — 4. Nodium zeigt sich. Root·Juice ausgeschlichen. Buschiges Wachstum.',
+    19: 'Vor dem Topping nochmal kräftig gegossen. Turgordruck muss stimmen für sauberen Schnitt.',
+    22: '✂️ Getoppt über dem 5. Nodium. Sauberer Schnitt, Pflanze war gut hydriert.',
+    25: 'Post-Topping-Pause vorbei, erster Guss danach. Zwei neue Haupttriebe schieben kräftig — top Erholung.',
+    31: 'Erste Pistillen sichtbar! Blüte startet. Licht auf 12/12 gewechselt (falls Photo).',
+    37: 'Stretch vorbei, Pflanze steht in voller Höhe. Bloom-Dünger rauf, N-Anteil halbiert.',
+    44: 'Buds stacken sichtbar, Harz-Produktion läuft. Zimmer riecht intensiv.',
+    52: 'Reife-Phase! Erste Amber-Trichome unter der Lupe sichtbar. Top·Max auf Max.',
+    55: 'Flush-Woche gestartet. Nur noch Wasser. Blätter werden langsam gelb (gewollt).',
+    59: 'Ernte steht kurz bevor. Trichome zu ~70% milchig, 10% amber — perfekt für balanced high.',
+  };
+  Object.entries(notes).forEach(([dayNum, note]) => {
+    const d = new Date(demoStart);
+    d.setDate(d.getDate() + parseInt(dayNum) - 1);
+    const iso = d.toISOString().split('T')[0];
+    if (!S.entries[iso]) S.entries[iso] = {};
+    if (!S.entries[iso].cycleData) S.entries[iso].cycleData = {};
+    if (!S.entries[iso].cycleData[cycleId]) {
+      S.entries[iso].cycleData[cycleId] = { doses: {}, water: '', ph: '', ec: '', notes: '', photos: [], trichomes: null };
+    }
+    S.entries[iso].cycleData[cycleId].notes = note;
+  });
 
   saveS();
   goTo('dash');
-  toast('🎓 Demo-Zyklus angelegt — du kannst ihn jederzeit löschen');
+  toast('🎓 Demo-Zyklus (60 Tage, komplett ausgefüllt) angelegt — löschbar wenn du magst.');
 }
 
 
@@ -6747,19 +7144,37 @@ function welcomeStartDemo() {
  */
 let _wizStep = 0;
 let _wizAnswers = {};
+// Wo wurde der Wizard geöffnet? Damit closeWizard() sauber zurück kann.
+// 'welcome' = vom Erstbesuch-Screen, 'dash' = vom leeren Dashboard, 'set' = aus Einstellungen (Default)
+let _wizOrigin = 'set';
 
-function openCycleWizard() {
+function openCycleWizard(origin) {
   _wizStep = 0;
   _wizAnswers = {};
+  _wizOrigin = origin || 'set';
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('scr-wizard').classList.add('active');
   _renderWiz();
 }
 
 function closeWizard() {
+  // Wenn der User vom Welcome-Screen kommt und abbricht:
+  // _welcomeSeen setzen, damit er beim nächsten App-Start nicht wieder dahin muss.
+  if (_wizOrigin === 'welcome' && !S._welcomeSeen) {
+    S._welcomeSeen = true;
+    saveS();
+  }
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById('scr-set').classList.add('active');
-  renderSet();
+  // Zurück zum Ursprung — oder dash als sichere Fallback-Ansicht
+  if (_wizOrigin === 'welcome' || _wizOrigin === 'dash') {
+    // Vom Welcome oder leeren Dashboard: Dashboard ist das beste Ziel.
+    // Es zeigt bei leerem State einen freundlichen Call-to-Action (Jetzt starten / Demo / Nachlesen).
+    document.getElementById('scr-dash').classList.add('active');
+    renderDash();
+  } else {
+    document.getElementById('scr-set').classList.add('active');
+    renderSet();
+  }
 }
 
 /** Profi-Bypass: direkt ins klassische Formular, Zyklus sofort anlegen */
@@ -6806,6 +7221,12 @@ function _renderWiz() {
 
 // Screen 0 — Willkommen
 function _wizStepWelcome(a) {
+  // Skip-Button nur im Profi-Modus anzeigen. Anfänger brauchen die Führung —
+  // der Skip-Link hat sie bisher eher verwirrt ("Kenn ich mich aus?").
+  const skipBtn = S.beginnerMode ? '' : `
+    <div style="text-align:center;margin-top:18px">
+      <button onclick="skipToExpertForm()" style="background:transparent;color:var(--text-hint);border:none;padding:4px 8px;font-size:11px;cursor:pointer;font-family:var(--font);text-decoration:underline">Direkt zum Formular (Profis)</button>
+    </div>`;
   return `<div style="padding:24px 20px">
     <div style="font-size:48px;text-align:center;margin-bottom:12px">🌱</div>
     <h1 style="font-size:22px;font-weight:700;color:var(--green);text-align:center;margin:0 0 12px">Willkommen!</h1>
@@ -6813,7 +7234,7 @@ function _wizStepWelcome(a) {
       Lass uns deinen neuen Zyklus einrichten.<br>Ich frage dich <b>5 einfache Sachen</b> — dauert keine Minute.
     </p>
     <button onclick="_wizNext()" style="width:100%;background:var(--green);color:#fff;border:none;border-radius:12px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;font-family:var(--font)">Los geht's →</button>
-    <button onclick="skipToExpertForm()" style="width:100%;background:transparent;color:var(--text-muted);border:none;padding:14px;font-size:12px;cursor:pointer;font-family:var(--font);margin-top:8px">Ich kenne mich aus — direkt zum Formular</button>
+    ${skipBtn}
   </div>`;
 }
 
@@ -7270,6 +7691,10 @@ function _wizFinish() {
 
   addCyc(overrides);
 
+  // Welcome-Screen ab jetzt als gesehen markieren (egal woher der Wizard geöffnet wurde)
+  S._welcomeSeen = true;
+  saveS();
+
   if (isFirstCycle && !S._modeAsked) {
     // Dialog zeigen, dann zum Dashboard
     _showModeChoiceDialog();
@@ -7350,7 +7775,7 @@ function addCyc(overrides) {
     harvestDays: PHASE_DEFAULTS.harvestDays, dryDays: PHASE_DEFAULTS.dryDays,
     intAnzucht: RI.anzucht, intBloom: RI.bloom, intFlush: RI.flush,
     intIce: RI.ice, intErnte: RI.ernte, intDry: RI.dry,
-    offsetHistory: [], toppingDate: null, toppingPause: 3, skippedDays: [],
+    offsetHistory: [], toppingDate: null, toppingPause: 2, skippedDays: [],
     // Outdoor-support fields
     growType: o.growType || 'indoor',
     hemisphere: o.hemisphere || 'north',
@@ -7388,6 +7813,9 @@ function toggleAct(id, checked) {
 /** E5: Toggle beginner mode. Hides advanced options throughout the UI. */
 function toggleBeginnerMode(enabled) {
   S.beginnerMode = !!enabled;
+  if (typeof document !== 'undefined' && document.body && document.body.classList) {
+    document.body.classList.toggle('beginner', !!enabled);
+  }
   saveS();
   vibrate();
   toast(enabled ? '🎯 Einsteiger-Modus an' : '⚡ Profi-Modus an');
@@ -7640,7 +8068,22 @@ function markTodayDone(cId, iso) {
   if (!S.entries[iso]) S.entries[iso] = {};
   if (!S.entries[iso].cycleData) S.entries[iso].cycleData = {};
   if (!S.entries[iso].cycleData[cId]) S.entries[iso].cycleData[cId] = {};
-  S.entries[iso].cycleData[cId]._doneTodo = Date.now();
+  const cd = S.entries[iso].cycleData[cId];
+  cd._doneTodo = Date.now();
+
+  // Wenn der User NUR "Erledigt" klickt (ohne Werte einzutragen), hilft die App
+  // mit sinnvollen Defaults damit Statistiken & Gesamt-Wasser nicht leer bleiben.
+  // Nur setzen wenn Feld leer — bestehende Werte nicht überschreiben.
+  const c = S.cycles.find(x => x.id === cId);
+  if (c) {
+    const p = phase(iso, c);
+    const a = getAction(iso, c);
+    const isWaterDay = a === 'giess' || a === 'giess_anz' || a === 'spuelen' || a === 'ice';
+    if (isWaterDay && p && !cd.water) {
+      cd.water = String(waterSuggestion(c, p));
+    }
+  }
+
   saveS();
   renderDash();
   vibrate(20);
@@ -8743,21 +9186,40 @@ function renderEntry(iso) {
         : ''
       );
 
-    // Topping button: show on Anzucht/early Bloom watering days if not yet topped
-    const canTop = isWaterDay && !c.toppingDate && p && (isVegiPhase(p.ph) || (p.ph === 'bloom' && p.week <= 3)) && iso >= todayISO();
+    // Topping button: frühestens ab Tag 15 (4-5 Nodien entwickelt), latestens Blüte Wo.3.
+    // Vor Tag 15 ist die Pflanze meist zu klein (noch 3 Nodien), Topping stresst mehr als es nützt.
+    // Das Goldfenster ist typisch Tag 15-21 je nachdem welche Nodie der User anpeilt.
+    const canTop = isWaterDay && !c.toppingDate && p && p.day >= 15
+      && (isVegiPhase(p.ph) || (p.ph === 'bloom' && p.week <= 3))
+      && iso >= todayISO();
     // Undo Topping button: show on the topping day itself OR on any rest day after topping
     const isToppingDay = c.toppingDate === iso;
     const isToppingRest = c.toppingDate && isoDiff(iso, c.toppingDate) >= 1 && isoDiff(iso, c.toppingDate) <= (c.toppingPause || 3);
     const showUndoTop = isToppingDay || isToppingRest;
 
+    // Hinweis warum Toppen nicht mehr möglich ist — nur bei Automatics in der Blüte ab Woche 4.
+    // Bei Feminisierten (Photoperiode) entscheidet der User selbst über den Blüte-Start via 12/12,
+    // daher ist die Blüte-Wochen-Grenze dort nicht als "zu spät" interpretierbar.
+    const showTopTooLateHint = !canTop && !c.toppingDate && iso >= todayISO()
+      && isWaterDay
+      && c.seedType === 'auto'
+      && p && p.ph === 'bloom' && p.week >= 4;
+
     const toppingBtn = canTop
-      ? `<button onclick="doTopping('${c.id}','${iso}')" style="width:100%;background:rgba(176,106,200,0.08);border:0.5px solid rgba(176,106,200,0.25);border-radius:10px;padding:10px 12px;font-size:13px;color:var(--purple);cursor:pointer;font-family:var(--font);display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px">
-          ✂️ Jetzt Toppen (3 Tage Pause danach)
+      ? `<div style="background:rgba(76,175,112,0.08);border:0.5px solid rgba(76,175,112,0.25);border-radius:10px;padding:10px 12px;margin-bottom:8px;font-size:11px;color:var(--green);line-height:1.5">
+          💡 <b>Vor dem Toppen gießen!</b> 2–4 Stunden vorher volles Gießen mit Dünger — das macht die Pflanze turgor-prall für einen sauberen Schnitt und versorgt die Wundheilung. Nach dem Topping: ${(c.toppingPause || 2)} Tage Ruhe ohne Gießen.<br><span style="color:var(--text-hint);font-size:10px">Tag ${p.day}: gute Zeit zum Toppen über dem 4.–5. Nodium (sichtbar durchzählen von unten).</span>
+        </div>
+        <button onclick="doTopping('${c.id}','${iso}')" style="width:100%;background:rgba(176,106,200,0.08);border:0.5px solid rgba(176,106,200,0.25);border-radius:10px;padding:10px 12px;font-size:13px;color:var(--purple);cursor:pointer;font-family:var(--font);display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px">
+          ✂️ Jetzt Toppen (${(c.toppingPause || 2)} Tage Pause danach)
         </button>`
+      : showTopTooLateHint
+      ? `<div style="background:rgba(240,208,80,0.06);border:0.5px solid rgba(240,208,80,0.25);border-radius:10px;padding:10px 12px;margin-bottom:8px;font-size:11px;color:var(--text-sub);line-height:1.5">
+          ⏰ <b style="color:var(--yellow)">Toppen nicht mehr empfohlen</b> – Blüte Woche ${p.week}. Bei Automatics ist das Zeitfenster in den ersten 3 Blüte-Wochen vorbei; ein Schnitt jetzt würde die Blüte zurückwerfen statt Ertrag zu bringen.<br><span style="color:var(--text-hint);font-size:10px">Beim nächsten Zyklus: rechtzeitig toppen (Anzucht ab Tag 21 bis Blüte Wo.3).</span>
+        </div>`
       : showUndoTop
       ? `<div style="background:rgba(176,106,200,0.06);border:0.5px solid rgba(176,106,200,0.2);border-radius:10px;padding:10px 12px;margin-bottom:8px">
-          <div style="font-size:12px;color:var(--purple);font-weight:600;margin-bottom:6px">✂️ ${isToppingDay ? 'Topping-Tag' : 'Topping-Ruhetag ' + isoDiff(iso, c.toppingDate) + '/' + (c.toppingPause || 3)}</div>
-          <div style="font-size:10px;color:var(--text-muted);margin-bottom:8px;line-height:1.5">Getoppt am ${fmtDE(c.toppingDate, {day:'2-digit',month:'2-digit'})}. Nächster Guss am ${fmtDE(isoPlus(c.toppingDate, (c.toppingPause||3)+1), {day:'2-digit',month:'2-digit'})}.</div>
+          <div style="font-size:12px;color:var(--purple);font-weight:600;margin-bottom:6px">✂️ ${isToppingDay ? 'Topping-Tag' : 'Topping-Ruhetag ' + isoDiff(iso, c.toppingDate) + '/' + (c.toppingPause || 2)}</div>
+          <div style="font-size:10px;color:var(--text-muted);margin-bottom:8px;line-height:1.5">Getoppt am ${fmtDE(c.toppingDate, {day:'2-digit',month:'2-digit'})}. Nächster Guss am ${fmtDE(isoPlus(c.toppingDate, (c.toppingPause||2)+1), {day:'2-digit',month:'2-digit'})}.</div>
           <button onclick="undoTopping('${c.id}')" style="width:100%;background:var(--surface);border:0.5px solid rgba(224,96,96,0.3);border-radius:8px;padding:8px;font-size:12px;color:var(--red);cursor:pointer;font-family:var(--font)">↩ Topping rückgängig machen</button>
         </div>`
       : '';
@@ -8804,9 +9266,9 @@ function renderEntry(iso) {
           <div style="flex:1;background:var(--card);border:0.5px solid var(--border);border-radius:8px;padding:8px 10px;display:flex;flex-direction:column;justify-content:center;gap:3px;min-width:110px">
             <div style="font-size:9px;color:var(--text-hint);font-weight:600;text-transform:uppercase;letter-spacing:0.03em">🚰 Gieß-Guide</div>
             ${showDrain
-              ? `<div style="font-size:10px;color:var(--text-sub);line-height:1.4"><span style="color:var(--green)">●</span> ~${waterSug} ml → ${drainMl} ml Drain</div>
+              ? `<div style="font-size:10px;color:var(--text-sub);line-height:1.4"><span style="color:var(--green)">●</span> ~<span class="live-water" data-cycle="${c.id}">${waterSug}</span> ml → <span class="live-drain" data-cycle="${c.id}">${drainMl}</span> ml Drain</div>
                  <div style="font-size:10px;color:var(--text-sub);line-height:1.4"><span style="color:var(--orange)">●</span> Drain entsorgen!</div>`
-              : `<div style="font-size:10px;color:var(--text-sub);line-height:1.4"><span style="color:var(--green)">●</span> ~${waterSug} ml · kein Drain</div>
+              : `<div style="font-size:10px;color:var(--text-sub);line-height:1.4"><span style="color:var(--green)">●</span> ~<span class="live-water" data-cycle="${c.id}">${waterSug}</span> ml · kein Drain</div>
                  <div style="font-size:10px;color:var(--text-sub);line-height:1.4"><span style="color:var(--blue)">●</span> ${growDay <= 10 ? 'Ring um Sämling' : growDay <= 18 ? 'Radius vergrößern' : 'Ganzer Topf'}</div>`
             }
             <div style="font-size:10px;color:var(--text-sub);line-height:1.4"><span style="color:var(--blue)">●</span> ${pot}L · ~alle ${iv}d · 30% Dryback</div>
@@ -9181,8 +9643,42 @@ function renderEntry(iso) {
     </div>
   ` : '';
 
+  // Fill-Status-Chip: zeigt auf einen Blick was schon eingetragen ist.
+  // Besonders nützlich wenn der User zwischen Tagen navigiert — er sieht sofort
+  // ob dieser Tag schon bearbeitet wurde oder noch leer ist.
+  let fillStatusChip = '';
+  if (act.length > 0) {
+    const hasTemp = !!temp;
+    const hasRh = !!rh;
+    // Für den ersten aktiven Zyklus: Wasser/pH/Notiz/Foto-Status
+    const fc = act[0];
+    const fcCd = saved.cycleData?.[fc.id] || {};
+    const hasWater = !!fcCd.water;
+    const hasPh = !!fcCd.ph;
+    const hasNote = !!(fcCd.notes && String(fcCd.notes).trim());
+    const hasPhoto = Array.isArray(fcCd.photos) && fcCd.photos.length > 0;
+    const filled = [hasWater, hasPh, hasTemp, hasRh, hasNote, hasPhoto].filter(Boolean).length;
+    const total = 6;
+    // Nur anzeigen wenn mindestens irgendwas eingetragen — sonst zu verwirrend bei leerem Tag
+    if (filled > 0) {
+      const chips = [
+        { ok: hasWater, icon: '💧', label: 'Wasser' },
+        { ok: hasPh, icon: '🧪', label: 'pH' },
+        { ok: hasTemp, icon: '🌡', label: 'Temp' },
+        { ok: hasRh, icon: '💨', label: 'RLF' },
+        { ok: hasNote, icon: '📝', label: 'Notiz' },
+        { ok: hasPhoto, icon: '📸', label: 'Foto' },
+      ];
+      fillStatusChip = `<div style="display:flex;align-items:center;gap:6px;padding:8px 12px;background:rgba(76,175,112,0.05);border:0.5px solid rgba(76,175,112,0.2);border-radius:10px;margin-bottom:10px;flex-wrap:wrap">
+        <span style="font-size:11px;color:var(--green);font-weight:600;margin-right:4px">${filled}/${total} eingetragen</span>
+        ${chips.map(ch => `<span style="font-size:10px;padding:3px 6px;border-radius:6px;background:${ch.ok ? 'rgba(76,175,112,0.15)' : 'var(--surface)'};color:${ch.ok ? 'var(--green)' : 'var(--text-hint)'};opacity:${ch.ok ? '1' : '0.6'}">${ch.ok ? '✓' : ''}${ch.icon} ${ch.label}</span>`).join('')}
+      </div>`;
+    }
+  }
+
   document.getElementById('entry-body').innerHTML = `
     ${entryHelpBanner}
+    ${fillStatusChip}
     ${noActive}
     ${blocks}
     ${envHTML}
@@ -9204,6 +9700,15 @@ function updateCalc(cId, wk) {
     if (plan > 0) {
       cell.textContent = (plan * ml / 1000).toFixed(1) + ' ml';
     }
+  });
+
+  // Gieß-Guide live mitziehen: angezeigte Wassermenge und Drain (10% Regel) anpassen.
+  // So sieht der User sofort wie sich Zielwert und Drain-Menge ändern wenn er +/− drückt.
+  document.querySelectorAll(`.live-water[data-cycle="${cId}"]`).forEach(el => {
+    el.textContent = Math.round(ml);
+  });
+  document.querySelectorAll(`.live-drain[data-cycle="${cId}"]`).forEach(el => {
+    el.textContent = Math.round(ml * 0.1);
   });
 }
 
@@ -9454,8 +9959,23 @@ function saveEntry() {
   _entrySnapshot = S.entries[editISO] ? JSON.parse(JSON.stringify(S.entries[editISO])) : null;
   vibrate();
   toast('Gespeichert ✓');
+
+  // Visuelles Save-Feedback: Button kurz grün aufleuchten lassen.
+  // Wichtig für Anfänger die sich sonst fragen "hat's geklappt?".
+  const saveBtns = document.querySelectorAll('.big-save, .save-pill');
+  saveBtns.forEach(btn => {
+    const orig = btn.textContent;
+    btn.textContent = '✓ Gespeichert';
+    btn.style.background = 'var(--green)';
+    btn.style.color = '#fff';
+    setTimeout(() => {
+      btn.textContent = orig;
+      btn.style.background = '';
+      btn.style.color = '';
+    }, 1200);
+  });
   // Re-render to activate VPD display with saved temp/humidity
-  renderEntry(editISO);
+  setTimeout(() => renderEntry(editISO), 1300);
 }
 
 /**
@@ -10339,10 +10859,9 @@ function _renderHowtoFull(query) {
       <button onclick="restartOnboardingTour()" style="width:100%;background:#1b4027;color:#fff;border:1px solid var(--green);border-radius:10px;padding:12px 14px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);text-shadow:0 1px 2px rgba(0,0,0,0.4);margin-bottom:10px">🎓 Überblick-Tour starten</button>
       <div style="font-size:11px;color:var(--text-muted);font-weight:600;margin-bottom:6px;margin-top:4px">Mini-Tutorials (zum selber Tippen):</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
-        <button onclick="startNavTour()" style="background:var(--card);color:var(--green);border:1px solid var(--green-dk);border-radius:10px;padding:10px 8px;font-size:11px;font-weight:600;cursor:pointer;font-family:var(--font);line-height:1.3">🧭 Navigation<br><span style="font-size:9px;font-weight:400;color:var(--text-muted)">Die 4 Tabs kennenlernen</span></button>
+        <button onclick="_howtoStartDemo()" style="background:rgba(240,208,80,0.1);color:var(--yellow);border:1px solid rgba(240,208,80,0.4);border-radius:10px;padding:10px 8px;font-size:11px;font-weight:600;cursor:pointer;font-family:var(--font);line-height:1.3">🎓 Demo-Modus<br><span style="font-size:9px;font-weight:400;color:var(--text-muted)">App mit Beispieldaten erkunden</span></button>
         <button onclick="startEntryTour()" style="background:var(--card);color:var(--green);border:1px solid var(--green-dk);border-radius:10px;padding:10px 8px;font-size:11px;font-weight:600;cursor:pointer;font-family:var(--font);line-height:1.3">📝 Eintrag öffnen<br><span style="font-size:9px;font-weight:400;color:var(--text-muted)">Täglicher Workflow</span></button>
-        <button onclick="startCreateCycleTour()" style="background:var(--card);color:var(--green);border:1px solid var(--green-dk);border-radius:10px;padding:10px 8px;font-size:11px;font-weight:600;cursor:pointer;font-family:var(--font);grid-column:span 2;line-height:1.3">🌱 Ersten Zyklus vollständig anlegen<br><span style="font-size:9px;font-weight:400;color:var(--text-muted)">~8 Schritte · legt echten Zyklus an</span></button>
-        <button onclick="startInteractiveTutorial()" style="background:var(--card);color:var(--text-muted);border:1px solid var(--border);border-radius:10px;padding:8px;font-size:10px;font-weight:500;cursor:pointer;font-family:var(--font);grid-column:span 2;line-height:1.3;opacity:0.75">🎯 Erster Zyklus — Kurzversion (nur 3 Schritte)</button>
+        <button onclick="startCreateCycleTour()" style="background:var(--card);color:var(--green);border:1px solid var(--green-dk);border-radius:10px;padding:10px 8px;font-size:11px;font-weight:600;cursor:pointer;font-family:var(--font);grid-column:span 2;line-height:1.3">🌱 Ersten Zyklus anlegen<br><span style="font-size:9px;font-weight:400;color:var(--text-muted)">Wizard mit 5 Fragen</span></button>
       </div>
       ${tourDoneNote}
     </div>`;
@@ -10516,6 +11035,8 @@ function stopPPFD() {
 loadS();
 // Initial sync: active plan → legacy globals for compatibility with existing read-sites
 syncActivePlanToGlobals();
+// Set beginner-mode body class so advanced controls stay hidden from the first render
+if (S.beginnerMode && typeof document !== 'undefined' && document.body && document.body.classList) document.body.classList.add('beginner');
 calDate = new Date();
 // First-run Reihenfolge:
 // 1. Disclaimer (einmalig, rechtlich bindend) — MUSS zuerst akzeptiert werden
