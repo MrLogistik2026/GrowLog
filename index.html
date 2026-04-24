@@ -10047,7 +10047,7 @@ function renderSet() {
           })()}
           ${sel.active && !sel.archived ? `<button onclick="archiveCycle('${sel.id}')" style="width:100%;background:rgba(90,171,240,0.06);border:0.5px solid rgba(90,171,240,0.25);border-radius:10px;padding:10px;font-size:13px;color:var(--blue);cursor:pointer;font-family:var(--font);margin-top:4px">📦 Grow archivieren</button>` : ''}
           ${sel.archived ? `<button onclick="unarchiveCycle('${sel.id}')" style="width:100%;background:rgba(76,175,112,0.06);border:0.5px solid rgba(76,175,112,0.25);border-radius:10px;padding:10px;font-size:13px;color:var(--green);cursor:pointer;font-family:var(--font);margin-top:4px">📦 Archivierung aufheben</button>` : ''}
-          <button class="del-btn" onclick="delCyc('${sel.id}')">🗑 Zyklus löschen</button>
+          <div style="font-size:10px;color:var(--text-hint);text-align:center;padding:8px 4px 2px;line-height:1.5">💡 Zyklus löschen → unten in der <span style="color:var(--red)">Gefahrenzone</span></div>
         </div>
       ` : `<div style="padding:20px 10px;text-align:center">
         <div style="font-size:36px;opacity:0.3;margin-bottom:6px">🌱</div>
@@ -10162,6 +10162,13 @@ function renderSet() {
       <div style="font-size:10px;color:var(--text-hint);line-height:1.5;padding:4px 0 0;border-top:0.5px solid var(--border);margin-top:2px">ℹ Tipp: Am zuverlässigsten funktioniert das wenn du die App zum Startbildschirm hinzugefügt hast. Bei komplett geschlossenem Browser kann der Handy-System-Timer die Erinnerung eventuell verpassen.</div>
     </div>
 
+    <!-- TRENNER: ab hier App-weite Einstellungen (nicht zyklus-spezifisch) -->
+    <div style="display:flex;align-items:center;gap:12px;padding:14px 4px 6px;opacity:0.7">
+      <div style="flex:1;height:0.5px;background:var(--border)"></div>
+      <div style="font-size:10px;color:var(--text-hint);text-transform:uppercase;letter-spacing:0.08em;font-weight:600;white-space:nowrap">App &amp; Daten</div>
+      <div style="flex:1;height:0.5px;background:var(--border)"></div>
+    </div>
+
     <!-- 5. DATEN (Export/Backup) -->
     <div class="card" style="gap:8px;display:flex;flex-direction:column">
       <div class="sect-head">💾 Daten sichern</div>
@@ -10257,6 +10264,7 @@ function renderSet() {
               <button onclick="resetNotes('${dc.id}')" style="flex:1;min-width:120px;background:var(--surface);border:0.5px solid rgba(232,136,74,0.3);border-radius:8px;padding:9px 8px;font-size:11px;color:var(--orange);cursor:pointer;font-family:var(--font)">📝 Notizen löschen</button>
               <button onclick="resetAll('${dc.id}')" style="flex:1;min-width:120px;background:var(--surface);border:0.5px solid rgba(224,96,96,0.3);border-radius:8px;padding:9px 8px;font-size:11px;color:var(--red);cursor:pointer;font-family:var(--font)">🔄 Alle Daten löschen</button>
             </div>
+            <button onclick="delCyc('${dc.id}')" style="width:100%;background:rgba(224,96,96,0.1);border:1px solid rgba(224,96,96,0.5);border-radius:8px;padding:11px 8px;font-size:12px;color:var(--red);cursor:pointer;font-family:var(--font);font-weight:700;margin-top:8px">🗑 Zyklus "${dc.name}" komplett löschen</button>
           </div>`;
         })() : ''}
       `}
@@ -10984,7 +10992,12 @@ function closeWizard() {
     renderDash();
   } else {
     document.getElementById('scr-set').classList.add('active');
+    // Scroll an den Anfang — egal wo der User zuletzt war, ein Wizard-
+    // Schließen sollte nicht in die Mitte der Settings-Seite führen.
+    _setScrollY = 0;
     renderSet();
+    const scr = document.getElementById('set-body');
+    if (scr) scr.scrollTop = 0;
   }
 }
 
@@ -11609,7 +11622,14 @@ function addCyc(overrides) {
   selId = c.id;
   draft = { ...c };
   saveS();
+  // Nach Zyklus-Erstellung: Scroll an den Anfang der Settings-Seite,
+  // damit der User den neu erstellten Zyklus direkt oben sieht und nicht
+  // auf die alte Scroll-Position (z.B. Gefahrenzone) zurückspringt.
+  _setScrollY = 0;
   renderSet();
+  // Belt-and-suspenders: direkt nach dem Render nochmal auf 0 setzen
+  const scr = document.getElementById('set-body');
+  if (scr) scr.scrollTop = 0;
   toast(`🌱 ${c.name} erstellt — Start: ${fmtDE(c.startDate, {day:'2-digit',month:'2-digit'})}`);
   return c;
 }
@@ -16126,7 +16146,7 @@ const TOUR_CREATE_CYCLE = {
     {
       tab: 'dash',
       title: '🌱 Ersten Zyklus anlegen',
-      body: '<b>Achtung, ehrlich gesagt:</b> Diese Tour legt einen echten Zyklus an. Den kannst du am Ende entweder behalten oder in den Einstellungen unten wieder löschen (roter "Zyklus löschen"-Button). Bereit loszulegen?',
+      body: '<b>Achtung, ehrlich gesagt:</b> Diese Tour legt einen echten Zyklus an. Den kannst du am Ende entweder behalten oder in den Einstellungen unter "Gefahrenzone" wieder löschen. Bereit loszulegen?',
     },
     {
       tab: 'dash',
@@ -16189,7 +16209,7 @@ const TOUR_CREATE_CYCLE = {
     {
       tab: 'dash',
       title: '✅ Geschafft!',
-      body: 'Dein Zyklus ist angelegt. Von jetzt an siehst du hier deine Gieß-Erinnerungen, und der Kalender zeigt deine Phasen. <b>Wenn du nicht weiter machen willst:</b> Einstellungen öffnen, Zyklus auswählen, nach unten scrollen, rot markierten "Zyklus löschen"-Button drücken. Viel Erfolg!',
+      body: 'Dein Zyklus ist angelegt. Von jetzt an siehst du hier deine Gieß-Erinnerungen, und der Kalender zeigt deine Phasen. <b>Wenn du nicht weiter machen willst:</b> Einstellungen öffnen, ganz nach unten scrollen zur "Gefahrenzone", Zyklus auswählen, dann "Zyklus komplett löschen" drücken. Viel Erfolg!',
     },
   ],
 };
