@@ -5972,20 +5972,44 @@ function getAction(iso, c) {
 
   if (diff < 0) return null;
 
+  // OUTDOOR MANUELLER MODUS via transplantDate (Universal-Schalter):
+  // Sobald die Pflanze raus ist (iso >= transplantDate), unterdrücken wir alle
+  // Gieß-Vorschläge — der User entscheidet selbst wann gegossen wird.
+  // Spülen/Ernte/Trocknen laufen aber weiter wie geplant (das sind feste End-Phasen).
+  // Diese Logik gilt für ALLE Outdoor-Zyklen (Auto und Fem), nicht nur Photoperioden.
+  const isOutdoorManualPhase = c.growType === 'outdoor' && c.transplantDate && iso >= c.transplantDate;
+
   // Datum-basierte Phase (Outdoor-Photoperiode oder Indoor mit explizitem bloomStartDate).
   // Wir leiten die Phase aus phase() ab und berechnen den Gieß-Rhythmus anhand der
   // Tage seit Zyklus-Start (einfach, unabhängig vom Phase-Übergang).
-  // Outdoor: Regen kann jeden Gießtag ersetzen, der User skippt dann einzeln.
+  // Outdoor-Manueller-Modus: Sobald die Pflanze draußen steht (vegi_out, bloom),
+  // schlägt die App KEINE festen Gießtage mehr vor. Der User trägt selbst ein
+  // wann er gegossen hat — Wetter, Topf-Größe, Sonne und Regen entscheiden,
+  // nicht ein starres Intervall. Dünger-Pläne bleiben aber aktiv (siehe getFertAction).
   const dated = _datebasedPhase(iso, c);
   if (dated) {
     const ph = dated.ph;
+    // Outdoor manueller Modus: sobald die Pflanze raus ist (>= transplantDate)
+    // ODER während draußen-Phasen (vegi_out/bloom) — kein automatischer Gießtag.
+    // Andere Aktionen (Spülen, Ernte, Trocknen) laufen weiter wie geplant.
+    if (c.growType === 'outdoor' && (isOutdoorManualPhase || ph === 'vegi_out' || ph === 'bloom')) {
+      // In Spül-/Ernte-/Trockenphase trotzdem die Aktion zurückgeben
+      const iv = getInt(c, ph);
+      if (diff % iv === 0) {
+        if (ph === 'flush')   return 'spuelen';
+        if (ph === 'ice')     return 'ice';
+        if (ph === 'harvest') return 'ernte';
+        if (ph === 'dry')     return 'trocknen';
+      }
+      return null;
+    }
     const iv = getInt(c, ph);
     if (diff % iv === 0) {
       if (ph === 'anzucht') return 'giess_anz';
       if (ph === 'vorzucht') return 'giess_anz';  // Outdoor drinnen vorgezogen = Sämlingspflege
       if (ph === 'abhärten') return null;          // In 7-Tage-Abhärtung nicht extra gießen (User bestimmt)
-      if (ph === 'vegi_out') return 'giess';       // Wachstum draußen = normaler Gießtag
-      if (ph === 'bloom')   return 'giess';
+      if (ph === 'vegi_out') return 'giess';       // (nicht erreichbar bei Outdoor — siehe oben)
+      if (ph === 'bloom')   return 'giess';        // (nicht erreichbar bei Outdoor — siehe oben)
       if (ph === 'flush')   return 'spuelen';
       if (ph === 'ice')     return 'ice';
       if (ph === 'harvest') return 'ernte';
@@ -6019,6 +6043,21 @@ function getAction(iso, c) {
   if (ph === 'ice')     phStart = f;
   if (ph === 'harvest') phStart = ic;
   if (ph === 'dry')     phStart = h;
+
+  // Outdoor-Manueller-Modus: kein automatischer Gießvorschlag wenn Pflanze raus ist
+  // (transplantDate erreicht) ODER während Bloom-Phase (Auto-Outdoor blüht draußen).
+  if (c.growType === 'outdoor' && (isOutdoorManualPhase || ph === 'bloom')) {
+    // Spülen/Ernte/Trocknen trotzdem zulassen
+    const dayInPhaseSE = diff - (ph === 'flush' ? b : ph === 'ice' ? f : ph === 'harvest' ? ic : ph === 'dry' ? h : 0);
+    const ivSE = getInt(c, ph);
+    if (dayInPhaseSE % ivSE === 0) {
+      if (ph === 'flush')   return 'spuelen';
+      if (ph === 'ice')     return 'ice';
+      if (ph === 'harvest') return 'ernte';
+      if (ph === 'dry')     return 'trocknen';
+    }
+    return null;
+  }
 
   const dayInPhase = diff - phStart;
   const iv = getInt(c, ph);
@@ -7124,6 +7163,14 @@ function plainSentence(action, c, p, waterMl) {
   const isOutdoor = c.growType === 'outdoor';
   const isVorzucht = p && p.ph === 'vorzucht';
   const isVegiOut = p && p.ph === 'vegi_out';
+  // Outdoor-Manueller-Modus: Wenn die Pflanze draußen wächst (vegi_out, bloom) und
+  // KEINE automatische Aktion ansteht, gibt es trotzdem eine kurze Erklärung —
+  // sonst hat die "Heute eintragen"-Karte keinen einleitenden Satz.
+  if (!action && isOutdoor && p && (p.ph === 'vegi_out' || p.ph === 'bloom')) {
+    return p.ph === 'bloom'
+      ? `Deine Pflanze blüht draußen. <b>Du entscheidest selbst</b> wann gegossen oder gedüngt wird — Wetter, Sonne und Regen schwanken zu stark für einen festen Plan. Mach unten deinen Tageseintrag.`
+      : `Deine Pflanze wächst draußen. <b>Du entscheidest selbst</b> wann gegossen oder gedüngt wird — Wetter, Sonne und Regen schwanken zu stark für einen festen Plan. Mach unten deinen Tageseintrag.`;
+  }
   // Tag 1 der Anzucht: Biologisch setzt man den Samen in leicht angefeuchtete Erde
   // und gießt NICHT. Die App sollte das klar kommunizieren statt nur Wasser-ml zu empfehlen.
   if ((action === 'giess_anz' || action === 'giess') && p && p.day === 1 && (p.ph === 'anzucht' || p.ph === 'vorzucht')) {
@@ -7177,6 +7224,38 @@ function getTodayAction(c, p, a, iso) {
   }
   const doses = getWeekDoses(c.id, fertWk, c);
   const activeDoses = Object.entries(doses).filter(([, v]) => v > 0);
+
+  // OUTDOOR MANUELLER MODUS: Während die Pflanze draußen wächst (vegi_out, bloom),
+  // schlägt die App keine festen Gießtage mehr vor — Wetter, Sonne und Regen
+  // entscheiden zu unregelmäßig für ein starres Intervall. Der User entscheidet
+  // selbst wann gegossen wird und trägt es ein. Karte ist klar: "Heute gegossen?"
+  // mit direktem Eingabe-Button.
+  if (c.growType === 'outdoor' && (p.ph === 'vegi_out' || p.ph === 'bloom') && !a) {
+    const fertHint = activeDoses.length > 0
+      ? `Düngewoche ${fertWk}: ${activeDoses.length} Produkt${activeDoses.length === 1 ? '' : 'e'} vorgeschlagen`
+      : 'Kein aktiver Düngeplan';
+    const phaseHint = p.ph === 'bloom'
+      ? 'Blüte draußen: morgens gießen. Bei Regen 1-3 Tage Pause.'
+      : 'Wachstum draußen: bei Hitze täglich, sonst Topf-Test.';
+    const beginner = !!S.beginnerMode;
+    const steps = beginner
+      ? [
+          '<b>Topf anheben:</b> Leicht → gießen. Schwer → noch warten.',
+          '<b>Fingertest:</b> 5 cm tief in die Erde. Trocken → gießen.',
+          phaseHint,
+        ]
+      : [phaseHint, fertHint];
+    return {
+      title: '💧 Heute gegossen?',
+      icon: '☀️',
+      color: cl.hex,
+      steps,
+      hint: beginner
+        ? 'Tippe „Eintragen" wenn du gegossen hast — Wassermenge, Dünger, Notizen.'
+        : null,
+      isOutdoorManual: true,
+    };
+  }
 
   // ABHÄRTEN-Phase: eigene Karte, unabhängig von der normalen Action-Logik.
   // Die Pflanze wird 7 Tage an Außenklima gewöhnt bevor sie ins Beet kommt.
@@ -7620,8 +7699,9 @@ function renderDash() {
     const p = phase(today, c), a = getAction(today, c);
     const td = getTodayAction(c, p, a, today);
     if (!td) return '';
-    // Outdoor + Gieß-Tag: Regen-Skip-Button anbieten
-    const isGiessToday = ['giess','giess_anz','spuelen','ice'].includes(a);
+    // Outdoor + Gieß-Tag: Regen-Skip-Button anbieten — aber nicht in Anzucht/Vorzucht
+    // (die passieren ja drinnen, da regnet's nicht).
+    const isGiessToday = ['giess','spuelen','ice'].includes(a);
     const rainBtn = (c.growType === 'outdoor' && isGiessToday)
       ? `<button onclick="event.stopPropagation();skipGiessRain('${c.id}','${today}')" style="background:rgba(90,171,240,0.12);border:0.5px solid rgba(90,171,240,0.35);border-radius:8px;padding:7px 12px;font-size:11px;color:var(--blue);cursor:pointer;font-family:var(--font);font-weight:600;margin-top:6px;display:flex;align-items:center;gap:6px"><span>🌧</span><span>Es hat geregnet — heute nicht gießen</span></button>`
       : '';
@@ -7662,9 +7742,13 @@ function renderDash() {
       </div>
       ${td.hint ? `<div style="font-size:10px;color:${td.color};opacity:0.85;border-top:0.5px solid ${td.color}33;padding-top:6px;margin-top:4px;line-height:1.4">💡 ${td.hint}</div>` : ''}
       <div style="display:flex;gap:8px;margin-top:8px;align-items:center">
-        <button onclick="event.stopPropagation();markTodayDone('${c.id}','${today}')" style="flex:1;background:${td.color};border:none;color:#fff;border-radius:10px;padding:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);display:flex;align-items:center;justify-content:center;gap:6px">
-          <span>✓</span><span>Erledigt</span>
-        </button>
+        ${td.isOutdoorManual
+          ? `<button onclick="event.stopPropagation();entryFrom='dash';openEntry('${today}')" style="flex:1;background:${td.color};border:none;color:#fff;border-radius:10px;padding:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);display:flex;align-items:center;justify-content:center;gap:6px">
+              <span>💧</span><span>Eintragen</span>
+            </button>`
+          : `<button onclick="event.stopPropagation();markTodayDone('${c.id}','${today}')" style="flex:1;background:${td.color};border:none;color:#fff;border-radius:10px;padding:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);display:flex;align-items:center;justify-content:center;gap:6px">
+              <span>✓</span><span>Erledigt</span>
+            </button>`}
         ${rainBtn}
       </div>
     </div>`;
@@ -7924,6 +8008,29 @@ function renderCal() {
     const actionDay = dayInfo.find(x => x.a);
     const phaseDay = dayInfo[0];
     const isStart = act.some(c => c.startDate === iso);
+    // Auspflanz-Tag: der Tag, an dem die Pflanze raus kommt
+    const isTransplantDay = act.some(c => c.transplantDate === iso);
+
+    // OUTDOOR-MANUELL: Erkenne benutzer-eingetragene Gießtage in Outdoor-Phasen.
+    // Wenn der User in vegi_out/bloom-Outdoor Wasser eingetragen hat (Manuell-Modus),
+    // soll der Tag im Kalender wie ein normaler Gießtag aussehen — sonst sieht
+    // er nur einen kleinen Punkt und denkt sein Eintrag wurde nicht gespeichert.
+    let manualWaterDay = null;
+    if (hasEntry && !actionDay) {
+      const entryData = S.entries[iso]?.cycleData || {};
+      for (const info of dayInfo) {
+        if (info.c.growType !== 'outdoor') continue;
+        // Manuell-Eintrag wird auch erkannt wenn iso >= transplantDate (universaler Modus)
+        const inManual = (info.p && (info.p.ph === 'vegi_out' || info.p.ph === 'bloom'))
+          || (info.c.transplantDate && iso >= info.c.transplantDate);
+        if (!inManual) continue;
+        const cd = entryData[info.c.id];
+        if (cd && parseFloat(cd.water) > 0) {
+          manualWaterDay = info;
+          break;
+        }
+      }
+    }
     // Archived cycle phase info (faded)
     const archInfo = !phaseDay ? arch.map(c => ({ c, p: phase(iso, c) })).filter(x => x.p)[0] : null;
     // Check if this is a topping rest day or skipped day
@@ -7969,23 +8076,33 @@ function renderCal() {
 
     let bg = '#151515', border = 'transparent';
     if (isStart) { bg = '#1e1a04'; border = '#f0d050aa'; }
+    else if (isTransplantDay) {
+      // Auspflanz-Tag: warmes Orange-Gelb (Sonne)
+      bg = '#2a1f08'; border = '#f0a850aa';
+    }
     else if (actionDay && ACT_COLORS[actionDay.a]) {
       // Use special color for key actions (ernte, spuelen, ice, trocknen)
       bg = ACT_COLORS[actionDay.a].bg;
       border = ACT_COLORS[actionDay.a].border;
     }
     else if (actionDay) { const cl = col(actionDay.c); bg = cl.dk; border = cl.hex + '77'; }
+    else if (manualWaterDay) {
+      // Outdoor-Manuell: User-Eintrag mit Wasser → wie normaler Gießtag dargestellt
+      const cl = col(manualWaterDay.c); bg = cl.dk; border = cl.hex + '77';
+    }
     else if (isToppingRest) { bg = '#150820'; border = 'rgba(176,106,200,0.3)'; }
     else if (isSkipped) { bg = '#1a1010'; border = 'rgba(224,96,96,0.15)'; }
 
     let icon = '';
     if (isStart) icon = START_ICON;
+    else if (isTransplantDay) icon = '☀️';  // Auspflanz-Tag: Pflanze geht raus
     else if (isToppingDay) icon = '✂️';
     else if (isToppingRest) icon = '😴';
     else if (isSkipped) icon = '🚫';
     else if (actionDay) icon = calActionIcon(actionDay.a);
+    else if (manualWaterDay) icon = '🪣';  // Outdoor-Manuell-Eintrag (Gießkanne)
 
-    const tagCol = actionDay ? col(actionDay.c).hex : (phaseDay ? col(phaseDay.c).hex : 'rgba(255,255,255,0.35)');
+    const tagCol = actionDay ? col(actionDay.c).hex : (manualWaterDay ? col(manualWaterDay.c).hex : (phaseDay ? col(phaseDay.c).hex : 'rgba(255,255,255,0.35)'));
 
     // Phase-Marker: dünner farbiger Strich am linken Rand (nicht am Start-Tag,
     // der hat schon seine eigene goldene Markierung)
@@ -8147,7 +8264,13 @@ function showDayPicker(iso) {
     dayTypeText = `${ACT_ICON[actionOnDay.a] || ''} ${actLabel}`;
   } else if (relevantCycles.length > 0) {
     const p = relevantCycles[0].p;
-    dayTypeText = `${PH_ICON[p.ph] || ''} ${PN[p.ph]} · ${phaseDayLabel(p)}`;
+    const c0 = relevantCycles[0].c;
+    // Outdoor-Manueller-Modus: klar machen dass User selbst entscheidet
+    if (c0.growType === 'outdoor' && (p.ph === 'vegi_out' || p.ph === 'bloom')) {
+      dayTypeText = `☀️ ${PN[p.ph]} draußen · Tageseintrag manuell`;
+    } else {
+      dayTypeText = `${PH_ICON[p.ph] || ''} ${PN[p.ph]} · ${phaseDayLabel(p)}`;
+    }
   } else {
     dayTypeText = 'Kein aktiver Zyklus';
   }
@@ -8252,6 +8375,23 @@ function showCtx(iso) {
       items.push(`<div class="ctx-item ctx-g" onclick="restoreDayFromCal('${c.id}','${iso}')">
         <span class="ctx-ic">↩</span>${s} Gießtag wiederherstellen
       </div>`);
+    }
+
+    // OUTDOOR-MANUELL: Schnell-Eingabe-Option, wenn die Pflanze draußen wächst und
+    // kein automatischer Gießtag gesetzt ist. Long-Press auf einen Tag → "Heute gegossen"
+    // öffnet den Tageseintrag direkt mit Wasser-Eingabe.
+    if (c.growType === 'outdoor' && (p.ph === 'vegi_out' || p.ph === 'bloom') && !a) {
+      const cd = S.entries[iso]?.cycleData?.[c.id];
+      const hasWater = cd && parseFloat(cd.water) > 0;
+      if (!hasWater) {
+        items.push(`<div class="ctx-item ctx-b" onclick="closeCtx();entryFrom='cal';openEntry('${iso}')">
+          <span class="ctx-ic">💧</span>${s} Gießtag eintragen
+        </div>`);
+      } else {
+        items.push(`<div class="ctx-item" style="color:var(--green);cursor:default;opacity:0.85">
+          <span class="ctx-ic">✓</span>${s} Gegossen: ${cd.water} ml
+        </div>`);
+      }
     }
 
     // Ruhetag-Verlängerung: Nur wenn dieser Tag in der aktuellen Topping-Pause liegt
@@ -11022,13 +11162,15 @@ function closeWizard() {
     saveS();
   }
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  // Zurück zum Ursprung — oder dash als sichere Fallback-Ansicht
+  // Zurück zum Ursprung — oder dash als sichere Fallback-Ansicht.
+  // WICHTIG: tab-Variable + Nav-Inhalt mit aktualisieren, sonst verschwindet
+  // die Bottom-Tab-Bar nach Wizard-Close (Bug aus User-Test).
   if (_wizOrigin === 'welcome' || _wizOrigin === 'dash') {
-    // Vom Welcome oder leeren Dashboard: Dashboard ist das beste Ziel.
-    // Es zeigt bei leerem State einen freundlichen Call-to-Action (Jetzt starten / Demo / Nachlesen).
     document.getElementById('scr-dash').classList.add('active');
+    tab = 'dash';
+    const navEl = document.getElementById('nav-dash');
+    if (navEl) navEl.innerHTML = buildNav('dash');
     renderDash();
-    // Wenn der User absichtlich übersprungen hat, kurz zeigen wo er weitermachen kann.
     if (cameFromWelcome) {
       setTimeout(() => {
         if (typeof toast === 'function') toast('💡 Unten findest du Tabs für Kalender, Tipps und Einstellungen', 4500);
@@ -11036,8 +11178,9 @@ function closeWizard() {
     }
   } else {
     document.getElementById('scr-set').classList.add('active');
-    // Scroll an den Anfang — egal wo der User zuletzt war, ein Wizard-
-    // Schließen sollte nicht in die Mitte der Settings-Seite führen.
+    tab = 'set';
+    const navEl = document.getElementById('nav-set');
+    if (navEl) navEl.innerHTML = buildNav('set');
     _setScrollY = 0;
     renderSet();
     const scr = document.getElementById('set-body');
@@ -11142,9 +11285,9 @@ function _wizStepLocation(a) {
 
 // Screen 2 — je nach growType: Samentyp oder Outdoor-Timing
 function _wizStepSeedOrTiming(a) {
-  if (a.growType === 'outdoor') {
-    return _wizStepOutdoorTiming(a);
-  }
+  // Bei Outdoor + Indoor wird die Seed-Type-Frage gezeigt (Auto vs Fem).
+  // Die frühere "Wann fängst du an?"-Auswahl wurde entfernt — sie war redundant
+  // weil das Start-Datum sowieso im Summary frei wählbar ist.
   return _wizStepSeedType(a);
 }
 
@@ -11408,25 +11551,29 @@ function _wizStepNameSummary(a) {
         <div>${a.growType === 'outdoor' ? '☀️ Outdoor' : '🏠 Indoor'}</div>
         ${a.seedType ? `<div>${seedLabel}</div>` : ''}
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:4px 0">
-          <span>📅 Start:</span>
+          <span>🌱 Keimung:</span>
           <input type="date" value="${startDateInfo.date}" onchange="_wizAnswers.customStartDate=this.value;_renderWiz()" style="background:var(--card2);border:0.5px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);font-family:var(--font);font-size:12px;font-weight:700;color-scheme:dark"/>
           <span style="font-size:10px;color:var(--text-muted)">${fmtDE(startDateInfo.date, { weekday:'short' })}</span>
         </div>
-        ${a.growType === 'outdoor' && a.seedType !== 'auto' ? (() => {
-          // Default: 15. Mai im Jahr des Startdatums (Ende Eisheilige)
-          // Wenn startDate nach Mai: 15. Mai nächstes Jahr
+        <div style="font-size:10px;color:var(--text-hint);padding-left:2px;margin-top:-2px">Tag an dem der Samen keimt</div>
+        ${a.growType === 'outdoor' ? (() => {
+          // Default: Keimdatum + 21 Tage (sicherer Sweetspot — Pflanze hat 4-5 Blattetagen,
+          // Wurzelmasse aufgebaut, hält Wind und Sonne aus). Eisheiligen sind schon eingerechnet
+          // wenn Keimung im April erfolgt.
           const sd = new Date(startDateInfo.date + 'T12:00:00');
-          let defTP = new Date(sd.getFullYear(), 4, 15, 12); // Mai = 4
-          if (defTP < sd) defTP.setFullYear(sd.getFullYear() + 1);
+          const defTP = new Date(sd.getFullYear(), sd.getMonth(), sd.getDate() + 21, 12);
+          // Falls Keimung sehr früh im Jahr (z.B. Februar): erst nach Eisheiligen raus
+          const eisheiligen = new Date(sd.getFullYear(), 4, 15, 12); // 15. Mai
+          if (defTP < eisheiligen && sd < eisheiligen) defTP.setTime(eisheiligen.getTime());
           const defISO = defTP.toISOString().split('T')[0];
           const cur = a.transplantDate || defISO;
           return `
             <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:4px 0">
-              <span>🌤 Raus ab:</span>
+              <span>☀️ Raus ab:</span>
               <input type="date" value="${cur}" onchange="_wizAnswers.transplantDate=this.value;_renderWiz()" style="background:var(--card2);border:0.5px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);font-family:var(--font);font-size:12px;font-weight:700;color-scheme:dark"/>
               <span style="font-size:10px;color:var(--text-muted)">${fmtDE(cur, { weekday:'short' })}</span>
             </div>
-            <div style="font-size:10px;color:var(--text-hint);padding-left:2px;margin-top:-2px">Wann darf die Pflanze raus? (z.B. nach Eisheiligen)</div>
+            <div style="font-size:10px;color:var(--text-hint);padding-left:2px;margin-top:-2px">Default: 21 Tage nach Keimung (Wurzeln, Stabilität). Frühestens nach Eisheiligen (15. Mai).</div>
           `;
         })() : ''}
         <div>🪴 Topf: <b>${a.potSize || 11} L</b></div>
@@ -11550,8 +11697,10 @@ function _wizFinish() {
   if (a.bloomDaysHint && a.bloomDaysHint > 0) {
     overrides.bloomDays = a.bloomDaysHint;
   }
-  // Outdoor-Photoperiode: Transplant-Datum weiterreichen wenn gesetzt
-  if (a.transplantDate && a.growType === 'outdoor' && a.seedType !== 'auto') {
+  // Outdoor-Auspflanzdatum übernehmen — gilt jetzt auch für Auto-Outdoor.
+  // Vorher war es nur bei Fem aktiv, weil Fem ein Photoperiode-Schema hat.
+  // Aber auch bei Auto braucht der User einen klaren "ab jetzt draußen"-Marker.
+  if (a.transplantDate && a.growType === 'outdoor') {
     overrides.transplantDate = a.transplantDate;
   }
 
@@ -13232,7 +13381,10 @@ function renderEntry(iso) {
       }
     }
     const doses = getWeekDoses(c.id, wk, c);
-    const isWaterDay = a === 'giess' || a === 'giess_anz' || a === 'spuelen' || a === 'ice';
+    // Outdoor-Manueller-Modus: Wasser-Feld auch ohne fixe Action zeigen,
+    // damit der User wann er gegossen hat einfach eintragen kann.
+    const isOutdoorManual = !a && c.growType === 'outdoor' && p && (p.ph === 'vegi_out' || p.ph === 'bloom');
+    const isWaterDay = a === 'giess' || a === 'giess_anz' || a === 'spuelen' || a === 'ice' || isOutdoorManual;
     const waterSug = waterSuggestion(c, p);
 
     // === ACTION CARD (header for each cycle) ===
@@ -13258,7 +13410,7 @@ function renderEntry(iso) {
             Auf morgen verschieben →
           </button>
         </div>
-        ${c.growType === 'outdoor' ? `<button onclick="rainSkip('${c.id}','${iso}')" style="width:100%;background:linear-gradient(135deg, rgba(90,171,240,0.15), rgba(90,171,240,0.08));border:0.5px solid rgba(90,171,240,0.4);border-radius:10px;padding:10px;font-size:12px;color:var(--blue);cursor:pointer;font-family:var(--font);margin-bottom:8px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:6px">
+        ${(c.growType === 'outdoor' && p && (p.ph === 'vegi_out' || p.ph === 'bloom' || p.ph === 'flush')) ? `<button onclick="rainSkip('${c.id}','${iso}')" style="width:100%;background:linear-gradient(135deg, rgba(90,171,240,0.15), rgba(90,171,240,0.08));border:0.5px solid rgba(90,171,240,0.4);border-radius:10px;padding:10px;font-size:12px;color:var(--blue);cursor:pointer;font-family:var(--font);margin-bottom:8px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:6px">
           ☔ Regen heute — Gießen nicht nötig
         </button>` : ''}
         <button onclick="skipDay('${c.id}','${iso}')" style="width:100%;background:var(--surface);border:0.5px solid var(--border);border-radius:10px;padding:8px;font-size:11px;color:var(--red);cursor:pointer;font-family:var(--font);margin-bottom:8px;opacity:0.7">
@@ -13289,7 +13441,21 @@ function renderEntry(iso) {
           </div>`
       : (!a && p && ['flush','ice','harvest','dry'].includes(p.ph)
         ? `<div style="padding:8px 12px;background:${cl.hex}08;border:0.5px solid ${cl.hex}1a;border-radius:10px;margin-bottom:8px;font-size:12px;color:${cl.hex}99">${PH_ICON[p.ph] || ''} ${PN[p.ph]} – kein Gießtag</div>`
-        : ''
+        : (!a && p && c.growType === 'outdoor' && (p.ph === 'vegi_out' || p.ph === 'bloom')
+          // Outdoor-Manueller-Modus: Pflanze steht draußen, kein automatischer Gießtag.
+          // User trägt selbst ein wann er gegossen/gedüngt hat.
+          ? `<div style="padding:10px 12px;background:linear-gradient(135deg,rgba(232,178,90,0.08),rgba(232,178,90,0.03));border:0.5px solid rgba(232,178,90,0.3);border-radius:10px;margin-bottom:8px">
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+                <span style="font-size:20px">☀️</span>
+                <div style="flex:1">
+                  <div style="font-size:13px;font-weight:600;color:var(--orange)">Outdoor-Tagebuch</div>
+                  <div style="font-size:11px;color:var(--text-muted)">Wann und wieviel du gegossen hast trägst du selbst ein</div>
+                </div>
+              </div>
+              <div style="font-size:11px;color:var(--text-sub);line-height:1.5">Topf anheben oder Fingertest (5 cm tief). Bei Hitze evtl. täglich, nach Regen 1-3 Tage Pause.</div>
+            </div>`
+          : ''
+        )
       );
 
     // Topping button: frühestens ab Tag 15 (4-5 Nodien entwickelt), latestens Blüte Wo.3.
