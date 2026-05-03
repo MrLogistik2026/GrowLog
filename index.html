@@ -130,6 +130,7 @@ input, textarea, [contenteditable] { -webkit-user-select: text; user-select: tex
   padding: 14px; display: flex; flex-direction: column; gap: 14px;
 }
 .scroll::-webkit-scrollbar { display: none; }
+#lex-chips::-webkit-scrollbar { display: none; }
 
 /* ===================== TOPBAR ===================== */
 .topbar {
@@ -785,6 +786,14 @@ body.beginner .advanced-ctl { display: none !important; }
         <button id="lex-search-clear" onclick="document.getElementById('lex-search').value='';renderLexikon();this.style.display='none'" style="display:none;position:absolute;right:6px;top:50%;transform:translateY(-50%);background:transparent;border:none;color:var(--text-muted);font-size:18px;cursor:pointer;padding:4px 8px;font-family:var(--font)">×</button>
       </div>
       <div id="lex-search-stats" style="font-size:10px;color:var(--text-muted);padding:4px 2px 0;display:none"></div>
+      <!-- Kategorie-Filter-Chips + Simple-Mode-Toggle: schnelle Navigation für
+           Anfänger, die noch nicht wissen wonach sie suchen sollen. Der "🎓"-
+           Toggle reduziert die Einträge auf ihre Kurzfassung — gut für den
+           ersten Überblick. Wird in renderLexikon() befüllt. -->
+      <div style="display:flex;gap:6px;align-items:center;padding:6px 0 4px">
+        <button id="lex-simple-toggle" onclick="toggleLexSimple()" aria-label="Einfach erklärt" style="flex-shrink:0;padding:6px 10px;border-radius:14px;border:0.5px solid var(--border);background:var(--card);color:var(--text-sub);font-size:11px;font-weight:600;cursor:pointer;font-family:var(--font);white-space:nowrap">🎓 Einfach</button>
+        <div id="lex-chips" style="display:flex;gap:6px;overflow-x:auto;flex:1;scrollbar-width:none;-ms-overflow-style:none"></div>
+      </div>
     </div>
     <div class="scroll" id="lexikon-body"></div>
   </div>
@@ -1040,56 +1049,53 @@ const T = {
       icon: '✂️',
       phase: 'vegi',
       short: 'Nur die Spitze der neuen Blätter kappen („Fuck I Missed") — ergibt 3–5 neue Spitzen statt 2.',
-      lex: 'FIM',
+      lex: 'Fimming (F.I.M.)',
     },
     lst: {
       label: 'LST (Low Stress Training)',
       icon: '🌿',
       phase: 'vegi-bloom',
       short: 'Zweige seitlich herunterbinden — flache Canopy, gleichmäßiges Licht auf alle Buds.',
-      lex: 'LST',
+      lex: 'LST (Low Stress)',
     },
     mainlining: {
       label: 'Mainlining',
       icon: '🔱',
       phase: 'vegi',
       short: 'Symmetrische Y-Struktur aufbauen — alle Buds werden gleich groß, professioneller Look.',
-      lex: 'Mainlining',
+      lex: 'Mainlining / Manifolding',
     },
     supercropping: {
       label: 'Super-Cropping',
       icon: '💪',
       phase: 'vegi-bloom',
       short: 'Stängel sanft knicken ohne Haut zu brechen — Pflanze reagiert mit dickerem Stamm und mehr Buds.',
-      lex: 'Super-Cropping',
     },
     defoliation: {
       label: 'Defoliation (Entlauben)',
       icon: '🍃',
       phase: 'vegi-bloom',
       short: 'Große Fächerblätter entfernen — mehr Licht auf untere Zweige, bessere Luftzirkulation.',
-      lex: 'Defoliation',
+      lex: 'Defoliation (Entlaubung)',
     },
     lollipopping: {
       label: 'Lollipopping',
       icon: '🍭',
       phase: 'bloom',
       short: 'Untere Triebe und Popcorn-Buds entfernen — Pflanze fokussiert Energie auf die Top-Buds.',
-      lex: 'Lollipopping',
     },
     scrog: {
       label: 'SCROG (Screen of Green)',
       icon: '🕸️',
       phase: 'vegi-bloom',
       short: 'Netz über Pflanze — Zweige durchflechten für eine ebene Canopy mit maximal viel Top-Buds.',
-      lex: 'SCROG',
+      lex: 'SCROG (Screen of Green)',
     },
     schucking: {
       label: 'Schucking (Bud-Trimmen)',
       icon: '✋',
       phase: 'harvest',
       short: 'Buds von Stielen ohne Messer abzupfen — schont Trichome, weniger Verlust als mit Schere.',
-      lex: 'Schucking',
     },
   },
 
@@ -3993,6 +3999,12 @@ function loadS() {
   // but stays whatever user has set after that.
   if (S.beginnerMode === undefined) S.beginnerMode = (S.cycles.length === 0);
 
+  // Lexikon-State (Phase C): Lesezeichen + Lese-Verlauf. Beides Maps mit
+  // Lexikon-Titeln als Keys. _lexFavs ist persistent (User-Wahl), _lexHistory
+  // ist eine begrenzte FIFO der zuletzt aufgeklappten Einträge (max 8).
+  if (!S._lexFavs) S._lexFavs = {};
+  if (!Array.isArray(S._lexHistory)) S._lexHistory = [];
+
   // v0.9 Fertilizer plan migration: legacy had global products+schedule.
   // Now each plan is a named entity in S.fertPlans {id, name, products, weekSchedule,
   // mixOrder, mixInfo, drainInfo, presetKey}. Cycles reference one via c.fertPlanId.
@@ -4398,7 +4410,7 @@ const INFO_TERMS = {
     title: 'pH-Wert',
     text: 'Zeigt wie sauer oder basisch das Gießwasser ist. Zu niedrig oder zu hoch → Pflanze kann Nährstoffe nicht aufnehmen.',
     tip: 'Ziel: <b>6,2 bis 6,4</b>. Messen mit pH-Tropfen oder -Messgerät. Korrigieren mit pH-Down (Säure) oder pH-Up (Base).',
-    lex: 'pH-Wert (Nährstoff-Lockout)',
+    lex: 'pH-Wert',
   },
   ec: {
     title: 'EC-Wert',
@@ -4410,13 +4422,13 @@ const INFO_TERMS = {
     title: 'Runoff-Messung',
     text: 'Runoff ist das Wasser das unten aus dem Topf rausläuft. pH und EC davon zeigen dir was <b>in der Erde</b> passiert — nicht nur was du reingibst.',
     tip: 'Beim Gießen ein sauberes Gefäß unter den Topf stellen, Ablauf auffangen, messen. Wichtig: <b>|Δ EC > 0.5</b> = Salz-Akkumulation → Flush nötig. <b>|Δ pH > 0.5</b> = Erde driftet → Lockout droht.',
-    lex: 'Runoff (Ablauf-Wasser)',
+    lex: 'Runoff-EC (Drain-Messung)',
   },
   vpd: {
     title: 'VPD (Dampfdruck-Defizit)',
     text: 'Eine Kombi-Kennzahl aus Temperatur und Luftfeuchtigkeit. Sagt ob die Pflanze gut "atmen" kann.',
     tip: 'Ideal: 0,8–1,2 in Blüte. Zu niedrig → Schimmelrisiko. Zu hoch → Pflanze verbrennt.',
-    lex: 'VPD (Vapor Pressure Deficit)',
+    lex: 'VPD (Vapour Pressure Deficit)',
   },
   trichome: {
     title: 'Trichome',
@@ -4434,13 +4446,13 @@ const INFO_TERMS = {
     title: 'Safe Dryback',
     text: 'Die Regel: Erst gießen wenn der Topf auf ~30% Restgewicht getrocknet ist. Nicht nach Kalender gießen.',
     tip: 'Warum: Die Wurzel "atmet" beim Trocknen, zieht Sauerstoff rein = Motor fürs Wachstum. Nasse Erde = keine Sauerstoff-Aufnahme.',
-    lex: 'Safe Dryback',
+    lex: 'Dryback (Trocken-Nass-Zyklus)',
   },
   drain: {
     title: 'Drain (Ablaufwasser)',
     text: 'Wenn du gießt, läuft unten aus dem Topf Wasser raus. Das ist der Drain.',
     tip: 'Ziel: 5–10% der Gießmenge sollte unten rauskommen. Das spült Salze aus. <b>Sofort entsorgen!</b> (enthält überschüssige Dünger-Salze)',
-    lex: 'Drain / Runoff',
+    lex: 'Drain-Kontrolle',
   },
   mischreihenfolge: {
     title: 'Mischreihenfolge',
@@ -4470,13 +4482,13 @@ const INFO_TERMS = {
     title: 'Stretch',
     text: 'Die ersten 2–3 Wochen der Blüte. Die Pflanze verdoppelt ihre Höhe bevor die Blüten richtig wachsen.',
     tip: 'Platz einplanen! Eine 40cm-Pflanze beim Licht-Umstellen wird leicht 80–100cm. Topping vor dem Stretch kontrolliert das Wachstum.',
-    lex: 'Stretch (Blüte-Phase 1)',
+    lex: 'Stretch (Pre-Flower)',
   },
   anzucht: {
     title: 'Anzucht (Vegetative Phase)',
     text: 'Die Zeit vom Samen bis zum Beginn der Blüte. Die Pflanze wächst Blätter und Wurzeln.',
     tip: 'Bei Autoflowern: erste 3 Wochen. Bei Photoperiode: solange du mit 18/6-Licht fährst (du bestimmst wann du auf 12/12 wechselst).',
-    lex: 'Anzucht (Vegetative Phase)',
+    lex: 'Sämlingsphase',
   },
 };
 
@@ -4515,6 +4527,68 @@ function showInfoPopover(termKey) {
 /** Hilfsfunktion: Info-Button-HTML generieren. Kompakt, dezent, klickbar. */
 function infoBtn(termKey, size = 11) {
   return `<button onclick="event.stopPropagation();showInfoPopover('${termKey}')" style="background:none;border:none;color:var(--text-hint);font-size:${size}px;cursor:pointer;padding:0 3px;line-height:1;vertical-align:middle" aria-label="Info">ⓘ</button>`;
+}
+
+/**
+ * Auto-Linkifier für Fachbegriffe in beliebigen Texten.
+ *
+ * Ersetzt das ERSTE Vorkommen jedes bekannten Fachbegriffs durch einen
+ * unterstrichenen Klick-Link, der das Info-Popover öffnet. Mehrfach-
+ * Vorkommen bleiben unangetastet, damit Texte nicht mit ⓘ-Symbolen
+ * überfrachtet werden — wenn der User den Begriff einmal verstanden hat,
+ * reicht das.
+ *
+ * Bewusst KEIN regex-Massaker: HTML-Tags und bereits verlinkte Stellen
+ * werden übersprungen, indem die Suche nur in reinen Text-Knoten passiert
+ * (per HTML-Marker-Trick).
+ *
+ * Aufruf: linkifyTerms('Achte auf den pH-Wert beim Gießen, sonst Lockout.')
+ *   → 'Achte auf den <a ...>pH-Wert</a> beim Gießen, sonst <a ...>Lockout</a>.'
+ *
+ * Verwendung restriktiv halten: nur bei Erklärungstexten und Anfänger-
+ * Hinweisen. NICHT auf Eingabefelder, Buttons oder UI-Chrome anwenden.
+ */
+const _LINKIFY_PATTERNS = [
+  // Reihenfolge wichtig: längere Patterns zuerst, damit "EC-Wert" vor "EC" matcht
+  { re: /\bpH-Wert\b/, key: 'ph' },
+  { re: /\bEC-Wert\b/, key: 'ec' },
+  { re: /\bVPD\b/, key: 'vpd' },
+  { re: /\bRunoff\b/, key: 'runoff' },
+  { re: /\bDrain\b/, key: 'drain' },
+  { re: /\bTrichome?\b/, key: 'trichome' },
+  { re: /\bTopping\b/, key: 'topping' },
+  { re: /\bDryback\b/, key: 'dryback' },
+  { re: /\bRestgewicht\b/, key: 'dryback' },
+  { re: /\bMischreihenfolge\b/, key: 'mischreihenfolge' },
+  { re: /\bLockout\b/, key: 'lockout' },
+  { re: /\bIceFlush\b/, key: 'iceflush' },
+  { re: /\bCup-Niveau\b/, key: 'cupniveau' },
+  { re: /\bStretch\b/, key: 'stretch' },
+];
+function linkifyTerms(text) {
+  if (!text || typeof text !== 'string') return text;
+  let out = text;
+  // Skip-Marker: wir merken Stellen die schon ersetzt wurden, damit ein
+  // zweiter Pattern-Pass nicht ineinander rennt (z.B. "Trichome" und "EC-Wert"
+  // beide im Text — kein Konflikt, aber wir überschreiben keine geöffneten Tags).
+  const replaced = new Set();
+  for (const { re, key } of _LINKIFY_PATTERNS) {
+    if (replaced.has(key)) continue;
+    if (!INFO_TERMS[key]) continue;
+    const match = out.match(re);
+    if (!match) continue;
+    // Sicherheit: wenn das Match innerhalb eines bereits geöffneten <a>/<button>-Tags
+    // steht, überspringen (heuristisch: vorher kein '>' nach letztem '<').
+    const idx = out.indexOf(match[0]);
+    const before = out.slice(0, idx);
+    const lastOpen = before.lastIndexOf('<');
+    const lastClose = before.lastIndexOf('>');
+    if (lastOpen > lastClose) continue; // wir sind in einem Tag
+    const link = `<a onclick="event.stopPropagation();showInfoPopover('${key}')" style="color:var(--blue);cursor:pointer;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:2px">${match[0]}</a>`;
+    out = out.slice(0, idx) + link + out.slice(idx + match[0].length);
+    replaced.add(key);
+  }
+  return out;
 }
 
 // =====================================================================
@@ -4562,7 +4636,7 @@ const SYMPTOMS = [
         color: 'var(--red)',
         text: 'Erde ist dauernd nass, Wurzeln kriegen keinen Sauerstoff. <b>Lösung:</b> Eine Woche NICHT gießen (Topf anheben prüfen!). Ist die Erde immer noch nass → Topf schräg stellen zum Ablaufen.',
         when: 'Alle Phasen',
-        lex: 'Safe Dryback',
+        lex: 'Dryback (Trocken-Nass-Zyklus)',
       },
     ],
   },
@@ -4610,7 +4684,7 @@ const SYMPTOMS = [
         color: 'var(--red)',
         text: 'Paradox aber häufig: Zu viel Wasser → Wurzeln ersticken → Pflanze welkt wie bei Durst. <b>Lösung:</b> 5-7 Tage NICHT gießen. Topf anfassen — erst bei leichtem Topf wieder gießen.',
         when: 'Alle Phasen',
-        lex: 'Safe Dryback',
+        lex: 'Dryback (Trocken-Nass-Zyklus)',
       },
       {
         heading: 'Erde trocken, Pflanze welk',
@@ -4673,7 +4747,7 @@ const SYMPTOMS = [
         color: 'var(--orange)',
         text: 'Die Pflanze versucht ihre Oberfläche zu verkleinern. <b>Lösung:</b> Lampe höher, Temperatur senken, Lüfter verstärken. Max 28°C am Blatt.',
         when: 'Indoor, heißer Sommer',
-        lex: 'VPD (Dampfdruck-Defizit)',
+        lex: 'VPD (Vapour Pressure Deficit)',
       },
       {
         heading: 'Blätter nach unten gekräuselt (Krallen)',
@@ -4704,7 +4778,7 @@ const SYMPTOMS = [
         color: 'var(--green)',
         text: 'In den ersten 2 Wochen bauen die Wurzeln im Boden auf — oben siehst du wenig. <b>Nicht düngen, nicht überwässern!</b> Ab Woche 3 explodiert das Wachstum.',
         when: 'Anzucht Wo 1-2',
-        lex: 'Anzucht (Vegetative Phase)',
+        lex: 'Sämlingsphase',
       },
       {
         heading: 'Ältere Pflanze, stagniert',
@@ -4858,7 +4932,7 @@ const FAQ = [
     icon: '⏰',
     category: 'Wasser',
     a: '<b>Nicht nach Kalender</b>, sondern nach Topfgewicht! Topf anheben: leicht = gießen, schwer = warten. Ziel: 5-10% Drain beim Gießen. Orientierung: Indoor alle 2-4 Tage, Outdoor je nach Wetter.',
-    lex: 'Safe Dryback',
+    lex: 'Dryback (Trocken-Nass-Zyklus)',
   },
   {
     q: 'Ist Toppen Pflicht?',
@@ -5521,16 +5595,21 @@ function phase(iso, c) {
 
   if (!c.startDate) return null;
 
-  // SHIFT SYSTEM: phase() berücksichtigt offsetHistory genauso wie getAction(),
-  // damit Phase-Marker und Aktions-Symbole konsistent auf demselben Tag landen.
-  // Ohne diesen Code würde phase() den Original-Plan zeigen während getAction()
-  // den verschobenen Plan zeigt → Phase-Marker auf "leeren" Tagen (Bug-Bericht).
-  let totalOffset = 0;
-  for (const entry of c.offsetHistory || []) {
-    if (iso >= entry.date) totalOffset += entry.offset;
-  }
-  const virtualStart = isoPlus(c.startDate, totalOffset);
-  const diff = isoDiff(iso, virtualStart);
+  // WICHTIG: phase() folgt dem ECHTEN Pflanzenalter, NICHT dem verschobenen Plan.
+  // offsetHistory gehört in getAction() (Plan-Raster), nicht hierher.
+  //
+  // Hintergrund: Wenn der User einen Gießtag von z.B. 21.5. auf 22.5. verschiebt
+  // (per Long-Press → "Auf morgen verschieben"), soll der Gießtag wandern, aber
+  // das Pflanzenalter NICHT. Eine 13 Tage alte Pflanze wird durch Verschieben
+  // eines Gießtags nicht plötzlich 12 Tage alt. Früher hat phase() den Offset
+  // mit angewendet — Folge: T-Nummern aller Folgetage rutschten um 1 zurück
+  // und die Phasen-Bar wanderte mit. Das ist Falsch.
+  //
+  // Fall "Phase-Wechsel und Gießtag liegen plötzlich nicht mehr auf demselben
+  // Tag": braucht keine separate Behandlung — das Stadium-Icon in stageForCycle()
+  // folgt p.day, der Gieß-Marker in getAction() folgt dem verschobenen Plan.
+  // Dass beides am gleichen Tag landet, ist nett aber nicht zwingend nötig.
+  const diff = isoDiff(iso, c.startDate);
   if (diff < 0) return null;
 
   const a  = c.anzuchtDays || PHASE_DEFAULTS.anzuchtDays;
@@ -11513,12 +11592,32 @@ async function endDemoMode() {
   const demoCycles = (S.cycles || []).filter(isDemoCycle);
   const demoIds = new Set(demoCycles.map(c => c.id));
 
-  // Einträge bereinigen: nur die cycleData der Demo-Zyklen löschen, andere behalten
+  // Einträge bereinigen: zwei Fälle unterscheiden.
+  //
+  // FALL A: Der Eintrag enthielt NUR Demo-Cycle-Daten (cycleData hat ausschließlich
+  //   Demo-IDs). Dann ist auch parent.temp/humidity/notes von der Demo geschrieben
+  //   (siehe welcomeStartDemo). Dann den ganzen Eintrag löschen.
+  //
+  // FALL B: Der Eintrag hat neben Demo-Cycle-Daten auch eigene Cycle-Daten. Dann
+  //   nur die Demo-cycleData-Keys entfernen. Parent-Daten und eigene cycleData
+  //   bleiben — die könnten vom User stammen.
+  //
+  // Bug-Fix (zuvor): Fall A wurde nicht erkannt, weil parent.temp/humidity als
+  //   "echte User-Daten" interpretiert wurden. Resultat: nach Demo-Ende blieben
+  //   Punkte im Kalender stehen, weil S.entries[iso] noch existierte.
   Object.keys(S.entries).forEach(iso => {
     const ent = S.entries[iso];
-    if (!ent || !ent.cycleData) return;
+    if (!ent) return;
+    const cdKeys = ent.cycleData ? Object.keys(ent.cycleData) : [];
+    const wasDemoOnly = cdKeys.length > 0 && cdKeys.every(id => demoIds.has(id));
+    if (wasDemoOnly) {
+      // Eintrag stammte komplett von der Demo — alles weg
+      delete S.entries[iso];
+      return;
+    }
+    if (!ent.cycleData) return;
+    // Demo-Anteil entfernen, eigener Anteil bleibt
     demoIds.forEach(id => { delete ent.cycleData[id]; });
-    // Wenn ein Eintrag jetzt komplett leer ist (keine cycleData und keine parent-Werte), weg damit
     const hasAnyCycleData = Object.keys(ent.cycleData).length > 0;
     const hasParentData = ent.temp || ent.humidity || ent.notes;
     if (!hasAnyCycleData && !hasParentData) {
@@ -16511,6 +16610,197 @@ const LEXIKON = [
   ]},
 ];
 
+/**
+ * Synonym-Tabelle für die Lexikon-Suche. Erlaubt es Anfängern, mit eigenen
+ * Worten zu suchen, ohne dass der genaue Lexikon-Titel bekannt sein muss.
+ *
+ * Format: { 'alias-suchbegriff': 'Lexikon-Titel im LEXIKON' }
+ *
+ * Wenn der User nach einem Alias sucht, wird er behandelt als hätte er
+ * den Lexikon-Titel direkt eingegeben — Treffer kommt mit Score 10
+ * (= "Titel-Match"-Niveau).
+ *
+ * Die Aliase werden beim Suchen normalisiert (Umlaute weg, lowercase),
+ * der Vergleich ist tolerant. Ein Alias kann auf MEHRERE Titel zeigen,
+ * wenn der Begriff mehrdeutig ist (z.B. "stretch" → "Stretch (Blüte-Phase 1)"
+ * UND "Stretch (genetisch)").
+ *
+ * Wartung: Hier kommen die häufigsten Such-Patterns rein, die nicht
+ * im Titel stehen — englische Synonyme, umgangssprachliche Begriffe,
+ * abgekürzte Schreibweisen.
+ */
+const LEX_ALIASES = {
+  // englische Synonyme
+  'flush':           'Flushen (Zwischenguss)',
+  'flushing':        'Flushen (Zwischenguss)',
+  'spülen':          'Flushen (Zwischenguss)',
+  'cure':            'Curen / Fermentieren',
+  'curing':          'Curen / Fermentieren',
+  'fermentieren':    'Curen / Fermentieren',
+  'drying':          'Trocknen',
+  'trim':            'Wet Trim vs. Dry Trim',
+  'trimming':        'Wet Trim vs. Dry Trim',
+  'wet trim':        'Wet Trim vs. Dry Trim',
+  'dry trim':        'Wet Trim vs. Dry Trim',
+  'harvest':         'Trichom-Analyse (Ernte-Trigger)',
+  'erntezeit':       'Trichom-Analyse (Ernte-Trigger)',
+  'erntereife':      'Trichom-Analyse (Ernte-Trigger)',
+  'erntezeitpunkt':  'Trichom-Analyse (Ernte-Trigger)',
+  'lst':             'LST (Low Stress)',
+  'low stress training': 'LST (Low Stress)',
+  'low stress':      'LST (Low Stress)',
+  'hst':             'Topping',
+  'high stress training': 'Topping',
+  'fim':             'Fimming (F.I.M.)',
+  'fimming':         'Fimming (F.I.M.)',
+  'mainline':        'Mainlining / Manifolding',
+  'mainlining':      'Mainlining / Manifolding',
+  'manifold':        'Mainlining / Manifolding',
+  'manifolding':     'Mainlining / Manifolding',
+  'scrog':           'SCROG (Screen of Green)',
+  'screen of green': 'SCROG (Screen of Green)',
+  'sog':             'SOG (Sea of Green)',
+  'sea of green':    'SOG (Sea of Green)',
+  'super cropping':  'Supercropping',
+  'supercrop':       'Supercropping',
+  'defoliation':     'Defoliation (Entlaubung)',
+  'entlauben':       'Defoliation (Entlaubung)',
+  'entlaubung':      'Defoliation (Entlaubung)',
+  'lollipop':        'Lollipopping',
+  'lollipopping':    'Lollipopping',
+
+  // Mineral-Mängel
+  'cal-mag':         'CalMag',
+  'calmag':          'CalMag',
+  'cal mag':         'CalMag',
+  'calcium magnesium': 'CalMag',
+  'calcium':         'CalMag',
+  'magnesium':       'CalMag',
+
+  // Schimmel/Krankheiten
+  'mehltau':         'Echter Mehltau',
+  'powdery mildew':  'Echter Mehltau',
+  'pm':              'Echter Mehltau',
+  'bud rot':         'Schimmel (Botrytis)',
+  'budrot':          'Schimmel (Botrytis)',
+  'grauschimmel':    'Schimmel (Botrytis)',
+  'botrytis':        'Schimmel (Botrytis)',
+  'schimmel':        'Schimmel (Botrytis)',
+  'wurzelfäule':     'Wurzelfäule (Pythium)',
+  'wurzelfaule':     'Wurzelfäule (Pythium)',
+  'root rot':        'Wurzelfäule (Pythium)',
+  'pythium':         'Wurzelfäule (Pythium)',
+
+  // Schädlinge
+  'spinnmilben':     'Spinnmilben (Tetranychidae)',
+  'spider mites':    'Spinnmilben (Tetranychidae)',
+  'tetranychidae':   'Spinnmilben (Tetranychidae)',
+  'thripse':         'Thripse',
+  'thrips':          'Thripse',
+  'trauermücken':    'Trauermücken (Sciaridae)',
+  'trauermuecken':   'Trauermücken (Sciaridae)',
+  'fungus gnats':    'Trauermücken (Sciaridae)',
+  'sciariden':       'Trauermücken (Sciaridae)',
+  'sciaridae':       'Trauermücken (Sciaridae)',
+
+  // Phasen / Begriffe
+  'lockout':         'Nährstoff-Lockout',
+  'nährstoff lockout': 'Nährstoff-Lockout',
+  'naehrstoff lockout': 'Nährstoff-Lockout',
+  'nutrient lockout': 'Nährstoff-Lockout',
+  'streckung':       'Stretch (Pre-Flower)',
+  'stretch':         'Stretch (Pre-Flower)',
+  'pre-flower':      'Stretch (Pre-Flower)',
+  'preflower':       'Stretch (Pre-Flower)',
+  'dryback':         'Dryback (Trocken-Nass-Zyklus)',
+  'restgewicht':     'Dryback (Trocken-Nass-Zyklus)',
+  'trocken-nass':    'Dryback (Trocken-Nass-Zyklus)',
+  'runoff':          'Runoff-EC (Drain-Messung)',
+  'drain':           'Drain-Kontrolle',
+  'ablaufwasser':    'Drain-Kontrolle',
+  'iceflush':        'IceFlush',
+  'ice flush':       'IceFlush',
+  'mischreihenfolge': 'Mischreihenfolge',
+
+  // Trichome
+  'trichome':        'Trichom-Analyse (Ernte-Trigger)',
+  'trichom':         'Trichom-Analyse (Ernte-Trigger)',
+  'reife':           'Trichom-Analyse (Ernte-Trigger)',
+  'milky':           'Trichom-Analyse (Ernte-Trigger)',
+  'amber':           'Trichom-Analyse (Ernte-Trigger)',
+
+  // Genetik
+  'autoflower':      'Photoperiodismus (Automatic vs. Photoperiodisch)',
+  'auto':            'Photoperiodismus (Automatic vs. Photoperiodisch)',
+  'autoflowering':   'Photoperiodismus (Automatic vs. Photoperiodisch)',
+  'photoperiode':    'Photoperiode (18/6 vs. 12/12)',
+  'photo':           'Photoperiode (18/6 vs. 12/12)',
+  'fem':             'Photoperiodismus (Automatic vs. Photoperiodisch)',
+  'feminisiert':     'Photoperiodismus (Automatic vs. Photoperiodisch)',
+  'sativa':          'Indica vs. Sativa vs. Ruderalis',
+  'indica':          'Indica vs. Sativa vs. Ruderalis',
+  'ruderalis':       'Indica vs. Sativa vs. Ruderalis',
+  'hybrid':          'Indica vs. Sativa vs. Ruderalis',
+
+  // Klima
+  'vpd':             'VPD (Vapour Pressure Deficit)',
+  'vapor pressure':  'VPD (Vapour Pressure Deficit)',
+  'vapour pressure': 'VPD (Vapour Pressure Deficit)',
+  'dampfdruck':      'VPD (Vapour Pressure Deficit)',
+  'rlf':             'Luftfeuchtigkeit (RLF)',
+  'humidity':        'Luftfeuchtigkeit (RLF)',
+  'luftfeuchte':     'Luftfeuchtigkeit (RLF)',
+  'luftfeuchtigkeit':'Luftfeuchtigkeit (RLF)',
+
+  // Licht
+  'ppfd':            'PPFD & DLI (Licht-Matrix)',
+  'dli':             'PPFD & DLI (Licht-Matrix)',
+  'lichtintensität': 'PPFD & DLI (Licht-Matrix)',
+  'lichtbrand':      'Lichtbrand (Phototoxizität)',
+  'phototoxizität':  'Lichtbrand (Phototoxizität)',
+  'leuchte':         'Lampen-Typen (LED / HPS / CFL)',
+  'led':             'Lampen-Typen (LED / HPS / CFL)',
+  'hps':             'Lampen-Typen (LED / HPS / CFL)',
+  'mh':              'Lampen-Typen (LED / HPS / CFL)',
+  'cfl':             'Lampen-Typen (LED / HPS / CFL)',
+  'natriumdampf':    'Lampen-Typen (LED / HPS / CFL)',
+};
+
+/**
+ * Kontext-Empfehlungen für das Lexikon: schlägt 3 Einträge vor, die zur
+ * aktuellen Phase des aktiven Zyklus passen. Zeigt Anfängern einen
+ * direkten Lernpfad statt sie vor 144 Einträge zu setzen.
+ *
+ * Logik: aktiven Zyklus + dessen Phase ermitteln, in CONTEXT_LEX_RECOS
+ * passende Titel nachschlagen, gegen LEXIKON-Bestand validieren.
+ *
+ * Gibt [] zurück wenn kein aktiver Zyklus / keine passenden Empfehlungen.
+ */
+const CONTEXT_LEX_RECOS = {
+  'anzucht':  ['Photosynthese (Metabolischer Reaktor)', 'Lichtbrand (Phototoxizität)', 'CalMag'],
+  'vorzucht': ['Anzucht-Klima', 'Photosynthese (Metabolischer Reaktor)', 'Lichtbrand (Phototoxizität)'],
+  'abhärten': ['Abhärten (Hardening Off)', 'UV-Bestrahlung (UV-A / UV-B)', 'Wind & mechanischer Stress'],
+  'vegi_out': ['☀️ Outdoor-Gießen: Grundregeln', '🌧 Outdoor: Regenmanagement', 'Topping'],
+  'bloom':    ['Stretch (Pre-Flower)', 'VPD (Vapour Pressure Deficit)', 'Trichom-Analyse (Ernte-Trigger)'],
+  'flush':    ['Flushen (Zwischenguss)', 'Trichom-Analyse (Ernte-Trigger)', 'Schimmel (Botrytis)'],
+  'ice':      ['IceFlush', 'Anthocyane (Lila-/Rot-Färbung)', 'Trichom-Analyse (Ernte-Trigger)'],
+  'harvest':  ['Trichom-Analyse (Ernte-Trigger)', 'Wet Trim vs. Dry Trim', 'Trocknen'],
+  'dry':      ['Trocknen', 'Curen / Fermentieren', 'Schimmel (Botrytis)'],
+};
+function getContextLexRecos() {
+  // Aktiven Zyklus nehmen — den ersten, falls mehrere
+  const active = (S.cycles || []).filter(c => c.active && !c.archived)[0];
+  if (!active) return [];
+  const p = phase(todayISO(), active);
+  if (!p) return [];
+  const titles = CONTEXT_LEX_RECOS[p.ph] || [];
+  if (!titles.length) return [];
+  // Nur echte Lexikon-Treffer durchlassen
+  const all = LEXIKON.flatMap(c => c.items);
+  const matched = titles.map(t => all.find(i => i.t === t)).filter(Boolean);
+  return matched.slice(0, 3);
+}
+
 function openLexikon() {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('scr-lexikon').classList.add('active');
@@ -16541,24 +16831,60 @@ function renderLexikon(highlightTitle, searchQuery) {
     if (item.practice) sections.push({ label: 'Praxis', body: item.practice, color: 'var(--green)' });
     if (item.pitfall) sections.push({ label: 'Vorsicht', body: item.pitfall, color: 'var(--orange)' });
 
+    // Cross-Reference-Linkifier: Begriffe wie "pH-Wert", "VPD", "Trichome" werden
+    // im Lexikon-Body automatisch klickbar — fördert Browsing, hilft beim Lernen.
+    // ABER: aktueller Eintrag soll sich nicht selbst verlinken (bringt nichts und
+    // sieht komisch aus, wenn der Titel-Begriff im Body als Link erscheint).
+    const ownKey = (() => {
+      // Heuristik: title des Items mit INFO_TERM-Title vergleichen
+      for (const [k, v] of Object.entries(INFO_TERMS)) {
+        if (item.t === v.title || (v.lex && v.lex === item.t)) return k;
+      }
+      return null;
+    })();
+    function linkifyExceptOwn(text) {
+      if (!ownKey) return linkifyTerms(text);
+      // Eigenen Begriff temporär maskieren, linkifyen, wieder zurück
+      const term = INFO_TERMS[ownKey].title;
+      const PLACEHOLDER = '\u0001OWN\u0001';
+      const masked = text.split(term).join(PLACEHOLDER);
+      const linked = linkifyTerms(masked);
+      return linked.split(PLACEHOLDER).join(term);
+    }
+
+    // SIMPLE-MODE-TOGGLE (Phase D.2): Wenn S._lexSimpleMode aktiv ist und der
+    // Eintrag ein brief-Feld hat, zeigen wir NUR die Kurzfassung. Das ist die
+    // Anfänger-Sicht — eine Sache, klar gesagt, ohne Mechanik/Praxis/Vorsicht-
+    // Detail. Strukturierte Einträge ohne brief und txt-only-Einträge zeigen
+    // weiter ihren Volltext (kein Schaden).
+    const simpleMode = !!S._lexSimpleMode;
+    const canSimplify = simpleMode && !!item.brief;
+
     let html = '';
+    if (canSimplify) {
+      // Nur den brief, größer und etwas freundlicher gerendert
+      html = `<div style="font-size:13px;color:var(--text);line-height:1.7">${linkifyExceptOwn(item.brief)}</div>`;
+      html += `<div style="margin-top:8px;font-size:10px;color:var(--text-hint);font-style:italic">Mehr Details: oben „🎓 Einfach erklärt" ausschalten.</div>`;
+      return html;
+    }
+
     if (item.brief) {
-      html += `<div style="font-size:12px;color:var(--text);line-height:1.6;margin-bottom:10px;font-weight:600">${item.brief}</div>`;
+      html += `<div style="font-size:12px;color:var(--text);line-height:1.6;margin-bottom:10px;font-weight:600">${linkifyExceptOwn(item.brief)}</div>`;
     }
     if (sections.length > 0) {
       html += sections.map(s =>
         `<div style="margin-bottom:10px">
           <div style="font-size:10px;font-weight:700;color:${s.color};text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">${s.label}</div>
-          <div style="font-size:12px;color:var(--text-sub);line-height:1.65">${s.body}</div>
+          <div style="font-size:12px;color:var(--text-sub);line-height:1.65">${linkifyExceptOwn(s.body)}</div>
         </div>`
       ).join('');
       // Wenn zusätzlich txt als Ergänzung vorhanden: als "Hintergrund" unten anhängen
       if (item.txt) {
-        html += `<div style="font-size:12px;color:var(--text-sub);line-height:1.65;padding-top:6px;border-top:0.5px dashed var(--border)">${item.txt}</div>`;
+        html += `<div style="font-size:12px;color:var(--text-sub);line-height:1.65;padding-top:6px;border-top:0.5px dashed var(--border)">${linkifyExceptOwn(item.txt)}</div>`;
       }
     } else if (item.txt) {
       // Fallback: klassisches txt-only Format
-      html = `<div style="font-size:12px;color:var(--text-sub);line-height:1.7">${item.txt}</div>`;
+      html = `<div style="font-size:12px;color:var(--text-sub);line-height:1.7">${linkifyExceptOwn(item.txt)}</div>`;
     } else {
       html = `<div style="font-size:11px;color:var(--text-muted);font-style:italic">Kein Inhalt hinterlegt.</div>`;
     }
@@ -16574,6 +16900,36 @@ function renderLexikon(highlightTitle, searchQuery) {
   const clearBtn = document.getElementById('lex-search-clear');
   const isSearching = q.length >= 2;
 
+  // KATEGORIE-CHIPS rendern (Phase A.2): schnelles Filter-Element für
+  // Anfänger, die nicht wissen wonach sie suchen sollen. "Alle" = null.
+  // Aktive Kategorie wird in S._lexActiveCat gespeichert (memory-only,
+  // kein saveS — das ist UI-State, kein Inhalt).
+  const chipsEl = document.getElementById('lex-chips');
+  if (chipsEl) {
+    const active = S._lexActiveCat || null;
+    const chipBase = 'flex-shrink:0;padding:6px 12px;border-radius:14px;border:0.5px solid var(--border);font-size:11px;font-weight:600;cursor:pointer;font-family:var(--font);white-space:nowrap;transition:all 0.15s';
+    const chipOff = `background:var(--card);color:var(--text-sub);${chipBase}`;
+    const chipOn  = `background:var(--green-bg);color:var(--green);border-color:var(--green-dk);${chipBase}`;
+    chipsEl.innerHTML =
+      `<button onclick="setLexCat(null)" style="${active === null ? chipOn : chipOff}">Alle</button>` +
+      LEXIKON.map(cat =>
+        `<button onclick="setLexCat('${cat.cat.replace(/'/g, "\\'")}')" style="${active === cat.cat ? chipOn : chipOff}">${cat.cat}</button>`
+      ).join('');
+  }
+  // Simple-Mode-Toggle-Style synchronisieren
+  const simpleBtn = document.getElementById('lex-simple-toggle');
+  if (simpleBtn) {
+    if (S._lexSimpleMode) {
+      simpleBtn.style.background = 'var(--green-bg)';
+      simpleBtn.style.color = 'var(--green)';
+      simpleBtn.style.borderColor = 'var(--green-dk)';
+    } else {
+      simpleBtn.style.background = 'var(--card)';
+      simpleBtn.style.color = 'var(--text-sub)';
+      simpleBtn.style.borderColor = 'var(--border)';
+    }
+  }
+
   function normalize(s) {
     return (s || '').toLowerCase()
       .replace(/ä/g, 'a').replace(/ö/g, 'o').replace(/ü/g, 'u').replace(/ß/g, 'ss');
@@ -16585,12 +16941,24 @@ function renderLexikon(highlightTitle, searchQuery) {
     return text.replace(re, '<mark style="background:rgba(240,208,80,0.35);color:var(--yellow);padding:0 2px;border-radius:3px">$1</mark>');
   }
 
-  let categoriesToRender = LEXIKON;
+  // Kategorie-Filter VOR der Suche anwenden (kombinierbar)
+  let categoriesToRender = (S._lexActiveCat ? LEXIKON.filter(c => c.cat === S._lexActiveCat) : LEXIKON);
   let totalMatches = 0;
 
   if (isSearching) {
     const qNorm = normalize(q);
-    categoriesToRender = LEXIKON.map(cat => {
+
+    // ALIAS-AUFLÖSUNG: Wenn der Suchbegriff ein Alias ist, lösen wir ihn auf
+    // den Lexikon-Titel auf. Das normalisierte Alias-Lookup macht "calmag",
+    // "Cal-Mag", "CALMAG" alle treffsicher → "Calcium-Mangel".
+    let aliasTargetTitle = null;
+    for (const [alias, title] of Object.entries(LEX_ALIASES || {})) {
+      if (normalize(alias) === qNorm) { aliasTargetTitle = title; break; }
+    }
+
+    // WICHTIG: Suche operiert auf bereits cat-gefilterten Liste — dadurch
+    // sind Cat-Filter und Suche kombinierbar ("in Bewässerung nach 'ph' suchen")
+    categoriesToRender = categoriesToRender.map(cat => {
       const matchedItems = cat.items.map(item => {
         const titleN = normalize(item.t);
         const briefN = normalize(item.brief || '');
@@ -16599,7 +16967,11 @@ function renderLexikon(highlightTitle, searchQuery) {
         if (titleN.includes(qNorm)) score += 10;
         if (briefN.includes(qNorm)) score += 5;
         if (bodyN.includes(qNorm)) score += 1;
-        return score > 0 ? { ...item, _score: score, _matchInBody: bodyN.includes(qNorm) && !titleN.includes(qNorm) && !briefN.includes(qNorm) } : null;
+        // Alias-Bonus: wenn der Suchbegriff ein Alias auf diesen Titel ist,
+        // werten wir als Voll-Treffer (Score 10), so dass der Alias-Treffer
+        // ganz oben in der Liste landet.
+        if (aliasTargetTitle && item.t === aliasTargetTitle) score = Math.max(score, 10);
+        return score > 0 ? { ...item, _score: score, _matchInBody: bodyN.includes(qNorm) && !titleN.includes(qNorm) && !briefN.includes(qNorm) && item.t !== aliasTargetTitle, _aliasMatch: aliasTargetTitle && item.t === aliasTargetTitle } : null;
       }).filter(Boolean).sort((a, b) => b._score - a._score);
       totalMatches += matchedItems.length;
       return matchedItems.length > 0 ? { ...cat, items: matchedItems } : null;
@@ -16607,9 +16979,20 @@ function renderLexikon(highlightTitle, searchQuery) {
 
     if (stats) {
       stats.style.display = 'block';
-      stats.textContent = totalMatches === 0
-        ? `Keine Treffer für „${q}". Versuch z.B. "Stickstoff", "VPD", "Mangel".`
-        : `${totalMatches} ${totalMatches === 1 ? 'Treffer' : 'Treffer'} für „${q}"`;
+      // DID-YOU-MEAN: Wenn keine Treffer, schau ob der Suchbegriff Levenshtein-nahe
+      // an einem bekannten Lexikon-Titel oder Alias liegt, und schlag ihn vor.
+      if (totalMatches === 0) {
+        const suggestion = _lexFindClosest(qNorm);
+        if (suggestion) {
+          stats.innerHTML = `Keine Treffer für „${q}". Meinst du <a onclick="document.getElementById('lex-search').value='${suggestion.replace(/'/g,"\\'")}';renderLexikon(null,'${suggestion.replace(/'/g,"\\'")}')" style="color:var(--blue);cursor:pointer;text-decoration:underline">${suggestion}</a>?`;
+        } else {
+          stats.textContent = `Keine Treffer für „${q}". Versuch z.B. "Stickstoff", "VPD", "Mangel".`;
+        }
+      } else if (aliasTargetTitle) {
+        stats.innerHTML = `${totalMatches} ${totalMatches === 1 ? 'Treffer' : 'Treffer'} für „${q}" <span style="color:var(--text-hint)">→ ${aliasTargetTitle}</span>`;
+      } else {
+        stats.textContent = `${totalMatches} ${totalMatches === 1 ? 'Treffer' : 'Treffer'} für „${q}"`;
+      }
     }
     if (clearBtn) clearBtn.style.display = 'block';
   } else {
@@ -16617,12 +17000,49 @@ function renderLexikon(highlightTitle, searchQuery) {
     if (clearBtn) clearBtn.style.display = 'none';
   }
 
+  // PSEUDO-KATEGORIEN (Phase C): Lesezeichen + Verlauf werden VOR den normalen
+  // Kategorien als Quick-Access angezeigt. Nur sichtbar:
+  //   - wenn nicht aktiv gesucht wird (Suche → User will was Konkretes)
+  //   - wenn nicht ein Cat-Filter aktiv ist (User hat selbst gewählt)
+  //   - wenn die Liste auch nicht leer ist
+  // Außerdem im "Lesezeichen"-Cat-Modus zeigen wir nur Lesezeichen.
+  function buildFavsItems() {
+    const favTitles = Object.keys(S._lexFavs || {});
+    if (!favTitles.length) return [];
+    // Originale Item-Objekte aus LEXIKON nachschlagen, damit alle Felder erhalten
+    const all = LEXIKON.flatMap(c => c.items);
+    return favTitles.map(t => all.find(i => i.t === t)).filter(Boolean);
+  }
+  function buildHistItems() {
+    const hist = (S._lexHistory || []).filter(t => !S._lexFavs || !S._lexFavs[t]);
+    if (!hist.length) return [];
+    const all = LEXIKON.flatMap(c => c.items);
+    return hist.map(t => all.find(i => i.t === t)).filter(Boolean).slice(0, 5);
+  }
+
+  const showPseudoCats = !isSearching && !S._lexActiveCat;
+  const favsItems = showPseudoCats ? buildFavsItems() : [];
+  const histItems = showPseudoCats ? buildHistItems() : [];
+  const recoItems = showPseudoCats ? getContextLexRecos() : [];
+  // Aus den Empfehlungen alles entfernen was schon in Favs/Hist ist (Doppelung vermeiden)
+  const usedTitles = new Set([
+    ...favsItems.map(i => i.t),
+    ...histItems.map(i => i.t),
+  ]);
+  const recoFiltered = recoItems.filter(i => !usedTitles.has(i.t));
+
+  const pseudoCats = [];
+  if (recoFiltered.length) pseudoCats.push({ cat: '📚 Empfohlen für deine Phase', items: recoFiltered, _isPseudo: true });
+  if (favsItems.length) pseudoCats.push({ cat: '⭐ Meine Lesezeichen', items: favsItems, _isPseudo: true });
+  if (histItems.length) pseudoCats.push({ cat: '🕒 Zuletzt gelesen', items: histItems, _isPseudo: true });
+
   // Rendering: bei Suche immer aufgeklappt zeigen, Treffer im Titel/Body markieren.
-  document.getElementById('lexikon-body').innerHTML = categoriesToRender.length === 0
+  const renderQueue = pseudoCats.concat(categoriesToRender);
+  document.getElementById('lexikon-body').innerHTML = renderQueue.length === 0
     ? `<div style="padding:40px 20px;text-align:center;color:var(--text-muted);font-size:13px">Keine Lexikon-Einträge für „${q}" gefunden.<br><br><span style="font-size:11px;color:var(--text-hint)">Tipp: Versuche kürzere Suchbegriffe oder verwandte Themen.</span></div>`
-    : categoriesToRender.map(cat => `
-    <div style="margin-bottom:4px">
-      <div class="sect-head" style="font-size:12px;padding:6px 0">${cat.cat}</div>
+    : renderQueue.map(cat => `
+    <div style="margin-bottom:4px" data-lex-cat="${cat.cat.replace(/"/g, '&quot;')}">
+      <div class="sect-head lex-cat-head" style="font-size:13px;padding:10px 12px;background:var(--bg);position:sticky;top:0;z-index:3;border-bottom:0.5px solid var(--border);margin:0 -12px 4px">${cat.cat} <span style="color:var(--text-hint);font-weight:500;font-size:10px;margin-left:4px">${cat.items.length}</span></div>
       ${cat.items.map(item => {
         const isHL = highlightTitle && item.t === highlightTitle;
         // Bei der Suche bleiben Treffer ZUGEKLAPPT — der User sieht alle Titel
@@ -16631,13 +17051,18 @@ function renderLexikon(highlightTitle, searchQuery) {
         const isExpanded = isHL;
         const hasStructure = !!(item.brief || item.mechanism || item.practice || item.pitfall);
         const titleHTML = isSearching ? highlightMatches(item.t, q) : item.t;
+        const isFav = !!(S._lexFavs && S._lexFavs[item.t]);
+        // Onclick: aufklappen/zuklappen + Verlauf tracken (nur beim Aufklappen).
+        // toggleLexEntry() weiter unten gekapselt, damit das HTML kompakt bleibt.
+        const safeTitle = item.t.replace(/'/g, "\\'").replace(/"/g, '&quot;');
         return `
         <div id="lex-${item.t.replace(/[^a-zA-Z]/g,'')}" style="background:${isHL ? 'var(--green-bg)' : 'var(--card)'};border:0.5px solid ${isHL ? 'var(--green-dk)' : 'var(--border)'};border-radius:10px;overflow:hidden;margin-bottom:6px;${isHL ? 'scroll-margin-top:80px' : ''}">
-          <div onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none';this.querySelector('.ltgl').textContent=this.nextElementSibling.style.display==='none'?'▸':'▾'" 
+          <div onclick="toggleLexEntry(this, '${safeTitle}')"
             style="padding:10px 14px;cursor:pointer;display:flex;align-items:center;gap:8px">
             <div style="flex:1;min-width:0">
               <div style="font-size:13px;font-weight:${isHL ? '700' : '500'};color:${isHL ? 'var(--green)' : 'var(--text)'}">${titleHTML}${hasStructure ? ' <span style="font-size:9px;color:var(--text-hint);font-weight:500">· strukturiert</span>' : ''}${item._matchInBody ? ' <span style="font-size:9px;color:var(--yellow);font-weight:500">· Treffer im Text</span>' : ''}</div>
             </div>
+            <button onclick="event.stopPropagation();toggleLexFav('${safeTitle}')" aria-label="Lesezeichen" style="background:none;border:none;cursor:pointer;padding:4px 6px;font-size:16px;line-height:1;color:${isFav ? 'var(--yellow)' : 'var(--text-hint)'}">${isFav ? '★' : '☆'}</button>
             <span class="ltgl" style="color:var(--text-muted);font-size:14px">${isExpanded ? '▾' : '▸'}</span>
           </div>
           <div style="display:${isExpanded ? 'block' : 'none'};padding:0 14px 12px">
@@ -16655,6 +17080,151 @@ function renderLexikon(highlightTitle, searchQuery) {
       if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }, 150);
   }
+}
+
+/**
+ * Schaltet die aktive Lexikon-Kategorie um. null = alle anzeigen.
+ * Bewahrt eine eventuelle Suche, sodass Cat-Filter und Suche kombinierbar sind
+ * (z.B. "in Bewässerung nach 'pH' suchen").
+ *
+ * Der Zustand wird NICHT in S persistiert — beim Verlassen der App wieder "Alle",
+ * weil das ein UI-Filter ist, nicht inhaltliche User-Wahl.
+ */
+function setLexCat(cat) {
+  S._lexActiveCat = cat;
+  const searchVal = document.getElementById('lex-search')?.value || '';
+  renderLexikon(null, searchVal);
+  // Lexikon-Body zum Anfang scrollen, damit der User den ersten Treffer sieht
+  const body = document.getElementById('lexikon-body');
+  if (body) body.scrollTop = 0;
+}
+
+/**
+ * Lesezeichen toggeln. Persistent in S._lexFavs gespeichert.
+ * Erwartet den vollen Lexikon-Eintragstitel.
+ */
+function toggleLexFav(title) {
+  if (!S._lexFavs) S._lexFavs = {};
+  if (S._lexFavs[title]) {
+    delete S._lexFavs[title];
+    toast('Lesezeichen entfernt');
+  } else {
+    S._lexFavs[title] = Date.now();
+    toast('★ Lesezeichen gesetzt');
+  }
+  saveS();
+  vibrate();
+  // Aktuell sichtbaren Filter beibehalten
+  const searchVal = document.getElementById('lex-search')?.value || '';
+  renderLexikon(null, searchVal);
+}
+
+/**
+ * Verlauf aktualisieren: ein Eintrag wurde aufgeklappt → an Position 0
+ * der Liste, ggf. Duplikate entfernen, max 8 behalten.
+ */
+function trackLexView(title) {
+  if (!Array.isArray(S._lexHistory)) S._lexHistory = [];
+  // Duplikat raus
+  S._lexHistory = S._lexHistory.filter(t => t !== title);
+  // Vorne einfügen
+  S._lexHistory.unshift(title);
+  // Auf 8 limitieren
+  if (S._lexHistory.length > 8) S._lexHistory.length = 8;
+  saveS();
+}
+
+/**
+ * Aufklappen/zuklappen eines Lexikon-Eintrags + Verlauf-Tracking.
+ * Beim AUFKLAPPEN wird der Eintrag in S._lexHistory ans Anfang geschoben,
+ * beim Zuklappen passiert nichts (Verlauf bleibt stabil).
+ */
+function toggleLexEntry(headerEl, title) {
+  const body = headerEl.nextElementSibling;
+  const isOpening = body.style.display === 'none';
+  body.style.display = isOpening ? 'block' : 'none';
+  const tgl = headerEl.querySelector('.ltgl');
+  if (tgl) tgl.textContent = isOpening ? '▾' : '▸';
+  if (isOpening) trackLexView(title);
+}
+
+/**
+ * Schaltet den "Einfach erklärt"-Modus für das Lexikon.
+ * Aktiv: zeigt nur den brief-Satz statt Mechanik/Praxis/Vorsicht-Detail.
+ * Persistent in S._lexSimpleMode gespeichert, damit der User den Modus
+ * nicht jedes Mal neu wählen muss.
+ */
+function toggleLexSimple() {
+  S._lexSimpleMode = !S._lexSimpleMode;
+  saveS();
+  vibrate();
+  const searchVal = document.getElementById('lex-search')?.value || '';
+  renderLexikon(null, searchVal);
+}
+
+/**
+ * Levenshtein-Distanz für Did-you-mean. Iterative Implementierung,
+ * O(n*m) Zeit, O(min(n,m)) Speicher. Genug für Lexikon-Größen (~150 Suchstrings).
+ */
+function _levenshtein(a, b) {
+  if (a === b) return 0;
+  if (!a.length) return b.length;
+  if (!b.length) return a.length;
+  // Wir nutzen nur eine Reihe + Vorgänger-Wert, kompakt
+  let prev = Array.from({ length: b.length + 1 }, (_, i) => i);
+  for (let i = 1; i <= a.length; i++) {
+    let curr = [i];
+    for (let j = 1; j <= b.length; j++) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      curr[j] = Math.min(
+        curr[j - 1] + 1,        // insertion
+        prev[j] + 1,            // deletion
+        prev[j - 1] + cost      // substitution
+      );
+    }
+    prev = curr;
+  }
+  return prev[b.length];
+}
+
+/**
+ * Sucht den ähnlichsten Lexikon-Titel zu einem fehlgeschlagenen Suchbegriff.
+ * Als Kandidaten zählen alle Titel + alle Aliase. Schwelle: max 25 % Distanz
+ * (z.B. 4 Zeichen Differenz bei 16-Zeichen-Wort).
+ *
+ * Gibt null zurück wenn nichts ähnlich genug ist.
+ */
+function _lexFindClosest(qNorm) {
+  if (!qNorm || qNorm.length < 3) return null;
+  const candidates = [];
+  // Lexikon-Titel
+  for (const cat of LEXIKON) {
+    for (const item of cat.items) {
+      const tNorm = (item.t || '').toLowerCase()
+        .replace(/ä/g, 'a').replace(/ö/g, 'o').replace(/ü/g, 'u').replace(/ß/g, 'ss');
+      candidates.push({ display: item.t, key: tNorm });
+    }
+  }
+  // Aliase
+  for (const alias of Object.keys(LEX_ALIASES || {})) {
+    const aNorm = alias.toLowerCase()
+      .replace(/ä/g, 'a').replace(/ö/g, 'o').replace(/ü/g, 'u').replace(/ß/g, 'ss');
+    candidates.push({ display: alias, key: aNorm });
+  }
+
+  let best = null;
+  let bestDist = Infinity;
+  const maxAllowed = Math.max(2, Math.floor(qNorm.length * 0.4));
+  for (const c of candidates) {
+    // Schnell-Skip: wenn Längen-Differenz schon zu groß, gar nicht erst rechnen
+    if (Math.abs(c.key.length - qNorm.length) > maxAllowed) continue;
+    const d = _levenshtein(qNorm, c.key);
+    if (d < bestDist && d <= maxAllowed) {
+      bestDist = d;
+      best = c.display;
+    }
+  }
+  return best;
 }
 
 // =====================================================================
