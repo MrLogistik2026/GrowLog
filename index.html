@@ -317,7 +317,7 @@ input.suggested:focus { color: var(--text) !important; font-style: normal; opaci
 /* ===================== SWITCHES ===================== */
 .sw-row { display: flex; align-items: center; justify-content: space-between; padding: 5px 0; }
 .sw { position: relative; width: 44px; height: 26px; cursor: pointer; }
-.sw input { opacity: 0; width: 0; height: 0; }
+.sw input { position: absolute; opacity: 0; width: 100%; height: 100%; left: 0; top: 0; margin: 0; cursor: pointer; }
 .sl {
   position: absolute; inset: 0; background: #333; border-radius: 26px; transition: 0.2s;
 }
@@ -380,7 +380,10 @@ input:checked + .sl:before { transform: translateX(18px); background: var(--gree
   background: rgba(26,26,26,0.95); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
   color: #ddd; padding: 10px 22px; border-radius: 22px; font-size: 13px;
   z-index: 9999; border: 0.5px solid #444; pointer-events: none;
-  opacity: 0; transition: all 0.25s; white-space: nowrap;
+  opacity: 0; transition: all 0.25s;
+  /* Lange Toasts müssen auf schmalen Screens umbrechen — nowrap ließ Text rechts/links rauslaufen */
+  max-width: calc(100vw - 32px); text-align: center; line-height: 1.35;
+  word-wrap: break-word; overflow-wrap: break-word;
 }
 #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
@@ -774,6 +777,14 @@ body.beginner .advanced-ctl { display: none !important; }
       <button class="icon-btn" onclick="goTo('tips')" style="font-size:20px">←</button>
       <span class="app-title">📖 Grow-Lexikon</span>
       <div></div>
+    </div>
+    <div style="padding:8px 12px 4px;background:var(--bg);position:sticky;top:0;z-index:5;border-bottom:0.5px solid var(--border)">
+      <div style="position:relative">
+        <input type="search" id="lex-search" placeholder="🔍 Suche (z.B. Temperatur, Calcium, VPD...)" oninput="renderLexikon(null,this.value)" autocomplete="off"
+          style="width:100%;background:var(--card);border:0.5px solid var(--border);border-radius:10px;padding:10px 36px 10px 14px;color:var(--text);font-family:var(--font);font-size:13px;outline:none"/>
+        <button id="lex-search-clear" onclick="document.getElementById('lex-search').value='';renderLexikon();this.style.display='none'" style="display:none;position:absolute;right:6px;top:50%;transform:translateY(-50%);background:transparent;border:none;color:var(--text-muted);font-size:18px;cursor:pointer;padding:4px 8px;font-family:var(--font)">×</button>
+      </div>
+      <div id="lex-search-stats" style="font-size:10px;color:var(--text-muted);padding:4px 2px 0;display:none"></div>
     </div>
     <div class="scroll" id="lexikon-body"></div>
   </div>
@@ -3372,9 +3383,17 @@ async function doGenerateCollage(cId) {
 
 
 const SK = 'growsmart_v4';
+// APP_VERSION: zentrale Versions-Konstante. Bei jedem Update um 0.0.01 erhöhen.
+// Format: vMAJOR.MINOR.PATCH (PATCH zweistellig, also v1.0.01, v1.0.02, ..., v1.0.99, v1.0.100).
+// v1.0.0 war erstes stabiles Release. v1.0.01 = Save-Zone-Live-Update + neuer Versions-Format.
+const APP_VERSION = 'v1.0.35';
 let S = {
   cycles: [], entries: {}, products: [], weekSchedule: {},
   potSize: 11, presetKey: null, mixOrder: null, mixInfo: null,
+  // planNotes: { cycleId: { phaseDay: noteText } } — Notizen die mit dem Plan
+  // verschoben werden statt am echten Datum zu kleben. Tagebuch-Notizen bleiben
+  // weiterhin in S.entries[iso].cycleData[cycId].notes.
+  planNotes: {},
 };
 let tab = 'dash', calDate = new Date(), editISO = null, entryFrom = 'dash';
 let _entryDirty = false; // Tracks whether the current entry has unsaved changes
@@ -3964,6 +3983,10 @@ function loadS() {
   if (!S.products || !S.products.length) S.products = [];
   if (!S.weekSchedule) S.weekSchedule = {};
   if (!S.potSize) S.potSize = 11;
+  // Migration v0.9.x: planNotes-Storage anlegen falls nicht vorhanden.
+  // Bestehende Notizen bleiben unverändert in S.entries[iso].cycleData[cId].notes
+  // (= Tagebuch-Modus). Neue Plan-Notizen kommen in S.planNotes[cId][phaseDay].
+  if (!S.planNotes) S.planNotes = {};
   // Migrate old 'biobizz' preset key to new 'biobizz_master' (Classic was renamed to Master in v0.8.68)
   if (S.presetKey === 'biobizz') S.presetKey = 'biobizz_master';
   // E5: Beginner mode flag. Default: true for fresh installs (S.beginnerMode === undefined)
@@ -4043,9 +4066,13 @@ function loadS() {
     //   dryWeight:       Topfgewicht wenn bone-dry (0% Restgewicht)
     // Wasserkapazität = Saturated - Dry
     // Restgewicht% = ((Aktuell - Dry) / (Saturated - Dry)) * 100
-    if (c.weightMode === undefined) c.weightMode = 'off';
+    if (c.weightMode === undefined) c.weightMode = 'lift';
     if (c.saturatedWeight === undefined) c.saturatedWeight = null; // in Gramm
     if (c.dryWeight === undefined) c.dryWeight = null; // in Gramm
+
+    // Pflanzenzahl-Migration (v1.0.22): bestehende Zyklen kriegen 1 Pflanze als Default
+    if (c.plantCount === undefined) c.plantCount = 1;
+    if (c.scaleByPlants === undefined) c.scaleByPlants = true;
 
     // v0.9: assign fertPlanId. If a legacy plan was migrated, all old cycles use it.
     if (!c.fertPlanId) {
@@ -5307,7 +5334,21 @@ function _rerender() {
 }
 
 let _debugDate = null; // Set to '2026-05-15' etc. for testing
-function todayISO() { return _debugDate || new Date().toISOString().split('T')[0]; }
+/**
+ * Konvertiert ein Date-Objekt in einen ISO-Datums-String (YYYY-MM-DD)
+ * basierend auf der LOKALEN Zeitzone des Users.
+ *
+ * WARUM nicht .toISOString().split('T')[0]?
+ *   .toISOString() liefert UTC. Für einen User in Berlin um 00:30 Uhr
+ *   ist das aber bereits 22:30 UTC am Vortag — die App würde den Eintrag
+ *   auf gestern speichern statt heute. Gleicher Bug für Tokyo morgens,
+ *   NY abends, etc. Mit getFullYear()/getMonth()/getDate() bleiben wir
+ *   in der Wanduhr-Zeit des Users, was hier immer das richtige ist.
+ */
+function _localISO(d) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function todayISO() { return _debugDate || _localISO(new Date()); }
 function setDebugDate(v) {
   _debugDate = v || null;
   vibrate();
@@ -5325,7 +5366,7 @@ function setDebugDate(v) {
   }
 }
 function iso12(iso) { return new Date(iso + 'T12:00:00'); }
-function isoPlus(iso, d) { const o = iso12(iso); o.setDate(o.getDate() + d); return o.toISOString().split('T')[0]; }
+function isoPlus(iso, d) { const o = iso12(iso); o.setDate(o.getDate() + d); return _localISO(o); }
 function isoDiff(a, b) { return Math.round((iso12(a) - iso12(b)) / 86400000); }
 function fmtDE(iso, o) { return iso12(iso).toLocaleDateString('de-DE', o || { day: '2-digit', month: '2-digit' }); }
 
@@ -5479,7 +5520,17 @@ function phase(iso, c) {
   if (dated) return dated;
 
   if (!c.startDate) return null;
-  const diff = isoDiff(iso, c.startDate);
+
+  // SHIFT SYSTEM: phase() berücksichtigt offsetHistory genauso wie getAction(),
+  // damit Phase-Marker und Aktions-Symbole konsistent auf demselben Tag landen.
+  // Ohne diesen Code würde phase() den Original-Plan zeigen während getAction()
+  // den verschobenen Plan zeigt → Phase-Marker auf "leeren" Tagen (Bug-Bericht).
+  let totalOffset = 0;
+  for (const entry of c.offsetHistory || []) {
+    if (iso >= entry.date) totalOffset += entry.offset;
+  }
+  const virtualStart = isoPlus(c.startDate, totalOffset);
+  const diff = isoDiff(iso, virtualStart);
   if (diff < 0) return null;
 
   const a  = c.anzuchtDays || PHASE_DEFAULTS.anzuchtDays;
@@ -6453,10 +6504,98 @@ function cycleOverviewStrip(c) {
   </div>`;
 }
 
+/**
+ * PLAN-NOTIZEN: Notizen die mit dem Phase-Plan wandern.
+ * Speicherung: S.planNotes[cycleId][phaseDay] = noteText
+ *
+ * Unterschied zu Tagebuch-Notizen:
+ * - Tagebuch (cd.notes am ISO-Datum): bleibt am echten Datum, beschreibt was war
+ * - Plan (S.planNotes[cId][day]): wandert mit Verschiebungen, beschreibt was sein soll
+ *
+ * Phase-Tag = Tag seit Start (1-basiert), berücksichtigt offsetHistory.
+ */
+
+/** Liefert den Phase-Tag (1-basiert) für ein ISO-Datum eines Zyklus, oder null wenn vor Start. */
+function getPhaseDayForIso(iso, c) {
+  if (!c || !c.startDate) return null;
+  let totalOffset = 0;
+  for (const entry of c.offsetHistory || []) {
+    if (iso >= entry.date) totalOffset += entry.offset;
+  }
+  const virtualStart = isoPlus(c.startDate, totalOffset);
+  const diff = isoDiff(iso, virtualStart);
+  if (diff < 0) return null;
+  return diff + 1;  // 1-basiert: Tag 1 ist startDate
+}
+
+/** Liefert das aktuelle ISO-Datum für einen Phase-Tag eines Zyklus. */
+function getIsoForPhaseDay(phaseDay, c) {
+  if (!c || !c.startDate || phaseDay < 1) return null;
+  // Wir müssen offsetHistory rückwärts auflösen: Tag X ist startDate + (X-1) Tage
+  // OHNE Offsets, weil offsetHistory das Datum verschiebt nicht den Tag-Wert.
+  // Aber bei aktiver offsetHistory: Phase-Tag X bedeutet "der Tag, der Tag X im Zyklus ist"
+  // Suchen: für welches ISO-Datum ergibt getPhaseDayForIso(iso, c) === phaseDay?
+  // Vereinfacht: startDate + (phaseDay - 1 - totalNegativeOffset) Tage
+  // Das ist iterativ stabiler als die Mathe direkt.
+  const targetDiff = phaseDay - 1;
+  // Wir suchen iso so dass (isoDiff(iso, virtualStart) === targetDiff)
+  // Bei keinen Offsets: iso = startDate + targetDiff
+  // Mit Offsets: iso = startDate + targetDiff + sumOffsetsApplicableForThatIso
+  // Iterativ lösen mit max 20 Schritten (genug für seltene Mehrfach-Verschiebungen).
+  let iso = isoPlus(c.startDate, targetDiff);
+  for (let i = 0; i < 20; i++) {
+    const actualDay = getPhaseDayForIso(iso, c);
+    if (actualDay === phaseDay) return iso;
+    if (actualDay === null) return iso;  // Vor Start, kein gültiger Tag
+    iso = isoPlus(iso, phaseDay - actualDay);
+  }
+  return iso;
+}
+
+/** Lädt eine Plan-Notiz für einen Zyklus + Phase-Tag, oder null. */
+function getPlanNote(cycleId, phaseDay) {
+  if (!S.planNotes || !S.planNotes[cycleId]) return null;
+  return S.planNotes[cycleId][phaseDay] || null;
+}
+
+/** Speichert eine Plan-Notiz. Wenn text leer, wird die Notiz gelöscht. */
+function setPlanNote(cycleId, phaseDay, text) {
+  if (!S.planNotes) S.planNotes = {};
+  if (!S.planNotes[cycleId]) S.planNotes[cycleId] = {};
+  if (!text || !text.trim()) {
+    delete S.planNotes[cycleId][phaseDay];
+    if (Object.keys(S.planNotes[cycleId]).length === 0) {
+      delete S.planNotes[cycleId];
+    }
+  } else {
+    S.planNotes[cycleId][phaseDay] = text.trim();
+  }
+  saveS();
+}
+
+/** Löscht alle Plan-Notizen eines Zyklus (z.B. bei Zyklus-Reset/Löschen). */
+function clearPlanNotesForCycle(cycleId) {
+  if (S.planNotes && S.planNotes[cycleId]) {
+    delete S.planNotes[cycleId];
+    saveS();
+  }
+}
+
 function calcStreak(c) {
   const today = todayISO();
   let s = 0;
-  for (let i = 0; i < 90; i++) {
+  // Heutiger Tag ist Sonderfall: Wenn er ein Gießtag ist aber noch kein Eintrag
+  // vorhanden, würde die Schleife sofort abbrechen und den Streak auf 0 setzen.
+  // Das ist nicht intuitiv — der User hat ja vor dem Mittag noch Zeit zu gießen.
+  // Daher: Wenn heute Gießtag und heute LEER ist, einfach überspringen und ab
+  // gestern zählen. Wurde heute schon gegossen, zählt der Tag mit.
+  let startOffset = 0;
+  if (isGiessTag(today, c)) {
+    const todayCd = S.entries[today]?.cycleData?.[c.id];
+    const todayDone = todayCd && (todayCd.water || todayCd._doneTodo);
+    if (!todayDone) startOffset = 1;  // heute nicht zählen, ab gestern starten
+  }
+  for (let i = startOffset; i < 90 + startOffset; i++) {
     const iso = isoPlus(today, -i);
     if (isGiessTag(iso, c)) {
       // Ein Gießtag zählt für den Streak wenn:
@@ -6492,6 +6631,24 @@ function waterStats(c) {
  *
  * Skaliert proportional zur Topfgröße (Basis: 11L).
  */
+/**
+ * Effektive Pflanzenzahl für einen Tag.
+ * Reihenfolge: Eintrag-spezifisch (cd.plantCount) > Zyklus-Default (c.plantCount) > 1.
+ * Wenn scaleByPlants aus ist, immer 1 zurückgeben (= keine Skalierung).
+ *
+ * @returns {number} Effektive Pflanzenzahl als Multiplikator (>= 1)
+ */
+function getEffectivePlantCount(c, iso) {
+  if (!c) return 1;
+  if (!c.scaleByPlants) return 1;  // Skalierung aus → kein Multiplikator
+  // Eintrag-spezifischer Override (User hat im Tageseintrag eine andere Zahl gesetzt)
+  if (iso && S.entries[iso]?.cycleData?.[c.id]?.plantCount) {
+    const n = parseInt(S.entries[iso].cycleData[c.id].plantCount);
+    if (n >= 1) return n;
+  }
+  return Math.max(1, parseInt(c.plantCount) || 1);
+}
+
 function waterSuggestion(c, p) {
   // Helper: berechnet die "rohe" biophysikalische Empfehlung (ohne Personalisierung)
   const rawSuggestion = () => _waterSuggestionRaw(c, p);
@@ -6502,6 +6659,7 @@ function waterSuggestion(c, p) {
   // (oder weniger) gegossen hat als empfohlen, passt sich die App an.
   // Wir nehmen das Verhältnis aus den letzten 3 tatsächlich gegossenen Tagen und
   // bilden ein gleitendes Mittel. So wirken einmalige Abweichungen nicht zu stark.
+  let personalizedRaw = raw;
   if (c && c.id && p && S.entries) {
     const today = todayISO();
     const recentRatios = [];
@@ -6510,13 +6668,18 @@ function waterSuggestion(c, p) {
       const iso = isoPlus(today, -i);
       const cd = S.entries[iso]?.cycleData?.[c.id];
       if (!cd?.water) continue;
-      const userMl = parseFloat(cd.water);
+      let userMl = parseFloat(cd.water);
       if (!userMl || userMl < 50) continue; // Ignoriere Tag-1 (0 ml) und absurd niedrige
       const pPast = phase(iso, c);
       if (!pPast) continue;
       const expectedMl = _waterSuggestionRaw(c, pPast);
       if (!expectedMl) continue;
-      const ratio = userMl / expectedMl;
+      // userMl ist Total über alle Pflanzen, expectedMl ist pro Pflanze.
+      // Damit der Ratio-Vergleich stimmt, müssen wir userMl durch die damals
+      // aktive Pflanzenzahl teilen (Eintrag-spezifisch oder Zyklus-Default).
+      const plantsAtTime = getEffectivePlantCount(c, iso);
+      const userMlPerPlant = userMl / plantsAtTime;
+      const ratio = userMlPerPlant / expectedMl;
       // Clamp auf sinnvollen Bereich — wer mal deutlich weniger gießt (z.B. weil Erde
       // noch feucht war) soll nicht die ganze Zukunft nach unten ziehen.
       if (ratio >= 0.5 && ratio <= 2.0) {
@@ -6528,11 +6691,14 @@ function waterSuggestion(c, p) {
       // Sanfte Anpassung: Nur anwenden wenn Abweichung >10% ist, sonst Default lassen.
       // So wird nicht bei jeder kleinen Variation alles umgerechnet.
       if (Math.abs(avgRatio - 1.0) > 0.1) {
-        return Math.round(raw * avgRatio / 50) * 50;
+        personalizedRaw = Math.round(raw * avgRatio / 50) * 50;
       }
     }
   }
-  return raw;
+  // PFLANZEN-MULTIPLIKATOR: Nach Personalisierung mit Pflanzenzahl multiplizieren.
+  // Wenn scaleByPlants aus ist, gibt getEffectivePlantCount immer 1 zurück.
+  const plants = getEffectivePlantCount(c, todayISO());
+  return Math.round(personalizedRaw * plants / 50) * 50;
 }
 
 // Interne rohe Empfehlung ohne Personalisierung — Basis für Personalisierungs-Berechnung
@@ -6915,17 +7081,101 @@ function calcVPD(t, rh) {
  *   - growType: 'outdoor' skips actionable hints ("Lüfter an", "RLF erhöhen") since
  *               the user can't control the weather — only informational labels remain.
  */
+/**
+ * Liefert Klima-Zielwerte (Temp, RLF, VPD) für eine bestimmte Phase + Woche.
+ * Quelle: VPD-Lexikon-Eintrag, abgestimmt auf typische Cup-Niveau-Empfehlungen.
+ *
+ * Bei Outdoor sind die Werte nicht steuerbar — die App zeigt sie trotzdem als
+ * Info ("zur Pflanze passt"), aber ohne Bewertung "richtig/falsch".
+ *
+ * @returns {Object} { tempMin, tempMax, rhMin, rhMax, vpdMin, vpdMax, label, icon }
+ */
+function getPhaseTargets(p) {
+  if (!p) return null;
+  const ph = p.ph;
+  const day = p.day || 1;
+  const week = p.week || 1;
+  // Anzucht/Vegi-out/Abhärten: alle drinnen-vegi (auch Anzucht ≤10 Tage = Sämling)
+  if (ph === 'anzucht' || ph === 'vorzucht') {
+    if (day <= 10) {
+      return { tempMin: 22, tempMax: 26, rhMin: 65, rhMax: 75, vpdMin: 0.4, vpdMax: 0.8, label: 'Sämling', icon: '🌱' };
+    }
+    return { tempMin: 22, tempMax: 28, rhMin: 55, rhMax: 70, vpdMin: 0.8, vpdMax: 1.2, label: 'Anzucht/Vegi', icon: '🌿' };
+  }
+  if (ph === 'abhärten') {
+    return { tempMin: 18, tempMax: 26, rhMin: 50, rhMax: 70, vpdMin: 0.8, vpdMax: 1.4, label: 'Abhärten', icon: '🌬' };
+  }
+  if (ph === 'vegi_out') {
+    return { tempMin: 18, tempMax: 28, rhMin: 50, rhMax: 70, vpdMin: 0.8, vpdMax: 1.4, label: 'Vegi draußen', icon: '🌿' };
+  }
+  if (ph === 'bloom') {
+    if (week <= 3) {
+      return { tempMin: 23, tempMax: 27, rhMin: 50, rhMax: 60, vpdMin: 1.0, vpdMax: 1.3, label: 'Frühe Blüte', icon: '🌸' };
+    }
+    if (week <= 6) {
+      return { tempMin: 22, tempMax: 26, rhMin: 45, rhMax: 55, vpdMin: 1.2, vpdMax: 1.5, label: 'Mittlere Blüte', icon: '🌺' };
+    }
+    return { tempMin: 18, tempMax: 24, rhMin: 40, rhMax: 50, vpdMin: 1.4, vpdMax: 1.6, label: 'Späte Blüte', icon: '🍯' };
+  }
+  if (ph === 'flush') {
+    return { tempMin: 20, tempMax: 24, rhMin: 40, rhMax: 50, vpdMin: 1.4, vpdMax: 1.6, label: 'Spülen', icon: '🚿' };
+  }
+  if (ph === 'ice' || ph === 'harvest') {
+    return { tempMin: 18, tempMax: 22, rhMin: 40, rhMax: 50, vpdMin: 1.4, vpdMax: 1.6, label: ph === 'ice' ? 'IceFlush' : 'Ernte', icon: ph === 'ice' ? '🧊' : '✂️' };
+  }
+  if (ph === 'dry') {
+    return { tempMin: 18, tempMax: 20, rhMin: 55, rhMax: 62, vpdMin: null, vpdMax: null, label: 'Trocknen', icon: '🍂' };
+  }
+  return null;
+}
+
+/**
+ * Bewertet ob ein Wert im Ziel-Bereich liegt.
+ * @returns {string} '✓' (im Bereich), '⚠' (abweichend), '' (kein Wert)
+ */
+function inRangeMark(val, min, max) {
+  if (val === null || val === undefined || isNaN(val) || val === 0) return '';
+  if (val >= min && val <= max) return '✓';
+  return '⚠';
+}
+
 function vpdZone(v, phaseInfo, growType) {
   if (v === null) return null;
-  const isLateBloom = phaseInfo && phaseInfo.ph === 'bloom' && (phaseInfo.week || 0) >= 7;
+  const ph = phaseInfo?.ph;
+  const day = phaseInfo?.day || 0;
+  const isLateBloom = ph === 'bloom' && (phaseInfo.week || 0) >= 7;
+  const isSeedling = (ph === 'anzucht' || ph === 'vorzucht') && day <= 10;
+  const isVegi = (ph === 'anzucht' || ph === 'vorzucht' || ph === 'vegi_out' || ph === 'abhärten') && !isSeedling;
+  const isBloom = ph === 'bloom' || ph === 'flush' || ph === 'ice' || ph === 'harvest';
   const outdoor = growType === 'outdoor';
-  if (v < 0.4) return { label: 'Zu feucht', color: '#7a7af0', bg: '#1e1e3a', hint: outdoor ? 'Hohe Luftfeuchte — Schimmelrisiko beobachten.' : 'Lüfter an!', pct: v / 0.4 * 15 };
-  if (v < 0.8) return { label: 'Anzucht ✓', color: '#5aabf0', bg: '#0d1e2e', hint: 'Ideal für Sämlinge.', pct: 15 + (v - 0.4) / 0.4 * 35 };
-  if (v < 1.2) return { label: 'Blüte ✓', color: '#4caf70', bg: '#0d1e0d', hint: 'Optimal für Blüte!', pct: 50 + (v - 0.8) / 0.4 * 25 };
+
+  // PHASE-AWARE LABEL:
+  // Die VPD-Skala ist universal, aber der Status ✓/⚠ hängt von der Phase ab.
+  // Sämling will 0.4–0.8 — bei 1.0 ist das "zu hoch" obwohl es in Vegi/Blüte ok wäre.
+  // Vegi will 0.8–1.2. Blüte will 1.0–1.6. Späte Blüte will 1.4–1.6.
+  if (v < 0.4) {
+    return { label: 'Zu feucht', color: '#7a7af0', bg: '#1e1e3a', hint: outdoor ? 'Hohe Luftfeuchte — Schimmelrisiko beobachten.' : 'Lüfter an!', pct: v / 0.4 * 15 };
+  }
+  if (v < 0.8) {
+    // Sämling-Zone — nur für Sämling als ✓ markiert
+    if (isSeedling) return { label: 'Sämling ✓', color: '#4caf70', bg: '#0d1e0d', hint: 'Ideal für Sämlinge — niedriger Sog schützt junge Wurzeln.', pct: 15 + (v - 0.4) / 0.4 * 35 };
+    return { label: 'Etwas niedrig', color: '#5aabf0', bg: '#0d1e2e', hint: 'Für Vegi/Blüte etwas zu niedrig — RLF kann etwas runter oder Temp etwas hoch.', pct: 15 + (v - 0.4) / 0.4 * 35 };
+  }
+  if (v < 1.2) {
+    // Vegi/frühe Blüte — abhängig von Phase
+    if (isSeedling) return { label: 'Zu trocken für Sämling', color: '#c8a04a', bg: '#2a1e0d', hint: 'Sämlinge brauchen 0.4–0.8 — RLF rauf auf 65–75%.', pct: 50 + (v - 0.8) / 0.4 * 25 };
+    if (isVegi) return { label: 'Vegi ✓', color: '#4caf70', bg: '#0d1e0d', hint: 'Optimal für Wachstum.', pct: 50 + (v - 0.8) / 0.4 * 25 };
+    if (isBloom) return { label: 'Frühe Blüte ✓', color: '#4caf70', bg: '#0d1e0d', hint: 'Optimal für Stretch und frühe Blüte.', pct: 50 + (v - 0.8) / 0.4 * 25 };
+    return { label: 'Vegi/Blüte ✓', color: '#4caf70', bg: '#0d1e0d', hint: 'Optimal.', pct: 50 + (v - 0.8) / 0.4 * 25 };
+  }
   if (v < 1.6) {
     if (isLateBloom) {
       return { label: 'Spätblüte ✓', color: '#4caf70', bg: '#0d1e0d', hint: 'Cup-Niveau: Trichom-Boost durch milden Trockenstress.', pct: 75 + (v - 1.2) / 0.4 * 15 };
     }
+    if (isBloom) {
+      return { label: 'Mittlere Blüte ✓', color: '#4caf70', bg: '#0d1e0d', hint: 'Optimal für Bud-Bildung.', pct: 75 + (v - 1.2) / 0.4 * 15 };
+    }
+    if (isSeedling) return { label: 'Viel zu trocken!', color: '#e06060', bg: '#2a0d0d', hint: 'Sämling stirbt — sofort RLF rauf auf 70%!', pct: 75 + (v - 1.2) / 0.4 * 15 };
     return { label: 'Etwas hoch', color: '#c8a04a', bg: '#2a1e0d', hint: outdoor ? 'Trockener Tag — häufiger gießen falls heiß.' : 'RLF erhöhen (in Spätblüte OK als Cup-Niveau).', pct: 75 + (v - 1.2) / 0.4 * 15 };
   }
   return { label: 'Stress!', color: '#e06060', bg: '#2a0d0d', hint: outdoor ? 'Sehr trocken — Schattenplatz und Wasser prüfen.' : 'Sofort RLF anpassen!', pct: Math.min(97, 90 + (v - 1.6) * 10) };
@@ -7029,6 +7279,34 @@ function getEntryWarnings(cd, p, e, c) {
       if (rhVal > 80) out.push({ type: 'err', text: `💨 ${rhVal}% RLF sehr hoch — Schimmelrisiko! Lüftung maximal.` });
       else if (rhVal > 70) out.push({ type: 'warn', text: `💨 ${rhVal}% RLF über 70 — Aktivkohlefilter kann kondensieren und Geruch durchlassen.` });
       else if (rhVal < 30 && p && p.ph !== 'dry') out.push({ type: 'warn', text: `💨 ${rhVal}% RLF sehr niedrig — Pflanze schließt Stomata.` });
+    }
+  }
+
+  // PHASE-SPEZIFISCHE INFOS (nur Indoor — Outdoor lässt sich Klima eh nicht steuern):
+  // Wenn die extremen Schwellen oben nicht greifen aber der Wert vom Phase-Ziel
+  // abweicht, geben wir einen sanften Hinweis. So lernt der User die Phase-Targets
+  // ohne dass jede kleine Abweichung als Fehler behandelt wird.
+  if (!isOutdoor) {
+    const targets = typeof getPhaseTargets === 'function' ? getPhaseTargets(p) : null;
+    if (targets) {
+      // Temp-Hinweis: nur wenn extreme-Warnungen NICHT bereits drin sind
+      const hasTempErr = out.some(o => /\d°C/.test(o.text));
+      if (!hasTempErr && !isNaN(tempVal) && tempVal > 0) {
+        if (tempVal < targets.tempMin - 1) {
+          out.push({ type: 'info', text: `${targets.icon} ${targets.label}: Temp zielt auf ${targets.tempMin}–${targets.tempMax}°C — du hast ${tempVal}°C.` });
+        } else if (tempVal > targets.tempMax + 1) {
+          out.push({ type: 'info', text: `${targets.icon} ${targets.label}: Temp zielt auf ${targets.tempMin}–${targets.tempMax}°C — du hast ${tempVal}°C.` });
+        }
+      }
+      // RLF-Hinweis: ähnliche Logik
+      const hasRhErr = out.some(o => /\d%\s?RLF/.test(o.text));
+      if (!hasRhErr && !isNaN(rhVal) && rhVal > 0) {
+        if (rhVal < targets.rhMin - 3) {
+          out.push({ type: 'info', text: `${targets.icon} ${targets.label}: RLF zielt auf ${targets.rhMin}–${targets.rhMax}% — du hast ${rhVal}%.` });
+        } else if (rhVal > targets.rhMax + 3) {
+          out.push({ type: 'info', text: `${targets.icon} ${targets.label}: RLF zielt auf ${targets.rhMin}–${targets.rhMax}% — du hast ${rhVal}%.` });
+        }
+      }
     }
   }
 
@@ -7815,14 +8093,28 @@ function renderDash() {
     const pct = p?.pct || 0, sf = fmtDE(c.startDate), next = nextGiessTag(c, today);
     const streak = calcStreak(c), wS = waterStats(c), maxW = Math.max(...wS, 1);
     const tip = getSmartTip(c, p);
-    // pH/EC trend data (last 14 days)
+    // pH/EC trend data — letzte N Einträge MIT Werten statt letzte 14 Tage komplett.
+    // So sehen die Mini-Charts auch dann gut aus wenn nur alle 3 Tage gegossen wird
+    // (sonst wären 10 von 14 Balken leer und das Chart sähe leer aus).
+    const N_TREND = 14;
     const phStats = [], ecStats = [];
-    for (let i = 13; i >= 0; i--) {
-      const d2 = isoPlus(today, -i);
+    // Iterate backwards through entries, collect last N with any pH/EC data
+    const allDates = Object.keys(S.entries).sort();
+    const phRecent = [], ecRecent = [];
+    for (let i = allDates.length - 1; i >= 0 && (phRecent.length < N_TREND || ecRecent.length < N_TREND); i--) {
+      const d2 = allDates[i];
       const cd2 = S.entries[d2]?.cycleData?.[c.id];
-      phStats.push(parseFloat(cd2?.ph) || 0);
-      ecStats.push(parseFloat(cd2?.ec) || 0);
+      if (!cd2) continue;
+      const phVal = parseFloat(cd2.ph) || 0;
+      const ecVal = parseFloat(cd2.ec) || 0;
+      if (phVal > 0 && phRecent.length < N_TREND) phRecent.unshift(phVal);
+      if (ecVal > 0 && ecRecent.length < N_TREND) ecRecent.unshift(ecVal);
     }
+    // Pad if fewer than N — fill front with zeros so chart-width stays stable
+    while (phRecent.length < N_TREND && phRecent.length > 0) phRecent.unshift(0);
+    while (ecRecent.length < N_TREND && ecRecent.length > 0) ecRecent.unshift(0);
+    phStats.push(...phRecent);
+    ecStats.push(...ecRecent);
     const hasPhData = phStats.some(v => v > 0);
     const hasEcData = ecStats.some(v => v > 0);
 
@@ -7874,19 +8166,19 @@ function renderDash() {
         ).join('')}</div>
       </div>` : ''}
       ${hasPhData && phStats.filter(v => v > 0).length >= 3 ? `<div style="display:flex;align-items:center;gap:8px">
-        <span style="font-size:10px;color:var(--text-hint);white-space:nowrap">14d pH</span>
-        <div class="mini-chart" style="flex:1">${phStats.map(v => {
+        <span style="font-size:10px;color:var(--text-hint);white-space:nowrap">pH ${phStats.filter(v=>v>0).length}×</span>
+        <div class="mini-chart" style="flex:1;background:rgba(0,0,0,0.25);border-radius:3px;padding:1px">${phStats.map(v => {
           const h = v > 0 ? Math.max(8, ((v - 5) / 2.5) * 100) : 2;
           const clr = v >= 6.2 && v <= 6.6 ? 'var(--green)' : v > 0 ? 'var(--orange)' : 'var(--border)';
-          return `<div class="mini-bar" style="height:${Math.min(100, h)}%;background:${clr}55"></div>`;
+          return `<div class="mini-bar" style="height:${Math.min(100, h)}%;background:${clr}"></div>`;
         }).join('')}</div>
       </div>` : ''}
       ${hasEcData && ecStats.filter(v => v > 0).length >= 3 ? `<div style="display:flex;align-items:center;gap:8px">
-        <span style="font-size:10px;color:var(--text-hint);white-space:nowrap">14d EC</span>
-        <div class="mini-chart" style="flex:1">${ecStats.map(v => {
+        <span style="font-size:10px;color:var(--text-hint);white-space:nowrap">EC ${ecStats.filter(v=>v>0).length}×</span>
+        <div class="mini-chart" style="flex:1;background:rgba(0,0,0,0.25);border-radius:3px;padding:1px">${ecStats.map(v => {
           const h = v > 0 ? Math.max(8, (v / 3) * 100) : 2;
           const clr = v > 2.5 ? 'var(--red)' : v > 0 ? 'var(--teal)' : 'var(--border)';
-          return `<div class="mini-bar" style="height:${Math.min(100, h)}%;background:${clr}55"></div>`;
+          return `<div class="mini-bar" style="height:${Math.min(100, h)}%;background:${clr}"></div>`;
         }).join('')}</div>
       </div>` : ''}
       `}
@@ -8075,6 +8367,13 @@ function renderCal() {
     }
 
     let bg = '#151515', border = 'transparent';
+    // PLAN vs EINGETRAGEN: Wenn ein Tag eine geplante Aktion hat (actionDay)
+    // aber noch KEINEN Eintrag, soll er deutlich dezenter aussehen — der User
+    // soll auf einen Blick sehen "das ist Plan, nicht erledigt". Eingetragene
+    // Tage (hasEntry) bekommen volle Card-Farbe, Plan-Tage nur 35% Opazität.
+    const isPlannedNotLogged = actionDay && !hasEntry;
+    const planAlpha = isPlannedNotLogged ? '22' : '77';   // Border-Alpha
+    const planBgFactor = isPlannedNotLogged ? 0.4 : 1.0;  // visuell dezenter
     if (isStart) { bg = '#1e1a04'; border = '#f0d050aa'; }
     else if (isTransplantDay) {
       // Auspflanz-Tag: warmes Orange-Gelb (Sonne)
@@ -8082,10 +8381,16 @@ function renderCal() {
     }
     else if (actionDay && ACT_COLORS[actionDay.a]) {
       // Use special color for key actions (ernte, spuelen, ice, trocknen)
-      bg = ACT_COLORS[actionDay.a].bg;
-      border = ACT_COLORS[actionDay.a].border;
+      bg = isPlannedNotLogged ? '#1a1a1a' : ACT_COLORS[actionDay.a].bg;
+      border = isPlannedNotLogged
+        ? ACT_COLORS[actionDay.a].border.replace(/88$/, '33')
+        : ACT_COLORS[actionDay.a].border;
     }
-    else if (actionDay) { const cl = col(actionDay.c); bg = cl.dk; border = cl.hex + '77'; }
+    else if (actionDay) {
+      const cl = col(actionDay.c);
+      bg = isPlannedNotLogged ? '#1a1a1a' : cl.dk;
+      border = cl.hex + planAlpha;
+    }
     else if (manualWaterDay) {
       // Outdoor-Manuell: User-Eintrag mit Wasser → wie normaler Gießtag dargestellt
       const cl = col(manualWaterDay.c); bg = cl.dk; border = cl.hex + '77';
@@ -8150,7 +8455,7 @@ function renderCal() {
       weatherHTML = `<span title="${wi.label} · ${wf.tmin}°–${wf.tmax}°C · ${wf.rain_sum}mm" style="position:absolute;top:1px;right:2px;font-size:10px;opacity:0.7;pointer-events:none;line-height:1">${wi.icon}${rainWarn}</span>`;
     }
 
-    cells += `<div class="cal-cell ${isToday ? 'today' : ''}" style="background:${bg};border-color:${border};position:relative"
+    cells += `<div class="cal-cell ${isToday ? 'today' : ''}" style="background:${bg};border-color:${border};position:relative${isPlannedNotLogged ? ';opacity:0.55' : ''}"
       onclick="calClick('${iso}')" oncontextmenu="return false" ontouchstart="lpS('${iso}',event)" ontouchend="lpE()" ontouchmove="lpE()">
       ${phaseMarkerHTML}
       ${weatherHTML}
@@ -8158,7 +8463,19 @@ function renderCal() {
       <span class="cal-num" ${isStart ? 'style="color:#f0d050;font-weight:800"' : ''}>${d}</span>
       ${phaseDay ? `<span class="cal-tag" style="color:${tagCol}">T${phaseDay.p.day}</span>` : 
         archInfo ? `<span class="cal-tag" style="color:${col(archInfo.c).hex}44;font-size:8px">T${archInfo.p.day}</span>` : ''}
-      ${hasEntry ? `<div class="cal-dot"></div>` : ''}
+      ${(() => {
+        // Zeige weißen Punkt wenn dieser Tag einen Eintrag hat — egal ob Tagebuch
+        // (cd.notes/water/etc) oder Plan-Notiz (S.planNotes via phaseDay).
+        // User sieht einheitlich: "hier ist was" — die Auto-Logik sortiert intern.
+        if (hasEntry) return `<div class="cal-dot"></div>`;
+        for (const c of act) {
+          const pd = getPhaseDayForIso(iso, c);
+          if (pd && getPlanNote(c.id, pd)) {
+            return `<div class="cal-dot"></div>`;
+          }
+        }
+        return '';
+      })()}
       ${multiCycleDotsHTML}
     </div>`;
   }
@@ -8391,6 +8708,11 @@ function showCtx(iso) {
         items.push(`<div class="ctx-item" style="color:var(--green);cursor:default;opacity:0.85">
           <span class="ctx-ic">✓</span>${s} Gegossen: ${cd.water} ml
         </div>`);
+        // Reset-Option: Eintrag zurücksetzen, wenn der User versehentlich was eingetragen
+        // hat oder neu testen will. Nur sichtbar wenn ein Eintrag existiert.
+        items.push(`<div class="ctx-item ctx-r" onclick="closeCtx();resetEntry('${c.id}','${iso}')">
+          <span class="ctx-ic">🗑</span>${s} Eintrag zurücksetzen
+        </div>`);
       }
     }
 
@@ -8536,6 +8858,12 @@ function doShift(cId, days, actionISO) {
 
   saveS();
   renderCal();
+  // Nach dem Render: cal-body zum Anfang scrollen, damit der User die volle Übersicht
+  // sieht (Phase-Bar, Wochentags-Header, alle Wochen). Sonst kann es sein dass durch
+  // den Re-Render die Scroll-Position so liegt, dass die ersten Tage abgeschnitten
+  // werden (Bug-Bericht "Layout zerstört nach Verschieben").
+  const calBody = document.getElementById('cal-body');
+  if (calBody) calBody.scrollTop = 0;
   vibrate();
   toast(days > 0 ? '→ Auf morgen verschoben' : '← Vorgezogen');
 }
@@ -8546,7 +8874,14 @@ function doShiftFromEntry(cId, days) {
   if (!c) return;
   const today = todayISO();
 
-  const actionDay = findNextActionDay(c, today);
+  // BUG-FIX: Vorher wurde `findNextActionDay(c, today)` verwendet — das suchte den
+  // nächsten Gießtag ab HEUTE und verschob den. Wenn der User aber im Eintrag eines
+  // späteren Gießtags steht (z.B. Tag 12.05) und auf "Verschieben" klickt, wurde
+  // ein ganz anderer Gießtag verschoben (irgendein zukünftiger ab heute), nicht der
+  // angesehene. Das hat das Raster total durcheinandergebracht.
+  // Korrekt: den aktuell offenen Tag (editISO) als Aktionstag nehmen — analog zu
+  // doShift() aus dem Kalender-Kontextmenü, wo der Aktionstag direkt übergeben wird.
+  const actionDay = editISO || findNextActionDay(c, today);
   if (!actionDay) { toast('⚠ Kein Gießtag gefunden'); return; }
 
   // Guard: Lock around topping
@@ -8567,6 +8902,34 @@ function doShiftFromEntry(cId, days) {
   vibrate();
   toast(days > 0 ? '→ Auf morgen verschoben' : '← Vorgezogen');
   if (editISO) renderEntry(editISO);
+}
+
+/**
+ * Setzt die Verschiebungs-Historie eines Zyklus zurück. Tageseinträge bleiben
+ * erhalten, aber alle "auf morgen verschoben"/"vorgezogen"-Offsets werden gelöscht.
+ * Nützlich wenn die Plan-Verschiebungen sich verzettelt haben (Doppel-T-Nummern,
+ * komische Sprünge im Raster) und der User einen sauberen Plan will ohne
+ * den ganzen Zyklus löschen zu müssen.
+ */
+async function resetOffsets(cId) {
+  const c = S.cycles.find(x => x.id === cId);
+  if (!c) return;
+  const count = (c.offsetHistory || []).length;
+  if (count === 0) { toast('Keine Verschiebungen vorhanden'); return; }
+  const ok = await customConfirm(
+    'Verschiebungen zurücksetzen?',
+    `${count} Verschiebung${count === 1 ? '' : 'en'} werden gelöscht. Tageseinträge (Wasser, pH, Notizen, Fotos) bleiben erhalten.`,
+    'Zurücksetzen',
+    'var(--orange)'
+  );
+  if (!ok) return;
+  c.offsetHistory = [];
+  c.skippedDays = [];
+  saveS();
+  vibrate(10);
+  toast(`✓ ${count} Verschiebung${count === 1 ? '' : 'en'} gelöscht`);
+  if (editISO) renderEntry(editISO);
+  if (tab === 'cal') renderCal();
 }
 
 /** Find the next action day from a given date (inclusive) */
@@ -8853,6 +9216,43 @@ function calcToppingOffset(c, toppingISO, pause) {
  * Einzelnen Gießtag entfernen (stumm schalten).
  * Das Raster bleibt komplett intakt – nur dieser eine Tag wird übersprungen.
  */
+/**
+ * Setzt einen einzelnen Tageseintrag für einen Zyklus zurück:
+ * Löscht Wasser, pH, EC, Dosen, Notizen, Fotos, Häkchen — alles für DIESEN Tag.
+ * Andere Zyklen am gleichen Tag bleiben unberührt. Plan-Markierungen (Sämling-
+ * Icon, Wassertropfen) bleiben sichtbar — die kommen aus dem Phasen-Plan.
+ *
+ * Genutzt für "ich hab versehentlich Werte eingetragen" oder "ich will diesen
+ * Tag neu testen". Bei Zustimmung wird der Eintrag direkt geleert.
+ */
+async function resetEntry(cId, iso) {
+  const c = S.cycles.find(x => x.id === cId);
+  if (!c) return;
+  const ok = await customConfirm(
+    `Eintrag zurücksetzen?`,
+    `Alle Werte dieses Zyklus für den ${fmtDE(iso)} (Wasser, pH, EC, Dosen, Fotos, Notizen) werden gelöscht. Gießtag-Plan bleibt erhalten.`,
+    'Zurücksetzen',
+    'var(--red)'
+  );
+  if (!ok) return;
+  if (S.entries[iso]?.cycleData?.[cId]) {
+    delete S.entries[iso].cycleData[cId];
+    // Wenn keine Daten mehr für andere Zyklen + keine Umgebung → ganzen Tag löschen
+    const e = S.entries[iso];
+    if (e && (!e.cycleData || Object.keys(e.cycleData).length === 0) && !e.temp && !e.humidity && !e.notes) {
+      delete S.entries[iso];
+    }
+  }
+  saveS();
+  vibrate(10);
+  toast('🗑 Eintrag zurückgesetzt');
+  if (editISO === iso) {
+    renderEntry(iso);
+  } else {
+    renderCal();
+  }
+}
+
 async function skipDay(cId, iso) {
   const c = S.cycles.find(x => x.id === cId);
   if (!c) return;
@@ -9937,6 +10337,14 @@ function updateMixInfo(val) {
 //  [SEKTION]: SETTINGS
 // =====================================================================
 function renderSet() {
+  // Auto-Scroll-Preservation: Aktuelle Scroll-Position lesen UND speichern, außer es
+  // wurde vorher explizit ein anderer Wert gesetzt (z.B. _setScrollY = 0 für "ganz nach oben").
+  // Reihenfolge: explizit gesetzter Wert hat Vorrang, sonst aktuelle Position übernehmen.
+  // So springt nichts mehr: jede Aktion (löschen, togglen, etc.) bleibt auf Stelle.
+  const _autoScrollEl = document.getElementById('set-body');
+  if (_autoScrollEl && _setScrollY === null) {
+    _setScrollY = _autoScrollEl.scrollTop;
+  }
   if (!selId && S.cycles.length > 0) selId = S.cycles[0].id;
   const sel = S.cycles.find(c => c.id === selId);
   if (sel && draft.id !== sel.id) draft = { ...sel };
@@ -9971,11 +10379,36 @@ function renderSet() {
   // Outdoor: hide IceFlush row (not used, only confuses)
   const durListAll = (sel && sel.growType === 'outdoor') ? allDurs.filter(d => d[1] !== 'iceDays') : allDurs;
   const durList = S.beginnerMode ? durListAll.slice(0, 2) : durListAll;
-  const durs = sel ? durList.map(([l, k, def]) =>
-    `<div class="dur-box"><div class="dur-lbl">${l}</div>
-      <input class="dur-inp" type="number" value="${d[k] !== undefined ? d[k] : def}" oninput="dd('${k}',this.value)"/>
-    </div>`
-  ).join('') : '';
+  // Bei Indoor-Fem mit gesetztem bloomStartDate: Anzucht wird datums-basiert
+  // berechnet (start → bloomStart), nicht aus anzuchtDays. Feld entsprechend
+  // deaktivieren damit der User nicht denkt sein 21-Tage-Wert hätte Wirkung.
+  // Auto-Pflanzen NICHT sperren — die haben keinen 12/12-Umschlag (auch wenn
+  // ein altes bloomStartDate aus früherer Fem-Einstellung noch im draft hängt).
+  const anzuchtLockedByBloomDate = sel && sel.growType !== 'outdoor' && d.seedType !== 'auto' && d.bloomStartDate;
+  const effectiveAnzucht = anzuchtLockedByBloomDate && d.startDate
+    ? Math.max(1, Math.round((iso12(d.bloomStartDate) - iso12(d.startDate)) / 86400000))
+    : null;
+
+  const durs = sel ? durList.map(([l, k, def]) => {
+    const isLocked = (k === 'anzuchtDays' && anzuchtLockedByBloomDate);
+    const displayValue = isLocked && effectiveAnzucht !== null
+      ? effectiveAnzucht
+      : (d[k] !== undefined ? d[k] : def);
+    if (isLocked) {
+      return `<div class="dur-box" style="opacity:0.5">
+        <div class="dur-lbl">${l} <span style="font-size:9px;color:var(--yellow)">🔒 auto</span></div>
+        <input class="dur-inp" type="number" value="${displayValue}" disabled style="cursor:not-allowed"/>
+      </div>`;
+    }
+    return `<div class="dur-box"><div class="dur-lbl">${l}</div>
+      <input class="dur-inp" type="number" value="${displayValue}" oninput="dd('${k}',this.value)"/>
+    </div>`;
+  }).join('') : '';
+
+  // Hinweistext unter den Phasendauern wenn anzucht gelockt ist
+  const anzuchtLockHint = anzuchtLockedByBloomDate
+    ? `<div style="font-size:10px;color:var(--text-hint);margin-top:6px;line-height:1.4">🔒 Anzucht-Dauer wird automatisch aus <b>Startdatum</b> und <b>Blüte-Start-Datum</b> berechnet (${effectiveAnzucht} Tage). Um manuell zu setzen: Blüte-Start-Datum oben auf "automatisch zurücksetzen".</div>`
+    : '';
 
   document.getElementById('set-body').innerHTML = `
     <!-- E5: MODUS-TOGGLE (ganz oben) -->
@@ -10017,6 +10450,21 @@ function renderSet() {
         <button id="add-cyc-btn" class="add-btn" onclick="openCycleWizard()">＋ Neu</button>
       </div>
       <div class="tab-row">${tabs}</div>
+      ${sel && sel.active && !sel.archived && sel.startDate ? (() => {
+        // BACKFILL-BANNER: Prominent direkt unter den Tabs wenn fehlende Gießtage existieren.
+        // Vorher war der Button ganz unten neben "Archivieren" — schwer zu finden.
+        // Hier ist er beim Anlegen eines neuen Zyklus die wichtigste Aktion.
+        const missing = countMissingPastWateringDays(sel);
+        if (missing === 0) return '';
+        return `<div style="background:linear-gradient(135deg,rgba(240,208,80,0.15),rgba(240,208,80,0.04));border:1px solid rgba(240,208,80,0.5);border-radius:12px;padding:12px 14px;margin-top:8px;display:flex;align-items:center;gap:10px">
+          <span style="font-size:24px;flex-shrink:0">🕐</span>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:13px;font-weight:700;color:var(--yellow)">${missing} Gießtage seit Start fehlen</div>
+            <div style="font-size:11px;color:var(--text-muted);line-height:1.4;margin-top:2px">Trage sie automatisch ein damit Charts und Statistiken vollständig sind.</div>
+          </div>
+          <button onclick="backfillPast('${sel.id}')" style="background:var(--yellow);border:none;color:#000;font-size:11px;padding:8px 12px;border-radius:8px;cursor:pointer;font-family:var(--font);font-weight:700;white-space:nowrap;flex-shrink:0">Auto-eintragen</button>
+        </div>`;
+      })() : ''}
       ${sel ? `
         <div style="display:flex;flex-direction:column;gap:10px;margin-top:4px">
 
@@ -10058,6 +10506,22 @@ function renderSet() {
             <div style="font-size:10px;color:var(--teal);line-height:1.4;padding:4px 4px 0">☀️ Outdoor: VPD-Warnungen, 12/12-Reminder und IceFlush ausgeblendet. ${(d.seedType||'').indexOf('auto')>=0 ? 'Autos zählen Tage unabhängig von der Sonnenwende.' : 'Blüte startet automatisch bei Sonnenwende oder nach 6 Wochen Vegi — je nachdem was später kommt.'}</div>
           ` : ''}
 
+          <!-- GRUPPE: Pflanzenzahl -->
+          <div class="sub-head" style="margin-top:8px">🌱 Anzahl Pflanzen</div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <button onclick="_setScrollY=document.getElementById('set-body').scrollTop;dd('plantCount',Math.max(1,(parseInt(draft.plantCount)||1)-1));renderSet()" style="width:36px;height:36px;border-radius:8px;background:var(--card2);border:0.5px solid var(--border);color:var(--text);font-size:18px;cursor:pointer;font-family:var(--mono)">−</button>
+            <input type="number" min="1" max="50" value="${d.plantCount || 1}" oninput="dd('plantCount',Math.max(1,parseInt(this.value)||1))" onchange="_setScrollY=document.getElementById('set-body').scrollTop;renderSet()" style="flex:1;text-align:center;background:var(--card2);border:0.5px solid var(--border);border-radius:8px;padding:8px;color:var(--text);font-size:18px;font-weight:600;font-family:var(--mono);outline:none"/>
+            <button onclick="_setScrollY=document.getElementById('set-body').scrollTop;dd('plantCount',Math.min(50,(parseInt(draft.plantCount)||1)+1));renderSet()" style="width:36px;height:36px;border-radius:8px;background:var(--card2);border:0.5px solid var(--border);color:var(--text);font-size:18px;cursor:pointer;font-family:var(--mono)">+</button>
+            <span style="font-size:12px;color:var(--text-muted);min-width:60px">Pflanzen</span>
+          </div>
+          <label style="display:flex;align-items:center;gap:8px;padding:8px 4px;cursor:pointer;font-size:12px;color:var(--text-sub)">
+            <input type="checkbox" ${d.scaleByPlants !== false ? 'checked' : ''} onchange="_setScrollY=document.getElementById('set-body').scrollTop;dd('scaleByPlants',this.checked);renderSet()" style="width:16px;height:16px;cursor:pointer"/>
+            <span>Mengen × Pflanzenzahl rechnen</span>
+          </label>
+          <div style="font-size:10px;color:var(--text-hint);line-height:1.45;padding:0 4px 4px">${d.scaleByPlants !== false
+            ? `<b style="color:var(--green)">Aktiv:</b> Wassermenge wird automatisch ×${d.plantCount || 1} gerechnet. Düngerdosen folgen mit (weil sie pro Liter Wasser sind). Beispiel: 50 ml/Pflanze × ${d.plantCount || 1} = ${50 * (parseInt(d.plantCount) || 1)} ml total.`
+            : `<b style="color:var(--text-muted)">Aus:</b> Vorschläge bleiben pro Pflanze — du rechnest die Gesamtmenge selbst.`}</div>
+
           <!-- GRUPPE: Düngeplan-Zuweisung -->
           <div class="sub-head" style="margin-top:8px">🧪 Düngeplan</div>
           ${(() => {
@@ -10081,7 +10545,7 @@ function renderSet() {
           <div style="display:flex;gap:8px">
             <div class="inp-wrap" style="flex:1">
               <div class="inp-label">Samentyp</div>
-              <select id="cyc-seed-select" class="inp-field" style="cursor:pointer" onchange="dd('seedType',this.value);renderSet()">
+              <select id="cyc-seed-select" class="inp-field" style="cursor:pointer" onchange="_onSeedTypeChange(this.value)">
                 <option value="fem" ${d.seedType==='fem'?'selected':''}>♀ Feminisiert</option>
                 <option value="auto" ${d.seedType==='auto'?'selected':''}>⚡ Automatic</option>
                 ${S.beginnerMode && d.seedType !== 'reg' ? '' : `<option value="reg" ${d.seedType==='reg'?'selected':''}>♀♂ Regulär</option>`}
@@ -10168,13 +10632,14 @@ function renderSet() {
                 </div>
                 ${!sel.active ? '<div style="font-size:10px;color:var(--text-muted);margin-top:2px">Deaktiviert — wird beim Speichern automatisch aktiviert</div>' : ''}
               </div>
-              <label class="sw"><input type="checkbox" ${sel.active ? 'checked' : ''} onchange="toggleAct('${sel.id}',this.checked)"/><span class="sl"></span></label>
+              <label class="sw"><input type="checkbox" ${sel.active ? 'checked' : ''} onchange="_setScrollY=document.getElementById('set-body').scrollTop;toggleAct('${sel.id}',this.checked)"/><span class="sl"></span></label>
             </div>
           </div>
 
           <!-- GRUPPE: Phasen & Intervalle -->
           <div class="sub-head" style="margin-top:4px">📅 Phasendauern (Tage)</div>
           <div class="dur-grid">${durs}</div>
+          ${anzuchtLockHint}
           ${S.beginnerMode ? '' : `
           <div class="sub-head">💧 Gießintervall (alle X Tage)</div>
           <div class="dur-grid">
@@ -10192,23 +10657,21 @@ function renderSet() {
           ${(() => {
             // Save-Button nur anzeigen wenn draft tatsächlich vom gespeicherten Zyklus abweicht.
             // So sieht der Anfänger keinen riesigen "Speichern"-Button wenn es nichts zu speichern gibt.
+            // WICHTIG: Wrapper hat ID damit dd() den Bereich live updaten kann (sonst sieht der User
+            // den Save-Button nicht erscheinen wenn er Werte ändert — er müsste raus & rein).
             const isDirty = sel && Object.keys(draft).some(k => {
-              // ID ignorieren, interne Felder ignorieren
               if (k === 'id' || k.startsWith('_')) return false;
               return JSON.stringify(draft[k]) !== JSON.stringify(sel[k]);
             });
-            if (isDirty) {
-              return `<button class="sav-btn" style="background:${cl.hex};margin-top:8px" onclick="saveDraft()">💾 Änderungen sichern</button>`;
-            }
-            // Gespeichert-Indikator (dezent, informativ)
-            return `<div style="margin-top:8px;padding:8px 12px;background:rgba(76,175,112,0.06);border:0.5px solid rgba(76,175,112,0.2);border-radius:10px;font-size:11px;color:var(--text-muted);text-align:center">✓ Alle Änderungen gespeichert</div>`;
+            const inner = isDirty
+              ? `<button class="sav-btn" style="background:${cl.hex};margin-top:8px" onclick="saveDraft()">💾 Änderungen sichern</button>`
+              : `<div style="margin-top:8px;padding:8px 12px;background:rgba(76,175,112,0.06);border:0.5px solid rgba(76,175,112,0.2);border-radius:10px;font-size:11px;color:var(--text-muted);text-align:center">✓ Alle Änderungen gespeichert</div>`;
+            return `<div id="cyc-save-zone">${inner}</div>`;
           })()}
           ${(() => {
-            // Backfill-Button: only if active, started in the past, and has missing past watering entries
-            if (!sel.active || sel.archived || !sel.startDate) return '';
-            const missing = countMissingPastWateringDays(sel);
-            if (missing === 0) return '';
-            return `<button onclick="backfillPast('${sel.id}')" style="width:100%;background:rgba(240,208,80,0.08);border:0.5px solid rgba(240,208,80,0.3);border-radius:10px;padding:10px;font-size:13px;color:var(--yellow);cursor:pointer;font-family:var(--font);margin-top:4px">🕐 Vergangene Gießtage auto-eintragen (${missing})</button>`;
+            // Backfill-Button wurde nach oben in den Banner verschoben — siehe Top der
+            // Settings-Sektion. Hier nichts mehr rendern.
+            return '';
           })()}
           ${(() => {
             // ZEITRAFFER/COLLAGE-EXPORT (Phase 5 Schritt 1):
@@ -10400,7 +10863,7 @@ function renderSet() {
         </div>
         <span style="color:var(--text-muted)">›</span>
       </div>
-      ${S._disclaimerAcceptedAt ? `<div style="font-size:10px;color:var(--text-hint);text-align:center;padding:2px">✓ Angenommen am ${fmtDE(new Date(S._disclaimerAcceptedAt).toISOString().split('T')[0], { day:'2-digit', month:'long', year:'numeric' })}</div>` : ''}
+      ${S._disclaimerAcceptedAt ? `<div style="font-size:10px;color:var(--text-hint);text-align:center;padding:2px">✓ Angenommen am ${fmtDE(_localISO(new Date(S._disclaimerAcceptedAt)), { day:'2-digit', month:'long', year:'numeric' })}</div>` : ''}
     </div>
     `}
 
@@ -10490,18 +10953,60 @@ function renderSet() {
     </div>
     `}
 
-    <div style="text-align:center;padding:16px 0;font-size:11px;color:var(--text-hint)">GrowSmart v0.9.0 🌱</div>
+    <div style="text-align:center;padding:16px 0;font-size:11px;color:var(--text-hint)">GrowSmart ${APP_VERSION} 🌱</div>
     <div style="height:20px"></div>`;
 
   // Restore scroll position (goTo handles scroll-to-top on tab switch)
+  // Nach dem Restore _setScrollY auf null setzen, damit der nächste renderSet()
+  // wieder die *aktuelle* Position liest. So bleibt das Verhalten konsistent auch
+  // wenn der User zwischen Aktionen scrollt.
   const scr = document.getElementById('set-body');
-  if (scr && _setScrollY !== null) scr.scrollTop = _setScrollY;
+  if (scr && _setScrollY !== null) {
+    scr.scrollTop = _setScrollY;
+    _setScrollY = null;
+  }
 }
 
-function dd(k, v) { draft[k] = isNaN(v) || v === '' ? v : Number(v); }
+function dd(k, v) {
+  draft[k] = isNaN(v) || v === '' ? v : Number(v);
+  // Save-Zone live aktualisieren — sonst sieht der User den "Sichern"-Button erst
+  // nach Tab-Wechsel (Bug "muss raus und rein"). Targeted-Update statt renderSet()
+  // damit Eingabefokus erhalten bleibt.
+  _refreshSaveZone();
+}
 function ddS(k, v) { draft[k] = v; renderSet(); }
 
-function saveDraft() {
+/**
+ * Samentyp-Wechsel mit Aufräum-Logik:
+ * - Beim Wechsel auf Auto wird bloomStartDate entfernt (Auto blüht automatisch,
+ *   keine 12/12-Umstellung). Sonst bliebe das Feld gesetzt und würde Anzucht
+ *   sperren obwohl es bei Auto keine Wirkung hat (User-Bug-Report).
+ */
+function _onSeedTypeChange(value) {
+  draft.seedType = value;
+  if (value === 'auto' && draft.bloomStartDate) {
+    draft.bloomStartDate = '';
+  }
+  renderSet();
+}
+
+/** Aktualisiert nur den Save-Button/Indicator-Bereich der Settings-Seite. */
+function _refreshSaveZone() {
+  const zone = document.getElementById('cyc-save-zone');
+  if (!zone) return;
+  const sel = S.cycles.find(c => c.id === selId);
+  if (!sel) return;
+  const cl = sel.colorId ? COLORS.find(x => x.id === sel.colorId) || COLORS[0] : COLORS[0];
+  const isDirty = Object.keys(draft).some(k => {
+    if (k === 'id' || k.startsWith('_')) return false;
+    return JSON.stringify(draft[k]) !== JSON.stringify(sel[k]);
+  });
+  zone.innerHTML = isDirty
+    ? `<button class="sav-btn" style="background:${cl.hex};margin-top:8px" onclick="saveDraft()">💾 Änderungen sichern</button>`
+    : `<div style="margin-top:8px;padding:8px 12px;background:rgba(76,175,112,0.06);border:0.5px solid rgba(76,175,112,0.2);border-radius:10px;font-size:11px;color:var(--text-muted);text-align:center">✓ Alle Änderungen gespeichert</div>`;
+}
+
+async function saveDraft() {
   const c = S.cycles.find(x => x.id === selId);
   if (!c) return;
 
@@ -10530,6 +11035,30 @@ function saveDraft() {
         S.entries[nd].cycleData[c.id] = data;
       });
     }
+  }
+
+  // Phasen-Dauer-Änderung erkennen: warnt wenn Plan-Notizen existieren die
+  // potentiell in einer anderen Phase landen als ursprünglich gemeint.
+  // Intervalländerungen sind harmlos (Phase-Tage bleiben), Dauer-Änderungen
+  // (anzuchtDays etc) verschieben aber die Phasen-Zuordnung.
+  const phaseDurFields = ['anzuchtDays','bloomDays','flushDays','iceDays','harvestDays','dryDays'];
+  const phaseDurChanged = phaseDurFields.some(f => {
+    // Nur dann als "geändert" zählen wenn das Feld im draft existiert UND vom alten Wert abweicht.
+    // Sonst würde ein undefined-Wert vs Default-Wert immer als Änderung interpretiert (Bug-Fix).
+    if (draft[f] === undefined || draft[f] === null) return false;
+    const oldVal = c[f] === undefined ? PHASE_DEFAULTS[f] : c[f];
+    const newVal = draft[f];
+    return Number(oldVal) !== Number(newVal);
+  });
+  const planNotesForCycle = (S.planNotes && S.planNotes[c.id]) || {};
+  const planNoteCount = Object.keys(planNotesForCycle).length;
+  if (phaseDurChanged && planNoteCount > 0) {
+    const ok = await customConfirm(
+      '⚠ Phasen-Dauer wird geändert',
+      `Du hast ${planNoteCount} Plan-Notiz${planNoteCount === 1 ? '' : 'en'} für diesen Zyklus. Die Notizen bleiben am gleichen Plan-Tag — aber die Phase, der sie zugeordnet sind, kann sich verschieben.\n\nBeispiel: Eine Notiz "An Tag 25 Topping" lag bisher in der Blüte. Wenn du jetzt die Anzucht von 21 auf 30 Tage verlängerst, ist Tag 25 plötzlich noch Anzucht.\n\nÄnderung trotzdem speichern?`,
+      'Ja, ändern', 'var(--orange)'
+    );
+    if (!ok) return;
   }
 
   Object.assign(c, { ...draft, id: c.id });
@@ -10825,6 +11354,16 @@ function _renderWelcome() {
         Erstmal nur gucken →
       </button>
 
+      ${(S.cycles && S.cycles.length > 0) ? `
+        <div style="margin-top:16px;padding:12px 14px;background:rgba(232,136,74,0.06);border:0.5px solid rgba(232,136,74,0.25);border-radius:10px">
+          <div style="font-size:11px;color:var(--orange);font-weight:600;margin-bottom:4px">⚠ ${S.cycles.length} alte${S.cycles.length === 1 ? 'r' : ''} Zyklus${S.cycles.length === 1 ? '' : ' (' + S.cycles.length + ')'} gefunden</div>
+          <div style="font-size:10px;color:var(--text-muted);line-height:1.5;margin-bottom:8px">${S.cycles.map(c => c.name).join(', ')}</div>
+          <button onclick="welcomeFactoryReset()" style="width:100%;background:var(--surface);border:0.5px solid rgba(224,96,96,0.3);border-radius:8px;padding:9px 12px;font-size:11px;color:var(--red);cursor:pointer;font-family:var(--font);font-weight:600">
+            🧹 Alle Zyklen löschen & frisch starten
+          </button>
+        </div>
+      ` : ''}
+
       <div style="font-size:10px;color:var(--text-hint);text-align:center;margin-top:28px;line-height:1.5;padding:0 20px">
         Alle Daten bleiben auf deinem Gerät. Keine Anmeldung, kein Cloud-Zwang, keine Werbung.
       </div>
@@ -10844,6 +11383,34 @@ function welcomeSkip() {
 }
 
 /**
+ * Werks-Reset: löscht alle Zyklen + Einträge, behält aber globale Settings
+ * (Profi-Modus, Theme, Düngerprodukte). Für User die "frisch starten" wollen
+ * weil sie die App nur mal getestet haben.
+ *
+ * Aufruf vom Welcome-Screen wenn alte Zyklen erkannt wurden.
+ */
+async function welcomeFactoryReset() {
+  const ok = await customConfirm(
+    'Wirklich alle Zyklen löschen?',
+    `Alle ${S.cycles.length} Zyklen, alle Tageseinträge, Notizen und Fotos werden unwiderruflich gelöscht. Düngerprodukte und globale Einstellungen bleiben erhalten.`,
+    'Alles löschen',
+    'var(--red)'
+  );
+  if (!ok) return;
+  S.cycles = [];
+  S.entries = {};
+  // Welcome NICHT als gesehen markieren — der User soll wieder den Wizard durchlaufen
+  S._welcomeSeen = false;
+  // Selektion zurücksetzen
+  selId = null;
+  draft = {};
+  saveS();
+  toast('🧹 Alle Zyklen entfernt — frischer Start');
+  // Welcome-Screen neu rendern damit die Banner-Box weg ist
+  showWelcome();
+}
+
+/**
  * Legt einen vollständigen Demo-Zyklus an — damit der User sofort sieht wie die App
  * mit echten Daten aussieht. Der Zyklus ist klar als "Demo" markiert, so dass der
  * User ihn später einfach löschen oder ersetzen kann.
@@ -10852,6 +11419,60 @@ function welcomeSkip() {
  * Erkennt einen Demo-Zyklus an seinem Namen. Der Demo-Zyklus wird von
  * welcomeStartDemo() mit einem festen Namen angelegt.
  */
+/**
+ * Demo-Zyklus auf "heute" rollen wenn er veraltet ist.
+ * Der Demo soll immer den aktuellen Lebenszyklus zeigen (heute = Tag 61, also
+ * Spülphase). Wenn der User die App nach Wochen/Monaten wieder öffnet, wäre der
+ * gespeicherte Demo-Zyklus aber noch mit altem Datum — und stünde z.B. längst
+ * "in der Vergangenheit". Diese Funktion erkennt das und regeneriert den Demo
+ * komplett, wenn er mehr als 3 Tage vom optimalen Datum (heute - 60d) abweicht.
+ *
+ * Wird beim App-Start aufgerufen (nach loadS) — vor dem Render. Falls kein
+ * Demo-Zyklus existiert, passiert nichts.
+ */
+function _refreshDemoIfStale() {
+  const demoCyc = (S.cycles || []).find(c => isDemoCycle(c) && !c.archived);
+  if (!demoCyc || !demoCyc.startDate) return false;
+
+  // Soll-Startdatum: heute minus 60 Tage
+  const target = new Date();
+  target.setDate(target.getDate() - 60);
+  const targetISO = _localISO(target);
+
+  // Wie weit weicht das aktuelle Startdatum ab?
+  const diffDays = Math.abs(isoDiff(demoCyc.startDate, targetISO));
+  if (diffDays <= 3) return false;  // Noch frisch genug, nichts tun
+
+  // Veraltet → kompletten Demo refreshen.
+  // 1) Alle Einträge des Demo-Zyklus löschen
+  const demoId = demoCyc.id;
+  Object.keys(S.entries).forEach(iso => {
+    const ent = S.entries[iso];
+    if (ent?.cycleData?.[demoId]) {
+      delete ent.cycleData[demoId];
+      // Wenn das der einzige Zyklus an diesem Tag war, kompletten Tag entfernen
+      if (Object.keys(ent.cycleData).length === 0 && !ent.notes && !ent.temp && !ent.humidity) {
+        delete S.entries[iso];
+      }
+    }
+  });
+  // 2) Plan-Notizen für Demo-Zyklus löschen
+  if (S.planNotes && S.planNotes[demoId]) delete S.planNotes[demoId];
+  // 3) Demo-Zyklus selbst entfernen
+  S.cycles = S.cycles.filter(c => c.id !== demoId);
+
+  // 4) Frisch neu laden — welcomeStartDemo() legt Zyklus + Einträge neu an mit
+  //    aktuellem Datum. Wir setzen _welcomeSeen damit der Welcome-Screen nicht
+  //    nochmal erscheint und den Disclaimer-Status nicht zurücksetzen.
+  const wasSeen = S._welcomeSeen;
+  const wasDisclaimer = S._disclaimerAcceptedAt;
+  welcomeStartDemo();
+  S._welcomeSeen = wasSeen;
+  if (wasDisclaimer) S._disclaimerAcceptedAt = wasDisclaimer;
+  saveS();
+  return true;
+}
+
 function isDemoCycle(c) {
   return c && typeof c.name === 'string' && c.name.startsWith('Demo-Zyklus');
 }
@@ -10927,6 +11548,11 @@ async function endDemoMode() {
 function welcomeStartDemo() {
   S._welcomeSeen = true;
 
+  // Demo zeigt Profi-Modus standardmäßig — der Anfänger-Modus versteckt zu viele
+  // Features (nur Anzucht+Blüte sichtbar, vereinfachte UI), aber im Demo soll der
+  // User die volle App sehen können um zu entscheiden ob sie für ihn passt.
+  S.beginnerMode = false;
+
   // Start-Datum: heute minus 60 Tage (~8,5 Wochen).
   // Das deckt den kompletten Auto-Lebenszyklus ab:
   //  Tag 1-21:  Anzucht (Keimung → Sämling → frühe Vegetation)
@@ -10938,7 +11564,7 @@ function welcomeStartDemo() {
   // So sieht der User ALLE Phasen + Features der App auf einmal in Aktion.
   const demoStart = new Date();
   demoStart.setDate(demoStart.getDate() - 60);
-  const demoStartISO = demoStart.toISOString().split('T')[0];
+  const demoStartISO = _localISO(demoStart);
 
   // Falls noch kein Düngeplan existiert: BioBizz Master (Cup-Niveau) Vorlage anlegen
   // Master statt Light, damit die Demo den Profi-Plan zeigt mit allen Features.
@@ -10974,7 +11600,7 @@ function welcomeStartDemo() {
   // Topping-Datum: Tag 22 (38 Tage vor heute)
   const toppingDate = new Date(demoStart);
   toppingDate.setDate(toppingDate.getDate() + 21);  // Tag 22
-  const toppingISO = toppingDate.toISOString().split('T')[0];
+  const toppingISO = _localISO(toppingDate);
 
   // Demo-Zyklus anlegen — ein Auto-Zyklus mit Standard-Phasen-Längen
   // (21 Anzucht + 35 Blüte + 3 Flush + 1 Ice + 1 Ernte + 7 Trocknen = 68 Tage gesamt)
@@ -11057,7 +11683,7 @@ function welcomeStartDemo() {
 
     const d = new Date(demoStart);
     d.setDate(d.getDate() + dayNum - 1);
-    const iso = d.toISOString().split('T')[0];
+    const iso = _localISO(d);
 
     if (!S.entries[iso]) S.entries[iso] = {};
     const ent = S.entries[iso];
@@ -11084,11 +11710,27 @@ function welcomeStartDemo() {
     ent.temp = (tempBase + ((dayNum * 7) % 5) * 0.3).toFixed(1);
     ent.humidity = String(rhBase + ((dayNum * 3) % 6));
 
-    // Dünger-Dosen aus Wochenplan
+    // Dünger-Dosen aus Wochenplan + automatisch alle als "erledigt" markieren
+    // (Demo-Tage sind in der Vergangenheit, also abgearbeitet — visuell als ✓ statt ○)
     if (dayNum >= 8) {
       const week = Math.max(1, Math.min(Math.ceil(dayNum / 7), 12));
       const weekSched = sched['w' + week] || {};
       cd.doses = { ...weekSched };
+      cd.mixChecks = {};
+      Object.keys(weekSched).forEach(prodId => {
+        if (weekSched[prodId] > 0) cd.mixChecks[prodId] = true;
+      });
+    }
+    // Runoff pH/EC für realistische Drift-Visualisierung
+    const inputPh = parseFloat(cd.ph);
+    if (!isNaN(inputPh)) {
+      const phDrift = ((dayNum * 13) % 5 - 2) * 0.05;
+      cd.runoffPh = (inputPh + phDrift - 0.05).toFixed(1);
+    }
+    const inputEc = parseFloat(cd.ec);
+    if (!isNaN(inputEc) && inputEc > 0) {
+      const ecDrift = ((dayNum * 7) % 4 - 1) * 0.1;
+      cd.runoffEc = Math.max(0.1, inputEc + ecDrift + 0.1).toFixed(1);
     }
   }
 
@@ -11114,7 +11756,7 @@ function welcomeStartDemo() {
   Object.entries(notes).forEach(([dayNum, note]) => {
     const d = new Date(demoStart);
     d.setDate(d.getDate() + parseInt(dayNum) - 1);
-    const iso = d.toISOString().split('T')[0];
+    const iso = _localISO(d);
     if (!S.entries[iso]) S.entries[iso] = {};
     if (!S.entries[iso].cycleData) S.entries[iso].cycleData = {};
     if (!S.entries[iso].cycleData[cycleId]) {
@@ -11125,7 +11767,7 @@ function welcomeStartDemo() {
 
   saveS();
   goTo('dash');
-  toast('🎓 Demo-Zyklus (60 Tage, komplett ausgefüllt) angelegt — löschbar wenn du magst.');
+  toast('🎓 Demo-Zyklus angelegt (60 Tage)');
 }
 
 
@@ -11189,7 +11831,21 @@ function closeWizard() {
 }
 
 /** Profi-Bypass: direkt ins klassische Formular, Zyklus sofort anlegen */
-function skipToExpertForm() {
+async function skipToExpertForm() {
+  // Wenn schon Zyklen existieren, den User fragen ob wirklich ein neuer Zyklus
+  // angelegt werden soll. Sonst entstehen versehentlich "Zyklus 2", "Zyklus 3"
+  // Doppel-Einträge die der User nicht haben wollte.
+  if ((S.cycles || []).length > 0) {
+    const ok = await customConfirm(
+      'Neuen Zyklus anlegen?',
+      `Du hast bereits ${S.cycles.length} Zyklus${S.cycles.length === 1 ? '' : ', '}: ${S.cycles.map(c => c.name).join(', ')}.\n\nSoll trotzdem ein neuer leerer Zyklus angelegt werden?`,
+      'Neuen anlegen'
+    );
+    if (!ok) {
+      closeWizard();
+      return;
+    }
+  }
   closeWizard();
   addCyc();
 }
@@ -11565,7 +12221,7 @@ function _wizStepNameSummary(a) {
           // Falls Keimung sehr früh im Jahr (z.B. Februar): erst nach Eisheiligen raus
           const eisheiligen = new Date(sd.getFullYear(), 4, 15, 12); // 15. Mai
           if (defTP < eisheiligen && sd < eisheiligen) defTP.setTime(eisheiligen.getTime());
-          const defISO = defTP.toISOString().split('T')[0];
+          const defISO = _localISO(defTP);
           const cur = a.transplantDate || defISO;
           return `
             <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:4px 0">
@@ -11629,7 +12285,7 @@ function _wizResolveStartDate(a) {
     // 3 Wochen zurück als Standard-Annahme für vorgezogene Pflanzen
     const d = new Date();
     d.setDate(d.getDate() - 21);
-    return { date: d.toISOString().split('T')[0], note: 'Vor 3 Wochen (anpassbar)' };
+    return { date: _localISO(d), note: 'Vor 3 Wochen (anpassbar)' };
   }
   if (a.startOption === 'later') {
     return { date: todayISO(), note: 'Manuell anpassen' };
@@ -11802,14 +12458,23 @@ function addCyc(overrides) {
     // Outdoor-Photoperiode: wann geht die Pflanze raus (nach Eisheiligen typisch)
     // Wenn gesetzt, teilt die App die Vegi-Zeit in Vorzucht/Abhärten/Wachstum-draußen auf.
     transplantDate: o.transplantDate || null,
-    // RESTGEWICHT-MODUL: Default 'off' (Fallback-Modus). User aktiviert den
-    // Modus bewusst in den Zyklus-Einstellungen oder im ersten Entry.
-    weightMode: o.weightMode || 'off',
+    // RESTGEWICHT-MODUL: Default 'lift' (Hebe-Test) — der ist sofort einsatzbereit
+    // ohne Setup und macht Bewässerungs-Entscheidungen deutlich präziser als
+    // die reine biophysikalische Schätzung. User kann auf Waage upgraden oder
+    // ganz abschalten.
+    weightMode: o.weightMode || 'lift',
     saturatedWeight: o.saturatedWeight || null,
     dryWeight: o.dryWeight || null,
     // v0.9: inherit the plan that's currently active in the Dünger screen.
     // If none exists, falls back to first plan. If no plans at all → null (user assigns later).
     fertPlanId: o.fertPlanId !== undefined ? o.fertPlanId : (S._activePlanId || (S.fertPlans && S.fertPlans[0]?.id) || null),
+    // PFLANZENZAHL: Wie viele Pflanzen sind in diesem Zyklus? Default 1.
+    // scaleByPlants: Wenn aktiv, multipliziert die App alle Mengen-Vorschläge
+    // (Wassermenge, Düngerdosen) automatisch mit der Pflanzenzahl. Wenn aus,
+    // bleibt der Vorschlag pro-Pflanze und der User rechnet selbst.
+    // Beide Felder sind im Eintrag pro-Tag überschreibbar (cd.plantCount).
+    plantCount: o.plantCount || 1,
+    scaleByPlants: o.scaleByPlants !== undefined ? o.scaleByPlants : true,
   };
   // Pot size: if wizard supplied one, save globally (TODO: per-cycle field in later iteration)
   if (o.potSize) S.potSize = o.potSize;
@@ -11921,7 +12586,7 @@ async function backfillPast(id) {
   if (missing === 0) return;
   const ok = await customConfirm(
     `🕐 ${missing} vergangene Gießtage auto-eintragen?`,
-    `Wasser, pH 6.4 und Plan-Dünger werden für ${missing} Gießtage zwischen ${fmtDE(c.startDate, {day:'2-digit',month:'short'})} und heute eingetragen. Bestehende Einträge bleiben unverändert.`,
+    `Wasser, pH (6.2-6.5), EC, Plan-Dünger sowie Temp/RLF passend zur Phase werden für ${missing} Gießtage zwischen ${fmtDE(c.startDate, {day:'2-digit',month:'short'})} und heute eingetragen. Bestehende Einträge bleiben unverändert.`,
     'Auto-eintragen', 'var(--yellow)'
   );
   if (!ok) return;
@@ -11954,21 +12619,66 @@ async function backfillPast(id) {
           
           const waterMl = waterSuggestion(c, p);
           cd.water = String(waterMl);
-          cd.ph = '6.4';
+          // pH leicht variieren um realistische Charts zu produzieren statt
+          // einer flachen Linie auf 6.4. Tag-basierte Pseudo-Variation
+          // zwischen 6.2 und 6.5 — typischer Bereich eines guten Growers.
+          const phVariation = [6.3, 6.4, 6.2, 6.4, 6.3, 6.5, 6.3, 6.4, 6.2, 6.4];
+          const dayIdx = isoDiff(iter, c.startDate);
+          cd.ph = String(phVariation[dayIdx % phVariation.length]);
+          // EC: phasen-spezifisch nach typischem Düngeschema. Auch in früher
+          // Anzucht setzen wir einen Mini-Wert (0.4) statt komplett leer zu lassen,
+          // sonst sehen die Trend-Charts unvollständig aus.
+          const ecForPhase = (() => {
+            if (p.ph === 'anzucht' && dayIdx <= 7) return '0.4';   // Sämling: minimal
+            if (p.ph === 'anzucht') return (0.8 + (dayIdx - 7) * 0.04).toFixed(1);
+            if (p.ph === 'bloom') {
+              const wk = Math.min(p.week || 1, 8);
+              return (1.4 + wk * 0.08).toFixed(1);  // Wo1: 1.5 → Wo8: 2.0
+            }
+            if (p.ph === 'flush') return (1.0 - (p.day || 1) * 0.1).toFixed(1);  // Flush rampt runter
+            if (p.ph === 'ice') return '0.4';
+            return '1.5';
+          })();
+          if (ecForPhase) cd.ec = ecForPhase;
           // Only fertilizers on normal watering days
           if (a === 'giess' || a === 'giess_anz') {
             const doses = getWeekDoses(c.id, fertWk, c);
+            // mixChecks: Bei Backfill markieren wir alle Dünger als "erledigt" — das macht
+            // die Mischreihenfolge optisch komplett (Häkchen statt Kreise) und entspricht
+            // der Realität: ein abgeschlossener vergangener Tag ist abgearbeitet.
+            if (!cd.mixChecks) cd.mixChecks = {};
             Object.entries(doses).forEach(([prodId, plan]) => {
               if (plan > 0) {
                 const prod = (S.products || []).find(p => p.id === prodId);
                 cd.doses[prodId] = calcDose(plan, waterMl, prod?.unit);
+                cd.mixChecks[prodId] = true;
               }
             });
           }
-          // Environment: only set if still empty
+          // Runoff pH/EC: Input-Werte minimal versetzt simulieren — Drift gehört zum
+          // realen Grow dazu. Runoff-pH meist 0.1-0.2 niedriger als Input (Erde säuert),
+          // Runoff-EC meist gleich oder leicht höher (Salze sammeln sich).
+          // So sehen die Drift-Diagramme später auch was und der User lernt das Konzept.
+          const inputPh = parseFloat(cd.ph);
+          if (!isNaN(inputPh)) {
+            const phDrift = ((dayIdx * 13) % 5 - 2) * 0.05;  // -0.10 bis +0.10
+            cd.runoffPh = (inputPh + phDrift - 0.05).toFixed(1);
+          }
+          const inputEc = parseFloat(cd.ec);
+          if (!isNaN(inputEc) && inputEc > 0) {
+            const ecDrift = ((dayIdx * 7) % 4 - 1) * 0.1;  // -0.1 bis +0.2
+            cd.runoffEc = Math.max(0.1, inputEc + ecDrift + 0.1).toFixed(1);
+          }
+          // Environment: phasen-spezifisch via getPhaseTargets — nimmt Mitte des
+          // Zielbereichs. Ergibt für Sämling 24°C/70%, Blüte 24°C/50%, etc.
+          const targets = typeof getPhaseTargets === 'function' ? getPhaseTargets(p) : null;
           const e = S.entries[iter];
-          if (!e.temp || String(e.temp).trim() === '') e.temp = '23.5';
-          if (!e.humidity || String(e.humidity).trim() === '') e.humidity = '60';
+          if (!e.temp || String(e.temp).trim() === '') {
+            e.temp = targets ? ((targets.tempMin + targets.tempMax) / 2).toFixed(1) : '23.5';
+          }
+          if (!e.humidity || String(e.humidity).trim() === '') {
+            e.humidity = targets ? String(Math.round((targets.rhMin + targets.rhMax) / 2)) : '60';
+          }
           // Mark auto-filled so user knows
           if (!cd.notes) cd.notes = '🤖 Auto-eingetragen';
           filled++;
@@ -12240,6 +12950,8 @@ async function delCyc(id) {
       delete S.entries[d];
     }
   });
+  // Plan-Notizen für diesen Zyklus auch löschen
+  clearPlanNotesForCycle(id);
   selId = S.cycles[0]?.id || null;
   draft = {};
   saveS();
@@ -13357,7 +14069,16 @@ function renderEntry(iso) {
             <div class="vpd-mrow"><div class="vpd-marker" id="vpd-m" style="left:${Math.min(95, z.pct)}%"></div></div>
             <div style="display:flex;justify-content:space-between;font-size:8px;color:var(--text-hint)"><span>0.4</span><span>0.8</span><span>1.2</span><span>1.8</span></div>
           </div>
-        </div>`
+        </div>${(() => {
+          // Phase-Target unter dem VPD-Cup-Display: zeigt Soll-Bereich für aktuelle Phase
+          const t = getPhaseTargets(p4vpd);
+          if (!t || !t.vpdMin) return '';
+          const mark = inRangeMark(vpd, t.vpdMin, t.vpdMax);
+          const color = mark === '✓' ? 'var(--green)' : mark === '⚠' ? 'var(--orange)' : 'var(--text-muted)';
+          return `<div style="margin-top:6px;padding:6px 10px;background:rgba(255,255,255,0.02);border:0.5px dashed var(--border);border-radius:8px;font-size:10px;color:${color};display:flex;align-items:center;gap:6px">
+            <span>${mark}</span><span>${t.icon} ${t.label}: VPD ${t.vpdMin}–${t.vpdMax} kPa · ${t.tempMin}–${t.tempMax}°C · ${t.rhMin}–${t.rhMax}% RLF</span>
+          </div>`;
+        })()}`
       : `<div style="background:var(--teal-bg);border:0.5px solid var(--teal-bd);border-radius:10px;padding:10px 12px;font-size:12px;color:var(--text-muted)">Temp & RLF eingeben → VPD</div>`);
 
   // Build per-cycle blocks
@@ -13410,12 +14131,24 @@ function renderEntry(iso) {
             Auf morgen verschieben →
           </button>
         </div>
+        ${(c.offsetHistory && c.offsetHistory.length > 0) ? `
+          <div style="margin-bottom:8px;padding:8px 10px;background:rgba(232,136,74,0.06);border:0.5px solid rgba(232,136,74,0.2);border-radius:8px;display:flex;align-items:center;gap:8px">
+            <span style="font-size:14px">↔</span>
+            <span style="font-size:11px;color:var(--text-sub);flex:1">${c.offsetHistory.length} Verschiebung${c.offsetHistory.length === 1 ? '' : 'en'} im Plan</span>
+            <button onclick="resetOffsets('${c.id}')" style="background:var(--surface);border:0.5px solid rgba(232,136,74,0.35);border-radius:6px;padding:5px 10px;font-size:10px;color:var(--orange);cursor:pointer;font-family:var(--font);font-weight:600">Zurücksetzen</button>
+          </div>
+        ` : ''}
         ${(c.growType === 'outdoor' && p && (p.ph === 'vegi_out' || p.ph === 'bloom' || p.ph === 'flush')) ? `<button onclick="rainSkip('${c.id}','${iso}')" style="width:100%;background:linear-gradient(135deg, rgba(90,171,240,0.15), rgba(90,171,240,0.08));border:0.5px solid rgba(90,171,240,0.4);border-radius:10px;padding:10px;font-size:12px;color:var(--blue);cursor:pointer;font-family:var(--font);margin-bottom:8px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:6px">
           ☔ Regen heute — Gießen nicht nötig
         </button>` : ''}
         <button onclick="skipDay('${c.id}','${iso}')" style="width:100%;background:var(--surface);border:0.5px solid var(--border);border-radius:10px;padding:8px;font-size:11px;color:var(--red);cursor:pointer;font-family:var(--font);margin-bottom:8px;opacity:0.7">
           🚫 Diesen Gießtag entfernen
-        </button>` : ''}`
+        </button>
+        ${(parseFloat(cd.water) || parseFloat(cd.ph) || parseFloat(cd.ec) || (cd.notes && cd.notes.length > 0) || (cd.photos && cd.photos.length > 0))
+          ? `<button onclick="resetEntry('${c.id}','${iso}')" style="width:100%;background:var(--surface);border:0.5px solid rgba(224,96,96,0.3);border-radius:10px;padding:8px;font-size:11px;color:var(--red);cursor:pointer;font-family:var(--font);margin-bottom:8px;opacity:0.85">
+              🗑 Eintrag zurücksetzen <span style="font-size:10px;opacity:0.7">· Werte für diesen Tag löschen</span>
+            </button>`
+          : ''}` : ''}`
       : (!a && p && c.toppingDate && isoDiff(iso, c.toppingDate) >= 1 && isoDiff(iso, c.toppingDate) <= (c.toppingPause || 2))
         // Topping rest day
         ? `<div style="padding:10px 12px;background:rgba(176,106,200,0.08);border:0.5px solid rgba(176,106,200,0.25);border-radius:10px;margin-bottom:8px;display:flex;align-items:center;gap:10px">
@@ -13577,9 +14310,13 @@ function renderEntry(iso) {
             clf = null;
           }
         } else {
+          // Wenn kein gespeicherter Wert: Default 50% (mittlere Feuchte) — die App
+          // zeigt direkt eine Klassifizierung statt "— tippen", damit der User sieht
+          // was der aktuelle Slider-Stand bedeuten würde. Erst beim Tippen wird der
+          // Wert tatsächlich gespeichert (savedForDisplay bleibt null).
           const savedRest = cd.restPct !== undefined && cd.restPct !== null ? parseFloat(cd.restPct) : null;
           restVal = savedRest !== null ? savedRest : 50;
-          clf = savedRest !== null ? classifyRestPct(restVal, isFinisher) : null;
+          clf = classifyRestPct(restVal, isFinisher);  // immer klassifizieren, auch im Default
           savedForDisplay = savedRest;
         }
 
@@ -13643,7 +14380,7 @@ function renderEntry(iso) {
                 style="width:100%;accent-color:${clf ? clf.color : 'var(--green)'};cursor:pointer"/>
               <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--text-hint);font-family:var(--mono)">
                 <span>0% leicht</span>
-                <span style="color:${clf ? clf.color : 'var(--text-muted)'};font-weight:700;font-size:14px" id="rest-val-${c.id}">${savedForDisplay !== null ? restVal + '%' : '— tippen'}</span>
+                <span style="color:${clf ? clf.color : 'var(--text-muted)'};font-weight:700;font-size:14px" id="rest-val-${c.id}">${restVal}% ${savedForDisplay === null ? '<span style="color:var(--text-hint);font-weight:400;font-size:9px">(geschätzt)</span>' : ''}</span>
                 <span>100% voll</span>
               </div>
             </div>
@@ -13652,14 +14389,20 @@ function renderEntry(iso) {
         }
 
         // Status-Box (geteilt für beide Modi)
+        // Wenn savedForDisplay null ist, zeigen wir die Klassifizierung des Default-Werts (50%)
+        // mit Hinweis "geschätzt" — der User soll wissen was die Slider-Position bedeutet
+        // ohne erst tippen zu müssen.
         let statusBox = '';
+        const isUnsaved = savedForDisplay === null;
         if (clf) {
+          const unsavedHint = isUnsaved ? `<div style="font-size:10px;color:var(--text-hint);margin-top:4px;font-style:italic">↑ Slider tippen oder +/− um Wert für heute zu speichern</div>` : '';
           statusBox = `<div style="margin-top:8px;padding:8px 10px;background:${clf.color}14;border-left:2px solid ${clf.color};border-radius:6px;font-size:11px;line-height:1.5;color:var(--text-sub)">
             <div style="font-weight:600;color:${clf.color};margin-bottom:2px">${clf.label}</div>
             <div>${clf.text}</div>
+            ${unsavedHint}
           </div>`;
         } else if (hasRefs || !isScale) {
-          // Noch kein Wert eingetragen — Placeholder-Hinweis
+          // Noch kein Wert eingetragen — Placeholder-Hinweis (nur Scale ohne Refs)
           statusBox = `<div style="margin-top:8px;padding:8px 10px;background:var(--card2);border-radius:6px;font-size:11px;line-height:1.5;color:var(--text-hint)">
             ${isScale ? 'Trage das aktuelle Topfgewicht ein — % und Status werden automatisch berechnet.' : 'Tippe den Slider oder +/− um dein geschätztes Restgewicht festzuhalten.'}
           </div>`;
@@ -13672,24 +14415,63 @@ function renderEntry(iso) {
         </div>`;
       }
 
+      const effPlants = getEffectivePlantCount(c, iso);
+      const showPlantBadge = c.scaleByPlants && (c.plantCount || 1) > 1;
+      // Berechnete Gesamt-Wassermenge prominent zeigen — Anfänger sollen auf einen Blick
+      // sehen wieviel insgesamt zusammenkommt, nicht nur "pro Pflanze"
+      const totalWater = waterSug;  // waterSuggestion liefert schon ×Pflanzen falls aktiv
+      const plantsBadge = showPlantBadge ? `
+        <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:rgba(122,194,90,0.08);border:0.5px solid rgba(122,194,90,0.3);border-radius:10px">
+          <span style="font-size:18px">🌱</span>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:11px;color:var(--text-sub);line-height:1.3">Berechnet für <b style="color:var(--green)">${effPlants}</b> Pflanze${effPlants===1?'':'n'}</div>
+            <div class="plant-badge-total" data-cycle="${c.id}" data-plants="${effPlants}" style="font-size:14px;color:var(--green);font-weight:700;font-family:var(--mono);line-height:1.2;margin-top:2px">≈ ${totalWater} ml total <span style="font-size:10px;color:var(--text-muted);font-weight:400">(${Math.round(totalWater/effPlants)} ml/Pflanze)</span></div>
+          </div>
+          <button onclick="stepPlantCount('${c.id}','${iso}',-1)" style="width:28px;height:28px;border-radius:7px;background:var(--card2);border:0.5px solid var(--border);color:var(--text);font-size:14px;cursor:pointer;font-family:var(--mono);display:flex;align-items:center;justify-content:center;flex-shrink:0">−</button>
+          <button onclick="stepPlantCount('${c.id}','${iso}',1)" style="width:28px;height:28px;border-radius:7px;background:var(--card2);border:0.5px solid var(--border);color:var(--text);font-size:14px;cursor:pointer;font-family:var(--mono);display:flex;align-items:center;justify-content:center;flex-shrink:0">+</button>
+        </div>` : '';
+
+      // Wasser-Empfehlungs-Box prominenter — gleiche blaue Hinweisbox wie an Nicht-Gießtagen,
+      // damit der User auch hier auf einen Blick die biophysikalisch optimale Menge sieht.
+      // Der kleine "Gieß-Guide" rechts neben dem Input ist gut für Detail-Info, aber leicht
+      // zu übersehen.
+      const totalSugWD = waterSug;
+      const perPlantSugWD = Math.round(totalSugWD / effPlants);
+      const waterDayHint = `<div style="background:rgba(90,171,240,0.06);border:0.5px solid rgba(90,171,240,0.25);border-radius:10px;padding:10px 12px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+          <span style="font-size:14px">💡</span>
+          <span style="font-size:11px;font-weight:600;color:var(--blue);text-transform:uppercase;letter-spacing:0.03em">Empfohlene Gießmenge heute</span>
+        </div>
+        <div style="font-size:15px;color:var(--text);font-family:var(--mono);font-weight:700;line-height:1.3">
+          ~${perPlantSugWD} ml/Pflanze${effPlants > 1 ? ` <span style="color:var(--text-muted);font-weight:400;font-size:12px">(${totalSugWD} ml total)</span>` : ''}
+        </div>
+        <div style="font-size:10px;color:var(--text-muted);margin-top:3px;line-height:1.4">
+          ${p && p.ph === 'anzucht' && p.day <= 10
+            ? 'Sämling: lieber Sprühflasche oder dünner Strahl. Erde feucht, nicht nass.'
+            : `Topf ${pot}L · ${iv}d Intervall · ${showDrain ? '10% Drain entsorgen' : 'kein Drain'} · biophysikalische Empfehlung`}
+        </div>
+      </div>`;
+
       const waterInput = `<div style="display:flex;flex-direction:column;gap:8px">
         ${liftTestBlock}
+        ${plantsBadge}
+        ${waterDayHint}
         ${(['giess','giess_anz','spuelen','ice'].includes(a) && !parseFloat(cd.water) && !parseFloat(cd.ph))
-          ? `<button onclick="applyRecommended('${c.id}',${wk})" style="width:100%;background:linear-gradient(135deg,${cl.hex}22,${cl.hex}11);border:1px solid ${cl.hex}66;border-radius:10px;padding:10px 14px;font-size:13px;color:${cl.hex};cursor:pointer;font-family:var(--font);font-weight:600;display:flex;flex-direction:column;align-items:center;gap:2px">
-              <div style="display:flex;align-items:center;gap:8px"><span style="font-size:16px">✨</span><span>Werte vorschlagen</span></div>
-              <div style="font-size:10px;font-weight:400;color:var(--text-muted);font-style:italic">grau = vorgeschlagen · tippen überschreibt</div>
+          ? `<button onclick="applyRecommended('${c.id}',${wk})" style="width:100%;background:linear-gradient(135deg,${cl.hex}22,${cl.hex}11);border:1px solid ${cl.hex}66;border-radius:10px;padding:10px 14px;font-size:13px;color:${cl.hex};cursor:pointer;font-family:var(--font);font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px">
+              <span style="font-size:16px">✨</span><span>Tag automatisch ausfüllen</span>
             </button>`
           : ''}
         <div class="water-input-box" style="gap:10px;align-items:stretch">
           <div style="display:flex;align-items:center;gap:8px">
             <span style="font-size:18px">💧</span>
             <div>
-              <div style="font-size:10px;color:var(--text-hint);margin-bottom:2px">Gießmenge (ml)</div>
+              <div style="font-size:10px;color:var(--text-hint);margin-bottom:2px">Gießmenge (ml)${(c.scaleByPlants && (c.plantCount || 1) > 1) ? ' <span style="color:var(--green)">/Pflanze</span>' : ''}</div>
               <div style="display:flex;align-items:center;gap:4px">
                 <button onclick="stepWater('${c.id}',-50,${wk})" class="stepper-btn">−</button>
-                <input class="inp-field${cd._suggested?.water ? ' suggested' : ''}" type="number" step="50" id="water-calc-${c.id}" value="${savedWater}" placeholder="${waterSug}"
+                <input class="inp-field${cd._suggested?.water ? ' suggested' : ''}" type="number" step="50" id="water-calc-${c.id}" value="${savedWater ? (effPlants > 1 && c.scaleByPlants ? Math.round(parseFloat(savedWater)/effPlants) : savedWater) : ''}" placeholder="${effPlants > 1 && c.scaleByPlants ? Math.round(waterSug/effPlants) : waterSug}"
+                  data-plants="${effPlants}"
                   style="border-color:${cl.hex}44;width:80px;height:32px;font-size:15px;font-weight:600;font-family:var(--mono);text-align:center;padding:6px 2px"
-                  oninput="updateCalc('${c.id}',${wk});uEF('${c.id}','water',this.value)"/>
+                  oninput="updateCalc('${c.id}',${wk});uEFWater('${c.id}',this.value,${effPlants})"/>
                 <button onclick="stepWater('${c.id}',50,${wk})" class="stepper-btn">+</button>
               </div>
             </div>
@@ -13811,37 +14593,71 @@ function renderEntry(iso) {
           </div>`;
         }).join('');
 
-        // Mix order
+        // Mix order: ALLE konfigurierten Produkte aus mixOrder anzeigen, unabhängig
+        // ob Dosis aktuell 0 ist. Sonst verschwindet ein Produkt sobald der User mit
+        // "−" die Dosis auf 0 stellt — und kann es nicht mehr mit "+" zurückholen.
+        // Filter nur: Produkt existiert noch in S.products.
         const activeMixProducts = S.mixOrder
-          ? S.mixOrder.filter(n => { const pr = S.products.find(p => p.name === n); return pr && (doses[pr.id] || 0) > 0; })
+          ? S.mixOrder.filter(n => S.products.find(p => p.name === n))
           : [];
+        // Aufteilen in aktiv (Dosis > 0) und inaktiv (Dosis 0) — inaktive werden klappbar
+        // unten ausgeblendet damit die Liste übersichtlich bleibt. Sonst sieht der Anfänger
+        // 7 Produkte und denkt es ist mega kompliziert, obwohl nur 3 für diese Woche aktiv sind.
+        const mixActive = activeMixProducts.filter(n => {
+          const pr = S.products.find(p => p.name === n);
+          return pr && (doses[pr.id] || 0) > 0;
+        });
+        const mixInactive = activeMixProducts.filter(n => {
+          const pr = S.products.find(p => p.name === n);
+          return pr && (doses[pr.id] || 0) <= 0;
+        });
+        // Renderer für eine einzelne Produktzeile — gleiche Logik für beide Listen
+        const renderMixRow = (name, i, isInActiveList) => {
+          const pr = S.products.find(p => p.name === name);
+          const d2 = doses[pr?.id] || 0;
+          const calc2 = d2 > 0 ? calcDose(d2, waterAmt, pr?.unit).toFixed(1) : '0.0';
+          const dispUnit = displayUnit(pr?.unit);
+          const isZero = d2 <= 0;
+          const isPerL = isPerLitre(pr?.unit);
+          const recipeBreakdown = isPerL
+            ? `<div class="mix-recipe-breakdown" data-cycle="${c.id}" data-plan="${d2}" data-unit="${pr?.unit || 'ml/L'}" style="font-size:9px;color:var(--text-hint);font-family:var(--mono);text-align:center;line-height:1.1;margin-top:2px;display:${(d2 > 0 && waterAmt > 0) ? 'block' : 'none'}">${d2} ${pr?.unit} × ${(waterAmt/1000).toFixed(waterAmt%1000===0?0:1)} L</div>`
+            : '';
+          const checked = !!(cd.mixChecks?.[pr?.id]);
+          const checkId = `mix-${c.id}-${i}-${isInActiveList ? 'a' : 'i'}`;
+          const rowOpacity = checked ? '0.55' : (isZero ? '0.5' : '1');
+          const rowStyle = `padding:10px 8px;margin:0 -4px;border-radius:8px;transition:background 0.15s;align-items:center;cursor:pointer;opacity:${rowOpacity}`;
+          const onclickAttr = isZero ? '' : `onclick="toggleMixCheck('${c.id}','${pr?.id}')"`;
+          const doseColor = isZero ? 'var(--text-muted)' : 'var(--green)';
+          return `<div class="mix-step" id="${checkId}" ${onclickAttr} style="${rowStyle}">
+            <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0">
+              <div class="mix-chk" style="font-size:18px;width:24px;text-align:center;flex-shrink:0;color:${checked ? 'var(--green)' : ''}">${checked ? '✓' : (isZero ? '∅' : '○')}</div>
+              <div style="width:10px;height:10px;border-radius:50%;background:${pr?.color || '#555'};flex-shrink:0"></div>
+              <span style="font-size:13px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name}</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:3px;flex-shrink:0">
+              <button class="mix-step-btn" data-cycle="${c.id}" data-prod="${pr?.id}" data-wk="${wk}" data-step="-0.1" data-unit="${pr?.unit || 'ml/L'}" onclick="event.stopPropagation();stepMixDoseLive(this)" style="width:26px;height:26px;border-radius:5px;background:var(--surface);border:0.5px solid var(--border);color:var(--text-sub);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:var(--mono)">−</button>
+              <div style="display:flex;flex-direction:column;align-items:center;width:64px">
+                <span class="mix-calc" data-cycle="${c.id}" data-prod="${pr?.id}" data-plan="${d2}" data-unit="${pr?.unit || 'ml/L'}" style="color:${doseColor};font-family:var(--mono);font-size:13px;font-weight:600;text-align:center">${calc2} ${dispUnit}</span>
+                ${recipeBreakdown}
+              </div>
+              <button class="mix-step-btn" data-cycle="${c.id}" data-prod="${pr?.id}" data-wk="${wk}" data-step="0.1" data-unit="${pr?.unit || 'ml/L'}" onclick="event.stopPropagation();stepMixDoseLive(this)" style="width:26px;height:26px;border-radius:5px;background:var(--surface);border:0.5px solid var(--border);color:var(--text-sub);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:var(--mono)">+</button>
+            </div>
+          </div>`;
+        };
+        const inactiveBlock = mixInactive.length > 0 ? `
+          <details style="margin-top:8px;border-top:0.5px dashed var(--border);padding-top:8px">
+            <summary style="font-size:10px;color:var(--text-hint);cursor:pointer;list-style:none;display:flex;align-items:center;gap:6px;padding:4px 0">
+              <span style="opacity:0.6">+ ${mixInactive.length} weitere${mixInactive.length===1?'':''} (Dosis 0) ▾</span>
+            </summary>
+            <div style="margin-top:6px">${mixInactive.map((n, i) => renderMixRow(n, i, false)).join('')}</div>
+          </details>` : '';
         const mixSteps = activeMixProducts.length > 0
           ? `<div style="background:var(--card);border:0.5px solid var(--border);border-top:none;border-radius:0 0 10px 10px;padding:10px 12px">
-              <div style="font-size:10px;color:var(--text-hint);margin-bottom:6px;font-weight:600">⚗️ MISCHREIHENFOLGE</div>
-              ${activeMixProducts.map((name, i) => {
-                const pr = S.products.find(p => p.name === name);
-                const d2 = doses[pr?.id] || 0;
-                const calc2 = d2 > 0 ? calcDose(d2, waterAmt, pr?.unit).toFixed(1) : 0;
-                const dispUnit = displayUnit(pr?.unit);
-                // Q1: persistent check state, stored per-entry keyed by product id
-                const checked = !!(cd.mixChecks?.[pr?.id]);
-                const checkId = `mix-${c.id}-${i}`;
-                const rowStyle = checked
-                  ? 'padding:10px 8px;margin:0 -4px;border-radius:8px;transition:background 0.15s;align-items:center;cursor:pointer;opacity:0.55'
-                  : 'padding:10px 8px;margin:0 -4px;border-radius:8px;transition:background 0.15s;align-items:center;cursor:pointer';
-                return `<div class="mix-step" id="${checkId}" onclick="toggleMixCheck('${c.id}','${pr?.id}')" style="${rowStyle}">
-                  <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0">
-                    <div class="mix-chk" style="font-size:18px;width:24px;text-align:center;flex-shrink:0;color:${checked ? 'var(--green)' : ''}">${checked ? '✓' : '○'}</div>
-                    <div style="width:10px;height:10px;border-radius:50%;background:${pr?.color || '#555'};flex-shrink:0"></div>
-                    <span style="font-size:13px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name}</span>
-                  </div>
-                  <div style="display:flex;align-items:center;gap:3px;flex-shrink:0">
-                    <button class="mix-step-btn" data-cycle="${c.id}" data-prod="${pr?.id}" data-wk="${wk}" data-step="-0.1" data-unit="${pr?.unit || 'ml/L'}" onclick="event.stopPropagation();stepMixDoseLive(this)" style="width:26px;height:26px;border-radius:5px;background:var(--surface);border:0.5px solid var(--border);color:var(--text-sub);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:var(--mono)">−</button>
-                    <span class="mix-calc" data-cycle="${c.id}" data-prod="${pr?.id}" data-plan="${d2}" data-unit="${pr?.unit || 'ml/L'}" style="color:var(--green);font-family:var(--mono);font-size:13px;font-weight:600;width:58px;text-align:center">${calc2} ${dispUnit}</span>
-                    <button class="mix-step-btn" data-cycle="${c.id}" data-prod="${pr?.id}" data-wk="${wk}" data-step="0.1" data-unit="${pr?.unit || 'ml/L'}" onclick="event.stopPropagation();stepMixDoseLive(this)" style="width:26px;height:26px;border-radius:5px;background:var(--surface);border:0.5px solid var(--border);color:var(--text-sub);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:var(--mono)">+</button>
-                  </div>
-                </div>`;
-              }).join('')}
+              <div style="font-size:10px;color:var(--text-hint);margin-bottom:6px;font-weight:600">⚗️ MISCHREIHENFOLGE <span class="mix-header-water" data-cycle="${c.id}" style="color:var(--text-muted);font-weight:400">${waterAmt > 0 ? `· für ${(waterAmt/1000).toFixed(waterAmt%1000===0?0:1)} L` : ''}</span></div>
+              ${mixActive.length > 0
+                ? mixActive.map((n, i) => renderMixRow(n, i, true)).join('')
+                : `<div style="padding:14px 4px;text-align:center;font-size:11px;color:var(--text-hint);line-height:1.4">Keine Dünger diese Woche aktiv.<br><span style="font-size:10px">Schau in <b>Tipps → Dünger</b> oder erweitere unten ↓</span></div>`}
+              ${inactiveBlock}
             </div>`
           : '';
 
@@ -13923,9 +14739,138 @@ function renderEntry(iso) {
     // (removed duplicate rendering here to prevent visual duplicates)
 
     // Water + pH: now integrated in water-input-box for water days
+    // An Nicht-Wasser-Tagen (z.B. Sämling-Tag 2 wenn nicht alle 3d gegossen wird, oder
+    // einfach zwischen Gießtagen) trotzdem den vollen Hebe-Test + Auto-Ausfüllen-Button
+    // zeigen + die biophysikalische Wassermengen-Empfehlung als Hinweis.
+    // So kann der User auch hier prüfen ob er gießen muss und schnell den Tag dokumentieren.
+    let nonWaterDayBlock = '';
+    if (!isWaterDay && p) {
+      // VOLLER Hebe-Test-Block (gleicher Code wie an Wasser-Tagen) — wenn lift/scale aktiv
+      let fullLift = '';
+      if (c.weightMode === 'lift' || c.weightMode === 'scale') {
+        const ctx = contextFor(c, iso);
+        const isFinisher = ctx && ctx.isFinisher;
+        const isScale = c.weightMode === 'scale';
+        const hasRefs = isScale && c.saturatedWeight && c.dryWeight;
+        let restVal, clf, savedForDisplay = null;
+        if (isScale) {
+          const savedG = cd.weightG !== undefined && cd.weightG !== null ? parseFloat(cd.weightG) : null;
+          if (savedG !== null && hasRefs) {
+            restVal = calcRestPct(savedG, c.saturatedWeight, c.dryWeight);
+            clf = restVal !== null ? classifyRestPct(restVal, isFinisher) : null;
+            savedForDisplay = savedG;
+          } else if (savedG !== null) {
+            restVal = null; clf = null; savedForDisplay = savedG;
+          } else {
+            restVal = null; clf = null;
+          }
+        } else {
+          // Wenn kein gespeicherter Wert: Default 50% (mittlere Feuchte) — die App
+          // zeigt direkt eine Klassifizierung statt "— tippen", damit der User sieht
+          // was der aktuelle Slider-Stand bedeuten würde. Erst beim Tippen wird der
+          // Wert tatsächlich gespeichert (savedForDisplay bleibt null).
+          const savedRest = cd.restPct !== undefined && cd.restPct !== null ? parseFloat(cd.restPct) : null;
+          restVal = savedRest !== null ? savedRest : 50;
+          clf = classifyRestPct(restVal, isFinisher);  // immer klassifizieren, auch im Default
+          savedForDisplay = savedRest;
+        }
+        const header = `<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px">
+          <div style="display:flex;align-items:center;gap:6px">
+            <span style="font-size:14px">${isScale ? '⚖️' : '✋'}</span>
+            <span style="font-size:12px;font-weight:600;color:var(--text)">${isScale ? 'Waage' : 'Hebe-Test'}</span>
+            ${isFinisher ? '<span style="font-size:9px;background:rgba(224,96,96,0.15);color:var(--red);padding:2px 6px;border-radius:8px;font-weight:600">FINISHER</span>' : ''}
+          </div>
+          <div style="font-size:10px;color:var(--text-muted)">${isScale ? 'Topf mit Pflanze wiegen' : 'Hebe den Topf — wie schwer fühlt er sich?'}</div>
+        </div>`;
+        let body = '';
+        if (isScale) {
+          if (!hasRefs) {
+            body = `<div style="background:rgba(240,208,80,0.08);border-left:2px solid var(--yellow);padding:10px 12px;border-radius:6px;font-size:11px;line-height:1.55;color:var(--text-sub)">
+              <div style="color:var(--yellow);font-weight:600;margin-bottom:4px">⚠ Referenz-Gewichte fehlen</div>
+              Für die Auswertung brauchen wir <b>Saturated</b> (voll gesättigt) und <b>Dry</b> (bone-dry).
+              <button onclick="setWeightModeScale(S.cycles.find(c=>c.id==='${c.id}'))" style="margin-top:6px;background:var(--card);border:0.5px solid var(--border);border-radius:6px;padding:5px 10px;font-size:11px;color:var(--yellow);cursor:pointer;font-family:var(--font)">Referenzen setzen</button>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;margin-top:8px">
+              <button onclick="stepWeightG('${c.id}',-50)" class="stepper-btn">−</button>
+              <input class="inp-field" type="number" step="50" id="weight-g-${c.id}" value="${savedForDisplay !== null ? savedForDisplay : ''}" placeholder="Gewicht in g" oninput="uWeightG('${c.id}',this.value)" style="flex:1;height:34px;font-size:14px;font-weight:600;font-family:var(--mono);text-align:center"/>
+              <button onclick="stepWeightG('${c.id}',50)" class="stepper-btn">+</button>
+              <span style="font-size:12px;color:var(--text-muted);min-width:14px">g</span>
+            </div>`;
+          } else {
+            const pctDisplay = restVal !== null ? `${restVal.toFixed(0)}%` : '—';
+            body = `<div style="display:flex;align-items:center;gap:8px">
+              <button onclick="stepWeightG('${c.id}',-50)" class="stepper-btn">−</button>
+              <input class="inp-field" type="number" step="50" id="weight-g-${c.id}" value="${savedForDisplay !== null ? savedForDisplay : ''}" placeholder="${Math.round((c.saturatedWeight + c.dryWeight) / 2)}" oninput="uWeightG('${c.id}',this.value)" style="flex:1;height:34px;font-size:14px;font-weight:600;font-family:var(--mono);text-align:center"/>
+              <button onclick="stepWeightG('${c.id}',50)" class="stepper-btn">+</button>
+              <span style="font-size:12px;color:var(--text-muted);min-width:14px">g</span>
+              <div style="min-width:50px;text-align:right;font-size:14px;font-weight:700;font-family:var(--mono);color:${clf ? clf.color : 'var(--text-hint)'}">${pctDisplay}</div>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--text-hint);font-family:var(--mono);margin-top:4px;padding:0 38px">
+              <span>Dry ${c.dryWeight}g</span><span>Sat ${c.saturatedWeight}g</span>
+            </div>`;
+          }
+        } else {
+          body = `<div style="display:flex;align-items:center;gap:10px">
+            <button onclick="stepRestPct('${c.id}',-5)" class="stepper-btn">−</button>
+            <div style="flex:1;display:flex;flex-direction:column;gap:4px;min-width:0">
+              <input type="range" min="0" max="100" step="5" value="${restVal}" id="rest-slider-${c.id}" oninput="uRestPct('${c.id}',this.value)" style="width:100%;accent-color:${clf ? clf.color : 'var(--green)'};cursor:pointer"/>
+              <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--text-hint);font-family:var(--mono)">
+                <span>0% leicht</span>
+                <span style="color:${clf ? clf.color : 'var(--text-muted)'};font-weight:700;font-size:14px" id="rest-val-${c.id}">${restVal}% ${savedForDisplay === null ? '<span style="color:var(--text-hint);font-weight:400;font-size:9px">(geschätzt)</span>' : ''}</span>
+                <span>100% voll</span>
+              </div>
+            </div>
+            <button onclick="stepRestPct('${c.id}',5)" class="stepper-btn">+</button>
+          </div>`;
+        }
+        let statusBox = '';
+        const isUnsaved2 = savedForDisplay === null;
+        if (clf) {
+          const unsavedHint2 = isUnsaved2 ? `<div style="font-size:10px;color:var(--text-hint);margin-top:4px;font-style:italic">↑ Slider tippen oder +/− um Wert für heute zu speichern</div>` : '';
+          statusBox = `<div style="margin-top:8px;padding:8px 10px;background:${clf.color}14;border-left:2px solid ${clf.color};border-radius:6px;font-size:11px;line-height:1.5;color:var(--text-sub)">
+            <div style="font-weight:600;color:${clf.color};margin-bottom:2px">${clf.label}</div>
+            <div>${clf.text}</div>
+            ${unsavedHint2}
+          </div>`;
+        } else if (hasRefs || !isScale) {
+          statusBox = `<div style="margin-top:8px;padding:8px 10px;background:var(--card2);border-radius:6px;font-size:11px;line-height:1.5;color:var(--text-hint)">
+            ${isScale ? 'Trage das aktuelle Topfgewicht ein — % und Status werden automatisch berechnet.' : 'Tippe den Slider oder +/− um dein geschätztes Restgewicht festzuhalten.'}
+          </div>`;
+        }
+        fullLift = `<div style="background:var(--card);border:0.5px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:8px">
+          ${header}${body}${statusBox}
+        </div>`;
+      }
+      // Wasser-Empfehlung als Hinweis-Box: zeigt die biophysikalisch optimale Menge
+      // auch an Nicht-Gießtagen — der User soll wissen wieviel ideal wäre falls er
+      // sich für ein "Mikro-Gießen" entscheidet (z.B. bei Sämlingen jeden Tag).
+      const effPlantsHint = getEffectivePlantCount(c, iso);
+      const totalSug = waterSug;
+      const perPlantSug = Math.round(totalSug / effPlantsHint);
+      const waterHint = `<div style="background:rgba(90,171,240,0.06);border:0.5px solid rgba(90,171,240,0.25);border-radius:10px;padding:10px 12px;margin-bottom:8px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+          <span style="font-size:14px">💡</span>
+          <span style="font-size:11px;font-weight:600;color:var(--blue);text-transform:uppercase;letter-spacing:0.03em">Empfohlene Gießmenge${p.day <= 7 ? ' (falls heute) ' : ''}</span>
+        </div>
+        <div style="font-size:13px;color:var(--text);font-family:var(--mono);font-weight:600;line-height:1.3">
+          ~${perPlantSug} ml/Pflanze${effPlantsHint > 1 ? ` <span style="color:var(--text-muted);font-weight:400;font-size:11px">(${totalSug} ml total)</span>` : ''}
+        </div>
+        <div style="font-size:10px;color:var(--text-muted);margin-top:3px;line-height:1.4">
+          ${p.ph === 'anzucht' && p.day <= 10
+            ? 'Sämling: lieber Sprühflasche oder dünner Strahl. Erde feucht, nicht nass.'
+            : `Topf ${S.potSize || 11}L · ${getInt(c, p?.ph || 'bloom')}d Intervall · biophysikalische Empfehlung`}
+        </div>
+      </div>`;
+      // Auto-Ausfüllen-Button
+      const autoFillBtn = `<button onclick="applyRecommended('${c.id}',${wk})" style="width:100%;background:linear-gradient(135deg,${cl.hex}22,${cl.hex}11);border:1px solid ${cl.hex}66;border-radius:10px;padding:10px 14px;font-size:13px;color:${cl.hex};cursor:pointer;font-family:var(--font);font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px">
+        <span style="font-size:16px">✨</span><span>Tag automatisch ausfüllen</span>
+      </button>`;
+      nonWaterDayBlock = fullLift + waterHint + autoFillBtn;
+    }
+
     const waterRow = isWaterDay
       ? '' // pH is already in the water-input-box above
-      : `<div class="row2" style="margin-top:8px">
+      : `${nonWaterDayBlock}<div class="row2" style="margin-top:8px">
           <div class="inp-wrap"><div class="inp-label">Wasser (ml)</div>
             <input class="inp-field" type="number" value="${cd.water || ''}" placeholder="–"
               oninput="uEF('${c.id}','water',this.value)" style="border-color:${cl.hex}44"/>
@@ -13959,6 +14904,33 @@ function renderEntry(iso) {
       ${waterRow}`;
   }).join('');
 
+  // Phase-Targets für den ersten aktiven Zyklus (für Temp/RLF-Hinweise unter den Feldern).
+  // Wenn mehrere aktive Zyklen mit unterschiedlichen Phasen → wir zeigen die häufigste.
+  const phaseTargetsForEnv = (() => {
+    if (act.length === 0) return null;
+    const p = phase(iso, act[0]);
+    return getPhaseTargets(p);
+  })();
+  const tempVal = parseFloat(temp);
+  const rhValN = parseFloat(rh);
+  const isOutdoorEnv = act.length > 0 && act[0].growType === 'outdoor';
+  const tempTargetHTML = phaseTargetsForEnv ? (() => {
+    const mark = inRangeMark(tempVal, phaseTargetsForEnv.tempMin, phaseTargetsForEnv.tempMax);
+    const color = mark === '✓' ? 'var(--green)' : mark === '⚠' ? 'var(--orange)' : 'var(--text-muted)';
+    const suffix = isOutdoorEnv ? ' (Indoor-Idealwert)' : '';
+    return `<div style="font-size:10px;color:${color};margin-top:3px;display:flex;align-items:center;gap:4px">
+      <span>${mark}</span><span>${phaseTargetsForEnv.icon} ${phaseTargetsForEnv.label}: ${phaseTargetsForEnv.tempMin}–${phaseTargetsForEnv.tempMax}°C${suffix}</span>
+    </div>`;
+  })() : '';
+  const rhTargetHTML = phaseTargetsForEnv ? (() => {
+    const mark = inRangeMark(rhValN, phaseTargetsForEnv.rhMin, phaseTargetsForEnv.rhMax);
+    const color = mark === '✓' ? 'var(--green)' : mark === '⚠' ? 'var(--orange)' : 'var(--text-muted)';
+    const suffix = isOutdoorEnv ? ' (Indoor-Idealwert)' : '';
+    return `<div style="font-size:10px;color:${color};margin-top:3px;display:flex;align-items:center;gap:4px">
+      <span>${mark}</span><span>${phaseTargetsForEnv.icon} ${phaseTargetsForEnv.label}: ${phaseTargetsForEnv.rhMin}–${phaseTargetsForEnv.rhMax}% RLF${suffix}</span>
+    </div>`;
+  })() : '';
+
   // Umgebung (global, once, between nutrient section and tips/notes)
   const envHTML = act.length > 0 ? `
     <div style="margin-top:6px;background:var(--card);border:0.5px solid var(--border);border-radius:12px;padding:12px">
@@ -13967,16 +14939,18 @@ function renderEntry(iso) {
         <div class="inp-wrap"><div class="inp-label">Temperatur (°C)</div>
           <div style="display:flex;align-items:center;gap:4px">
             <button onclick="stepEnv('et',-0.1)" class="stepper-btn">−</button>
-            <input class="inp-field" type="number" step="0.1" value="${temp}" placeholder="23.5" id="et" style="flex:1;text-align:center;height:32px;font-family:var(--mono);font-weight:600" oninput="uEnv()"/>
+            <input class="inp-field" type="number" step="0.1" value="${temp}" placeholder="${phaseTargetsForEnv ? ((phaseTargetsForEnv.tempMin + phaseTargetsForEnv.tempMax) / 2).toFixed(1) : '23.5'}" id="et" style="flex:1;text-align:center;height:32px;font-family:var(--mono);font-weight:600" oninput="uEnv()"/>
             <button onclick="stepEnv('et',0.1)" class="stepper-btn">+</button>
           </div>
+          ${tempTargetHTML}
         </div>
         <div class="inp-wrap"><div class="inp-label">Luftfeuchtigkeit (%)</div>
           <div style="display:flex;align-items:center;gap:4px">
             <button onclick="stepEnv('er',-0.2)" class="stepper-btn">−</button>
-            <input class="inp-field" type="number" step="0.2" value="${rh}" placeholder="60" id="er" style="flex:1;text-align:center;height:32px;font-family:var(--mono);font-weight:600" oninput="uEnv()"/>
+            <input class="inp-field" type="number" step="0.2" value="${rh}" placeholder="${phaseTargetsForEnv ? Math.round((phaseTargetsForEnv.rhMin + phaseTargetsForEnv.rhMax) / 2) : '60'}" id="er" style="flex:1;text-align:center;height:32px;font-family:var(--mono);font-weight:600" oninput="uEnv()"/>
             <button onclick="stepEnv('er',0.2)" class="stepper-btn">+</button>
           </div>
+          ${rhTargetHTML}
         </div>
       </div>
       <div id="vpd-c" style="margin-top:8px">${vpdBox}</div>
@@ -13993,6 +14967,46 @@ function renderEntry(iso) {
     const ernte = cd.harvestLog || {};
     const tip = getSmartTip(c, p);
     const photos = cd.photos || [];
+
+    // SÄMLING-HINWEIS-BOX (Tag 1–10 der Anzucht):
+    // Tag 1 ist der häufigste Bug-Producer für Anfänger — falsche Erwartungen,
+    // zu früh düngen, zu viel gießen. Eine prominente Hinweis-Box mit den
+    // wichtigsten "DON'Ts" und einem klaren "DO" pro Tag senkt den Frust und
+    // verhindert Abbrüche schon in Woche 1.
+    const isSeedling = p && (p.ph === 'anzucht' || p.ph === 'vorzucht') && p.day <= 10;
+    const seedlingHTML = isSeedling ? (() => {
+      // Tagespezifische Mini-Anleitung
+      const dayHints = {
+        1: { do: 'Samen einpflanzen oder Anzuchtwürfel feucht halten. Erde nur leicht andrücken.', avoid: 'Düngen, kontrolliertes Gießen, jede Stunde nachsehen.' },
+        2: { do: 'Erde feucht aber nicht nass halten. Geduld — Keimung dauert 2–7 Tage.', avoid: 'Erde aufgraben um zu schauen ob der Samen schon keimt.' },
+        3: { do: 'Beobachten ob Keimblätter durchbrechen. Licht bereitstellen (gedimmt!).', avoid: 'Volle Lampenpower, starkes Sprühen.' },
+        4: { do: 'Wenn Keimling sichtbar: Lampe an, ~50% Power, 30–40cm Abstand.', avoid: 'Dünger, Gießkanne — nur Sprühflasche oder dünnen Strahl.' },
+        5: { do: 'Erste echte Blätter zeigen sich bald. Weiter sprühen statt gießen.', avoid: 'Düngen — Sämling lebt von Cotyledon-Reserven.' },
+        6: { do: 'Lichtabstand prüfen: Sämling streckt sich = zu wenig Licht / zu weit weg.', avoid: 'Topf direkt unter Lampe ohne Wärme-Check.' },
+        7: { do: 'Erste richtige Blätter da! Vorsichtig stärkeres Licht, ggf. mehr Power.', avoid: 'Hektisch düngen — frühestens Tag 10–14.' }
+      };
+      const hint = dayHints[p.day] || { do: 'Beobachten, dokumentieren, geduldig bleiben. Sämlinge wachsen langsam.', avoid: 'Zu früh düngen oder umtopfen.' };
+      return `
+      <div style="background:linear-gradient(135deg,rgba(122,194,90,0.12),rgba(122,194,90,0.04));border:1px solid rgba(122,194,90,0.4);border-radius:12px;padding:12px 14px;margin-top:8px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+          <span style="font-size:18px">🌱</span>
+          <span style="font-size:12px;font-weight:700;color:var(--green)">Sämlings-Pflege · Tag ${p.day}</span>
+        </div>
+        <div style="font-size:12px;color:var(--text);line-height:1.5;margin-bottom:8px"><b style="color:var(--green)">✅ Heute:</b> ${hint.do}</div>
+        <div style="font-size:12px;color:var(--text-sub);line-height:1.5;margin-bottom:10px"><b style="color:var(--orange)">⛔ Vermeiden:</b> ${hint.avoid}</div>
+        <div style="padding:8px 10px;background:rgba(0,0,0,0.2);border-radius:8px;font-size:11px;color:var(--text-sub);line-height:1.55">
+          <b style="color:var(--text)">💡 Sämling-Grundregeln:</b><br>
+          • <b>Klima:</b> 22–26°C · 65–75% RLF · VPD 0.4–0.8 kPa<br>
+          • <b>Wasser:</b> Sprühflasche oder dünner Strahl, ~50–100 ml. Erde feucht halten, NICHT nass.<br>
+          • <b>Dünger:</b> Frühestens Tag 10–14, dann nur 25% Dosis. Sämling lebt erst von Reserven.<br>
+          • <b>Licht:</b> 30–50cm Abstand, 50–70% Power. Sämling streckt sich → zu wenig Licht.<br>
+          • <b>pH:</b> 6.0–6.5 (Erde) / 5.5–6.0 (Coco/Hydro)
+        </div>
+        <div style="margin-top:8px;font-size:11px;color:var(--text-hint);line-height:1.5">
+          📖 Mehr im Lexikon: <span style="color:var(--green);text-decoration:underline;cursor:pointer" onclick="goTo('lexikon');setTimeout(()=>renderLexikon('Sämlingsphase'),100)">Sämlingsphase</span> · <span style="color:var(--green);text-decoration:underline;cursor:pointer" onclick="goTo('lexikon');setTimeout(()=>renderLexikon('VPD (Vapour Pressure Deficit)'),100)">VPD</span>
+        </div>
+      </div>`;
+    })() : '';
 
     const trichHTML = showTrich ? `
       <div id="trich-${c.id}" style="background:rgba(176,106,200,0.06);border:0.5px solid rgba(176,106,200,0.2);border-radius:12px;padding:12px;margin-top:8px">
@@ -14066,10 +15080,39 @@ function renderEntry(iso) {
     const qnHTML = qnChipsHTML + qnLexHTML;
     const photoHTML = `<div class="photo-grid">${photos.map((ph, idx) => `<div class="photo-wrap"><img class="photo-thumb" src="${ph}" onclick="viewPhoto(this.src)"/><button class="photo-del" onclick="delPhoto('${c.id}','${iso}',${idx})" title="Foto löschen">×</button></div>`).join('')}<div class="photo-add" onclick="addPhoto('${c.id}')">📷</div></div>`;
 
-    return `${trichHTML}${ernteHTML}${hintHTML}
+    // PLAN-NOTIZEN AUTO-LOGIK:
+    // Notizen für Zukunfts-Tage werden automatisch als Plan-Notiz gespeichert
+    // (wandern mit Verschiebungen). Notizen für heute/Vergangenheit bleiben
+    // am Datum (Tagebuch). Der User merkt davon nichts — er schreibt einfach.
+    // Beide Felder bleiben unabhängig: nach Phase-Verschiebung kann ein Tag
+    // sowohl Tagebuch- als auch Plan-Notiz-Inhalt enthalten (selten, aber möglich).
+    const phaseDayForIso = getPhaseDayForIso(iso, c);
+    const isFutureDay = iso > todayISO();
+    const planNoteText = phaseDayForIso ? (getPlanNote(c.id, phaseDayForIso) || '') : '';
+    const diaryNoteText = cd.notes || '';
+    // Anzeige: Wenn Zukunft → Plan-Notiz primär; sonst Tagebuch primär.
+    // Falls für den Tag BEIDE existieren (z.B. nach Verschiebung), zeigen wir
+    // beides untereinander damit nichts "verschwindet".
+    const primaryText = isFutureDay ? planNoteText : diaryNoteText;
+    const secondaryText = isFutureDay ? diaryNoteText : planNoteText;
+    const onNoteChangeHandler = isFutureDay && phaseDayForIso
+      ? `setPlanNoteFromInput('${c.id}',${phaseDayForIso},this.value)`
+      : `uEF('${c.id}','notes',this.value)`;
+    const noteHint = isFutureDay
+      ? `<div style="font-size:10px;color:var(--text-hint);margin-top:4px">📌 Notiz f\u00fcr Tag ${phaseDayForIso} \u2014 wandert mit Plan-Verschiebungen</div>`
+      : '';
+    const secondaryHTML = secondaryText.trim() ? `
+      <div style="margin-top:8px;padding:8px;background:rgba(255,255,255,0.03);border-left:2px solid var(--text-muted);border-radius:4px">
+        <div style="font-size:10px;color:var(--text-muted);margin-bottom:4px">${isFutureDay ? '📝 Tagebuch-Eintrag (am Datum)' : `📌 Plan-Notiz f\u00fcr Tag ${phaseDayForIso}`}</div>
+        <div style="font-size:12px;color:var(--text-sub);white-space:pre-wrap">${secondaryText.replace(/[<>]/g, c => c === '<' ? '&lt;' : '&gt;')}</div>
+      </div>` : '';
+
+    return `${seedlingHTML}${trichHTML}${ernteHTML}${hintHTML}
       <div class="note-wrap" style="border-color:${cl.hex}33;margin-top:8px">
         <div class="inp-label" style="margin-bottom:3px">Notizen</div>
-        <textarea class="note-ta" id="note-${c.id}" placeholder="Blattfarbe, Geruch, Wachstum..." onchange="uEF('${c.id}','notes',this.value)">${cd.notes || ''}</textarea>
+        <textarea class="note-ta" id="note-${c.id}" placeholder="Blattfarbe, Geruch, Wachstum..." onchange="${onNoteChangeHandler}">${primaryText}</textarea>
+        ${noteHint}
+        ${secondaryHTML}
         ${qnHTML}
         <div style="margin-top:8px;padding-top:8px;border-top:0.5px dashed var(--border);display:flex;align-items:center;justify-content:space-between;gap:8px">
           <span style="font-size:10px;color:var(--text-muted)">Etwas Auffälliges beobachtet?</span>
@@ -14179,7 +15222,11 @@ function renderEntry(iso) {
 function updateCalc(cId, wk) {
   const waterEl = document.getElementById('water-calc-' + cId);
   if (!waterEl) return;
-  const ml = parseFloat(waterEl.value) || parseFloat(waterEl.placeholder) || waterSuggestion(null, { ph: 'bloom', day: 35 });
+  // Input-Wert ist pro Pflanze (wenn data-plants > 1), sonst total. Für alle Folge-
+  // Berechnungen brauchen wir das TOTAL-Volume — also multiplizieren falls per-plant.
+  const plants = parseInt(waterEl.dataset.plants) || 1;
+  const inputVal = parseFloat(waterEl.value) || parseFloat(waterEl.placeholder) || 0;
+  const ml = plants > 1 ? inputVal * plants : (inputVal || waterSuggestion(null, { ph: 'bloom', day: 35 }));
 
   // Update only calc cells for THIS cycle (scoped by data-cycle attribute)
   document.querySelectorAll(`.nt-calc[data-cycle="${cId}"]`).forEach(cell => {
@@ -14196,6 +15243,33 @@ function updateCalc(cId, wk) {
     const current = plan > 0 ? calcDose(plan, ml, unit).toFixed(1) : '0';
     const dispUnit = displayUnit(unit);
     cell.textContent = `${current} ${dispUnit}`;
+  });
+
+  // Mix-Header "· für X L" live aktualisieren — sonst zeigt er noch die alte Wassermenge
+  // und der User denkt die Berechnung wäre kaputt.
+  document.querySelectorAll(`.mix-header-water[data-cycle="${cId}"]`).forEach(el => {
+    el.textContent = ml > 0 ? `· für ${(ml/1000).toFixed(ml%1000===0?0:1)} L` : '';
+  });
+
+  // Mix-Recipe-Breakdown ("X ml/L × Y L") unter den Dosen live aktualisieren
+  document.querySelectorAll(`.mix-recipe-breakdown[data-cycle="${cId}"]`).forEach(el => {
+    const plan = parseFloat(el.dataset.plan) || 0;
+    const unit = el.dataset.unit || 'ml/L';
+    if (plan > 0 && ml > 0 && unit.indexOf('/L') >= 0) {
+      el.textContent = `${plan} ${unit} × ${(ml/1000).toFixed(ml%1000===0?0:1)} L`;
+      el.style.display = 'block';
+    } else {
+      el.style.display = 'none';
+    }
+  });
+
+  // Plant-Badge Total-Wassermenge live aktualisieren — bei 6 Pflanzen × 50 ml/Pflanze = 300 ml.
+  // Wenn der User aber die Gießmenge auf 100 ml ändert, soll der Badge auf 100 ml total gehen
+  // und "(17 ml/Pflanze)" als Aufschlüsselung zeigen.
+  document.querySelectorAll(`.plant-badge-total[data-cycle="${cId}"]`).forEach(el => {
+    const plants = parseInt(el.dataset.plants) || 1;
+    const perPlant = Math.round(ml / plants);
+    el.innerHTML = `≈ ${Math.round(ml)} ml total <span style="font-size:10px;color:var(--text-muted);font-weight:400">(${perPlant} ml/Pflanze)</span>`;
   });
 
   // Gieß-Guide live mitziehen: angezeigte Wassermenge und Drain (10% Regel) anpassen.
@@ -14219,20 +15293,64 @@ function stepMixDoseLive(btn) {
   const prodId = btn.dataset.prod;
   const wk = parseInt(btn.dataset.wk);
   const stepMl = parseFloat(btn.dataset.step);
-  // Aktuellen Wasserwert aus dem Input-Feld lesen (live-Wert vor Save)
+  // Aktuellen Wasserwert aus dem Input-Feld lesen (live-Wert vor Save).
+  // Input ist pro-Pflanze wenn data-plants > 1 — × Pflanzen für Gesamt-Volumen,
+  // weil Dünger sich nach Total-Liter richtet (10 L Wasser → 5 ml Bio·Grow).
   const waterEl = document.getElementById('water-calc-' + cId);
-  const waterAmt = waterEl ? (parseFloat(waterEl.value) || parseFloat(waterEl.placeholder) || 0) : 0;
+  const plants = waterEl ? (parseInt(waterEl.dataset.plants) || 1) : 1;
+  const inputVal = waterEl ? (parseFloat(waterEl.value) || parseFloat(waterEl.placeholder) || 0) : 0;
+  const waterAmt = plants > 1 ? inputVal * plants : inputVal;
   stepMixDose(cId, prodId, wk, stepMl, waterAmt);
+}
+
+/**
+ * Spezielle uEF-Variante für das Wasser-Eingabefeld:
+ * Wenn der Zyklus mehr als 1 Pflanze hat und Skalierung aktiv ist, gibt der User
+ * den Wert PRO PFLANZE ein. Intern speichern wir aber das Total — sonst müssten
+ * Statistiken, History-Charts und Düngerberechnung an vielen Stellen angepasst
+ * werden. Hier wird einmalig × Pflanzenzahl multipliziert beim Speichern.
+ */
+function uEFWater(cId, valStr, plants) {
+  const perPlant = parseFloat(valStr) || 0;
+  const total = plants > 1 ? Math.round(perPlant * plants) : perPlant;
+  uEF(cId, 'water', String(total));
+}
+
+/** Step plant count for entry override; persists in cd.plantCount */
+function stepPlantCount(cId, iso, delta) {
+  if (!iso) return;
+  ensE(cId);
+  const c = S.cycles.find(x => x.id === cId);
+  const cd = S.entries[iso].cycleData[cId];
+  // Aktueller Wert: bestehender Override ODER Zyklus-Default
+  const current = parseInt(cd.plantCount) || parseInt(c?.plantCount) || 1;
+  const next = Math.max(1, Math.min(50, current + delta));
+  // Wenn Override = Zyklus-Default → Override-Feld wieder löschen (clean state)
+  if (next === (parseInt(c?.plantCount) || 1)) {
+    delete cd.plantCount;
+  } else {
+    cd.plantCount = next;
+  }
+  saveS();
+  vibrate(8);
+  if (editISO) renderEntry(editISO);
 }
 
 /** Step water amount by 50ml increments */
 function stepWater(cId, step, wk) {
   const el = document.getElementById('water-calc-' + cId);
   if (!el) return;
+  // Wenn das Feld im pro-Pflanze-Modus läuft (data-plants gesetzt), Schrittweite
+  // bleibt 50 ml pro Pflanze. Total wird via uEFWater × Pflanzen berechnet.
+  const plants = parseInt(el.dataset.plants) || 1;
   const current = parseFloat(el.value) || parseFloat(el.placeholder) || 0;
   const newVal = Math.max(0, Math.round((current + step) / 50) * 50);
   el.value = newVal;
-  uEF(cId, 'water', String(newVal));
+  if (plants > 1) {
+    uEF(cId, 'water', String(newVal * plants));
+  } else {
+    uEF(cId, 'water', String(newVal));
+  }
   updateCalc(cId, wk);
   vibrate(8);
 }
@@ -14462,6 +15580,30 @@ function uEF(cId, f, v) {
 }
 
 /**
+ * Wechselt zwischen Tagebuch- und Plan-Notiz-Modus für einen Zyklus im aktuellen Eintrag.
+ * Modus wird in cd._noteMode gespeichert (nur UI-State, nicht persistent ins Tagebuch).
+ */
+function setNoteMode(cId, mode) {
+  if (!editISO) return;
+  ensE(cId);
+  const cd = S.entries[editISO].cycleData[cId];
+  cd._noteMode = mode;
+  saveS();
+  // Re-render entry um das richtige Notiz-Feld + Toggle-Status anzuzeigen
+  if (typeof renderEntry === 'function') renderEntry();
+}
+
+/**
+ * Wird vom Plan-Notiz-Textarea aufgerufen. Speichert direkt in S.planNotes
+ * statt in S.entries[iso].cycleData[cId].notes.
+ */
+function setPlanNoteFromInput(cId, phaseDay, text) {
+  if (!phaseDay || phaseDay < 1) return;
+  _entryDirty = true;
+  setPlanNote(cId, phaseDay, text);
+}
+
+/**
  * Apply one-click recommended values for a watering day:
  * sets water to the suggestion, pH to 6.4, and writes all planned fertilizer
  * doses (ml/L × water / 1000) as the logged amounts. Skips flush day fertilizers
@@ -14472,49 +15614,66 @@ function applyRecommended(cId, wk) {
   const c = S.cycles.find(x => x.id === cId);
   if (!c) return;
   const p = phase(editISO, c);
+  // Funktion arbeitet auch wenn KEINE getAction-Aktion vorliegt (z.B. Anzucht-Tag 2):
+  // dann gibt's eben kein Wasser/Dünger, aber Klima-Targets können trotzdem gesetzt werden.
   const a = getAction(editISO, c);
-  if (!p || !a) return;
   ensE(cId);
   const cd = S.entries[editISO].cycleData[cId];
-  // "_suggested" markiert welche Werte nur vorgeschlagen sind (grau angezeigt,
-  // in Statistiken ignoriert). Sobald der User den Wert manuell tippt wird das
-  // Flag entfernt → Wert gilt als echter Datenpunkt.
-  if (!cd._suggested) cd._suggested = {};
+  // Phase-Targets für sinnvolle Klima-Werte holen
+  const targets = typeof getPhaseTargets === 'function' && p ? getPhaseTargets(p) : null;
+  let filled = 0;
 
-  // Water: use suggestion
-  const waterMl = waterSuggestion(c, p);
-  cd.water = String(waterMl);
-  cd._suggested.water = true;
-  // pH: 6.4 standard target
-  cd.ph = '6.4';
-  cd._suggested.ph = true;
-  // Fertilizers: only on normal watering days (giess, giess_anz), not flush/ice
-  if (a === 'giess' || a === 'giess_anz') {
-    const doses = getWeekDoses(cId, wk, c);
-    if (!cd._suggestedDoses) cd._suggestedDoses = {};
-    Object.entries(doses).forEach(([prodId, plan]) => {
-      if (plan > 0) {
-        const prod = (S.products || []).find(p => p.id === prodId);
-        cd.doses[prodId] = calcDose(plan, waterMl, prod?.unit);
-        cd._suggestedDoses[prodId] = true;
-      }
-    });
+  // Wasser: nur an Gießtagen (sonst gibt's keine sinnvolle Empfehlung)
+  if (p && (a === 'giess' || a === 'giess_anz' || a === 'spuelen' || a === 'ice')) {
+    const waterMl = waterSuggestion(c, p);
+    cd.water = String(waterMl);
+    filled++;
+    // pH: 6.4 standard target
+    cd.ph = '6.4';
+    filled++;
+    // EC: phase-specific
+    if (typeof getEcTarget === 'function') {
+      // wenn Helper existiert verwenden, sonst Phase-basiert
+    }
+    if (p.ph === 'bloom') {
+      const wk2 = Math.min(p.week || 1, 8);
+      cd.ec = (1.4 + wk2 * 0.08).toFixed(1);
+    } else if (p.ph === 'anzucht' && p.day > 7) {
+      cd.ec = (0.8 + (p.day - 7) * 0.04).toFixed(1);
+    } else if (p.ph === 'flush') {
+      cd.ec = '0.4';
+    } else if (p.ph !== 'anzucht') {
+      cd.ec = '1.5';
+    }
+    // Fertilizers: nur an normalen Gießtagen
+    if (a === 'giess' || a === 'giess_anz') {
+      const doses = getWeekDoses(cId, wk, c);
+      if (!cd.mixChecks) cd.mixChecks = {};
+      Object.entries(doses).forEach(([prodId, plan]) => {
+        if (plan > 0) {
+          const prod = (S.products || []).find(p => p.id === prodId);
+          cd.doses[prodId] = calcDose(plan, waterMl, prod?.unit);
+          // Dünger gleich als "abgehakt" markieren — der User tippt ja drauf wenn er
+          // sie zugegeben hat. Bei Auto-Fill nehmen wir an: alle aktiven werden zugegeben.
+          cd.mixChecks[prodId] = true;
+        }
+      });
+    }
   }
-  // Environment: only set if empty (don't overwrite real measurements)
+  // Klima: Phase-spezifische Mitte des Zielbereichs (z.B. Sämling 24°C/70%)
   const e = S.entries[editISO];
-  if (!e.temp || String(e.temp).trim() === '') {
-    e.temp = '23.5';
-    if (!e._suggested) e._suggested = {};
-    e._suggested.temp = true;
-  }
-  if (!e.humidity || String(e.humidity).trim() === '') {
-    e.humidity = '60';
-    if (!e._suggested) e._suggested = {};
-    e._suggested.humidity = true;
+  if (targets) {
+    e.temp = ((targets.tempMin + targets.tempMax) / 2).toFixed(1);
+    e.humidity = String(Math.round((targets.rhMin + targets.rhMax) / 2));
+    filled += 2;
+  } else {
+    // Fallback wenn keine Phase-Targets
+    if (!e.temp) { e.temp = '23.5'; filled++; }
+    if (!e.humidity) { e.humidity = '60'; filled++; }
   }
   saveS();
   vibrate(15);
-  toast('✨ Werte vorgeschlagen — tippe einen Wert um ihn als "gemessen" zu markieren');
+  toast(filled > 0 ? `✨ ${filled} Werte automatisch ausgefüllt` : '⚠ Keine Werte zum Ausfüllen');
   renderEntry(editISO);
 }
 function uTrich(cId, field, v) {
@@ -14786,11 +15945,60 @@ const LEXIKON = [
       mechanism: 'Pflanzen nehmen Wasser durch <b>Osmose</b> auf — Wasser wandert immer von niedriger zu höherer Salzkonzentration. Ist die Konzentration im Substrat niedriger als in der Wurzel → Wasser fließt rein. Wird sie höher (Überdüngung, Versalzung) → <b>der Sog kehrt sich um</b>, das Substrat zieht aktiv Wasser aus der Pflanze. Ergebnis: „Nutrient Burn" — sie vertrocknet in nasser Erde.',
       practice: '<b>Zielwerte (in Erde, Light-Mix):</b><br>• Anzucht: 0.4–0.8<br>• Vegi: 0.8–1.4<br>• Blüte Mitte: 1.4–2.0<br>• Spülen: <0.4<br><br>EC immer nach allen Düngern messen, vor pH-Einstellung. <b>Runoff-EC</b> höher als Inflow = Salze sammeln sich → Flushen.',
       pitfall: 'Über 2.5 im Substrat ist gefährlich — sofort mit reinem Wasser zwischen-gießen. Viele Coco/Hydro-Grower dosieren zu hart weil sie es „härter als Erde" interpretieren. Nein — die Pflanze toleriert nicht mehr, du hast nur <b>weniger Puffer</b> und musst öfter messen.' },
+    { t: 'Temperatur',
+      brief: 'Bestimmt Stoffwechsel-Geschwindigkeit, Wurzelaktivität und Photosynthese. Direkter Einfluss auf Wachstumstempo und Aroma.',
+      mechanism: 'Pflanzen sind <b>poikilotherm</b> — ihre Stoffwechselrate folgt der Umgebungstemperatur. Pro 10°C verdoppelt sich die Enzymaktivität ungefähr (van\'t Hoff-Regel). Aber: ab 30°C kippt der Effekt — Enzyme denaturieren, Photosynthese stagniert, Atmung steigt weiter → Pflanze verbrennt mehr Energie als sie aufbaut. Unter 18°C wird die Wurzelaktivität so langsam dass Phosphor und andere Nährstoffe nicht mehr aufgenommen werden — typisches „lila Stängel"-Bild.<br><br>Tag-Nacht-Differenz (DIF) steuert Streckenwachstum: hohe Differenz = stauchere Pflanze, niedrige Differenz = streckendes Wachstum.',
+      practice: '<b>Zielwerte je Phase:</b><br><br>' +
+        '<b>🌱 Sämling/Klon:</b> 22–26°C Tag · 20–22°C Nacht<br>' +
+        '<b>🌿 Anzucht/Vegi:</b> 22–28°C Tag · 18–22°C Nacht<br>' +
+        '<b>🌸 Frühe Blüte:</b> 23–27°C Tag · 19–22°C Nacht<br>' +
+        '<b>🌺 Mittlere Blüte:</b> 22–26°C Tag · 18–21°C Nacht<br>' +
+        '<b>🍯 Späte Blüte:</b> 18–24°C Tag · 16–20°C Nacht (DIF 5–8°C verstärkt Farben/Trichome)<br>' +
+        '<b>🚿 Spülen:</b> 20–24°C · ähnlich wie späte Blüte<br>' +
+        '<b>🍂 Trocknen:</b> 18–20°C konstant<br><br>' +
+        '<b>Faustregel:</b> 25°C ist überall im sicheren Bereich. Erst in der späten Blüte gezielt absenken für Farben + Aroma. Messpunkt: Blattdach-Höhe, nicht Boden.',
+      pitfall: 'Häufige Fehler:<br>• Lampen zu nah → Hitzespitze in Buds → verbrennen<br>• Im Winter zu kalt nachts → Wurzeln stehen still → P-Mangel<br>• Tagsüber 28°C plus 60% RLF = perfekt für Schimmel in der Blüte<br>• Thermometer am Boden statt am Blattdach → falsche Messwerte<br><br>Temperatur und Luftfeuchte arbeiten zusammen — siehe <b>VPD</b> für die kombinierte Logik.' },
+    { t: 'Luftfeuchtigkeit (RLF)',
+      brief: 'Wieviel Wasserdampf in der Luft ist (relativ zur maximal möglichen Menge bei dieser Temperatur). Steuert Transpiration und Schimmelrisiko.',
+      mechanism: 'Relative Luftfeuchte (RLF) ist temperaturabhängig: 60% RLF bei 25°C enthält mehr absolutes Wasser als 60% RLF bei 18°C. Wenn nachts die Temperatur fällt, steigt die RLF von alleine — gleicher Wassergehalt, aber näher an der Sättigung. Daher kann eine Box tagsüber bei 50% sein und nachts auf 75% klettern → Botrytis-Risiko (Bud-Rot).<br><br>Pflanzen verlieren Wasser hauptsächlich durch Transpiration. Hohe RLF = wenig Verlust = schwacher Sog = Calcium und andere unbewegliche Nährstoffe wandern nicht in junge Triebe → Mangel-Symptome trotz Düngung. Niedrige RLF = starker Verlust = Stomata schließen → Photosynthese stoppt.',
+      practice: '<b>Zielwerte je Phase:</b><br><br>' +
+        '<b>🌱 Sämling/Klon:</b> 65–75% RLF (kleine Wurzeln, viel Verdunstung über Blätter)<br>' +
+        '<b>🌿 Anzucht/Vegi:</b> 55–70% RLF<br>' +
+        '<b>🌸 Frühe Blüte:</b> 50–60% RLF (Stretch-Phase, schon runter)<br>' +
+        '<b>🌺 Mittlere Blüte:</b> 45–55% RLF (Buds werden dicht — Schimmelrisiko steigt)<br>' +
+        '<b>🍯 Späte Blüte:</b> 40–50% RLF (kontrollierter Trockenstress = mehr Trichome)<br>' +
+        '<b>🚿 Spülen:</b> 40–50% RLF<br>' +
+        '<b>🍂 Trocknen:</b> 55–62% RLF konstant (langsames gleichmäßiges Trocknen)<br><br>' +
+        '<b>Wichtig:</b> RLF zur kühlsten Stunde messen (Nacht-Ende), nicht bei Lampen-an. Tagsüber 50% kann nachts 70% bedeuten → Schimmelfalle.',
+      pitfall: 'Klassische Fehler:<br>• Sämling bei 40% RLF → trocknet aus<br>• Späte Blüte bei 65% RLF → Botrytis (Bud-Rot, alles weg)<br>• Nur tagsüber gemessen, nachts steigt RLF um 15–25% → Schimmel in der Nacht<br>• Luftbefeuchter direkt neben Pflanze → Nasse Blätter → Mehltau<br><br>Temperatur und Luftfeuchte arbeiten zusammen — siehe <b>VPD</b> für die kombinierte Logik die wirklich relevant ist.' },
     { t: 'VPD (Vapour Pressure Deficit)',
       brief: 'Der Saugdruck zwischen Blatt und Luft. Steuert Transpiration, Nährstoff-Transport und Kühlung — die wichtigste Umgebungs-Variable nach Licht.',
       mechanism: 'Auf der Blattunterseite öffnen <b>Stomata</b> für CO₂-Aufnahme und lassen dabei Wasser verdunsten. Dieser <b>Transpirationssog</b> zieht Wasser + Nährstoffe von den Wurzeln bis in die Triebspitzen. VPD ist das Maß für diesen Sog: abhängig von Temperatur UND Luftfeuchte gleichzeitig.<br><br><b>VPD zu niedrig</b> (feucht/kalt): Pflanze kann nicht transpirieren → Calcium (unbeweglich!) stagniert → Ca-Mangel trotz Dünger.<br><b>VPD zu hoch</b> (heiß/trocken): Pflanze schließt Stomata zum Schutz → Photosynthese stoppt → Wachstum friert ein.',
-      practice: '<b>Zielwerte (kPa):</b><br>• Anzucht: 0.4–0.8<br>• Vegi: 0.8–1.2<br>• Frühe Blüte: 1.0–1.3<br>• Späte Blüte: 1.2–1.6<br><br>VPD-Rechner in der App nutzen (Umgebungs-Sektion).<br><br><b>Cup-Level-Trick:</b> In der letzten Blüte-Woche gezielt auf 1.4–1.6 kPa fahren. Kontrollierter Trockenstress → massive Trichom-Überproduktion zum Selbstschutz.',
-      pitfall: 'VPD wird oft ignoriert weil es abstrakt wirkt. Dabei ist es der Hebel für 30%+ mehr Ertrag bei gleichem Licht und Dünger. Temperatur- oder Feuchte-Werte allein sagen wenig — die Kombination ist entscheidend.' },
+      practice: '<b>Zielwerte je Phase (kPa / Temp / RLF):</b><br><br>' +
+        '<b>🌱 Keimung & Sämling (Tag 1–10):</b><br>' +
+        'VPD 0.4–0.8 · Temp 22–26°C · RLF 65–75%<br>' +
+        '<i>Wurzeln noch klein → niedrige Transpiration nötig, sonst trocknet Sämling aus.</i><br><br>' +
+        '<b>🌿 Anzucht/Vegi (Tag 11–28):</b><br>' +
+        'VPD 0.8–1.2 · Temp 22–28°C · RLF 55–70%<br>' +
+        '<i>Wurzeln aufgebaut, Wachstum legt los. Höherer VPD = mehr Nährstoff-Transport, schnelleres Wachstum.</i><br><br>' +
+        '<b>🌸 Frühe Blüte (Tag 1–21 ab Blüte):</b><br>' +
+        'VPD 1.0–1.3 · Temp 23–27°C · RLF 50–60%<br>' +
+        '<i>Stretch-Phase. RLF runter um Schimmelrisiko zu mindern, Trichom-Bildung anzustoßen.</i><br><br>' +
+        '<b>🌺 Mittlere Blüte (Tag 22–42):</b><br>' +
+        'VPD 1.2–1.5 · Temp 22–26°C · RLF 45–55%<br>' +
+        '<i>Buds werden dicht. Strikt unter 55% RLF um Botrytis (Bud-Rot) zu vermeiden.</i><br><br>' +
+        '<b>🍯 Späte Blüte/Reife (letzte 2 Wochen):</b><br>' +
+        'VPD 1.4–1.6 · Temp 18–24°C · RLF 40–50%<br>' +
+        '<i>Kontrollierter Trockenstress → massive Trichom-Überproduktion. Tag 18–22°C, Nacht 16–20°C (Tag-Nacht-Diff 5–8°C verstärkt Farben).</i><br><br>' +
+        '<b>🚿 Spülen (8 Tage):</b><br>' +
+        'VPD 1.4–1.6 · Temp 20–24°C · RLF 40–50%<br>' +
+        '<i>Wie späte Blüte. Pflanze baut Restnährstoffe ab.</i><br><br>' +
+        '<b>🍂 Trocknen:</b><br>' +
+        'Temp 18–20°C · RLF 55–62%<br>' +
+        '<i>VPD-Konzept gilt nicht mehr — abgeschnittene Pflanze. Langsam und gleichmäßig trocknen für Aroma-Erhalt.</i><br><br>' +
+        '<b>VPD-Rechner</b> in der App nutzen (Umgebungs-Sektion).<br><br>' +
+        '<b>Cup-Level-Trick:</b> In der letzten Blüte-Woche gezielt auf 1.4–1.6 kPa fahren. Kontrollierter Trockenstress → massive Trichom-Überproduktion zum Selbstschutz.',
+      pitfall: 'VPD wird oft ignoriert weil es abstrakt wirkt. Dabei ist es der Hebel für 30%+ mehr Ertrag bei gleichem Licht und Dünger. Temperatur- oder Feuchte-Werte allein sagen wenig — die Kombination ist entscheidend.<br><br><b>Fallen:</b><br>• Sämling bei 1.2 kPa → trocknet aus<br>• Späte Blüte bei 0.8 kPa + 65% RLF → Botrytis (Bud-Rot, alles weg)<br>• RLF tagsüber gemessen aber nachts steigt sie um 10–20% → Schimmel in der Nacht<br><br>RLF-Differenz Tag/Nacht beachten: nachts kühler = höhere relative Feuchte bei gleichem Wassergehalt der Luft. Daher Klima-Werte zur kühlsten Stunde messen.' },
     { t: 'PPFD & DLI (Licht-Matrix)',
       brief: 'Zwei Messungen die zusammen sagen wie viel Photosynthese tatsächlich passiert. PPFD ist der Tacho, DLI der Tages-Tank.',
       mechanism: '<b>PPFD (Photosynthetische Photonenflussdichte):</b> Momentan-Dichte nutzbarer Photonen pro Sekunde pro m². Messung: µmol/m²/s. Zu hoch ohne passenden CO₂/Temperatur → Chlorophyll bleicht aus (Light Bleach).<br><br><b>DLI (Tageslichtintegral):</b> Kumulierte Photonen pro Tag, mol/m²/d. Jede Pflanze hat ein biologisches Tages-Limit — ist es erreicht, erzeugt sie keine weitere Biomasse mehr, egal wie hell es noch ist.',
@@ -15316,7 +16524,7 @@ function openLexikonEntry(title) {
   renderLexikon(title);
 }
 
-function renderLexikon(highlightTitle) {
+function renderLexikon(highlightTitle, searchQuery) {
   // STRUKTUR-SUPPORT (Phase 4 Schritt 4):
   // Ein Lexikon-Eintrag kann jetzt optionale strukturierte Felder haben:
   //   brief:     1-Satz-Kern (erscheint als Subtitel unter dem Titel)
@@ -15357,22 +16565,82 @@ function renderLexikon(highlightTitle) {
     return html;
   }
 
-  document.getElementById('lexikon-body').innerHTML = LEXIKON.map(cat => `
+  // SUCH-LOGIK
+  // Tolerant: case-insensitive, ignoriert Umlaute/Sonderzeichen.
+  // Sucht in: Titel + brief + mechanism + practice + pitfall + txt.
+  // Score: Treffer im Titel zählen 10×, in brief 5×, im Body 1×.
+  const q = (searchQuery || '').trim().toLowerCase();
+  const stats = document.getElementById('lex-search-stats');
+  const clearBtn = document.getElementById('lex-search-clear');
+  const isSearching = q.length >= 2;
+
+  function normalize(s) {
+    return (s || '').toLowerCase()
+      .replace(/ä/g, 'a').replace(/ö/g, 'o').replace(/ü/g, 'u').replace(/ß/g, 'ss');
+  }
+  function highlightMatches(text, qNorm) {
+    if (!qNorm || !text) return text;
+    // Mark matches with <mark> for visual highlight
+    const re = new RegExp('(' + qNorm.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&') + ')', 'gi');
+    return text.replace(re, '<mark style="background:rgba(240,208,80,0.35);color:var(--yellow);padding:0 2px;border-radius:3px">$1</mark>');
+  }
+
+  let categoriesToRender = LEXIKON;
+  let totalMatches = 0;
+
+  if (isSearching) {
+    const qNorm = normalize(q);
+    categoriesToRender = LEXIKON.map(cat => {
+      const matchedItems = cat.items.map(item => {
+        const titleN = normalize(item.t);
+        const briefN = normalize(item.brief || '');
+        const bodyN = normalize((item.mechanism || '') + ' ' + (item.practice || '') + ' ' + (item.pitfall || '') + ' ' + (item.txt || ''));
+        let score = 0;
+        if (titleN.includes(qNorm)) score += 10;
+        if (briefN.includes(qNorm)) score += 5;
+        if (bodyN.includes(qNorm)) score += 1;
+        return score > 0 ? { ...item, _score: score, _matchInBody: bodyN.includes(qNorm) && !titleN.includes(qNorm) && !briefN.includes(qNorm) } : null;
+      }).filter(Boolean).sort((a, b) => b._score - a._score);
+      totalMatches += matchedItems.length;
+      return matchedItems.length > 0 ? { ...cat, items: matchedItems } : null;
+    }).filter(Boolean);
+
+    if (stats) {
+      stats.style.display = 'block';
+      stats.textContent = totalMatches === 0
+        ? `Keine Treffer für „${q}". Versuch z.B. "Stickstoff", "VPD", "Mangel".`
+        : `${totalMatches} ${totalMatches === 1 ? 'Treffer' : 'Treffer'} für „${q}"`;
+    }
+    if (clearBtn) clearBtn.style.display = 'block';
+  } else {
+    if (stats) stats.style.display = 'none';
+    if (clearBtn) clearBtn.style.display = 'none';
+  }
+
+  // Rendering: bei Suche immer aufgeklappt zeigen, Treffer im Titel/Body markieren.
+  document.getElementById('lexikon-body').innerHTML = categoriesToRender.length === 0
+    ? `<div style="padding:40px 20px;text-align:center;color:var(--text-muted);font-size:13px">Keine Lexikon-Einträge für „${q}" gefunden.<br><br><span style="font-size:11px;color:var(--text-hint)">Tipp: Versuche kürzere Suchbegriffe oder verwandte Themen.</span></div>`
+    : categoriesToRender.map(cat => `
     <div style="margin-bottom:4px">
       <div class="sect-head" style="font-size:12px;padding:6px 0">${cat.cat}</div>
       ${cat.items.map(item => {
         const isHL = highlightTitle && item.t === highlightTitle;
+        // Bei der Suche bleiben Treffer ZUGEKLAPPT — der User sieht alle Titel
+        // auf einen Blick und klappt nur den interessanten auf. Nur ein expliziter
+        // "highlight"-Eintrag (z.B. via Diagnostiker-Link) wird automatisch geöffnet.
+        const isExpanded = isHL;
         const hasStructure = !!(item.brief || item.mechanism || item.practice || item.pitfall);
+        const titleHTML = isSearching ? highlightMatches(item.t, q) : item.t;
         return `
         <div id="lex-${item.t.replace(/[^a-zA-Z]/g,'')}" style="background:${isHL ? 'var(--green-bg)' : 'var(--card)'};border:0.5px solid ${isHL ? 'var(--green-dk)' : 'var(--border)'};border-radius:10px;overflow:hidden;margin-bottom:6px;${isHL ? 'scroll-margin-top:80px' : ''}">
           <div onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none';this.querySelector('.ltgl').textContent=this.nextElementSibling.style.display==='none'?'▸':'▾'" 
             style="padding:10px 14px;cursor:pointer;display:flex;align-items:center;gap:8px">
             <div style="flex:1;min-width:0">
-              <div style="font-size:13px;font-weight:${isHL ? '700' : '500'};color:${isHL ? 'var(--green)' : 'var(--text)'}">${item.t}${hasStructure ? ' <span style="font-size:9px;color:var(--text-hint);font-weight:500">· strukturiert</span>' : ''}</div>
+              <div style="font-size:13px;font-weight:${isHL ? '700' : '500'};color:${isHL ? 'var(--green)' : 'var(--text)'}">${titleHTML}${hasStructure ? ' <span style="font-size:9px;color:var(--text-hint);font-weight:500">· strukturiert</span>' : ''}${item._matchInBody ? ' <span style="font-size:9px;color:var(--yellow);font-weight:500">· Treffer im Text</span>' : ''}</div>
             </div>
-            <span class="ltgl" style="color:var(--text-muted);font-size:14px">${isHL ? '▾' : '▸'}</span>
+            <span class="ltgl" style="color:var(--text-muted);font-size:14px">${isExpanded ? '▾' : '▸'}</span>
           </div>
-          <div style="display:${isHL ? 'block' : 'none'};padding:0 14px 12px">
+          <div style="display:${isExpanded ? 'block' : 'none'};padding:0 14px 12px">
             ${renderLexItemBody(item)}
           </div>
         </div>`;
@@ -15435,7 +16703,7 @@ const HOWTO = [
     { t: 'Fotos & Notizen',
       txt: 'Foto-Button öffnet die Kamera oder Galerie. Jedes Foto hat ein rotes × zum Löschen. Bei mehr als ~3.5 MB Speicher warnt die App dass der Platz eng wird. Im Notiz-Feld kannst du frei schreiben — oder die Smart-Note-Chips antippen für häufige Beobachtungen. Einige Chips (z.B. "Blätter gelblich") zeigen dann einen 📖-Link zum passenden Lexikon-Eintrag.' },
     { t: 'Vergangene Tage auto-eintragen',
-      txt: 'Wenn du mitten im Zyklus startest: <b>Einstellungen → Zyklus auswählen → 🕐 Vergangene Gießtage auto-eintragen.</b> Die App zählt alle Gießtage zwischen Startdatum und heute die noch keinen Eintrag haben und füllt sie mit Planwerten (Wasser, pH 6.4, Dünger, Umgebungs-Defaults) und markiert sie mit "🤖 Auto-eingetragen" in den Notizen. Bestehende Einträge bleiben unverändert.' },
+      txt: 'Wenn du mitten im Zyklus startest: <b>Einstellungen → Zyklus auswählen → 🕐 Vergangene Gießtage auto-eintragen.</b> Die App zählt alle Gießtage zwischen Startdatum und heute die noch keinen Eintrag haben und füllt sie mit phasen-passenden Werten (Wasser, pH 6.2–6.5, EC nach Phase, Dünger nach Wochenplan, Temp/RLF aus Phase-Targets) und markiert sie mit "🤖 Auto-eingetragen" in den Notizen. Bestehende Einträge bleiben unverändert.' },
   ]},
   { cat: '🚿 Besondere Phasen', items: [
     { t: 'Spülen (Wo 9-10 im Master-Plan)',
@@ -15447,7 +16715,29 @@ const HOWTO = [
     { t: 'Ernte',
       txt: 'Früh am Morgen ernten, bevor die Lampen angehen (maximaler Terpengehalt). Äste abschneiden, grob entblättern, dann kopfüber aufhängen. Die App wechselt automatisch in die Trocknungs-Phase.' },
     { t: 'Trocknen',
-      txt: '18–21°C, 55–65% RLF. Dauert 7–14 Tage. Stiele sollten knacken beim Biegen, nicht brechen. Zu schnell = Heu-Geschmack (zu wenig Abbau von Chlorophyll). Danach <b>Curing</b> in Einmachgläsern: erste Woche täglich 15 Min öffnen ("Burping"), dann alle 2–3 Tage. Minimum 2 Wochen, ideal 4–8 Wochen.' },
+      brief: 'Die wichtigste Phase für Aroma und Wirkung. Falsch trocknen ruiniert in 7 Tagen die ganze Arbeit der vorherigen Monate.',
+      mechanism: '<b>Was beim Trocknen passiert:</b><br>• <b>Wasserentzug</b> aus den Buds (frisch ~80% Wasser, fertig ~10–15%)<br>• <b>Chlorophyll-Abbau</b> — das grüne Pigment macht den „Heu/Gras"-Geschmack. Es zerfällt langsam bei Dunkelheit + 18–21°C in 7–14 Tagen<br>• <b>Stärke wandelt sich zu Zucker</b> — der typische süße Geschmack entsteht erst beim Trocknen<br>• <b>Terpene</b> (Aroma-Stoffe) sind flüchtig — bei &gt;25°C verdunsten sie weg, bei zu trockener Luft auch<br>• <b>THC ist zunächst inaktiv</b> als THCA — wird erst beim Erhitzen oder durch Zeit/UV zu THC<br><br>Zu schnell getrocknet (z.B. Heizung, Sonne, Lüfter direkt drauf) → Chlorophyll bleibt → kratzt im Hals, schmeckt nach Heu, brennt schwarz. Zu feucht → Schimmel, Pflanze ist Müll.',
+      practice: '<b>📋 KOMPLETTER ABLAUF</b><br><br>' +
+        '<b>1. Vor dem Trocknen — Schnitt-Entscheidung:</b><br>' +
+        '<u>Wet Trim (sofort schneiden):</u> Ganze Pflanze ernten, Buds direkt von Zweigen + Zuckerblättern befreien. Schneller, mehr Platz nötig (Trockennetz). Trocknet schneller (5–8 Tage). Buds sind danach optisch sauberer.<br><br>' +
+        '<u>Dry Trim (mit Blättern trocknen):</u> Pflanze kopfüber in ganze Zweige schneiden + aufhängen. Zuckerblätter bleiben dran. Trocknet langsamer (8–14 Tage). Trichome bleiben besser geschützt. Aroma intensiver. Trimmen erst NACH dem Trocknen.<br><br>' +
+        '<b>👉 Empfehlung Anfänger: Dry Trim.</b> Mehr Aroma, schwerer zu versauen, mehr Puffer wenn Klima nicht perfekt ist.<br><br>' +
+        '<b>2. Klima beim Trocknen:</b><br>• Temperatur: <b>18–21°C</b> (kühler = besser, nie über 23°C)<br>• Luftfeuchte: <b>55–65% RLF</b> (wichtig! 50% ist schon zu trocken)<br>• <b>Dunkelheit</b> (Licht zerstört Trichome und THC)<br>• <b>Leichte Luftbewegung</b> — kleiner Lüfter im Raum, NICHT direkt auf die Buds<br>• Geruch: Plant-Schrank, Zelt, kühler Kellerraum<br><br>' +
+        '<b>3. Aufhängen:</b><br>• Zweige kopfüber an Schnur/Drahtgitter — Buds zeigen nach unten<br>• Pro Zweig 5–10 cm Abstand<br>• Wenn Trockennetz: Buds einzeln liegend, alle 24h wenden<br><br>' +
+        '<b>4. Wie erkenne ich „fertig"? — Der Knack-Test:</b><br>Nach 5–7 Tagen täglich testen. Nimm einen kleineren Seitenzweig, biege ihn:<br>• <b>Knackt deutlich + bricht durch</b> = fertig getrocknet ✅<br>• <b>Biegt sich nur</b> = noch zu feucht, weiter trocknen<br>• <b>Bröselig + zerfällt</b> = zu trocken (Curing rettet aber noch was)<br><br>Bei dicken Buds testet der Knack-Test des Hauptstiels — die Innenfeuchte zählt, nicht die Oberfläche.<br><br>' +
+        '<b>Alternative: das Bud selbst:</b> Außen sollte sich der Bud trocken anfühlen, beim leichten Quetschen aber innen noch minimal nachgeben (nicht hart wie ein Stein, nicht weich wie ein Schwamm). „Sponge-with-resistance".<br><br>' +
+        '<b>5. NACH dem Trocknen — Curing in Gläsern:</b><br>• Buds in Einmachgläser (Weck/Mason Jars), zu 75% gefüllt — Luftraum oben<br>• <b>Erste 1–2 Tage:</b> Glas alle paar Stunden öffnen, kurz lüften<br>• <b>Woche 1:</b> 1× täglich „Burping" — Glas 5–15 Min komplett auf<br>• <b>Woche 2–4:</b> Alle 2–3 Tage burpen<br>• <b>Ab Woche 4:</b> Nur noch 1× pro Woche oder weniger<br><br>' +
+        '<b>Optional: Boveda/Integra-Hygrostat-Päckchen 62%</b> ins Glas — stabilisiert RLF automatisch. Kosten ~3–5€ pro Pack, kann mehrfach verwendet werden.<br><br>' +
+        '<b>6. Wie lange Curen?</b><br>• <b>Minimum: 2 Wochen</b> — gerade noch akzeptabel<br>• <b>Ideal: 4–8 Wochen</b> — voller Geschmack entwickelt<br>• <b>Premium: 3–6 Monate</b> — Sortenstärke richtig spürbar<br>• Bleibt in dunklen Gläsern bei 18–20°C praktisch unbegrenzt haltbar',
+      pitfall: '<b>⚠ Häufige Fehler die alles ruinieren:</b><br><br>' +
+        '<b>• Zu schnell getrocknet</b> (Heizung, Lüfter direkt drauf, Sonne) → Heu-Geschmack, kratzt, brennt schwarz. Curing rettet das nur teilweise.<br><br>' +
+        '<b>• Zu lange getrocknet ohne ins Glas</b> → Buds bröseln zu Staub. Sind dann unbrauchbar fein.<br><br>' +
+        '<b>• Im Glas zu früh verschlossen</b> (Buds noch zu feucht, &gt;65% RLF im Glas) → <b>Schimmel im Glas</b>, alles Müll. Hygrometer im Glas messen — sollte nach 30 Min auf 60–62% einpendeln. Über 65% = nochmal raus zum Trocknen.<br><br>' +
+        '<b>• Nicht geburpt</b> → Buds bleiben muffig, Geschmack klemmt fest.<br><br>' +
+        '<b>• Im Sonnenlicht</b> → THC zerfällt. Gläser im Schrank lagern.<br><br>' +
+        '<b>• Plastiktüten</b> statt Glas → Kondenswasser → Schimmel. Nur Glas oder spezielle Curing-Boxen.<br><br>' +
+        '<b>🩺 Was wenn was schiefgeht?</b><br>• <b>Nach 2 Tagen schon trocken:</b> Klima ist zu warm/trocken. Zelt schließen, Luftbefeuchter rein, RLF auf 60% bringen.<br>• <b>Nach 14 Tagen noch feucht:</b> Klima ist zu kühl/feucht. Mehr Luftumwälzung, leicht entfeuchten.<br>• <b>Schimmelflecken auf Bud:</b> Diesen Bud sofort entsorgen, andere prüfen, Klima trockener fahren.<br>• <b>Heu-Geschmack nach Trocknen:</b> Längeres Curing (6–8 Wochen) baut viel davon ab.<br>• <b>Bröselig-trocken:</b> Boveda-Päckchen (62%) ins Glas → 1–2 Wochen rehydriert leicht.<br><br>' +
+        '<b>📅 Bei DEINEM Trocknen (5 Tage):</b> Mach den Knack-Test an einem dünneren Seitenzweig. Wenn er knackt + bricht: rein ins Glas, mit Hygrometer prüfen ob unter 65%. Wenn er nur biegt: weiter hängen lassen, alle 12h erneut testen. Bei Dry-Trim ist 5 Tage oft noch früh — 7–10 ist normal.' },
   ]},
   { cat: '☀️ Outdoor-Anbau', items: [
     { t: 'Outdoor-Zyklus richtig anlegen',
@@ -15857,7 +17147,12 @@ function _buildHowtoResults(query) {
     matchedCats = HOWTO.map(cat => ({
       cat: cat.cat,
       items: cat.items.filter(item => {
-        const hay = _normSearch(item.t + ' ' + item.txt + ' ' + cat.cat);
+        // Suche durchsucht jetzt auch strukturierte Felder (brief/mechanism/practice/pitfall),
+        // sonst würden Treffer im Text der ausgebauten Einträge nicht gefunden.
+        const fullText = (item.t || '') + ' ' + (item.txt || '') + ' ' +
+          (item.brief || '') + ' ' + (item.mechanism || '') + ' ' +
+          (item.practice || '') + ' ' + (item.pitfall || '') + ' ' + cat.cat;
+        const hay = _normSearch(fullText);
         return hay.includes(normQuery);
       })
     })).filter(cat => cat.items.length > 0);
@@ -15874,7 +17169,10 @@ function _buildHowtoResults(query) {
          <div style="font-size:12px;color:var(--text-sub);line-height:1.6">${HOWTO.length} Kapitel · ${totalEntries} Einträge. Tipp auf eine Überschrift um den Text auf- oder zuzuklappen, oder benutz die Suche oben. Weiter unten findest du auch interaktive Touren.</div>
        </div>`;
 
-  const entriesOpen = !!normQuery;
+  // Bei Suche bleiben alle Treffer ZUGEKLAPPT — User sieht alle Titel auf einen Blick
+  // und klappt nur den interessanten auf. Verhindert dass 14 ausgebaute Einträge
+  // gleichzeitig sichtbar sind und alles unleserlich wird.
+  const entriesOpen = false;
   const bodyDisplay = entriesOpen ? 'block' : 'none';
   const toggleIcon = entriesOpen ? '▾' : '▸';
 
@@ -15883,15 +17181,40 @@ function _buildHowtoResults(query) {
       <div class="sect-head" style="font-size:12px;padding:10px 0 6px">${cat.cat}</div>
       ${cat.items.map(item => {
         const titleHTML = _highlightMatches(item.t, query);
-        const bodyHTML = _highlightMatches(item.txt, query);
+        // Strukturierte Einträge (brief/mechanism/practice/pitfall) wie im Lexikon rendern.
+        // Fallback: txt-Feld als einzelner Block.
+        const hasStructure = !!(item.brief || item.mechanism || item.practice || item.pitfall);
+        let bodyHTML;
+        if (hasStructure) {
+          const sections = [];
+          if (item.mechanism) sections.push({ label: 'Was passiert', body: item.mechanism, color: 'var(--blue)' });
+          if (item.practice) sections.push({ label: 'So gehst du vor', body: item.practice, color: 'var(--green)' });
+          if (item.pitfall) sections.push({ label: 'Achtung', body: item.pitfall, color: 'var(--orange)' });
+          let parts = [];
+          if (item.brief) {
+            parts.push(`<div style="font-size:12px;color:var(--text);line-height:1.6;margin-bottom:10px;font-weight:600">${_highlightMatches(item.brief, query)}</div>`);
+          }
+          parts = parts.concat(sections.map(s =>
+            `<div style="margin-bottom:10px">
+              <div style="font-size:10px;font-weight:700;color:${s.color};text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">${s.label}</div>
+              <div style="font-size:12px;color:var(--text-sub);line-height:1.65">${_highlightMatches(s.body, query)}</div>
+            </div>`
+          ));
+          if (item.txt) {
+            parts.push(`<div style="font-size:12px;color:var(--text-sub);line-height:1.65;padding-top:6px;border-top:0.5px dashed var(--border)">${_highlightMatches(item.txt, query)}</div>`);
+          }
+          bodyHTML = parts.join('');
+        } else {
+          bodyHTML = `<div style="font-size:12px;color:var(--text-sub);line-height:1.7">${_highlightMatches(item.txt || '', query)}</div>`;
+        }
         return `<div style="background:var(--card);border:0.5px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:6px">
           <div onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none';this.querySelector('.htgl').textContent=this.nextElementSibling.style.display==='none'?'▸':'▾'"
             style="padding:10px 14px;cursor:pointer;display:flex;align-items:center;gap:8px">
-            <div style="flex:1;font-size:13px;font-weight:500;color:var(--text)">${titleHTML}</div>
+            <div style="flex:1;font-size:13px;font-weight:500;color:var(--text)">${titleHTML}${hasStructure ? ' <span style="font-size:9px;color:var(--text-hint);font-weight:500">· strukturiert</span>' : ''}</div>
             <span class="htgl" style="color:var(--text-muted);font-size:14px">${toggleIcon}</span>
           </div>
           <div style="display:${bodyDisplay};padding:0 14px 12px">
-            <div style="font-size:12px;color:var(--text-sub);line-height:1.7">${bodyHTML}</div>
+            ${bodyHTML}
           </div>
         </div>`;
       }).join('')}
@@ -16101,7 +17424,18 @@ function stopPPFD() {
 // =====================================================================
 //  [SEKTION]: INIT
 // =====================================================================
+const _perfStart = performance.now();
+function _perfMark(label) {
+  const ms = (performance.now() - _perfStart).toFixed(0);
+  if (typeof console !== 'undefined') console.log(`[perf] ${label}: ${ms}ms`);
+  return ms;
+}
 loadS();
+_perfMark('loadS');
+// Demo-Zyklus auf aktuelles Datum rollen falls er veraltet ist (z.B. User
+// öffnet App nach Wochen wieder). Demo soll immer "live" wirken — nicht mit
+// Startdatum aus dem Vorjahr.
+_refreshDemoIfStale();
 // Initial sync: active plan → legacy globals for compatibility with existing read-sites
 syncActivePlanToGlobals();
 // Set beginner-mode body class so advanced controls stay hidden from the first render
@@ -16121,7 +17455,28 @@ if (!S._disclaimerAcceptedAt) {
 } else {
   goTo('dash');
 }
+const _perfTotal = _perfMark('first-render');
+// Sichtbarer Toast wenn Init länger als 800ms dauert — sonst still bleiben.
+// Hilft uns zu sehen ob Optimierungen tatsächlich wirken.
+if (parseFloat(_perfTotal) > 800) {
+  setTimeout(() => {
+    if (typeof toast === 'function') toast(`⚡ App-Start: ${_perfTotal}ms (>800ms = optimierbar)`, 3500);
+  }, 1500);
+}
 history.pushState(null, '', location.href);
+
+// Service Worker registrieren — NACH dem ersten Render, asynchron mit setTimeout damit
+// er den Init nicht blockiert. Beim zweiten App-Start liefert der SW die App direkt aus
+// dem Browser-Cache → instant Start ohne Netzwerk. Wird in iFrames (z.B. Claude.ai-
+// Vorschau) übersprungen weil SW-Registrierung dort eh nicht funktioniert.
+if ('serviceWorker' in navigator && location.protocol !== 'data:' && window.self === window.top) {
+  setTimeout(() => {
+    navigator.serviceWorker.register('sw.js').catch(() => {
+      // Stille Fehler — wenn SW-Registrierung scheitert (z.B. falscher Pfad), läuft die App
+      // einfach ohne Caching weiter. Kein Bruch der Kern-Funktionalität.
+    });
+  }, 2000);
+}
 
 // Swipe navigation for calendar
 (function() {
@@ -16742,7 +18097,7 @@ function startEntryTour() {
   // Check: tour only makes sense if there's an active cycle
   const hasActive = typeof S !== 'undefined' && S.cycles && S.cycles.filter(c => c.active).length > 0;
   if (!hasActive) {
-    alert('Diese Tour zeigt wie man einen täglichen Eintrag öffnet — dafür brauchst du erst einen aktiven Zyklus. Leg einen in den Einstellungen an und probier dann nochmal.');
+    toast('Diese Tour braucht erst einen aktiven Zyklus — leg einen in den Einstellungen an.', 5000);
     return;
   }
   goTo('dash');
