@@ -6728,7 +6728,7 @@ function getEffectivePlantCount(c, iso) {
   return Math.max(1, parseInt(c.plantCount) || 1);
 }
 
-function waterSuggestion(c, p) {
+function waterSuggestion(c, p, iso) {
   // Helper: berechnet die "rohe" biophysikalische Empfehlung (ohne Personalisierung)
   const rawSuggestion = () => _waterSuggestionRaw(c, p);
 
@@ -6744,19 +6744,19 @@ function waterSuggestion(c, p) {
     const recentRatios = [];
     // Rückwärts durch die letzten 30 Tage gehen, bis 3 relevante Gießtage gefunden sind
     for (let i = 1; i <= 30 && recentRatios.length < 3; i++) {
-      const iso = isoPlus(today, -i);
-      const cd = S.entries[iso]?.cycleData?.[c.id];
+      const isoPast = isoPlus(today, -i);
+      const cd = S.entries[isoPast]?.cycleData?.[c.id];
       if (!cd?.water) continue;
       let userMl = parseFloat(cd.water);
       if (!userMl || userMl < 50) continue; // Ignoriere Tag-1 (0 ml) und absurd niedrige
-      const pPast = phase(iso, c);
+      const pPast = phase(isoPast, c);
       if (!pPast) continue;
       const expectedMl = _waterSuggestionRaw(c, pPast);
       if (!expectedMl) continue;
       // userMl ist Total über alle Pflanzen, expectedMl ist pro Pflanze.
       // Damit der Ratio-Vergleich stimmt, müssen wir userMl durch die damals
       // aktive Pflanzenzahl teilen (Eintrag-spezifisch oder Zyklus-Default).
-      const plantsAtTime = getEffectivePlantCount(c, iso);
+      const plantsAtTime = getEffectivePlantCount(c, isoPast);
       const userMlPerPlant = userMl / plantsAtTime;
       const ratio = userMlPerPlant / expectedMl;
       // Clamp auf sinnvollen Bereich — wer mal deutlich weniger gießt (z.B. weil Erde
@@ -6774,10 +6774,45 @@ function waterSuggestion(c, p) {
       }
     }
   }
+
+  // VPD-FAKTOR (Phase 5): Wenn der Eintrag des aktuellen Tages Temp + RLF hat,
+  // berechnen wir VPD und passen die Empfehlung an. Zu trocken → Pflanze
+  // transpiriert mehr, braucht mehr Wasser. Zu feucht → weniger.
+  // Faktor wird nur angewendet wenn beide Klima-Werte real eingetragen sind.
+  // ANFÄNGER-SCHUTZ: ohne Klima-Daten keine Anpassung — sonst plötzliche
+  // sprunghafte Empfehlungen die der User nicht versteht.
+  const isoForVpd = iso || todayISO();
+  const e = S.entries?.[isoForVpd];
+  const targets = (typeof getPhaseTargets === 'function' && p) ? getPhaseTargets(p) : null;
+  let vpdFactor = 1.0;
+  if (e && e.temp && e.humidity && targets && targets.vpdMin && targets.vpdMax) {
+    const t = parseFloat(e.temp);
+    const r = parseFloat(e.humidity);
+    if (isFinite(t) && isFinite(r) && r > 0 && r <= 100) {
+      // Magnus-Formel für gesättigten Dampfdruck → daraus VPD
+      const svp = 0.61078 * Math.exp(17.27 * t / (t + 237.3));
+      const vpd = svp * (1 - r / 100);
+      if (vpd < targets.vpdMin * 0.85) vpdFactor = 0.85;          // viel zu feucht
+      else if (vpd < targets.vpdMin) vpdFactor = 0.95;            // leicht zu feucht
+      else if (vpd > targets.vpdMax * 1.25) vpdFactor = 1.25;     // viel zu trocken
+      else if (vpd > targets.vpdMax) vpdFactor = 1.15;            // leicht zu trocken
+    }
+  }
+
+  // STRETCH-BONUS: Bloom Wo 1–3 wachsen die Pflanzen sehr stark, brauchen mehr.
+  let stretchFactor = 1.0;
+  if (p && p.ph === 'bloom' && (p.week || 1) <= 3) {
+    stretchFactor = 1.10;
+  }
+
   // PFLANZEN-MULTIPLIKATOR: Nach Personalisierung mit Pflanzenzahl multiplizieren.
   // Wenn scaleByPlants aus ist, gibt getEffectivePlantCount immer 1 zurück.
-  const plants = getEffectivePlantCount(c, todayISO());
-  return Math.round(personalizedRaw * plants / 50) * 50;
+  const plants = getEffectivePlantCount(c, isoForVpd);
+  const final = personalizedRaw * plants * vpdFactor * stretchFactor;
+  // Bei kleinen Mengen (Sämling unter 100ml) auf 5er-Schritte runden, sonst auf 50er.
+  // Sonst würde aus 15ml entweder 0ml oder 50ml — beides falsch.
+  if (final < 100) return Math.round(final / 5) * 5;
+  return Math.round(final / 50) * 50;
 }
 
 // Interne rohe Empfehlung ohne Personalisierung — Basis für Personalisierungs-Berechnung
@@ -6834,12 +6869,21 @@ function _waterSuggestionRaw(c, p) {
   // Gesamttag im Zyklus (1-basiert) — für klassische Indoor/Outdoor-Anzucht
   const day = p.day || 1;
 
-  // Phase 1: Sämling (Tag 1-10)
+  // Phase 1: Sämling (Tag 1-10) — realistische Wassermenge pro Stadium
+  // Wichtig: Sämling sitzt im Würfel oder oberen 5cm, nicht im ganzen Topf.
+  // Topfgröße spielt hier kaum eine Rolle (kein scale-Faktor).
+  //   Tag 1–3:  Würfel feucht halten — Sprühflasche, 10–20ml
+  //   Tag 4–7:  Keimblätter — dünner Strahl direkt am Würfel, 20–40ml
+  //   Tag 8–14: Erste echte Blätter — 40–80ml am Stamm
   if (day <= 10) {
-    const ml = 50 + (day - 1) * (200 / 9); // 50 → 250
-    return snap(ml);
+    let ml;
+    if (day <= 3)      ml = 15;  // 10–20 → Mitte
+    else if (day <= 7) ml = 30;  // 20–40 → Mitte
+    else               ml = 60;  // 40–80 → Mitte
+    // Auf 5er runden, NICHT auf 50er — bei 15ml wäre 50er-Snap absurd
+    return Math.round(ml * outFactor / 5) * 5;
   }
-  // Phase 2: Etablierung (Tag 11-17/18)
+  // Phase 2: Etablierung (Tag 11-17/18) — Wurzeln durchwachsen den Topf, jetzt Topf-Volumen relevant
   if (day <= 18) {
     const ml = 500 + (day - 11) * (1000 / 7); // 500 → 1500
     return snap(ml);
@@ -13568,14 +13612,18 @@ Vorher ein Backup ziehen? (dringend empfohlen)`,
   );
   if (!final) return;
 
-  // Execute: localStorage wegwischen, Reload
-  try {
-    localStorage.removeItem(SK);
-  } catch (e) {}
+  // Execute: ALLE Storage-Keys wegwischen (nicht nur SK), sonst kommt der Reset-State
+  // beim Reload aus einem Legacy-Key zurück. Das war ein Bug: factoryReset löschte
+  // nur 'growsmart_v4', aber loadS() liest auch aus 'growsmart_v3', 'growsmart_v2',
+  // 'growsmart_data' als Fallback. Folge auf gewachsenen Installationen: Reset
+  // schien nichts zu tun, weil die alte Version dann aus einem Legacy-Key wiederkam.
+  await _wipeAllAppStorage();
   // Kleinen Toast zeigen bevor reload (wird kurz sichtbar sein)
   toast('🔄 App wird neu gestartet...');
   setTimeout(() => {
-    window.location.reload();
+    // Kein einfaches reload(): mit Cache-Bust-Param sicherstellen, dass auch
+    // ein evtl. registrierter Service Worker eine frische HTML liefern muss.
+    _hardReload();
   }, 600);
 }
 
@@ -13593,11 +13641,68 @@ Tipp: Wenn du den Zyklus eigentlich behalten willst, drück Abbrechen und nimm d
     'Ja, alles weg', 'var(--yellow)'
   );
   if (!ok) return;
-  try {
-    localStorage.removeItem(SK);
-  } catch (e) {}
+  await _wipeAllAppStorage();
   toast('🔄 Reset...');
-  setTimeout(() => window.location.reload(), 400);
+  setTimeout(() => _hardReload(), 400);
+}
+
+/**
+ * Räumt sämtliche App-Spuren aus dem Browser:
+ *   - localStorage: alle bekannten App-Keys (v4 + Legacy v3/v2/data) + Lexikon-Pseudostate
+ *   - Service-Worker-Caches (Cache-API): so dass der nächste Reload eine frische HTML zieht
+ *
+ * Wichtig vor jedem Reset, weil loadS() Legacy-Keys als Fallback liest — wenn man
+ * nur growsmart_v4 löscht, kommt beim Reload der State aus growsmart_v3 wieder hoch
+ * und der User denkt der Reset hätte nichts gemacht.
+ */
+async function _wipeAllAppStorage() {
+  // 1. ALLE bekannten Storage-Keys (Haupt + Legacy) löschen
+  const knownKeys = ['growsmart_v4', 'growsmart_v3', 'growsmart_v2', 'growsmart_data'];
+  for (const k of knownKeys) {
+    try { localStorage.removeItem(k); } catch (e) {}
+  }
+  // 2. Defensiv: alle Keys mit growsmart_-Prefix raus, falls eine zukünftige
+  //    Migration weitere Keys einführt
+  try {
+    const toRemove = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.startsWith('growsmart')) toRemove.push(k);
+    }
+    toRemove.forEach(k => { try { localStorage.removeItem(k); } catch (e) {} });
+  } catch (e) {}
+  // 3. Service-Worker-Caches leeren — sonst zeigt der Reload eine alte HTML aus
+  //    dem Cache, in der die Reset-Operation nicht zu sehen ist.
+  try {
+    if ('caches' in window) {
+      const names = await caches.keys();
+      await Promise.all(names.map(n => caches.delete(n)));
+    }
+  } catch (e) {}
+  // 4. Service Worker selbst deregistrieren — die nächste Seite registriert ihn
+  //    neu und holt eine aktuelle HTML.
+  try {
+    if ('serviceWorker' in navigator) {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(regs.map(r => r.unregister()));
+    }
+  } catch (e) {}
+}
+
+/**
+ * Erzwingt einen frischen Reload. Cache-Bust-Param zwingt selbst aggressive
+ * Browser-/Proxy-Caches dazu, neu zu laden.
+ */
+function _hardReload() {
+  try {
+    const u = new URL(window.location.href);
+    u.searchParams.set('_t', Date.now().toString());
+    // Hash leeren damit kein Routing-Anker drin steckt
+    u.hash = '';
+    window.location.replace(u.toString());
+  } catch (e) {
+    window.location.reload();
+  }
 }
 
 /** Promts user to type "LÖSCHEN" to confirm factory reset. */
@@ -14409,14 +14514,32 @@ function renderEntry(iso) {
             clf = null;
           }
         } else {
-          // Wenn kein gespeicherter Wert: Default 50% (mittlere Feuchte) — die App
-          // zeigt direkt eine Klassifizierung statt "— tippen", damit der User sieht
-          // was der aktuelle Slider-Stand bedeuten würde. Erst beim Tippen wird der
-          // Wert tatsächlich gespeichert (savedForDisplay bleibt null).
+          // Smarter Default-Wert für den Slider (wenn nichts gespeichert):
+          //   1. Heute Wasser eingetragen → 100% (Topf gerade voll)
+          //   2. Sonst: aus letzten Mess-Punkten extrapolieren (extrapolateRestPct)
+          //   3. Fallback: 50%
+          // Der Default wird NICHT gespeichert — erst wenn der User tippt.
           const savedRest = cd.restPct !== undefined && cd.restPct !== null ? parseFloat(cd.restPct) : null;
-          restVal = savedRest !== null ? savedRest : 50;
-          clf = classifyRestPct(restVal, isFinisher);  // immer klassifizieren, auch im Default
+          let smartDefault = 50;
+          let defaultSource = 'fallback';
+          if (savedRest === null) {
+            const wToday = parseFloat(cd.water);
+            if (isFinite(wToday) && wToday > 0) {
+              smartDefault = 100;
+              defaultSource = 'gegossen';
+            } else if (typeof extrapolateRestPct === 'function') {
+              const ext = extrapolateRestPct(c, iso);
+              if (ext.pct !== null && ext.pct !== undefined) {
+                smartDefault = ext.pct;
+                defaultSource = ext.source; // 'extrapolated' | 'heuristic'
+              }
+            }
+          }
+          restVal = savedRest !== null ? savedRest : smartDefault;
+          clf = classifyRestPct(restVal, isFinisher);
           savedForDisplay = savedRest;
+          // Default-Source für UI-Hint (in unsavedHint angezeigt)
+          var _defaultSource1 = (savedRest === null) ? defaultSource : null;
         }
 
         // Header: Titel + Finisher-Badge + Erklärung
@@ -14487,6 +14610,20 @@ function renderEntry(iso) {
           </div>`;
         }
 
+        // Phase 8: Nachher-Stand-Indikator. Wenn der User Wasser eingetragen hat,
+        // wurde liftAfterPct automatisch auf 100 gesetzt — das ist der "nach Guss"-
+        // Wert für den Verlauf-Chart. Wir zeigen das dezent als Linie unter dem
+        // Slider — ohne extra Slider, weil 100% der Default ist und nur in
+        // Sonderfällen (z.B. teilweise abgelaufenes Wasser) anders wäre.
+        let liftAfterIndicator = '';
+        if (cd.liftAfterPct !== undefined && cd.liftAfterPct !== null && parseFloat(cd.water || 0) > 0) {
+          const afterPct = parseFloat(cd.liftAfterPct);
+          liftAfterIndicator = `<div style="margin-top:6px;display:flex;align-items:center;gap:8px;font-size:10px;color:var(--text-hint)">
+            <span style="display:inline-flex;align-items:center;gap:4px;background:var(--green-bg);color:var(--green);padding:3px 8px;border-radius:8px;font-weight:600">💧 Nachher: ${afterPct}%</span>
+            <span style="flex:1">→ wird beim nächsten Mess-Tag wieder runterzählen</span>
+          </div>`;
+        }
+
         // Status-Box (geteilt für beide Modi)
         // Wenn savedForDisplay null ist, zeigen wir die Klassifizierung des Default-Werts (50%)
         // mit Hinweis "geschätzt" — der User soll wissen was die Slider-Position bedeutet
@@ -14494,7 +14631,13 @@ function renderEntry(iso) {
         let statusBox = '';
         const isUnsaved = savedForDisplay === null;
         if (clf) {
-          const unsavedHint = isUnsaved ? `<div style="font-size:10px;color:var(--text-hint);margin-top:4px;font-style:italic">↑ Slider tippen oder +/− um Wert für heute zu speichern</div>` : '';
+          const sourceLabel = (() => {
+            if (_defaultSource1 === 'gegossen') return '↑ Frisch gegossen — 100%. Slider anpassen falls nicht ganz voll.';
+            if (_defaultSource1 === 'extrapolated') return '↑ Aus letzten Mess-Punkten geschätzt. Slider tippen wenn anders.';
+            if (_defaultSource1 === 'heuristic') return '↑ Aus Phase geschätzt. Slider tippen oder +/− für deinen Wert.';
+            return '↑ Slider tippen oder +/− um Wert für heute zu speichern';
+          })();
+          const unsavedHint = isUnsaved ? `<div style="font-size:10px;color:var(--text-hint);margin-top:4px;font-style:italic">${sourceLabel}</div>` : '';
           statusBox = `<div style="margin-top:8px;padding:8px 10px;background:${clf.color}14;border-left:2px solid ${clf.color};border-radius:6px;font-size:11px;line-height:1.5;color:var(--text-sub)">
             <div style="font-weight:600;color:${clf.color};margin-bottom:2px">${clf.label}</div>
             <div>${clf.text}</div>
@@ -14510,6 +14653,7 @@ function renderEntry(iso) {
         liftTestBlock = `<div style="background:var(--card);border:0.5px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:8px">
           ${header}
           ${body}
+          ${liftAfterIndicator}
           ${statusBox}
         </div>`;
       }
@@ -14864,14 +15008,28 @@ function renderEntry(iso) {
             restVal = null; clf = null;
           }
         } else {
-          // Wenn kein gespeicherter Wert: Default 50% (mittlere Feuchte) — die App
-          // zeigt direkt eine Klassifizierung statt "— tippen", damit der User sieht
-          // was der aktuelle Slider-Stand bedeuten würde. Erst beim Tippen wird der
-          // Wert tatsächlich gespeichert (savedForDisplay bleibt null).
+          // Smarter Default (siehe Stelle 1 — gleiche Logik). Nur in lokal getrennter
+          // Variable damit kein Konflikt mit Stelle 1.
           const savedRest = cd.restPct !== undefined && cd.restPct !== null ? parseFloat(cd.restPct) : null;
-          restVal = savedRest !== null ? savedRest : 50;
-          clf = classifyRestPct(restVal, isFinisher);  // immer klassifizieren, auch im Default
+          let smartDefault = 50;
+          let defaultSource = 'fallback';
+          if (savedRest === null) {
+            const wToday = parseFloat(cd.water);
+            if (isFinite(wToday) && wToday > 0) {
+              smartDefault = 100;
+              defaultSource = 'gegossen';
+            } else if (typeof extrapolateRestPct === 'function') {
+              const ext = extrapolateRestPct(c, iso);
+              if (ext.pct !== null && ext.pct !== undefined) {
+                smartDefault = ext.pct;
+                defaultSource = ext.source;
+              }
+            }
+          }
+          restVal = savedRest !== null ? savedRest : smartDefault;
+          clf = classifyRestPct(restVal, isFinisher);
           savedForDisplay = savedRest;
+          var _defaultSource2 = (savedRest === null) ? defaultSource : null;
         }
         const header = `<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px">
           <div style="display:flex;align-items:center;gap:6px">
@@ -14922,10 +15080,25 @@ function renderEntry(iso) {
             <button onclick="stepRestPct('${c.id}',5)" class="stepper-btn">+</button>
           </div>`;
         }
+        // Phase 8 (zweite Stelle): selber Nachher-Indikator wie oben
+        let liftAfterIndicator2 = '';
+        if (cd.liftAfterPct !== undefined && cd.liftAfterPct !== null && parseFloat(cd.water || 0) > 0) {
+          const afterPct = parseFloat(cd.liftAfterPct);
+          liftAfterIndicator2 = `<div style="margin-top:6px;display:flex;align-items:center;gap:8px;font-size:10px;color:var(--text-hint)">
+            <span style="display:inline-flex;align-items:center;gap:4px;background:var(--green-bg);color:var(--green);padding:3px 8px;border-radius:8px;font-weight:600">💧 Nachher: ${afterPct}%</span>
+            <span style="flex:1">→ wird beim nächsten Mess-Tag wieder runterzählen</span>
+          </div>`;
+        }
         let statusBox = '';
         const isUnsaved2 = savedForDisplay === null;
         if (clf) {
-          const unsavedHint2 = isUnsaved2 ? `<div style="font-size:10px;color:var(--text-hint);margin-top:4px;font-style:italic">↑ Slider tippen oder +/− um Wert für heute zu speichern</div>` : '';
+          const sourceLabel2 = (() => {
+            if (_defaultSource2 === 'gegossen') return '↑ Frisch gegossen — 100%. Slider anpassen falls nicht ganz voll.';
+            if (_defaultSource2 === 'extrapolated') return '↑ Aus letzten Mess-Punkten geschätzt. Slider tippen wenn anders.';
+            if (_defaultSource2 === 'heuristic') return '↑ Aus Phase geschätzt. Slider tippen oder +/− für deinen Wert.';
+            return '↑ Slider tippen oder +/− um Wert für heute zu speichern';
+          })();
+          const unsavedHint2 = isUnsaved2 ? `<div style="font-size:10px;color:var(--text-hint);margin-top:4px;font-style:italic">${sourceLabel2}</div>` : '';
           statusBox = `<div style="margin-top:8px;padding:8px 10px;background:${clf.color}14;border-left:2px solid ${clf.color};border-radius:6px;font-size:11px;line-height:1.5;color:var(--text-sub)">
             <div style="font-weight:600;color:${clf.color};margin-bottom:2px">${clf.label}</div>
             <div>${clf.text}</div>
@@ -14937,7 +15110,7 @@ function renderEntry(iso) {
           </div>`;
         }
         fullLift = `<div style="background:var(--card);border:0.5px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:8px">
-          ${header}${body}${statusBox}
+          ${header}${body}${liftAfterIndicator2}${statusBox}
         </div>`;
       }
       // Wasser-Empfehlung als Hinweis-Box: zeigt die biophysikalisch optimale Menge
@@ -15209,7 +15382,19 @@ function renderEntry(iso) {
     return `${seedlingHTML}${trichHTML}${ernteHTML}${hintHTML}
       <div class="note-wrap" style="border-color:${cl.hex}33;margin-top:8px">
         <div class="inp-label" style="margin-bottom:3px">Notizen</div>
-        <textarea class="note-ta" id="note-${c.id}" placeholder="Blattfarbe, Geruch, Wachstum..." onchange="${onNoteChangeHandler}">${primaryText}</textarea>
+        <textarea class="note-ta" id="note-${c.id}" placeholder="${(() => {
+          // Phase 6: dynamischer Notiz-Placeholder aus getAutoFillTemplate
+          // Vorteil: User sieht direkt was passend wäre, ohne Klick auf Auto-Fill.
+          // Default-Placeholder bleibt fallback wenn Template keinen liefert.
+          if (typeof getAutoFillTemplate === 'function') {
+            const a4note = (typeof getAction === 'function') ? getAction(iso, c) : null;
+            const tpl4note = getAutoFillTemplate(c, p, a4note, iso);
+            if (tpl4note && tpl4note.notePlaceholder) {
+              return tpl4note.notePlaceholder.replace(/"/g, '&quot;');
+            }
+          }
+          return 'Blattfarbe, Geruch, Wachstum...';
+        })()}" onchange="${onNoteChangeHandler}">${primaryText}</textarea>
         ${noteHint}
         ${secondaryHTML}
         ${qnHTML}
@@ -15676,6 +15861,29 @@ function uEF(cId, f, v) {
   cd[f] = v;
   // User tippt manuell → Feld als echt gemessen markieren
   if (cd._suggested) delete cd._suggested[f];
+  // BIOPHYSIK-LOGIK: Wenn der User Wasser einträgt (Wasser > 0), gilt der Topf
+  // ab jetzt als gegossen → Restgewicht-NACHHER ist 100%. Das ist der Sägezahn-Punkt
+  // für den Verlauf-Chart und stoppt die App davor, am Folgetag fälschlich „bald
+  // gießen" zu suggerieren obwohl die Pflanze gerade nass ist.
+  // Nur setzen wenn der User liftAfterPct noch nie selbst angefasst hat (sonst
+  // überschreiben wir z.B. eine bewusste Mess-Eingabe wie „nach Guss nur 95% weil
+  // 100ml am Tellerrand wieder abgelaufen sind").
+  if (f === 'water' && cd.liftAfterPct === undefined) {
+    const wMl = parseFloat(v);
+    if (isFinite(wMl) && wMl > 0) {
+      cd.liftAfterPct = 100;
+      cd._liftAfterAutoSet = true;  // Flag, damit bei Wasser=0 wieder gelöscht werden kann
+    }
+  }
+  // Wenn der User Wasser auf 0 oder leer setzt UND der After-Wert auto-gesetzt war:
+  // wieder rausnehmen, denn ohne Gießen gibt's keinen 100%-Punkt
+  if (f === 'water' && cd._liftAfterAutoSet) {
+    const wMl = parseFloat(v);
+    if (!isFinite(wMl) || wMl <= 0) {
+      delete cd.liftAfterPct;
+      delete cd._liftAfterAutoSet;
+    }
+  }
 }
 
 /**
@@ -15703,76 +15911,435 @@ function setPlanNoteFromInput(cId, phaseDay, text) {
 }
 
 /**
- * Apply one-click recommended values for a watering day:
- * sets water to the suggestion, pH to 6.4, and writes all planned fertilizer
- * doses (ml/L × water / 1000) as the logged amounts. Skips flush day fertilizers
- * since flush = water only. Fires toast on success.
+ * Extrapoliert das vermutliche Restgewicht für ein zukünftiges Datum aus den
+ * letzten Mess-Punkten des Zyklus. Profi-Feature: nur sinnvoll wenn der User
+ * regelmäßig misst.
+ *
+ * Fallback-Heuristik (wenn keine Mess-Punkte vorhanden):
+ *   Sämling-Phase: 3% pro Tag
+ *   Vegi/Anzucht: 5%/Tag
+ *   Frühe Blüte: 7%/Tag
+ *   Mittlere Blüte: 9%/Tag
+ *   Späte Blüte: 11%/Tag
+ *
+ * Wenn ≥2 Mess-Punkte in den letzten 7 Tagen vorliegen: lineare Regression
+ * über die letzten Punkte für eine ehrlichere Empfehlung.
+ *
+ * Liefert: { pct, source: 'extrapolated' | 'heuristic' | null, lastIso?, lastPct? }
+ *   pct = null → keine sinnvolle Schätzung möglich
+ */
+function extrapolateRestPct(c, targetIso) {
+  if (!c || !targetIso) return { pct: null, source: null };
+
+  // Sammle Mess-Punkte (cd.restPct) der letzten 14 Tage VOR targetIso, plus
+  // einen evtl. liftAfterPct=100-Punkt (Reset nach Guss). Beide bestimmen
+  // die Trocknungs-Trajektorie.
+  const points = [];
+  for (let i = 1; i <= 14; i++) {
+    const isoPast = isoPlus(targetIso, -i);
+    const cd = S.entries?.[isoPast]?.cycleData?.[c.id];
+    if (!cd) continue;
+    // Nach-Guss-Punkt: 100% am Tag des Gusses
+    if (cd.liftAfterPct !== undefined && cd.liftAfterPct !== null) {
+      points.push({ iso: isoPast, pct: parseFloat(cd.liftAfterPct), age: i });
+    }
+    // Mess-Punkt (Vor-Guss oder freie Messung)
+    if (cd.restPct !== undefined && cd.restPct !== null) {
+      points.push({ iso: isoPast, pct: parseFloat(cd.restPct), age: i });
+    }
+  }
+
+  // Sortiere nach age aufsteigend (jüngste zuerst → höhere Priorität)
+  points.sort((a, b) => a.age - b.age);
+
+  // Mit ≥2 verschiedenen Datums-Punkten lineare Trendlinie rechnen
+  const uniqueDates = Array.from(new Set(points.map(p => p.iso)));
+  if (uniqueDates.length >= 2 && points.length >= 2) {
+    // Letzte beiden Datums-Punkte: jeweils Min(pct) (= Vor-Guss-Wert) nehmen,
+    // damit die Trend-Berechnung den Trocknungs-Hang misst, nicht den 100%-Reset.
+    const recent = points.slice(0, Math.min(4, points.length));
+    // Pro Datum nur der niedrigste Wert (= Vor-Guss-Stand)
+    const byDate = {};
+    for (const p of recent) {
+      if (byDate[p.iso] === undefined || p.pct < byDate[p.iso].pct) byDate[p.iso] = p;
+    }
+    const series = Object.values(byDate).sort((a, b) => a.age - b.age);
+    if (series.length >= 2) {
+      // Lineare Regression: dPct/dDay
+      const p1 = series[0]; // jüngste Messung
+      const p2 = series[series.length - 1]; // älteste in der Serie
+      const dDays = p2.age - p1.age;
+      if (dDays > 0) {
+        const dPct = p1.pct - p2.pct;
+        // dPct ist negativ wenn p1 < p2 (= getrocknet seitdem), wir wollen die
+        // tägliche Abnahme als positive Zahl
+        const dryRatePerDay = -dPct / dDays; // positiv = trocknet pro Tag
+        // Extrapoliere von p1 nach targetIso. ageOfTarget = wie viele Tage liegt
+        // target NACH p1.iso (positiv wenn target in Zukunft relativ zu p1)
+        const ageOfTarget = isoDiff(targetIso, p1.iso);
+        const projected = p1.pct - dryRatePerDay * ageOfTarget;
+        const clamped = Math.max(0, Math.min(100, Math.round(projected)));
+        return {
+          pct: clamped,
+          source: 'extrapolated',
+          lastIso: p1.iso,
+          lastPct: p1.pct,
+          dryRatePerDay: Math.round(dryRatePerDay * 10) / 10,
+        };
+      }
+    }
+  }
+
+  // Fallback: Heuristik aus Phase, sofern wir wenigstens 1 Punkt haben
+  if (points.length >= 1) {
+    const last = points[0];
+    const p = phase(targetIso, c);
+    let dryPerDay = 5;
+    if (p) {
+      if ((p.ph === 'anzucht' || p.ph === 'vorzucht') && p.day <= 10) dryPerDay = 3;
+      else if (p.ph === 'anzucht' || p.ph === 'vorzucht') dryPerDay = 5;
+      else if (p.ph === 'bloom') {
+        const wk = p.week || 1;
+        if (wk <= 3) dryPerDay = 7;
+        else if (wk <= 6) dryPerDay = 9;
+        else dryPerDay = 11;
+      }
+      else if (p.ph === 'flush') dryPerDay = 10;
+    }
+    const ageOfTarget = isoDiff(targetIso, last.iso);
+    const projected = last.pct - dryPerDay * ageOfTarget;
+    const clamped = Math.max(0, Math.min(100, Math.round(projected)));
+    return {
+      pct: clamped,
+      source: 'heuristic',
+      lastIso: last.iso,
+      lastPct: last.pct,
+      dryRatePerDay: dryPerDay,
+    };
+  }
+
+  // Gar nichts → nichts vorschlagen
+  return { pct: null, source: null };
+}
+
+/**
+ * Liefert ein vollständiges Auto-Fill-Template für einen bestimmten Tag im
+ * Zyklus. Das Template enthält alle Felder, die der „Tag automatisch
+ * ausfüllen"-Button vorschlagen würde — pro Aktionstyp anders gewichtet,
+ * biophysikalisch begründet pro Phase.
+ *
+ * Rückgabe: { water?, ph?, ec?, doses?, liftAfterPct?, temp?, humidity?,
+ *             notePlaceholder?, _filled: { count, fields[] } }
+ *
+ * Felder die NICHT im Template stehen, sollen vom Auto-Fill auch nicht
+ * angefasst werden. Das ist die zentrale Wahrheits-Tabelle für „was passiert
+ * an diesem Tag" — geändert wird nur HIER, nicht verstreut im Code.
+ *
+ * @param {object} c    Cycle
+ * @param {object} p    Phase-Info aus phase()
+ * @param {string} a    Action aus getAction() — kann null sein (Mess-Tag)
+ * @param {string} iso  ISO-Datum (für Topping-Erkennung)
+ */
+function getAutoFillTemplate(c, p, a, iso) {
+  if (!c || !p || !iso) return null;
+  const ph = p.ph;
+  const day = p.day || 1;
+  const week = p.week || 1;
+  const targets = (typeof getPhaseTargets === 'function') ? getPhaseTargets(p) : null;
+  const tpl = {};
+
+  // Klima: für ALLE Tage (auch Mess-Tage) — nur als Vorschlag bei leerem Feld
+  if (targets) {
+    tpl.temp = ((targets.tempMin + targets.tempMax) / 2).toFixed(1);
+    tpl.humidity = String(Math.round((targets.rhMin + targets.rhMax) / 2));
+  }
+
+  // SPEZIAL-FALL: Topping-Tag (User hat heute getoppt)
+  // Biophysik: Pflanze hat Turgor verloren, kann Wasser nicht aufnehmen.
+  // 2 Tage trockene Erholung sind besser als sofort gießen.
+  if (c.toppingDate === iso) {
+    tpl.water = '0';
+    tpl.doses = {}; // alle Dosen 0
+    tpl._allDosesZero = true;
+    tpl.notePlaceholder = 'Topping erfolgt. 2 Tage Pause — Pflanze nicht stressen, kein Wasser.';
+    tpl._actionType = 'topping';
+    return tpl;
+  }
+
+  // SPEZIAL-FALL: Topping-Pause-Tag (1–2 Tage nach Topping, kein regulärer Gießtag)
+  if (c.toppingDate) {
+    const daysSinceTop = isoDiff(iso, c.toppingDate);
+    const pause = c.toppingPause || 2;
+    if (daysSinceTop >= 1 && daysSinceTop <= pause) {
+      tpl.notePlaceholder = `Recovery-Tag ${daysSinceTop}/${pause} nach Topping. Pflanze nicht stressen, kein Wasser, kein Dünger.`;
+      tpl._actionType = 'topping_rest';
+      return tpl;
+    }
+  }
+
+  // GIESSTAG-LOGIK: nach Action differenzieren
+  if (a === 'giess_anz' || a === 'giess') {
+    // Sämling-Tage 1–10: kleine Mengen, kein/kaum EC
+    const isSeedling = (ph === 'anzucht' || ph === 'vorzucht') && day <= 10;
+
+    // Wassermenge — waterSuggestion enthält jetzt VPD- und Stretch-Faktor
+    let waterMl = (typeof waterSuggestion === 'function') ? waterSuggestion(c, p, iso) : 200;
+
+    // Telemetrie: Bonus-Markierung für Toast (wenn der Faktor wirklich aktiv war,
+    // erkennen wir an der Differenz zur rohen Empfehlung)
+    if (typeof _waterSuggestionRaw === 'function') {
+      const plants = (typeof getEffectivePlantCount === 'function') ? getEffectivePlantCount(c, iso) : 1;
+      const rawNoFactor = Math.round(_waterSuggestionRaw(c, p) * plants / 50) * 50;
+      const e = S.entries[iso];
+      const targets2 = (typeof getPhaseTargets === 'function') ? getPhaseTargets(p) : null;
+      if (e && e.temp && e.humidity && targets2 && targets2.vpdMin) {
+        // VPD wurde wahrscheinlich angewendet — wir berechnen es nochmal kurz für die Anzeige
+        const t = parseFloat(e.temp), r = parseFloat(e.humidity);
+        if (isFinite(t) && isFinite(r) && r > 0) {
+          const svp = 0.61078 * Math.exp(17.27 * t / (t + 237.3));
+          const vpd = svp * (1 - r / 100);
+          if (vpd > targets2.vpdMax || vpd < targets2.vpdMin) tpl._vpdAdjusted = true;
+        }
+      }
+      if (ph === 'bloom' && (p.week || 1) <= 3) tpl._stretchBonus = true;
+    }
+
+    // Sämling-Logik wandert in _waterSuggestionRaw selbst (Tag 1–3: 15ml,
+    // Tag 4–7: 30ml, Tag 8–10: 60ml). Kein Override hier mehr nötig — dadurch
+    // ist die Live-Empfehlung („~XX ml/Pflanze") konsistent mit dem Auto-Fill-Wert.
+
+    tpl.water = String(waterMl);
+    tpl.ph = '6.4';
+
+    // EC nach Phase + Tag
+    if (isSeedling && day <= 7) {
+      tpl.ec = '0';
+    } else if (isSeedling) {
+      tpl.ec = '0.4';
+    } else if (ph === 'anzucht') {
+      tpl.ec = (0.8 + Math.min(0.4, (day - 10) * 0.04)).toFixed(1);
+    } else if (ph === 'bloom') {
+      const wk2 = Math.min(week, 8);
+      tpl.ec = Math.min(2.0, 1.4 + wk2 * 0.08).toFixed(1);
+    } else {
+      tpl.ec = '1.5';
+    }
+
+    // Restgewicht nach Guss
+    tpl.liftAfterPct = 100;
+
+    // Dosen: aus dem Wochenplan
+    if (typeof getWeekDoses === 'function') {
+      tpl.doses = getWeekDoses(c.id, week, c) || {};
+    }
+
+    // Sämling: nur sehr leichte Dosen (CalMag, Wurzelstimulator)
+    if (isSeedling && day <= 7) {
+      tpl.doses = {};
+      tpl._allDosesZero = true;
+    }
+
+    // Notiz-Vorschlag
+    if (isSeedling) {
+      tpl.notePlaceholder = 'Mit Sprühflasche oder dünnem Strahl — Erde feucht halten, NICHT nass.';
+    } else if (ph === 'anzucht') {
+      tpl.notePlaceholder = 'Gleichmäßig durchgießen, 5–10% Drain auffangen.';
+    } else if (ph === 'bloom' && week <= 3) {
+      tpl.notePlaceholder = 'Stretch-Phase. RLF Richtung 50% halten, Schimmel-Vorbeugung.';
+    } else if (ph === 'bloom' && week >= 7) {
+      tpl.notePlaceholder = 'Späte Blüte — Trichome jeden Tag mit Lupe checken (klar/milchig/amber).';
+    } else if (ph === 'bloom') {
+      tpl.notePlaceholder = 'Mittlere Blüte. EC schrittweise hoch, Klima 22–26°C / 45–55% RLF.';
+    }
+
+    tpl._actionType = isSeedling ? 'seedling_water' : (ph === 'bloom' ? 'bloom_water' : 'veg_water');
+    return tpl;
+  }
+
+  // SPÜL-TAG (Flush)
+  if (a === 'spuelen') {
+    let waterMl = (typeof waterSuggestion === 'function') ? waterSuggestion(c, p) : 200;
+    waterMl = Math.round(waterMl * 1.5 / 50) * 50; // mehr durchspülen!
+    tpl.water = String(waterMl);
+    tpl.ph = '6.4';
+    tpl.ec = '0';                  // KLARES Wasser
+    tpl.doses = {};
+    tpl._allDosesZero = true;
+    tpl.liftAfterPct = 100;
+    tpl.notePlaceholder = 'Klares Wasser, pH 6.4, kein Dünger. ~25% Drain auffangen — der ist EC-fett, Salze raus.';
+    tpl._actionType = 'flush';
+    return tpl;
+  }
+
+  // ICEFLUSH-TAG
+  if (a === 'ice') {
+    const waterMl = (typeof waterSuggestion === 'function') ? waterSuggestion(c, p) : 200;
+    tpl.water = String(waterMl);
+    tpl.ph = '6.4';
+    tpl.ec = '0';
+    tpl.doses = {};
+    tpl._allDosesZero = true;
+    tpl.liftAfterPct = 100;
+    tpl.notePlaceholder = 'Eiskaltes Wasser (<10°C). Kältestress triggert Trichom-Bildung in den letzten Tagen.';
+    tpl._actionType = 'iceflush';
+    return tpl;
+  }
+
+  // ERNTE-TAG
+  if (a === 'ernte' || ph === 'harvest') {
+    tpl.water = '0';     // 24h vor Ernte trocken stellen
+    tpl.doses = {};
+    tpl._allDosesZero = true;
+    tpl.notePlaceholder = 'Ernte-Tag. 24–48h vorher dunkel stellen → mehr Terpene erhalten.';
+    tpl._actionType = 'harvest';
+    return tpl;
+  }
+
+  // TROCKEN-TAG
+  if (a === 'trocknen' || ph === 'dry') {
+    tpl.notePlaceholder = 'Hängend trocknen, dunkel, 18°C, 60% RLF, 7–14 Tage. Geduld!';
+    tpl._actionType = 'dry';
+    return tpl;
+  }
+
+  // OUTDOOR-MANUELL — keine festen Vorschläge, User entscheidet
+  if (c.growType === 'outdoor' && c.transplantDate && iso >= c.transplantDate) {
+    tpl.notePlaceholder = 'Outdoor-Eintrag — Wetter und Erdfeuchtigkeit selbst beurteilen.';
+    tpl._actionType = 'outdoor_manual';
+    return tpl;
+  }
+
+  // MESS-TAG (kein action, kein Topping) — nur Klima-Vorschlag, Notiz frei
+  tpl._actionType = 'measurement';
+  return tpl;
+}
+
+/**
+ * Wendet das Auto-Fill-Template auf den aktuellen Eintrag an.
+ *
+ * Kernregel (Schutz): Nur LEERE Felder werden gefüllt. Was der User schon
+ * eingetragen hat, bleibt unangetastet. Am Ende kommt ein Toast mit
+ * Zusammenfassung: „X Werte ergänzt, Y schon befüllte Werte unverändert".
+ *
+ * Felder aus dem Template:
+ *   - water, ph, ec, liftAfterPct, temp, humidity → in cd / e gesetzt
+ *   - doses → pro prodId in cd.doses gesetzt; bei _allDosesZero werden alle
+ *     anderen Dosen explizit auf 0 gesetzt (Spül-/Topping-Tag)
+ *   - notePlaceholder → wird NICHT in notes geschrieben (das wäre überschreiben),
+ *     sondern nur als Render-Hinweis im UI verwendet
  */
 function applyRecommended(cId, wk) {
   if (!editISO) return;
   const c = S.cycles.find(x => x.id === cId);
   if (!c) return;
   const p = phase(editISO, c);
-  // Funktion arbeitet auch wenn KEINE getAction-Aktion vorliegt (z.B. Anzucht-Tag 2):
-  // dann gibt's eben kein Wasser/Dünger, aber Klima-Targets können trotzdem gesetzt werden.
   const a = getAction(editISO, c);
   ensE(cId);
   const cd = S.entries[editISO].cycleData[cId];
-  // Phase-Targets für sinnvolle Klima-Werte holen
-  const targets = typeof getPhaseTargets === 'function' && p ? getPhaseTargets(p) : null;
-  let filled = 0;
+  const e = S.entries[editISO];
 
-  // Wasser: nur an Gießtagen (sonst gibt's keine sinnvolle Empfehlung)
-  if (p && (a === 'giess' || a === 'giess_anz' || a === 'spuelen' || a === 'ice')) {
-    const waterMl = waterSuggestion(c, p);
-    cd.water = String(waterMl);
-    filled++;
-    // pH: 6.4 standard target
-    cd.ph = '6.4';
-    filled++;
-    // EC: phase-specific
-    if (typeof getEcTarget === 'function') {
-      // wenn Helper existiert verwenden, sonst Phase-basiert
+  // Template holen — die Wahrheits-Tabelle aus getAutoFillTemplate
+  const tpl = (typeof getAutoFillTemplate === 'function') ? getAutoFillTemplate(c, p, a, editISO) : null;
+  if (!tpl) {
+    toast('⚠ Kein Auto-Fill für diesen Tag verfügbar');
+    return;
+  }
+
+  let filled = 0;
+  let skipped = 0;
+
+  // Helper: nur setzen wenn Feld leer
+  function maybeSet(obj, key, val) {
+    if (val === undefined || val === null) return;
+    const cur = obj[key];
+    if (cur === undefined || cur === null || cur === '' || cur === '0') {
+      // Spezialfall „0" als Wasser/EC: gilt als leer, weil Default-Placeholder.
+      // Aber wenn das Template selbst „0" setzen will, ist das gewollt → nur überschreiben
+      // wenn der aktuelle Wert wirklich nicht-explizit ist.
+      // Hier vereinfacht: leerer/0/null/undefined → setzen.
+      obj[key] = val;
+      filled++;
+    } else {
+      skipped++;
     }
-    if (p.ph === 'bloom') {
-      const wk2 = Math.min(p.week || 1, 8);
-      cd.ec = (1.4 + wk2 * 0.08).toFixed(1);
-    } else if (p.ph === 'anzucht' && p.day > 7) {
-      cd.ec = (0.8 + (p.day - 7) * 0.04).toFixed(1);
-    } else if (p.ph === 'flush') {
-      cd.ec = '0.4';
-    } else if (p.ph !== 'anzucht') {
-      cd.ec = '1.5';
+  }
+
+  // Wasser, pH, EC, liftAfterPct
+  if (tpl.water !== undefined) maybeSet(cd, 'water', tpl.water);
+  if (tpl.ph !== undefined) maybeSet(cd, 'ph', tpl.ph);
+  if (tpl.ec !== undefined) maybeSet(cd, 'ec', tpl.ec);
+  if (tpl.liftAfterPct !== undefined) {
+    if (cd.liftAfterPct === undefined || cd.liftAfterPct === null) {
+      cd.liftAfterPct = tpl.liftAfterPct;
+      cd._liftAfterAutoSet = true;
+      filled++;
+    } else {
+      skipped++;
     }
-    // Fertilizers: nur an normalen Gießtagen
-    if (a === 'giess' || a === 'giess_anz') {
-      const doses = getWeekDoses(cId, wk, c);
-      if (!cd.mixChecks) cd.mixChecks = {};
-      Object.entries(doses).forEach(([prodId, plan]) => {
-        if (plan > 0) {
-          const prod = (S.products || []).find(p => p.id === prodId);
-          cd.doses[prodId] = calcDose(plan, waterMl, prod?.unit);
-          // Dünger gleich als "abgehakt" markieren — der User tippt ja drauf wenn er
-          // sie zugegeben hat. Bei Auto-Fill nehmen wir an: alle aktiven werden zugegeben.
-          cd.mixChecks[prodId] = true;
+  }
+
+  // Klima (auf Eintrags-Ebene, nicht cycleData)
+  if (tpl.temp !== undefined) maybeSet(e, 'temp', tpl.temp);
+  if (tpl.humidity !== undefined) maybeSet(e, 'humidity', tpl.humidity);
+
+  // Düngerdosen
+  if (tpl.doses) {
+    if (!cd.doses) cd.doses = {};
+    if (!cd.mixChecks) cd.mixChecks = {};
+    if (tpl._allDosesZero) {
+      // Spül-/Topping-Tag: alle Produkt-Dosen explizit 0 setzen, mixChecks weg.
+      // Das ist NICHT „leeres Feld füllen", sondern eine Sonderregel — auch
+      // wenn der User aus Versehen Dünger eingetragen hat, soll der Spül-Tag
+      // kein Dünger werden. Wir markieren es trotzdem als „filled" damit der
+      // User sieht dass Auto-Fill aktiv war.
+      const prodList = (S.products || []);
+      let dosesChanged = 0;
+      for (const prod of prodList) {
+        if (cd.doses[prod.id] && parseFloat(cd.doses[prod.id]) > 0) {
+          cd.doses[prod.id] = 0;
+          dosesChanged++;
+        }
+        cd.mixChecks[prod.id] = false;
+      }
+      if (dosesChanged > 0) filled++;
+    } else {
+      // Normale Gießtag-Dosen: nur einsetzen wenn die Position noch leer ist
+      const waterMl = parseFloat(cd.water || tpl.water || 0);
+      Object.entries(tpl.doses).forEach(([prodId, plan]) => {
+        if (plan > 0 && (cd.doses[prodId] === undefined || cd.doses[prodId] === null || cd.doses[prodId] === 0)) {
+          const prod = (S.products || []).find(pp => pp.id === prodId);
+          if (typeof calcDose === 'function') {
+            cd.doses[prodId] = calcDose(plan, waterMl, prod?.unit);
+            cd.mixChecks[prodId] = true;
+            filled++;
+          }
+        } else if (plan > 0) {
+          skipped++;
         }
       });
     }
   }
-  // Klima: Phase-spezifische Mitte des Zielbereichs (z.B. Sämling 24°C/70%)
-  const e = S.entries[editISO];
-  if (targets) {
-    e.temp = ((targets.tempMin + targets.tempMax) / 2).toFixed(1);
-    e.humidity = String(Math.round((targets.rhMin + targets.rhMax) / 2));
-    filled += 2;
-  } else {
-    // Fallback wenn keine Phase-Targets
-    if (!e.temp) { e.temp = '23.5'; filled++; }
-    if (!e.humidity) { e.humidity = '60'; filled++; }
-  }
+
   saveS();
   vibrate(15);
-  toast(filled > 0 ? `✨ ${filled} Werte automatisch ausgefüllt` : '⚠ Keine Werte zum Ausfüllen');
+
+  // Toast mit Zusammenfassung. Wenn nichts ergänzt wurde, nur Hinweis.
+  let msg;
+  if (filled === 0 && skipped === 0) {
+    msg = '⚠ Kein Auto-Fill für diesen Tag';
+  } else if (filled === 0) {
+    msg = `✋ Alle ${skipped} Werte schon befüllt`;
+  } else if (skipped === 0) {
+    msg = `✨ ${filled} Werte ausgefüllt`;
+  } else {
+    msg = `✨ ${filled} ergänzt, ${skipped} unverändert gelassen`;
+  }
+  // Hinweis auf VPD-Justierung anhängen falls aktiv
+  if (tpl._vpdAdjusted) {
+    msg += ' · Klima-justiert';
+  }
+  if (tpl._stretchBonus) msg += ' · Stretch +10%';
+  toast(msg, 3000);
   renderEntry(editISO);
 }
 function uTrich(cId, field, v) {
