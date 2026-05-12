@@ -1,13 +1,14 @@
 {
   "name": "GrowSmart",
   "short_name": "GrowSmart",
-  "description": "Smarter Cannabis Grow Kalender mit KI-Coach",
-  "start_url": "/GrowLog/",
-  "scope": "/GrowLog/",
+  "description": "Cannabis-Anbau App mit Biophysik-Empfehlungen — Anfänger-tauglich, Profi-präzise.",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
-  "background_color": "#0f0f0f",
-  "theme_color": "#111111",
   "orientation": "portrait",
+  "background_color": "#111111",
+  "theme_color": "#111111",
+  "lang": "de",
   "icons": [
     {
       "src": "icon-192.png",

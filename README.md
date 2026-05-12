@@ -1,48 +1,62 @@
-# GrowSmart PWA – GitHub Setup
+# GrowSmart
 
-## Schritt 1: GitHub Account erstellen
-1. Gehe auf https://github.com
-2. Klicke "Sign up" – kostenlos registrieren
+Cannabis-Anbau-App mit Biophysik-Empfehlungen. Anfänger-tauglich, Profi-präzise.
+Läuft komplett lokal im Browser — alle Daten bleiben auf deinem Gerät.
 
-## Schritt 2: Neues Repository erstellen
-1. Nach dem Login: Klicke oben rechts auf "+" → "New repository"
-2. Name: `growsmart`
-3. Auf "Public" lassen
-4. Klicke "Create repository"
+## Deploy auf GitHub Pages
 
-## Schritt 3: Dateien hochladen
-1. Im neuen Repository: Klicke "uploading an existing file"
-2. Ziehe ALLE Dateien aus diesem ZIP-Ordner hinein:
-   - index.html
-   - manifest.json
-   - Den Ordner `.github` (mit workflows/deploy.yml)
-3. Klicke "Commit changes"
+### Schritt 1: Repository erstellen
 
-## Schritt 4: GitHub Pages aktivieren
-1. Im Repository: Klicke "Settings" (oben)
-2. Links im Menü: "Pages"
-3. Source: "GitHub Actions" auswählen
-4. Fertig – nach 1-2 Minuten ist die App live!
+1. Auf [github.com](https://github.com) einloggen
+2. Oben rechts auf **+** → **New repository**
+3. Name: `GrowSmart` (groß geschrieben, passt zur App)
+4. **Public** (Pages funktioniert auch mit Private bei Pro-Account)
+5. **Create repository**
 
-## Schritt 5: App-URL aufrufen
-Deine App-URL ist:
-```
-https://DEIN-USERNAME.github.io/growsmart/
-```
+### Schritt 2: Dateien hochladen
 
-## Auf dem Handy installieren (wie eine App)
-1. Öffne die URL in Chrome auf deinem Samsung Galaxy S25 Ultra
-2. Tippe auf die drei Punkte oben rechts
-3. "Zum Startbildschirm hinzufügen"
-4. Die App erscheint wie eine normale App auf dem Homescreen!
+Im neuen Repo: **"uploading an existing file"** klicken, dann diese Dateien reinziehen:
 
-## KI-Coach aktivieren
-1. Gehe auf https://console.anthropic.com
-2. Erstelle einen kostenlosen Account
-3. Generiere einen API-Key
-4. Öffne `index.html`
-5. Suche nach `claude-sonnet-4-20250514` – direkt darüber den API-Key eintragen
+- `index.html`
+- `sw.js`
+- `manifest.json`
+- `icon-192.png`
+- `icon-512.png`
+- `favicon-32.png`
+
+Unten: **"Commit changes"** klicken.
+
+### Schritt 3: GitHub Pages aktivieren
+
+1. Im Repo: **Settings** (oben)
+2. Links im Menü: **Pages**
+3. **Source: "Deploy from a branch"** auswählen
+4. **Branch: `main`**, **Folder: `/ (root)`**
+5. **Save** — nach 1-2 Minuten ist die App live unter:
+
+   ```
+   https://DEIN-USERNAME.github.io/GrowSmart/
+   ```
+
+### Schritt 4: Auf dem Handy installieren
+
+1. URL im **Chrome auf dem Handy** öffnen
+2. Browser-Menü → **Zum Startbildschirm hinzufügen**
+3. Die App erscheint wie eine normale App auf dem Homescreen
+4. Beim Öffnen läuft sie im Vollbild ohne Browser-Leiste
+
+## Updates ausrollen
+
+Wenn du eine neue Version der `index.html` hochlädst:
+
+1. Im Repo: Auf `index.html` klicken → ✏️ Edit → alte Datei ersetzen → Commit
+2. **Wichtig**: Auch `sw.js` ersetzen wenn sich `CACHE_NAME` geändert hat
+   (steht oben in `sw.js`, sieht aus wie `'growsmart-v1.1'`)
+3. Nach 1-2 Minuten ist's live. Beim nächsten App-Öffnen auf dem Handy
+   lädt der Service-Worker den neuen Code automatisch nach.
 
 ## Daten
-Alle deine Grow-Daten werden lokal in deinem Browser gespeichert.
-Nichts geht in die Cloud – deine Privatsphäre ist geschützt.
+
+Alle Grow-Daten landen lokal im Browser-Storage (IndexedDB / localStorage).
+Nichts geht in die Cloud. Backup über die App: **Einstellungen → Daten →
+Export als JSON**.

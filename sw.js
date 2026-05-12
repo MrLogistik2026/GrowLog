@@ -19,7 +19,11 @@
  */
 
 const CACHE_NAME = 'growsmart-v1.1';
-const APP_SHELL = ['/', '/index.html', '/manifest.json'];
+// Relative Pfade — funktionieren sowohl an der Wurzel (file://, localhost) als
+// auch in GitHub-Pages-Sub-Pfaden wie /GrowSmart/. Absolute Pfade ('/index.html')
+// würden auf GitHub Pages zu 404 führen, weil der Browser dann root statt
+// Sub-Pfad lädt.
+const APP_SHELL = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png', './favicon-32.png'];
 
 self.addEventListener('install', (event) => {
   // Bei der Erst-Installation: App-Shell vorab cachen
@@ -29,7 +33,7 @@ self.addEventListener('install', (event) => {
         // Wenn ein einzelner addAll fehlschlägt (z.B. manifest.json fehlt):
         // wenigstens die index.html cachen
         console.warn('[SW] addAll partial failure:', err);
-        return cache.add('/index.html').catch(() => {});
+        return cache.add('./index.html').catch(() => {});
       });
     })
   );
