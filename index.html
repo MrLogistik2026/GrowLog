@@ -815,9 +815,10 @@ body.beginner .advanced-ctl { display: none !important; }
     <div class="topbar" style="padding-top:max(12px,env(safe-area-inset-top))">
       <button class="icon-btn" onclick="goTo('cal')" style="font-size:20px" title="Zum Kalender">📅</button>
       <span class="app-title">⚙ Einstellungen</span>
-      <div style="display:flex;gap:6px">
-        <button onclick="doUndo()" style="background:var(--surface);border:0.5px solid var(--border);border-radius:8px;padding:5px 8px;font-size:10px;color:var(--text-sub);cursor:pointer;font-family:var(--font)" title="Rückgängig">↩</button>
-        <button onclick="doRedo()" style="background:var(--surface);border:0.5px solid var(--border);border-radius:8px;padding:5px 8px;font-size:10px;color:var(--text-sub);cursor:pointer;font-family:var(--font)" title="Wiederholen">↪</button>
+      <div style="display:flex;gap:6px;align-items:center">
+        <button id="set-save-top" onclick="saveDraft()" style="display:none;background:var(--green);border:none;border-radius:8px;padding:7px 14px;font-size:13px;color:#fff;cursor:pointer;font-family:var(--font);font-weight:600" title="Änderungen sichern">💾 Sichern</button>
+        <button onclick="doUndo()" style="background:var(--surface);border:0.5px solid var(--border);border-radius:8px;padding:5px 8px;font-size:10px;color:var(--text-hint);cursor:pointer;font-family:var(--font)" title="Rückgängig">↩</button>
+        <button onclick="doRedo()" style="background:var(--surface);border:0.5px solid var(--border);border-radius:8px;padding:5px 8px;font-size:10px;color:var(--text-hint);cursor:pointer;font-family:var(--font)" title="Wiederholen">↪</button>
       </div>
     </div>
     <div class="scroll" id="set-body"></div>
@@ -828,13 +829,13 @@ body.beginner .advanced-ctl { display: none !important; }
   <div class="screen" id="scr-entry">
     <div class="topbar" style="padding-top:max(12px,env(safe-area-inset-top));gap:6px">
       <button class="icon-btn" id="entry-back" style="font-size:22px;padding:4px 8px">←</button>
-      <button onclick="entryNav(-1)" title="Vorheriger Tag" style="background:var(--surface);border:0.5px solid var(--border);border-radius:8px;color:var(--green);font-size:16px;cursor:pointer;padding:5px 10px;font-weight:600">‹</button>
+      <button onclick="entryNav(-1)" title="Vorheriger Tag" style="background:var(--surface);border:0.5px solid var(--border);border-radius:10px;color:var(--green);font-size:20px;cursor:pointer;padding:9px 15px;font-weight:600;min-width:44px;min-height:42px">‹</button>
       <div id="entry-ttl" style="flex:1;text-align:center;font-size:14px;font-weight:600;color:var(--text)">Eintrag</div>
-      <button onclick="entryNav(1)" title="Nächster Tag" style="background:var(--surface);border:0.5px solid var(--border);border-radius:8px;color:var(--green);font-size:16px;cursor:pointer;padding:5px 10px;font-weight:600">›</button>
-      <div style="display:flex;gap:4px;align-items:center">
+      <button onclick="entryNav(1)" title="Nächster Tag" style="background:var(--surface);border:0.5px solid var(--border);border-radius:10px;color:var(--green);font-size:20px;cursor:pointer;padding:9px 15px;font-weight:600;min-width:44px;min-height:42px">›</button>
+      <div style="display:flex;gap:4px;align-items:center;margin-left:12px">
         <div style="display:flex;gap:4px">
-          <button onclick="doUndo()" style="background:var(--surface);border:0.5px solid var(--border);border-radius:8px;padding:5px 8px;font-size:10px;color:var(--text-sub);cursor:pointer;font-family:var(--font)" title="Rückgängig">↩</button>
-          <button onclick="doRedo()" style="background:var(--surface);border:0.5px solid var(--border);border-radius:8px;padding:5px 8px;font-size:10px;color:var(--text-sub);cursor:pointer;font-family:var(--font)" title="Wiederholen">↪</button>
+          <button onclick="doUndo()" style="background:var(--surface);border:0.5px solid var(--border);border-radius:8px;padding:5px 7px;font-size:10px;color:var(--text-hint);cursor:pointer;font-family:var(--font)" title="Rückgängig">↩</button>
+          <button onclick="doRedo()" style="background:var(--surface);border:0.5px solid var(--border);border-radius:8px;padding:5px 7px;font-size:10px;color:var(--text-hint);cursor:pointer;font-family:var(--font)" title="Wiederholen">↪</button>
         </div>
         <button class="save-pill" onclick="saveEntry()">Speichern</button>
       </div>
@@ -1139,6 +1140,13 @@ const T = {
       phase: 'vegi',
       short: 'Hauptspitze abschneiden — zwingt Pflanze zu buschigem Wachstum mit zwei Hauptcolas.',
       lex: 'Topping',
+    },
+    haube: {
+      label: 'Sämlings-Haube',
+      icon: '🫧',
+      phase: 'anzucht',
+      short: 'Transparente Kuppel über dem Sämling — hält 80–95% Luftfeuchte, schützt vor Austrocknen die ersten 7–10 Tage.',
+      lex: 'Sämlings-Haube',
     },
     fim: {
       label: 'FIM',
@@ -3166,6 +3174,174 @@ const FERT_PRESETS = {
       12: {},
     },
   },
+    // === Cup-Sieger-Preset (aus duengeplan_v3.html, Mai 2026) ===
+    cup_sieger: {
+      name: 'Cup-Sieger-Plan (Premium)',
+      subtitle: '12 Wochen · 12 Produkte · EC 0.4→2.3 · Auto-optimiert · 49 Tage Bloom',
+      doseMode: 'per-watering',
+      bloomDaysHint: 49,
+      mixOrder: ['Silica Force', 'CalMag', 'Bio-Grow', 'Bio-Bloom', 'GiDeli MKP', 'Epsom Salz',
+                 'POWHUMUS (Konz.A)', 'Advanced Amino',
+                 'Alfa Boost', 'Aloe Konzentrat B', 'Mykorrhiza HomeGrow24'],
+      mixInfo: '1. Silica Force IMMER ZUERST ins Wasser, 2 Min ruhen lassen (pH steigt initial). 2. CalMag einrühren. 3. Bio-Grow/Bio-Bloom + MKP. 4. Epsom Salz. 5. POWHUMUS (Chelator). 6. Stimulatoren (Advanced Amino strikt nur per Einwegspritze 0.2 ml/L! niemals schätzen). 7. Alfa Boost. 8. Aloe Konzentrat B zuletzt. pH zuletzt auf 6.2-6.4 (Erde) korrigieren. — Mykorrhiza HomeGrow24 gehört NICHT in die Mischung: trocken ans Pflanzloch (Tag 0) + Refresher rund um FIM.',
+      drainInfo: '⚠️ Premium Cup-Plan: Strenge EC-Kontrolle. Drain-EC pro Phase prüfen — bei Überschreitung Warnschwelle (z.B. >2.3 in Stretch II) 1-2 Water-Days einlegen. Mykorrhiza-freundlich durch moderate EC und Pause-Tage. Wo 11 nur Wasser (Flush), Wo 12 Ice-Wasser (1L crushed ice, 4-6h Schmelzzeit, 24-36h Dunkelphase vor Ernte).',
+      weekFocus: {
+          "1": {
+              "phase": "Seedling",
+              "tip": "Energie aus Keimblatt. Mini-Dosis bei jedem Guss. Keine Water-Days."
+          },
+          "2": {
+              "phase": "Vegi I",
+              "tip": "Grow-Start. LST sobald 3. Node. Silica Force startet jetzt."
+          },
+          "3": {
+              "phase": "Vegi II",
+              "tip": "FIM an Node 4. 48h danach NUR Wasser! Silica auf 0.4."
+          },
+          "4": {
+              "phase": "Stretch I",
+              "tip": "Bloom sanft. Mykorrhiza-Refresher. Silica auf Peak."
+          },
+          "5": {
+              "phase": "Stretch II",
+              "tip": "Pflanze saugt extrem. Dryback strikt. EC täglich."
+          },
+          "6": {
+              "phase": "Stacking",
+              "tip": "Stretch stoppt. Calyxen stapeln. Defoliation unteres Drittel."
+          },
+          "7": {
+              "phase": "Swelling I",
+              "tip": "MKP startet für Bud-Härtung. Letzte Amino & Alfa Boost."
+          },
+          "8": {
+              "phase": "Swelling II",
+              "tip": "MKP auf Peak. N-Mikrodosis hält Bud-Building aktiv."
+          },
+          "9": {
+              "phase": "Ripening I",
+              "tip": "Jetzt erst N-Stop. Trichome täglich Lupe. Letztes MKP + Silica."
+          },
+          "10": {
+              "phase": "Ripening II",
+              "tip": "Bloom stark reduzieren. 24h Pitch-Black Tag 3-4 einbauen!"
+          },
+          "11": {
+              "phase": "Flush 🚿",
+              "tip": "Nur Wasser + minimal CalMag. Ordentlich Drain. Trichome täglich."
+          },
+          "12": {
+              "phase": "Ernte 🌙",
+              "tip": "1L Crushed Ice · 4-6h schmelzen · 24-36h Pitch-Black · Ernte morgens."
+          }
+      },
+      products: [
+        { name: 'Silica Force',          unit: 'ml/L', color: '#7dd3fc', note: '① IMMER zuerst (pH-Schub)' },
+        { name: 'CalMag',                unit: 'ml/L', color: '#86efac', note: '② NACH Silica (2 Min Pause)', waterDayDose: 0.2 },
+        { name: 'Bio-Grow',              unit: 'ml/L', color: '#6ee7b7', note: '③ Wachstum (N-lastig)' },
+        { name: 'Bio-Bloom',             unit: 'ml/L', color: '#6ee7b7', note: '③ Blüte (P/K-lastig)' },
+        { name: 'GiDeli MKP',            unit: 'ml/L', color: '#f0abfc', note: '④ PK-Booster Swelling/Ripening' },
+        { name: 'Epsom Salz',            unit: 'ml/L', color: '#86efac', note: '④ Magnesium-Backup' },
+        { name: 'POWHUMUS (Konz.A)',     unit: 'ml/L', color: '#fde68a', note: '⑤ Chelator (Konz.A: 10-15 ml/L)', waterDayDose: 5 },
+        { name: 'Advanced Amino',     unit: 'ml/L', color: '#c084fc', note: '⑥ STRIKT 0.2 ml/L (Einwegspritze!)' },
+        { name: 'Alfa Boost',            unit: 'ml/L', color: '#a78bfa', note: '⑥ Aminosäure-Stimulator' },
+        { name: 'Aloe Konzentrat B',       unit: 'ml/L', color: '#2dd4bf', note: '⑦ Aloevera Konzentrat B (Sala 200:1, 20 mg/ml = 5 g Pulver + 250 ml dest. Wasser). Vor Gebrauch schütteln, Kühlschrank max. 3 Wochen (~3-4× neu ansetzen über den Run). Mit 1-ml-Spritze dosieren, sanft einrühren, zuletzt. Ab Woche 11 (Flush) KEIN Aloe mehr.', waterDayDose: 1.25 },
+        { name: 'Mykorrhiza HomeGrow24', unit: 'g',    color: '#fb923c', note: '⑧ Mykorrhiza-Pulver — TROCKEN an die Wurzel, NIE ins Gießwasser! Pflanzloch (Tag 0) + Refresher ~0.5 g/Topf rund um FIM/Vegi-Start (in obere Erdschicht einarbeiten, danach gießen → Sporen wandern zur Wurzelzone)' },
+      ],
+      schedule: {
+          "1": {
+              "CalMag": 0.3,
+              "POWHUMUS (Konz.A)": 10,
+              "Aloe Konzentrat B": 2.5
+          },
+          "2": {
+              "Silica Force": 0.3,
+              "CalMag": 0.3,
+              "Epsom Salz": 0.15,
+              "POWHUMUS (Konz.A)": 10,
+              "Bio-Grow": 0.25,
+              "Aloe Konzentrat B": 2.5
+          },
+          "3": {
+              "Silica Force": 0.3,
+              "CalMag": 0.3,
+              "Epsom Salz": 0.15,
+              "POWHUMUS (Konz.A)": 10,
+              "Bio-Grow": 0.75,
+              "Aloe Konzentrat B": 2.5
+          },
+          "4": {
+              "Silica Force": 0.4,
+              "CalMag": 0.3,
+              "Epsom Salz": 0.2,
+              "POWHUMUS (Konz.A)": 10,
+              "Bio-Grow": 1.25,
+              "Advanced Amino": 0.2,
+              "Alfa Boost": 0.5,
+              "Aloe Konzentrat B": 3.0
+          },
+          "5": {
+              "Silica Force": 0.4,
+              "CalMag": 0.3,
+              "Epsom Salz": 0.2,
+              "POWHUMUS (Konz.A)": 10,
+              "Bio-Grow": 1.75,
+              "Advanced Amino": 0.2,
+              "Alfa Boost": 0.8,
+              "Aloe Konzentrat B": 3.0
+          },
+          "6": {
+              "Silica Force": 0.5,
+              "CalMag": 0.3,
+              "Epsom Salz": 0.25,
+              "POWHUMUS (Konz.A)": 10,
+              "Bio-Grow": 1.5,
+              "Bio-Bloom": 1.0,
+              "Advanced Amino": 0.2,
+              "Alfa Boost": 0.8,
+              "Aloe Konzentrat B": 3.0
+          },
+          "7": {
+              "Silica Force": 0.5,
+              "CalMag": 0.3,
+              "Epsom Salz": 0.3,
+              "POWHUMUS (Konz.A)": 10,
+              "GiDeli MKP": 0.2,
+              "Bio-Grow": 1.0,
+              "Bio-Bloom": 2.0,
+              "Advanced Amino": 0.2,
+              "Alfa Boost": 0.5,
+              "Aloe Konzentrat B": 2.0
+          },
+          "8": {
+              "Silica Force": 0.5,
+              "CalMag": 0.3,
+              "Epsom Salz": 0.3,
+              "POWHUMUS (Konz.A)": 10,
+              "GiDeli MKP": 0.3,
+              "Bio-Grow": 0.1,
+              "Bio-Bloom": 2.0,
+              "Aloe Konzentrat B": 2.0
+          },
+          "9": {
+              "Silica Force": 0.5,
+              "CalMag": 0.3,
+              "Epsom Salz": 0.25,
+              "POWHUMUS (Konz.A)": 10,
+              "GiDeli MKP": 0.2,
+              "Bio-Bloom": 1.5,
+              "Aloe Konzentrat B": 2.5
+          },
+          "10": {
+              "CalMag": 0.3,
+              "POWHUMUS (Konz.A)": 10,
+              "Bio-Bloom": 0.75,
+              "Aloe Konzentrat B": 2.5
+          },
+          "11": {},
+          "12": {}
+      },
+    },
 };
 
 // =====================================================================
@@ -3688,7 +3864,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.1.0';
+const APP_VERSION = 'v1.1.35';
 let S = {
   cycles: [], entries: {}, products: [], weekSchedule: {},
   potSize: 11, presetKey: null, mixOrder: null, mixInfo: null,
@@ -3698,6 +3874,12 @@ let S = {
   planNotes: {},
 };
 let tab = 'dash', calDate = new Date(), editISO = null, entryFrom = 'dash';
+// Produkte, deren Dosis der User im aktuell offenen Eintrag gerade per +/− verstellt
+// hat. Sie bleiben in der aktiven Mix-Liste sichtbar — auch wenn die Dosis auf 0
+// fällt. Sonst "verschwindet" ein Produkt sofort beim Runterregeln in die
+// ausgeblendete "Dosis 0"-Sektion, was verwirrt. Wird beim Öffnen eines Eintrags
+// geleert, damit die Liste beim Neu-Öffnen wieder aufgeräumt ist.
+let _mixTouched = new Set();
 let _entryDirty = false; // Tracks whether the current entry has unsaved changes
 let _entrySnapshot = null; // Deep-clone of entry state on openEntry — enables proper "Verwerfen" restore
 let _tipsSnapshot = []; // Snapshot of current tips for meta-search
@@ -4307,6 +4489,10 @@ function loadS() {
   if (S._setUI.app === undefined) S._setUI.app = false;
   if (S._setUI.data === undefined) S._setUI.data = false;
   if (S._setUI.advanced === undefined) S._setUI.advanced = false;
+  // Dash-Akkordeon: im Anfängermodus werden Stats, Charts, Galerie, Symptom-Check
+  // unter einem "Mehr anzeigen"-Toggle versteckt. Im Profimodus ist alles direkt
+  // sichtbar wie bisher.
+  if (S._setUI.dashMore === undefined) S._setUI.dashMore = false;
 
   // Lexikon-State (Phase C): Lesezeichen + Lese-Verlauf. Beides Maps mit
   // Lexikon-Titeln als Keys. _lexFavs ist persistent (User-Wahl), _lexHistory
@@ -4397,6 +4583,9 @@ function loadS() {
     // Pflanzenzahl-Migration (v1.0.22): bestehende Zyklen kriegen 1 Pflanze als Default
     if (c.plantCount === undefined) c.plantCount = 1;
     if (c.scaleByPlants === undefined) c.scaleByPlants = true;
+    // Wasser-Tage standardmäßig AUS (jeder Gießtag = voller Feed). Profi-Feature,
+    // bewusst opt-in — Anfänger werden nicht damit belastet.
+    if (c.useWaterDays === undefined) c.useWaterDays = false;
 
     // PLANTS-MIGRATION (v1.0.30): c.plantCount → c.plants[] mit Identitäten.
     // c.plantCount bleibt als Sync-Feld für Backward-Compat (Wasser-Skalierung etc.),
@@ -4440,6 +4629,187 @@ function loadS() {
 
   // Remove legacy skipDays
   delete S.skipDays;
+
+  // PRODUKT-UMBENENNUNGEN (Migration für bestehende Pläne). Mapping alt→neu plus
+  // optionale Feld-Anpassungen. Idempotent — greift nach dem ersten Lauf nicht mehr.
+  // - "HomeGrow24 Granulat" → "Mykorrhiza HomeGrow24" (v1.1.18): war fälschlich
+  //   Gießwasser-Dünger (ml/L) in Woche 4. Mykorrhiza gehört trocken an die Wurzel.
+  //   → unit auf 'g', Notiz anpassen, aus allen Wochen-Schedules nehmen.
+  // - "Canna Acti·Vera" → "Aloe Konzentrat B" (v1.1.21): User nutzt jetzt eigenes
+  //   Aloevera-Pulver-Konzentrat. Reine Umbenennung, Dosis bleibt (per prodId).
+  // - "Advanced Amino ⚠️" → "Advanced Amino" (v1.1.21): Warn-Symbol aus dem Namen.
+  const _prodRenames = {
+    'HomeGrow24 Granulat': {
+      name: 'Mykorrhiza HomeGrow24',
+      unit: 'g',
+      note: '⑧ Mykorrhiza-Pulver — TROCKEN an die Wurzel, NIE ins Gießwasser! Pflanzloch (Tag 0) + Refresher ~0.5 g/Topf rund um FIM/Vegi-Start (in obere Erdschicht einarbeiten, danach gießen)',
+      removeFromSchedule: true,
+    },
+    'Canna Acti·Vera': { name: 'Aloe Konzentrat B' },
+    'Advanced Amino ⚠️': { name: 'Advanced Amino' },
+  };
+  (S.fertPlans || []).forEach(plan => {
+    (plan.products || []).forEach(p => {
+      const r = _prodRenames[p.name];
+      if (!r) return;
+      const oldName = p.name;
+      p.name = r.name;
+      if (r.unit) p.unit = r.unit;
+      if (r.note) p.note = r.note;
+      // mixOrder-Namen mitziehen
+      if (plan.mixOrder) {
+        plan.mixOrder = plan.mixOrder.map(n => n === oldName ? r.name : n);
+      }
+      // Optional: aus allen Wochen-Schedules nehmen (prodId- und name-basiert)
+      if (r.removeFromSchedule && plan.schedule) {
+        Object.keys(plan.schedule).forEach(wk => {
+          const wsched = plan.schedule[wk];
+          if (!wsched) return;
+          if (wsched[p.id] !== undefined) delete wsched[p.id];
+          if (wsched[oldName] !== undefined) delete wsched[oldName];
+        });
+      }
+    });
+  });
+  // Falls eines der umzubenennenden Produkte gerade aktiv in den Globals liegt:
+  // neu laden, damit die Änderung sofort sichtbar wird ohne Plan-Wechsel.
+  if (S.products && S.products.some(p => _prodRenames[p.name])) {
+    if (typeof syncActivePlanToGlobals === 'function') syncActivePlanToGlobals();
+  }
+
+  // ALOE-DOSIS-MIGRATION (v1.1.22): einmalig die neuen Aloe-Konzentrat-B-Dosen
+  // (Sala 200:1, 20 mg/ml) im Cup-Sieger-Plan setzen. Diese Migration ist NICHT
+  // idempotent (sie schreibt Dosis-Werte), daher ein Flag — sonst würden spätere
+  // manuelle Dosis-Anpassungen des Users bei jedem Laden zurückgesetzt.
+  // Feed-Days: Wo1-3 2.5, Wo4-6 3.0, Wo7-8 2.0, Wo9-10 2.5; ab Wo11 kein Aloe.
+  if (!S._aloeDoseMigrated) {
+    const aloeDoses = { w1: 2.5, w2: 2.5, w3: 2.5, w4: 3.0, w5: 3.0, w6: 3.0, w7: 2.0, w8: 2.0, w9: 2.5, w10: 2.5 };
+    (S.fertPlans || []).forEach(plan => {
+      if (plan.presetKey !== 'cup_sieger') return;  // nur der Cup-Sieger-Plan
+      const aloe = (plan.products || []).find(p => p.name === 'Aloe Konzentrat B');
+      if (!aloe || !plan.schedule) return;
+      Object.entries(aloeDoses).forEach(([wk, dose]) => {
+        if (plan.schedule[wk]) plan.schedule[wk][aloe.id] = dose;
+      });
+      // Ab Woche 11 (Flush/Iceflush) kein Aloe mehr → entfernen falls vorhanden
+      ['w11', 'w12'].forEach(wk => {
+        if (plan.schedule[wk] && plan.schedule[wk][aloe.id] !== undefined) {
+          delete plan.schedule[wk][aloe.id];
+        }
+      });
+    });
+    S._aloeDoseMigrated = true;
+    // Aktiven Plan neu in die Globals laden, damit die neuen Dosen sofort greifen
+    if (typeof syncActivePlanToGlobals === 'function') syncActivePlanToGlobals();
+  }
+
+  // WASSER-TAG-DOSIS-MIGRATION (v1.1.22, einmalig): Cup-Plan bekommt für CalMag und
+  // Aloe Konzentrat B eine Wasser-Tag-Erhaltungs-Dosis (CalMag 0.2, Aloe 1.25 ml/L).
+  // Flag-gesteuert, damit spätere manuelle Anpassungen nicht überschrieben werden.
+  if (!S._waterDayDoseMigrated) {
+    const wdDoses = { 'CalMag': 0.2, 'Aloe Konzentrat B': 1.25 };
+    (S.fertPlans || []).forEach(plan => {
+      if (plan.presetKey !== 'cup_sieger') return;
+      (plan.products || []).forEach(p => {
+        if (wdDoses[p.name] !== undefined && p.waterDayDose === undefined) {
+          p.waterDayDose = wdDoses[p.name];
+        }
+      });
+    });
+    S._waterDayDoseMigrated = true;
+    if (typeof syncActivePlanToGlobals === 'function') syncActivePlanToGlobals();
+  }
+
+  // WASSER-TAG-DOSIS-MIGRATION 2 (v1.1.23, einmalig): POWHUMUS als kleine
+  // Erhaltungs-Beigabe an Wasser-Tagen (50% der Basis-Dosis: POWHUMUS 5).
+  // EIGENES Flag, weil das erste Flag bei Usern mit v1.1.22 schon gesetzt ist —
+  // sonst bekäme POWHUMUS nie seine Wasser-Tag-Dosis.
+  // (Fulvinsäure war hier früher mit dabei, ist aber ab v1.1.28 ganz raus.)
+  if (!S._waterDayDose2Migrated) {
+    const wd2 = { 'POWHUMUS (Konz.A)': 5 };
+    (S.fertPlans || []).forEach(plan => {
+      if (plan.presetKey !== 'cup_sieger') return;
+      (plan.products || []).forEach(p => {
+        if (wd2[p.name] !== undefined && p.waterDayDose === undefined) {
+          p.waterDayDose = wd2[p.name];
+        }
+      });
+    });
+    S._waterDayDose2Migrated = true;
+    if (typeof syncActivePlanToGlobals === 'function') syncActivePlanToGlobals();
+  }
+
+  // FULVINSÄURE-ENTFERNUNG (v1.1.28, einmalig): "Cultivers Fulvinsäure" auf Wunsch
+  // komplett aus allen bestehenden Düngeplänen löschen — Produkt, Wochen-Dosen und
+  // Anmisch-Reihenfolge. Robust für beide Schedule-Formate (zur Laufzeit prodId-
+  // basiert, in alten/importierten Plänen evtl. noch name-basiert). Idempotent.
+  if (!S._fulvinRemoved) {
+    const FULVIN = 'Cultivers Fulvinsäure';
+    (S.fertPlans || []).forEach(plan => {
+      if (!plan.products) return;
+      // prodId(s) merken, bevor das Produkt entfernt wird (schedule referenziert per id)
+      const ids = plan.products.filter(p => p.name === FULVIN).map(p => p.id);
+      plan.products = plan.products.filter(p => p.name !== FULVIN);
+      if (plan.schedule) {
+        Object.keys(plan.schedule).forEach(wk => {
+          if (!plan.schedule[wk]) return;
+          ids.forEach(id => { delete plan.schedule[wk][id]; });
+          delete plan.schedule[wk][FULVIN];  // falls schedule noch name-basiert ist
+        });
+      }
+      if (Array.isArray(plan.mixOrder)) {
+        plan.mixOrder = plan.mixOrder.filter(n => n !== FULVIN);
+      }
+    });
+    S._fulvinRemoved = true;
+    if (typeof syncActivePlanToGlobals === 'function') syncActivePlanToGlobals();
+  }
+
+  // V3.2-DÜNGEPLAN (v1.1.30/31): Cup-Sieger-Wochenplan auf den von Patrick überprüften
+  // V3.2-Stand bringen. Kernänderungen: POWHUMUS überall 10, CalMag durchgehend 0.3,
+  // Bio-Grow neu gestaffelt (Vegi/Stretch deutlich höher), Bio-Bloom erst ab Wo6,
+  // Advanced Amino erst ab Wo4, Epsom feiner (0.15→0.30), Silica bis Wo9, Wo11 nur Wasser.
+  // Alfa Boost behält die bestehenden Werte (V3.2 = "n. Label").
+  // Baut das Wochen-Schedule pro cup_sieger-Plan neu (Produktname → prodId). Idempotent.
+  // v1.1.31: NEUES Flag (_v32SchedMigrated2), weil v1.1.30 die Schedule-Keys fälschlich
+  // als '1'..'12' statt 'w1'..'w12' schrieb → syncActivePlanToGlobals erzeugte kein
+  // 'global_wN' → Anzeige zeigte alle Dosen als 0. Diese Version repariert das auch bei
+  // allen, die v1.1.30 schon geladen hatten.
+  if (!S._v32SchedMigrated2) {
+    const V32 = {
+      '1':  { 'CalMag': 0.3, 'POWHUMUS (Konz.A)': 10, 'Aloe Konzentrat B': 2.5 },
+      '2':  { 'Silica Force': 0.3, 'CalMag': 0.3, 'Epsom Salz': 0.15, 'POWHUMUS (Konz.A)': 10, 'Bio-Grow': 0.25, 'Aloe Konzentrat B': 2.5 },
+      '3':  { 'Silica Force': 0.3, 'CalMag': 0.3, 'Epsom Salz': 0.15, 'POWHUMUS (Konz.A)': 10, 'Bio-Grow': 0.75, 'Aloe Konzentrat B': 2.5 },
+      '4':  { 'Silica Force': 0.4, 'CalMag': 0.3, 'Epsom Salz': 0.2, 'POWHUMUS (Konz.A)': 10, 'Bio-Grow': 1.25, 'Advanced Amino': 0.2, 'Alfa Boost': 0.5, 'Aloe Konzentrat B': 3.0 },
+      '5':  { 'Silica Force': 0.4, 'CalMag': 0.3, 'Epsom Salz': 0.2, 'POWHUMUS (Konz.A)': 10, 'Bio-Grow': 1.75, 'Advanced Amino': 0.2, 'Alfa Boost': 0.8, 'Aloe Konzentrat B': 3.0 },
+      '6':  { 'Silica Force': 0.5, 'CalMag': 0.3, 'Epsom Salz': 0.25, 'POWHUMUS (Konz.A)': 10, 'Bio-Grow': 1.5, 'Bio-Bloom': 1.0, 'Advanced Amino': 0.2, 'Alfa Boost': 0.8, 'Aloe Konzentrat B': 3.0 },
+      '7':  { 'Silica Force': 0.5, 'CalMag': 0.3, 'Epsom Salz': 0.3, 'POWHUMUS (Konz.A)': 10, 'GiDeli MKP': 0.2, 'Bio-Grow': 1.0, 'Bio-Bloom': 2.0, 'Advanced Amino': 0.2, 'Alfa Boost': 0.5, 'Aloe Konzentrat B': 2.0 },
+      '8':  { 'Silica Force': 0.5, 'CalMag': 0.3, 'Epsom Salz': 0.3, 'POWHUMUS (Konz.A)': 10, 'GiDeli MKP': 0.3, 'Bio-Grow': 0.1, 'Bio-Bloom': 2.0, 'Aloe Konzentrat B': 2.0 },
+      '9':  { 'Silica Force': 0.5, 'CalMag': 0.3, 'Epsom Salz': 0.25, 'POWHUMUS (Konz.A)': 10, 'GiDeli MKP': 0.2, 'Bio-Bloom': 1.5, 'Aloe Konzentrat B': 2.5 },
+      '10': { 'CalMag': 0.3, 'POWHUMUS (Konz.A)': 10, 'Bio-Bloom': 0.75, 'Aloe Konzentrat B': 2.5 },
+      '11': {}, '12': {}
+    };
+    (S.fertPlans || []).forEach(plan => {
+      if (plan.presetKey !== 'cup_sieger' || !plan.products) return;
+      const nameToId = {};
+      plan.products.forEach(p => { nameToId[p.name] = p.id; });
+      const newSched = {};
+      Object.keys(V32).forEach(wk => {
+        // WICHTIG: plan.schedule braucht 'wN'-Keys (nicht 'N'). syncActivePlanToGlobals
+        // konvertiert nur 'wN' → 'global_wN'; rein numerische Keys werden NICHT erkannt,
+        // wodurch die Anzeige (liest 'global_wN') alle Dosen als 0 zeigt.
+        const key = 'w' + wk;
+        newSched[key] = {};
+        Object.entries(V32[wk]).forEach(([name, dose]) => {
+          const id = nameToId[name];
+          if (id) newSched[key][id] = dose;  // unbekannte Produkte still überspringen
+        });
+      });
+      plan.schedule = newSched;
+    });
+    S._v32SchedMigrated2 = true;
+    if (typeof syncActivePlanToGlobals === 'function') syncActivePlanToGlobals();
+  }
 }
 
 /**
@@ -4658,7 +5028,7 @@ let _modalResolve = null;
  * Show a custom confirm dialog. Returns a Promise<boolean>.
  * Usage: const ok = await customConfirm('Titel', 'Nachricht', 'Löschen', '#e06060');
  */
-function customConfirm(title, msg, okText = 'OK', okColor = 'var(--red)') {
+function customConfirm(title, msg, okText = 'OK', okColor = 'var(--red)', cancelText = 'Abbrechen') {
   return new Promise((resolve) => {
     _modalResolve = resolve;
     document.getElementById('modal-title').textContent = title;
@@ -4666,6 +5036,9 @@ function customConfirm(title, msg, okText = 'OK', okColor = 'var(--red)') {
     const okBtn = document.getElementById('modal-ok');
     okBtn.textContent = okText;
     okBtn.style.background = okColor;
+    // Cancel-Text individuell setzbar — vermeidet UX-Kollision wenn der primäre
+    // Button-Text auch "Abbrechen" wäre (z.B. bei "Zyklus abbrechen?" Dialog).
+    document.getElementById('modal-cancel').textContent = cancelText;
     document.getElementById('modal-overlay').classList.add('show');
   });
 }
@@ -4714,10 +5087,14 @@ function customPrompt({ title, msg = '', placeholder = '', initial = '', multili
 
 document.getElementById('modal-cancel').onclick = () => {
   document.getElementById('modal-overlay').classList.remove('show');
+  // Cancel-Text auf Default zurücksetzen damit folgende Dialoge nicht den
+  // angepassten Text aus dem vorigen Aufruf erben.
+  document.getElementById('modal-cancel').textContent = 'Abbrechen';
   if (_modalResolve) { _modalResolve(false); _modalResolve = null; }
 };
 document.getElementById('modal-ok').onclick = () => {
   document.getElementById('modal-overlay').classList.remove('show');
+  document.getElementById('modal-cancel').textContent = 'Abbrechen';
   if (_modalResolve) { _modalResolve(true); _modalResolve = null; }
 };
 
@@ -6051,6 +6428,25 @@ function isoPlus(iso, d) { const o = iso12(iso); o.setDate(o.getDate() + d); ret
 function isoDiff(a, b) { return Math.round((iso12(a) - iso12(b)) / 86400000); }
 function fmtDE(iso, o) { return iso12(iso).toLocaleDateString('de-DE', o || { day: '2-digit', month: '2-digit' }); }
 
+/**
+ * Wassermenge schön formatiert. Kleine Mengen (<100ml) als "33 ml" statt "0.0 L"
+ * — letzteres sah aus als wäre die Wassermenge Null und führte zu Verwirrung
+ * bei Mini-Tagesgüssen (z.B. Direct-Methode Tag 2-8 mit ~33ml).
+ *
+ * Beispiele:
+ *   fmtWater(0)    → "0 ml"
+ *   fmtWater(33)   → "33 ml"
+ *   fmtWater(200)  → "0.2 L"
+ *   fmtWater(2000) → "2 L"
+ *   fmtWater(2300) → "2.3 L"
+ */
+function fmtWater(ml) {
+  if (!ml || ml <= 0) return '0 ml';
+  if (ml < 100) return Math.round(ml) + ' ml';
+  if (ml % 1000 === 0) return (ml / 1000) + ' L';
+  return (ml / 1000).toFixed(1) + ' L';
+}
+
 // =====================================================================
 //  [SEKTION]: GROW LOGIC
 // =====================================================================
@@ -7002,7 +7398,17 @@ function isGiessTag(iso, c) {
  */
 function getWeekDoses(cId, w, c) {
   const raw = S.weekSchedule[cId + '_w' + w] || S.weekSchedule['global_w' + w] || {};
-  const preset = S.presetKey ? getPreset(S.presetKey) : null;
+  // STATE-SYNC-FIX (Mai 2026, v1.1.07): doseMode aus dem AKTIVEN PLAN lesen, nicht
+  // aus S.presetKey. Der globale S.presetKey kann veraltet sein wenn der User
+  // zwischendurch andere Presets angetippt hat (auch wenn ein anderer Plan aktiv ist).
+  // Beispiel: User hat biobizz_official mal probiert, dann Cup-Sieger als aktiven Plan
+  // gesetzt. S.presetKey blieb auf biobizz_official ('weekly-split') hängen während
+  // der echte aktive Plan cup_sieger ('per-watering') war → Cup-Werte wurden
+  // fälschlicherweise durch wateringsPerWeek geteilt.
+  // Source of truth ist der aktive Plan, nicht der globale State.
+  const plan = (typeof getActivePlan === 'function') ? getActivePlan() : null;
+  const presetKey = plan?.presetKey || S.presetKey;
+  const preset = presetKey ? getPreset(presetKey) : null;
   const mode = preset?.doseMode || 'per-watering';
   if (mode !== 'weekly-split' || !c) return raw;
   // Pick phase-appropriate watering interval: anzucht weeks 1-2, bloom weeks 3+
@@ -7044,13 +7450,17 @@ function displayUnit(unit) {
  * For "/L" units: scales with water (plan × waterMl / 1000).
  * For absolute units: returns plan as-is regardless of water amount.
  */
-function calcDose(plan, waterMl, unit) {
+function calcDose(plan, waterMl, unit, decimals) {
   if (!plan || plan <= 0) return 0;
+  // decimals optional — Default 1 (unverändertes Verhalten für alle bestehenden
+  // Aufrufer). Die Mix-Dosis-Anzeige übergibt bei kleinen Wassermengen 2, damit
+  // feine 0.05ml-Schritte sichtbar werden statt auf 0.1ml gerundet zu verschwinden.
+  const factor = Math.pow(10, (decimals === undefined ? 1 : decimals));
   if (isPerLitre(unit)) {
-    return Math.round((plan * waterMl / 1000) * 10) / 10;
+    return Math.round((plan * waterMl / 1000) * factor) / factor;
   }
   // Absolute: fixed amount per watering, independent of water volume
-  return Math.round(plan * 10) / 10;
+  return Math.round(plan * factor) / factor;
 }
 
 /**
@@ -7767,6 +8177,17 @@ function waterSuggestion(c, p, iso) {
 
   const raw = rawSuggestion();
 
+  // ANZUCHT-SCHUTZ: In der Anzuchtphase (junger Sämling, Tag 1–21) ist die sanfte
+  // Rampe (150 → 250 → 350 …) die feste, konservativ-sichere Vorgabe. Adaptive
+  // Faktoren — Personalisierung, VPD, Stretch — dürfen sie NICHT nach oben treiben:
+  // ein Sämling adaptiv auf 190–250 ml hochzugießen riskiert Überwässerung/Wurzelfäule.
+  // Nur die Pflanzenzahl skaliert das Total. Ab Vegi/Blüte greift die volle Adaption.
+  if (p && p.ph === 'anzucht') {
+    const plantsA = getEffectivePlantCount(c, iso || todayISO());
+    const finalA = raw * plantsA;
+    return finalA < 100 ? Math.round(finalA / 5) * 5 : Math.round(finalA / 50) * 50;
+  }
+
   // PERSONALISIERUNG: Wenn der User in den letzten Gießtagen systematisch mehr
   // (oder weniger) gegossen hat als empfohlen, passt sich die App an.
   // Wir nehmen das Verhältnis aus den letzten 3 tatsächlich gegossenen Tagen und
@@ -7787,9 +8208,13 @@ function waterSuggestion(c, p, iso) {
       const expectedMl = _waterSuggestionRaw(c, pPast);
       if (!expectedMl) continue;
       // userMl ist Total über alle Pflanzen, expectedMl ist pro Pflanze.
-      // Damit der Ratio-Vergleich stimmt, müssen wir userMl durch die damals
-      // aktive Pflanzenzahl teilen (Eintrag-spezifisch oder Zyklus-Default).
-      const plantsAtTime = getEffectivePlantCount(c, isoPast);
+      // Um den per-Pflanze-Vergleich korrekt zu machen, teilen wir userMl durch die
+      // Pflanzenzahl, mit der DAMALS gegossen wurde (plantsAtWatering, beim Gießen
+      // festgehalten). Einträge ohne diesen Wert (vor diesem Update gegossen) werden
+      // übersprungen — sonst müssten wir die aktuelle Pflanzenzahl annehmen, was bei
+      // einem Wechsel die Empfehlung verfälscht (Gesamt-Menge würde "kleben").
+      const plantsAtTime = parseInt(cd.plantsAtWatering);
+      if (!plantsAtTime || plantsAtTime < 1) continue;
       const userMlPerPlant = userMl / plantsAtTime;
       const ratio = userMlPerPlant / expectedMl;
       // Clamp auf sinnvollen Bereich — wer mal deutlich weniger gießt (z.B. weil Erde
@@ -7934,7 +8359,17 @@ function _waterSuggestionRaw(c, p) {
   }
   if (day >= 2 && day <= 8) {
     if (startMethod === 'direct') {
-      // Direkter Modus: Tag 2–8 keine Sprüh-Pflicht, sondern bei Bedarf kleine
+      // Tag 7 (direct): erster größerer Guss zum Wo-2-Übergang. Im Direct-Modus
+      // war die Erde nie voll gesättigt, nach 6 Tagen Mini-Mengen ist der Topf bei
+      // ~30% Restgewicht — die Pflanze braucht jetzt einen echten Schluck statt
+      // der 30ml-Erhaltungs-Dosis. Empfehlung ~100ml für 11L (= pot × 9).
+      // Tag 4 bleibt bewusst bei 30ml (User-Entscheid — kann manuell hochgesetzt
+      // werden). Skaliert mit Topfgröße (z.B. 15L → ~135ml).
+      if (day === 7) {
+        const ml = pot * 9;
+        return Math.round(ml / 5) * 5;
+      }
+      // Direkter Modus: Tag 2–6, 8 keine Sprüh-Pflicht, sondern bei Bedarf kleine
       // Mengen — der Topf ist nicht durchgängig nass, das Pythium-Risiko ist
       // geringer als beim vollgesättigten Topf.
       // Trotzdem vorsichtig: ~30ml/Pflanze als Empfehlung (User entscheidet selbst).
@@ -7945,19 +8380,19 @@ function _waterSuggestionRaw(c, p) {
     return 0;
   }
 
-  // Phase 2: Übergang Wo 2 (Tag 9–14) — sanfter Dryback 50–55%
-  // Protokoll: 300–600ml/Pflanze, Mitte 450ml
-  // Skaliert mit Topf (450ml für 11L → ~41ml/L)
-  if (day <= 14) {
-    const ml = pot * 41;
-    return snap(ml);
-  }
-
-  // Phase 3: Wo 3 (Tag 15–21) — voller Dryback 35–40%, etablierte Pflanze
-  // Protokoll: 800–1500ml/Pflanze, Mitte 1150ml (104ml/L für 11L)
+  // Phase 2+3: ANZUCHT (Tag 9–21) — sanfte Rampe PRO GUSS statt harter Sprünge.
+  // Wunsch: erster Anzucht-Guss ~150 ml, dann +100 ml pro weiterem Guss (250, 350, …).
+  // Vorher: flach 450 ml (Tag 9–14) und Sprung auf 1150 ml (Tag 15–21) — zu viel/zu
+  // abrupt für einen jungen Sämling. Die Empfehlung wird ohnehin nur an Gießtagen
+  // gezeigt (Intervall), zwischen den Güssen kommt nichts.
+  // Guss-Nummer tag-basiert aus dem Gieß-Intervall: bei intAnzucht=3 trifft das
+  // Tag 10→150, Tag 13→250, Tag 16→350, Tag 19→450. (Bei stark verschobenen Güssen
+  // kann die Stufe um eine abweichen — die Empfehlung bleibt aber im sanften Korridor.)
   if (day <= 21) {
-    const ml = pot * 104;
-    return snap(ml);
+    const iv = (c && c.intAnzucht) || 3;
+    const gussNr = Math.max(0, Math.floor((day - 9) / iv));
+    const ml = 150 + gussNr * 100;
+    return Math.round(ml * scale / 50) * 50;  // skaliert mit Topfgröße, snap auf 50 (kein Outdoor-Faktor — Sämling)
   }
 
   // Phase 4: Wo 4 (Tag 22–28) — 1500–2500ml, Mitte 2000ml (182ml/L)
@@ -8464,9 +8899,12 @@ function getAlerts(c) {
     }
   }
 
-  // Smart: Topping reminder (Vegi Wo2-3, not yet topped)
-  // Greift nun auch bei Outdoor (vorzucht/vegi_out) und Indoor (anzucht)
-  if (isVegiPhase(p.ph) && p.week >= 2 && p.week <= 3 && !c.toppingDate) {
+  // Smart: Topping reminder (Vegi ab Tag 15 / Woche 3, not yet topped)
+  // Greift nun auch bei Outdoor (vorzucht/vegi_out) und Indoor (anzucht).
+  // Untergrenze Tag 15 statt Woche 2 — vorher zeigte das Dashboard "Fenster offen"
+  // schon in Woche 2, obwohl der Toppen-Button im Eintrag erst ab Tag 15 erscheint
+  // (vor Tag 15 hat die Pflanze meist nur 3 Nodien, Topping stresst dann mehr als es nützt).
+  if (isVegiPhase(p.ph) && p.day >= 15 && p.week <= 3 && !c.toppingDate) {
     const text = S.beginnerMode
       ? 'Du könntest jetzt "toppen" — das verdoppelt deinen Ertrag. Im Lexikon nachschlagen.'
       : 'Topping-Fenster offen! 4.–5. Nodium = idealer Zeitpunkt.';
@@ -8620,6 +9058,55 @@ function calcVPD(t, rh) {
  *
  * @returns {Object} { tempMin, tempMax, rhMin, rhMax, vpdMin, vpdMax, label, icon }
  */
+/**
+ * EC-ZIEL-TABELLE pro GESAMT-Woche (1–12), von Patrick überprüft.
+ * Jede Woche: def = sinnvoller Vorschlagswert (Default für die App),
+ * min/max = Zielspanne (mS/cm in Erde, Light-Mix). Logik: früh am unteren
+ * Rand (sanft hochtasten), im Peak (Wo 7–8) oben, danach runter (Reife/Flush).
+ * EC bleibt der Kontrolleur — nach dem Anmischen messen und korrigieren.
+ */
+const EC_TARGETS = {
+  1:  { def: 0.5,  min: 0.4, max: 0.6, label: 'Sämling' },
+  2:  { def: 0.8,  min: 0.7, max: 1.0, label: 'Vegi' },
+  3:  { def: 0.9,  min: 0.7, max: 1.0, label: 'Vegi/FIM' },
+  4:  { def: 1.1,  min: 1.0, max: 1.4, label: 'Stretch' },
+  5:  { def: 1.3,  min: 1.0, max: 1.4, label: 'Stretch' },
+  6:  { def: 1.4,  min: 1.2, max: 1.6, label: 'Früh-Blüte' },
+  7:  { def: 1.6,  min: 1.5, max: 1.9, label: 'Bud-Set' },
+  8:  { def: 1.8,  min: 1.6, max: 2.0, label: 'Peak Swelling' },
+  9:  { def: 1.5,  min: 1.3, max: 1.7, label: 'Reifung' },
+  10: { def: 1.0,  min: 0.8, max: 1.2, label: 'Spät-Reifung' },
+  11: { def: 0.3,  min: 0.2, max: 0.4, label: 'Flush' },
+  12: { def: 0.22, min: 0,   max: 0.4, label: 'Iceflush — nur Wasser', waterOnly: true }
+};
+// Wasser-Tage (alle Phasen): nur CalMag + Aloe, niedriger EC.
+const EC_WATERDAY = { def: 0.35, min: 0.3, max: 0.4, label: 'Wasser-Tag' };
+
+/**
+ * Liefert das EC-Ziel {def, min, max, label, week} für einen Tag — basierend auf
+ * der GESAMT-Woche (wie der Düngeplan via fertWk), NICHT der phasen-relativen Woche.
+ * Erkennt Wasser-Tage (Erhaltungsguss). Gibt null in Ernte/Trocknung (kein Gießen).
+ */
+function getEcTarget(c, p, iso) {
+  if (!c || !p) return null;
+  // Wasser-Tag (Erhaltungsguss ohne vollen Feed) → eigene, niedrige Spanne
+  const cd = (iso && S.entries[iso] && S.entries[iso].cycleData) ? S.entries[iso].cycleData[c.id] : null;
+  if (c.useWaterDays && cd && cd.waterOnly) {
+    return { ...EC_WATERDAY, week: null };
+  }
+  // Gesamt-Woche bestimmen — identisch zur Düngeplan-Logik (fertWk):
+  let wk;
+  if (p.ph === 'flush') wk = 11;
+  else if (p.ph === 'ice') wk = 12;
+  else if (p.ph === 'harvest' || p.ph === 'dry') return null;  // nach Ernte kein Gießen
+  else {
+    const td = c.startDate ? isoDiff(iso, c.startDate) : 0;
+    wk = Math.max(1, Math.min(Math.floor(td / 7) + 1, 10));
+  }
+  const t = EC_TARGETS[wk];
+  return t ? { ...t, week: wk } : null;
+}
+
 function getPhaseTargets(p) {
   if (!p) return null;
   const ph = p.ph;
@@ -9229,7 +9716,7 @@ function getTodayAction(c, p, a, iso) {
   if (!p) return null;
   const cl = col(c);
   const pot = S.potSize || 11;
-  const waterMl = waterSuggestion(c, p);
+  const waterMl = waterSuggestion(c, p, iso);
   const iv = getInt(c, p.ph);
 
   // Determine fertilizer week same as entry screen
@@ -10027,17 +10514,65 @@ function renderDash() {
       <span style="color:var(--red);font-size:14px">›</span>
     </div>` : '';
 
-  document.getElementById('dash-body').innerHTML = `${demoBanner}${catchupBanner}${actionCards}${todayCard}${alertHTML}${diagHintsHTML}${weatherWidget()}${multiCycLabel}${stats}<div class="sect-head">Meine Zyklen</div>${empty}${cards}
-    ${chartsHTML}
-    ${act.length > 0 ? `<div class="sec-tog" onclick="openGallery()" style="margin-top:4px">
+  // ANFÄNGER-MODE: sekundäre Sektionen (Stats, Charts, Foto-Galerie, Symptom-Check)
+  // werden hinter einem "Mehr anzeigen"-Toggle versteckt. Reduziert die Scroll-Höhe
+  // auf ein-zwei Screens und macht die wichtige Aktion (Tageseintrag) klar erkennbar.
+  // Im Profimodus bleibt alles direkt sichtbar wie bisher.
+  const galleryHTML = act.length > 0 ? `<div class="sec-tog" onclick="openGallery()" style="margin-top:4px">
       <span>📸</span>
       <div>
         <div style="font-weight:500;font-size:12px">Foto-Galerie</div>
         <div style="font-size:11px;color:var(--text-muted)">Alle Fotos chronologisch</div>
       </div>
       <span style="color:var(--text-muted)">›</span>
-    </div>` : ''}
-    ${symptomBtn}
+    </div>` : '';
+
+  const secondarySections = `${stats}${chartsHTML}${galleryHTML}${symptomBtn}`;
+  
+  // ANFÄNGER: wenn heute KEINE Aktion ansteht (actionCards-String leer), eine klare
+  // "Heute alles ruhig"-Box anzeigen. Sonst weiß der Anfänger nicht ob die App
+  // jetzt was von ihm will oder nicht — die Cycle-Karte mit "in 4d" reicht nicht
+  // als deutlicher Status. Outdoor-User mit Wetterkarte sehen das übrigens
+  // schon — diese Box ist für Indoor-Anfänger der Anker.
+  const quietBanner = (S.beginnerMode && act.length > 0 && actionCards.trim() === '')
+    ? (() => {
+        // Nächsten Gießtag der ersten aktiven Pflanze ermitteln
+        const primaryC = act[0];
+        const next = nextGiessTag(primaryC, today);
+        const sub = next
+          ? `Nächster Gießtag: ${next.days === 1 ? 'morgen' : 'in ' + next.days + ' Tagen'}`
+          : 'Beobachten, ggf. Foto machen';
+        return `<div style="background:linear-gradient(135deg,rgba(76,175,112,0.10),rgba(76,175,112,0.03));border:1px solid rgba(76,175,112,0.3);border-radius:14px;padding:14px 16px;margin-bottom:6px;display:flex;align-items:center;gap:12px">
+          <span style="font-size:28px;flex-shrink:0">😌</span>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:14px;font-weight:600;color:var(--green)">Heute alles ruhig</div>
+            <div style="font-size:12px;color:var(--text-sub);line-height:1.4;margin-top:3px">${sub}</div>
+          </div>
+        </div>`;
+      })()
+    : '';
+  
+  const moreBlock = (S.beginnerMode && act.length > 0)
+    ? (() => {
+        const open = !!(S._setUI && S._setUI.dashMore);
+        const arrow = open ? '▾' : '▸';
+        return `<div onclick="_toggleDashMore()" style="background:var(--card);border:0.5px solid var(--border);border-radius:12px;padding:12px 14px;cursor:pointer;display:flex;align-items:center;gap:10px;user-select:none;margin-top:8px">
+          <span style="font-size:18px;flex-shrink:0">📊</span>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:13px;font-weight:600;color:var(--text)">${open ? 'Weniger anzeigen' : 'Mehr anzeigen'}</div>
+            <div style="font-size:10px;color:var(--text-muted);line-height:1.4;margin-top:2px">Statistik, Charts, Foto-Galerie</div>
+          </div>
+          <span style="font-size:14px;color:var(--text-muted);width:14px;text-align:center;flex-shrink:0">${arrow}</span>
+        </div>
+        ${open ? `<div style="margin-top:8px;display:flex;flex-direction:column;gap:6px">${secondarySections}</div>` : ''}`;
+      })()
+    : '';  // Profi-Modus: leer, weil die Sektionen oben schon direkt gerendert werden
+
+  document.getElementById('dash-body').innerHTML = `${demoBanner}${catchupBanner}${actionCards}${quietBanner}${todayCard}${alertHTML}${diagHintsHTML}${weatherWidget()}${multiCycLabel}${S.beginnerMode && act.length > 0 ? '' : stats}<div class="sect-head">Meine Zyklen</div>${empty}${cards}
+    ${S.beginnerMode && act.length > 0 ? '' : chartsHTML}
+    ${S.beginnerMode && act.length > 0 ? '' : galleryHTML}
+    ${S.beginnerMode && act.length > 0 ? '' : symptomBtn}
+    ${moreBlock}
     ${beginnerBanner}
     <div style="height:12px"></div>`;
 }
@@ -10715,6 +11250,54 @@ async function resetOffsets(cId) {
   if (tab === 'cal') renderCal();
 }
 
+/**
+ * Klappt die Verschiebungs-Liste im Eintrag auf/zu. Reines DOM-Toggle (kein
+ * Re-Render) — so springt die Scroll-Position nicht (wichtig, siehe Bug-Historie).
+ */
+function toggleOffsetList(cId) {
+  const list = document.getElementById('offset-list-' + cId);
+  const arrow = document.getElementById('offset-arrow-' + cId);
+  if (!list) return;
+  const willOpen = (list.style.display === 'none' || !list.style.display);
+  list.style.display = willOpen ? 'block' : 'none';
+  if (arrow) arrow.textContent = willOpen ? '▴' : '▾';
+  vibrate(5);
+}
+
+/** Springt zum Tag einer Verschiebung (öffnet dessen Eintrag). */
+function jumpToOffsetDay(iso) {
+  if (typeof closeCtx === 'function') closeCtx();
+  openEntry(iso);
+}
+
+/**
+ * Nimmt EINE einzelne Verschiebung zurück (per Grenzdatum). Die übrigen
+ * Verschiebungen und alle Tageseinträge bleiben erhalten. Gegenstück zu
+ * resetOffsets() (das ALLE auf einmal löscht). offsetHistory ist nach saveS
+ * pro Datum konsolidiert, daher ist das Datum ein eindeutiger Schlüssel.
+ */
+async function removeOneOffset(cId, iso) {
+  const c = S.cycles.find(x => x.id === cId);
+  if (!c || !c.offsetHistory) return;
+  const entry = c.offsetHistory.find(e => e.date === iso);
+  if (!entry) return;
+  const n = Math.abs(entry.offset);
+  const dir = entry.offset > 0 ? 'verschoben' : 'vorgezogen';
+  const ok = await customConfirm(
+    'Diese Verschiebung zurücknehmen?',
+    `Die Verschiebung vom ${fmtDE(iso)} (${n} Tag${n === 1 ? '' : 'e'} ${dir}) wird gelöscht. Andere Verschiebungen und alle Tageseinträge (Wasser, pH, Notizen, Fotos) bleiben erhalten.`,
+    'Zurücknehmen',
+    'var(--orange)'
+  );
+  if (!ok) return;
+  c.offsetHistory = c.offsetHistory.filter(e => e.date !== iso);
+  saveS();
+  vibrate(10);
+  toast('✓ Verschiebung zurückgenommen');
+  if (editISO) renderEntry(editISO);
+  if (tab === 'cal') renderCal();
+}
+
 /** Find the next action day from a given date (inclusive) */
 function findNextActionDay(c, from) {
   for (let i = 0; i <= 30; i++) {
@@ -11099,26 +11682,66 @@ async function stopC(cId, mode = 'default') {
   if (!c) return;
 
   // Mode-spezifische Warnung:
-  //   'cancel'  — Start-Tag: Zyklus wurde gerade angelegt, Abbruch = fast folgenlos
+  //   'cancel'  — Start-Tag: Zyklus wurde gerade angelegt, Abbruch = fast folgenlos.
+  //               Bei 0 Einträgen wird der Zyklus KOMPLETT GELÖSCHT (User hat noch
+  //               nichts investiert), bei ≥1 Einträgen nur inaktiv gesetzt (Schutz
+  //               vor versehentlichem Datenverlust).
   //   'harvest' — Ernte-Tag: planmäßige Ernte, freundliche Bestätigung
   //   'default' — alter Aufruf-Pfad (z.B. aus Einstellungen)
-  let title, msg, btnText;
+  let title, msg, btnText, cancelText, willDelete = false;
   if (mode === 'cancel') {
-    title = `"${c.name}" abbrechen?`;
-    msg = 'Der Zyklus wurde erst heute angelegt. Beim Abbruch bleiben Zyklus und Einträge erhalten, werden aber als inaktiv markiert. Du kannst das später in den Einstellungen rückgängig machen.';
-    btnText = 'Abbrechen';
+    // Einträge zählen: hat der User schon was eingegeben (Wasser, Notiz, Foto)?
+    const entryCount = Object.values(S.entries).filter(e => {
+      const cd = e?.cycleData?.[cId];
+      return cd && Object.keys(cd).length > 0;
+    }).length;
+    willDelete = entryCount === 0;
+    if (willDelete) {
+      // Frischer Zyklus ohne Einträge — User-Erwartung "weg damit"
+      title = `"${c.name}" verwerfen?`;
+      msg = 'Der Zyklus wurde erst heute angelegt und hat noch keine Einträge. Er wird komplett gelöscht. Du kannst jederzeit einen neuen Zyklus starten.';
+      btnText = 'Ja, verwerfen';
+      cancelText = 'Behalten';
+    } else {
+      // Zyklus hat schon Einträge — Schutzwall, nur inaktiv
+      title = `"${c.name}" stoppen?`;
+      msg = `Du hast schon ${entryCount} ${entryCount === 1 ? 'Eintrag' : 'Einträge'} gemacht. Beim Stoppen bleiben Zyklus und Einträge erhalten, werden aber als inaktiv markiert. Du kannst das später in den Einstellungen rückgängig machen.`;
+      btnText = 'Ja, stoppen';
+      cancelText = 'Weiter pflegen';
+    }
   } else if (mode === 'harvest') {
     title = `🌾 "${c.name}" ernten & beenden?`;
     msg = 'Glückwunsch zur Ernte! Der Zyklus wird deaktiviert, aber Startdatum, Einträge und Fotos bleiben für immer erhalten. Perfekt für den Rückblick und Zyklus-Vergleich.';
     btnText = 'Ernten';
+    cancelText = 'Noch nicht';
   } else {
     title = `"${c.name}" beenden?`;
     msg = 'Der Zyklus wird deaktiviert. Startdatum und Einträge bleiben erhalten — tippe "Archivieren" in den Einstellungen falls du die Phasen im Kalender noch sehen willst.';
     btnText = 'Beenden';
+    cancelText = 'Abbrechen';
   }
 
-  const ok = await customConfirm(title, msg, btnText, 'var(--red)');
+  const ok = await customConfirm(title, msg, btnText, 'var(--red)', cancelText);
   if (!ok) return;
+
+  if (willDelete) {
+    // Komplettes Löschen analog zu delCyc, aber ohne weiteren Confirm-Dialog
+    // (User hat oben schon zugestimmt) und mit eigenem Toast.
+    S.cycles = S.cycles.filter(x => x.id !== cId);
+    Object.keys(S.entries).forEach(d => {
+      if (S.entries[d]?.cycleData?.[cId]) delete S.entries[d].cycleData[cId];
+      const e = S.entries[d];
+      if (e && (!e.cycleData || Object.keys(e.cycleData).length === 0) && !e.temp && !e.humidity) {
+        delete S.entries[d];
+      }
+    });
+    if (typeof clearPlanNotesForCycle === 'function') clearPlanNotesForCycle(cId);
+    if (selId === cId) { selId = S.cycles[0]?.id || null; draft = {}; }
+    saveS();
+    renderCal();
+    toast(`${sym(c)} verworfen`);
+    return;
+  }
   // Only deactivate — keep startDate, offsetHistory, toppingDate, skippedDays
   // so past entries remain readable and phase/action renders correctly.
   c.active = false;
@@ -11522,6 +12145,10 @@ function renderDuenger() {
           </div>
         </div>
       </div>
+      <div class="inp-wrap"><div class="inp-label">Dosis an Wasser-Tagen <span style="color:var(--text-hint);font-weight:400">(optional)</span></div>
+        <input class="inp-field" id="pwater" type="number" step="0.05" min="0" inputmode="decimal" placeholder="leer = an Wasser-Tagen weglassen" value="${editProd !== 'new' ? (S.products.find(x => x.id === editProd)?.waterDayDose ?? '') : ''}"/>
+        <div style="font-size:10px;color:var(--text-hint);margin-top:3px;line-height:1.4">Nur falls du mit Wasser-Tagen arbeitest: die reduzierte Erhaltungs-Dosis (z.B. CalMag 0.2, Aloe 1.25). Leer = dieses Produkt kommt an Wasser-Tagen nicht ins Wasser.</div>
+      </div>
       <button class="sav-btn" style="background:var(--blue)" onclick="saveProd()">💾 Speichern</button>
       <button onclick="editProd=null;renderDuenger()" style="background:none;border:none;color:var(--text-muted);font-size:13px;cursor:pointer;padding:6px;font-family:var(--font)">Abbrechen</button>
     </div>
@@ -11537,6 +12164,9 @@ function renderDuenger() {
     <div style="display:flex;flex-direction:column;gap:6px">
       <button onclick="loadPreset('biobizz_master')" style="background:${S.presetKey==='biobizz_master'?'var(--green-dk)':'var(--green-bg)'};border:1px solid ${S.presetKey==='biobizz_master'?'var(--green)':'var(--green-dk)'};border-radius:10px;padding:10px 14px;font-size:13px;color:var(--green);cursor:pointer;font-family:var(--font);font-weight:700;text-align:left">
         🏆 Master <span style="font-size:10px;font-weight:400;color:var(--text-muted)">· Premium, jedes Gießen, früher N-Cutoff</span>
+      </button>
+      <button onclick="loadPreset('cup_sieger')" style="background:${S.presetKey==='cup_sieger'?'var(--green-dk)':'var(--green-bg)'};border:1px solid ${S.presetKey==='cup_sieger'?'var(--green)':'var(--green-dk)'};border-radius:10px;padding:10px 14px;font-size:13px;color:var(--green);cursor:pointer;font-family:var(--font);font-weight:700;text-align:left">
+        🥇 Cup-Sieger <span style="font-size:10px;font-weight:400;color:var(--text-muted)">· 12 Wo · 12 Produkte · 49d Bloom · Premium</span>
       </button>
       <button onclick="loadPreset('biobizz_light')" style="background:${S.presetKey==='biobizz_light'?'var(--green-dk)':'var(--green-bg)'};border:1px solid ${S.presetKey==='biobizz_light'?'var(--green)':'var(--green-dk)'};border-radius:10px;padding:10px 14px;font-size:13px;color:var(--green);cursor:pointer;font-family:var(--font);font-weight:700;text-align:left">
         🌱 Light <span style="font-size:10px;font-weight:400;color:var(--text-muted)">· Master × 50% für Einsteiger</span>
@@ -12055,8 +12685,13 @@ function saveProd() {
   if (!name) { toast('Name eingeben'); return; }
   const note = document.getElementById('pnote')?.value?.trim() || '';
   const unit = document.getElementById('punit')?.value || 'ml/L';
+  // Wasser-Tag-Dosis: leer = undefined (Produkt an Wasser-Tagen weglassen)
+  const pwRaw = document.getElementById('pwater')?.value?.trim();
+  const waterDayDose = (pwRaw === '' || pwRaw == null) ? undefined : Math.max(0, parseFloat(pwRaw) || 0);
   if (editProd === 'new') {
-    S.products.push({ id: 'p' + Date.now(), name, note, unit, color: _pColor });
+    const np = { id: 'p' + Date.now(), name, note, unit, color: _pColor };
+    if (waterDayDose !== undefined) np.waterDayDose = waterDayDose;
+    S.products.push(np);
     // Auto-append to mixOrder if one exists (custom plan or preset-derived)
     if (S.mixOrder && !S.mixOrder.includes(name)) {
       S.mixOrder.push(name);
@@ -12070,6 +12705,9 @@ function saveProd() {
         if (idx !== -1) S.mixOrder[idx] = name;
       }
       Object.assign(p, { name, note, unit, color: _pColor });
+      // Wasser-Tag-Dosis setzen oder entfernen (bei leerem Feld)
+      if (waterDayDose === undefined) delete p.waterDayDose;
+      else p.waterDayDose = waterDayDose;
     }
   }
   editProd = null;
@@ -12135,6 +12773,33 @@ function _toggleSetSection(key) {
   if (scr) _setScrollY = scr.scrollTop;
   saveS();
   renderSet();
+}
+
+/**
+ * Toggle für die Pflanzen-einzeln-Liste im Zyklus-Editor. Eigenständig
+ * (nicht in den drei großen App/Daten/Erweitert-Akkordeons) weil's
+ * INNERHALB der Zyklus-Karte ist und an die plants.length-Heuristik gekoppelt
+ * (Smart-Default bei wenigen Pflanzen offen).
+ */
+function _togglePlantsList(currentlyOpen) {
+  if (!S._setUI) S._setUI = {};
+  S._setUI.plants = !currentlyOpen;
+  const scr = document.getElementById('set-body');
+  if (scr) _setScrollY = scr.scrollTop;
+  saveS();
+  renderSet();
+}
+
+/**
+ * Toggle für den "Mehr anzeigen"-Bereich auf dem Home-Screen (Anfängermodus).
+ * Wenn der User klickt: Stats, Charts, Galerie + Symptom-Check werden sichtbar
+ * (oder ausgeblendet). State persistiert damit's nicht bei jedem Render zurückspringt.
+ */
+function _toggleDashMore() {
+  if (!S._setUI) S._setUI = {};
+  S._setUI.dashMore = !S._setUI.dashMore;
+  saveS();
+  renderDash();
 }
 
 /**
@@ -12353,6 +13018,14 @@ function renderSet() {
             ? `<b style="color:var(--green)">Aktiv:</b> Wassermenge wird automatisch ×${d.plantCount || 1} gerechnet. Düngerdosen folgen mit (weil sie pro Liter Wasser sind). Beispiel: 50 ml/Pflanze × ${d.plantCount || 1} = ${50 * (parseInt(d.plantCount) || 1)} ml total.`
             : `<b style="color:var(--text-muted)">Aus:</b> Vorschläge bleiben pro Pflanze — du rechnest die Gesamtmenge selbst.`}</div>
 
+          <label style="display:flex;align-items:center;gap:8px;padding:8px 4px;cursor:pointer;font-size:12px;color:var(--text-sub)">
+            <input type="checkbox" ${d.useWaterDays ? 'checked' : ''} onchange="_setScrollY=document.getElementById('set-body').scrollTop;dd('useWaterDays',this.checked);renderSet()" style="width:16px;height:16px;cursor:pointer"/>
+            <span>Wasser-Tage nutzen</span>
+          </label>
+          <div style="font-size:10px;color:var(--text-hint);line-height:1.45;padding:0 4px 4px">${d.useWaterDays
+            ? `<b style="color:var(--blue)">Aktiv:</b> Beim Gießen kannst du pro Guss zwischen <b>🌿 Düngen</b> (volle Dosis) und <b>💧 Nur Wasser</b> (Erhaltungs-Dosis) wählen. Die Wasser-Tag-Dosis legst du pro Dünger im Plan fest (Tipps → Dünger → ✏). So wäschst du regelmäßig Salze aus, ohne die Mikrobiologie zu verlieren.`
+            : `<b style="color:var(--text-muted)">Aus:</b> Jeder Gießtag ist ein voller Feed-Tag. Einfachste Variante — empfohlen wenn du dir unsicher bist.`}</div>
+
           <!-- PLANT-EDITOR: einzelne Pflanzen mit Strain & Notiz tracken -->
           ${(() => {
             // Bei 1 Pflanze: dezenter Hinweis "Mehrere Pflanzen?". Bei N>1: voller Editor.
@@ -12372,15 +13045,28 @@ function renderSet() {
                 ${plants.length > 1 ? `<button onclick="_removePlantFromSettings('${sel.id}','${pl.id}')" style="background:transparent;border:none;color:var(--text-muted);font-size:16px;cursor:pointer;padding:0 4px" title="Pflanze entfernen">✕</button>` : ''}
               </div>
             `).join('');
-            return `<div style="margin-top:6px;padding:10px;background:var(--card);border:0.5px solid var(--border);border-radius:10px">
-              <div style="font-size:11px;font-weight:600;color:var(--text-sub);margin-bottom:8px;display:flex;align-items:center;gap:6px">
-                <span style="font-size:14px">🌿</span>
-                <span>Pflanzen einzeln benennen</span>
+            return (() => {
+              // Einklappbar (Mai 2026): bei vielen Pflanzen (≥3) wäre die Liste
+              // sonst sehr lang und drückt den Rest weg. Smart-Default:
+              //   plants.length ≤ 2: aufgeklappt (kompakt, hilft beim Verstehen)
+              //   plants.length ≥ 3: zugeklappt (User-Wahl überschreibt)
+              // Sobald der User manuell toggelt, persistiert die Wahl in S._setUI.plants.
+              const userToggled = S._setUI && S._setUI.plants !== undefined;
+              const isOpen = userToggled ? !!S._setUI.plants : (plants.length <= 2);
+              const arrow = isOpen ? '▾' : '▸';
+              return `<div style="margin-top:6px;padding:10px;background:var(--card);border:0.5px solid var(--border);border-radius:10px">
+              <div onclick="_togglePlantsList(${isOpen})" style="font-size:11px;font-weight:600;color:var(--text-sub);display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none;padding:2px 0">
+                <span style="font-size:14px;flex-shrink:0">🌿</span>
+                <span style="flex:1">Pflanzen einzeln benennen ${plants.length > 0 ? `<span style="color:var(--text-muted);font-weight:400">· ${plants.length}</span>` : ''}</span>
+                <span style="font-size:13px;color:var(--text-muted);width:14px;text-align:center;flex-shrink:0">${arrow}</span>
               </div>
-              ${items}
-              <button onclick="_addPlantFromSettings('${sel.id}')" style="background:transparent;border:0.5px dashed var(--border);color:var(--green);border-radius:6px;padding:8px 10px;font-size:11px;cursor:pointer;font-family:var(--font);width:100%;margin-top:2px">+ Weitere Pflanze</button>
-              <div style="font-size:10px;color:var(--text-hint);line-height:1.4;margin-top:8px">Strain-Namen helfen später bei der Foto-Galerie und Erntegewicht-Auswertung pro Pflanze. Bei 1 Pflanze unwichtig.</div>
+              ${isOpen ? `
+                <div style="margin-top:8px">${items}</div>
+                <button onclick="_addPlantFromSettings('${sel.id}')" style="background:transparent;border:0.5px dashed var(--border);color:var(--green);border-radius:6px;padding:8px 10px;font-size:11px;cursor:pointer;font-family:var(--font);width:100%;margin-top:2px">+ Weitere Pflanze</button>
+                <div style="font-size:10px;color:var(--text-hint);line-height:1.4;margin-top:8px">Strain-Namen helfen später bei der Foto-Galerie und Erntegewicht-Auswertung pro Pflanze. Bei 1 Pflanze unwichtig.</div>
+              ` : ''}
             </div>`;
+            })();
           })()}
 
           <!-- GRUPPE: Düngeplan-Zuweisung -->
@@ -12396,6 +13082,25 @@ function renderSet() {
               <select class="inp-field" style="cursor:pointer" onchange="dd('fertPlanId',this.value);renderSet()">
                 ${plans.map(pl => `<option value="${pl.id}" ${d.fertPlanId === pl.id ? 'selected' : ''}>${pl.name} · ${(pl.products || []).length} Produkt${(pl.products || []).length === 1 ? '' : 'e'}</option>`).join('')}
               </select>
+              ${(() => {
+                // BLOOM-DAYS-HINT: wenn der gewählte Plan ein bloomDaysHint hat
+                // (z.B. Cup-Sieger-Preset rechnet mit 49 Tagen statt App-Default 35)
+                // und der Cycle hat eine abweichende Zahl → Hinweis mit Quick-Fix.
+                const activePlan = plans.find(p => p.id === d.fertPlanId);
+                if (!activePlan || !activePlan.presetKey) return '';
+                const preset = (typeof FERT_PRESETS !== 'undefined') ? FERT_PRESETS[activePlan.presetKey] : null;
+                const hint = preset?.bloomDaysHint;
+                if (!hint) return '';
+                const currentBloom = parseInt(d.bloomDays) || 35;
+                if (currentBloom === hint) return '';
+                return `<div style="margin-top:6px;padding:10px 12px;background:rgba(240,208,80,0.08);border:0.5px solid rgba(240,208,80,0.3);border-radius:8px;display:flex;align-items:center;gap:8px">
+                  <span style="font-size:16px;flex-shrink:0">💡</span>
+                  <div style="flex:1;min-width:0;font-size:11px;line-height:1.4;color:var(--text-sub)">
+                    Dieser Plan rechnet mit <b style="color:var(--yellow)">${hint} Bloom-Tagen</b>. Dein Zyklus hat aktuell ${currentBloom}.
+                  </div>
+                  <button onclick="dd('bloomDays',${hint});renderSet();toast('Bloom-Tage auf ${hint} gesetzt')" style="background:var(--yellow);border:none;color:#000;font-size:10px;padding:6px 10px;border-radius:6px;cursor:pointer;font-family:var(--font);font-weight:700;white-space:nowrap;flex-shrink:0">Anpassen</button>
+                </div>`;
+              })()}
               <div style="font-size:10px;color:var(--text-hint);line-height:1.4;padding:4px 4px 0">
                 Dieser Zyklus nutzt den gewählten Düngeplan. Plan-Produkte und Wochenplan bearbeitest du unter <span style="color:var(--blue)">Dünger</span>.
               </div>
@@ -12676,13 +13381,13 @@ function renderSet() {
           style="flex:1;background:${sm==='saturated' ? 'var(--green-bg)' : 'var(--card2)'};border:0.5px solid ${sm==='saturated' ? 'var(--green-dk)' : 'var(--border)'};border-radius:8px;padding:10px 8px;font-size:11px;color:${sm==='saturated' ? 'var(--green)' : 'var(--text-sub)'};cursor:pointer;font-family:var(--font);text-align:center;line-height:1.3">
           <div style="font-size:16px;margin-bottom:2px">💦</div>
           <div style="font-weight:600">Vorbefeuchtet</div>
-          <div style="font-size:9px;color:var(--text-hint);font-weight:400;margin-top:2px">Sättigungsguss + 7d Sprühen</div>
+          <div style="font-size:9px;color:var(--text-hint);font-weight:400;margin-top:2px">700ml Sättigungsguss + 7d Sprühen</div>
         </button>
         <button onclick="S.cycles.find(c=>c.id==='${sel.id}').startMethod='direct';saveS();renderSet()"
           style="flex:1;background:${sm==='direct' ? 'var(--green-bg)' : 'var(--card2)'};border:0.5px solid ${sm==='direct' ? 'var(--green-dk)' : 'var(--border)'};border-radius:8px;padding:10px 8px;font-size:11px;color:${sm==='direct' ? 'var(--green)' : 'var(--text-sub)'};cursor:pointer;font-family:var(--font);text-align:center;line-height:1.3">
           <div style="font-size:16px;margin-bottom:2px">🌱</div>
           <div style="font-weight:600">Direkt</div>
-          <div style="font-size:9px;color:var(--text-hint);font-weight:400;margin-top:2px">Kleiner Erstguss</div>
+          <div style="font-size:9px;color:var(--text-hint);font-weight:400;margin-top:2px">150ml Erstguss + kleine Tagesmengen</div>
         </button>
       </div>
     </div>`;
@@ -12889,6 +13594,10 @@ function renderSet() {
     scr.scrollTop = _setScrollY;
     _setScrollY = null;
   }
+  // Oberen Speichern-Button in der Leiste synchronisieren (er wird sonst nur bei
+  // Werteingabe via dd() aktualisiert — nach Tab-Wechsel mit offenem Draft stünde
+  // er sonst falsch).
+  _refreshSaveZone();
 }
 
 function dd(k, v) {
@@ -12956,10 +13665,12 @@ function _onSeedTypeChange(value) {
 
 /** Aktualisiert nur den Save-Button/Indicator-Bereich der Settings-Seite. */
 function _refreshSaveZone() {
+  const topBtn = document.getElementById('set-save-top');
   const zone = document.getElementById('cyc-save-zone');
-  if (!zone) return;
+  // Kein Zyklus im Edit-Bereich (z.B. App-Einstellungen offen) → oberen Button aus.
+  if (!zone) { if (topBtn) topBtn.style.display = 'none'; return; }
   const sel = S.cycles.find(c => c.id === selId);
-  if (!sel) return;
+  if (!sel) { if (topBtn) topBtn.style.display = 'none'; return; }
   const cl = sel.colorId ? COLORS.find(x => x.id === sel.colorId) || COLORS[0] : COLORS[0];
   const isDirty = Object.keys(draft).some(k => {
     if (k === 'id' || k.startsWith('_')) return false;
@@ -12968,6 +13679,11 @@ function _refreshSaveZone() {
   zone.innerHTML = isDirty
     ? `<button class="sav-btn" style="background:${cl.hex};margin-top:8px" onclick="saveDraft()">💾 Änderungen sichern</button>`
     : `<div style="margin-top:8px;padding:8px 12px;background:rgba(76,175,112,0.06);border:0.5px solid rgba(76,175,112,0.2);border-radius:10px;font-size:11px;color:var(--text-muted);text-align:center">✓ Alle Änderungen gespeichert</div>`;
+  // Oberen Speichern-Button (in der Leiste) synchron einblenden — erscheint nur
+  // wenn es ungespeicherte Änderungen gibt, genau wie der untere Button. So findet
+  // man den Speichern-Knopf oben in der Leiste (intuitiver), ohne ganz nach unten
+  // scrollen zu müssen.
+  if (topBtn) topBtn.style.display = isDirty ? 'inline-flex' : 'none';
 }
 
 async function saveDraft() {
@@ -14172,10 +14888,12 @@ function _wizStepFertPlan(a) {
   // Je nach Grow-Typ (Indoor/Outdoor) wird ein anderer Plan empfohlen.
   // Nur anzeigen wenn noch kein Plan mit diesem Preset existiert.
   const isOutdoor = a.growType === 'outdoor';
-  // Outdoor zuerst für Outdoor-Grower, sonst Light zuerst.
+  // Indoor: Light (Empfohlen für Anfänger) → Cup-Sieger (Premium) → Master → Official
+  // Outdoor: Outdoor zuerst (passt zum Grow-Typ), dann Indoor-Alternativen
+  // Cup-Sieger nur Indoor anbieten (49-Tage-Bloom-Plan ist Indoor-optimiert)
   const presetKeys = isOutdoor
     ? ['biobizz_outdoor', 'biobizz_light', 'biobizz_master', 'biobizz_official']
-    : ['biobizz_light', 'biobizz_master', 'biobizz_official', 'biobizz_outdoor'];
+    : ['biobizz_light', 'cup_sieger', 'biobizz_master', 'biobizz_official', 'biobizz_outdoor'];
   const recommendedKey = isOutdoor ? 'biobizz_outdoor' : 'biobizz_light';
   const presetOptions = presetKeys
     .filter(key => !plans.some(p => p.presetKey === key))
@@ -14186,12 +14904,19 @@ function _wizStepFertPlan(a) {
       const badge = isRecommended
         ? '<span style="background:rgba(76,175,112,0.25);color:var(--green);font-size:9px;padding:2px 6px;border-radius:4px;font-weight:600;margin-left:6px">Empfohlen</span>'
         : '';
-      const icon = { biobizz_light: '🌱', biobizz_master: '🏆', biobizz_official: '📋', biobizz_outdoor: '☀️' }[key] || '🧪';
+      const icon = {
+        biobizz_light: '🌱',
+        biobizz_master: '🏆',
+        biobizz_official: '📋',
+        biobizz_outdoor: '☀️',
+        cup_sieger: '🥇',
+      }[key] || '🧪';
       const summary = {
         biobizz_light: 'Master × 50% · fehlerverzeihend für Einsteiger',
         biobizz_master: 'Premium · jedes Gießen · früher N-Cutoff',
         biobizz_official: 'Herstellerplan · automatisch verteilt',
         biobizz_outdoor: 'Fish·Mix in Vegi · für Erdanbau im Freien',
+        cup_sieger: '12 Wochen · 12 Produkte · Auto-optimiert · 49 Tage Bloom',
       }[key] || '';
       return `
         <button onclick="_wizAnswer('fertPresetKey','${key}')" style="display:block;width:100%;background:${isRecommended ? 'rgba(76,175,112,0.08)' : 'var(--card)'};border:1px solid ${isRecommended ? 'var(--green)' : 'var(--border)'};border-radius:12px;padding:12px 14px;margin-bottom:8px;cursor:pointer;text-align:left;font-family:var(--font)">
@@ -14218,7 +14943,7 @@ function _wizStepFertPlan(a) {
     </div>` : ''}
 
     ${presetOptions ? `<div style="margin-bottom:12px">
-      <div style="font-size:11px;color:var(--text-muted);font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.05em">BioBizz-Standards ${hasExistingPlans ? '' : '· automatisch einrichten'}</div>
+      <div style="font-size:11px;color:var(--text-muted);font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.05em">Fertige Pläne ${hasExistingPlans ? '' : '· automatisch einrichten'}</div>
       ${presetOptions}
     </div>` : ''}
 
@@ -14631,22 +15356,45 @@ function addCyc(overrides) {
   // SÄMLINGS-PROTOKOLL-HINWEIS: nur Indoor-Anzucht, nur einmalig pro App-Installation.
   // Erklärt das Sprüh-vs-Gießen-Prinzip und Tag-0-Vorbefeuchten, bevor der User
   // einen kritischen Anfängerfehler macht. Nicht aufdringlich — kann weggewischt werden.
+  //
+  // Mai 2026: zwei methodenabhängige Texte. Der vorherige Text mischte zwei
+  // Schulen ("7 Tage NICHT gießen" + "Tag 1 Sättigungsguss 700ml") — das las
+  // sich widersprüchlich. Plus: pH war als "pH-Wasser" angegeben (kein konkreter
+  // Wert), "Dryback" war nicht klar definiert. Jetzt: konkrete pH-Werte (6.2–6.5),
+  // "Restgewicht" statt "Dryback" (linguistisch konsistent mit dem Rest der App),
+  // klar formulierte Tag-für-Tag-Schritte.
   if (c.growType === 'indoor' && !S._seedlingProtocolShown) {
     S._seedlingProtocolShown = true;
     saveS();
     setTimeout(() => {
-      // Ein einfaches Info-Modal über customConfirm (mit nur einem OK-Button)
-      const msg = `Für die ersten 7 Tage NICHT gießen — nur sprühen.
-
-Durchnässte Erde ohne aktive Wurzel = Pythium-Risiko (Wurzelfäule innerhalb 24h).
+      const sm = c.startMethod || 'saturated';
+      const msg = sm === 'direct' ? `Du hast 'Direkt' gewählt — Tag 1 ohne vollen Sättigungsguss, dafür kleinere Tagesgüsse.
 
 App-Plan für Sämlinge:
-• Tag 1: Sättigungsguss (~700ml in 3 Etappen mit 15min Pause)
-• Tag 2–8: nur Sprühen (3–5 Sprühstöße pH-Wasser auf Oberfläche)
-• Tag 9+: normaler Gießrhythmus, sanfter Dryback 50%
-• Tag 15+: voller Dryback 35–40%
+• Tag 1: Samen in trockene Erde, ~150ml pH-Wasser (pH 6.2–6.5) direkt um die Pflanzstelle
+• Tag 2–8: Bei Bedarf ~30ml pro Tag — kein striktes Sprüh-Verbot, aber dosiert. Erde sollte nie ganz austrocknen, aber auch nie pfützen
+• Tag 9+: Normaler Gießrhythmus alle 2–3 Tage, Topf-Restgewicht ~40% beim Gießzeitpunkt
+• Ab Tag 15: Tiefer trocknen lassen, Restgewicht ~30–40%
 
-Tipp: 48h vor dem Einpflanzen die Erde mit ~400ml pH-Wasser vorbefeuchten — verhindert hydrophoben Torf beim ersten Guss.`;
+Vorteil dieser Methode: Wurzel wächst aktiv nach unten weil sie das Wasser suchen muss. Weniger Risiko von durchgenässtem Topf — Pythium-Druck geringer als bei Sättigung.
+
+Achtung: Etwas höheres Pflegerisiko bei Vergessen — der Topf hat weniger Wasserpuffer als bei der Sättigungsmethode. Wenn die Erde sich oben fest und hart anfühlt: kurz mit pH-Wasser einsprühen, dann normal weiter.
+
+💡 Tipp: Sämlings-Haube
+Bei Raumluft unter 65% RLF: transparente Kuppel über den Sämling stellen. Hält 80–95% Luftfeuchte und verhindert Welken. DIY: PET-Flasche umgekehrt aufstülpen. Komplette Anleitung im Lexikon → "Sämlings-Haube".` : `Du hast 'Vorbefeuchtet' (Sättigungsmethode) gewählt — ein klarer Initialguss am Tag 1, dann konsequente Ruhe.
+
+App-Plan für Sämlinge:
+• 48h vor Tag 1: Erde mit ~400ml pH-Wasser (pH 6.2–6.5) vorbefeuchten — verhindert hydrophoben Torf
+• Tag 1: Einmaliger Sättigungsguss ~700ml in 3 Etappen mit je 15min Pause (Wasser sickert besser ein, keine Pfützen)
+• Tag 2–8: KEIN weiteres Gießen — nur Sprühen (3–5 Sprühstöße auf die Oberfläche, pH 6.2–6.5, nicht auf die Keimblätter)
+• Tag 9+: Normaler Gießrhythmus alle 2–3 Tage, Topf-Restgewicht ~40% beim Gießzeitpunkt
+• Ab Tag 15: Tiefer trocknen lassen, Restgewicht ~30–40%
+
+Warum kein Gießen Tag 2–8?
+Sämlings-Wurzeln reichen wenige Zentimeter. Voll durchnässte Erde ohne aktive Wurzel = Pythium-Risiko (Wurzelfäule, oft tödlich binnen 24h). Der einmalige Sättigungsguss am Tag 1 stellt die Erde ein — danach trinkt der Sämling aus der oberen Schicht, gesprüht reicht.
+
+💡 Tipp: Sämlings-Haube
+Bei Raumluft unter 65% RLF: transparente Kuppel über den Sämling stellen. Hält 80–95% Luftfeuchte und verhindert Welken. DIY: PET-Flasche umgekehrt aufstülpen. Komplette Anleitung im Lexikon → "Sämlings-Haube".`;
       customConfirm('🌱 Sämlings-Protokoll', msg, 'Verstanden', 'var(--green)').catch(() => {});
     }, 800);
   }
@@ -14791,7 +15539,7 @@ async function backfillPast(id) {
           const cd = S.entries[iter].cycleData[c.id];
           if (!cd.doses) cd.doses = {};
           
-          const waterMl = waterSuggestion(c, p);
+          const waterMl = waterSuggestion(c, p, iter);
           cd.water = String(waterMl);
           // pH leicht variieren um realistische Charts zu produzieren statt
           // einer flachen Linie auf 6.4. Tag-basierte Pseudo-Variation
@@ -15006,7 +15754,7 @@ function markTodayDone(cId, iso) {
     const a = getAction(iso, c);
     const isWaterDay = a === 'giess' || a === 'giess_anz' || a === 'spuelen' || a === 'ice';
     if (isWaterDay && p && !cd.water) {
-      cd.water = String(waterSuggestion(c, p));
+      cd.water = String(waterSuggestion(c, p, iso));
     }
   }
 
@@ -16395,6 +17143,7 @@ function getSmartQuickNotes(c, p, cd, iso) {
 function openEntry(iso) {
   editISO = iso;
   _entryDirty = false;
+  _mixTouched.clear();  // frische Mix-Liste pro Eintrag (0-Dosen wieder ausgeblendet)
   // Deep-clone snapshot so "Verwerfen" can restore the pre-edit state.
   // We only clone the one day's entry — not the whole S — which is cheap.
   _entrySnapshot = S.entries[iso] ? JSON.parse(JSON.stringify(S.entries[iso])) : null;
@@ -16509,15 +17258,42 @@ function _updateEntryTitle(iso) {
 
 /** Navigate to prev/next day in entry screen */
 /** Navigate to prev/next day in entry screen. Prompts if there are unsaved changes. */
+/**
+ * Setzt für einen Guss die Markierung "Nur Wasser" (Wasser-Tag) oder "Düngen".
+ * Nur relevant wenn der Zyklus Wasser-Tage nutzt (c.useWaterDays). Legt den
+ * Eintrag bei Bedarf an und rendert neu, damit die Dosis-Liste sofort umschaltet.
+ */
+function setWaterOnly(cId, iso, val) {
+  if (!S.entries[iso]) S.entries[iso] = { cycleData: {} };
+  if (!S.entries[iso].cycleData) S.entries[iso].cycleData = {};
+  if (!S.entries[iso].cycleData[cId]) {
+    S.entries[iso].cycleData[cId] = { doses: {}, water: '', ph: '', ec: '', notes: '', photos: [], trichomes: null };
+  }
+  S.entries[iso].cycleData[cId].waterOnly = !!val;
+  saveS();
+  vibrate(8);
+  renderEntry(iso);
+}
+
 async function entryNav(dir) {
   if (!editISO) return;
   const doNav = () => {
+    const scrollEl = document.getElementById('entry-body');
+    const savedScroll = scrollEl ? scrollEl.scrollTop : 0;
     const newISO = isoPlus(editISO, dir);
     editISO = newISO;
     // New day = new snapshot (state was just saved or discarded)
     _entrySnapshot = S.entries[newISO] ? JSON.parse(JSON.stringify(S.entries[newISO])) : null;
     _updateEntryTitle(newISO);
     renderEntry(newISO);
+    // Scroll-Position erhalten statt nach oben zu springen. Auf die neue Inhaltshöhe
+    // begrenzen (clamp), damit man bei einem kürzeren Tag am unteren Ende landet
+    // statt ins Leere. So bleibt das Navigieren durch die Tage ruhig und
+    // vorhersagbar — der User bleibt ungefähr da wo er war (z.B. bei den Notizen).
+    if (scrollEl) {
+      const maxScroll = Math.max(0, scrollEl.scrollHeight - scrollEl.clientHeight);
+      scrollEl.scrollTop = Math.min(savedScroll, maxScroll);
+    }
     vibrate(8);
   };
   if (!_entryDirty) { doNav(); return; }
@@ -16608,6 +17384,11 @@ function renderEntry(iso) {
     const a = getAction(iso, c);
     const cl = col(c), s = sym(c);
     const cd = saved.cycleData?.[c.id] || {};
+    // EC-Ziel für diesen Tag (Default + Spanne, Gesamt-Wochen-Tabelle). Steuert
+    // Platzhalter und Spanne-Anzeige beim EC-Feld — statt des alten fixen "1.4".
+    const ecT = (typeof getEcTarget === 'function') ? getEcTarget(c, p, iso) : null;
+    const ecPh = ecT ? String(ecT.def) : '';
+    const ecRange = ecT ? (ecT.waterOnly ? 'nur Wasser' : `${ecT.min.toFixed(1)}–${ecT.max.toFixed(1)}`) : '0.8–2.0';
     // Düngeplan-Woche: Phase-bewusst!
     // Spülen/IceFlush → immer Wo11, Ernte/Trocknung → Wo12
     // Anzucht/Blüte → Gesamtwoche seit Zyklusstart (max Wo10)
@@ -16622,14 +17403,32 @@ function renderEntry(iso) {
         wk = Math.max(1, Math.min(Math.floor(totalDay / 7) + 1, 10));
       }
     }
-    const doses = getWeekDoses(c.id, wk, c);
+    // WASSER-TAGE: Nutzt der Zyklus Wasser-Tage UND ist dieser Guss als "Nur Wasser"
+    // markiert, kommen statt der vollen Wochendosis nur die konstanten Wasser-Tag-
+    // Dosen ins Wasser (Erhaltungs-Rezeptur, z.B. CalMag + Aloe niedrig). Produkte
+    // ohne Wasser-Tag-Dosis fallen automatisch weg — das hält Salze/EC niedrig.
+    const isMaintWatering = c.useWaterDays && cd.waterOnly;
+    let doses;
+    if (isMaintWatering) {
+      doses = {};
+      (S.products || []).forEach(pr => {
+        const wd = parseFloat(pr.waterDayDose);
+        if (wd > 0) doses[pr.id] = wd;
+      });
+    } else {
+      doses = getWeekDoses(c.id, wk, c);
+    }
     // Outdoor-Manueller-Modus: Wasser-Feld auch ohne fixe Action zeigen,
     // damit der User wann er gegossen hat einfach eintragen kann.
     const isOutdoorManual = !a && c.growType === 'outdoor' && p && (p.ph === 'vegi_out' || p.ph === 'bloom');
     // saettigung ist ein echter Wassertag (700ml in 3 Etappen).
     // sprueh nicht — Sprühen verändert Topfgewicht nicht messbar.
     const isWaterDay = a === 'giess' || a === 'giess_anz' || a === 'spuelen' || a === 'ice' || a === 'saettigung' || isOutdoorManual;
-    const waterSug = waterSuggestion(c, p);
+    // iso übergeben, damit waterSuggestion den Pflanzenzahl-Override DIESES Tages
+    // liest (cd.plantCount). Ohne iso fiele es auf todayISO() zurück und würde an
+    // einem vergangenen Tag die Zyklus-Pflanzenzahl statt des Tages-Overrides nehmen
+    // → die Empfehlung würde nicht mit der gewählten Pflanzenzahl skalieren.
+    const waterSug = waterSuggestion(c, p, iso);
 
     // HARD-DRYBACK-VORBEREITUNGS-BANNER:
     // In den letzten 2-3 Tagen Flush-Phase, kurz vor IceFlush, soll der User
@@ -16708,10 +17507,27 @@ function renderEntry(iso) {
           </button>
         </div>
         ${(c.offsetHistory && c.offsetHistory.length > 0) ? `
-          <div style="margin-bottom:8px;padding:8px 10px;background:rgba(232,136,74,0.06);border:0.5px solid rgba(232,136,74,0.2);border-radius:8px;display:flex;align-items:center;gap:8px">
-            <span style="font-size:14px">↔</span>
-            <span style="font-size:11px;color:var(--text-sub);flex:1">${c.offsetHistory.length} Verschiebung${c.offsetHistory.length === 1 ? '' : 'en'} im Plan</span>
-            <button onclick="resetOffsets('${c.id}')" style="background:var(--surface);border:0.5px solid rgba(232,136,74,0.35);border-radius:6px;padding:5px 10px;font-size:10px;color:var(--orange);cursor:pointer;font-family:var(--font);font-weight:600">Zurücksetzen</button>
+          <div style="margin-bottom:8px;background:rgba(232,136,74,0.06);border:0.5px solid rgba(232,136,74,0.2);border-radius:8px;overflow:hidden">
+            <div onclick="toggleOffsetList('${c.id}')" style="padding:8px 10px;display:flex;align-items:center;gap:8px;cursor:pointer">
+              <span style="font-size:14px">↔</span>
+              <span style="font-size:11px;color:var(--text-sub);flex:1">${c.offsetHistory.length} Verschiebung${c.offsetHistory.length === 1 ? '' : 'en'} im Plan</span>
+              <span id="offset-arrow-${c.id}" style="font-size:11px;color:var(--orange)">▾</span>
+              <button onclick="event.stopPropagation();resetOffsets('${c.id}')" style="background:var(--surface);border:0.5px solid rgba(232,136,74,0.35);border-radius:6px;padding:5px 10px;font-size:10px;color:var(--orange);cursor:pointer;font-family:var(--font);font-weight:600">Alle</button>
+            </div>
+            <div id="offset-list-${c.id}" style="display:none;padding:0 10px 8px">
+              <div style="font-size:9px;color:var(--text-hint);padding:2px 0 4px">Antippen = zu dem Tag springen · ✕ = nur diese eine zurücknehmen</div>
+              ${c.offsetHistory.slice().sort((a, b) => a.date.localeCompare(b.date)).map(e => {
+                const fwd = e.offset > 0;
+                const n = Math.abs(e.offset);
+                return `<div style="display:flex;align-items:center;gap:8px;padding:7px 8px;background:var(--surface);border-radius:6px;margin-top:6px">
+                  <span onclick="jumpToOffsetDay('${e.date}')" style="flex:1;cursor:pointer;font-size:11px;color:var(--text);display:flex;align-items:center;gap:6px">
+                    <span style="font-size:14px;color:${fwd ? 'var(--orange)' : 'var(--blue)'}">${fwd ? '→' : '←'}</span>
+                    <span><b>${fmtDE(e.date)}</b> · ${n} Tag${n === 1 ? '' : 'e'} ${fwd ? 'nach hinten' : 'vorgezogen'}</span>
+                  </span>
+                  <button onclick="removeOneOffset('${c.id}','${e.date}')" style="background:transparent;border:0.5px solid rgba(232,136,74,0.35);border-radius:6px;padding:4px 9px;font-size:12px;color:var(--orange);cursor:pointer;font-family:var(--font);line-height:1">✕</button>
+                </div>`;
+              }).join('')}
+            </div>
           </div>
         ` : ''}
         ${(c.growType === 'outdoor' && p && (p.ph === 'vegi_out' || p.ph === 'bloom' || p.ph === 'flush')) ? `<button onclick="rainSkip('${c.id}','${iso}')" style="width:100%;background:linear-gradient(135deg, rgba(90,171,240,0.15), rgba(90,171,240,0.08));border:0.5px solid rgba(90,171,240,0.4);border-radius:10px;padding:10px;font-size:12px;color:var(--blue);cursor:pointer;font-family:var(--font);margin-bottom:8px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:6px">
@@ -17250,7 +18066,9 @@ function renderEntry(iso) {
           </div>
           <div style="font-size:10px;color:var(--text-muted);margin-top:3px;line-height:1.4">
             ${p && p.ph === 'anzucht' && p.day <= 10
-              ? 'Sämling: lieber Sprühflasche oder dünner Strahl. Erde feucht, nicht nass.'
+              ? (p.day <= 6
+                  ? 'Keimphase: Sprühflasche oder ganz feiner Strahl. Erde nur feucht halten, nicht nass.'
+                  : 'Junger Sämling: feine Gießkanne mit dünnem Strahl, im Ring um die Pflanze (für diese Menge keine Sprühflasche). Erde feucht, nicht nass.')
               : `Topf ${pot}L · ${iv}d Intervall · ${showDrain ? '10% Drain entsorgen' : 'kein Drain'} · biophysikalische Empfehlung`}
           </div>
         </div>`;
@@ -17267,6 +18085,12 @@ function renderEntry(iso) {
         ? `<div style="margin-top:6px">${phCritW}${ecCritW}</div>`
         : '';
 
+      // Gieß-Guide zeigt die Menge PRO PFLANZE — konsistent mit der großen Empfehlung
+      // oben ("150 ml/Pflanze"). Vorher stand hier die Gesamtmenge (z.B. 750 ml bei
+      // 5 Pflanzen), was neben dem per-Pflanze-Wert verwirrte. Das Total steht weiter
+      // oben als Zusatz ("750 ml total").
+      const guidePerPlant = (effPlants > 1 && c.scaleByPlants) ? Math.round(waterSug / effPlants) : waterSug;
+      const guideDrain = Math.round(guidePerPlant * 0.1);
       const waterInput = `<div style="display:flex;flex-direction:column;gap:8px">
         ${a === 'ice' ? _renderIceFlushPanel(c, iso) : ''}
         ${liftTestBlock}
@@ -17295,9 +18119,9 @@ function renderEntry(iso) {
           <div style="flex:1;background:var(--card);border:0.5px solid var(--border);border-radius:8px;padding:8px 10px;display:flex;flex-direction:column;justify-content:center;gap:3px;min-width:110px">
             <div style="font-size:9px;color:var(--text-hint);font-weight:600;text-transform:uppercase;letter-spacing:0.03em">🚰 Gieß-Guide</div>
             ${showDrain
-              ? `<div style="font-size:10px;color:var(--text-sub);line-height:1.4"><span style="color:var(--green)">●</span> ~<span class="live-water" data-cycle="${c.id}">${waterSug}</span> ml → <span class="live-drain" data-cycle="${c.id}">${drainMl}</span> ml Drain</div>
+              ? `<div style="font-size:10px;color:var(--text-sub);line-height:1.4"><span style="color:var(--green)">●</span> ~<span class="live-water" data-cycle="${c.id}">${guidePerPlant}</span> ml${effPlants > 1 && c.scaleByPlants ? '/Pfl.' : ''} → <span class="live-drain" data-cycle="${c.id}">${guideDrain}</span> ml Drain</div>
                  <div style="font-size:10px;color:var(--text-sub);line-height:1.4"><span style="color:var(--orange)">●</span> Drain entsorgen!</div>`
-              : `<div style="font-size:10px;color:var(--text-sub);line-height:1.4"><span style="color:var(--green)">●</span> ~<span class="live-water" data-cycle="${c.id}">${waterSug}</span> ml · kein Drain</div>
+              : `<div style="font-size:10px;color:var(--text-sub);line-height:1.4"><span style="color:var(--green)">●</span> ~<span class="live-water" data-cycle="${c.id}">${guidePerPlant}</span> ml${effPlants > 1 && c.scaleByPlants ? '/Pfl.' : ''} · kein Drain</div>
                  <div style="font-size:10px;color:var(--text-sub);line-height:1.4"><span style="color:var(--blue)">●</span> ${growDay <= 10 ? 'Ring um Sämling' : growDay <= 18 ? 'Radius vergrößern' : 'Ganzer Topf'}</div>`
             }
             <div style="font-size:10px;color:var(--text-sub);line-height:1.4"><span style="color:var(--blue)">●</span> ${pot}L · ~alle ${iv}d · 30% Dryback</div>
@@ -17315,17 +18139,17 @@ function renderEntry(iso) {
             </div>
           </div>
           <div>
-            <div style="font-size:10px;color:var(--text-hint);margin-bottom:2px">EC${S.beginnerMode ? ' <span style="color:var(--text-hint);font-size:9px;font-weight:400">(optional)</span>' + infoBtn('ec') : ''}</div>
+            <div style="font-size:10px;color:var(--text-hint);margin-bottom:2px">EC${ecT && !ecT.waterOnly ? ` <span style="color:var(--text-sub);font-size:9px;font-weight:600">Ziel ${ecRange}</span>` : (ecT && ecT.waterOnly ? ' <span style="color:var(--blue);font-size:9px">Wasser-Tag</span>' : '')}${S.beginnerMode ? ' <span style="color:var(--text-hint);font-size:9px;font-weight:400">(optional)</span>' + infoBtn('ec') : ''}</div>
             <div style="display:flex;align-items:center;gap:3px">
               <button onclick="stepEC('${c.id}',-0.1)" class="stepper-btn">−</button>
-              <input class="inp-field${cd._suggested?.ec ? ' suggested' : ''}" type="number" step="0.1" min="0" max="5" id="ec-${c.id}" value="${cd.ec || ''}" placeholder="1.4"
+              <input class="inp-field${cd._suggested?.ec ? ' suggested' : ''}" type="number" step="0.1" min="0" max="5" id="ec-${c.id}" value="${cd.ec || ''}" placeholder="${ecPh || '1.4'}"
                 style="width:52px;font-size:15px;font-weight:600;font-family:var(--mono);text-align:center;padding:6px 2px"
                 oninput="uEF('${c.id}','ec',this.value)"/>
               <button onclick="stepEC('${c.id}',0.1)" class="stepper-btn">+</button>
             </div>
           </div>
           <div style="flex:1;text-align:right;font-size:10px;color:var(--text-hint);line-height:1.5">
-            ${S.beginnerMode ? 'pH 6.2–6.4 ist optimal' : 'Ziel: pH 6.4 · EC 0.8–2.0<br>Drain entsorgen!'}
+            ${S.beginnerMode ? 'pH 6.2–6.4 ist optimal' : `Ziel: pH 6.4 · EC ${ecT && !ecT.waterOnly ? ecRange : (ecT && ecT.waterOnly ? '0.3–0.4 (Wasser-Tag)' : '0.8–2.0')}<br>Drain entsorgen!`}
           </div>
         </div>
         ${phEcCritWarnHTML}
@@ -17366,7 +18190,7 @@ function renderEntry(iso) {
                 <div style="font-size:10px;color:var(--text-hint);margin-bottom:2px">Runoff EC</div>
                 <div style="display:flex;align-items:center;gap:3px">
                   <button onclick="stepRunoffEc('${c.id}',-0.1)" class="stepper-btn">−</button>
-                  <input class="inp-field" type="number" step="0.1" min="0" max="5" id="runoff-ec-${c.id}" value="${cd.runoffEc || ''}" placeholder="${cd.ec || '1.4'}"
+                  <input class="inp-field" type="number" step="0.1" min="0" max="5" id="runoff-ec-${c.id}" value="${cd.runoffEc || ''}" placeholder="${cd.ec || ecPh || '1.4'}"
                     style="width:52px;font-size:15px;font-weight:600;font-family:var(--mono);text-align:center;padding:6px 2px;border-color:${ecColor !== 'var(--text-hint)' ? ecColor : 'var(--border)'}"
                     oninput="uEF('${c.id}','runoffEc',this.value);if(editISO) renderEntry(editISO)"/>
                   <button onclick="stepRunoffEc('${c.id}',0.1)" class="stepper-btn">+</button>
@@ -17423,22 +18247,37 @@ function renderEntry(iso) {
         // 7 Produkte und denkt es ist mega kompliziert, obwohl nur 3 für diese Woche aktiv sind.
         const mixActive = activeMixProducts.filter(n => {
           const pr = S.products.find(p => p.name === n);
-          return pr && (doses[pr.id] || 0) > 0;
+          // Sichtbar wenn Dosis > 0 ODER der User das Produkt gerade verstellt hat
+          // (dann bleibt es an Ort und Stelle stehen, statt beim Runterregeln auf 0
+          // sofort in die "Dosis 0"-Sektion zu rutschen).
+          return pr && ((doses[pr.id] || 0) > 0 || _mixTouched.has(pr.id));
         });
         const mixInactive = activeMixProducts.filter(n => {
           const pr = S.products.find(p => p.name === n);
-          return pr && (doses[pr.id] || 0) <= 0;
+          return pr && (doses[pr.id] || 0) <= 0 && !_mixTouched.has(pr.id);
         });
         // Renderer für eine einzelne Produktzeile — gleiche Logik für beide Listen
         const renderMixRow = (name, i, isInActiveList) => {
           const pr = S.products.find(p => p.name === name);
           const d2 = doses[pr?.id] || 0;
-          const calc2 = d2 > 0 ? calcDose(d2, waterAmt, pr?.unit).toFixed(1) : '0.0';
+          // ADAPTIVE SCHRITTWEITE je nach Wassermenge: bei kleinen Mengen (Sämling,
+          // ~80ml) feine 0.05ml-Schritte, mittlere ~0.1ml, große (Blüte, 2L+) 0.5ml.
+          // So springt der +/−-Stepper bei winzigen Sämlings-Dosen nicht zu grob
+          // (0.1ml war bei 80ml schon die halbe Dosis) und bleibt bei großen Mengen
+          // trotzdem zügig bedienbar.
+          const stepSize = waterAmt > 0
+            ? (waterAmt < 200 ? 0.05 : (waterAmt < 1000 ? 0.1 : 0.5))
+            : 0.1;
+          // Anzeige-Präzision an die Schrittweite koppeln: feine 0.05er-Schritte
+          // brauchen 2 Nachkommastellen, sonst sieht man die Änderung nicht.
+          const decimals = stepSize < 0.1 ? 2 : 1;
+          const calc2num = d2 > 0 ? calcDose(d2, waterAmt, pr?.unit, decimals) : 0;
+          const calc2 = calc2num.toFixed(decimals);
           const dispUnit = displayUnit(pr?.unit);
           const isZero = d2 <= 0;
           const isPerL = isPerLitre(pr?.unit);
           const recipeBreakdown = isPerL
-            ? `<div class="mix-recipe-breakdown" data-cycle="${c.id}" data-plan="${d2}" data-unit="${pr?.unit || 'ml/L'}" style="font-size:9px;color:var(--text-hint);font-family:var(--mono);text-align:center;line-height:1.1;margin-top:2px;display:${(d2 > 0 && waterAmt > 0) ? 'block' : 'none'}">${d2} ${pr?.unit} × ${(waterAmt/1000).toFixed(waterAmt%1000===0?0:1)} L</div>`
+            ? `<div class="mix-recipe-breakdown" data-cycle="${c.id}" data-prod="${pr?.id}" data-plan="${d2}" data-unit="${pr?.unit || 'ml/L'}" style="font-size:9px;color:var(--text-hint);font-family:var(--mono);text-align:center;line-height:1.1;margin-top:2px;display:${(d2 > 0 && waterAmt > 0) ? 'block' : 'none'}">${d2} ${pr?.unit} × ${fmtWater(waterAmt)}</div>`
             : '';
           const checked = !!(cd.mixChecks?.[pr?.id]);
           const checkId = `mix-${c.id}-${i}-${isInActiveList ? 'a' : 'i'}`;
@@ -17453,12 +18292,12 @@ function renderEntry(iso) {
               <span style="font-size:13px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name}</span>
             </div>
             <div style="display:flex;align-items:center;gap:3px;flex-shrink:0">
-              <button class="mix-step-btn" data-cycle="${c.id}" data-prod="${pr?.id}" data-wk="${wk}" data-step="-0.1" data-unit="${pr?.unit || 'ml/L'}" onclick="event.stopPropagation();stepMixDoseLive(this)" style="width:26px;height:26px;border-radius:5px;background:var(--surface);border:0.5px solid var(--border);color:var(--text-sub);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:var(--mono)">−</button>
+              <button class="mix-step-btn" data-cycle="${c.id}" data-prod="${pr?.id}" data-wk="${wk}" data-step="${-stepSize}" data-unit="${pr?.unit || 'ml/L'}" onclick="event.stopPropagation();stepMixDoseLive(this)" style="width:26px;height:26px;border-radius:5px;background:var(--surface);border:0.5px solid var(--border);color:var(--text-sub);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:var(--mono)">−</button>
               <div style="display:flex;flex-direction:column;align-items:center;width:64px">
-                <span class="mix-calc" data-cycle="${c.id}" data-prod="${pr?.id}" data-plan="${d2}" data-unit="${pr?.unit || 'ml/L'}" style="color:${doseColor};font-family:var(--mono);font-size:13px;font-weight:600;text-align:center">${calc2} ${dispUnit}</span>
+                <span class="mix-calc" data-cycle="${c.id}" data-prod="${pr?.id}" data-plan="${d2}" data-unit="${pr?.unit || 'ml/L'}" data-decimals="${decimals}" style="color:${doseColor};font-family:var(--mono);font-size:13px;font-weight:600;text-align:center">${calc2} ${dispUnit}</span>
                 ${recipeBreakdown}
               </div>
-              <button class="mix-step-btn" data-cycle="${c.id}" data-prod="${pr?.id}" data-wk="${wk}" data-step="0.1" data-unit="${pr?.unit || 'ml/L'}" onclick="event.stopPropagation();stepMixDoseLive(this)" style="width:26px;height:26px;border-radius:5px;background:var(--surface);border:0.5px solid var(--border);color:var(--text-sub);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:var(--mono)">+</button>
+              <button class="mix-step-btn" data-cycle="${c.id}" data-prod="${pr?.id}" data-wk="${wk}" data-step="${stepSize}" data-unit="${pr?.unit || 'ml/L'}" onclick="event.stopPropagation();stepMixDoseLive(this)" style="width:26px;height:26px;border-radius:5px;background:var(--surface);border:0.5px solid var(--border);color:var(--text-sub);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:var(--mono)">+</button>
             </div>
           </div>`;
         };
@@ -17471,7 +18310,7 @@ function renderEntry(iso) {
           </details>` : '';
         const mixSteps = activeMixProducts.length > 0
           ? `<div style="background:var(--card);border:0.5px solid var(--border);border-top:none;border-radius:0 0 10px 10px;padding:10px 12px">
-              <div style="font-size:10px;color:var(--text-hint);margin-bottom:6px;font-weight:600">⚗️ MISCHREIHENFOLGE <span class="mix-header-water" data-cycle="${c.id}" style="color:var(--text-muted);font-weight:400">${waterAmt > 0 ? `· für ${(waterAmt/1000).toFixed(waterAmt%1000===0?0:1)} L` : ''}</span></div>
+              <div style="font-size:10px;color:var(--text-hint);margin-bottom:6px;font-weight:600">⚗️ MISCHREIHENFOLGE <span class="mix-header-water" data-cycle="${c.id}" style="color:var(--text-muted);font-weight:400">${waterAmt > 0 ? `· für ${fmtWater(waterAmt)}` : ''}</span></div>
               ${mixActive.length > 0
                 ? mixActive.map((n, i) => renderMixRow(n, i, true)).join('')
                 : `<div style="padding:14px 4px;text-align:center;font-size:11px;color:var(--text-hint);line-height:1.4">Keine Dünger diese Woche aktiv.<br><span style="font-size:10px">Schau in <b>Tipps → Dünger</b> oder erweitere unten ↓</span></div>`}
@@ -17479,7 +18318,18 @@ function renderEntry(iso) {
             </div>`
           : '';
 
-        nutSection = `${waterInput}
+        // WASSER-TAG-UMSCHALTER: nur wenn der Zyklus Wasser-Tage nutzt und es ein
+        // Gießtag ist. Lässt den User pro Guss bewusst zwischen voller Düngung und
+        // reiner Erhaltungs-Gabe wählen.
+        const waterDayToggle = (c.useWaterDays && isWaterDay && a !== 'ice') ? `
+          <div style="display:flex;gap:6px;margin-bottom:8px">
+            <button onclick="setWaterOnly('${c.id}','${iso}',false)" style="flex:1;padding:10px;border-radius:9px;border:1px solid ${!cd.waterOnly ? 'var(--green)' : 'var(--border)'};background:${!cd.waterOnly ? 'var(--green-bg)' : 'var(--surface)'};color:${!cd.waterOnly ? 'var(--green)' : 'var(--text-sub)'};font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font)">🌿 Düngen</button>
+            <button onclick="setWaterOnly('${c.id}','${iso}',true)" style="flex:1;padding:10px;border-radius:9px;border:1px solid ${cd.waterOnly ? 'var(--blue)' : 'var(--border)'};background:${cd.waterOnly ? 'rgba(90,171,240,0.12)' : 'var(--surface)'};color:${cd.waterOnly ? 'var(--blue)' : 'var(--text-sub)'};font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font)">💧 Nur Wasser</button>
+          </div>
+          ${cd.waterOnly ? `<div style="font-size:10px;color:var(--text-hint);line-height:1.45;margin-bottom:8px;padding:0 2px">💧 <b style="color:var(--blue)">Wasser-Tag:</b> Nur die Erhaltungs-Dosen unten (z.B. CalMag + Aloe). Die Hauptdünger pausieren heute — das wäscht überschüssige Salze aus und hält die Wurzelzone gesund.</div>` : ''}
+        ` : '';
+
+        nutSection = `${waterDayToggle}${waterInput}
           <div class="nut-tbl-hdr" style="background:${cl.dk};border:0.5px solid ${cl.hex}44;border-bottom:none">
             <span style="font-size:12px;font-weight:600;color:#fff">🧪 ${S.beginnerMode ? 'Dünger diese Woche' : `Nährstoffe Wo.${wk}`}</span>
             <button onclick="openDuenger()" style="background:none;border:none;color:${cl.hex};font-size:11px;cursor:pointer">Plan ✏</button>
@@ -17808,7 +18658,9 @@ function renderEntry(iso) {
         </div>
         <div style="font-size:10px;color:var(--text-muted);margin-top:3px;line-height:1.4">
           ${p.ph === 'anzucht' && p.day <= 10
-            ? 'Sämling: lieber Sprühflasche oder dünner Strahl. Erde feucht, nicht nass.'
+            ? (p.day <= 6
+                ? 'Keimphase: Sprühflasche oder ganz feiner Strahl. Erde nur feucht halten, nicht nass.'
+                : 'Junger Sämling: feine Gießkanne mit dünnem Strahl, im Ring um die Pflanze (für diese Menge keine Sprühflasche). Erde feucht, nicht nass.')
             : `Topf ${S.potSize || 11}L · ${getInt(c, p?.ph || 'bloom')}d Intervall · biophysikalische Empfehlung`}
         </div>
       </div>` : '';
@@ -17975,7 +18827,7 @@ function renderEntry(iso) {
         <div style="padding:8px 10px;background:rgba(0,0,0,0.2);border-radius:8px;font-size:11px;color:var(--text-sub);line-height:1.55">
           <b style="color:var(--text)">💡 Sämling-Grundregeln:</b><br>
           • <b>Klima:</b> 22–26°C · 65–75% RLF · VPD 0.4–0.8 kPa<br>
-          • <b>Wasser:</b> Sprühflasche oder dünner Strahl, ~50–100 ml. Erde feucht halten, NICHT nass.<br>
+          • <b>Wasser:</b> Erste Tage (Keimung) mit Sprühflasche befeuchten. Sobald der Sämling steht: feine Gießkanne, dünner Strahl im Ring (~50–150 ml, steigt mit jedem Guss). Erde feucht halten, NICHT nass.<br>
           • <b>Dünger:</b> Frühestens Tag 10–14, dann nur 25% Dosis. Sämling lebt erst von Reserven.<br>
           • <b>Licht:</b> 30–50cm Abstand, 50–70% Power. Sämling streckt sich → zu wenig Licht.<br>
           • <b>pH:</b> 6.0–6.5 (Erde) / 5.5–6.0 (Coco/Hydro)
@@ -18028,34 +18880,13 @@ function renderEntry(iso) {
 
     const hintHTML = '';
 
-    const smartQN2 = getSmartQuickNotes(c, p, cd, iso);
-    const _TC = {
-      milestone: { bg: 'rgba(240,208,80,0.08)', bd: 'rgba(240,208,80,0.3)', fg: 'var(--yellow)' },
-      observation: { bg: 'rgba(90,171,240,0.06)', bd: 'rgba(90,171,240,0.25)', fg: 'var(--blue)' },
-      action: { bg: 'rgba(76,175,112,0.06)', bd: 'rgba(76,175,112,0.25)', fg: 'var(--green)' },
-      state: { bg: 'var(--surface)', bd: 'var(--border)', fg: 'var(--text-sub)' },
-      problem: { bg: 'rgba(224,96,96,0.06)', bd: 'rgba(224,96,96,0.25)', fg: 'var(--red)' },
-    };
-    const qnChipsHTML = smartQN2.length ? `<div class="qn-row">${smartQN2.map(qn => {
-      const already = (cd.notes || '').includes(qn.label);
-      const tc = _TC[qn.type] || _TC.state;
-      // Base type-colored style (rendered inline). When .active class is added
-      // by addQN(), its !important rules override this to show green "checked" state.
-      const baseStyle = `background:${tc.bg};border-color:${tc.bd};color:${tc.fg}`;
-      const safeLabel = qn.label.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-      return `<div class="qn-chip${already ? ' active' : ''}" data-icon="${qn.icon}" data-label="${safeLabel}" onclick="addQN('${c.id}',this)" style="${baseStyle}">${already ? '✓ ' + qn.label : qn.icon + ' ' + qn.label}</div>`;
-    }).join('')}</div>` : '';
-    // E4: For each ACTIVE chip with a lexikon mapping, show a small "📖 Info" link row.
-    // Helps beginners learn about what they just observed without leaving the entry.
-    const activeWithLex = smartQN2.filter(qn => (cd.notes || '').includes(qn.label) && QN_LEX[qn.label]);
-    const qnLexHTML = activeWithLex.length ? `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">${
-      // Dedupe: multiple chips (Trichome klar/milchig/bernstein) may point to same entry
-      [...new Map(activeWithLex.map(qn => [QN_LEX[qn.label], qn])).values()].map(qn => {
-        const target = QN_LEX[qn.label].replace(/'/g, "\\'");
-        return `<div onclick="openLexikonEntry('${target}')" style="display:inline-flex;align-items:center;gap:4px;background:var(--card);border:0.5px solid var(--border);border-radius:12px;padding:4px 10px;font-size:10px;color:var(--text-sub);cursor:pointer;font-family:var(--font)">📖 ${QN_LEX[qn.label]} ›</div>`;
-      }).join('')
-    }</div>` : '';
-    const qnHTML = qnChipsHTML + qnLexHTML;
+    // QUICK-NOTE-CHIPS (Mai 2026 entfernt, v1.1.12): Die Beobachtungs-Buttons
+    // ("Sieht gesund aus", "Blätter hängen", etc.) unter dem Notizfeld wurden auf
+    // User-Wunsch ausgeblendet — sie wirkten überladen und das freie Notizfeld plus
+    // "Problem diagnostizieren" decken den Bedarf ab. Die Helper getSmartQuickNotes()
+    // und addQN() bleiben im Code (für Datenkompatibilität mit bestehenden Notizen
+    // die Chip-Texte enthalten, und falls die Chips je zurückkommen sollen).
+    const qnHTML = '';
     const photoHTML = `<div class="photo-grid">${photos.map((ph, idx) => `<div class="photo-wrap"><img class="photo-thumb" src="${ph}" onclick="viewPhoto(this.src)"/><button class="photo-del" onclick="delPhoto('${c.id}','${iso}',${idx})" title="Foto löschen">×</button></div>`).join('')}<div class="photo-add" onclick="addPhoto('${c.id}')">📷</div></div>`;
 
     // PLAN-NOTIZEN AUTO-LOGIK:
@@ -18272,7 +19103,8 @@ function updateCalc(cId, wk) {
   document.querySelectorAll(`.mix-calc[data-cycle="${cId}"]`).forEach(cell => {
     const plan = parseFloat(cell.dataset.plan) || 0;
     const unit = cell.dataset.unit || 'ml/L';
-    const current = plan > 0 ? calcDose(plan, ml, unit).toFixed(1) : '0';
+    const decimals = parseInt(cell.dataset.decimals) || 1;
+    const current = plan > 0 ? calcDose(plan, ml, unit, decimals).toFixed(decimals) : (0).toFixed(decimals);
     const dispUnit = displayUnit(unit);
     cell.textContent = `${current} ${dispUnit}`;
   });
@@ -18280,7 +19112,7 @@ function updateCalc(cId, wk) {
   // Mix-Header "· für X L" live aktualisieren — sonst zeigt er noch die alte Wassermenge
   // und der User denkt die Berechnung wäre kaputt.
   document.querySelectorAll(`.mix-header-water[data-cycle="${cId}"]`).forEach(el => {
-    el.textContent = ml > 0 ? `· für ${(ml/1000).toFixed(ml%1000===0?0:1)} L` : '';
+    el.textContent = ml > 0 ? `· für ${fmtWater(ml)}` : '';
   });
 
   // Mix-Recipe-Breakdown ("X ml/L × Y L") unter den Dosen live aktualisieren
@@ -18288,7 +19120,7 @@ function updateCalc(cId, wk) {
     const plan = parseFloat(el.dataset.plan) || 0;
     const unit = el.dataset.unit || 'ml/L';
     if (plan > 0 && ml > 0 && unit.indexOf('/L') >= 0) {
-      el.textContent = `${plan} ${unit} × ${(ml/1000).toFixed(ml%1000===0?0:1)} L`;
+      el.textContent = `${plan} ${unit} × ${fmtWater(ml)}`;
       el.style.display = 'block';
     } else {
       el.style.display = 'none';
@@ -18305,12 +19137,13 @@ function updateCalc(cId, wk) {
   });
 
   // Gieß-Guide live mitziehen: angezeigte Wassermenge und Drain (10% Regel) anpassen.
+  // PRO PFLANZE (ml/plants) — konsistent mit der Guide-Box, die pro Pflanze anzeigt.
   // So sieht der User sofort wie sich Zielwert und Drain-Menge ändern wenn er +/− drückt.
   document.querySelectorAll(`.live-water[data-cycle="${cId}"]`).forEach(el => {
-    el.textContent = Math.round(ml);
+    el.textContent = Math.round(ml / plants);
   });
   document.querySelectorAll(`.live-drain[data-cycle="${cId}"]`).forEach(el => {
-    el.textContent = Math.round(ml * 0.1);
+    el.textContent = Math.round(ml / plants * 0.1);
   });
 }
 
@@ -18942,18 +19775,25 @@ function stepMixDose(cId, prodId, wk, stepMl, waterAmt) {
   const prod = (S.products || []).find(p => p.id === prodId);
   const perLitre = isPerLitre(prod?.unit);
   let newPlan;
+  // Auf die Schrittweite runden (nicht mehr fix 0.1). absStep ist die aktuelle
+  // adaptive Schrittweite (0.05 / 0.1 / 0.5) aus dem Button. So landen die Werte
+  // sauber auf Vielfachen der Schrittweite statt auf krummen Zwischenwerten.
+  const absStep = Math.abs(stepMl) || 0.1;
   if (perLitre && waterAmt && waterAmt > 0) {
     // Per-litre unit: current displayed amount → add step → back to per-litre plan
     const currentAmt = plan * waterAmt / 1000;
-    const newAmt = Math.max(0, Math.round((currentAmt + stepMl) * 10) / 10);
+    let newAmt = Math.max(0, Math.round((currentAmt + stepMl) / absStep) * absStep);
+    newAmt = Math.round(newAmt * 100) / 100;  // Floating-Point säubern (2 Nachkommast.)
     newPlan = newAmt * 1000 / waterAmt;
     // Keep stored plan value to a sensible precision (4 decimals is plenty)
     newPlan = Math.round(newPlan * 10000) / 10000;
   } else {
     // Absolute unit OR missing water: step the plan value directly
-    newPlan = Math.max(0, Math.round((plan + stepMl) * 10) / 10);
+    let np = Math.max(0, Math.round((plan + stepMl) / absStep) * absStep);
+    newPlan = Math.round(np * 100) / 100;
   }
   S.weekSchedule[key][prodId] = newPlan;
+  _mixTouched.add(prodId);  // bleibt sichtbar auch wenn Dosis auf 0 fiel
   saveS();
   vibrate(8);
   // Re-render the entry to reflect updated doses
@@ -19014,6 +19854,18 @@ function uEF(cId, f, v) {
     if (isFinite(wMl) && wMl > 0) {
       cd.liftAfterPct = 100;
       cd._liftAfterAutoSet = true;  // Flag, damit bei Wasser=0 wieder gelöscht werden kann
+    }
+  }
+  // PFLANZENZAHL BEIM GIESSEN festhalten. Die App speichert Wasser als Gesamtmenge
+  // (total). Um später die per-Pflanze-Menge korrekt zu rekonstruieren (für die
+  // Personalisierung), muss bekannt sein mit WIE VIELEN Pflanzen damals gegossen
+  // wurde. Ohne das würde ein späterer Wechsel der Pflanzenzahl die historische
+  // per-Pflanze-Menge verfälschen und die Gesamt-Empfehlung "kleben" lassen.
+  if (f === 'water') {
+    const wMl = parseFloat(v);
+    if (isFinite(wMl) && wMl > 0) {
+      const cyc = S.cycles.find(x => x.id === cId);
+      cd.plantsAtWatering = getEffectivePlantCount(cyc, editISO);
     }
   }
   // Wenn der User Wasser auf 0 oder leer setzt UND der After-Wert auto-gesetzt war:
@@ -19130,6 +19982,17 @@ function intervalDryDefault(c, iso) {
     lastWaterIso = c.startDate;
   }
 
+  // HINWEIS (v1.1.14): Ein früherer Versuch ("lastPlannedGuss-Anker") nahm an,
+  // dass an jedem GEPLANTEN Gieß-Tag auch gegossen wurde — selbst ohne Beleg.
+  // Das war falsch: wenn der User einen Gieß-Tag überspringt (keine Eingabe),
+  // sprang der Hebe-Test am Folgetag wieder hoch ("Mittel"/"Bald"), als wäre
+  // frisch gegossen. Gefährlich für Anfänger — Topf wirkt feuchter als er ist.
+  // Korrekt (konservativ-sicher): nur BELEGTE Güsse resetten den Verlauf. Ein
+  // übersprungener geplanter Gieß-Tag lässt den Topf weiter trocknen (overdue).
+  // Die Interpolation unten zielt deshalb auf den ersten geplanten Gieß-Tag NACH
+  // dem letzten belegten Guss — und geht in overdue über, wenn der vorbei ist.
+
+
   // INTERVALL bestimmen — Reihenfolge der Quellen:
   //   1. Echtes historisches Intervall aus den letzten zwei Güssen — siegt, weil
   //      es das tatsächliche Verhalten widerspiegelt. Stabil gegen nachträgliche
@@ -19164,94 +20027,75 @@ function intervalDryDefault(c, iso) {
 
   const daysSinceWater = isoDiff(iso, lastWaterIso);
 
-  // PHASEN-SPEZIFISCHER DRYBACK-ZIELWERT (statt fix 40% für alles).
-  // Praxis-Protokoll Premium:
-  //   Sämling Tag 9–14 (App day):  50–55% Ziel (sanft, Wurzeln noch jung)
-  //   Anzucht Tag 15+:             40% Ziel (voller Dryback)
-  //   Bloom (alle Wochen):         40% Ziel
-  //   Flush regulär:               35% Ziel (hard dryback in der Endphase)
-  //   Flush letzte 2 Tage:         35% Ziel — Hard-Dryback-Vorbereitung IceFlush
-  //   IceFlush-Tag (ice day 1):    nicht relevant (Auto-Fill-Branch übernimmt mit 100%)
-  //   IceFlush-Dunkelphase (ice day 2-3): bleibt knochentrocken, Ziel 20-25%
-  // Der Zielwert ist der erwartete Wert AM NÄCHSTEN GIESSTAG. Davor wird
-  // linear interpoliert.
-  let targetPct = 40;
-  if (p.day && p.day >= 9 && p.day <= 14) targetPct = 52;  // Wo 2 sanft: 50–55%
+  // ZIELWERT AM GIESSTAG (Mai 2026, v1.1.13): durchgängig 30% (= "Knapp"/sweetSpot).
+  // Früher phasen-abhängig (40% Anzucht/Bloom, 52% Sämling-Schonzeit), was dazu
+  // führte dass der Hebe-Test am Gieß-Tag auf "Bald" (52%) statt "Knapp" (30%)
+  // stehen blieb. Cup-Anbau zielt auf einen knackigen Dryback — am geplanten
+  // Gieß-Tag soll der Topf bei ~30% Restgewicht ("Knapp") sein, dann gießen.
+  // Sonderfälle: Flush etwas trockener (35% Hard-Dryback-Vorbereitung),
+  // IceFlush-Dunkelphase knochentrocken (20%).
+  let targetPct = 30;
   if (p.ph === 'flush') targetPct = 35;
-  // IceFlush-Dunkelphase (Tag 2-3 der ice-Phase): Topf bleibt knochentrocken
-  // bis zur Ernte — kein Wasser mehr nach dem IceFlush.
   if (p.ph === 'ice') targetPct = 20;
-  // Hard-Dryback-Phase: letzte 2-3 Tage VOR der ice-Phase (Ende Flush oder
-  // direkt bevor IceFlush). User soll auf 35% trocknen lassen → kein Trick mehr,
-  // die App rechnet schon mit 35% (siehe Flush-Branch oben). Nichts extra zu tun
-  // außer Awareness in der UI (siehe Hard-Dryback-Hinweis-Box).
-  // Spanne 100% → targetPct
-  const range = 100 - targetPct;
 
-  // Wenn heute = Gieß-Tag (daysSinceWater == 0): das wird vom Aufrufer
-  // sowieso über den water>0-Check abgefangen. Hier: 100%.
+  // Wenn heute selbst schon gegossen → 100% (Aufrufer fängt das meist über
+  // water>0 ab, hier als Sicherheit).
   if (daysSinceWater <= 0) {
     return { pct: 100, source: 'guss-tag', lastWaterIso, intervalDays: intDays, dayInCycle: 0, intSource, targetPct };
   }
 
-  // Wenn die Pflanze schon "überfällig" ist (mehr Tage vergangen als das Intervall),
-  // bleiben wir bei targetPct — die Theorie sagt nicht weniger, der User soll sehen
-  // "Zeit zu gießen" und nicht in 5%-Stress-Werte gedrängt werden.
-  // ABGRENZUNG: bei daysSinceWater === intDays sind wir GENAU am geplanten Gieß-Tag
-  // (z.B. Tag 12 nach Guss am Tag 9 mit Intervall 3). Das ist nicht "overdue", sondern
-  // "fällig" — die Empfehlung lautet jetzt zu gießen, nicht "ist überfällig". Der Wert
-  // ist gleich (targetPct), aber die source unterscheidet sich für die Status-Logik.
-  if (daysSinceWater === intDays) {
+  // NÄCHSTEN GEPLANTEN GIESS-TAG NACH DEM LETZTEN GUSS finden (nicht ab heute!).
+  // Über getAction, damit Verschiebungen (offsetHistory) automatisch zählen.
+  // Wichtig: ab lastWaterIso vorwärts suchen, nicht ab iso. Sonst springt der Wert
+  // hoch wenn ein geplanter Gieß-Tag übersprungen wurde — denn dann läge der
+  // "nächste ab heute" weiter in der Zukunft und die Interpolation würde feuchter
+  // rechnen als am übersprungenen Tag (physikalisch unmöglich ohne Guss).
+  let targetGussIso = null;
+  for (let fwd = 1; fwd <= intDays + 10; fwd++) {
+    const probe = isoPlus(lastWaterIso, fwd);
+    const act = (typeof getAction === 'function') ? getAction(probe, c) : null;
+    if (['giess', 'giess_anz', 'spuelen', 'ice', 'saettigung'].includes(act)) {
+      targetGussIso = probe;
+      break;
+    }
+  }
+  const daysToTarget = targetGussIso ? isoDiff(targetGussIso, lastWaterIso) : intDays;
+
+  // Heute IST der Ziel-Gieß-Tag → Tiefpunkt targetPct ("Knapp"). Auch wenn noch
+  // kein Wasser eingetragen ist: "jetzt gießen".
+  if (targetGussIso && iso === targetGussIso) {
     return { pct: targetPct, source: 'due', lastWaterIso, intervalDays: intDays, dayInCycle: daysSinceWater, intSource, targetPct };
   }
-  if (daysSinceWater > intDays) {
-    // Overdue-Drop: Wert sinkt weiter ab dem geplanten Gieß-Tag. Vorher: konstant
-    // targetPct über alle overdue-Tage → mehrere Tage hintereinander sahen identisch
-    // aus, der Hebe-Test bewegte sich visuell nicht. Jetzt: 5%-Schritte pro Tag,
-    // Floor 25% damit der Default nicht in Wasserstress-Bereich abrutscht (= classify
-    // 'stress' < 25). User sieht damit: "Pflanze trocknet weiter, jetzt langsam dringend".
-    const overdue = daysSinceWater - intDays;
-    const droppedPct = Math.max(25, targetPct - overdue * 5);
+
+  // Ziel-Gieß-Tag liegt VOR heute = übersprungen (kein Guss eingetragen) → der Topf
+  // trocknet WEITER. Wert sinkt ab targetPct in 5%-Schritten pro Tag, Floor 20%
+  // (Wasserstress-Bereich = dringend gießen). Springt NICHT zurück nach oben.
+  if (targetGussIso && iso > targetGussIso) {
+    const overdue = isoDiff(iso, targetGussIso);
+    const droppedPct = Math.max(20, targetPct - overdue * 5);
     return { pct: droppedPct, source: 'overdue', lastWaterIso, intervalDays: intDays, dayInCycle: daysSinceWater, intSource, targetPct };
   }
 
-  // Trocknungs-Interpolation 100% → targetPct.
-  // Naive Linear-Formel `100 - (range/(intDays-1)) * day` produziert bei
-  // intDays=3 + großem range (Anzucht/Bloom voll: 100→40 = 60) zu große
-  // Sprünge pro Tag (~30 Punkte), die UI-Stufen überspringen
-  // (Mittel→Sweet Spot ohne Bald dazwischen). Das ist pädagogisch verwirrend
-  // und biophysikalisch falsch — Töpfe trocknen am Anfang schneller (viel
-  // freies Wasser), gegen Ende langsamer (Pflanze zieht weniger weil weniger
-  // verfügbar). Konkave Kurve mit Easing approximiert diesen Verlauf und
-  // durchläuft die 5 UI-Stufen (Voll/Mittel/Bald/Knapp/Trocken) flüssig.
-  //
-  // Formel: t = daysSinceWater / intDays (Anteil des Intervalls)
-  //         eased = 1 - (1 - t)^2  (quadratisches Ease-Out)
-  //         pct = 100 - eased * range
-  //
-  // Beispiel intDays=3, target=40 (range=60):
-  //   Tag 1: t=0.33, eased=0.55 → pct=67 (Mittel)
-  //   Tag 2: t=0.66, eased=0.89 → pct=47 (Bald)
-  //   Tag 3: t=1.00, eased=1.00 → pct=40 (due — fängt der nächste Branch ab)
-  //
-  // Beispiel intDays=3, target=52 (range=48, Sämling-Schonzeit):
-  //   Tag 1: t=0.33, eased=0.55 → pct=74 (Mittel)
-  //   Tag 2: t=0.66, eased=0.89 → pct=57 (Mittel/Bald-Grenze)
-  //   Tag 3: t=1.00 → 52 (due)
-  const t = daysSinceWater / intDays;
-  const eased = 1 - Math.pow(1 - t, 2);
-  const pct = 100 - eased * range;
-  // Auf 5er-Schritte runden, weil der Slider eh in 5er-Schritten arbeitet
+  // Sonst (heute liegt VOR dem Ziel-Gieß-Tag): LINEARE Interpolation von
+  // lastWater (100%) zum Ziel-Gieß-Tag (targetPct). Linear, damit der Verlauf
+  // die UI-Stufen (Voll/Mittel/Bald/Knapp) gleichmäßig durchläuft.
+  // Beispiel (Guss Tag 7, Ziel-Gieß-Tag Tag 10):
+  //   Tag 8: span=3, progress=1/3 → 77% (Mittel)
+  //   Tag 9: span=3, progress=2/3 → 53% (Bald)
+  //   Tag 10: due → 30% (Knapp)
+  // Bei Verschiebung des Gieß-Tags streckt sich daysToTarget automatisch.
+  const span = daysToTarget > 0 ? daysToTarget : intDays;
+  const progress = Math.max(0, Math.min(1, daysSinceWater / span));
+  const pct = 100 - progress * (100 - targetPct);
   const clamped = Math.max(targetPct, Math.min(100, Math.round(pct / 5) * 5));
-
   return {
     pct: clamped,
-    source: 'interval',
+    source: 'interpolated',
     lastWaterIso,
     intervalDays: intDays,
     dayInCycle: daysSinceWater,
     intSource,
-    targetPct,  // für UI-Hinweis
+    targetPct,
   };
 }
 
@@ -19335,7 +20179,16 @@ function extrapolateRestPct(c, targetIso) {
     if (series.length >= 2) {
       // Lineare Regression: dPct/dDay
       const p1 = series[0]; // jüngste Messung
-      const p2 = series[series.length - 1]; // älteste in der Serie
+      // FIX (Mai 2026, v1.1.11): zweitjüngste Messung nehmen, NICHT die älteste
+      // der Serie. Sonst überspannt die Trendlinie mehrere Gieß-Zyklen: liegt
+      // zwischen p1 und der ältesten Messung ein 100%-Guss-Reset, wird die
+      // Trocknungsrate viel zu flach gemittelt.
+      // Beispiel (Patricks Fall): Tag 1 Guss (100%), Tag 4 Guss (100%),
+      // Tag 6 gemessen (70%). Alte Logik mittelte Tag 1 → Tag 6 = 6%/Tag → Tag 7
+      // fälschlich 64% ("Mittel"). Echte aktuelle Rate ist Tag 4 → Tag 6 = 15%/Tag
+      // → Tag 7 = 55% ("Bald"). Die zwei JÜNGSTEN Punkte messen das aktuellste
+      // Trocknungs-Segment statt über alte Zyklen zu glätten.
+      const p2 = series[1];
       const dDays = p2.age - p1.age;
       if (dDays > 0) {
         const dPct = p1.pct - p2.pct;
@@ -19542,18 +20395,14 @@ function getAutoFillTemplate(c, p, a, iso) {
     tpl.water = String(waterMl);
     tpl.ph = '6.4';
 
-    // EC nach Phase + Tag
+    // EC-Vorschlag aus der Gesamt-Wochen-Tabelle (getEcTarget) — konsistent mit dem
+    // Düngeplan und der Spanne-Anzeige im Eintrag. Sämling Tag 1–7 bleibt bei 0
+    // (kein/kaum EC), danach gilt die Tabelle (Wo1 0.5, Wo2 0.8 …).
     if (isSeedling && day <= 7) {
       tpl.ec = '0';
-    } else if (isSeedling) {
-      tpl.ec = '0.4';
-    } else if (ph === 'anzucht') {
-      tpl.ec = (0.8 + Math.min(0.4, (day - 10) * 0.04)).toFixed(1);
-    } else if (ph === 'bloom') {
-      const wk2 = Math.min(week, 8);
-      tpl.ec = Math.min(2.0, 1.4 + wk2 * 0.08).toFixed(1);
     } else {
-      tpl.ec = '1.5';
+      const ecT = (typeof getEcTarget === 'function') ? getEcTarget(c, p, iso) : null;
+      tpl.ec = ecT ? String(ecT.def) : '';
     }
 
     // Restgewicht nach Guss
@@ -19864,7 +20713,13 @@ function saveEntry() {
     const waterCalcEl = document.getElementById('water-calc-' + c.id);
     if (waterCalcEl && waterCalcEl.value) {
       ensE(c.id);
-      S.entries[editISO].cycleData[c.id].water = waterCalcEl.value;
+      // Das Feld zeigt die Menge PRO PFLANZE (data-plants). Wie uEFWater auf das
+      // Total umrechnen — sonst wird der per-Pflanze-Wert fälschlich als Total
+      // gespeichert (z.B. 150 → beim Re-Render 150/5 = 30, "springt runter").
+      const plants = parseInt(waterCalcEl.dataset.plants) || 1;
+      const perPlant = parseFloat(waterCalcEl.value) || 0;
+      const total = plants > 1 ? Math.round(perPlant * plants) : perPlant;
+      S.entries[editISO].cycleData[c.id].water = String(total);
     }
   });
 
@@ -21917,6 +22772,11 @@ const LEXIKON = [
       mechanism: '<b>Mechanische Zeitschaltuhren:</b> Drehscheibe mit Zeit-Markierungen. Wirken günstig (5-10 €), driften aber 1-2 Min pro Tag — über Wochen können sich +/- 30 Min ansammeln. Bei photoperiodischen Pflanzen kritisch: ungewollt verlängerte Lichtphasen können Re-Vegging triggern.<br><br><b>Digitale Smartplugs:</b> Sekundengenau, programmierbar, mit App fernbedienbar. Manche zeichnen Stromverbrauch auf → echte DLI-Berechnung.',
       practice: '<b>Empfohlene Smartplugs:</b><br>• <b>Shelly Plug S</b>: WiFi, ~15-20 €, sehr zuverlässig, Stromverbrauchs-Anzeige<br>• <b>TP-Link Tapo P110</b>: ~12 €, einfache App<br>• <b>Gosund/Meross</b>: günstige Alternative, etwas mehr WiFi-Wartung<br><br><b>Setup-Empfehlungen:</b><br>• <b>Zwei getrennte Timer</b>: einer für Licht, einer für Abluft (wenn Abluft Tag/Nacht-Profil)<br>• Backup: zweiter Timer für Notfall<br>• Smartphone-Reminder: alle 4 Wochen Timer-Drift checken<br><br><b>Bei Sommer/Winterzeit:</b> Smart-Plugs synchronisieren automatisch über WiFi, mechanische müssen manuell umgestellt werden.',
       pitfall: 'Mechanischer Timer fällt aus Steckdose oder verstellt sich → Pflanze plötzlich 18/12 statt 12/12 → Hermie. Smartplug ohne Internet (WiFi-Ausfall) → bleibt im letzten Zustand, was meist OK ist, aber programmierte Änderungen werden nicht ausgeführt. Bei Stromausfall: Smartplugs starten meist „aus" — nach Stromrückkehr Lampe checken!' },
+    { t: 'Sämlings-Haube',
+      brief: 'Transparente Kuppel über jungen Sämlingen — hält 80–95% Luftfeuchte und verhindert dass die winzigen Wurzeln nicht mit der Verdunstung mithalten können.',
+      mechanism: 'Frisch gekeimte Sämlinge haben Wurzeln im <b>Millimeter-Bereich</b> — sie können kaum Wasser aufnehmen. Gleichzeitig verlieren ihre Keimblätter durch <b>Transpiration</b> Wasser, sobald sie Licht sehen. In trockener Raumluft (40–60% RLF) ist der Verlust größer als die Aufnahme → Welken in Stunden.<br><br>Die Haube schließt eine Mikro-Atmosphäre ein, in der die Verdunstung aus dem Substrat die Innenfeuchte auf <b>80–95% RLF</b> hochzieht. Damit fällt der <b>VPD-Druck</b> auf nahe null — die Pflanze kann ihre Stomata offen halten ohne austrocknen, Photosynthese läuft, Wurzeln wachsen aktiv nach unten.<br><br>Nach 7–14 Tagen sind die Wurzeln tief genug um selbst Wasser zu finden. Ab diesem Punkt wird die Haube zur Falle: zu viel Feuchte schwächt den Stamm, weil die Pflanze keine Transpirations-„Übung" mehr macht. Daher schrittweise abgewöhnen.',
+      practice: '<b>Wann nötig?</b><br>• Raumluft &lt; 50% RLF (Winter mit Heizung, Klimaanlage) → <b>dringend empfohlen</b><br>• Raumluft 50–65% RLF → <b>sehr empfehlenswert</b><br>• Raumluft &gt; 65% RLF (z. B. Anzucht-Zelt mit Befeuchter) → optional<br><br><b>Was nehmen?</b><br>• <b>Kauf-Haube</b>: „Humidity Dome" oder „Mini-Greenhouse" — 5–15 €, oft mit Lüftungsschlitzen. Empfehlenswert wegen sauberer Form und Belüftung.<br>• <b>DIY Variante 1</b>: leere 1.5 L PET-Flasche, Boden abschneiden, umgekehrt über den Topf stülpen. Deckel kann auf/ab für Belüftung.<br>• <b>DIY Variante 2</b>: Frischhaltefolie über den Topf, 3–4 kleine Löcher reinstechen.<br>• <b>Größe</b>: hoch genug dass die Pflanze noch 5–10 cm Wachstumsraum hat — sonst neu zuschneiden.<br><br><b>Tag-für-Tag-Anleitung:</b><br>• <b>Tag 1–7</b>: Haube durchgängig drauf. 1× täglich für 2–5 Minuten abheben → Frischluft, Tropfen abwischen.<br>• <b>Tag 8–10</b>: Haube tagsüber 2× für 30 Min abnehmen — Pflanze gewöhnt sich.<br>• <b>Tag 11–14</b>: Haube nur noch nachts (oder bei niedriger RLF), tagsüber ganz weg.<br>• <b>Ab Tag 14</b>: Haube komplett weg. Falls Welken auftritt: noch 2–3 Tage länger Nacht-Haube.<br><br><b>Pflege während die Haube drauf ist:</b><br>• <b>Tropfen-Check</b>: 1× täglich Innenwand abwischen — Tropfen können auf die Keimblätter fallen und durch den Linsen-Effekt unter Licht Verbrennungen erzeugen.<br>• <b>Riech-Test</b>: muffig/erdig = OK, säuerlich/faulig = Pilz-Alarm, sofort lüften und Substrat prüfen.<br>• <b>Lampen-Abstand</b>: durch die Haube weniger Licht-Verluste durch UV-Reflexion, aber auch Wärmestau → Lampe 5–10 cm höher als ohne Haube.<br>• <b>Sprühen drinnen?</b> Bei Haube nicht nötig. Die Innenfeuchte reicht durch die Verdunstung aus dem Topf.',
+      pitfall: 'Klassische Anfänger-Fehler:<br>• <b>Haube zu lange drauf</b> (über Tag 14 hinaus) → Stamm bleibt dünn und biegt sich später unter dem Eigengewicht. Frühzeitig abgewöhnen erzwingt einen kräftigen Stamm.<br>• <b>Nie lüften</b> → Pythium oder Damping-Off (Wurzelfäule, Stängelfäule) → Sämling kippt am Substrat-Übergang um. Einmal pro Tag öffnen ist Pflicht, auch wenn die App keinen Gießtag plant.<br>• <b>Tropfen auf Keimblättern</b> + LED-Licht → kleine „Lupen", verbrennen winzige Punkte. Innenseite trocken halten.<br>• <b>Direkt nach Wegnahme zu trockene Luft</b> → Welk-Schock. Erste 2–3 Tage nach dem endgültigen Abnehmen die Raumfeuchte hochfahren (Befeuchter, nasses Handtuch über die Heizung), nicht abrupt.<br>• <b>Zu kleiner Topf unter der Haube</b> → Wurzel-Raum begrenzt, Pflanze hat in 14 Tagen nichts mehr zum Wachsen. Bei 11 L Stoffttopf: kein Problem, dort ist Platz.' },
     { t: 'Refraktometer (Brix-Messung)',
       brief: 'Misst den Zuckergehalt im Pflanzensaft. Cup-Profis prüfen damit „Pflanzenstärke" und Erntereife.',
       mechanism: 'Das <b>Refraktometer</b> misst den <b>Brechungsindex</b> einer Flüssigkeit. Mehr gelöste Stoffe (Zucker, Mineralsalze, Aminosäuren) = stärkere Lichtbrechung = höherer <b>Brix-Wert</b> (Skala 0-30). Bei Pflanzen wird das aus dem <b>Pflanzensaft</b> (durch Ausdrücken eines Blattes) gemessen. Hohe Brix-Werte zeigen: Pflanze hat viele Reserven, Photosynthese läuft optimal, Schädlingsdruck wird besser abgewehrt.',
@@ -24293,7 +25153,7 @@ const TOUR_ONBOARDING = {
       target: '#scr-set.active .topbar',
       arrow: 'top',
       title: '⚙️ Einstellungen',
-      body: 'Hier legst du neue Zyklen an, wählst deinen Düngeplan (Master, Light oder Official), konfigurierst Phasendauern, und kannst deine Daten exportieren/importieren. Oben siehst du Undo/Redo falls du etwas versehentlich änderst.',
+      body: 'Hier legst du neue Zyklen an, wählst einen von mehreren fertigen Düngeplänen (vom Einsteiger-Plan bis zum Cup-Sieger), konfigurierst Phasendauern, und kannst deine Daten exportieren/importieren. Sobald du etwas änderst, taucht oben ein "💾 Sichern"-Knopf auf — daneben Rückgängig/Wiederholen, falls du dich mal vertippst.',
     },
     {
       tab: 'set',
@@ -24395,7 +25255,7 @@ const TOUR_ENTRY = {
     },
     {
       title: '✅ Das war\'s schon',
-      body: 'Im Eintrag selbst findest du Wasser-Menge, pH, EC, Temperatur, Luftfeuchte, Dünger und ein Notizfeld. An Gießtagen gibt es den ✨-Button oben der alle Werte automatisch nach Plan ausfüllt. Einfach mal ausprobieren.',
+      body: 'Im Eintrag selbst findest du Wasser-Menge, pH, EC, Temperatur, Luftfeuchte, Dünger und ein Notizfeld. An Gießtagen gibt es den grünen Knopf "✨ Tag automatisch ausfüllen" (gleich bei der Gieß-Empfehlung) — der belegt alle Werte nach Plan vor, du passt nur noch an was abweicht. Einfach mal ausprobieren.',
     },
   ],
 };
@@ -24472,7 +25332,7 @@ const TOUR_CREATE_CYCLE = {
     {
       tab: 'set',
       title: '🧪 Nächster Schritt: Düngeplan',
-      body: 'Wenn du weiter scrollst kommst du zum Bereich "🧪 Dünger & Wochenplan". Dort wählst du einen der drei BioBizz-Pläne (Master für Premium, Light für Einsteiger, Official als Herstellerplan). Das machst du nach der Tour.',
+      body: 'Wenn du weiter scrollst kommst du zum Bereich "🧪 Dünger & Wochenplan". Dort wählst du einen fertigen Plan — es gibt mehrere: vom einfachen Einsteiger-Plan (BioBizz Light) über die Hersteller-Variante (Official) bis zum durchgetüftelten Cup-Sieger-Plan. Als Anfänger nimmst du am besten Light oder den konservativen Plan — da kann am wenigsten schiefgehen. Das machst du nach der Tour.',
     },
     {
       tab: 'set',
@@ -24551,6 +25411,13 @@ const TOUR_FEATURES = {
       arrow: 'top',
       title: '⚡ Schnell- vs. Profi-Modus im Tageseintrag',
       body: 'Wenn du einen Tageseintrag öffnest, siehst du oben rechts einen Toggle "Mehr Felder" / "Weniger Felder". Im Schnell-Modus blendet die App Drain/Runoff und Trichome aus — nur die wesentlichen Felder bleiben. Profi-Modus zeigt alles. Wechsle je nach Lust und Erfahrung.',
+    },
+    {
+      tab: 'dash',
+      target: '#scr-dash.active .scroll',
+      arrow: 'top',
+      title: '💧 Düngen oder nur Wasser',
+      body: 'Standardmäßig bekommt jeder Guss Dünger. Du kannst aber pro Zyklus "Wasser-Tage" anschalten (in den Zyklus-Einstellungen). Dann hast du im Tageseintrag einen Umschalter 🌿 Düngen / 💧 Nur Wasser. An einem Wasser-Tag gibt es nur klares Wasser plus die paar Erhaltungs-Mittel die du dafür freigibst (z.B. CalMag) — die Hauptdünger pausieren. Das wäscht überschüssige Salze aus der Erde und hält die Wurzeln gesund. Viele Premium-Pläne arbeiten mit so einem Wechsel aus Dünge- und Wasser-Tagen.',
     },
     {
       tab: 'set',
