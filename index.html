@@ -3341,6 +3341,16 @@ const FERT_PRESETS = {
           "11": {},
           "12": {}
       },
+      // FEED/WATER-RHYTHMUS pro Woche (F = voller Feed, W = nur Wasser+CalMag/Aloe).
+      // V3.2-Plan: Wo1 alle Mini-Feeds, Wo2-3 F-F-W, Wo4-9 F-W-F, Wo10 W-F-W,
+      // Wo11 nur Wasser, Wo12 Iceflush (kein normaler Guss). Position wird DURCHGEHEND
+      // über den Zyklus gezählt (siehe getFeedWaterType). Pläne ohne dieses Feld
+      // verhalten sich wie bisher (jeder Gießtag = voller Feed).
+      feedWaterRhythm: {
+        '1': 'F', '2': 'FFW', '3': 'FFW',
+        '4': 'FWF', '5': 'FWF', '6': 'FWF', '7': 'FWF', '8': 'FWF', '9': 'FWF',
+        '10': 'WFW', '11': 'W', '12': '-'
+      },
     },
 };
 
@@ -3864,7 +3874,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.1.35';
+const APP_VERSION = 'v1.1.41';
 let S = {
   cycles: [], entries: {}, products: [], weekSchedule: {},
   potSize: 11, presetKey: null, mixOrder: null, mixInfo: null,
@@ -4810,6 +4820,23 @@ function loadS() {
     S._v32SchedMigrated2 = true;
     if (typeof syncActivePlanToGlobals === 'function') syncActivePlanToGlobals();
   }
+
+  // FEED/WATER-RHYTHMUS (v1.1.36, einmalig): bestehenden Cup-Sieger-Plänen den
+  // V3.2-Rhythmus nachtragen, damit die App automatisch Feed- vs Wasser-Tage erkennt.
+  // Idempotent über _feedWaterRhythmMigrated. Nur cup_sieger; andere Pläne unberührt.
+  if (!S._feedWaterRhythmMigrated) {
+    const RHYTHM = {
+      '1': 'F', '2': 'FFW', '3': 'FFW',
+      '4': 'FWF', '5': 'FWF', '6': 'FWF', '7': 'FWF', '8': 'FWF', '9': 'FWF',
+      '10': 'WFW', '11': 'W', '12': '-'
+    };
+    (S.fertPlans || []).forEach(plan => {
+      if (plan.presetKey === 'cup_sieger' && !plan.feedWaterRhythm) {
+        plan.feedWaterRhythm = { ...RHYTHM };
+      }
+    });
+    S._feedWaterRhythmMigrated = true;
+  }
 }
 
 /**
@@ -4821,6 +4848,100 @@ function getPlanForCycle(cycOrId) {
   const c = typeof cycOrId === 'string' ? S.cycles.find(x => x.id === cycOrId) : cycOrId;
   if (!c || !c.fertPlanId) return null;
   return S.fertPlans.find(p => p.id === c.fertPlanId) || null;
+}
+
+/**
+ * Zählt die normalen Düngerguss-Tage (giess/giess_anz) im Zyklus VOR einem Datum
+ * (exklusiv). Ergibt den 0-basierten fortlaufenden Index des heutigen Gusses —
+ * Basis für den DURCHGEHEND gezählten Feed/Water-Rhythmus.
+ */
+/**
+ * Topfgröße (Liter) für einen Zyklus. Bevorzugt das pro-Zyklus-Feld c.potSize,
+ * fällt sonst auf die globale App-Einstellung S.potSize (Standard 11 L) zurück.
+ * So können parallele Zyklen unterschiedliche Topfgrößen haben, ohne dass alte
+ * Zyklen ohne eigenes Feld ihr Verhalten ändern (kein Migrations-Bedarf).
+ */
+function getPotSize(c) {
+  const v = c && c.potSize;
+  return (v && v > 0) ? v : (S.potSize || 11);
+}
+
+// Cache für feedWaterGussIndex: Schlüssel cycleId|iso. Der Index hängt nur von
+// Dingen ab, die sich über eine State-Mutation ändern (Gießtage, Verschiebungen,
+// Topping) — der Cache wird daher in saveS() geleert (clearFeedWaterCache). Innerhalb
+// eines Renders teilen sich alle Aufrufe (z.B. Anzeige + Auto-Fill) dasselbe Ergebnis,
+// statt jeweils erneut über den ganzen Verlauf zu iterieren.
+let _fwGussIdxCache = {};
+function clearFeedWaterCache() { _fwGussIdxCache = {}; }
+function feedWaterGussIndex(c, iso) {
+  if (!c || !c.startDate) return 0;
+  const key = c.id + '|' + iso;
+  if (_fwGussIdxCache[key] !== undefined) return _fwGussIdxCache[key];
+  let idx = 0, d = c.startDate, guard = 0;
+  while (d < iso && guard < 400) {
+    const a = getAction(d, c);
+    if (a === 'giess' || a === 'giess_anz') idx++;
+    d = isoPlus(d, 1);
+    guard++;
+  }
+  _fwGussIdxCache[key] = idx;
+  return idx;
+}
+
+/**
+ * Entscheidet ob ein Gießtag ein voller Feed oder ein reiner Wasser-Tag ist —
+ * nach dem feedWaterRhythm des zugehörigen Plans. Die Position wird DURCHGEHEND
+ * über den Zyklus gezählt (nicht pro Woche zurückgesetzt).
+ * @returns {'feed'|'water'|null} null = kein Rhythmus hinterlegt oder kein
+ *   normaler Gießtag → Verhalten wie bisher (voller Feed).
+ */
+function getFeedWaterType(c, p, iso) {
+  if (!c || !p) return null;
+  const plan = getPlanForCycle(c);
+  if (!plan || !plan.feedWaterRhythm) return null;
+  const a = getAction(iso, c);
+  if (a !== 'giess' && a !== 'giess_anz') return null;  // nur normale Düngergüsse
+  // TOPPING-REGEL: am Topping-Tag und beim ersten Guss nach der Topping-Pause gießt
+  // man nur Wasser — kein Dünger-Stress direkt vor/nach dem Schnitt (V3.2: "48h danach
+  // nur Wasser"). Gewinnt über den Rhythmus. Die Pausentage dazwischen sind ohnehin
+  // gießfrei (getAction=null, oben schon raus).
+  if (c.toppingDate) {
+    const sinceTop = isoDiff(iso, c.toppingDate);
+    if (sinceTop === 0) return 'water';                   // Topping-Tag selbst
+    const pause = c.toppingPause || 2;
+    if (sinceTop > pause && sinceTop <= pause + 14) {
+      // Ist iso der erste Gießtag seit dem Topping (nach der Pause)? Dann Erholungs-Wasser.
+      let firstAfter = true;
+      for (let s = pause + 1; s < sinceTop; s++) {
+        const aa = getAction(isoPlus(c.toppingDate, s), c);
+        if (aa === 'giess' || aa === 'giess_anz') { firstAfter = false; break; }
+      }
+      if (firstAfter) return 'water';
+    }
+  }
+  // Gesamt-Woche bestimmen (identisch zur Düngeplan-/EC-Logik)
+  let wk;
+  if (p.ph === 'flush') wk = 11;
+  else if (p.ph === 'ice') wk = 12;
+  else if (p.ph === 'harvest' || p.ph === 'dry') return null;
+  else { const td = isoDiff(iso, c.startDate); wk = Math.max(1, Math.min(Math.floor(td / 7) + 1, 10)); }
+  const pattern = plan.feedWaterRhythm[String(wk)];
+  if (!pattern || pattern === '-') return null;
+  const idx = feedWaterGussIndex(c, iso);
+  const ch = pattern[idx % pattern.length];
+  return ch === 'W' ? 'water' : 'feed';
+}
+
+/**
+ * Effektiver Feed/Water-Typ eines Tages inkl. manuellem Override. Der Toggle
+ * (cd.waterOnly true/false) gewinnt immer; ist nichts gesetzt (undefined), gilt
+ * der automatische Rhythmus aus getFeedWaterType.
+ * @returns {'feed'|'water'|null}
+ */
+function getFeedWaterEffective(c, p, iso, cd) {
+  if (cd && cd.waterOnly === true) return 'water';
+  if (cd && cd.waterOnly === false) return 'feed';
+  return getFeedWaterType(c, p, iso);
 }
 
 /**
@@ -4899,6 +5020,8 @@ function syncGlobalsToActivePlan() {
 
 function saveS() {
   try {
+    // Feed/Water-Guss-Index-Cache verwerfen — der State ändert sich gleich.
+    if (typeof clearFeedWaterCache === 'function') clearFeedWaterCache();
     // Sync: legacy global fields → active plan (plan is source of truth)
     syncGlobalsToActivePlan();
     // Consolidate offsetHistory (only when needed)
@@ -7335,7 +7458,14 @@ function getAction(iso, c) {
       // (dayInPhase < iv). In der Mitte von Bloom ist dayInPhase die natürliche
       // Fortsetzung — der theoretische Anzucht-Anker würde dort einen versetzten
       // Rhythmus erzeugen.
-      if (lastGussDiff < 0 && dayInPhase < iv) {
+      // ANKER 3: Theoretischer letzter Anzucht-Action-Tag als DURCHGEHENDER Anker.
+      // FRÜHER nur am Phasenstart (dayInPhase < iv) — das erzeugte am Übergang einen
+      // Doppel-Guss: Bei dayInPhase >= iv fiel es auf dayInPhase zurück, dessen Raster
+      // (ab Bloom-Start) um 1 Tag gegen das Anzucht-Raster (ab letztem Anzucht-Guss)
+      // versetzt ist → zwei Güsse mit 1 Tag Abstand (z.B. diff 23 + 24). Jetzt zählt
+      // die Blüte durchgehend vom letzten Anzucht-Guss weiter (23, 26, 29 …) — ein
+      // sauberer, lückenloser Rhythmus ohne Dopplung.
+      if (lastGussDiff < 0) {
         const intA = getInt(c, 'anzucht');
         const useSatProto = (c.startMethod || 'saturated') === 'saturated';
         const anzAnchorStart = useSatProto ? 8 : 0;
@@ -8275,7 +8405,7 @@ function waterSuggestion(c, p, iso) {
 
 // Interne rohe Empfehlung ohne Personalisierung — Basis für Personalisierungs-Berechnung
 function _waterSuggestionRaw(c, p) {
-  const pot = S.potSize || 11;
+  const pot = getPotSize(c);
   const scale = pot / 11; // Skalierungsfaktor relativ zu 11L
   // Outdoor-Pflanzen haben mehr Blattmasse + Sonne/Wind = mehr Verdunstung.
   // Empirisch (Foren-Berichte): 30L-Topf mit 1,4m Pflanze verbraucht an heißen Tagen
@@ -9715,7 +9845,7 @@ function plainSentence(action, c, p, waterMl) {
 function getTodayAction(c, p, a, iso) {
   if (!p) return null;
   const cl = col(c);
-  const pot = S.potSize || 11;
+  const pot = getPotSize(c);
   const waterMl = waterSuggestion(c, p, iso);
   const iv = getInt(c, p.ph);
 
@@ -13017,6 +13147,16 @@ function renderSet() {
           <div style="font-size:10px;color:var(--text-hint);line-height:1.45;padding:0 4px 4px">${d.scaleByPlants !== false
             ? `<b style="color:var(--green)">Aktiv:</b> Wassermenge wird automatisch ×${d.plantCount || 1} gerechnet. Düngerdosen folgen mit (weil sie pro Liter Wasser sind). Beispiel: 50 ml/Pflanze × ${d.plantCount || 1} = ${50 * (parseInt(d.plantCount) || 1)} ml total.`
             : `<b style="color:var(--text-muted)">Aus:</b> Vorschläge bleiben pro Pflanze — du rechnest die Gesamtmenge selbst.`}</div>
+
+          <!-- GRUPPE: Topfgröße pro Zyklus (überschreibt den App-Standard) -->
+          <div class="sub-head" style="margin-top:8px">🪴 Topfgröße</div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <button onclick="_setScrollY=document.getElementById('set-body').scrollTop;dd('potSize',Math.max(1,(parseFloat(draft.potSize)||${S.potSize || 11})-1));renderSet()" style="width:44px;height:44px;border-radius:8px;background:var(--card2);border:0.5px solid var(--border);color:var(--text);font-size:18px;cursor:pointer;font-family:var(--mono)">−</button>
+            <input type="number" min="1" max="100" step="0.5" value="${d.potSize || S.potSize || 11}" oninput="dd('potSize',Math.max(1,parseFloat(this.value)||${S.potSize || 11}))" onchange="_setScrollY=document.getElementById('set-body').scrollTop;renderSet()" style="flex:1;text-align:center;background:var(--card2);border:0.5px solid var(--border);border-radius:8px;padding:8px;color:var(--text);font-size:18px;font-weight:600;font-family:var(--mono);outline:none"/>
+            <button onclick="_setScrollY=document.getElementById('set-body').scrollTop;dd('potSize',Math.min(100,(parseFloat(draft.potSize)||${S.potSize || 11})+1));renderSet()" style="width:44px;height:44px;border-radius:8px;background:var(--card2);border:0.5px solid var(--border);color:var(--text);font-size:18px;cursor:pointer;font-family:var(--mono)">+</button>
+            <span style="font-size:12px;color:var(--text-muted);min-width:60px">Liter</span>
+          </div>
+          <div style="font-size:10px;color:var(--text-hint);line-height:1.45;padding:4px 4px 0">Bestimmt die Gießmengen und den Hebe-Test für <b>diesen</b> Zyklus. Hast du mehrere Zyklen in unterschiedlich großen Töpfen, kannst du das hier pro Zyklus einstellen. Standard kommt aus den App-Einstellungen (${S.potSize || 11} L).</div>
 
           <label style="display:flex;align-items:center;gap:8px;padding:8px 4px;cursor:pointer;font-size:12px;color:var(--text-sub)">
             <input type="checkbox" ${d.useWaterDays ? 'checked' : ''} onchange="_setScrollY=document.getElementById('set-body').scrollTop;dd('useWaterDays',this.checked);renderSet()" style="width:16px;height:16px;cursor:pointer"/>
@@ -16402,7 +16542,7 @@ function exportReportPDF(cId) {
   <div class="meta-box"><div class="meta-label">Dauer bisher</div><div class="meta-val">${totalDays} Tage</div></div>
   <div class="meta-box"><div class="meta-label">Phase heute</div><div class="meta-val">${p ? PN[p.ph] + ' · Tag ' + p.day : '—'}</div></div>
   <div class="meta-box"><div class="meta-label">Typ</div><div class="meta-val">${c.growType === 'outdoor' ? '☀️ Outdoor' : '🏠 Indoor'} · ${c.seedType === 'auto' ? '⚡ Auto' : c.seedType === 'fem' ? '♀ Fem' : '♀♂ Reg'}</div></div>
-  <div class="meta-box"><div class="meta-label">Topfgröße</div><div class="meta-val">${S.potSize || 11} L</div></div>
+  <div class="meta-box"><div class="meta-label">Topfgröße</div><div class="meta-val">${getPotSize(c)} L</div></div>
   ${harvestBlock}
 </div>
 
@@ -16953,7 +17093,7 @@ function exportDiary() {
     md += `- **Phasen:** Anzucht ${c.anzuchtDays||PHASE_DEFAULTS.anzuchtDays}d → Blüte ${c.bloomDays||PHASE_DEFAULTS.bloomDays}d → Spülen ${c.flushDays||PHASE_DEFAULTS.flushDays}d → Ice ${c.iceDays||PHASE_DEFAULTS.iceDays}d\n`;
     if (S.presetKey) md += `- **Düngeplan:** ${getPreset(S.presetKey)?.name || S.presetKey}\n`;
     else if ((S.products || []).length > 0) md += `- **Düngeplan:** ✨ Eigener Plan · ${S.products.length} Produkte\n`;
-    md += `- **Topfgröße:** ${S.potSize || 11}L\n\n`;
+    md += `- **Topfgröße:** ${getPotSize(c)}L\n\n`;
 
     // Entries sorted by date
     const dates = Object.keys(S.entries).filter(d => S.entries[d]?.cycleData?.[c.id]).sort();
@@ -17407,7 +17547,13 @@ function renderEntry(iso) {
     // markiert, kommen statt der vollen Wochendosis nur die konstanten Wasser-Tag-
     // Dosen ins Wasser (Erhaltungs-Rezeptur, z.B. CalMag + Aloe niedrig). Produkte
     // ohne Wasser-Tag-Dosis fallen automatisch weg — das hält Salze/EC niedrig.
-    const isMaintWatering = c.useWaterDays && cd.waterOnly;
+    // Quelle der Wahrheit ist jetzt getFeedWaterEffective: automatischer Rhythmus
+    // (falls Plan einen hat) ODER manueller Toggle-Override. Greift auch ohne das
+    // alte useWaterDays-Flag, sobald der Plan einen feedWaterRhythm trägt.
+    const _fwPlan = getPlanForCycle(c);
+    const _hasRhythm = !!(_fwPlan && _fwPlan.feedWaterRhythm);
+    const fwType = getFeedWaterEffective(c, p, iso, cd);
+    const isMaintWatering = (_hasRhythm || c.useWaterDays) && fwType === 'water';
     let doses;
     if (isMaintWatering) {
       doses = {};
@@ -17492,7 +17638,7 @@ function renderEntry(iso) {
               a === 'trocknen' ? '🍂 Trocknung' :
               `· ${a}`  // fallback: kein Mystery-"Trocknung" mehr
             }</div>
-            ${isWaterDay && a !== 'ice' ? `<div style="font-size:11px;color:var(--text-muted)">Vorschlag: ~${waterSug} ml · Topf ${S.potSize || 11}L · ${getInt(c, p?.ph || 'bloom')}d Intervall</div>` : ''}
+            ${isWaterDay && a !== 'ice' ? `<div style="font-size:11px;color:var(--text-muted)">Vorschlag: ~${waterSug} ml · Topf ${getPotSize(c)}L · ${getInt(c, p?.ph || 'bloom')}d Intervall</div>` : ''}
             ${a === 'ice' ? `<div style="font-size:11px;color:var(--text-muted);line-height:1.4;margin-top:2px">~1 L Crushed Ice pro Topf am RAND verteilen (nicht Mitte). Schmilzt zu ~${waterSug} ml. 4–6h schmelzen, dann Licht AUS.</div>` : ''}
             ${a === 'sprueh' ? `<div style="font-size:11px;color:var(--text-muted);line-height:1.4;margin-top:2px">3–5 Sprühstöße auf die Oberfläche, sobald obere 1–2 cm trocken wirken.</div>` : ''}
             ${a === 'saettigung' ? `<div style="font-size:11px;color:var(--text-muted);line-height:1.4;margin-top:2px">3 Etappen je ~250 ml mit 15 min Pause. CalMag + leichte Bio-Heaven, kein Bio-Grow.</div>` : ''}
@@ -17668,7 +17814,7 @@ function renderEntry(iso) {
       const waterAmt = parseFloat(savedWater) || waterSug;
 
       const drainMl = Math.round(waterSug * 0.1);
-      const pot = S.potSize || 11;
+      const pot = getPotSize(c);
       const iv = getInt(c, p?.ph || 'bloom');
       const growDay = p?.day || 1;
       const showDrain = growDay >= 25 || p?.ph === 'flush' || p?.ph === 'ice'; // Drain erst ab Vollsättigung
@@ -18009,7 +18155,7 @@ function renderEntry(iso) {
           <span style="font-size:18px">🌱</span>
           <div style="flex:1;min-width:0">
             <div style="font-size:11px;color:var(--text-sub);line-height:1.3">Berechnet für <b style="color:var(--green)">${effPlants}</b> Pflanze${effPlants===1?'':'n'}</div>
-            <div class="plant-badge-total" data-cycle="${c.id}" data-plants="${effPlants}" style="font-size:14px;color:var(--green);font-weight:700;font-family:var(--mono);line-height:1.2;margin-top:2px">≈ ${totalWater} ml total <span style="font-size:10px;color:var(--text-muted);font-weight:400">(${Math.round(totalWater/effPlants)} ml/Pflanze)</span></div>
+            <div class="plant-badge-total" data-cycle="${c.id}" data-plants="${effPlants}" style="font-size:14px;color:var(--green);font-weight:700;font-family:var(--mono);line-height:1.25;margin-top:2px">≈ ${Math.round(totalWater/effPlants)} ml/Pflanze<span style="display:block;font-size:13px;color:var(--text-sub);font-weight:600;margin-top:2px">= ${totalWater} ml gesamt</span></div>
           </div>
           <button onclick="stepPlantCount('${c.id}','${iso}',-1)" style="width:28px;height:28px;border-radius:7px;background:var(--card2);border:0.5px solid var(--border);color:var(--text);font-size:14px;cursor:pointer;font-family:var(--mono);display:flex;align-items:center;justify-content:center;flex-shrink:0">−</button>
           <button onclick="stepPlantCount('${c.id}','${iso}',1)" style="width:28px;height:28px;border-radius:7px;background:var(--card2);border:0.5px solid var(--border);color:var(--text);font-size:14px;cursor:pointer;font-family:var(--mono);display:flex;align-items:center;justify-content:center;flex-shrink:0">+</button>
@@ -18042,7 +18188,7 @@ function renderEntry(iso) {
         </div>`;
       } else if (isIceFlushTodayWD) {
         // IceFlush-Tag: kompakte Eis-Mengen-Box (Anleitung steht schon im Panel oben)
-        const icePerPotMl = Math.round((S.potSize || 11) / 11 * 1000);
+        const icePerPotMl = Math.round((getPotSize(c)) / 11 * 1000);
         waterDayHint = `<div style="background:rgba(165,243,252,0.06);border:0.5px solid rgba(165,243,252,0.3);border-radius:10px;padding:10px 12px">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
             <span style="font-size:14px">🧊</span>
@@ -18318,15 +18464,24 @@ function renderEntry(iso) {
             </div>`
           : '';
 
-        // WASSER-TAG-UMSCHALTER: nur wenn der Zyklus Wasser-Tage nutzt und es ein
-        // Gießtag ist. Lässt den User pro Guss bewusst zwischen voller Düngung und
-        // reiner Erhaltungs-Gabe wählen.
-        const waterDayToggle = (c.useWaterDays && isWaterDay && a !== 'ice') ? `
+        // FEED/WASSER-UMSCHALTER: erscheint bei Rhythmus-Plänen ODER wenn der Zyklus
+        // das alte Wasser-Tage-Flag nutzt — sofern es ein Gießtag ist. Zeigt den
+        // automatischen Plan-Vorschlag und lässt den User pro Guss bewusst zwischen
+        // voller Düngung und reiner Erhaltungs-Gabe wählen (Override gewinnt).
+        const _fwAuto = getFeedWaterType(c, p, iso);            // reiner Plan-Vorschlag
+        const _fwOverridden = cd.waterOnly !== undefined && _fwAuto !== null &&
+                              (cd.waterOnly ? 'water' : 'feed') !== _fwAuto;
+        const _fwAutoLabel = _fwAuto === 'water' ? '💧 nur Wasser'
+                           : (_fwAuto === 'feed' ? '🌿 Feed (voller Dünger)' : null);
+        const _fwFeedActive = fwType === 'feed';
+        const _fwWaterActive = fwType === 'water';
+        const waterDayToggle = ((_hasRhythm || c.useWaterDays) && isWaterDay && a !== 'ice') ? `
+          ${(_hasRhythm && _fwAutoLabel) ? `<div style="font-size:10px;color:var(--text-hint);margin-bottom:6px;padding:0 2px;line-height:1.4">📋 <b>Plan empfiehlt heute:</b> ${_fwAutoLabel}${_fwOverridden ? ' <span style="color:var(--orange)">· von dir geändert</span>' : ''}</div>` : ''}
           <div style="display:flex;gap:6px;margin-bottom:8px">
-            <button onclick="setWaterOnly('${c.id}','${iso}',false)" style="flex:1;padding:10px;border-radius:9px;border:1px solid ${!cd.waterOnly ? 'var(--green)' : 'var(--border)'};background:${!cd.waterOnly ? 'var(--green-bg)' : 'var(--surface)'};color:${!cd.waterOnly ? 'var(--green)' : 'var(--text-sub)'};font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font)">🌿 Düngen</button>
-            <button onclick="setWaterOnly('${c.id}','${iso}',true)" style="flex:1;padding:10px;border-radius:9px;border:1px solid ${cd.waterOnly ? 'var(--blue)' : 'var(--border)'};background:${cd.waterOnly ? 'rgba(90,171,240,0.12)' : 'var(--surface)'};color:${cd.waterOnly ? 'var(--blue)' : 'var(--text-sub)'};font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font)">💧 Nur Wasser</button>
+            <button onclick="setWaterOnly('${c.id}','${iso}',false)" style="flex:1;padding:10px;border-radius:9px;border:1px solid ${_fwFeedActive ? 'var(--green)' : 'var(--border)'};background:${_fwFeedActive ? 'var(--green-bg)' : 'var(--surface)'};color:${_fwFeedActive ? 'var(--green)' : 'var(--text-sub)'};font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font)">🌿 Düngen</button>
+            <button onclick="setWaterOnly('${c.id}','${iso}',true)" style="flex:1;padding:10px;border-radius:9px;border:1px solid ${_fwWaterActive ? 'var(--blue)' : 'var(--border)'};background:${_fwWaterActive ? 'rgba(90,171,240,0.12)' : 'var(--surface)'};color:${_fwWaterActive ? 'var(--blue)' : 'var(--text-sub)'};font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font)">💧 Nur Wasser</button>
           </div>
-          ${cd.waterOnly ? `<div style="font-size:10px;color:var(--text-hint);line-height:1.45;margin-bottom:8px;padding:0 2px">💧 <b style="color:var(--blue)">Wasser-Tag:</b> Nur die Erhaltungs-Dosen unten (z.B. CalMag + Aloe). Die Hauptdünger pausieren heute — das wäscht überschüssige Salze aus und hält die Wurzelzone gesund.</div>` : ''}
+          ${_fwWaterActive ? `<div style="font-size:10px;color:var(--text-hint);line-height:1.45;margin-bottom:8px;padding:0 2px">💧 <b style="color:var(--blue)">Wasser-Tag:</b> Nur die Erhaltungs-Dosen unten (z.B. CalMag + Aloe). Die Hauptdünger pausieren heute — das wäscht überschüssige Salze aus und hält die Wurzelzone gesund.</div>` : ''}
         ` : '';
 
         nutSection = `${waterDayToggle}${waterInput}
@@ -18661,7 +18816,7 @@ function renderEntry(iso) {
             ? (p.day <= 6
                 ? 'Keimphase: Sprühflasche oder ganz feiner Strahl. Erde nur feucht halten, nicht nass.'
                 : 'Junger Sämling: feine Gießkanne mit dünnem Strahl, im Ring um die Pflanze (für diese Menge keine Sprühflasche). Erde feucht, nicht nass.')
-            : `Topf ${S.potSize || 11}L · ${getInt(c, p?.ph || 'bloom')}d Intervall · biophysikalische Empfehlung`}
+            : `Topf ${getPotSize(c)}L · ${getInt(c, p?.ph || 'bloom')}d Intervall · biophysikalische Empfehlung`}
         </div>
       </div>` : '';
       // Auto-Ausfüllen-Button: dezenter formuliert weil's nicht der geplante Tag ist
@@ -19127,13 +19282,12 @@ function updateCalc(cId, wk) {
     }
   });
 
-  // Plant-Badge Total-Wassermenge live aktualisieren — bei 6 Pflanzen × 50 ml/Pflanze = 300 ml.
-  // Wenn der User aber die Gießmenge auf 100 ml ändert, soll der Badge auf 100 ml total gehen
-  // und "(17 ml/Pflanze)" als Aufschlüsselung zeigen.
+  // Plant-Badge live aktualisieren: pro Pflanze prominent (so denkt der User),
+  // die Gesamtmenge gut lesbar auf eigener Zeile darunter (leicht zu erfassen).
   document.querySelectorAll(`.plant-badge-total[data-cycle="${cId}"]`).forEach(el => {
     const plants = parseInt(el.dataset.plants) || 1;
     const perPlant = Math.round(ml / plants);
-    el.innerHTML = `≈ ${Math.round(ml)} ml total <span style="font-size:10px;color:var(--text-muted);font-weight:400">(${perPlant} ml/Pflanze)</span>`;
+    el.innerHTML = `≈ ${perPlant} ml/Pflanze<span style="display:block;font-size:13px;color:var(--text-sub);font-weight:600;margin-top:2px">= ${Math.round(ml)} ml gesamt</span>`;
   });
 
   // Gieß-Guide live mitziehen: angezeigte Wassermenge und Drain (10% Regel) anpassen.
@@ -19469,7 +19623,7 @@ function getLiftFeelForPct(pct) {
  */
 function _renderIceFlushPanel(c, iso) {
   if (!c || !iso) return '';
-  const pot = S.potSize || 11;
+  const pot = getPotSize(c);
   const plants = (typeof getEffectivePlantCount === 'function') ? getEffectivePlantCount(c, iso) : (c.plantCount || 1);
   const icePerPot = Math.round(pot / 11 * 1000);  // 1L für 11L-Topf
   const cd = S.entries?.[iso]?.cycleData?.[c.id] || {};
@@ -20417,6 +20571,27 @@ function getAutoFillTemplate(c, p, a, iso) {
     if (isSeedling && day <= 7) {
       tpl.doses = {};
       tpl._allDosesZero = true;
+    }
+
+    // FEED/WATER-RHYTHMUS: an automatischen (oder manuell gesetzten) Wasser-Tagen nur
+    // die Erhaltungs-Dosen (waterDayDose, z.B. CalMag + Aloe) + niedriger Wasser-Tag-EC.
+    // Sämling Tag 1–7 bleibt unberührt. Greift bei Plänen mit feedWaterRhythm ODER
+    // aktivem useWaterDays-Flag; ein manueller Toggle (cd.waterOnly) gewinnt.
+    if (!(isSeedling && day <= 7)) {
+      const _afPlan = getPlanForCycle(c);
+      const _afHasRhythm = !!(_afPlan && _afPlan.feedWaterRhythm);
+      const _afCd = (S.entries[iso] && S.entries[iso].cycleData && S.entries[iso].cycleData[c.id]) || {};
+      const _afType = getFeedWaterEffective(c, p, iso, _afCd);
+      if ((_afHasRhythm || c.useWaterDays) && _afType === 'water') {
+        const wDoses = {};
+        (S.products || []).forEach(pr => {
+          const wd = parseFloat(pr.waterDayDose);
+          if (wd > 0) wDoses[pr.id] = wd;
+        });
+        tpl.doses = wDoses;
+        if (typeof EC_WATERDAY !== 'undefined') tpl.ec = String(EC_WATERDAY.def);
+        tpl._waterDay = true;
+      }
     }
 
     // Notiz-Vorschlag
