@@ -3874,7 +3874,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.1.41';
+const APP_VERSION = 'v1.1.42';
 let S = {
   cycles: [], entries: {}, products: [], weekSchedule: {},
   potSize: 11, presetKey: null, mixOrder: null, mixInfo: null,
@@ -24764,7 +24764,7 @@ function stopPPFD() {
 const _perfStart = performance.now();
 function _perfMark(label) {
   const ms = (performance.now() - _perfStart).toFixed(0);
-  if (typeof console !== 'undefined') console.log(`[perf] ${label}: ${ms}ms`);
+  // Perf-Logging in die Konsole bewusst deaktiviert (war nur für die Entwicklung).
   return ms;
 }
 loadS();
