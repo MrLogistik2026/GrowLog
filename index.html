@@ -905,6 +905,16 @@ body.beginner .advanced-ctl { display: none !important; }
     <div class="scroll" id="howto-body"></div>
   </div>
 
+  <!-- Gieß-Fahrplan (Gießmap) -->
+  <div class="screen" id="scr-gussplan">
+    <div class="topbar" style="padding-top:max(12px,env(safe-area-inset-top))">
+      <button class="icon-btn" onclick="goTo('duenger')" style="font-size:20px">←</button>
+      <span class="app-title">💧 Gieß-Fahrplan</span>
+      <div></div>
+    </div>
+    <div class="scroll" id="gussplan-body"></div>
+  </div>
+
   <!-- Foto-Galerie -->
   <div class="screen" id="scr-gallery">
     <div class="topbar" style="padding-top:max(12px,env(safe-area-inset-top))">
@@ -3182,8 +3192,8 @@ const FERT_PRESETS = {
       bloomDaysHint: 49,
       mixOrder: ['Silica Force', 'CalMag', 'Bio-Grow', 'Bio-Bloom', 'GiDeli MKP', 'Epsom Salz',
                  'POWHUMUS (Konz.A)', 'Advanced Amino',
-                 'Alfa Boost', 'Aloe Konzentrat B', 'Mykorrhiza HomeGrow24'],
-      mixInfo: '1. Silica Force IMMER ZUERST ins Wasser, 2 Min ruhen lassen (pH steigt initial). 2. CalMag einrühren. 3. Bio-Grow/Bio-Bloom + MKP. 4. Epsom Salz. 5. POWHUMUS (Chelator). 6. Stimulatoren (Advanced Amino strikt nur per Einwegspritze 0.2 ml/L! niemals schätzen). 7. Alfa Boost. 8. Aloe Konzentrat B zuletzt. pH zuletzt auf 6.2-6.4 (Erde) korrigieren. — Mykorrhiza HomeGrow24 gehört NICHT in die Mischung: trocken ans Pflanzloch (Tag 0) + Refresher rund um FIM.',
+                 'Alfa Boost', 'Acti-Vera', 'Mykorrhiza HomeGrow24'],
+      mixInfo: '1. Silica Force IMMER ZUERST ins Wasser, 2 Min ruhen lassen (pH steigt initial). 2. CalMag einrühren. 3. Bio-Grow/Bio-Bloom + MKP. 4. Epsom Salz. 5. POWHUMUS (Chelator). 6. Stimulatoren (Advanced Amino strikt nur per Einwegspritze 0.2 ml/L! niemals schätzen). 7. Alfa Boost. 8. Acti-Vera zuletzt (BioBizz, flüssig direkt aus der Flasche). pH zuletzt auf 6.2-6.4 (Erde) korrigieren. — Mykorrhiza HomeGrow24 gehört NICHT in die Mischung: trocken ans Pflanzloch (Tag 0) + Refresher rund um FIM.',
       drainInfo: '⚠️ Premium Cup-Plan: Strenge EC-Kontrolle. Drain-EC pro Phase prüfen — bei Überschreitung Warnschwelle (z.B. >2.3 in Stretch II) 1-2 Water-Days einlegen. Mykorrhiza-freundlich durch moderate EC und Pause-Tage. Wo 11 nur Wasser (Flush), Wo 12 Ice-Wasser (1L crushed ice, 4-6h Schmelzzeit, 24-36h Dunkelphase vor Ernte).',
       weekFocus: {
           "1": {
@@ -3245,14 +3255,14 @@ const FERT_PRESETS = {
         { name: 'POWHUMUS (Konz.A)',     unit: 'ml/L', color: '#fde68a', note: '⑤ Chelator (Konz.A: 10-15 ml/L)', waterDayDose: 5 },
         { name: 'Advanced Amino',     unit: 'ml/L', color: '#c084fc', note: '⑥ STRIKT 0.2 ml/L (Einwegspritze!)' },
         { name: 'Alfa Boost',            unit: 'ml/L', color: '#a78bfa', note: '⑥ Aminosäure-Stimulator' },
-        { name: 'Aloe Konzentrat B',       unit: 'ml/L', color: '#2dd4bf', note: '⑦ Aloevera Konzentrat B (Sala 200:1, 20 mg/ml = 5 g Pulver + 250 ml dest. Wasser). Vor Gebrauch schütteln, Kühlschrank max. 3 Wochen (~3-4× neu ansetzen über den Run). Mit 1-ml-Spritze dosieren, sanft einrühren, zuletzt. Ab Woche 11 (Flush) KEIN Aloe mehr.', waterDayDose: 1.25 },
+        { name: 'Acti-Vera',       unit: 'ml/L', color: '#2dd4bf', note: '⑦ Acti-Vera (BioBizz, flüssig direkt aus der Flasche). Pflanzliche Enzyme & Polysaccharide fürs Wurzel-Immunsystem — kein Anmischen nötig. Sanft einrühren, zuletzt zugeben. Ab Woche 11 (Flush) KEIN Acti-Vera mehr.', waterDayDose: 2 },
         { name: 'Mykorrhiza HomeGrow24', unit: 'g',    color: '#fb923c', note: '⑧ Mykorrhiza-Pulver — TROCKEN an die Wurzel, NIE ins Gießwasser! Pflanzloch (Tag 0) + Refresher ~0.5 g/Topf rund um FIM/Vegi-Start (in obere Erdschicht einarbeiten, danach gießen → Sporen wandern zur Wurzelzone)' },
       ],
       schedule: {
           "1": {
               "CalMag": 0.3,
               "POWHUMUS (Konz.A)": 10,
-              "Aloe Konzentrat B": 2.5
+              "Acti-Vera": 4
           },
           "2": {
               "Silica Force": 0.3,
@@ -3260,7 +3270,7 @@ const FERT_PRESETS = {
               "Epsom Salz": 0.15,
               "POWHUMUS (Konz.A)": 10,
               "Bio-Grow": 0.25,
-              "Aloe Konzentrat B": 2.5
+              "Acti-Vera": 4
           },
           "3": {
               "Silica Force": 0.3,
@@ -3268,7 +3278,7 @@ const FERT_PRESETS = {
               "Epsom Salz": 0.15,
               "POWHUMUS (Konz.A)": 10,
               "Bio-Grow": 0.75,
-              "Aloe Konzentrat B": 2.5
+              "Acti-Vera": 4
           },
           "4": {
               "Silica Force": 0.4,
@@ -3278,7 +3288,7 @@ const FERT_PRESETS = {
               "Bio-Grow": 1.25,
               "Advanced Amino": 0.2,
               "Alfa Boost": 0.5,
-              "Aloe Konzentrat B": 3.0
+              "Acti-Vera": 5
           },
           "5": {
               "Silica Force": 0.4,
@@ -3288,7 +3298,7 @@ const FERT_PRESETS = {
               "Bio-Grow": 1.75,
               "Advanced Amino": 0.2,
               "Alfa Boost": 0.8,
-              "Aloe Konzentrat B": 3.0
+              "Acti-Vera": 5
           },
           "6": {
               "Silica Force": 0.5,
@@ -3299,7 +3309,7 @@ const FERT_PRESETS = {
               "Bio-Bloom": 1.0,
               "Advanced Amino": 0.2,
               "Alfa Boost": 0.8,
-              "Aloe Konzentrat B": 3.0
+              "Acti-Vera": 5
           },
           "7": {
               "Silica Force": 0.5,
@@ -3311,7 +3321,7 @@ const FERT_PRESETS = {
               "Bio-Bloom": 2.0,
               "Advanced Amino": 0.2,
               "Alfa Boost": 0.5,
-              "Aloe Konzentrat B": 2.0
+              "Acti-Vera": 3
           },
           "8": {
               "Silica Force": 0.5,
@@ -3321,7 +3331,7 @@ const FERT_PRESETS = {
               "GiDeli MKP": 0.3,
               "Bio-Grow": 0.1,
               "Bio-Bloom": 2.0,
-              "Aloe Konzentrat B": 2.0
+              "Acti-Vera": 3
           },
           "9": {
               "Silica Force": 0.5,
@@ -3330,13 +3340,13 @@ const FERT_PRESETS = {
               "POWHUMUS (Konz.A)": 10,
               "GiDeli MKP": 0.2,
               "Bio-Bloom": 1.5,
-              "Aloe Konzentrat B": 2.5
+              "Acti-Vera": 4
           },
           "10": {
               "CalMag": 0.3,
               "POWHUMUS (Konz.A)": 10,
               "Bio-Bloom": 0.75,
-              "Aloe Konzentrat B": 2.5
+              "Acti-Vera": 4
           },
           "11": {},
           "12": {}
@@ -3874,7 +3884,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.1.42';
+const APP_VERSION = 'v1.1.51';
 let S = {
   cycles: [], entries: {}, products: [], weekSchedule: {},
   potSize: 11, presetKey: null, mixOrder: null, mixInfo: null,
@@ -4837,6 +4847,40 @@ function loadS() {
     });
     S._feedWaterRhythmMigrated = true;
   }
+
+  // V3.3 ACTI-VERA (einmalig): Das Sala-Pulver "Aloe Konzentrat B" wird komplett
+  // ersetzt durch "Acti-Vera" (BioBizz, flüssig direkt aus der Flasche). In
+  // bestehenden Cup-Sieger-Plänen wird nur das Produkt umbenannt — die prodId
+  // bleibt erhalten, daher bleiben Schedule (prodId-Keys) und Mischreihenfolge
+  // intakt. Anschließend die neuen Acti-Vera-Dosen setzen (Wo1-3 4, Wo4-6 5,
+  // Wo7-8 3, Wo9-10 4 ml/L; Water-Day 2; ab Wo11 Flush kein Acti-Vera).
+  // Flag-gesteuert, damit spätere manuelle Anpassungen nicht überschrieben werden.
+  if (!S._v33ActiVera) {
+    const actiDoses = { w1: 4, w2: 4, w3: 4, w4: 5, w5: 5, w6: 5, w7: 3, w8: 3, w9: 4, w10: 4 };
+    (S.fertPlans || []).forEach(plan => {
+      if (plan.presetKey !== 'cup_sieger') return;
+      const prod = (plan.products || []).find(p => p.name === 'Aloe Konzentrat B');
+      if (!prod) return;
+      prod.name = 'Acti-Vera';
+      prod.note = '⑦ Acti-Vera (BioBizz, flüssig direkt aus der Flasche). Pflanzliche Enzyme & Polysaccharide fürs Wurzel-Immunsystem — kein Anmischen nötig. Sanft einrühren, zuletzt zugeben. Ab Woche 11 (Flush) KEIN Acti-Vera mehr.';
+      prod.waterDayDose = 2;
+      // mixOrder ist in den Plänen name-basiert → Namen mitziehen
+      if (plan.mixOrder) {
+        plan.mixOrder = plan.mixOrder.map(n => n === 'Aloe Konzentrat B' ? 'Acti-Vera' : n);
+      }
+      if (plan.schedule) {
+        Object.entries(actiDoses).forEach(([wk, dose]) => {
+          if (plan.schedule[wk]) plan.schedule[wk][prod.id] = dose;
+        });
+        // Ab Woche 11 (Flush/Iceflush) kein Acti-Vera mehr → entfernen falls vorhanden
+        ['w11', 'w12'].forEach(wk => {
+          if (plan.schedule[wk] && plan.schedule[wk][prod.id] !== undefined) delete plan.schedule[wk][prod.id];
+        });
+      }
+    });
+    S._v33ActiVera = true;
+    if (typeof syncActivePlanToGlobals === 'function') syncActivePlanToGlobals();
+  }
 }
 
 /**
@@ -4880,7 +4924,12 @@ function feedWaterGussIndex(c, iso) {
   let idx = 0, d = c.startDate, guard = 0;
   while (d < iso && guard < 400) {
     const a = getAction(d, c);
-    if (a === 'giess' || a === 'giess_anz') idx++;
+    // Nur Blüte-Güsse ('giess') zählen: der Dünger-Wasser-Rhythmus läuft erst ab der
+    // Blüte, daher beginnt der Positionszähler beim ersten Blüte-Guss bei 0 — so
+    // startet die Blüte sauber mit Feed (Pattern-Anfang) statt mitten im Muster.
+    // Anzucht-Güsse ('giess_anz') sind ohnehin durchgehend Feed (siehe
+    // getFeedWaterType) und dürfen den Rhythmus nicht verschieben.
+    if (a === 'giess') idx++;
     d = isoPlus(d, 1);
     guard++;
   }
@@ -4918,6 +4967,24 @@ function getFeedWaterType(c, p, iso) {
       }
       if (firstAfter) return 'water';
     }
+  }
+  // VEGI-/ANZUCHT-REGEL: In der Anzucht-/Vegiphase wird durchgehend gedüngt — der
+  // Dünger-Wasser-Rhythmus (mit reinen Wasser-Tagen) startet erst mit der Blüte.
+  // Die junge Pflanze will in der Wachstumsphase stetig Nährstoffe; reine Wasser-Tage
+  // ergeben erst ab dem Blüte-/Stretch-Übergang Sinn. Die Topping-Wasser-Regel oben
+  // (gezielter Stress-Schutz rund um den Schnitt) gewinnt weiterhin.
+  if (p.ph === 'anzucht') return 'feed';
+  // GIEßMAP (fester Profi-Fahrplan): Hat der Zyklus einen eigenen Gieß-Fahrplan
+  // (c.gussPlan), bestimmt dieser den Feed/Water-Typ — über den durchlaufenden
+  // Blüte-Guss-Index, NICHT über feste Kalendertage. So bleibt der Rhythmus fest,
+  // während sich die Tage nach Dryback verschieben dürfen ("Tage = Gerüst").
+  // Der n-te Blüte-Guss nimmt den n-ten Schritt der Map. Reicht die Map nicht weit
+  // genug, wird der letzte hinterlegte Schritt fortgeführt. Die Topping-Wasser-Regel
+  // oben gewinnt weiterhin (Stress-Schutz), verbraucht aber ihren Map-Platz mit.
+  if (c.gussPlan && typeof c.gussPlan === 'string' && c.gussPlan.length) {
+    const gIdx = feedWaterGussIndex(c, iso);
+    const ch = c.gussPlan[gIdx] || c.gussPlan[c.gussPlan.length - 1];
+    return ch === 'W' ? 'water' : 'feed';
   }
   // Gesamt-Woche bestimmen (identisch zur Düngeplan-/EC-Logik)
   let wk;
@@ -5401,7 +5468,7 @@ const INFO_TERMS = {
     title: 'Damping-Off',
     text: 'Sämlings-Killer Nr. 1: Die Stiel-Basis wird dünn und braun, der Sämling fällt um. Pilzinfektion durch zu nasse Erde + zu warm + keine Luftbewegung.',
     tip: 'Verhindern: Tag 1–7 nicht gießen — nur sprühen. Sobald erste echte Blätter da: Substrat zwischendurch antrocknen lassen. Bei Verdacht: Haube weg, sanften Lüfter dazustellen.',
-    lex: 'Sämlingsphase',
+    lex: 'Umfallkrankheit (Damping-off)',
   },
   tacoing: {
     title: 'Tacoing',
@@ -6567,7 +6634,11 @@ function fmtWater(ml) {
   if (!ml || ml <= 0) return '0 ml';
   if (ml < 100) return Math.round(ml) + ' ml';
   if (ml % 1000 === 0) return (ml / 1000) + ' L';
-  return (ml / 1000).toFixed(1) + ' L';
+  // Bis zu 2 Nachkommastellen, ohne unnötige Nullen: 1250 → "1.25 L", 1300 → "1.3 L",
+  // 1500 → "1.5 L". Vorher rundete toFixed(1) z.B. 1250 ml fälschlich auf "1.3 L" —
+  // verwirrend, weil 5 × 250 ml = 1250 sind, nicht 1300. Die Berechnung war immer
+  // korrekt (nutzt die echten ml), nur die Anzeige war gerundet.
+  return parseFloat((ml / 1000).toFixed(2)) + ' L';
 }
 
 // =====================================================================
@@ -9704,6 +9775,7 @@ function goTo(t) {
   else if (t === 'cal') renderCal();
   else if (t === 'tips') renderTips();
   else if (t === 'set') renderSet();
+  else if (t === 'gussplan') renderGussplan();
   // Always scroll to top when switching tabs
   const scrollEl = scr.querySelector('.scroll');
   if (scrollEl) scrollEl.scrollTop = 0;
@@ -9721,6 +9793,9 @@ window.addEventListener('popstate', () => {
   }
   if (document.getElementById('scr-howto').classList.contains('active')) {
     goTo('tips'); history.pushState(null, '', location.href); return;
+  }
+  if (document.getElementById('scr-gussplan').classList.contains('active')) {
+    goTo('duenger'); history.pushState(null, '', location.href); return;
   }
   if (document.getElementById('scr-gallery').classList.contains('active')) {
     goTo('dash'); history.pushState(null, '', location.href); return;
@@ -12232,6 +12307,186 @@ function openDuenger() {
   renderDuenger();
 }
 
+/* ====================== GIEß-FAHRPLAN (Gießmap) ======================
+ * Etappe 2: sichtbare, editierbare Fahrplan-Ansicht. Zeigt alle Blüte-Güsse
+ * eines Zyklus als Liste; pro Guss lässt sich Feed/Water antippen. Gespeichert
+ * wird die Reihenfolge in c.gussPlan (String aus 'F'/'W', Position = Blüte-
+ * Guss-Index). getFeedWaterType liest diesen String seit Etappe 1. Pflicht-
+ * Wassergüsse rund ums Topping sind fest (nicht editierbar).
+ */
+
+// Ist dieser Guss durch die Topping-Regel ein Pflicht-Wasserguss (fest)?
+// Spiegelt die Topping-Wasser-Regel aus getFeedWaterType: der Schnitt-Schutz
+// (Wasser am Topping-Tag + erster Guss nach der Pause) ist nicht verhandelbar.
+function isToppingWaterGuss(c, iso) {
+  if (!c || !c.toppingDate) return false;
+  const sinceTop = isoDiff(iso, c.toppingDate);
+  if (sinceTop === 0) return true;
+  const pause = c.toppingPause || 2;
+  if (sinceTop > pause && sinceTop <= pause + 14) {
+    for (let s = pause + 1; s < sinceTop; s++) {
+      const aa = getAction(isoPlus(c.toppingDate, s), c);
+      if (aa === 'giess' || aa === 'giess_anz') return false;
+    }
+    return true;
+  }
+  return false;
+}
+
+// Sammelt alle Blüte-Düngergüsse eines Zyklus als Fahrplan-Schritte.
+// Jeder Schritt: { iso, tag (1-basiert), gIdx (Blüte-Guss-Index), type, locked, ph }
+function collectBloomGusse(c) {
+  if (!c || !c.startDate) return [];
+  const az = c.anzuchtDays || PHASE_DEFAULTS.anzuchtDays;
+  const bl = c.bloomDays || PHASE_DEFAULTS.bloomDays;
+  const fl = c.flushDays || PHASE_DEFAULTS.flushDays;
+  // Ice-Phase mitnehmen (Indoor): Tag 1 = Iceflush, danach Dunkelphase (kein Guss).
+  const ic = (c.growType === 'outdoor') ? 0 : (c.iceDays || PHASE_DEFAULTS.iceDays);
+  const lastDay = az + bl + fl + ic;
+  const steps = [];
+  for (let d = az + 1; d <= lastDay; d++) {
+    const iso = isoPlus(c.startDate, d - 1);
+    const a = getAction(iso, c);
+    const p = phase(iso, c);
+    if (a === 'giess') {
+      // Normaler Blüte-Guss: Feed/Water editierbar (außer Topping-Pflicht-Wasser).
+      const lock = isToppingWaterGuss(c, iso);
+      steps.push({
+        iso, tag: d, kind: 'giess',
+        gIdx: feedWaterGussIndex(c, iso),
+        type: getFeedWaterType(c, p, iso) || 'feed',
+        locked: lock,
+        // FIM nur am Topping-Tag selbst (der Schnitt); der erste Guss nach der
+        // Pause ist „nur" Erholungs-Wasser und bleibt als 🔒 Wasser markiert.
+        fim: lock && c.toppingDate && isoDiff(iso, c.toppingDate) === 0,
+        ph: p ? p.ph : 'bloom'
+      });
+    } else if (a === 'spuelen') {
+      // Flush-Phase: immer reines Wasser, nicht umschaltbar.
+      steps.push({ iso, tag: d, kind: 'flush', gIdx: null, type: 'water', locked: true, ph: 'flush' });
+    } else if (a === 'ice') {
+      // Iceflush: Crushed Ice statt Guss — fester Spezial-Schritt.
+      steps.push({ iso, tag: d, kind: 'ice', gIdx: null, type: 'ice', locked: true, ph: 'ice' });
+    }
+  }
+  return steps;
+}
+
+// Der Zyklus, dessen Fahrplan gerade gilt (Auswahl > erster aktiver > erster).
+function gussplanActiveCycle() {
+  return (S.cycles || []).find(x => x.id === selId)
+      || (S.cycles || []).find(x => x.active && !x.archived)
+      || (S.cycles || [])[0] || null;
+}
+
+function openGussplan() {
+  if (!gussplanActiveCycle()) { toast('Erst einen Zyklus anlegen'); return; }
+  goTo('gussplan');
+}
+
+function renderGussplan() {
+  const body = document.getElementById('gussplan-body');
+  if (!body) return;
+  const c = gussplanActiveCycle();
+  if (!c) { body.innerHTML = '<div style="padding:30px 16px;text-align:center;color:var(--text-muted)">Kein Zyklus aktiv.</div>'; return; }
+  const plan = getPlanForCycle(c);
+  if (!plan || !plan.feedWaterRhythm) {
+    body.innerHTML = `<div style="padding:24px 16px;text-align:center;color:var(--text-muted);line-height:1.6">
+      Dein Düngeplan hat noch keinen Feed/Water-Rhythmus.<br><br>Der Gieß-Fahrplan braucht einen Plan mit Wasser-Tagen — z.B. die Vorlage „Cup-Sieger". Lade sie im Dünger-Tab und komm dann zurück.</div>`;
+    return;
+  }
+  const steps = collectBloomGusse(c);
+  if (!steps.length) {
+    body.innerHTML = '<div style="padding:30px 16px;text-align:center;color:var(--text-muted)">Für diesen Zyklus sind (noch) keine Blüte-Güsse berechenbar.</div>';
+    return;
+  }
+  const hasPlan = !!(c.gussPlan && c.gussPlan.length);
+  const intro = `<div style="background:linear-gradient(135deg,rgba(76,175,112,0.08),rgba(90,171,240,0.05));border:1px solid var(--border);border-radius:12px;padding:13px 15px;margin-bottom:14px;line-height:1.55">
+    <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:5px">💧 Dein Gieß-Fahrplan</div>
+    <div style="font-size:12px;color:var(--text-sub)">Jede Zeile ist ein Guss in der Blüte. Tippe, um zwischen <b style="color:var(--green)">🧪 Feed</b> (mit Dünger) und <b style="color:var(--blue)">💧 Wasser</b> (nur Spülen, z.B. CalMag) zu wechseln. Die App hält sich an diese <b>Reihenfolge</b> — auch wenn sich die Tage nach Restgewicht verschieben. <span style="color:var(--text-muted)">🔒 = fester Wasserguss rund ums Topping, der bleibt unverändert.</span></div>
+  </div>`;
+  const statusLine = `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+    <div style="font-size:11px;color:var(--text-muted)">${hasPlan ? '✓ Eigener Fahrplan aktiv' : 'Folgt aktuell dem Auto-Rhythmus deines Plans'}</div>
+    ${hasPlan ? `<button onclick="resetGussplan()" style="background:transparent;border:0.5px solid var(--border);color:var(--text-sub);border-radius:8px;padding:5px 10px;font-size:11px;font-weight:600;cursor:pointer;font-family:var(--font)">↺ Auto-Rhythmus</button>` : ''}
+  </div>`;
+  const PH = { bloom: '🌸 Blüte', flush: '💧 Flush (nur Wasser)', ice: '🧊 Iceflush & Ernte' };
+  let lastPh = null;
+  const rows = steps.map(s => {
+    let head = '';
+    if (s.ph !== lastPh) { lastPh = s.ph; head = `<div style="font-size:10px;letter-spacing:0.8px;text-transform:uppercase;color:var(--text-muted);font-weight:700;margin:14px 0 6px;padding-left:2px">${PH[s.ph] || s.ph}</div>`; }
+    const isW = s.type === 'water';
+    const dateLabel = fmtDE(s.iso, { weekday: 'short', day: '2-digit', month: '2-digit' });
+    // Festes Pill-Styling für nicht-editierbare Spezial-Schritte.
+    const pill = (bg, brd, col, txt) => `<div style="display:flex;align-items:center;gap:5px;background:${bg};border:0.5px solid ${brd};border-radius:9px;padding:7px 11px;font-size:12px;font-weight:700;color:${col};min-width:96px;justify-content:center">${txt}</div>`;
+    let control;
+    if (s.kind === 'ice') {
+      control = pill('rgba(212,160,23,0.12)', 'rgba(212,160,23,0.4)', 'var(--yellow)', '🧊 Iceflush');
+    } else if (s.kind === 'flush') {
+      control = pill('rgba(90,171,240,0.10)', 'rgba(90,171,240,0.3)', 'var(--blue)', '💧 Flush');
+    } else if (s.fim) {
+      control = pill('rgba(212,160,23,0.12)', 'rgba(212,160,23,0.4)', 'var(--yellow)', '✂️ FIM');
+    } else if (s.locked) {
+      control = pill('rgba(90,171,240,0.10)', 'rgba(90,171,240,0.3)', 'var(--blue)', '🔒 💧 Wasser');
+    } else {
+      control = `<button onclick="toggleGussStep(${s.gIdx})" style="display:flex;align-items:center;gap:5px;border:0.5px solid ${isW ? 'var(--blue)' : 'var(--green)'};background:${isW ? 'rgba(90,171,240,0.12)' : 'rgba(76,175,112,0.12)'};color:${isW ? 'var(--blue)' : 'var(--green)'};border-radius:9px;padding:7px 11px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);min-width:96px;justify-content:center">${isW ? '💧 Wasser' : '🧪 Feed'}</button>`;
+    }
+    return head + `<div style="display:flex;align-items:center;gap:10px;padding:8px 11px;background:var(--card);border:0.5px solid var(--border);border-radius:10px;margin-bottom:5px">
+      <div style="width:46px;font-size:12px;color:var(--text);font-weight:700">Tag ${s.tag}</div>
+      <div style="flex:1;font-size:11px;color:var(--text-muted)">${dateLabel}</div>
+      ${control}
+    </div>`;
+  }).join('');
+  // Dunkelphase-Hinweis: die letzten ice-Tage (nach dem Iceflush) sind 24-36h
+  // Pitch-Black + Ernte — kein Guss, daher nicht als Zeile, sondern als Hinweis.
+  const hasIce = steps.some(s => s.kind === 'ice');
+  const darkNote = hasIce ? `<div style="background:rgba(150,120,200,0.08);border:1px solid rgba(150,120,200,0.25);border-radius:10px;padding:11px 13px;margin-top:10px;line-height:1.5">
+    <div style="font-size:12px;font-weight:700;color:#a78bce;margin-bottom:3px">🌑 Nach dem Iceflush</div>
+    <div style="font-size:11px;color:var(--text-sub)">24–36h komplette Dunkelheit (Pitch-Black), dann Ernte früh morgens. Das ist kein Guss — die Pflanze ruht. <b>Die Trichome entscheiden den Erntezeitpunkt, nicht das Datum.</b></div>
+  </div>` : '';
+  body.innerHTML = `<div style="padding:14px 14px 30px">${intro}${statusLine}${rows}${darkNote}</div>`;
+}
+
+function toggleGussStep(gIdx) {
+  const c = gussplanActiveCycle();
+  if (!c) return;
+  const steps = collectBloomGusse(c);
+  const step = steps.find(s => s.gIdx === gIdx);
+  if (step && step.locked) { toast('Fester Wasserguss rund ums Topping'); return; }
+  // gussPlan beim ersten Eingriff aus dem aktuellen Rhythmus aufbauen, damit alle
+  // anderen Güsse ihren bisherigen Typ behalten (nicht auf Default zurückfallen).
+  // Nur echte Blüte-Güsse (gIdx gesetzt) zählen — Flush/Iceflush haben keinen Index.
+  if (!c.gussPlan || !c.gussPlan.length) {
+    const giessSteps = steps.filter(s => s.gIdx != null);
+    const maxIdx = giessSteps.reduce((m, s) => Math.max(m, s.gIdx), 0);
+    const arr = [];
+    for (let i = 0; i <= maxIdx; i++) {
+      const st = giessSteps.find(s => s.gIdx === i);
+      arr[i] = (st && st.type === 'water') ? 'W' : 'F';
+    }
+    c.gussPlan = arr.join('');
+  }
+  const arr = c.gussPlan.split('');
+  while (arr.length <= gIdx) arr.push('F');
+  arr[gIdx] = arr[gIdx] === 'W' ? 'F' : 'W';
+  c.gussPlan = arr.join('');
+  if (typeof clearFeedWaterCache === 'function') clearFeedWaterCache();
+  saveS();
+  if (typeof vibrate === 'function') vibrate();
+  renderGussplan();
+}
+
+function resetGussplan() {
+  const c = gussplanActiveCycle();
+  if (!c) return;
+  customConfirm('Fahrplan zurücksetzen?', 'Der automatische Feed/Water-Rhythmus aus deinem Düngeplan übernimmt wieder. Deine eigenen Feed/Water-Markierungen gehen dabei verloren.', 'Zurücksetzen', 'var(--red)').then(okk => {
+    if (!okk) return;
+    delete c.gussPlan;
+    if (typeof clearFeedWaterCache === 'function') clearFeedWaterCache();
+    saveS();
+    renderGussplan();
+  });
+}
+
 function renderDuenger() {
   const prods = S.products || [];
   const rows = prods.map(p => `
@@ -12504,7 +12759,11 @@ function renderDuenger() {
       <div style="font-size:13px;color:var(--text-muted);margin-bottom:12px;line-height:1.5">Noch keine Produkte angelegt.<br>Lade oben eine Vorlage oder lege eigene Produkte an.</div>
       <button onclick="addProduct()" style="background:var(--blue);color:#fff;border:none;border-radius:10px;padding:10px 18px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font)">＋ Produkt hinzufügen</button>
     </div>`}${addBtnInline}</div>
-    ${mixHTML}${weekPlan}<div style="height:20px"></div>`;
+    ${mixHTML}${weekPlan}<button onclick="openGussplan()" style="width:100%;background:linear-gradient(135deg,rgba(76,175,112,0.10),rgba(90,171,240,0.08));border:1px solid var(--border);border-radius:12px;padding:13px 15px;cursor:pointer;font-family:var(--font);text-align:left;margin-top:10px;display:flex;align-items:center;gap:11px">
+      <span style="font-size:19px">💧</span>
+      <div style="flex:1"><div style="font-size:13px;font-weight:700;color:var(--text)">Gieß-Fahrplan</div><div style="font-size:11px;color:var(--text-muted);margin-top:1px">Feed/Water pro Guss festlegen</div></div>
+      <span style="color:var(--text-muted);font-size:18px">→</span>
+    </button><div style="height:20px"></div>`;
 }
 
 let _pColor = PROD_COLORS[0];
@@ -18411,17 +18670,23 @@ function renderEntry(iso) {
           // So springt der +/−-Stepper bei winzigen Sämlings-Dosen nicht zu grob
           // (0.1ml war bei 80ml schon die halbe Dosis) und bleibt bei großen Mengen
           // trotzdem zügig bedienbar.
-          const stepSize = waterAmt > 0
-            ? (waterAmt < 200 ? 0.05 : (waterAmt < 1000 ? 0.1 : 0.5))
-            : 0.1;
-          // Anzeige-Präzision an die Schrittweite koppeln: feine 0.05er-Schritte
-          // brauchen 2 Nachkommastellen, sonst sieht man die Änderung nicht.
+          // SCHRITTWEITE für die +/−-Buttons: wir ändern direkt die KONZENTRATION
+          // (ml/L bzw. g/L), NICHT die ausgegossene ml-Menge. Sonst driften die Werte:
+          // 0.3 ml/L → + → 0.4 → − → 0.32, weil 0.3 × 1.25 L = 0.375 ml nicht aufs
+          // ml-Raster passt und beim Hin-/Her-Rechnen krumme Konzentrationen entstehen.
+          // Schöne, runde Konzentrationsschritte je nach Dosis-Größe halten die Werte
+          // sauber (0.3 → 0.35 → 0.4) und machen +/− symmetrisch (kein Drift).
+          const isPerL = isPerLitre(pr?.unit);
+          const stepSize = isPerL
+            ? (d2 < 0.5 ? 0.05 : (d2 < 2 ? 0.1 : (d2 < 5 ? 0.25 : 0.5)))
+            : (d2 < 1 ? 0.1 : (d2 < 5 ? 0.25 : 0.5));
+          // Anzeige-Präzision der Gieß-Gesamtmenge: bei feinen Schritten 2 Nachkomma-
+          // stellen, sonst sieht man die ml-Änderung pro Klick kaum.
           const decimals = stepSize < 0.1 ? 2 : 1;
           const calc2num = d2 > 0 ? calcDose(d2, waterAmt, pr?.unit, decimals) : 0;
           const calc2 = calc2num.toFixed(decimals);
           const dispUnit = displayUnit(pr?.unit);
           const isZero = d2 <= 0;
-          const isPerL = isPerLitre(pr?.unit);
           const recipeBreakdown = isPerL
             ? `<div class="mix-recipe-breakdown" data-cycle="${c.id}" data-prod="${pr?.id}" data-plan="${d2}" data-unit="${pr?.unit || 'ml/L'}" style="font-size:9px;color:var(--text-hint);font-family:var(--mono);text-align:center;line-height:1.1;margin-top:2px;display:${(d2 > 0 && waterAmt > 0) ? 'block' : 'none'}">${d2} ${pr?.unit} × ${fmtWater(waterAmt)}</div>`
             : '';
@@ -19917,10 +20182,11 @@ function toggleMixCheck(cId, prodId) {
 }
 
 /**
- * Adjust a fertilizer dose by ±stepMl on the DISPLAY (ml actually poured into the
- * water can). The stored plan value (ml/L) becomes a fractional number — that's
- * intentional. User wants to think in "poured ml", not in "concentration".
- * If waterAmt is missing, falls back to ±0.1 ml/L plan-value steps.
+ * Adjust a fertilizer dose by ±one concentration step (ml/L or g/L) for per-litre
+ * products, or ±one amount step for absolute units. We step the CONCENTRATION
+ * directly (not the poured ml) so the stored plan value stays on a clean grid and
+ * +/− are symmetric — no drift to crooked values like 0.32 ml/L. waterAmt is kept
+ * in the signature for the absolute-unit fallback but unused for per-litre.
  */
 function stepMixDose(cId, prodId, wk, stepMl, waterAmt) {
   const key = 'global_w' + wk;
@@ -19933,14 +20199,13 @@ function stepMixDose(cId, prodId, wk, stepMl, waterAmt) {
   // adaptive Schrittweite (0.05 / 0.1 / 0.5) aus dem Button. So landen die Werte
   // sauber auf Vielfachen der Schrittweite statt auf krummen Zwischenwerten.
   const absStep = Math.abs(stepMl) || 0.1;
-  if (perLitre && waterAmt && waterAmt > 0) {
-    // Per-litre unit: current displayed amount → add step → back to per-litre plan
-    const currentAmt = plan * waterAmt / 1000;
-    let newAmt = Math.max(0, Math.round((currentAmt + stepMl) / absStep) * absStep);
-    newAmt = Math.round(newAmt * 100) / 100;  // Floating-Point säubern (2 Nachkommast.)
-    newPlan = newAmt * 1000 / waterAmt;
-    // Keep stored plan value to a sensible precision (4 decimals is plenty)
-    newPlan = Math.round(newPlan * 10000) / 10000;
+  if (perLitre) {
+    // Per-Liter-Einheit (ml/L, g/L): stepMl ist hier der KONZENTRATIONS-Schritt.
+    // Direkt auf das Schritt-Raster runden → +/− sind symmetrisch und die Werte
+    // bleiben sauber (0.3 → 0.35 → 0.4), kein Drift über die Gießmenge mehr.
+    const dir = stepMl >= 0 ? 1 : -1;
+    let np = Math.max(0, Math.round((plan + dir * absStep) / absStep) * absStep);
+    newPlan = Math.round(np * 1000) / 1000;  // Floating-Point säubern
   } else {
     // Absolute unit OR missing water: step the plan value directly
     let np = Math.max(0, Math.round((plan + stepMl) / absStep) * absStep);
@@ -22692,6 +22957,39 @@ const LEXIKON = [
         '• <b>Hydro-Wassertemperatur ignoriert</b>: über 22°C ist die Hauptursache für Pythium in Hydro-Systemen<br>' +
         '• <b>Topf-Größen-Mismatch</b>: zu großer Topf bei Sämling → zu lange feucht → Pythium-Falle. Topf-Größe an Pflanzengröße anpassen.<br><br>' +
         '<b>Wichtigste Lektion:</b> Pythium ist <b>fast immer ein Symptom für Übergiessen</b>. Wer den Hebe-Test/Dryback ernst nimmt, sieht es selten.' },
+    { t: 'Umfallkrankheit (Damping-off)',
+      brief: 'Keimlinge und junge Sämlinge fallen plötzlich um — der Stängel wird direkt an der Erdoberfläche dünn, glasig und knickt weg, obwohl oben noch alles grün aussieht. Schuld sind Pilze im Substrat, die bei Staunässe explodieren. Einmal umgefallen ist die Pflanze verloren — die einzige wirksame Hilfe ist Vorbeugen.',
+      mechanism: '<b>Kein einzelner Erreger, sondern ein Sammelbild:</b> Mehrere Pilze im Substrat lösen dasselbe Schadbild aus. Betroffen ist <b>nur das früheste Stadium</b> — vom gequollenen Samen bis zum Sämling mit den ersten echten Blättern. Sobald die Stängelbasis fester wird (verholzt), sinkt das Risiko stark.<br><br>' +
+        '<b>Die Haupttäter:</b><br>' +
+        '• <b>Pythium</b> & <b>Phytophthora</b> — sogenannte Wasserpilze (Fachbegriff Oomyzeten, botanisch keine echten Pilze). Ihre Sporen können im nassen Substrat regelrecht schwimmen → deshalb sind sie extrem von Nässe abhängig.<br>' +
+        '• <b>Rhizoctonia</b>, <b>Fusarium</b>, <b>Botrytis</b> — echte Pilze, je nach Art bei warm-feucht bis kühl-feucht.<br><br>' +
+        '<b>Zwei Formen:</b><br>' +
+        '• <b>Vor dem Auflaufen</b> (prä-emergent = bevor der Keimling die Erde durchbricht): Der Keimling stirbt unter der Erde. Sieht aus, als wäre die Saat einfach „nicht aufgegangen" — wird oft fälschlich dem Saatgut angelastet.<br>' +
+        '• <b>Nach dem Auflaufen</b> (post-emergent, das klassische „Umfallen"): Der Sämling steht schon, dann fault die Stängelbasis genau auf Höhe der Erdoberfläche ein. Es entsteht eine <b>wassergetränkte, eingeschnürte Stelle</b> (eine Läsion), der Stängel verliert den Halt und knickt — oft innerhalb von Stunden.<br><br>' +
+        '<b>Warum oben noch alles grün ist:</b> Der Schaden sitzt ganz unten am Stängel und kappt dort die „Wasserleitung" der Pflanze. Die Blätter wirken im ersten Moment noch frisch, während die Basis schon zerstört ist — das macht die Krankheit so tückisch.',
+      practice: '<b>Woran du es erkennst:</b>' +
+        '<table style="width:100%;border-collapse:collapse;font-size:13px;margin:6px 0 12px">' +
+        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)" width="42%"><b>Anzeichen</b></td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Beschreibung</b></td></tr>' +
+        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Stängelbasis</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Dünn, glasig, dunkel eingeschnürt — genau auf Erdhöhe</td></tr>' +
+        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Hauptsymptom</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Sämling knickt um und fällt, obwohl die Erde feucht ist</td></tr>' +
+        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Blätter</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Anfangs noch grün und frisch — täuscht über den Ernst hinweg</td></tr>' +
+        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Wurzeln</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Bräunlich, glasig oder faulig statt fest und weiß</td></tr>' +
+        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Manchmal</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Feiner weiß-grauer Pilzflaum auf Erde oder Stängel</td></tr>' +
+        '</table>' +
+        '<b>Es gibt keine Heilung — nur Vorbeugen.</b> Eine umgefallene oder eingeschnürte Pflanze kannst du nicht mehr retten, das Gewebe wächst nicht nach. Alles dreht sich darum, den Pilzen ihre Lebensgrundlage (Nässe) zu entziehen:<br>' +
+        '• <b>Substrat antrocknen lassen</b> — klare Abtrocknungsphasen zwischen den Güssen (Restgewicht beachten). In Woche 1 möglichst gar nicht gießen, nur sprühen.<br>' +
+        '• <b>Luftige, gut drainierende Erde</b> und durchlässige Gefäße (z.B. Stofftöpfe), damit kein Wasser steht.<br>' +
+        '• <b>Leichte Luftbewegung</b> über der Erdoberfläche (Ventilator auf niedrigster Stufe, nicht direkt auf die Sämlinge).<br>' +
+        '• <b>Anzuchthaube früh abnehmen</b> — die Dauerfeuchte unter der Haube ist ein Brutkasten für die Erreger.<br>' +
+        '• <b>Im Keimstadium kaum düngen</b> — viel Stickstoff macht das junge Gewebe weich und anfällig.<br>' +
+        '• <b>Sauberes Gießwasser und Werkzeug</b>, nicht zu eng säen.<br>' +
+        '• <b>Nützlinge ins Substrat:</b> Mykorrhiza und Trichoderma (ein nützlicher Pilz) besiedeln die Wurzelzone und verdrängen die Erreger — die wirksamste biologische Vorsorge.',
+      pitfall: '<b>Die häufigsten Fehler:</b><br>' +
+        '• <b>Eine umgefallene Pflanze retten wollen</b> — zwecklos, das Leitgewebe ist tot. Steck die Energie lieber in die gesunden Geschwister.<br>' +
+        '• <b>Bei „Saat geht nicht auf" sofort neue Samen kaufen</b> — oft war es die Vor-dem-Auflaufen-Form durch zu nasses Substrat, nicht schlechtes Saatgut.<br>' +
+        '• <b>Verwechslung mit Vergeilung:</b> Bei Lichtmangel wird der Stängel auch lang, dünn und kippt — aber <b>ohne</b> die glasige Faulstelle und ohne Pilz. Das eindeutige Erkennungszeichen der Umfallkrankheit ist die <b>wassergetränkte Einschnürung an der Erdoberfläche bei feuchtem Substrat</b>. Faustregel: Vergeilung → mehr Licht / Lampe näher; Umfallkrankheit → trockener halten.<br>' +
+        '• <b>Zu großer Topf für den kleinen Sämling</b> → das viele Substrat bleibt zu lange feucht → ideale Bedingungen für die Erreger.<br><br>' +
+        '<b>Merksatz:</b> Die Umfallkrankheit ist eine Krankheit des Mikroklimas, nicht des Pechs. Wer Feuchte, Drainage und Luftbewegung im Griff hat, nimmt den Erregern die Grundlage, bevor sie gefährlich werden. Eng verwandt mit der <b>Wurzelfäule (Pythium)</b> — derselbe Erreger, nur später im Pflanzenleben.' },
     { t: 'Lichtbrand (Phototoxizität)',
       brief: 'PPFD zu hoch für die Pflanze. Obere Blüten und Blätter bleichen aus. Sieht oft wie Hitze aus, ist aber Licht.',
       mechanism: 'Wenn die <b>PPFD die Verarbeitungs-Kapazität</b> der Pflanze übersteigt, werden Chloroplasten und Chlorophyll <b>oxidativ zerstört</b>. Blätter werden gelblich-weiß, in extremen Fällen verbrennen die obersten Triebspitzen komplett. <b>Wichtige Unterscheidung zu Hitzestress:</b> Lichtbrand tritt auch bei kühler Temperatur auf (LED bleibt kalt!). Hitzestress kommt vom <b>Klima</b>, Lichtbrand von der <b>Strahlung</b>.',
@@ -22980,6 +23278,12 @@ const LEXIKON = [
  * abgekürzte Schreibweisen.
  */
 const LEX_ALIASES = {
+  // Umfallkrankheit
+  'umfallkrankheit':  'Umfallkrankheit (Damping-off)',
+  'umfallen':         'Umfallkrankheit (Damping-off)',
+  'sämlingsfäule':    'Umfallkrankheit (Damping-off)',
+  'saemlingsfaeule':  'Umfallkrankheit (Damping-off)',
+  'keimlingsfäule':   'Umfallkrankheit (Damping-off)',
   // englische Synonyme
   'flush':           'Spülung (Final-Flush)',
   'flushing':        'Spülung (Final-Flush)',
@@ -23028,8 +23332,8 @@ const LEX_ALIASES = {
   'sämling':         'Sämlingsphase',
   'saemling':        'Sämlingsphase',
   'seedling':        'Sämlingsphase',
-  'damping-off':     'Sämlingsphase',
-  'damping off':     'Sämlingsphase',
+  'damping-off':     'Umfallkrankheit (Damping-off)',
+  'damping off':     'Umfallkrankheit (Damping-off)',
   'umtopfen':        'Umtopfen',
   'wurzelschock':    'Umtopfen',
   'jiffy':           'Keimung',
@@ -23257,7 +23561,7 @@ const LEX_ALIASES = {
  * Gibt [] zurück wenn kein aktiver Zyklus / keine passenden Empfehlungen.
  */
 const CONTEXT_LEX_RECOS = {
-  'anzucht':  ['Photosynthese (Metabolischer Reaktor)', 'Lichtbrand (Phototoxizität)', 'CalMag'],
+  'anzucht':  ['Umfallkrankheit (Damping-off)', 'Lichtbrand (Phototoxizität)', 'CalMag'],
   'vorzucht': ['Anzucht-Klima', 'Photosynthese (Metabolischer Reaktor)', 'Lichtbrand (Phototoxizität)'],
   'abhärten': ['Abhärten (Hardening Off)', 'UV-Bestrahlung (UV-A / UV-B)', 'Wind & mechanischer Stress'],
   'vegi_out': ['☀️ Outdoor-Gießen: Grundregeln', '🌧 Outdoor: Regenmanagement', 'Topping'],
