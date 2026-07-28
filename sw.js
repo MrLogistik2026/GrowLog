@@ -1,79 +1,63 @@
-/**
- * GrowSmart Service Worker
+/* GrowSmart Service Worker
  *
- * Cache-Strategie: "Cache First, Network Fallback" für die App-Shell (index.html).
- * Erste Ladung: Network → Cache. Folge-Ladungen: aus Cache (instant), parallel
- * Network-Update im Hintergrund.
+ * Zweck: Die App startet aus dem Cache statt die ~1,9 MB grosse index.html jedes Mal neu
+ * zu laden und zu parsen. Das war der groesste Posten der Startzeit.
  *
- * Vorteile:
- *   - App funktioniert komplett offline nach erstem Besuch
- *   - Lade-Zeit reduziert sich von ~2s (LTE) auf <100ms (Cache)
- *   - Auf 3G/Edge spürbar: 28s → instant
+ * Strategie: stale-while-revalidate.
+ *   - Antwort kommt SOFORT aus dem Cache (schneller Start, funktioniert auch offline).
+ *   - Parallel laeuft im Hintergrund ein Netz-Abruf, der den Cache aktualisiert.
+ *   - Beim naechsten Start ist die neue Version da.
+ * Damit muss die Version unten NICHT bei jedem Release angefasst werden — sie dient nur
+ * dazu, alte Caches aufzuraeumen, wenn sich die Dateiliste aendert.
  *
- * Update-Mechanismus: bei jedem Reload wird parallel im Hintergrund die neue
- * Version geholt und der Cache aktualisiert. Beim NÄCHSTEN Besuch sieht der
- * User dann die neue Version. Das vermeidet Mid-Session-Updates die laufende
- * Eingaben zerschießen würden.
- *
- * VERSION ändert sich bei jedem Release (steht oben im index.html).
+ * Wichtig: Nur gleiche Herkunft (same-origin) wird behandelt. Fremde Anfragen laufen
+ * unveraendert durch, damit nichts kaputtgeht, was die App sonst noch laedt.
  */
+const CACHE = 'growsmart-v3';
+const ASSETS = [
+  './',
+  './index.html',
+  './manifest.json',
+  './favicon-32.png',
+  './icon-192.png',
+  './icon-512.png',
+  './icon-maskable-512.png',
+];
 
-const CACHE_NAME = 'growsmart-v1.1';
-// Relative Pfade — funktionieren sowohl an der Wurzel (file://, localhost) als
-// auch in GitHub-Pages-Sub-Pfaden wie /GrowSmart/. Absolute Pfade ('/index.html')
-// würden auf GitHub Pages zu 404 führen, weil der Browser dann root statt
-// Sub-Pfad lädt.
-const APP_SHELL = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png', './favicon-32.png'];
-
-self.addEventListener('install', (event) => {
-  // Bei der Erst-Installation: App-Shell vorab cachen
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(APP_SHELL).catch((err) => {
-        // Wenn ein einzelner addAll fehlschlägt (z.B. manifest.json fehlt):
-        // wenigstens die index.html cachen
-        console.warn('[SW] addAll partial failure:', err);
-        return cache.add('./index.html').catch(() => {});
-      });
-    })
+self.addEventListener('install', (e) => {
+  e.waitUntil(
+    caches.open(CACHE)
+      // einzeln statt addAll: fehlt eine Datei, scheitert nicht die ganze Installation
+      .then((c) => Promise.all(ASSETS.map((u) => c.add(u).catch(() => null))))
+      .then(() => self.skipWaiting())
   );
-  self.skipWaiting();
 });
 
-self.addEventListener('activate', (event) => {
-  // Alte Caches anderer Versionen löschen (Sauberhalten)
-  event.waitUntil(
-    caches.keys().then((keys) => {
-      return Promise.all(
-        keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k))
-      );
-    })
+self.addEventListener('activate', (e) => {
+  e.waitUntil(
+    caches.keys()
+      .then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
+      .then(() => self.clients.claim())
   );
-  self.clients.claim();
 });
 
-self.addEventListener('fetch', (event) => {
-  const { request } = event;
-  // Nur GET-Requests cachen (POST/PUT etc. lassen wir durch)
-  if (request.method !== 'GET') return;
-  // Externe Domains (Wetter-API, fonts) nicht cachen
-  if (!request.url.startsWith(self.location.origin)) return;
+self.addEventListener('fetch', (e) => {
+  const req = e.request;
+  if (req.method !== 'GET') return;
+  let url;
+  try { url = new URL(req.url); } catch (err) { return; }
+  if (url.origin !== self.location.origin) return;
 
-  event.respondWith(
-    caches.match(request).then((cached) => {
-      // Cache-First: bei Treffer sofort aus Cache, parallel Update im Hintergrund
-      const networkFetch = fetch(request)
-        .then((response) => {
-          // Nur erfolgreiche Antworten cachen
-          if (response && response.status === 200) {
-            const clone = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
-          }
-          return response;
-        })
-        .catch(() => cached);
-
-      return cached || networkFetch;
+  e.respondWith(
+    caches.match(req).then((cached) => {
+      const fromNet = fetch(req).then((resp) => {
+        if (resp && resp.status === 200 && resp.type === 'basic') {
+          const copy = resp.clone();
+          caches.open(CACHE).then((c) => c.put(req, copy)).catch(() => {});
+        }
+        return resp;
+      }).catch(() => cached);
+      return cached || fromNet;
     })
   );
 });

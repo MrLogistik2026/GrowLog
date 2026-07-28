@@ -1246,20 +1246,29 @@ const T = {
       `Runoff-EC ${ecFmt(runoffEc)} ${ecUnitLabel()} ist niedriger als Input ${ecFmt(inputEc)} — Pflanze frisst die Nährstoffe gut. Normal in Stretch & früher Blüte.`,
 
     // Runoff-pH-Analyse
-    phLabel: ({ delta }) => {
+    phLabel: ({ delta, medium }) => {
       if (delta === null || delta === undefined) return 'pH-Differenz unbekannt';
       if (Math.abs(delta) < 0.3) return '✓ pH stabil';
-      if (delta > 0.5) return `⚠ pH steigt um +${delta.toFixed(1)} — Erde driftet basisch`;
+      const inert = (medium === 'coco' || medium === 'hydro');
+      if (delta > 0.5) return inert ? `⚠ pH steigt um +${delta.toFixed(1)} — Wurzelzone driftet basisch` : `pH +${delta.toFixed(1)} über Input · Erde-Puffer, normal`;
       if (delta > 0.3) return `pH leicht höher (+${delta.toFixed(1)})`;
-      if (delta < -0.5) return `⚠ pH sinkt um ${delta.toFixed(1)} — Erde driftet sauer`;
+      if (delta < -0.5) return inert ? `⚠ pH sinkt um ${delta.toFixed(1)} — Wurzelzone driftet sauer` : `pH ${delta.toFixed(1)} unter Input · Erde-Puffer, normal`;
       return `pH leicht niedriger (${delta.toFixed(1)})`;
     },
 
-    phWarningHigh: ({ inputPh, runoffPh }) =>
-      `Runoff-pH ${runoffPh.toFixed(1)} ist deutlich höher als Input ${inputPh.toFixed(1)} — Erde wird basisch. Kalium-Lockout droht. Input-pH senken auf 6.0-6.2.`,
+    // (v1.4.74) Medium-abhängig: In gepufferter ERDE ist ein Drain-pH über/unter dem Input
+    // meist der Kalk-Puffer — Input-pH zu ändern bekämpft den Puffer und riskiert erst den
+    // Lockout. In inertem COCO/HYDRO folgt der Runoff dem Input, dort ist die pH-Korrektur
+    // der richtige Hebel. Ohne bekanntes Medium → Erde-Variante (sicherer, drängt nicht zu Säure).
+    phWarningHigh: ({ inputPh, runoffPh, medium }) =>
+      (medium === 'coco' || medium === 'hydro')
+        ? `Runoff-pH ${runoffPh.toFixed(1)} ist deutlich höher als Input ${inputPh.toFixed(1)} — im inerten Medium (kein Puffer) driftet die Wurzelzone basisch, Kalium-Lockout droht. Input-pH senken (${medium === 'hydro' ? 'Hydro 5.5–6.0' : 'Coco 5.8–6.2'}).`
+        : `Runoff-pH ${runoffPh.toFixed(1)} liegt über Input ${inputPh.toFixed(1)}. In Erde ist das meist der Kalk-Puffer — <b>kein</b> Grund, den Input-pH zu senken. Weiter bei pH 6.2–6.8 gießen; nicht dauerhaft unter 6.0, um den Drain zu drücken (das bekämpft den Puffer und riskiert erst recht einen Lockout). Nur bei echten Mangel-Symptomen + über mehrere Güsse steigendem Drain-pH: 1× leichter Flush mit pH 6.5.`,
 
-    phWarningLow: ({ inputPh, runoffPh }) =>
-      `Runoff-pH ${runoffPh.toFixed(1)} ist deutlich niedriger als Input ${inputPh.toFixed(1)} — Erde wird sauer. Calcium/Magnesium-Lockout droht. Input-pH erhöhen auf 6.4-6.6.`,
+    phWarningLow: ({ inputPh, runoffPh, medium }) =>
+      (medium === 'coco' || medium === 'hydro')
+        ? `Runoff-pH ${runoffPh.toFixed(1)} ist deutlich niedriger als Input ${inputPh.toFixed(1)} — im inerten Medium driftet die Wurzelzone sauer, Calcium/Magnesium-Lockout droht. Input-pH erhöhen (${medium === 'hydro' ? 'Hydro 5.8–6.2' : 'Coco 6.0–6.3'}).`
+        : `Runoff-pH ${runoffPh.toFixed(1)} liegt unter Input ${inputPh.toFixed(1)}. Etwas niedriger ist in Erde oft normal. Erst bei Calcium/Magnesium-Mangel-Symptomen gegensteuern — dann Input-pH leicht anheben (6.5–6.8). Nicht überkorrigieren.`,
   },
 
   dataHonesty: {
@@ -2421,7 +2430,7 @@ function buildDiagnosticContext(c, iso = null) {
 
   // Runoff-Analyse aus letztem Entry
   if (latestEntry) {
-    const ra = analyzeRunoff(latestEntry.cd);
+    const ra = analyzeRunoff(latestEntry.cd, c.medium);
     if (ra.ecStatus === 'warning-high') result.ecDeltaPos = true;
     if (ra.ecStatus === 'warning-low') result.ecDeltaNeg = true;
     if (ra.phStatus === 'warning-high') result.runoffDriftHigh = true;
@@ -3971,7 +3980,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.4.72';
+const APP_VERSION = 'v1.4.89';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -5414,6 +5423,9 @@ function saveS() {
       saveS._lastUndo = now;
     }
     localStorage.setItem(SK, JSON.stringify(S));
+    // (v1.4.83) Tägliche Sicherungskopie + einmalig dauerhaften Speicher anfordern.
+    // Läuft nach dem eigentlichen Schreiben, damit ein Fehler dort die Speicherung nie gefährdet.
+    if (typeof _autoBackup === 'function') _autoBackup();
     _flashSaved();
   } catch (e) {
     // Quota exceeded is the critical case we need to surface to the user
@@ -5427,6 +5439,104 @@ function saveS() {
     }
     // Other errors (DOMException in private mode, etc.) silently ignored —
     // nothing sensible we can do, and we don't want to spam toasts.
+  }
+}
+
+// =====================================================================
+// DATENSICHERUNG (v1.4.83)
+// =====================================================================
+/**
+ * Der Browser-Speicher ist der einzige Ort, an dem die Grow-Daten liegen. Drei Stufen
+ * Schutz, von stark nach schwach:
+ *   1. persist() — bittet das System, den Speicher NICHT automatisch zu räumen. Ohne das
+ *      darf Android/Chrome bei Platzmangel eigenmächtig löschen.
+ *   2. Auto-Sicherungskopie — täglich ein Abzug unter eigenem Schlüssel. Rettet vor
+ *      Bedienfehlern und App-Fehlern, NICHT vor gelöschtem Browser-Speicher.
+ *   3. JSON-Export — die einzige Kopie außerhalb des Browsers. Nur der überlebt alles.
+ * Die Kopie läuft bewusst OHNE Fotos: sie bleibt klein (kein Quota-Risiko), und die
+ * unersetzlichen Daten sind die Messwerte, nicht die Bilder.
+ */
+const BAK_KEY = 'growsmart_v4_bak';
+
+function _requestPersistentStorage() {
+  if (_requestPersistentStorage._done) return;
+  _requestPersistentStorage._done = true;
+  try {
+    if (navigator.storage && navigator.storage.persist) {
+      navigator.storage.persisted().then(already => {
+        if (!already) navigator.storage.persist().catch(() => {});
+      }).catch(() => {});
+    }
+  } catch (e) { /* nicht unterstützt — kein Grund, irgendwas abzubrechen */ }
+}
+
+/**
+ * (v1.4.88) Serialisiert den State OHNE Fotos — in einem Durchgang.
+ *
+ * Vorher wurde der komplette State per JSON.parse(JSON.stringify(...)) geklont, danach die
+ * Fotos geleert und das Ergebnis erneut serialisiert: Die base64-Bilder liefen also dreimal
+ * durch, nur um am Ende weggeworfen zu werden. Bei einem Zyklus mit vielen Fotos kostete das
+ * gemessene ~370 ms und einen entsprechenden Speicher-Peak. Mit einem Replacer werden die
+ * Fotos gar nicht erst geschrieben — ein Durchlauf, kein Klon.
+ */
+function _backupJSON(state, bakDate) {
+  state._bakDate = bakDate;
+  try {
+    return JSON.stringify(state, (k, v) => (k === 'photos' ? [] : v));
+  } finally {
+    delete state._bakDate;
+  }
+}
+
+function _autoBackup() {
+  _requestPersistentStorage();
+  try {
+    const today = todayISO();
+    const raw = localStorage.getItem(BAK_KEY);
+    if (raw) {
+      try { if (JSON.parse(raw)._bakDate === today) return; } catch (e) { /* kaputt — neu schreiben */ }
+    }
+    localStorage.setItem(BAK_KEY, _backupJSON(S, today));
+  } catch (e) {
+    // Scheitert die Kopie (z.B. Speicher voll), darf das die Haupt-Speicherung nie stören.
+    try { localStorage.removeItem(BAK_KEY); } catch (e2) { /* egal */ }
+  }
+}
+
+function _backupInfo() {
+  let bakDate = null, bakEntries = 0;
+  try {
+    const raw = localStorage.getItem(BAK_KEY);
+    if (raw) { const b = JSON.parse(raw); bakDate = b._bakDate || null; bakEntries = Object.keys(b.entries || {}).length; }
+  } catch (e) { /* keine gültige Kopie */ }
+  const last = S._lastExport || null;
+  const days = last ? isoDiff(todayISO(), last) : null;
+  return { bakDate, bakEntries, lastExport: last, daysSinceExport: days, due: (days === null || days >= 14) };
+}
+
+/**
+ * Stellt die automatische Sicherungskopie wieder her. Fotos fehlen darin bewusst — darum
+ * wird das vorher deutlich gesagt, statt den Verlust hinterher zu überraschen.
+ */
+async function restoreAutoBackup() {
+  const info = _backupInfo();
+  if (!info.bakDate) { toast('Keine automatische Sicherungskopie vorhanden'); return; }
+  const ok = await customConfirm(
+    '💾 Sicherungskopie laden?',
+    `Die Kopie ist vom <b>${fmtDE(info.bakDate)}</b> mit <b>${info.bakEntries} Einträgen</b>.<br><br>`
+    + 'Dein aktueller Stand wird dabei <b>ersetzt</b>. <b>Fotos sind in der Kopie nicht enthalten</b> und gehen verloren.<br><br>'
+    + 'Mach vorher am besten ein JSON-Backup.',
+    'Laden');
+  if (!ok) return;
+  try {
+    const raw = localStorage.getItem(BAK_KEY);
+    const b = JSON.parse(raw);
+    delete b._bakDate;
+    localStorage.setItem(SK, JSON.stringify(b));
+    toast('Sicherungskopie geladen — App wird neu geladen');
+    setTimeout(() => window.location.reload(), 800);
+  } catch (e) {
+    toast('⚠️ Sicherungskopie konnte nicht gelesen werden');
   }
 }
 
@@ -5716,7 +5826,7 @@ const INFO_TERMS = {
   vpd: {
     title: 'VPD (Dampfdruck-Defizit)',
     text: 'VPD ist eine Kombi-Kennzahl aus Temperatur und Luftfeuchte. Sie sagt, ob die Pflanze gut „atmen" (Wasser verdunsten) kann — der Motor für Nährstoff-Transport und Wachstum.',
-    tip: 'Richtwert in der Blüte: <b>0.8–1.2 kPa</b>. Zu niedrig (feucht + kühl) → Schimmelgefahr. Zu hoch (heiß + trocken) → die Pflanze macht „dicht" und stresst. Stellst du Temperatur und Luftfeuchte passend ein, stimmt der VPD von selbst. Und ein Mythos: hohen VPD absichtlich zu fahren bringt <b>keine</b> extra Trichome — Trockenstress kostet Ertrag und riskiert Zwitter (Pollensäcke). Späte Blüte darf ruhig etwas trockener sein (Richtung 1.0–1.2 als Schimmel-Schutz), aber nie in den Stress über 1.5 kPa.',
+    tip: 'Richtwert in der Blüte: <b>0.8–1.2 kPa</b>. Zu niedrig (feucht + kühl) → Schimmelgefahr. Zu hoch (heiß + trocken) → die Pflanze macht „dicht" und stresst. Stellst du Temperatur und Luftfeuchte passend ein, stimmt der VPD von selbst. Und ein Mythos: hohen VPD absichtlich zu fahren bringt <b>keine</b> extra Trichome — Trockenstress kostet Ertrag und riskiert Zwitter (Pollensäcke). Späte Blüte darf ruhig etwas trockener sein (Richtung 1.0–1.2 als Schimmel-Schutz), aber nie in den Stress über 1.5 kPa.<br><br>GrowSmart rechnet das <b>Blatt-VPD</b>: Deine Blätter sind durch die Verdunstung rund 2 °C kühler als die Raumluft, und verdunstet wird über das Blatt — nicht über die Luft im Zelt. Der Blatt-Wert liegt darum niedriger als der reine Luft-Wert (bei 25 °C/55 % etwa 1.07 statt 1.43 kPa). Genau darauf beziehen sich die Zielbereiche. Anpassen: Einstellungen › App-Einstellungen › VPD-Berechnung.',
     lex: 'VPD (Vapour Pressure Deficit)',
   },
   trichome: {
@@ -7917,6 +8027,26 @@ async function setWeightModeLift(c) {
   renderSet();
 }
 
+/**
+ * (v1.4.87) Fingertest — dritter Weg, ohne den Topf anzufassen.
+ *
+ * Waage und Hebe-Test setzen beide voraus, dass man den Topf hochheben will oder kann. Bei
+ * schweren 11-L-Töpfen, im Schrank verkeilten Pflanzen oder wenn man es schlicht nicht mag,
+ * blieb bisher nur „aus" — und damit die grobe Schätzung. Der Fingertest ist die Methode, die
+ * jeder ohne Ausrüstung sofort kann: Finger senkrecht in die Erde, wie tief ist es trocken?
+ *
+ * Technisch derselbe Weg wie der Hebe-Test: Beide münden in cd.restPct und nutzen dieselbe
+ * 5-Stufen-Skala (LIFT_FEEL_VALUES). Nur die Beschriftung wechselt — kein zweiter Rechenweg,
+ * keine zweite Fehlerquelle.
+ */
+async function setWeightModeFinger(c) {
+  if (!c) return;
+  c.weightMode = 'finger';
+  saveS();
+  toast('✓ Fingertest aktiviert');
+  renderSet();
+}
+
 async function setWeightModeScale(c) {
   if (!c) return;
 
@@ -8006,7 +8136,16 @@ async function setWeightModeScale(c) {
  *   warnings: string[]  — Liste aller relevanten Warnungen
  * }
  */
-function analyzeRunoff(cd) {
+// (v1.4.75) Farbe aus der Runoff-Schwere: warning = orange (Handlung nötig),
+// info = ruhiges Blau (nur Hinweis, z.B. Erde-Puffer — kein Alarm), ok = grün, sonst neutral.
+function _runoffSevColor(sev) {
+  return sev === 'warning' ? 'var(--orange)'
+    : sev === 'info' ? 'rgba(90,171,240,0.7)'
+    : sev === 'ok' ? 'var(--green)'
+    : 'var(--text-hint)';
+}
+
+function analyzeRunoff(cd, medium) {
   if (!cd) {
     return { hasRunoff: false, ecDelta: null, phDelta: null, ecStatus: null, phStatus: null, ecLabel: '', phLabel: '', warnings: [] };
   }
@@ -8049,11 +8188,24 @@ function analyzeRunoff(cd) {
     warnings.push(T.runoff.ecWarningLow({ inputEc, runoffEc }));
   }
   if (phStatus === 'warning-high') {
-    warnings.push(T.runoff.phWarningHigh({ inputPh, runoffPh }));
+    warnings.push(T.runoff.phWarningHigh({ inputPh, runoffPh, medium }));
   }
   if (phStatus === 'warning-low') {
-    warnings.push(T.runoff.phWarningLow({ inputPh, runoffPh }));
+    warnings.push(T.runoff.phWarningLow({ inputPh, runoffPh, medium }));
   }
+
+  // (v1.4.75) Medium-abhängige Schwere für die Farbgebung: In gepufferter Erde ist eine
+  // pH-Abweichung meist der Puffer → „info" (ruhige Farbe). In inertem Coco/Hydro ist es ein
+  // echtes Warnsignal → „warning" (orange). Ohne Medium → Erde-Variante (info).
+  const phSeverity = phStatus === 'ok' ? 'ok'
+    : (phStatus === 'warning-high' || phStatus === 'warning-low')
+      ? ((medium === 'coco' || medium === 'hydro') ? 'warning' : 'info')
+      : null;
+  const ecSeverity = ecStatus === 'ok' ? 'ok'
+    : (ecStatus === 'warning-high' || ecStatus === 'warning-low') ? 'warning'
+    : null;
+  const boxSeverity = (ecSeverity === 'warning' || phSeverity === 'warning') ? 'warning'
+    : ((warnings.length > 0 || phSeverity === 'info') ? 'info' : 'ok');
 
   return {
     hasRunoff,
@@ -8061,8 +8213,11 @@ function analyzeRunoff(cd) {
     phDelta,
     ecStatus,
     phStatus,
+    phSeverity,
+    ecSeverity,
+    boxSeverity,
     ecLabel: T.runoff.ecLabel({ delta: ecDelta }),
-    phLabel: T.runoff.phLabel({ delta: phDelta }),
+    phLabel: T.runoff.phLabel({ delta: phDelta, medium }),
     warnings,
   };
 }
@@ -8707,7 +8862,7 @@ function dayDataPreview(iso, opts = {}) {
     }
 
     // Runoff-Diff (kompakt, nur wenn Daten da)
-    const ra = analyzeRunoff(cd);
+    const ra = analyzeRunoff(cd, c.medium);
     if (ra.hasRunoff && (ra.phDelta !== null || ra.ecDelta !== null)) {
       const warn = ra.warnings.length > 0;
       const color = warn ? 'var(--orange)' : 'var(--green)';
@@ -10980,9 +11135,61 @@ function getAlerts(c) {
   return out;
 }
 
+/**
+ * (v1.4.84) Blatt-VPD statt Luft-VPD.
+ *
+ * Warum: Die Pflanze verdunstet über die Blattoberfläche, nicht über die Raumluft. Blätter
+ * sind durch die Verdunstungskälte typisch 1–3 °C kühler als die Umgebungsluft (unter LED
+ * eher 2 °C, unter HPS wegen der Strahlungswärme weniger). Weil kühlere Luft weniger Wasser
+ * halten kann, ist das echte VPD an der Blattoberfläche NIEDRIGER als das der Raumluft.
+ *
+ * Bei 25 °C / 55 % RH sind das 1.43 kPa Luft-VPD, aber nur 1.07 kPa am Blatt — ein Drittel
+ * Unterschied. Die Zielbereiche der App (Vegi 0.8–1.4, Mittelblüte 1.2–1.5) stammen aus den
+ * gängigen VPD-Tabellen und meinen den BLATT-Wert. Vorher wurden sie gegen den Luft-Wert
+ * geprüft: die App meldete „im Ziel", während das Blatt real zu feucht stand.
+ *
+ * Formel: VPD_Blatt = SVP(T_Blatt) − SVP(T_Luft) · RH/100, mit T_Blatt = T_Luft − Offset.
+ * Bei Offset 0 kürzt sich SVP(T_Blatt) gegen SVP(T_Luft) — dann ist das Ergebnis rechnerisch
+ * identisch mit der alten Luft-Formel. Wer den alten Stand will, stellt den Offset auf 0.
+ */
+function _leafOffset() {
+  const v = parseFloat(S.leafOffset);
+  return isFinite(v) && v >= 0 && v <= 5 ? v : 2;
+}
+
+function _svp(t) {
+  return 0.6108 * Math.exp(17.27 * t / (t + 237.3));
+}
+
 function calcVPD(t, rh) {
   if (isNaN(t) || isNaN(rh)) return null;
-  return Math.round(0.6108 * Math.exp(17.27 * t / (t + 237.3)) * (1 - rh / 100) * 100) / 100;
+  const off = _leafOffset();
+  return Math.round((_svp(t - off) - _svp(t) * rh / 100) * 100) / 100;
+}
+
+/** Reines Luft-VPD — für die Nebenanzeige, damit der Unterschied sichtbar bleibt. */
+function calcVPDAir(t, rh) {
+  if (isNaN(t) || isNaN(rh)) return null;
+  return Math.round(_svp(t) * (1 - rh / 100) * 100) / 100;
+}
+
+function setLeafOffset(v) {
+  S.leafOffset = Math.max(0, Math.min(5, parseFloat(v) || 0));
+  saveS();
+  vibrate(8);
+  if (typeof renderSet === 'function') renderSet();
+}
+
+/** Jüngste Temperatur/Luftfeuchte aus den Einträgen — für ein konkretes Rechenbeispiel. */
+function _lastClimateSample() {
+  const isos = Object.keys(S.entries || {}).sort().reverse();
+  for (let i = 0; i < isos.length && i < 60; i++) {
+    const e = S.entries[isos[i]];
+    if (!e) continue;
+    const t = parseFloat(e.temp), rh = parseFloat(e.humidity);
+    if (isFinite(t) && isFinite(rh) && rh > 0 && rh <= 100) return { t, rh, iso: isos[i] };
+  }
+  return null;
 }
 
 /**
@@ -15545,6 +15752,7 @@ function renderDuenger() {
         <div style="font-size:18px;font-weight:700;color:var(--text);line-height:1.2">${heroPlanName}</div>
         <div style="font-size:11px;color:var(--text-muted);margin-top:4px">${heroProdCount} Produkt${heroProdCount === 1 ? '' : 'e'}${heroSub ? ' · ' + heroSub : ''}</div>
         <div style="font-size:11px;color:var(--text-muted);margin-top:3px">${heroDoseNote}</div>
+        ${S.beginnerMode ? `<div style="font-size:11px;color:var(--green);margin-top:8px;line-height:1.5">✓ Die App sagt dir jeden Tag automatisch, was und wie viel du mischst — hier musst du nichts einstellen.</div>` : ''}
       </div>`
     : `<div style="padding:16px;background:var(--card);border:0.5px dashed var(--border);border-radius:16px;margin-bottom:8px;text-align:center">
         <div style="font-size:24px;margin-bottom:6px">🧪</div>
@@ -15605,12 +15813,30 @@ function renderDuenger() {
     <div style="padding:2px 12px 12px">${planBar}${presetBtns}</div>
   </details>`;
 
-  document.getElementById('duenger-body').innerHTML = `${assignBanner}${heroCard}${drawer}${drainHTML}${ef}
-    <div style="display:flex;flex-direction:column;gap:8px">${rows || `<div style="padding:20px;text-align:center;background:var(--card);border:0.5px dashed var(--border);border-radius:12px">
+  const _emptyProds = `<div style="padding:20px;text-align:center;background:var(--card);border:0.5px dashed var(--border);border-radius:12px">
       <div style="font-size:13px;color:var(--text-muted);margin-bottom:12px;line-height:1.5">Noch keine Produkte angelegt.<br>Lade oben eine Vorlage oder lege eigene Produkte an.</div>
       <button onclick="addProduct()" style="background:var(--blue);color:#fff;border:none;border-radius:10px;padding:10px 18px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font)">＋ Produkt hinzufügen</button>
-    </div>`}${addBtnInline}</div>
-    ${mixHTML}${weekPlan}<div style="height:20px"></div>`;
+    </div>`;
+  // (v1.4.77) Feintuning-Schublade: Produktliste + Mischreihenfolge + Wochen-Editor sind Profi-
+  // Werkzeug — der gewählte Plan berechnet die Tagesmengen ja selbst. Für Anfänger eingeklappt,
+  // für Profis offen. Zusätzlich offen beim Bearbeiten eines Produkts, ohne Plan oder ohne
+  // Produkte (sonst käme man nicht an die Werkzeuge). Alle Handler bleiben unverändert.
+  const _ftOpen = (!S.beginnerMode || editProd || !hasAnyPlan || prods.length === 0) ? 'open' : '';
+  const feintuning = `<details ${_ftOpen} style="margin-top:12px;border-radius:14px;background:var(--card);border:0.5px solid var(--border)">
+    <summary style="cursor:pointer;padding:12px 14px;list-style:none;user-select:none;font-family:var(--font);display:flex;align-items:center;gap:10px">
+      <span style="font-size:16px">🔧</span>
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:600;color:var(--text)">Feintuning</div>
+        <div style="font-size:10px;color:var(--text-muted);margin-top:1px">Produkte, Mengen &amp; Mischreihenfolge — nur wenn du selbst schrauben willst</div>
+      </div>
+      <span style="color:var(--text-hint);font-size:13px">▾</span>
+    </summary>
+    <div style="padding:2px 12px 12px">${ef}
+      <div style="display:flex;flex-direction:column;gap:8px">${rows || _emptyProds}${addBtnInline}</div>
+      ${mixHTML}${weekPlan}
+    </div>
+  </details>`;
+  document.getElementById('duenger-body').innerHTML = `${assignBanner}${heroCard}${drawer}${drainHTML}${feintuning}<div style="height:20px"></div>`;
 }
 
 let _pColor = PROD_COLORS[0];
@@ -16646,6 +16872,17 @@ function renderSet() {
     </div>
 
     <!-- AKKORDEON: App-Einstellungen (Mai 2026) -->
+    ${_installPrompt ? `<div class="card" style="gap:8px;display:flex;flex-direction:column;border:1px solid var(--green)">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:22px">\ud83d\udcf2</span>
+        <div style="flex:1">
+          <div style="font-size:14px;font-weight:600;color:var(--text)">GrowSmart installieren</div>
+          <div style="font-size:11px;color:var(--text-muted);line-height:1.45;margin-top:2px">Eigenes Symbol auf dem Startbildschirm</div>
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--text-sub);line-height:1.55">Danach <b>startet die App deutlich schneller</b> (sie wird einmal gespeichert statt jedes Mal neu geladen) und funktioniert auch <b>ohne Internet</b> — praktisch im Zelt oder Keller. Deine Daten bleiben wie bisher auf dem Gerät.</div>
+      <button onclick="installApp()" style="width:100%;background:var(--green);color:#fff;border:none;border-radius:10px;padding:12px;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--font)">Jetzt installieren</button>
+    </div>` : ''}
     ${_setAccordionHeader('app', '⚙', 'App-Einstellungen', 'Standard-Topfgröße, EC-Einheit (µS/mS/ppm), Restgewicht-Modus, Benachrichtigungen')}
 
     ${S._setUI && S._setUI.app ? `
@@ -16677,6 +16914,21 @@ function renderSet() {
       </div>
     </div>
 
+    ${!S.beginnerMode ? `
+    <div class="card" style="gap:10px;display:flex;flex-direction:column">
+      <div class="sect-head">🌡️ VPD-Berechnung</div>
+      <div class="inp-wrap"><div class="inp-label" style="margin-bottom:6px">Blatt-Temperatur: wie viel kühler als die Luft?</div>
+        <div style="display:flex;gap:6px">
+          ${[0, 1, 2, 3].map(o => { const on = _leafOffset() === o; return `<button onclick="setLeafOffset(${o})" style="flex:1;background:${on ? 'var(--green)' : 'var(--card2)'};color:${on ? '#fff' : 'var(--text-sub)'};border:0.5px solid ${on ? 'var(--green)' : 'var(--border)'};border-radius:8px;padding:9px 4px;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font)">${o === 0 ? 'aus' : '−' + o + ' °C'}</button>`; }).join('')}
+        </div>
+        <div style="font-size:10px;color:var(--text-hint);margin-top:8px;line-height:1.5">
+          Deine Blätter sind durch die Verdunstung <b>kühler als die Raumluft</b> — unter LED meist etwa 2 °C. Weil die Pflanze über das Blatt verdunstet und nicht über die Raumluft, rechnet die App das <b>Blatt-VPD</b>. Genau darauf beziehen sich die Zielbereiche.<br><br>
+          <b>−2 °C</b> ist der Normalfall (LED). <b>−1 °C</b> bei HPS/Natriumdampf, deren Strahlungswärme die Blätter aufheizt. <b>aus</b> rechnet mit der reinen Raumluft wie früher — nur sinnvoll, wenn du deine Blatt-Temperatur wirklich misst und sie gleich der Lufttemperatur ist.
+          ${(() => { const d = _lastClimateSample(); return d ? `<br><br>Bei deinen letzten Werten (${d.t} °C / ${d.rh} %): Blatt <b>${calcVPD(d.t, d.rh)} kPa</b> · Raumluft ${calcVPDAir(d.t, d.rh)} kPa` : ''; })()}
+        </div>
+      </div>
+    </div>` : ''}
+
     ${sel && !sel.archived ? (() => {
       // RESTGEWICHT-MODUL — Karte für den ausgewählten Zyklus
       const mode = sel.weightMode || 'off';
@@ -16686,6 +16938,7 @@ function renderSet() {
       const modeLabels = {
         off: { icon: '—', title: 'Aus (Fallback)', desc: 'Biophysikalische Schätzung (±30%)' },
         lift: { icon: '✋', title: 'Hebe-Test', desc: 'Du schätzt Restgewicht in %. Profi-tauglich, keine Waage nötig.' },
+        finger: { icon: '👆', title: 'Fingertest', desc: 'Finger in die Erde — wie tief ist es trocken? Ohne Topf anheben, ohne Gerät.' },
         scale: { icon: '⚖️', title: 'Waage', desc: 'Exaktes Gewicht in Gramm. Höchste Präzision.' },
       };
       const curLabel = modeLabels[mode] || modeLabels.off;
@@ -16731,6 +16984,10 @@ function renderSet() {
         <div style="font-size:10px;color:var(--text-hint);background:var(--card2);padding:2px 8px;border-radius:10px">${curLabel.icon} ${curLabel.title}</div>
       </div>
       <div style="font-size:12px;color:var(--text-sub);line-height:1.5">${curLabel.desc}</div>
+      ${(S.gear && S.gear.scale && mode !== 'scale') ? `<div style="background:var(--card2);border-left:2px solid var(--green);border-radius:8px;padding:9px 11px;font-size:11px;color:var(--text-sub);line-height:1.55">
+        \u2696\ufe0f Du hast beim Einrichten angegeben, eine <b>Waage</b> zu haben. Der Waage-Modus ist deutlich genauer als der Hebe-Test — du wiegst den Topf einmal vollgesogen und einmal staubtrocken, danach rechnet die App den Rest.
+        <button onclick="setWeightModeScale(S.cycles.find(c=>c.id==='\${sel.id}'))" style="width:100%;margin-top:8px;background:var(--green);color:#fff;border:none;border-radius:8px;padding:8px;font-size:11px;font-weight:600;cursor:pointer;font-family:var(--font)">Waage-Modus einrichten</button>
+      </div>` : ''}
 
       <div style="display:flex;gap:6px;margin-top:4px">
         <button onclick="setWeightModeOff(S.cycles.find(c=>c.id==='${sel.id}'))"
@@ -16742,6 +16999,11 @@ function renderSet() {
           style="flex:1;background:${mode==='lift' ? 'var(--green-bg)' : 'var(--card2)'};border:0.5px solid ${mode==='lift' ? 'var(--green-dk)' : 'var(--border)'};border-radius:8px;padding:10px 6px;font-size:11px;color:${mode==='lift' ? 'var(--green)' : 'var(--text-sub)'};cursor:pointer;font-family:var(--font);text-align:center;line-height:1.3">
           <div style="font-size:16px;margin-bottom:2px">✋</div>
           <div style="font-weight:600">Hebe-Test</div>
+        </button>
+        <button onclick="setWeightModeFinger(S.cycles.find(c=>c.id==='${sel.id}'))"
+          style="flex:1;background:${mode==='finger' ? 'var(--green-bg)' : 'var(--card2)'};border:0.5px solid ${mode==='finger' ? 'var(--green)' : 'var(--border)'};border-radius:10px;padding:10px 4px;font-size:11px;color:${mode==='finger' ? 'var(--green)' : 'var(--text-sub)'};cursor:pointer;font-family:var(--font);text-align:center">
+          <div style="font-size:16px;margin-bottom:2px">👆</div>
+          <div style="font-weight:600">Finger</div>
         </button>
         <button onclick="setWeightModeScale(S.cycles.find(c=>c.id==='${sel.id}'))"
           style="flex:1;background:${mode==='scale' ? 'var(--green-bg)' : 'var(--card2)'};border:0.5px solid ${mode==='scale' ? 'var(--green-dk)' : 'var(--border)'};border-radius:8px;padding:10px 6px;font-size:11px;color:${mode==='scale' ? 'var(--green)' : 'var(--text-sub)'};cursor:pointer;font-family:var(--font);text-align:center;line-height:1.3">
@@ -16772,12 +17034,39 @@ function renderSet() {
     ` : ''}
 
     <!-- AKKORDEON: Daten & Sicherheit (Mai 2026) -->
-    ${_setAccordionHeader('data', '💾', 'Daten & Sicherheit', 'Backup, Export, Rechtliches')}
+    ${_setAccordionHeader('data', '💾', 'Daten & Sicherheit', (() => {
+      // (v1.4.83) Fälligkeit schon am zugeklappten Kopf zeigen — wer die Sektion nie öffnet,
+      // erführe sonst nie, dass sein letztes echtes Backup Wochen her ist.
+      const bi = _backupInfo();
+      if (!bi.due) return 'Backup, Export, Rechtliches';
+      return `<span style="color:var(--yellow)">⚠️ ${bi.lastExport === null ? 'Noch nie gesichert' : 'Letztes Backup vor ' + bi.daysSinceExport + ' Tagen'}</span> · Backup, Export`;
+    })())}
 
     ${S._setUI && S._setUI.data ? `
     <!-- 5. DATEN (Export/Backup) -->
     <div class="card" style="gap:8px;display:flex;flex-direction:column">
       <div class="sect-head">💾 Daten sichern</div>
+      ${(() => {
+        // (v1.4.83) Ehrlicher Sicherungs-Status: Wie alt ist das letzte echte Backup, und was
+        // schützt die automatische Kopie tatsächlich? Ohne diese Zeile merkt niemand, dass er
+        // seit Wochen keine Kopie außerhalb des Browsers hat — bis der Speicher weg ist.
+        const bi = _backupInfo();
+        const col = bi.due ? 'var(--yellow)' : 'var(--green)';
+        const lastTxt = bi.lastExport === null
+          ? '<b>Noch nie gesichert</b> — deine Daten liegen nur im Browser.'
+          : (bi.daysSinceExport === 0 ? '<b>Heute gesichert</b> ✓'
+            : `Letztes Backup vor <b>${bi.daysSinceExport} Tag${bi.daysSinceExport === 1 ? '' : 'en'}</b>${bi.due ? ' — Zeit für ein neues.' : ' ✓'}`);
+        return `<div style="background:var(--card);border:0.5px solid ${bi.due ? 'rgba(212,160,23,0.4)' : 'var(--border)'};border-left:2px solid ${col};border-radius:10px;padding:10px 12px;margin-bottom:8px">
+          <div style="font-size:12px;color:var(--text-sub);line-height:1.5">${lastTxt}</div>
+          <div style="font-size:10px;color:var(--text-hint);margin-top:6px;line-height:1.5">
+            ${bi.bakDate
+              ? `🛟 Automatische Sicherungskopie vom <b>${fmtDE(bi.bakDate)}</b> (${bi.bakEntries} Einträge, ohne Fotos).`
+              : '🛟 Automatische Sicherungskopie wird beim nächsten Speichern angelegt.'}
+            <br>Sie hilft bei Bedien- und App-Fehlern — aber sie liegt im <b>selben Browser-Speicher</b>. Löschst du den, ist auch sie weg. <b>Nur die JSON-Datei liegt außerhalb.</b>
+          </div>
+          ${bi.bakDate ? `<button onclick="restoreAutoBackup()" style="width:100%;margin-top:8px;background:var(--card2);border:0.5px solid var(--border);border-radius:8px;padding:8px;font-size:11px;color:var(--text-sub);cursor:pointer;font-family:var(--font)">🛟 Sicherungskopie laden</button>` : ''}
+        </div>`;
+      })()}
       <div class="sec-tog" onclick="exportReportPDF()" style="border-color:rgba(76,175,112,0.3);margin:0;background:rgba(76,175,112,0.04)">
         <span>📄</span>
         <div>
@@ -18085,6 +18374,7 @@ function _renderWiz() {
     _wizStepPotSize,    // 3: Topfgröße (mit Empfehlung)
     _wizStepFertPlan,   // 4: Düngeplan
     ...(isIndoor && a.medium !== 'hydro' ? [_wizStepStartMethod] : []),  // 4.5 (Indoor, kein Hydro): Sämlings-Start — Hydro hat keine Erde/kein Gießen, der Sättigungsguss-Schritt ist dort sinnlos
+    _wizStepGear,       // 5: Ausruestungs-Check (ehrlich, ohne Pflicht)
     _wizStepNameSummary, // 5/6: Name + Zusammenfassung
   ];
   const idx = Math.max(0, Math.min(_wizStep, screens.length - 1));
@@ -18626,8 +18916,78 @@ function _wizResolveStartDate(a) {
 }
 
 /** Wizard abschließen: Zyklus anlegen, aktiver Pflanzen-Typ, los */
+/**
+ * (v1.4.86) Ehrlicher Ausrüstungs-Check. GrowSmart entfaltet seine Stärke mit Waage, pH- und
+ * EC-Messung — steht das nirgends, tippt ein Anfänger Fantasiewerte in Felder, deren Sinn er
+ * nicht kennt, und vertraut Auswertungen, die auf geratenen Zahlen beruhen. Darum einmal offen
+ * fragen und ehrlich sagen, was mit der vorhandenen Ausstattung geht und was nicht. Ohne
+ * Bevormundung: Fehlt alles, kann man trotzdem loslegen — die App führt dann über Beobachtung.
+ */
+function _wizToggleGear(k) {
+  if (!_wizAnswers.gear) _wizAnswers.gear = { scale: false, ph: false, ec: false };
+  _wizAnswers.gear[k] = !_wizAnswers.gear[k];
+  _renderWiz();
+}
+
+function _wizStepGear(a) {
+  const g = a.gear || (a.gear = { scale: false, ph: false, ec: false });
+
+  function card(key, icon, title, sub) {
+    const on = !!g[key];
+    return `<button onclick="_wizToggleGear('${key}')" style="display:block;width:100%;text-align:left;background:${on ? 'rgba(76,175,112,0.08)' : 'var(--card)'};border:1px solid ${on ? 'var(--green)' : 'var(--border)'};border-radius:14px;padding:14px;margin-bottom:10px;cursor:pointer;font-family:var(--font)">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="font-size:22px;flex-shrink:0">${icon}</span>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:14px;font-weight:600;color:var(--text)">${title}</div>
+          <div style="font-size:11px;color:var(--text-muted);line-height:1.45;margin-top:2px">${sub}</div>
+        </div>
+        <span style="font-size:18px;color:${on ? 'var(--green)' : 'var(--text-hint)'};flex-shrink:0">${on ? '\u2713' : '\u25cb'}</span>
+      </div>
+    </button>`;
+  }
+
+  // Einschätzung passt sich der Auswahl an — konkret, mit Preisen, ohne Druck.
+  const n = (g.scale ? 1 : 0) + (g.ph ? 1 : 0) + (g.ec ? 1 : 0);
+  let verdict, vCol;
+  if (n === 3) {
+    vCol = 'var(--green)';
+    verdict = 'Volle Ausstattung — die App kann dich überall unterstützen: Gießen nach Topfgewicht, pH-Kontrolle und Dünger-Feinsteuerung.';
+  } else if (g.scale && g.ph) {
+    vCol = 'var(--green)';
+    verdict = 'Gute Basis. Ohne EC-Messgerät hältst du dich einfach an die Mengen aus dem Düngeplan — das reicht für einen sauberen ersten Zyklus. Ein EC-Meter (~20 €) lohnt erst, wenn du feinjustieren willst.';
+  } else if (g.scale) {
+    vCol = 'var(--yellow)';
+    verdict = 'Die Waage ist der wichtigste Teil — gut. Ohne pH-Kontrolle fährst du beim Wasser blind: In Erde ist das oft tolerierbar, aber ein <b>falscher pH ist die häufigste Anfänger-Falle</b> (die Pflanze hungert trotz Dünger). pH-Tropfen kosten ~10 €.';
+  } else if (n === 0) {
+    vCol = 'var(--yellow)';
+    verdict = 'Du kannst trotzdem starten — die App führt dich über Beobachtung: <b>Hebe-Test</b> (Topf anheben statt wiegen) und Blattbild. Du fährst dann aber auf Sicht: Über- oder Unterdüngung merkst du erst an der Pflanze. Wenn du eins kaufst, dann eine <b>Küchenwaage (~15 €)</b> — sie beantwortet die Frage, an der die meisten Anfänger scheitern: „Wann muss ich gießen?"';
+  } else {
+    vCol = 'var(--yellow)';
+    verdict = 'Ohne Waage nutzt die App den <b>Hebe-Test</b>: Du hebst den Topf an und die App führt dich über das Gefühl. Das funktioniert, ist aber ungenauer als Wiegen. Eine Küchenwaage bis 5 kg (~15 €) macht das Gießen deutlich sicherer.';
+  }
+
+  return `<div style="padding:20px">
+    <h2 style="font-size:20px;font-weight:700;margin:0 0 6px">Was hast du zum Messen da?</h2>
+    <p style="font-size:13px;color:var(--text-muted);margin:0 0 16px;line-height:1.5">Eine ehrliche Antwort bringt dir mehr als eine schöne — die App richtet sich danach. <b>Nichts davon ist Pflicht.</b></p>
+
+    ${card('scale', '\u2696\ufe0f', 'Küchenwaage (bis 5 kg)', 'Zeigt am Topfgewicht, wann wirklich gegossen werden muss — der zuverlässigste Weg')}
+    ${card('ph', '\ud83d\udca7', 'pH-Messgerät oder pH-Tropfen', 'Sorgt dafür, dass die Wurzel den Dünger überhaupt aufnehmen kann')}
+    ${card('ec', '\u26a1', 'EC-/PPM-Messgerät', 'Zeigt, wie viel Dünger wirklich im Gießwasser ist')}
+
+    <div style="background:var(--card2);border-left:2px solid ${vCol};border-radius:8px;padding:11px 12px;margin-top:14px">
+      <div style="font-size:11px;color:var(--text-sub);line-height:1.6">${verdict}</div>
+    </div>
+
+    <button onclick="_wizNext()" style="display:block;width:100%;background:var(--green);color:#fff;border:none;border-radius:12px;padding:14px;margin-top:16px;font-size:15px;font-weight:600;cursor:pointer;font-family:var(--font)">Weiter</button>
+    <button onclick="_wizBack()" style="display:block;width:100%;background:transparent;color:var(--text-hint);border:none;padding:10px;margin-top:4px;font-size:12px;cursor:pointer;font-family:var(--font)">Zurück</button>
+  </div>`;
+}
+
 function _wizFinish() {
   const a = _wizAnswers;
+  // (v1.4.86) Ausruestung merken. Ohne Waage direkt den Hebe-Test-Modus waehlen, damit
+  // niemand vor einem Gramm-Feld sitzt, das er nicht befuellen kann.
+  if (a.gear) S.gear = { scale: !!a.gear.scale, ph: !!a.gear.ph, ec: !!a.gear.ec };
   const startInfo = _wizResolveStartDate(a);
 
   // Indoor: Seed-Type kam, draußen kam es nicht — Default auto für Outdoor
@@ -18712,6 +19072,14 @@ function _wizFinish() {
   const isFirstCycle = (S.cycles || []).length === 0;
 
   addCyc(overrides);
+
+  // (v1.4.86) Wer keine Waage hat, soll nicht vor einem Gramm-Feld sitzen: direkt den
+  // Hebe-Test-Modus setzen (braucht kein Setup, die App führt über das Gefühl). Mit Waage
+  // bleibt der Standard — den Waage-Modus richtet man bewusst mit den Referenzgewichten ein.
+  if (a.gear && !a.gear.scale) {
+    const _nc = S.cycles[S.cycles.length - 1];
+    if (_nc && !_nc.weightMode) _nc.weightMode = 'lift';
+  }
 
   // Welcome-Screen ab jetzt als gesehen markieren (egal woher der Wizard geöffnet wurde)
   S._welcomeSeen = true;
@@ -20190,6 +20558,9 @@ function exportData() {
   a.href = URL.createObjectURL(blob);
   a.download = 'growsmart_' + todayISO() + '.json';
   a.click();
+  // (v1.4.83) Datum merken, damit die App sagen kann, wie lange das letzte echte Backup her ist.
+  S._lastExport = todayISO();
+  saveS();
   toast('Backup ✓');
 }
 
@@ -21358,7 +21729,7 @@ function renderEntry(iso) {
       // Wird IMMER gezeigt wenn weightMode konfiguriert ist — auch im Quick-Mode,
       // weil der User das aktiv in Settings gewählt hat (nicht versehentlich Profi).
       let liftTestBlock = '';
-      if ((c.weightMode === 'lift' || c.weightMode === 'scale') && c.medium !== 'hydro') {
+      if ((c.weightMode === 'lift' || c.weightMode === 'finger' || c.weightMode === 'scale') && c.medium !== 'hydro') {
         // Smart-Skip an speziellen Tagen wo Hebe-Test keinen Sinn ergibt:
         //   - Sättigungsguss-Tag (saettigung): Topf gerade auf 100% gefüllt → kein Test nötig
         //   - Sprüh-Tag (sprueh): Sprühen ändert Topfgewicht kaum → Hebe-Test irreführend
@@ -21527,15 +21898,15 @@ function renderEntry(iso) {
         const showReset = !isScale && savedForDisplay !== null;
         const header = `<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px">
           <div style="display:flex;align-items:center;gap:6px">
-            <span style="font-size:14px">${isScale ? '⚖️' : '✋'}</span>
-            <span style="font-size:12px;font-weight:600;color:var(--text)">${isScale ? 'Waage' : 'Hebe-Test'}</span>
+            <span style="font-size:14px">${isScale ? '⚖️' : (c.weightMode === 'finger' ? '👆' : '✋')}</span>
+            <span style="font-size:12px;font-weight:600;color:var(--text)">${isScale ? 'Waage' : (c.weightMode === 'finger' ? 'Fingertest' : 'Hebe-Test')}</span>
             ${isFinisher ? '<span style="font-size:9px;background:rgba(224,96,96,0.15);color:var(--red);padding:2px 6px;border-radius:8px;font-weight:600">FINISHER</span>' : ''}
           </div>
           ${(userExpanded && (isSaturationDay || isSprayDay || isPostHarvest))
             ? `<button onclick="collapseLiftTest('${c.id}','${iso}')" style="background:transparent;border:none;color:var(--text-hint);font-size:10px;cursor:pointer;padding:2px 6px;text-decoration:underline;font-family:var(--font)" title="Hebe-Test wieder ausblenden">▲ ausblenden</button>`
             : (showReset
             ? `<button onclick="clearRestPct('${c.id}')" style="background:transparent;border:none;color:var(--text-hint);font-size:10px;cursor:pointer;padding:2px 6px;text-decoration:underline;font-family:var(--font)" title="Wert zurücksetzen — App rechnet neu">× zurücksetzen</button>`
-            : `<div style="font-size:10px;color:var(--text-muted)">${isScale ? 'Topf mit Pflanze wiegen' : 'Hebe den Topf — wie schwer?'}</div>`)}
+            : `<div style="font-size:10px;color:var(--text-muted)">${isScale ? 'Topf mit Pflanze wiegen' : (c.weightMode === 'finger' ? 'Finger in die Erde — wie tief trocken?' : 'Hebe den Topf — wie schwer?')}</div>`)}
         </div>`;
 
         // Body: je nach Modus Slider oder Gramm-Input
@@ -21936,13 +22307,11 @@ function renderEntry(iso) {
           // Diagnose-Tool: Differenz zu Input zeigt was in der Erde passiert.
           // Warning-Box via analyzeRunoff() liefert konkrete Handlungsempfehlung.
           // Im Einsteiger-Modus versteckt — Profi-Feature.
-          const ra = analyzeRunoff(cd);
-          const ecColor = ra.ecStatus === 'ok' ? 'var(--green)' :
-                          (ra.ecStatus === 'warning-high' || ra.ecStatus === 'warning-low') ? 'var(--orange)' :
-                          'var(--text-hint)';
-          const phColor = ra.phStatus === 'ok' ? 'var(--green)' :
-                          (ra.phStatus === 'warning-high' || ra.phStatus === 'warning-low') ? 'var(--orange)' :
-                          'var(--text-hint)';
+          const ra = analyzeRunoff(cd, c.medium);
+          const ecColor = _runoffSevColor(ra.ecSeverity);
+          const phColor = _runoffSevColor(ra.phSeverity);
+          const boxBd = ra.boxSeverity === 'warning' ? 'var(--orange)' : 'rgba(90,171,240,0.5)';
+          const boxBg = ra.boxSeverity === 'warning' ? 'rgba(232,136,74,0.08)' : 'rgba(90,171,240,0.06)';
           const hasDiff = ra.ecDelta !== null || ra.phDelta !== null;
 
           return `<div style="display:flex;flex-direction:column;gap:6px;padding:10px 4px 0;border-top:0.5px solid var(--border);margin-top:6px">
@@ -21951,7 +22320,7 @@ function renderEntry(iso) {
                 <span style="font-size:11px;color:var(--text-hint);font-weight:600;text-transform:uppercase;letter-spacing:0.03em">🌊 Runoff (optional)</span>
                 ${S.beginnerMode ? infoBtn('runoff') : ''}
               </div>
-              <span id="runoff-status-${c.id}" style="font-size:10px;font-family:var(--mono)">${hasDiff ? `<span style="color:${ra.ecStatus === 'ok' && ra.phStatus === 'ok' ? 'var(--green)' : 'var(--orange)'}">${ra.phLabel} · ${ra.ecLabel}</span>` : ''}</span>
+              <span id="runoff-status-${c.id}" style="font-size:10px;font-family:var(--mono)">${hasDiff ? `<span style="color:${_runoffSevColor(ra.boxSeverity)}">${ra.phLabel} · ${ra.ecLabel}</span>` : ''}</span>
             </div>
             <div style="display:flex;align-items:center;gap:8px;padding:0 4px">
               <div>
@@ -21979,7 +22348,7 @@ function renderEntry(iso) {
               </div>
             </div>
             <div id="runoff-warn-${c.id}">${ra.warnings.length > 0 ? ra.warnings.map(w =>
-              `<div style="background:rgba(232,136,74,0.08);border-left:2px solid var(--orange);padding:8px 10px;border-radius:6px;font-size:11px;line-height:1.5;color:var(--text-sub);margin-top:4px">${w}</div>`
+              `<div style="background:${boxBg};border-left:2px solid ${boxBd};padding:8px 10px;border-radius:6px;font-size:11px;line-height:1.5;color:var(--text-sub);margin-top:4px">${w}</div>`
             ).join('') : ''}</div>
           </div>`;
         })() : ''}
@@ -22062,17 +22431,29 @@ function renderEntry(iso) {
           // Anzeige-Präzision der Gieß-Gesamtmenge: bei feinen Schritten 2 Nachkomma-
           // stellen, sonst sieht man die ml-Änderung pro Klick kaum.
           const decimals = stepSize < 0.1 ? 2 : 1;
-          const calc2num = d2 > 0 ? calcDose(d2, waterAmt, pr?.unit, decimals) : 0;
-          const calc2 = calc2num.toFixed(decimals);
+          // (Plan A / v1.4.78) Tages-Override bevorzugen: eine manuelle Korrektur gilt nur für
+          // HEUTE (cd.doses[pid]) — sie ändert NICHT mehr den Plan. Ohne Override = Plan × Wasser.
+          const _planMl = d2 > 0 ? calcDose(d2, waterAmt, pr?.unit, decimals) : 0;
+          const _ovrRaw = cd.doses ? cd.doses[pr?.id] : undefined;
+          const _hasOvr = _ovrRaw !== undefined && _ovrRaw !== null && _ovrRaw !== '';
+          const shownMl = _hasOvr ? (parseFloat(_ovrRaw) || 0) : _planMl;
+          const mlStep = shownMl < 1 ? 0.05 : (shownMl < 5 ? 0.1 : (shownMl < 20 ? 0.5 : (shownMl < 100 ? 1 : 5)));
+          const calc2 = shownMl.toFixed(decimals);
           const dispUnit = displayUnit(pr?.unit);
-          const isZero = d2 <= 0;
+          const isZero = shownMl <= 0;
           // (v1.2.72) An Wasser-Tagen zeigen Produkte ohne waterDayFull ihre feste
           // waterDayDose — Stepper/Tippfeld müssen dann genau die ändern, nicht den
           // Wochen-Schedule. Flag steuert den Schreibpfad (data-wd).
           const isWdDose = isMaintWatering && !pr?.waterDayFull;
-          const recipeBreakdown = isPerL
-            ? `<div class="mix-recipe-breakdown" data-cycle="${c.id}" data-prod="${pr?.id}" data-plan="${d2}" data-unit="${pr?.unit || 'ml/L'}" style="font-size:9px;color:var(--text-hint);font-family:var(--mono);text-align:center;line-height:1.1;margin-top:2px;display:${(d2 > 0 && waterAmt > 0) ? 'block' : 'none'}">${d2} ${pr?.unit} × ${fmtWater(waterAmt)}</div>`
-            : '';
+          // (v1.4.85) Bei einer Tages-Korrektur die Plan-Angabe NICHT verstecken, sondern
+          // ergänzen: man will beim Anmischen sehen, was der Plan sagt und wie weit man
+          // heute davon abweicht. Darum Rechnung + Plan-Ergebnis, darunter der Marker.
+          const _planTot = _hasOvr ? ` = ${_planMl.toFixed(decimals)} ${dispUnit}` : '';
+          const _planLine = isPerL
+            ? `<div class="mix-recipe-breakdown" data-cycle="${c.id}" data-prod="${pr?.id}" data-plan="${d2}" data-unit="${pr?.unit || 'ml/L'}" data-ovr="${_hasOvr ? '1' : ''}" data-decimals="${decimals}" data-dispunit="${dispUnit}" style="font-size:9px;color:var(--text-hint);font-family:var(--mono);text-align:center;line-height:1.1;margin-top:2px;display:${(d2 > 0 && waterAmt > 0) ? 'block' : 'none'}">${d2} ${pr?.unit} × ${fmtWater(waterAmt)}${_planTot}</div>`
+            : (_hasOvr && d2 > 0 ? `<div style="font-size:9px;color:var(--text-hint);font-family:var(--mono);text-align:center;line-height:1.1;margin-top:2px">Plan: ${d2} ${dispUnit}</div>` : '');
+          const recipeBreakdown = _planLine
+            + (_hasOvr ? `<div style="font-size:9px;color:var(--blue);font-family:var(--mono);text-align:center;line-height:1.1;margin-top:2px">✎ nur heute</div>` : '');
           const checked = !!(cd.mixChecks?.[pr?.id]);
           const checkId = `mix-${c.id}-${i}-${isInActiveList ? 'a' : 'i'}`;
           const rowOpacity = checked ? '0.55' : (isZero ? '0.5' : '1');
@@ -22086,12 +22467,12 @@ function renderEntry(iso) {
               <span style="font-size:13px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name}</span>
             </div>
             <div style="display:flex;align-items:center;gap:3px;flex-shrink:0">
-              <button class="mix-step-btn" data-cycle="${c.id}" data-prod="${pr?.id}" data-wk="${wk}" data-step="${-stepSize}" data-unit="${pr?.unit || 'ml/L'}" data-wd="${isWdDose ? '1' : ''}" onclick="event.stopPropagation();stepMixDoseLive(this)" style="width:26px;height:26px;border-radius:5px;background:var(--surface);border:0.5px solid var(--border);color:var(--text-sub);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:var(--mono)">−</button>
+              <button class="mix-step-btn" data-cycle="${c.id}" data-prod="${pr?.id}" data-wk="${wk}" data-step="${-mlStep}" data-unit="${pr?.unit || 'ml/L'}" data-wd="${isWdDose ? '1' : ''}" onclick="event.stopPropagation();stepMixDoseLive(this)" style="width:26px;height:26px;border-radius:5px;background:var(--surface);border:0.5px solid var(--border);color:var(--text-sub);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:var(--mono)">−</button>
               <div style="display:flex;flex-direction:column;align-items:center;width:64px">
-                <div style="display:flex;align-items:center;gap:2px;justify-content:center" onclick="event.stopPropagation()"><input class="mix-calc" type="number" inputmode="decimal" step="${stepSize}" data-cycle="${c.id}" data-prod="${pr?.id}" data-wk="${wk}" data-plan="${d2}" data-unit="${pr?.unit || 'ml/L'}" data-decimals="${decimals}" data-wd="${isWdDose ? '1' : ''}" value="${isZero ? '' : calc2}" placeholder="0" onfocus="this.select()" onchange="uMixDoseTotal(this)" style="width:46px;height:26px;border:0.5px solid ${doseColor}55;background:var(--surface);color:${doseColor};font-family:var(--mono);font-size:13px;font-weight:600;text-align:center;border-radius:5px;padding:0;-moz-appearance:textfield"/><span style="font-size:10px;color:var(--text-muted);font-family:var(--mono)">${dispUnit}</span></div>
+                <div style="display:flex;align-items:center;gap:2px;justify-content:center" onclick="event.stopPropagation()"><input class="mix-calc" type="number" inputmode="decimal" step="${mlStep}" data-cycle="${c.id}" data-prod="${pr?.id}" data-wk="${wk}" data-plan="${d2}" data-ovr="${_hasOvr ? '1' : ''}" data-unit="${pr?.unit || 'ml/L'}" data-decimals="${decimals}" data-wd="${isWdDose ? '1' : ''}" value="${isZero ? '' : calc2}" placeholder="0" onfocus="this.select()" onchange="uMixDoseTotal(this)" style="width:46px;height:26px;border:0.5px solid ${doseColor}55;background:var(--surface);color:${doseColor};font-family:var(--mono);font-size:13px;font-weight:600;text-align:center;border-radius:5px;padding:0;-moz-appearance:textfield"/><span style="font-size:10px;color:var(--text-muted);font-family:var(--mono)">${dispUnit}</span></div>
                 ${recipeBreakdown}
               </div>
-              <button class="mix-step-btn" data-cycle="${c.id}" data-prod="${pr?.id}" data-wk="${wk}" data-step="${stepSize}" data-unit="${pr?.unit || 'ml/L'}" data-wd="${isWdDose ? '1' : ''}" onclick="event.stopPropagation();stepMixDoseLive(this)" style="width:26px;height:26px;border-radius:5px;background:var(--surface);border:0.5px solid var(--border);color:var(--text-sub);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:var(--mono)">+</button>
+              <button class="mix-step-btn" data-cycle="${c.id}" data-prod="${pr?.id}" data-wk="${wk}" data-step="${mlStep}" data-unit="${pr?.unit || 'ml/L'}" data-wd="${isWdDose ? '1' : ''}" onclick="event.stopPropagation();stepMixDoseLive(this)" style="width:26px;height:26px;border-radius:5px;background:var(--surface);border:0.5px solid var(--border);color:var(--text-sub);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:var(--mono)">+</button>
             </div>
           </div>`;
         };
@@ -22250,7 +22631,7 @@ function renderEntry(iso) {
     if (!isWaterDay && p) {
       // VOLLER Hebe-Test-Block (gleicher Code wie an Wasser-Tagen) — wenn lift/scale aktiv
       let fullLift = '';
-      if ((c.weightMode === 'lift' || c.weightMode === 'scale') && c.medium !== 'hydro') {
+      if ((c.weightMode === 'lift' || c.weightMode === 'finger' || c.weightMode === 'scale') && c.medium !== 'hydro') {
         // Smart-Skip an speziellen Tagen wo Hebe-Test keinen Sinn ergibt (siehe Stelle 1)
         const todayAction = (typeof getAction === 'function') ? getAction(iso, c) : null;
         const isSaturationDay = todayAction === 'saettigung';
@@ -22354,15 +22735,15 @@ function renderEntry(iso) {
         const showReset2 = !isScale && savedForDisplay !== null;
         const header = `<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px">
           <div style="display:flex;align-items:center;gap:6px">
-            <span style="font-size:14px">${isScale ? '⚖️' : '✋'}</span>
-            <span style="font-size:12px;font-weight:600;color:var(--text)">${isScale ? 'Waage' : 'Hebe-Test'}</span>
+            <span style="font-size:14px">${isScale ? '⚖️' : (c.weightMode === 'finger' ? '👆' : '✋')}</span>
+            <span style="font-size:12px;font-weight:600;color:var(--text)">${isScale ? 'Waage' : (c.weightMode === 'finger' ? 'Fingertest' : 'Hebe-Test')}</span>
             ${isFinisher ? '<span style="font-size:9px;background:rgba(224,96,96,0.15);color:var(--red);padding:2px 6px;border-radius:8px;font-weight:600">FINISHER</span>' : ''}
           </div>
           ${(userExpanded && (isSaturationDay || isSprayDay || isPostHarvest))
             ? `<button onclick="collapseLiftTest('${c.id}','${iso}')" style="background:transparent;border:none;color:var(--text-hint);font-size:10px;cursor:pointer;padding:2px 6px;text-decoration:underline;font-family:var(--font)" title="Hebe-Test wieder ausblenden">▲ ausblenden</button>`
             : (showReset2
             ? `<button onclick="clearRestPct('${c.id}')" style="background:transparent;border:none;color:var(--text-hint);font-size:10px;cursor:pointer;padding:2px 6px;text-decoration:underline;font-family:var(--font)" title="Wert zurücksetzen — App rechnet neu">× zurücksetzen</button>`
-            : `<div style="font-size:10px;color:var(--text-muted)">${isScale ? 'Topf mit Pflanze wiegen' : 'Hebe den Topf — wie schwer?'}</div>`)}
+            : `<div style="font-size:10px;color:var(--text-muted)">${isScale ? 'Topf mit Pflanze wiegen' : (c.weightMode === 'finger' ? 'Finger in die Erde — wie tief trocken?' : 'Hebe den Topf — wie schwer?')}</div>`)}
         </div>`;
         let body = '';
         if (isScale) {
@@ -22688,9 +23069,13 @@ function renderEntry(iso) {
     // Trichom-Block nur in Spätblüte (Wo 7+) UND im Profi-Modus
     // ODER der User hat schon Trichom-Daten erfasst — dann immer zeigen damit
     // existierende Werte nicht optisch "verschwinden".
-    const _hasTrichData = cd.trichomes && (cd.trichomes.clear !== undefined || cd.trichomes.milky !== undefined || cd.trichomes.amber !== undefined);
+    // (v1.4.79) Ohne eigenen Eintrag für heute den zuletzt bekannten Stand des Zyklus zeigen,
+    // statt wieder bei 70/25/5 zu starten — Trichome ändern sich über Tage, niemand soll sie
+    // täglich neu eintippen müssen. Nur Anzeige; gespeichert wird erst bei einer Änderung.
+    const _prevTrich = cd.trichomes ? null : _lastTrichomes(c.id, iso, c);
+    const _hasTrichData = (cd.trichomes && (cd.trichomes.clear !== undefined || cd.trichomes.milky !== undefined || cd.trichomes.amber !== undefined)) || !!_prevTrich;
     const showTrich = p && p.ph === 'bloom' && p.week >= 7 && (!S.beginnerMode || _hasTrichData);
-    const trich = cd.trichomes || { clear: 70, milky: 25, amber: 5 };
+    const trich = cd.trichomes || (_prevTrich ? { clear: _prevTrich.clear, milky: _prevTrich.milky, amber: _prevTrich.amber } : { clear: 70, milky: 25, amber: 5 });
     const showErnte = p && (p.ph === 'harvest' || p.ph === 'dry');
     const ernte = cd.harvestLog || {};
     const tip = getSmartTip(c, p);
@@ -22759,9 +23144,26 @@ function renderEntry(iso) {
           <div style="width:${trich.milky}%;background:rgba(255,255,255,0.6)"></div>
           <div style="width:${trich.amber}%;background:var(--orange)"></div>
         </div>
+        ${_prevTrich ? (() => {
+          const _age = isoDiff(iso, _prevTrich.iso);
+          const _srcDay = isoDiff(_prevTrich.iso, c.startDate) + 1;
+          const _old = _age > 3;
+          const _txt = _old
+            ? `⏳ Diese Werte sind vom <b>Tag ${_srcDay}</b> — das ist <b>${_age} Tage her</b>, nicht von heute. Trichome reifen in der Zeit weiter.`
+            : `↩ Stand von Tag ${_srcDay} übernommen (${_age === 1 ? 'gestern' : 'vor ' + _age + ' Tagen'}) — anpassen, wenn du neu geschaut hast.`;
+          return `<div style="font-size:10px;color:${_old ? 'var(--yellow)' : 'rgba(90,171,240,0.9)'};margin-top:6px;text-align:center;line-height:1.45">${_txt}</div>
+            <button onclick="confirmTrichCarry('${c.id}','${iso}')" style="width:100%;margin-top:6px;background:var(--card2);border:0.5px solid var(--border);border-radius:8px;padding:8px;font-size:11px;color:var(--text-sub);cursor:pointer;font-family:var(--font)">✓ Heute geschaut — sieht noch genauso aus</button>`;
+        })() : ''}
         ${trich.milky >= 60 && trich.amber >= 10 ? '<div style="font-size:11px;color:var(--green);margin-top:6px;text-align:center">✅ Erntereif!</div>' : 
           trich.milky >= 50 ? '<div style="font-size:11px;color:var(--yellow);margin-top:6px;text-align:center">⏳ Fast bereit</div>' : 
           '<div style="font-size:11px;color:var(--text-muted);margin-top:6px;text-align:center">Noch zu viel klar — Geduld!</div>'}
+        ${(() => {
+          const _tp = _trichPlanNote(c, iso, trich, _prevTrich ? isoDiff(iso, _prevTrich.iso) : 0);
+          if (!_tp) return '';
+          const _col = (_tp.sev === 'wait' || _tp.sev === 'stale') ? 'var(--yellow)' : 'rgba(90,171,240,0.9)';
+          return `<div style="font-size:10px;color:var(--text-hint);margin-top:6px;text-align:center;line-height:1.45">📅 Plan: ${_tp.planLine}</div>`
+            + (_tp.advice ? `<div style="font-size:10px;color:${_col};margin-top:6px;line-height:1.55;background:var(--card2);border-radius:6px;padding:7px 9px">${_tp.advice}</div>` : '');
+        })()}
       </div>` : '';
 
     const ernteHTML = showErnte ? `
@@ -23048,6 +23450,9 @@ function updateCalc(cId, wk) {
 
   // Mix-Reihenfolge-Zellen genauso aktualisieren (Dünger unten bei "⚗️ MISCHREIHENFOLGE")
   document.querySelectorAll(`.mix-calc[data-cycle="${cId}"]`).forEach(cell => {
+    // (Plan A / v1.4.78) Tages-Override (data-ovr) ist eine feste ml-Menge — die darf beim
+    // Ändern der Wassermenge NICHT neu aus dem Plan berechnet und überschrieben werden.
+    if (cell.dataset.ovr === '1') return;
     const plan = parseFloat(cell.dataset.plan) || 0;
     const unit = cell.dataset.unit || 'ml/L';
     const decimals = parseInt(cell.dataset.decimals) || 1;
@@ -23071,7 +23476,17 @@ function updateCalc(cId, wk) {
     const plan = parseFloat(el.dataset.plan) || 0;
     const unit = el.dataset.unit || 'ml/L';
     if (plan > 0 && mixMl > 0 && unit.indexOf('/L') >= 0) {
-      el.textContent = `${plan} ${unit} × ${fmtWater(mixMl)}`;
+      // (v1.4.85) Bei Tages-Korrektur bleibt das Plan-Ergebnis mit in der Zeile, damit der
+      // Vergleich auch nach dem Ändern der Wassermenge stimmt.
+      let txt = `${plan} ${unit} × ${fmtWater(mixMl)}`;
+      if (el.dataset.ovr === '1') {
+        const dec = parseInt(el.dataset.decimals);
+        const d = isFinite(dec) ? dec : 1;
+        const du = el.dataset.dispunit || 'ml';
+        const tot = (typeof calcDose === 'function') ? calcDose(plan, mixMl, unit, d) : (plan * mixMl / 1000);
+        txt += ` = ${tot.toFixed(d)} ${du}`;
+      }
+      el.textContent = txt;
       el.style.display = 'block';
     } else {
       el.style.display = 'none';
@@ -23112,20 +23527,32 @@ function updateCalc(cId, wk) {
  * gerade geändert aber noch nicht gespeichert hat.
  */
 function stepMixDoseLive(btn) {
+  // (Plan A / v1.4.78) Das ± ändert nur den TAGESEINTRAG (cd.doses), nicht den Plan. Der
+  // Ausgangswert ist der aktuell angezeigte ml-Wert (Override oder Plan × Wasser) aus dem
+  // Feld daneben — darauf den ml-Schritt anwenden und als reinen Tages-Override speichern.
   const cId = btn.dataset.cycle;
   const prodId = btn.dataset.prod;
-  const wk = parseInt(btn.dataset.wk);
-  const stepMl = parseFloat(btn.dataset.step);
-  // Aktuellen Wasserwert aus dem Input-Feld lesen (live-Wert vor Save).
-  // Input ist pro-Pflanze wenn data-plants > 1 — × Pflanzen für Gesamt-Volumen,
-  // weil Dünger sich nach Total-Liter richtet (10 L Wasser → 5 ml Bio·Grow).
-  const waterEl = document.getElementById('water-calc-' + cId);
-  const plants = waterEl ? (parseInt(waterEl.dataset.plants) || 1) : 1;
-  const inputVal = waterEl ? (parseFloat(waterEl.value) || parseFloat(waterEl.placeholder) || 0) : 0;
-  const _c = S.cycles.find(x => x.id === cId);
-  const _rf = (typeof reserveFactor === 'function') ? reserveFactor(_c) : 1;
-  const waterAmt = (plants > 1 ? inputVal * plants : inputVal) * _rf;
-  stepMixDose(cId, prodId, wk, stepMl, waterAmt, btn.dataset.wd === '1');
+  const stepMl = parseFloat(btn.dataset.step) || 0;
+  const row = btn.closest('.mix-step');
+  const inp = row ? row.querySelector('.mix-calc') : null;
+  let cur = 0;
+  if (inp) {
+    const raw = String(inp.value == null ? '' : inp.value).replace(',', '.');
+    cur = parseFloat(raw);
+    if (isNaN(cur)) cur = parseFloat(inp.placeholder) || 0;
+  }
+  const absStep = Math.abs(stepMl) || 0.1;
+  let nv = Math.max(0, Math.round((cur + stepMl) / absStep) * absStep);
+  nv = Math.round(nv * 100) / 100;
+  _entryDirty = true;
+  ensE(cId);
+  const cd = S.entries[editISO].cycleData[cId];
+  cd.doses[prodId] = nv;
+  if (cd._suggestedDoses) delete cd._suggestedDoses[prodId];
+  if (typeof _mixTouched !== 'undefined' && _mixTouched && _mixTouched.add) _mixTouched.add(prodId);
+  saveS();
+  vibrate(8);
+  if (editISO) renderEntry(editISO);
 }
 
 /**
@@ -23631,7 +24058,19 @@ function _renderLiftFeelBody(cId, currentPct, userTouched) {
   // Farben als feste hex statt CSS-Vars, damit `${color}1f` (Background mit Alpha)
   // tatsächlich rendert. CSS-Variable + Hex-Suffix funktioniert nicht in Browsern.
   // 5 Buttons auf Mobile sind knapp — Hint-Texte daher 1 Wort, padding minimal.
-  const buttons = [
+  // (v1.4.87) Im Fingertest-Modus misst der User die TIEFE der trockenen Zone statt des
+  // Topfgewichts — dieselben 5 Stufen, andere Beschriftung. Die Zentimeter beziehen sich auf
+  // einen normalen Topf; die Zuordnung ist bewusst vorsichtig, weil der Finger nur die obere
+  // Schicht erreicht und unten oft noch Wasser steht.
+  const _fc = S.cycles.find(x => x.id === cId);
+  const _isFinger = _fc && _fc.weightMode === 'finger';
+  const buttons = _isFinger ? [
+    { feel: 'full',   icon: '💧', label: 'Nass',   hint: 'dunkel',  color: '#4a9eff' },
+    { feel: 'medium', icon: '🟢', label: '1–2 cm', hint: 'Kruste',  color: '#5cb85c' },
+    { feel: 'soon',   icon: '🟡', label: '3–4 cm', hint: 'Kuppe',   color: '#e0a020' },
+    { feel: 'low',    icon: '🟠', label: '5 cm+',  hint: 'Knöchel', color: '#e08040' },
+    { feel: 'dry',    icon: '🔴', label: 'Staub',  hint: 'ganz tief', color: '#e06060' },
+  ] : [
     { feel: 'full',   icon: '💧', label: 'Voll',    hint: 'frisch',   color: '#4a9eff' },
     { feel: 'medium', icon: '🟢', label: 'Mittel',  hint: 'feucht',   color: '#5cb85c' },
     { feel: 'soon',   icon: '🟡', label: 'Bald',    hint: 'leichter', color: '#e0a020' },
@@ -23676,7 +24115,14 @@ function _renderLiftFeelBody(cId, currentPct, userTouched) {
     </button>`;
   }).join('');
 
-  return `<div style="display:flex;gap:4px;justify-content:space-between">${btnHtml}</div>`;
+  // (v1.4.87) Im Fingertest-Modus die Methode kurz danebenschreiben — sie wirkt simpel, aber
+  // Stelle und Tiefe entscheiden. Und die ehrliche Grenze: Der Finger erreicht nur die obere
+  // Schicht; gerade in groesseren Toepfen kann unten noch Wasser stehen.
+  const _fingerHelp = _isFinger ? `<div style="font-size:10px;color:var(--text-hint);line-height:1.55;margin-bottom:7px">
+      \ud83d\udc46 Finger senkrecht in die Erde, <b>mittig zwischen Stamm und Topfrand</b> (nicht am Rand \u2014 dort trocknet es schneller). Wie tief ist es trocken?
+      ${(_fc && (_fc.potSize || 0) >= 15) ? `<br><span style="color:var(--yellow)">Bei deinem gro\u00dfen Topf (${_fc.potSize} L): Unten kann noch Wasser stehen, auch wenn oben 5 cm trocken sind. Im Zweifel einen Tag l\u00e4nger warten.</span>` : ''}
+    </div>` : '';
+  return _fingerHelp + `<div style="display:flex;gap:4px;justify-content:space-between">${btnHtml}</div>`;
 }
 
 /**
@@ -23726,18 +24172,18 @@ function stepWeightG(cId, step) {
 function refreshRunoffAnalysis(cId) {
   const cd = S.entries[editISO] && S.entries[editISO].cycleData && S.entries[editISO].cycleData[cId];
   if (!cd) return;
-  const ra = analyzeRunoff(cd);
-  const ecColor = ra.ecStatus === 'ok' ? 'var(--green)' :
-                  (ra.ecStatus === 'warning-high' || ra.ecStatus === 'warning-low') ? 'var(--orange)' : 'var(--text-hint)';
-  const phColor = ra.phStatus === 'ok' ? 'var(--green)' :
-                  (ra.phStatus === 'warning-high' || ra.phStatus === 'warning-low') ? 'var(--orange)' : 'var(--text-hint)';
+  const ra = analyzeRunoff(cd, (S.cycles.find(x => x.id === cId) || {}).medium);
+  const ecColor = _runoffSevColor(ra.ecSeverity);
+  const phColor = _runoffSevColor(ra.phSeverity);
+  const boxBd = ra.boxSeverity === 'warning' ? 'var(--orange)' : 'rgba(90,171,240,0.5)';
+  const boxBg = ra.boxSeverity === 'warning' ? 'rgba(232,136,74,0.08)' : 'rgba(90,171,240,0.06)';
   const hasDiff = ra.ecDelta !== null || ra.phDelta !== null;
   const st = document.getElementById('runoff-status-' + cId);
-  if (st) st.innerHTML = hasDiff ? `<span style="color:${ra.ecStatus === 'ok' && ra.phStatus === 'ok' ? 'var(--green)' : 'var(--orange)'}">${ra.phLabel} · ${ra.ecLabel}</span>` : '';
+  if (st) st.innerHTML = hasDiff ? `<span style="color:${_runoffSevColor(ra.boxSeverity)}">${ra.phLabel} · ${ra.ecLabel}</span>` : '';
   const dl = document.getElementById('runoff-delta-' + cId);
   if (dl) dl.innerHTML = hasDiff ? `Δ pH ${ra.phDelta !== null ? (ra.phDelta > 0 ? '+' : '') + ra.phDelta.toFixed(1) : '—'}<br>Δ EC ${ra.ecDelta !== null ? (ra.ecDelta > 0 ? '+' : '') + ra.ecDelta.toFixed(1) : '—'}` : 'Drain-Wasser messen';
   const wb = document.getElementById('runoff-warn-' + cId);
-  if (wb) wb.innerHTML = ra.warnings.length > 0 ? ra.warnings.map(w => `<div style="background:rgba(232,136,74,0.08);border-left:2px solid var(--orange);padding:8px 10px;border-radius:6px;font-size:11px;line-height:1.5;color:var(--text-sub);margin-top:4px">${w}</div>`).join('') : '';
+  if (wb) wb.innerHTML = ra.warnings.length > 0 ? ra.warnings.map(w => `<div style="background:${boxBg};border-left:2px solid ${boxBd};padding:8px 10px;border-radius:6px;font-size:11px;line-height:1.5;color:var(--text-sub);margin-top:4px">${w}</div>`).join('') : '';
   const phEl = document.getElementById('runoff-ph-' + cId);
   if (phEl) phEl.style.borderColor = phColor !== 'var(--text-hint)' ? phColor : 'var(--border)';
   const ecEl = document.getElementById('runoff-ec-' + cId);
@@ -23833,37 +24279,20 @@ function toggleMixCheck(cId, prodId) {
 // damit die ml/L-Zeile + die Live-Umrechnung (×Wasser) konsistent bleiben. Absolute
 // Einheiten (fixe g/ml) werden direkt gespeichert. Leere/ungültige Eingabe → unverändert.
 function uMixDoseTotal(input) {
-  const cId = input.dataset.cycle, prodId = input.dataset.prod, wk = parseInt(input.dataset.wk);
-  const prod = (S.products || []).find(x => x.id === prodId);
-  const perLitre = isPerLitre(prod && prod.unit);
+  // (Plan A / v1.4.78) Die getippte ml-Menge gilt nur für HEUTE. Früher wurde sie durch die
+  // Tages-Wassermenge zurück in eine Konzentration gerechnet und in S.weekSchedule geschrieben —
+  // dadurch veränderte eine Tages-Korrektur rückwirkend Plan, Einstellungen und alle anderen
+  // Tage (z.B. 3.0 ml ÷ 13 L = 0.231 ml/L). Jetzt: reiner Tages-Override in cd.doses.
+  const cId = input.dataset.cycle, prodId = input.dataset.prod;
   const typed = parseFloat(String(input.value == null ? '' : input.value).replace(',', '.'));
   if (isNaN(typed) || typed < 0) { if (editISO) renderEntry(editISO); return; }
-  // Live-Anmischmenge (wie stepMixDoseLive): Wasser-Input ist pro Pflanze wenn data-plants>1
-  const waterEl = document.getElementById('water-calc-' + cId);
-  const plants = waterEl ? (parseInt(waterEl.dataset.plants) || 1) : 1;
-  const inputVal = waterEl ? (parseFloat(waterEl.value) || parseFloat(waterEl.placeholder) || 0) : 0;
-  const _c = S.cycles.find(x => x.id === cId);
-  const _rf = (typeof reserveFactor === 'function') ? reserveFactor(_c) : 1;
-  const mixMl = (plants > 1 ? inputVal * plants : inputVal) * _rf;
-  const key = 'global_w' + wk;
-  if (!S.weekSchedule[key]) S.weekSchedule[key] = {};
-  let newPlan;
-  if (perLitre) {
-    const waterL = mixMl / 1000;
-    newPlan = waterL > 0 ? typed / waterL : 0;
-    newPlan = Math.round(newPlan * 1000) / 1000;
-  } else {
-    newPlan = Math.round(typed * 100) / 100;
-  }
+  const nv = Math.round(typed * 100) / 100;
+  _entryDirty = true;
+  ensE(cId);
+  const cd = S.entries[editISO].cycleData[cId];
+  cd.doses[prodId] = nv;
+  if (cd._suggestedDoses) delete cd._suggestedDoses[prodId];
   if (typeof _mixTouched !== 'undefined' && _mixTouched && _mixTouched.add) _mixTouched.add(prodId);
-  // (v1.2.72) An Wasser-Tagen die feste waterDayDose ändern statt des Schedules,
-  // sonst bleibt der angezeigte Wert stehen (siehe _setWaterDayDose). newPlan ist
-  // bereits die Ziel-Konzentration (per-litre) bzw. der Absolutwert.
-  if (input.dataset.wd === '1') {
-    _setWaterDayDose(prodId, newPlan);
-    return;
-  }
-  S.weekSchedule[key][prodId] = newPlan;
   saveS();
   if (typeof vibrate === 'function') vibrate(8);
   if (editISO) renderEntry(editISO);
@@ -25013,10 +25442,147 @@ async function applyRecommended(cId, wk) {
   // "Tag automatisch ausfüllen" trotz mehrfachem Vorziehen nie.
   if (cd && parseFloat(cd.water) > 0) await _afterWateringSaved(editISO, cId);
 }
-function uTrich(cId, field, v) {
+/**
+ * (v1.4.80) Verknüpft den Trichom-Stand mit dem Plan (Spülstart / Erntetag). Bisher war der
+ * Trichom-Status rein wertebasiert und kannte die Termine nicht — man las „Fast bereit",
+ * während der Plan noch drei Wochen vorsah, ohne dass jemand auf den Widerspruch hinwies.
+ * Leitsatz: die Trichome sind die Wahrheit, das Datum ist nur das Gerüst. Darum wird hier NIE
+ * zum früheren Ernten gedrängt — im Zweifel lautet der Rat abwarten, weil zu früh geerntet
+ * Wirkung kostet und sich nicht mehr reparieren lässt.
+ */
+function _trichPlanNote(c, iso, trich, ageDays) {
+  if (!c || !c.startDate || !iso || !trich) return null;
+  const hc = harvestCountdown(c, iso);
+  if (!hc || !hc.harvestISO) return null;
+  const anzucht = c.anzuchtDays || PHASE_DEFAULTS.anzuchtDays;
+  const bloom = c.bloomDays || PHASE_DEFAULTS.bloomDays;
+  const today = isoDiff(iso, c.startDate) + 1;
+  const flushDay = anzucht + bloom + 1;
+  const dToFlush = flushDay - today;
+  const harvestDay = isoDiff(hc.harvestISO, c.startDate) + 1;
+  const dToHarvest = hc.daysRemaining;
+  const milky = parseInt(trich.milky, 10) || 0;
+  const amber = parseInt(trich.amber, 10) || 0;
+  const ripe = milky >= 60 && amber >= 10;
+  const nearly = !ripe && milky >= 50;
+  const early = !ripe && !nearly;
+
+  const planLine = (dToFlush > 0 ? `Spülen ab Tag ${flushDay} (in ${dToFlush} T.) · ` : '')
+    + `Ernte Tag ${harvestDay}`
+    + (dToHarvest > 0 ? ` (in ${dToHarvest} T.)` : (dToHarvest === 0 ? ' (heute)' : ` (seit ${Math.abs(dToHarvest)} T. überfällig)`));
+
+  // Schwellen: „voraus" erst wenn der Abstand deutlich ist (erntereif >5 T., fast bereit >14 T.) —
+  // sonst würde die App bei jedem normalen Reifeverlauf schon meckern. „Warten" sobald die Ernte
+  // in Sichtweite ist (≤7 T.), die Trichome aber noch überwiegend klar sind.
+  // (v1.4.82) Ab wann ist eine Beobachtung zu alt? In der Spätblüte schaut man alle 2–3 Tage
+  // unter die Lupe. Alles darüber taugt nicht mehr als Grundlage für eine Entscheidung über
+  // den Erntezeitpunkt — die Trichome reifen ja genau in diesen Tagen weiter.
+  const _stale = (ageDays || 0) > 3;
+  let advice = '', sev = 'plain';
+  if (early && dToHarvest <= 7) {
+    sev = 'wait';
+    advice = 'Die Trichome sind noch überwiegend klar. <b>Zu früh geerntet kostet Wirkung</b> — lieber warten, bis 80–90% milchig sind, auch wenn der Plan schon durch ist. Das Datum ist nur ein Gerüst.'
+      + (_stale ? ` Schau vorher frisch nach — dieser Stand ist ${ageDays} Tage alt.` : '');
+  } else if ((ripe && dToHarvest > 5) || (nearly && dToHarvest > 14)) {
+    if (_stale) {
+      // (v1.4.82) Auf eine veraltete Beobachtung hin NIEMALS zum Vorziehen der Ernte raten —
+      // Trichome reifen in genau diesen Tagen weiter, der alte Stand kann die Lage völlig
+      // falsch abbilden. Statt einer Empfehlung: erst frisch nachschauen.
+      sev = 'stale';
+      advice = `Für eine Aussage zum Erntezeitpunkt ist dieser Stand <b>zu alt (${ageDays} Tage)</b>. Schau einmal frisch mit der Lupe nach und trag die Werte ein — dann sage ich dir, ob du Spülen und Ernte vorziehen kannst.`;
+    } else {
+      sev = 'ahead';
+      advice = 'Die Trichome sind weiter als der Plan. <b>Trichome zählen mehr als das Datum</b> — schau nochmal mit der Lupe genau nach (mehrere Blüten, nicht nur die Spitze). Bestätigt sich das, kannst du Spülen und Ernte vorziehen: Phasendauern in den Einstellungen kürzen.';
+    }
+  }
+  return { planLine, advice, sev };
+}
+
+/**
+ * (v1.4.79) Sucht den jüngsten Trichom-Eintrag VOR einem Datum im selben Zyklus.
+ * Trichome ändern sich über Tage, nicht über Nacht — darum startet ein neuer Tag nicht
+ * wieder bei 70/25/5, sondern bei dem, was zuletzt unter der Lupe zu sehen war. Der Wert
+ * wird nur als Startpunkt ANGEZEIGT, nicht automatisch gespeichert: ein echter Tages-
+ * Eintrag entsteht erst, wenn der User etwas ändert (keine erfundenen Messdaten).
+ */
+function _lastTrichomes(cId, beforeIso, cyc) {
+  if (!S.entries || !beforeIso) return null;
+  const start = cyc && cyc.startDate ? cyc.startDate : null;
+  const isos = Object.keys(S.entries)
+    .filter(k => k < beforeIso && (!start || k >= start))
+    .sort().reverse();
+  for (let i = 0; i < isos.length; i++) {
+    const ent = S.entries[isos[i]];
+    const cd = ent && ent.cycleData && ent.cycleData[cId];
+    const t = cd && cd.trichomes;
+    if (t && (t.clear !== undefined || t.milky !== undefined || t.amber !== undefined)) {
+      return { clear: t.clear || 0, milky: t.milky || 0, amber: t.amber || 0, iso: isos[i] };
+    }
+  }
+  return null;
+}
+
+/**
+ * (v1.4.82) „Heute geschaut — unverändert": schreibt den übernommenen Stand als echten
+ * Eintrag für HEUTE fest. Aus einem alten Wert wird damit wieder eine frische, datierte
+ * Beobachtung — der Verlauf bekommt einen Punkt, die Veraltet-Warnung verschwindet und die
+ * Erntezeitpunkt-Einschätzung wird wieder freigegeben. Bewusst nur auf Knopfdruck: die App
+ * schreibt niemals von selbst Messwerte fort, die niemand angeschaut hat.
+ */
+function confirmTrichCarry(cId, iso) {
+  const cyc = S.cycles.find(x => x.id === cId);
+  const pv = _lastTrichomes(cId, iso, cyc);
+  if (!pv) return;
+  editISO = iso;
+  _entryDirty = true;
   ensE(cId);
-  if (!S.entries[editISO].cycleData[cId].trichomes) S.entries[editISO].cycleData[cId].trichomes = { clear: 70, milky: 25, amber: 5 };
-  S.entries[editISO].cycleData[cId].trichomes[field] = parseInt(v) || 0;
+  S.entries[iso].cycleData[cId].trichomes = { clear: pv.clear, milky: pv.milky, amber: pv.amber };
+  saveS();
+  if (typeof vibrate === 'function') vibrate(8);
+  if (typeof toast === 'function') toast('Trichom-Stand für heute bestätigt');
+  renderEntry(iso);
+}
+
+function uTrich(cId, field, v) {
+  // (v1.4.81) Wie jeder andere Eingabe-Handler den Tag als geändert markieren. Fehlte hier als
+  // einzigem — dadurch galt ein Tag, in dem NUR Trichome eingetragen wurden, als unverändert:
+  // beim Verlassen kam keine Nachfrage, und ein späteres „Verwerfen" (ausgelöst durch eine
+  // andere Änderung) löschte über _restoreEntrySnapshot den kompletten Tag samt Trichomen.
+  _entryDirty = true;
+  ensE(cId);
+  const cd = S.entries[editISO].cycleData[cId];
+  if (!cd.trichomes) {
+    // (v1.4.79) Beim ersten Antippen an einem neuen Tag vom zuletzt bekannten Stand ausgehen —
+    // sonst würde die Anzeige (die den Vortag zeigt) beim Speichern auf 70/25/5 zurückspringen.
+    const _pv = _lastTrichomes(cId, editISO, S.cycles.find(x => x.id === cId));
+    cd.trichomes = _pv ? { clear: _pv.clear, milky: _pv.milky, amber: _pv.amber } : { clear: 70, milky: 25, amber: 5 };
+  }
+  const t = cd.trichomes;
+  let val = parseInt(v, 10);
+  if (isNaN(val)) val = 0;
+  val = Math.max(0, Math.min(100, val));
+
+  if (field === 'clear') {
+    // (v1.4.73) Klar ist der Taktgeber: Milchig + Bernstein ergänzen sich automatisch.
+    // Bernstein bleibt 0, solange Klar ≥ 40; darunter wächst es langsam (~0.4 je %-Punkt) —
+    // deckt „viel Klar → noch kein Bernstein" ab. Milchig = Rest, Summe immer 100.
+    t.clear = val;
+    t.amber = Math.min(100 - val, Math.round(Math.max(0, 40 - val) * 0.4));
+    t.milky = 100 - val - t.amber;
+  } else if (field === 'milky') {
+    // Manuelle Korrektur: Milchig übernehmen, Rest auf Bernstein (Klar bleibt Anker).
+    t.milky = val;
+    if (t.clear + val > 100) { t.clear = 100 - val; t.amber = 0; }
+    else t.amber = 100 - t.clear - val;
+  } else if (field === 'amber') {
+    // Manuelle Korrektur: Bernstein übernehmen, Rest auf Milchig (Klar bleibt Anker).
+    t.amber = val;
+    if (t.clear + val > 100) { t.clear = 100 - val; t.milky = 0; }
+    else t.milky = 100 - t.clear - val;
+  }
+  saveS();
+  if (editISO && typeof _rerenderEntryKeepScroll === 'function') _rerenderEntryKeepScroll();
+  else if (editISO && typeof renderEntry === 'function') renderEntry(editISO);
 }
 function uHarvest(cId, field, v) {
   ensE(cId);
@@ -27256,6 +27822,7 @@ const LEXIKON = [
       txt: '<b>Eingerollte Blätter (Blattrollen) sind ein Symptom, keine eigene Krankheit</b> — ob sie sich kräuseln oder nach oben rollen, die <b>Richtung</b> verrät die Ursache.<br><br>' +
         '<b>➤ Ränder rollen sich nach OBEN (Taco-Form):</b> meist zu heiß (über 30 °C Raumtemperatur) oder die Lampe zu nah bzw. zu stark (Lichtbrand). Erste Hilfe: Temperatur senken, für Luftbewegung sorgen, Lampe höher hängen. Handtest: hältst du die Hand 10 Sekunden auf Bud-Höhe gut aus, passt der Abstand.<br><br>' +
         '<b>➤ Blatt in der Mitte gefaltet (Canoeing / Kanu-Form):</b> die beiden Blatthälften klappen entlang der Mittelrippe nach oben zu einer V- bzw. Kanu-Form. Enger Verwandter der Taco-Form, meist dieselbe Ursache — Hitze, zu nahes/intensives Licht oder zu trockene Luft (VPD zu hoch). Erste Hilfe: Lampe höher hängen, Temperatur senken, für etwas mehr Luftfeuchte sorgen. Betrifft es nur die obersten Blätter direkt unter der Lampe, ist Licht/Hitze fast sicher der Grund.<br><br>' +
+        '<b>➤ Blatt fest nach UNTEN gefaltet (nach unten gefaltete Blätter · Längs-Faltung, nach unten gebogen):</b> das ganze Blatt klappt entlang der Mittelrippe fest nach <b>unten</b> zusammen — von der Spitze bis zum Stiel, wie ein zugeklapptes Buch, und lässt sich nicht aufbiegen. Der Stiel ist dabei nicht verdreht. <b>Nicht verwechseln:</b> weder Kanu (Hälften nach <b>oben</b>, V-Form → Hitze/Licht) noch Krallen (nur die <b>Spitzen</b> haken nach unten → oft Nährstoff-Überschuss). Sind nur <b>1–2 Blätter</b> pro Pflanze so (typisch in der Mitteletage) und der Rest sieht gesund aus, ist das fast immer <b>harmlos</b> — meist sorten-/genetiktypisch oder eine lokale Reaktion auf die Position (Licht-/Temperatur-Kante, ein leicht geknickter Blattstiel). <b>Handlung: nichts, nur beobachten.</b> Erst wenn sich die feste Faltung über <b>viele</b> Blätter einer ganzen Etage ausbreitet, lohnt der Blick auf Wurzelzone und Umgebung. Ist das Blatt dagegen <b>weich/schlaff</b> statt fest, ist es keine harmlose Faltung, sondern ein Gieß-/Wurzel-Thema.<br><br>' +
         '<b>➤ Blätter kräuseln/krallen sich nach UNTEN (Krallen-Form):</b> meist zu viel Wasser, Überdüngung (zu viel Stickstoff) oder ein Wurzelproblem. Erste Hilfe: zurückhaltender gießen (erst wenn der Topf spürbar leichter ist), beim nächsten Guss die Düngermenge halbieren, pH kontrollieren (Erde 6,2–6,4).<br><br>' +
         '<b>Im Zweifel gilt immer: weniger statt mehr.</b> Von leicht gestressten Blättern erholt sich die Pflanze in Stunden — von Überdüngung oder Staunässe nur langsam. Also zuerst Temperatur, Lampenabstand und Gießmenge prüfen, nicht auf Verdacht nachdüngen.<br><br>' +
         'Für eine gezielte Diagnose Schritt für Schritt öffne den <b>Pflanzen-Doktor</b> im Tab „Tipps" — er fragt dich durch Ort, Farbe, Form und Zeitpunkt und nennt die wahrscheinlichste Ursache mit konkretem nächstem Schritt.' },
@@ -28220,7 +28787,7 @@ const HOWTO = [
     { t: 'pH und EC eingeben',
       txt: 'Die ±-Buttons gehen in 0.1-Schritten. Tippe den Wert, oder drücke lang auf + oder − um schnell hoch/runter zu zählen. Die Ziele (pH 6.2–6.4, EC 0.8–2.0) stehen rechts daneben. Bei Abweichungen erscheint eine farbige Warnung: Orange für Grenzwertig, Rot für gefährlich.' },
     { t: 'Dünger abhaken beim Mischen',
-      txt: 'Im Nährstoff-Abschnitt siehst du die Mischreihenfolge mit konkreten ml-Werten für deine Gießmenge. Tippe irgendwo auf eine Zeile um den Haken zu setzen — die ganze Zeile ist antippbar, nicht nur das ○. Die Haken bleiben erhalten auch wenn du zwischendurch an einem anderen Dünger die ± antippst, und setzen sich am nächsten Gießtag automatisch zurück. Die ±-Buttons ändern den Plan in 0.1-ml-Schritten (auf dem Display gerechnet).' },
+      txt: 'Im Nährstoff-Abschnitt siehst du die Mischreihenfolge mit konkreten ml-Werten für deine Gießmenge. Tippe irgendwo auf eine Zeile um den Haken zu setzen — die ganze Zeile ist antippbar, nicht nur das ○. Die Haken bleiben erhalten auch wenn du zwischendurch an einem anderen Dünger die ± antippst, und setzen sich am nächsten Gießtag automatisch zurück. Die ±-Buttons und das Zahlenfeld ändern die Menge <b>nur für diesen Tag</b> — dein Düngeplan bleibt unangetastet. Unter einem geänderten Wert steht dann „✎ nur heute". Willst du den Plan selbst dauerhaft ändern, geht das unter <b>Dünger → Feintuning → Wochenplan</b>.' },
     { t: 'Umgebung: Temperatur & Luftfeuchte',
       txt: 'Unten im Eintrag. Temperatur in 0.1°C-Schritten, Luftfeuchte in 0.2%-Schritten. Daraus rechnet die App automatisch den <b>VPD</b> (Vapour Pressure Deficit) — der Balken zeigt ob die Werte für Anzucht/Blüte passen.' },
     { t: 'Fotos & Notizen',
@@ -30047,6 +30614,44 @@ setTimeout(() => {
 // alles übers Netz, jede weitere Ladung kommt aus dem Cache (instant), parallel
 // wird im Hintergrund die neue Version geholt für die NÄCHSTE Sitzung.
 // Vorteil: keine Mid-Session-Updates die laufende Eingaben zerschießen.
+/**
+ * (v1.4.89) Installierbarkeit. Der Browser bietet "Zum Startbildschirm hinzufuegen" nur ueber
+ * ein Menue an, das die meisten nie oeffnen — dabei ist das Installieren genau der Schritt,
+ * der die App schnell macht: danach startet sie aus dem Cache statt die ~1,9 MB grosse Datei
+ * jedes Mal neu zu laden. Darum das Angebot des Browsers abfangen und sichtbar anbieten.
+ */
+let _installPrompt = null;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  _installPrompt = e;
+  if (tab === 'set' && typeof renderSet === 'function') renderSet();
+});
+
+window.addEventListener('appinstalled', () => {
+  _installPrompt = null;
+  if (typeof toast === 'function') toast('\u2713 GrowSmart installiert');
+  if (tab === 'set' && typeof renderSet === 'function') renderSet();
+});
+
+async function installApp() {
+  if (!_installPrompt) return;
+  const p = _installPrompt;
+  _installPrompt = null;
+  try {
+    p.prompt();
+    await p.userChoice;
+  } catch (e) { /* abgebrochen — kein Grund fuer eine Fehlermeldung */ }
+  if (typeof renderSet === 'function') renderSet();
+}
+
+/** Laeuft die App bereits im installierten Modus (eigenes Fenster, ohne Browser-Leiste)? */
+function _isInstalled() {
+  try {
+    return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+  } catch (e) { return false; }
+}
+
 if ('serviceWorker' in navigator && location.protocol !== 'file:') {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('sw.js').then((reg) => {
