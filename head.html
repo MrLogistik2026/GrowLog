@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<meta name="theme-color" content="#111111"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="GrowSmart"/>
+<!-- (v1.5.11) Manifest und App-Icons werden erst zur Laufzeit eingehaengt, und nur wenn
+     die App ueber http(s) laeuft. In einer Datei-Vorschau (Claude-App, blob:/file:)
+     liegen diese Dateien nicht daneben; die fehlschlagenden Anfragen haben den Start
+     dort spuerbar verzoegert. Das Favicon steckt als winziges SVG direkt drin. -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%227%22 fill=%22%23111%22/%3E%3Cellipse cx=%2211%22 cy=%2214%22 rx=%228%22 ry=%224%22 fill=%22%234caf70%22 transform=%22rotate(-25 11 14)%22/%3E%3Cellipse cx=%2221%22 cy=%2214%22 rx=%228%22 ry=%224%22 fill=%22%234caf70%22 transform=%22rotate(25 21 14)%22/%3E%3Crect x=%2215%22 y=%2214%22 width=%222%22 height=%2211%22 fill=%22%232e8b50%22/%3E%3C/svg%3E"/>
+<title>GrowSmart</title>
+<!--
+  ============================================================================
+  GROWSMART — EIN MEISTERWERK IM WERDEN
+  ============================================================================
+
+  KERN-ANSPRUCH:
+  "Eine App die Cannabis-Anbau entmystifiziert. Die Anfänger vor den häufigen
+  tödlichen Fehlern schützt, und Profis zeigt wo sie noch Ertrag liegen lassen."
+
+  Die erste Grow-App mit echter Biophysik statt Daumenregeln.
+
+  ----------------------------------------------------------------------------
+  MEISTERWERK-PRINZIPIEN (verbindlich, nicht verhandelbar)
+  ----------------------------------------------------------------------------
+
+  1. EHRLICHKEIT ÜBER OPTIMISMUS
+     Die App lügt nie — auch nicht aus Freundlichkeit. Schätzwerte sind als
+     solche gekennzeichnet. Keine falschen Präzisionen. Keine Success-Theater.
+     Leere Felder sind leer, nicht "angenommen gefüllt".
+
+  2. SICHTBARES WARUM
+     Jede Zahl, jede Empfehlung, jede Phase kann der User aufklappen und sehen
+     warum das so ist. Kein Geheimwissen. Kein "die App sagt halt".
+
+  3. DER MENSCH BLEIBT CHEF
+     Die App schlägt vor, sie entscheidet nicht. Jede Empfehlung ist
+     überschreibbar, jede Automatik abschaltbar. Bei biologisch schädlichem
+     Verhalten wird einmal deutlich gewarnt — dann lässt die App machen.
+
+  4. ZWEI SPRACHEN, EIN KERN
+     Einsteiger- und Profi-Modus sind nicht verschiedene Apps, sondern
+     verschiedene Übersetzungen derselben Wahrheit. Gleiche Berechnung,
+     anderer Detailgrad.
+
+  5. KONTEXT-SPEZIFISCH (seedType × growType × phase)
+     Jede Empfehlung, jede Warnung, jeder Tipp wird gegen die Kombination
+     seedType × growType × phase geprüft. Keine generischen Sätze die für
+     eine Gruppe falsch sind. Automatics brauchen kein 12/12. Feminisiert
+     Outdoor folgt der Sonne. Jeder Ton muss stimmen.
+
+  6. NOMENKLATUR KONSEQUENT
+     Jeder Begriff hat genau eine Bedeutung, jede Bedeutung einen Begriff.
+     Keine gemischten Synonyme. Das Lexikon erklärt alternative Begriffe
+     aus der Branche, aber die App selbst spricht EINE Sprache.
+     Beispiel: "Restgewicht" in der App, "Dryback" nur im Lexikon erwähnt.
+
+  7. LEXIKON KONTEXTUELL
+     Die richtige Information zur richtigen Zeit am richtigen Ort. Wer
+     "Spinnmilben" antippt sieht sofort die Sofort-Maßnahme inline, nicht
+     erst nach drei Klicks in einem anderen Tab.
+
+  8. EHRLICHKEIT DER DATEN
+     Ein eingetragener Wert = gemessen. Ein Placeholder = Empfehlung, nicht
+     Messung. Nichts wird automatisch in den Daten-Strom gekippt was der
+     User nicht bewusst bestätigt hat. Statistiken zeigen was wirklich
+     passiert ist, nicht was die App vermutet hat.
+
+  ----------------------------------------------------------------------------
+  ARCHITEKTUR-PRINZIPIEN
+  ----------------------------------------------------------------------------
+
+  A. Single-File PWA. Keine Frameworks. Keine Build-Chain. Portabel.
+     Wird in 10 Jahren noch laufen.
+
+  B. Alles lokal. LocalStorage für Struktur, IndexedDB für Fotos (geplant).
+     Kein Backend, kein Tracking, kein Account.
+
+  C. Modulare interne Organisation: Daten / Logik / UI klar getrennt,
+     auch wenn alles in einer Datei lebt.
+
+  D. Alle User-Texte laufen durch T('key') — kein Hardcoded-Text im
+     Logik-Code. Bereitet Internationalisierung vor.
+
+  ============================================================================
+-->
+<!-- (v1.5.11) Schriften NICHT render-blockierend laden. Vorher hing der Start an dieser
+     externen Anfrage: Ist das Netz langsam oder blockiert (z.B. in einer App-Vorschau),
+     wartet der Browser bis zum Timeout, bevor er überhaupt etwas zeichnet — das kostete
+     im schlechtesten Fall eine Minute. Mit media="print" gilt das Stylesheet zunächst
+     nicht fürs Display, blockiert also nichts; sobald es geladen ist, wird es aktiv.
+     Bis dahin läuft die App mit den Systemschriften, die unten als Fallback stehen. -->
+<link rel="stylesheet" media="print" onload="this.media='all';this.onload=null"
+      href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&display=swap"/>
+<style>
+/* ===================== CSS VARIABLES ===================== */
+:root {
+  --bg: #0a0a0a;
+  --surface: #131313;
+  --card: #1a1a1a;
+  --card2: #1f1f1f;
+  --border: #262626;
+  --green: #4caf70;
+  --green-dk: #1a3a24;
+  --green-bg: #0d1e0d;
+  --green-hint: #3a6e4a;
+  --blue: #5aabf0;
+  --blue-bg: #0a1520;
+  --teal: #5adada;
+  --teal-bg: #0e1a1a;
+  --teal-bd: #1e3535;
+  --red: #e06060;
+  --orange: #e8884a;
+  --orange-bg: #1e0e04;
+  --purple: #b06ac8;
+  --yellow: #f0d050;
+  --text: #e8e8e8;
+  --text-sub: #aaa;
+  --text-muted: #666;
+  --text-hint: #505050;
+  --font: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --mono: 'DM Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Roboto Mono', monospace;
+}
+
+/* ===================== LIGHT-MODE ===================== */
+/* Aktivierbar via data-theme="light" auf <html>. Bei data-theme="auto" greift
+ * automatisch das System-Setting (prefers-color-scheme). Bei data-theme="dark"
+ * oder fehlend: Dark-Mode-Defaults oben.
+ *
+ * Akzent-Farben sind im Light-Mode etwas dunkler/saturierter für Kontrast
+ * auf hellem Untergrund (gelbe Schrift auf weiß wäre unlesbar). Die transparenten
+ * Akzent-Hintergründe in Inline-Styles (rgba(76,175,112,0.1)) funktionieren in
+ * beiden Modi, weil sie sich an die jeweilige Hintergrundfarbe anpassen.
+ *
+ * Bekannte Limitation: einzelne Inline-Styles im JS-Code mit harten dunklen
+ * Hex-Werten (z.B. background:#1a1a1a) reagieren nicht auf den Theme-Switch.
+ * Diese Stellen werden später schrittweise auf var() umgestellt.
+ */
+:root[data-theme="light"] {
+  --bg: #f7f8f7;
+  --surface: #ffffff;
+  --card: #ffffff;
+  --card2: #fafafa;
+  --border: #d8dcd8;
+  --green: #2e8b50;
+  --green-dk: #c8e8d2;
+  --green-bg: #e8f5ec;
+  --green-hint: #5e9870;
+  --blue: #2a7fc4;
+  --blue-bg: #e6f0fa;
+  --teal: #2a8a8a;
+  --teal-bg: #e8f5f5;
+  --teal-bd: #c0e0e0;
+  --red: #c84040;
+  --orange: #d06820;
+  --orange-bg: #fdf0e6;
+  --purple: #8a44a8;
+  --yellow: #b89020;
+  --text: #1a1a1a;
+  --text-sub: #4a4a4a;
+  --text-muted: #777;
+  --text-hint: #aaa;
+}
+
+/* Auto-Modus: System-Theme respektieren */
+@media (prefers-color-scheme: light) {
+  :root[data-theme="auto"] {
+    --bg: #f7f8f7;
+    --surface: #ffffff;
+    --card: #ffffff;
+    --card2: #fafafa;
+    --border: #d8dcd8;
+    --green: #2e8b50;
+    --green-dk: #c8e8d2;
+    --green-bg: #e8f5ec;
+    --green-hint: #5e9870;
+    --blue: #2a7fc4;
+    --blue-bg: #e6f0fa;
+    --teal: #2a8a8a;
+    --teal-bg: #e8f5f5;
+    --teal-bd: #c0e0e0;
+    --red: #c84040;
+    --orange: #d06820;
+    --orange-bg: #fdf0e6;
+    --purple: #8a44a8;
+    --yellow: #b89020;
+    --text: #1a1a1a;
+    --text-sub: #4a4a4a;
+    --text-muted: #777;
+    --text-hint: #aaa;
+  }
+}
+
+/* prefers-reduced-motion: Animationen reduzieren für Schwindel-empfindliche User
+ * (Accessibility-Manifest: "JEDEM ermöglichen"). Übersteuert nicht harte
+ * Funktions-Animationen wie Modal-Open, aber dezimiert dauerhafte Bewegung. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ===================== RESET & BASE ===================== */
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { width: 100%; height: 100%; overflow: hidden; background: var(--bg); font-family: var(--font); color: var(--text); -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+#app { width: 100%; height: 100%; display: flex; flex-direction: column; max-width: 480px; margin: 0 auto; }
+/* Allow text selection only in input fields and textareas */
+input, textarea, [contenteditable] { -webkit-user-select: text; user-select: text; -webkit-touch-callout: default; }
+
+/* ===================== SCREENS ===================== */
+.screen { display: none; flex-direction: column; flex: 1; overflow: hidden; }
+.screen.active { display: flex; }
+.scroll {
+  flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
+  padding: 14px; display: flex; flex-direction: column; gap: 14px;
+}
+.scroll::-webkit-scrollbar { display: none; }
+#lex-chips::-webkit-scrollbar { display: none; }
+
+/* ===================== TOPBAR ===================== */
+.topbar {
+  background: var(--surface); padding: 12px 16px;
+  display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 0.5px solid var(--border); flex-shrink: 0;
+}
+.tb-title { font-size: 14px; font-weight: 500; }
+.app-title { font-size: 17px; font-weight: 700; letter-spacing: -0.3px; }
+/* Touch-Targets: Apple HIG fordert min 44pt. Diese Buttons sind im Topbar
+ * und müssen mit Daumen erreichbar sein. padding:10 + font-size:22 → ~44px. */
+.icon-btn { background: none; border: none; color: var(--green); font-size: 22px; cursor: pointer; padding: 10px; min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
+.save-pill {
+  background: var(--green); border: none; border-radius: 20px;
+  padding: 10px 18px; font-size: 13px; color: #fff; cursor: pointer;
+  font-family: var(--font); font-weight: 600; min-height: 40px;
+}
+
+/* ===================== BOTTOM NAV ===================== */
+.bottom-nav {
+  background: var(--surface); border-top: 0.5px solid var(--border);
+  display: flex; padding-bottom: env(safe-area-inset-bottom); flex-shrink: 0;
+}
+.nav-btn {
+  flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  padding: 8px 0 6px; min-height: 52px; cursor: pointer; background: none; border: none;
+  opacity: 0.4; transition: opacity 0.2s;
+}
+.nav-btn.active { opacity: 1; }
+.nav-icon { font-size: 20px; line-height: 1; }
+.nav-label { font-size: 10px; color: var(--green); font-weight: 600; font-family: var(--font); }
+
+/* ===================== CARDS ===================== */
+.card { background: var(--card); border-radius: 14px; border: 0.5px solid var(--border); padding: 14px; }
+.sect-head {
+  font-size: 11px; color: var(--green); font-weight: 600;
+  letter-spacing: 0.06em; text-transform: uppercase; padding: 3px 0 2px;
+}
+
+/* ===================== STATS ===================== */
+.stat-row { display: flex; gap: 8px; }
+.stat-box { flex: 1; background: var(--surface); border-radius: 10px; padding: 10px 12px; border: 0.5px solid var(--border); }
+.stat-lbl { font-size: 10px; color: var(--text-hint); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 2px; }
+.stat-val { font-size: 18px; font-weight: 600; }
+.stat-unit { font-size: 11px; color: var(--text-hint); }
+
+/* ===================== INPUTS ===================== */
+.inp-wrap { display: flex; flex-direction: column; gap: 3px; flex: 1; }
+.inp-label { font-size: 11px; color: var(--text-hint); font-weight: 500; }
+.inp-field {
+  background: var(--card); border: 0.5px solid var(--border); border-radius: 7px;
+  padding: 11px 12px; color: var(--text-sub); font-size: 14px; font-family: var(--font);
+  width: 100%; outline: none; transition: border-color 0.2s; min-height: 44px;
+  box-sizing: border-box;
+}
+.inp-field:focus { border-color: var(--green-hint); }
+.row2 { display: flex; gap: 8px; }
+
+/* Vorgeschlagene Werte (Auto-Fill): grau/kursiv statt fett
+   — unterscheidet "vorgeschlagen" von "gemessen". Beim ersten manuellen Tippen
+   wird _suggested entfernt, Klasse verschwindet, Wert wird normal angezeigt. */
+.inp-field.suggested,
+input.suggested { color: var(--text-hint) !important; font-style: italic; opacity: 0.7; }
+.inp-field.suggested:focus,
+input.suggested:focus { color: var(--text) !important; font-style: normal; opacity: 1; }
+
+/* ===================== VPD ===================== */
+.vpd-box {
+  background: var(--teal-bg); border: 0.5px solid var(--teal-bd); border-radius: 10px;
+  padding: 12px; display: flex; align-items: center; justify-content: space-between; gap: 10px;
+}
+.vpd-val { font-size: 22px; font-weight: 600; color: var(--teal); font-family: var(--mono); }
+.vpd-pill { padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 500; display: inline-block; margin-top: 3px; }
+.vpd-scale { display: flex; height: 5px; border-radius: 3px; overflow: hidden; }
+.vpd-seg { flex: 1; }
+.vpd-mrow { position: relative; height: 8px; }
+.vpd-marker {
+  position: absolute; top: 0; width: 2px; height: 9px;
+  background: #fff; border-radius: 2px; transition: left 0.3s;
+}
+
+/* ===================== CALENDAR ===================== */
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
+.cal-cell {
+  aspect-ratio: 0.78; border-radius: 9px; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; cursor: pointer; position: relative;
+  border: 0.5px solid transparent; background: #151515; user-select: none;
+  padding: 2px; transition: transform 0.1s;
+}
+.cal-cell:active { transform: scale(0.92); }
+.cal-cell.today { border: 2px solid #fff !important; }
+.cal-num { font-size: 14px; color: var(--text-sub); font-weight: 700; line-height: 1; }
+.cal-cell.today .cal-num { color: #fff; }
+.cal-tag { font-size: 7.5px; color: rgba(255,255,255,0.6); line-height: 1; margin-top: 1px; text-align: center; }
+.cal-icon { font-size: 13px; line-height: 1; margin-bottom: 1px; display: inline-flex; align-items: center; justify-content: center; height: 16px; width: 16px; }
+.cal-icon svg { width: 100%; height: 100%; display: block; }
+.cal-dot { width: 4px; height: 4px; border-radius: 50%; position: absolute; bottom: 2px; right: 3px; background: rgba(255,255,255,0.7); }
+
+/* ===================== NUTRIENT TABLE ===================== */
+.nut-tbl-hdr {
+  border-radius: 10px 10px 0 0; padding: 8px 12px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.nut-tbl-wrap {
+  border: 0.5px solid var(--border); border-top: none;
+  border-radius: 0 0 10px 10px; overflow: hidden;
+}
+.nut-tbl-head {
+  display: grid; grid-template-columns: 1fr 58px 68px 60px;
+  padding: 5px 10px; border-bottom: 0.5px solid var(--border);
+}
+.nth { font-size: 11px; font-weight: 500; }
+.nth:not(:first-child) { text-align: right; }
+.nut-row-tbl {
+  display: grid; grid-template-columns: 1fr 58px 68px 60px;
+  padding: 5px 10px; border-bottom: 0.5px solid #1e1e1e; align-items: center;
+}
+.nut-row-tbl:last-child { border: none; }
+.nut-row-tbl:nth-child(odd) { background: #171717; }
+.nut-row-tbl:nth-child(even) { background: var(--surface); }
+.nt-name { font-size: 12px; color: #bbb; }
+.nt-hint { font-size: 12px; text-align: right; font-family: var(--mono); }
+.nt-calc { font-size: 11px; text-align: right; font-family: var(--mono); color: var(--green); }
+.nt-inp {
+  background: #1e1e1e; border: 0.5px solid var(--border); border-radius: 5px;
+  padding: 3px 6px; color: #ddd; font-size: 12px; font-family: var(--mono);
+  width: 56px; text-align: right; outline: none;
+}
+.nt-inp:focus { border-color: var(--green-hint); }
+
+/* ===================== NOTES ===================== */
+.note-wrap { background: var(--surface); border: 0.5px solid var(--border); border-radius: 10px; padding: 8px 10px; }
+.note-ta {
+  background: var(--card); border: 0.5px solid var(--border); border-radius: 7px;
+  padding: 8px 10px; color: #aaa; font-size: 12px; font-family: var(--font);
+  width: 100%; min-height: 65px; resize: none; outline: none; line-height: 1.6;
+}
+.note-ta:focus { border-color: var(--green-hint); }
+
+/* ===================== BUTTONS ===================== */
+.big-save {
+  border: none; border-radius: 10px; padding: 14px; font-size: 14px;
+  font-weight: 600; color: #fff; width: 100%; cursor: pointer; font-family: var(--font);
+}
+.big-save:active { opacity: 0.8; }
+.sav-btn {
+  border: none; border-radius: 10px; padding: 12px; font-size: 13px;
+  font-weight: 600; color: #fff; width: 100%; cursor: pointer; font-family: var(--font); margin-top: 6px;
+}
+.sav-btn:active { opacity: 0.8; }
+.wk-accordion > summary::-webkit-details-marker { display: none; }
+.wk-accordion[open] .wk-caret { transform: rotate(180deg); }
+.add-btn {
+  display: flex; align-items: center; gap: 5px;
+  background: var(--green-bg); border: 0.5px solid var(--green-dk); border-radius: 8px;
+  padding: 6px 12px; font-size: 12px; color: var(--green); cursor: pointer;
+  font-family: var(--font); font-weight: 600;
+}
+.del-btn {
+  display: flex; align-items: center; gap: 6px; padding: 8px 0; cursor: pointer;
+  background: none; border: none; font-size: 13px; color: var(--red); font-family: var(--font);
+}
+
+/* ===================== ALERTS ===================== */
+.alert { border-radius: 12px; padding: 10px 14px; display: flex; gap: 10px; align-items: flex-start; border: 0.5px solid transparent; }
+
+/* ===================== TABS ===================== */
+.tab-row { display: flex; gap: 6px; flex-wrap: wrap; }
+.tab-item {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--surface); border-radius: 8px; padding: 9px 14px;
+  border: 0.5px solid var(--border); cursor: pointer; font-size: 12px;
+  color: var(--text-muted); font-family: var(--font); min-height: 40px;
+}
+.tab-item.sel { border-color: var(--green); background: var(--green-bg); color: var(--green); }
+
+/* ===================== DURATION GRID ===================== */
+.dur-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+.dur-box { display: flex; flex-direction: column; gap: 3px; width: calc(33% - 6px); }
+.dur-lbl { font-size: 11px; color: var(--text-hint); }
+.dur-inp {
+  background: var(--card2); border: 0.5px solid var(--border); border-radius: 7px;
+  padding: 10px 6px; color: var(--text-sub); font-size: 14px; text-align: center;
+  width: 100%; outline: none; font-family: var(--mono); min-height: 44px;
+  box-sizing: border-box;
+}
+.sub-head { font-size: 11px; color: var(--text-hint); font-weight: 500; margin-top: 8px; margin-bottom: 4px; }
+
+/* ===================== SWITCHES ===================== */
+.sw-row { display: flex; align-items: center; justify-content: space-between; padding: 5px 0; }
+.sw { position: relative; width: 44px; height: 26px; cursor: pointer; }
+.sw input { position: absolute; opacity: 0; width: 100%; height: 100%; left: 0; top: 0; margin: 0; cursor: pointer; }
+.sl {
+  position: absolute; inset: 0; background: #333; border-radius: 26px; transition: 0.2s;
+}
+.sl:before {
+  content: ''; position: absolute; width: 20px; height: 20px;
+  left: 3px; top: 3px; background: #888; border-radius: 50%; transition: 0.2s;
+}
+input:checked + .sl { background: var(--green-dk); }
+input:checked + .sl:before { transform: translateX(18px); background: var(--green); }
+
+/* ===================== SECTION TOGGLE ===================== */
+.sec-tog {
+  background: var(--card); border-radius: 12px; border: 0.5px solid var(--border);
+  padding: 16px 16px; display: flex; align-items: center; gap: 12px;
+  cursor: pointer; font-size: 14px; color: var(--text);
+}
+.sec-tog + .sec-tog { margin-top: 10px; }
+#tips-normal > .sec-tog:first-child { margin-top: 8px; }
+#tips-normal > .sec-tog { margin-top: 10px; }
+#tips-normal > div[style*="background:var(--card)"] { margin-top: 10px !important; }
+#tips-body .sub-card-pad { padding: 16px !important; margin-top: 10px !important; }
+.sec-tog:active { background: var(--card2); }
+.sec-tog > div { flex: 1; }
+
+/* ===================== COLOR / SYMBOL PICKERS ===================== */
+.pick-row { display: flex; gap: 8px; flex-wrap: wrap; margin: 4px 0; }
+.col-opt {
+  width: 34px; height: 34px; border-radius: 50%; border: 2px solid transparent;
+  cursor: pointer; transition: transform 0.15s;
+}
+.col-opt.sel { border-color: #fff; transform: scale(1.2); }
+.sym-opt {
+  width: 36px; height: 36px; border-radius: 10px; background: var(--card2);
+  border: 2px solid transparent; cursor: pointer; display: flex;
+  align-items: center; justify-content: center; font-size: 18px; transition: transform 0.15s;
+}
+.sym-opt.sel { border-color: #fff; transform: scale(1.15); }
+
+/* ===================== STEPPER BUTTONS ===================== */
+/* Touch-Target: 44×44px nach Apple HIG. Frühere 40px waren zu klein für Daumen. */
+.stepper-btn {
+  width: 44px; height: 44px; border-radius: 7px;
+  background: var(--card2); border: 0.5px solid var(--border);
+  color: var(--text-sub); font-size: 18px; cursor: pointer;
+  font-family: var(--mono); display: flex;
+  align-items: center; justify-content: center; flex-shrink: 0;
+}
+.stepper-btn:active { background: var(--surface); transform: scale(0.95); }
+
+/* ===================== PRODUCT CARDS ===================== */
+.prod-card {
+  background: var(--card2); border: 0.5px solid var(--border); border-radius: 10px;
+  padding: 10px 12px; display: flex; align-items: center; gap: 10px;
+}
+.prod-color { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+
+/* ===================== TOAST ===================== */
+#toast {
+  position: fixed; bottom: 80px; left: 50%;
+  transform: translateX(-50%) translateY(8px);
+  background: rgba(26,26,26,0.95); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  color: #ddd; padding: 10px 22px; border-radius: 22px; font-size: 13px;
+  z-index: 9999; border: 0.5px solid #444; pointer-events: none;
+  opacity: 0; transition: all 0.25s;
+  /* Lange Toasts müssen auf schmalen Screens umbrechen — nowrap ließ Text rechts/links rauslaufen */
+  max-width: calc(100vw - 32px); text-align: center; line-height: 1.35;
+  word-wrap: break-word; overflow-wrap: break-word;
+}
+#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ===================== CONTEXT MENU ===================== */
+#ctx-m {
+  position: fixed; z-index: 9998;
+  background: rgba(28,28,28,0.97); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+  border: 0.5px solid #3a3a3a; border-radius: 16px; padding: 6px;
+  min-width: 270px; box-shadow: 0 12px 48px rgba(0,0,0,0.7);
+  display: none; animation: ctxIn 0.18s ease;
+}
+#ctx-m.show { display: block; }
+@keyframes ctxIn { from { opacity: 0; transform: scale(0.94); } to { opacity: 1; transform: scale(1); } }
+.ctx-item {
+  padding: 12px 16px; border-radius: 10px; font-size: 13px; color: var(--text-sub);
+  cursor: pointer; display: flex; align-items: center; gap: 10px;
+}
+.ctx-item:active { background: rgba(255,255,255,0.06); }
+.ctx-g { color: var(--green); } .ctx-r { color: var(--red); } .ctx-b { color: var(--blue); }
+.ctx-div { height: 0.5px; background: #333; margin: 4px 0; }
+.ctx-ic { font-size: 15px; width: 22px; text-align: center; }
+#ctx-ov { position: fixed; inset: 0; z-index: 9997; display: none; }
+#ctx-ov.show { display: block; }
+
+/* ===================== CUSTOM CONFIRM MODAL ===================== */
+#modal-overlay {
+  position: fixed; inset: 0; z-index: 10001;
+  background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  display: none; align-items: center; justify-content: center; padding: 20px;
+}
+#modal-overlay.show { display: flex; }
+#modal-box {
+  background: var(--card); border: 0.5px solid var(--border); border-radius: 18px;
+  padding: 24px; max-width: 340px; width: 100%;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.6); animation: modalIn 0.2s ease;
+}
+@keyframes modalIn { from { opacity: 0; transform: scale(0.92) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+#modal-title {
+  font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 8px;
+}
+#modal-msg {
+  font-size: 13px; color: var(--text-sub); line-height: 1.6; margin-bottom: 20px;
+}
+.modal-btns { display: flex; gap: 10px; }
+.modal-btns button {
+  flex: 1; padding: 12px; border-radius: 10px; font-size: 13px;
+  font-weight: 600; cursor: pointer; font-family: var(--font); border: none;
+}
+#modal-cancel {
+  background: var(--card2); color: var(--text-sub); border: 0.5px solid var(--border);
+}
+#modal-ok { background: var(--red); color: #fff; }
+
+/* Input-Modal (Zahlen-Eingabe, z.B. Restgewicht-Setup) */
+#input-modal-overlay {
+  position: fixed; inset: 0; z-index: 10002;
+  background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  display: none; align-items: center; justify-content: center; padding: 20px;
+}
+#input-modal-overlay.show { display: flex; }
+#input-modal-box {
+  background: var(--card); border: 0.5px solid var(--border); border-radius: 18px;
+  padding: 24px; max-width: 380px; width: 100%;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.6); animation: modalIn 0.2s ease;
+}
+#input-modal-title {
+  font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 8px;
+}
+#input-modal-msg {
+  font-size: 12px; color: var(--text-sub); line-height: 1.55; margin-bottom: 14px;
+}
+#input-modal-field-wrap {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 8px;
+  background: var(--card2); border: 0.5px solid var(--border); border-radius: 10px;
+  padding: 10px 12px;
+}
+#input-modal-field {
+  flex: 1; background: transparent; border: none; color: var(--text);
+  font-size: 18px; font-weight: 600; font-family: var(--mono); outline: none;
+  text-align: right; min-width: 0;
+}
+#input-modal-unit {
+  font-size: 13px; color: var(--text-muted); font-weight: 500;
+}
+#input-modal-hint {
+  font-size: 11px; color: var(--text-hint); line-height: 1.5; margin-bottom: 16px;
+  min-height: 16px;
+}
+#input-modal-cancel {
+  background: var(--card2); color: var(--text-sub); border: 0.5px solid var(--border);
+}
+#input-modal-ok { background: var(--green); color: #fff; }
+
+/* ===================== MISC ===================== */
+.spin {
+  display: inline-block; width: 18px; height: 18px;
+  border: 2px solid var(--green-bg); border-top-color: var(--green);
+  border-radius: 50%; animation: sp 0.7s linear infinite;
+}
+@keyframes sp { to { transform: rotate(360deg); } }
+.empty-state { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 30px 20px; text-align: center; }
+.tip-card {
+  background: var(--green-bg); border: 0.5px solid var(--green-dk); border-radius: 12px;
+  padding: 12px 14px; display: flex; gap: 10px; align-items: flex-start;
+}
+.streak {
+  display: inline-flex; align-items: center; gap: 3px;
+  background: linear-gradient(135deg, #2a1500, #1a0a00);
+  border: 0.5px solid rgba(232,136,74,0.35); border-radius: 16px;
+  padding: 3px 8px; font-size: 10px; color: var(--orange); font-weight: 600;
+}
+.legal-body p { margin: 0 0 8px; }
+.legal-body p:last-child { margin-bottom: 0; }
+.legal-body ul { margin: 4px 0 8px; padding-left: 20px; }
+.legal-body li { margin-bottom: 3px; }
+.legal-body b { color: var(--text); }
+.ring-wrap { position: relative; width: 56px; height: 56px; flex-shrink: 0; }
+.ring-wrap svg { transform: rotate(-90deg); }
+.ring-lbl { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; }
+.mini-chart { display: flex; align-items: flex-end; gap: 1px; height: 24px; }
+.mini-bar { flex: 1; min-width: 2px; border-radius: 1px 1px 0 0; transition: height 0.3s; }
+.photo-grid { display: flex; gap: 6px; flex-wrap: wrap; }
+.photo-wrap { position: relative; width: 52px; height: 52px; }
+.photo-thumb { width: 52px; height: 52px; border-radius: 8px; object-fit: cover; border: 0.5px solid var(--border); cursor: pointer; display: block; }
+.photo-del {
+  position: absolute; top: -4px; right: -4px; width: 22px; height: 22px;
+  border-radius: 50%; background: rgba(224,96,96,0.95); border: 1.5px solid #0a0a0a;
+  color: #fff; font-size: 14px; font-weight: 700; line-height: 1; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font); padding: 0;
+}
+/* Touch-Target-Erweiterung: ::before macht den Tap-Bereich auf 36px ohne den
+ * sichtbaren Button zu vergrößern (Tile selbst ist nur 72px breit, größerer
+ * Visual-Button würde Foto verdecken). 36px ist Kompromiss — Apple HIG-Standard
+ * 44 würde >50% des Tiles bedecken und ist hier nicht praktikabel. */
+.photo-del::before {
+  content: ''; position: absolute; top: -7px; left: -7px;
+  width: 36px; height: 36px;
+}
+.photo-del:active { transform: scale(0.9); }
+.photo-add {
+  width: 52px; height: 52px; border-radius: 8px; border: 1px dashed var(--border);
+  display: flex; align-items: center; justify-content: center; font-size: 18px;
+  color: var(--text-hint); cursor: pointer;
+}
+.photo-add:active { border-color: var(--green); }
+.qn-row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
+.qn-chip {
+  background: var(--card2); border: 0.5px solid var(--border); border-radius: 16px;
+  padding: 9px 14px; font-size: 12px; color: var(--text-sub); cursor: pointer;
+  font-family: var(--font); white-space: nowrap; min-height: 36px;
+  display: inline-flex; align-items: center; transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.qn-chip:active { transform: scale(0.95); }
+.qn-chip.active {
+  background: var(--green-bg) !important;
+  border-color: var(--green-dk) !important;
+  color: var(--green) !important;
+  font-weight: 600;
+}
+.mix-step {
+  display: flex; align-items: center; gap: 8px; padding: 6px 0;
+  font-size: 12px; color: var(--text-sub);
+}
+.mix-num {
+  width: 20px; height: 20px; border-radius: 50%; background: var(--green-dk);
+  color: var(--green); font-size: 10px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+
+/* ===================== WATER INPUT (Dünger-Rechner) ===================== */
+.water-input-box {
+  background: var(--surface); border: 0.5px solid var(--border); border-radius: 10px;
+  padding: 10px 12px; display: flex; align-items: center; gap: 10px; margin-bottom: 8px;
+}
+.water-input-box .inp-field {
+  max-width: 100px; font-size: 15px; font-weight: 600; text-align: center;
+  font-family: var(--mono);
+}
+.ph-hint {
+  background: var(--green-bg); border: 0.5px solid var(--green-dk);
+  border-radius: 8px; padding: 8px 12px; font-size: 11px; color: var(--green);
+  margin-top: 6px; text-align: center;
+}
+
+/* ============================================================== */
+/* Tour: overlay + popup + highlight                               */
+/* ============================================================== */
+.tour-overlay {
+  position: fixed; inset: 0; z-index: 9998;
+  background: rgba(0, 0, 0, 0.35);
+  pointer-events: none;
+  opacity: 0; transition: opacity 0.25s;
+}
+.tour-overlay.visible { opacity: 1; }
+.tour-hole {
+  position: fixed; z-index: 9999;
+  border-radius: 12px;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.35),
+              0 0 0 2px var(--green),
+              0 0 20px rgba(76, 175, 112, 0.4);
+  pointer-events: none;
+  transition: all 0.3s ease-out;
+  animation: tour-pulse 2s infinite ease-in-out;
+}
+@keyframes tour-pulse {
+  0%, 100% { box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.35),
+                          0 0 0 2px var(--green),
+                          0 0 15px rgba(76, 175, 112, 0.35); }
+  50%      { box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.35),
+                          0 0 0 3px var(--green),
+                          0 0 25px rgba(76, 175, 112, 0.55); }
+}
+.tour-popup {
+  position: fixed; z-index: 10000;
+  background: var(--card); border: 1px solid var(--green-dk);
+  border-radius: 14px; padding: 16px 16px 14px;
+  max-width: 300px; width: calc(100vw - 32px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  font-family: var(--font);
+  animation: tour-pop-in 0.3s ease-out;
+}
+@keyframes tour-pop-in {
+  from { opacity: 0; transform: scale(0.9) translateY(8px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+.tour-popup-arrow {
+  position: absolute; width: 12px; height: 12px;
+  background: var(--card); border: 1px solid var(--green-dk);
+  transform: rotate(45deg);
+}
+.tour-popup-arrow.top    { top: -7px;    left: 50%; margin-left: -6px; border-bottom: none; border-right: none; }
+.tour-popup-arrow.bottom { bottom: -7px; left: 50%; margin-left: -6px; border-top: none; border-left: none; }
+.tour-popup-arrow.left   { left: -7px;   top: 50%;  margin-top: -6px;  border-right: none; border-top: none; }
+.tour-popup-arrow.right  { right: -7px;  top: 50%;  margin-top: -6px;  border-left: none; border-bottom: none; }
+.tour-popup-title {
+  font-size: 13px; font-weight: 700; color: var(--green);
+  margin-bottom: 6px; display: flex; align-items: center; gap: 6px;
+}
+.tour-popup-body {
+  font-size: 12px; color: var(--text-sub); line-height: 1.55;
+  margin-bottom: 12px;
+}
+.tour-popup-btns {
+  display: flex; gap: 6px; align-items: center;
+}
+.tour-popup-btn {
+  flex: 1; padding: 8px 12px; border-radius: 8px;
+  font-size: 12px; font-weight: 600; cursor: pointer;
+  font-family: var(--font); border: 0.5px solid transparent;
+}
+.tour-popup-btn.primary   {
+  background: #1b4027; color: #fff; border-color: var(--green);
+  font-weight: 700; text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+}
+.tour-popup-btn.primary:hover  { background: #245432; }
+.tour-popup-btn.primary:active { background: #152e1c; transform: scale(0.97); }
+.tour-popup-btn.secondary { background: var(--surface); color: var(--text-sub); border-color: var(--border); }
+.tour-popup-btn.skip      { background: rgba(232,136,74,0.08); color: var(--orange); padding: 9px 14px; flex: 0 0 auto; font-size: 12px; border-color: rgba(232,136,74,0.3); font-weight: 600; }
+.tour-popup-btn.skip:active { background: rgba(232,136,74,0.15); transform: scale(0.97); }
+.tour-popup-x {
+  position: absolute; top: 8px; right: 8px;
+  width: 26px; height: 26px; border-radius: 50%;
+  background: rgba(232,136,74,0.1); border: 0.5px solid rgba(232,136,74,0.3);
+  color: var(--orange); font-size: 13px; cursor: pointer;
+  font-family: var(--font); padding: 0; line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+  z-index: 2;
+}
+.tour-popup-x:active { background: rgba(232,136,74,0.2); transform: scale(0.92); }
+.tour-popup-step {
+  font-size: 10px; color: var(--text-hint); margin-left: auto;
+}
+/* Step indicator dots */
+.tour-dots {
+  display: flex; justify-content: center; gap: 4px; margin-bottom: 10px;
+}
+.tour-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--border); transition: all 0.2s;
+}
+.tour-dot.active { background: var(--green); transform: scale(1.3); }
+.tour-dot.done   { background: var(--green-dk); }
+
+/* Advanced controls (Undo/Redo, Test-Mode usw.) — nur im Profi-Modus sichtbar. */
+.advanced-ctl { display: flex; }
+body.beginner .advanced-ctl { display: none !important; }
+/* (v1.5.48) Lexikon-Tabellen: Spalten nicht zerquetschen, damit der Rahmen seitlich
+   geschoben werden kann statt die letzte Spalte abzuschneiden. */
+.lex-td { min-width:104px; }
+</style>
+</head>
+<body>
+
+<!-- ===================== APP SHELL ===================== -->
+<div id="app">
+  <!-- Dashboard -->
+  <div class="screen active" id="scr-dash">
+    <div class="topbar" style="padding-top:max(12px,env(safe-area-inset-top))">
+      <span class="app-title">🌱 GrowSmart</span>
+      <div style="display:flex;gap:4px;align-items:center">
+        <div class="advanced-ctl" style="display:flex;gap:4px">
+          <button onclick="doUndo()" style="background:var(--surface);border:0.5px solid var(--border);border-radius:8px;padding:5px 8px;font-size:10px;color:var(--text-sub);cursor:pointer;font-family:var(--font)" title="Rückgängig">↩</button>
+          <button onclick="doRedo()" style="background:var(--surface);border:0.5px solid var(--border);border-radius:8px;padding:5px 8px;font-size:10px;color:var(--text-sub);cursor:pointer;font-family:var(--font)" title="Wiederholen">↪</button>
+        </div>
+        <button class="icon-btn" onclick="entryFrom='dash';openEntry(todayISO())">＋</button>
+      </div>
+    </div>
+    <div class="scroll" id="dash-body"></div>
+    <nav class="bottom-nav" id="nav-dash"></nav>
+  </div>
+
+  <!-- Calendar -->
+  <div class="screen" id="scr-cal">
+    <div class="topbar" style="padding-top:max(12px,env(safe-area-inset-top))">
+      <button onclick="changeMonth(-1)" style="background:none;border:none;color:var(--green);font-size:28px;cursor:pointer;padding:0 8px;line-height:1">‹</button>
+      <span style="font-size:16px;font-weight:700;flex:1;text-align:center" id="cal-lbl">—</span>
+      <button onclick="changeMonth(1)" style="background:none;border:none;color:var(--green);font-size:28px;cursor:pointer;padding:0 8px;line-height:1">›</button>
+      <div style="display:flex;gap:4px;margin-left:4px">
+        <button onclick="doUndo()" style="background:var(--surface);border:0.5px solid var(--border);border-radius:8px;padding:5px 8px;font-size:10px;color:var(--text-sub);cursor:pointer;font-family:var(--font)" title="Rückgängig">↩</button>
+        <button onclick="doRedo()" style="background:var(--surface);border:0.5px solid var(--border);border-radius:8px;padding:5px 8px;font-size:10px;color:var(--text-sub);cursor:pointer;font-family:var(--font)" title="Wiederholen">↪</button>
+      </div>
+    </div>
+    <div class="scroll" id="cal-body" oncontextmenu="return false" style="padding:8px;gap:6px;"></div>
+    <nav class="bottom-nav" id="nav-cal"></nav>
+  </div>
+
+  <!-- Tips -->
+  <div class="screen" id="scr-tips">
+    <div class="topbar" style="padding-top:max(12px,env(safe-area-inset-top))">
+      <span class="app-title">💡 Grow-Tipps</span>
+      <div class="advanced-ctl" style="gap:4px;align-items:center">
+        <button onclick="doUndo()" style="background:var(--surface);border:0.5px solid var(--border);border-radius:8px;padding:5px 8px;font-size:10px;color:var(--text-sub);cursor:pointer;font-family:var(--font)" title="Rückgängig">↩</button>
+        <button onclick="doRedo()" style="background:var(--surface);border:0.5px solid var(--border);border-radius:8px;padding:5px 8px;font-size:10px;color:var(--text-sub);cursor:pointer;font-family:var(--font)" title="Wiederholen">↪</button>
+      </div>
+    </div>
+    <div class="scroll" id="tips-body"></div>
+    <nav class="bottom-nav" id="nav-tips"></nav>
+  </div>
+
+  <!-- Settings -->
+  <div class="screen" id="scr-set">
+    <div class="topbar" style="padding-top:max(12px,env(safe-area-inset-top))">
+      <button class="icon-btn" onclick="goTo('cal')" style="font-size:20px" title="Zum Kalender">📅</button>
+      <span class="app-title">⚙ Einstellungen</span>
+      <div style="display:flex;gap:6px;align-items:center">
+        <button id="set-save-top" onclick="saveDraft()" style="display:none;background:var(--green);border:none;border-radius:8px;padding:7px 14px;font-size:13px;color:#fff;cursor:pointer;font-family:var(--font);font-weight:600" title="Änderungen sichern">💾 Sichern</button>
+        <button onclick="doUndo()" style="background:var(--surface);border:0.5px solid var(--border);border-radius:8px;padding:5px 8px;font-size:10px;color:var(--text-hint);cursor:pointer;font-family:var(--font)" title="Rückgängig">↩</button>
+        <button onclick="doRedo()" style="background:var(--surface);border:0.5px solid var(--border);border-radius:8px;padding:5px 8px;font-size:10px;color:var(--text-hint);cursor:pointer;font-family:var(--font)" title="Wiederholen">↪</button>
+      </div>
+    </div>
+    <div class="scroll" id="set-body"></div>
+    <nav class="bottom-nav" id="nav-set"></nav>
+  </div>
+
+  <!-- Entry -->
+  <div class="screen" id="scr-entry">
+    <div class="topbar" style="padding-top:max(12px,env(safe-area-inset-top));gap:6px">
+      <button class="icon-btn" id="entry-back" style="font-size:22px;padding:4px 8px">←</button>
+      <button onclick="entryNav(-1)" title="Vorheriger Tag" style="background:var(--surface);border:0.5px solid var(--border);border-radius:10px;color:var(--green);font-size:20px;cursor:pointer;padding:9px 15px;font-weight:600;min-width:44px;min-height:42px">‹</button>
+      <div id="entry-ttl" style="flex:1;text-align:center;font-size:14px;font-weight:600;color:var(--text)">Eintrag</div>
+      <button onclick="entryNav(1)" title="Nächster Tag" style="background:var(--surface);border:0.5px solid var(--border);border-radius:10px;color:var(--green);font-size:20px;cursor:pointer;padding:9px 15px;font-weight:600;min-width:44px;min-height:42px">›</button>
+      <div style="display:flex;gap:4px;align-items:center;margin-left:12px">
+        <div style="display:flex;gap:4px">
+          <button onclick="doUndo()" style="background:var(--surface);border:0.5px solid var(--border);border-radius:8px;padding:5px 7px;font-size:10px;color:var(--text-hint);cursor:pointer;font-family:var(--font)" title="Rückgängig">↩</button>
+          <button onclick="doRedo()" style="background:var(--surface);border:0.5px solid var(--border);border-radius:8px;padding:5px 7px;font-size:10px;color:var(--text-hint);cursor:pointer;font-family:var(--font)" title="Wiederholen">↪</button>
+        </div>
+        <button class="save-pill" onclick="saveEntry()">Speichern</button>
+      </div>
+    </div>
+    <div class="scroll" id="entry-body"></div>
+    <nav class="bottom-nav" id="nav-entry"></nav>
+  </div>
+
+  <!-- Dünger Manager -->
+  <div class="screen" id="scr-duenger">
+    <div class="topbar" style="padding-top:max(12px,env(safe-area-inset-top))">
+      <button class="icon-btn" onclick="goTo('set')" style="font-size:20px">←</button>
+      <span class="app-title">🧪 Dünger</span>
+      <button class="icon-btn" onclick="addProduct()">＋</button>
+    </div>
+    <div class="scroll" id="duenger-body"></div>
+  </div>
+
+  <!-- Welcome / First-run screen -->
+  <div class="screen" id="scr-welcome">
+    <div class="scroll" id="welcome-body" style="padding-top:max(20px,env(safe-area-inset-top))"></div>
+  </div>
+
+  <!-- Cycle Wizard (Anfänger-Flow für neuen Zyklus) -->
+  <div class="screen" id="scr-wizard">
+    <div class="topbar" style="padding-top:max(12px,env(safe-area-inset-top))">
+      <button class="icon-btn" onclick="closeWizard()" style="font-size:20px">✕</button>
+      <span class="app-title" id="wiz-title">🌱 Neuer Zyklus</span>
+      <button class="icon-btn advanced-ctl" onclick="skipToExpertForm()" style="font-size:14px;color:var(--text-muted);padding:0 10px">Profi →</button>
+    </div>
+    <div class="scroll" id="wiz-body"></div>
+  </div>
+
+  <!-- Lexikon -->
+  <div class="screen" id="scr-lexikon">
+    <div class="topbar" style="padding-top:max(12px,env(safe-area-inset-top))">
+      <button class="icon-btn" onclick="goTo('tips')" style="font-size:20px">←</button>
+      <span class="app-title">📖 Grow-Lexikon</span>
+      <div></div>
+    </div>
+    <div style="padding:8px 12px 4px;background:var(--bg);position:sticky;top:0;z-index:5;border-bottom:0.5px solid var(--border)">
+      <div style="position:relative">
+        <input type="search" id="lex-search" placeholder="🔍 Suche (z.B. Temperatur, Calcium, VPD...)" oninput="renderLexikon(null,this.value)" autocomplete="off"
+          style="width:100%;background:var(--card);border:0.5px solid var(--border);border-radius:10px;padding:10px 36px 10px 14px;color:var(--text);font-family:var(--font);font-size:13px;outline:none"/>
+        <button id="lex-search-clear" onclick="document.getElementById('lex-search').value='';renderLexikon();this.style.display='none'" style="display:none;position:absolute;right:6px;top:50%;transform:translateY(-50%);background:transparent;border:none;color:var(--text-muted);font-size:18px;cursor:pointer;padding:4px 8px;font-family:var(--font)">×</button>
+      </div>
+      <div id="lex-search-stats" style="font-size:10px;color:var(--text-muted);padding:4px 2px 0;display:none"></div>
+      <!-- Kategorie-Filter-Chips + Simple-Mode-Toggle: schnelle Navigation für
+           Anfänger, die noch nicht wissen wonach sie suchen sollen. Der "🎓"-
+           Toggle reduziert die Einträge auf ihre Kurzfassung — gut für den
+           ersten Überblick. Wird in renderLexikon() befüllt. -->
+      <div style="display:flex;gap:6px;align-items:center;padding:6px 0 4px">
+        <button id="lex-simple-toggle" onclick="toggleLexSimple()" aria-label="Einfach erklärt" style="flex-shrink:0;padding:6px 10px;border-radius:14px;border:0.5px solid var(--border);background:var(--card);color:var(--text-sub);font-size:11px;font-weight:600;cursor:pointer;font-family:var(--font);white-space:nowrap">🎓 Einfach</button>
+        <div id="lex-chips" style="display:flex;gap:6px;overflow-x:auto;flex:1;scrollbar-width:none;-ms-overflow-style:none"></div>
+      </div>
+    </div>
+    <div class="scroll" id="lexikon-body"></div>
+  </div>
+
+  <!-- How-to -->
+  <div class="screen" id="scr-howto">
+    <div class="topbar" style="padding-top:max(12px,env(safe-area-inset-top))">
+      <button class="icon-btn" onclick="goTo('tips')" style="font-size:20px">←</button>
+      <span class="app-title">🎓 How-to</span>
+      <div></div>
+    </div>
+    <div class="scroll" id="howto-body"></div>
+  </div>
+
+  <!-- Gieß-Fahrplan (Gießmap) -->
+  <div class="screen" id="scr-gussplan">
+    <div class="topbar" style="padding-top:max(12px,env(safe-area-inset-top))">
+      <button class="icon-btn" onclick="goTo('set')" style="font-size:20px">←</button>
+      <span class="app-title">💧 Gieß-Fahrplan</span>
+      <div></div>
+    </div>
+    <div class="scroll" id="gussplan-body"></div>
+  </div>
+
+  <!-- Foto-Galerie -->
+  <div class="screen" id="scr-gallery">
+    <div class="topbar" style="padding-top:max(12px,env(safe-area-inset-top))">
+      <button class="icon-btn" onclick="goTo('dash')" style="font-size:20px">←</button>
+      <span class="app-title">📸 Foto-Galerie</span>
+      <div></div>
+    </div>
+    <div class="scroll" id="gallery-body"></div>
+  </div>
+
+  <!-- Photo viewer -->
+  <div id="photo-viewer" style="position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,0.95);display:none;align-items:center;justify-content:center;cursor:pointer" onclick="this.style.display='none'">
+    <img id="pv-img" style="max-width:94%;max-height:88%;border-radius:12px;object-fit:contain"/>
+  </div>
+</div>
+
+<!-- (v1.5.37) Hilfe: immer erreichbar, egal wo man gerade ist -->
+<button id="help-fab" onclick="openHelp()" aria-label="Hilfe"
+  style="position:fixed;right:14px;bottom:76px;z-index:9500;width:42px;height:42px;border-radius:21px;border:1px solid var(--border);background:var(--card);color:var(--text-sub);font-size:19px;font-weight:700;box-shadow:0 3px 12px rgba(0,0,0,0.45);cursor:pointer;font-family:var(--font);display:none">?</button>
+<div id="help-sheet" style="position:fixed;inset:0;z-index:9600;background:rgba(0,0,0,0.6);display:none" onclick="if(event.target===this)closeHelp()">
+  <div id="help-box" style="position:absolute;left:0;right:0;bottom:0;max-height:88%;overflow-y:auto;background:var(--bg);border-radius:16px 16px 0 0;border-top:1px solid var(--border)"></div>
+</div>
+
+<!-- Context menu overlay -->
+<div id="ctx-ov" onclick="closeCtx()"></div>
+<div id="ctx-m"></div>
+<div id="toast"></div>
+
+<!-- Custom Confirm Modal (replaces native confirm()) -->
+<div id="modal-overlay">
+  <div id="modal-box">
+    <div id="modal-title"></div>
+    <div id="modal-msg"></div>
+    <div class="modal-btns">
+      <button id="modal-cancel">Abbrechen</button>
+      <button id="modal-ok">OK</button>
+    </div>
+  </div>
+</div>
+
+<!-- Input-Modal für Zahlen-Eingabe (z.B. Restgewicht-Setup) -->
+<div id="input-modal-overlay">
+  <div id="input-modal-box">
+    <div id="input-modal-title"></div>
+    <div id="input-modal-msg"></div>
+    <div id="input-modal-field-wrap">
+      <input type="number" id="input-modal-field" inputmode="decimal"/>
+      <span id="input-modal-unit"></span>
+    </div>
+    <div id="input-modal-hint"></div>
+    <div class="modal-btns">
+      <button id="input-modal-cancel">Abbrechen</button>
+      <button id="input-modal-ok">OK</button>
+    </div>
+  </div>
+</div>
+
+<script>

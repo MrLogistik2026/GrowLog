@@ -1,0 +1,5 @@
+# Abhaengigkeiten - werden nicht hochgeladen
+node_modules/
+
+# Sicherungsdateien mit persoenlichen Grow-Daten - NIEMALS ins oeffentliche Repository
+growsmart-sicherung-*.txt

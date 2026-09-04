@@ -1,0 +1,21 @@
+Das ist das GrowSmart-Projekt. Bitte lies zuerst diese drei Dateien im Ordner,
+dann weißt du alles Nötige:
+
+1. ANWEISUNG.md   — wer du hier bist, welche Regeln gelten (Sprache, Workflow,
+                    Sicherheitsregeln, Release-Checkliste, Versionierung)
+2. UEBERGABE.md   — der aktuelle Stand: Version, mein laufender Grow, die
+                    offenen Punkte und die Fehler, aus denen wir gelernt haben
+3. START-HIER.md  — wie die Testumgebung aufgebaut wird
+
+Danach richte bitte die Umgebung ein:
+- index.html in head.html + app.js + tail.html zerlegen
+- mit build.sh wieder zusammenbauen und per cmp auf Byte-Identitaet pruefen
+- npm install jsdom
+- alle test_*.js in beiden Zeitzonen laufen lassen
+  (TZ=Europe/Berlin und TZ=Pacific/Kiritimati)
+
+Melde mir danach: Ist die Byte-Identitaet in Ordnung, wie viele Tests laufen,
+und sind alle gruen. Erst danach faengt die Arbeit an.
+
+Ich bin nicht technisch. Erklaere in einfachem Deutsch und mach nichts, ohne
+vorher zu sagen was und warum.

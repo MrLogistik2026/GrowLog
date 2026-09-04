@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>GrowSmart Datenrettung</title>
+<style>
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+       background:#0d1117;color:#e6edf3;margin:0;padding:18px;line-height:1.6;font-size:15px}
+  h1{font-size:1.1rem;color:#4caf70;margin:0 0 14px}
+  .box{background:#161b22;border:1px solid #21262d;border-radius:10px;padding:14px;margin-bottom:12px}
+  .ok{border-color:#4caf70}
+  .warn{border-color:#d4a017}
+  .err{border-color:#db4545}
+  button{width:100%;padding:14px;font-size:15px;font-weight:600;border-radius:10px;
+         border:none;background:#4caf70;color:#0d1117;margin-top:10px;font-family:inherit}
+  button:disabled{background:#30363d;color:#7d8590}
+  pre{white-space:pre-wrap;word-break:break-all;font-size:11px;color:#8b949e;
+      max-height:190px;overflow:auto;background:#0d1117;padding:9px;border-radius:7px}
+  .k{color:#7d8590;font-size:.8rem}
+</style>
+</head>
+<body>
+<h1>🌱 GrowSmart · Datenrettung</h1>
+<div id="status" class="box">Suche nach gespeicherten Daten …</div>
+<div id="aktion"></div>
+<div class="box">
+  <div class="k">Findet diese Datei nichts, liegen deine Daten in einem anderen Speicherbereich
+  der Vorschau. Dann hilft nur, die Vorschau der großen Datei wieder zum Laufen zu bringen.
+  <b>Lösche in keinem Fall die App-Daten oder den Cache der Claude-App</b> — dort liegt dein Grow.</div>
+</div>
+
+<script>
+(function () {
+  var st = document.getElementById('status');
+  var akt = document.getElementById('aktion');
+  var KEY = 'growsmart_v4';
+  var roh = null;
+
+  try {
+    roh = localStorage.getItem(KEY);
+  } catch (e) {
+    st.className = 'box err';
+    st.innerHTML = '<b>Kein Zugriff auf den Speicher.</b><br>' + e.message;
+    return;
+  }
+
+  // Auch nach anderen Schlüsseln schauen, falls der Name abweicht
+  var alle = [];
+  try {
+    for (var i = 0; i < localStorage.length; i++) alle.push(localStorage.key(i));
+  } catch (e) { /* ignorieren */ }
+
+  if (!roh) {
+    st.className = 'box warn';
+    st.innerHTML = '<b>Keine GrowSmart-Daten in diesem Speicherbereich.</b><br>'
+      + 'Gefundene Schlüssel: ' + (alle.length ? alle.join(', ') : 'keine')
+      + '<br><br>Das heißt <b>nicht</b>, dass deine Daten weg sind — nur, dass diese Datei sie '
+      + 'von hier aus nicht sieht.';
+    return;
+  }
+
+  var groesse = (roh.length / 1024).toFixed(0);
+  var info = '';
+  try {
+    var d = JSON.parse(roh);
+    var z = (d.cycles || []).length;
+    var e = Object.keys(d.entries || {}).length;
+    var aktiv = (d.cycles || []).filter(function (c) { return c.active && !c.archived; })[0];
+    info = '<br>Zyklen: <b>' + z + '</b> · Tageseinträge: <b>' + e + '</b>'
+      + (aktiv ? '<br>Aktiv: <b>' + (aktiv.name || 'ohne Namen') + '</b>, Start ' + (aktiv.startDate || '?') : '');
+  } catch (err) {
+    info = '<br><span style="color:#d4a017">Die Daten liegen vor, ließen sich aber nicht lesen — '
+      + 'sichere sie trotzdem.</span>';
+  }
+
+  st.className = 'box ok';
+  st.innerHTML = '<b>Daten gefunden.</b> ' + groesse + ' KB' + info;
+
+  var b1 = document.createElement('button');
+  b1.textContent = '💾 Sicherung herunterladen';
+  b1.onclick = function () {
+    try {
+      var blob = new Blob([roh], { type: 'application/json' });
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'growsmart-sicherung-' + new Date().toISOString().slice(0, 10) + '.json';
+      document.body.appendChild(a); a.click(); a.remove();
+      b1.textContent = '✓ Heruntergeladen — prüf deinen Download-Ordner';
+    } catch (e) {
+      alert('Download nicht möglich: ' + e.message + '\n\nNutz stattdessen den Knopf darunter.');
+    }
+  };
+  akt.appendChild(b1);
+
+  var b2 = document.createElement('button');
+  b2.textContent = '📋 Daten anzeigen (zum Kopieren)';
+  b2.style.background = '#30363d';
+  b2.style.color = '#e6edf3';
+  b2.onclick = function () {
+    var pre = document.createElement('pre');
+    pre.textContent = roh;
+    akt.appendChild(pre);
+    b2.disabled = true;
+    try { navigator.clipboard.writeText(roh); } catch (e) { /* ohne Zwischenablage */ }
+  };
+  akt.appendChild(b2);
+})();
+</script>
+</body>
+</html>

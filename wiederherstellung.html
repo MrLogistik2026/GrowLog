@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>GrowSmart Wiederherstellung</title>
+<style>
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+       background:#0d1117;color:#e6edf3;margin:0;padding:18px;line-height:1.6;font-size:15px}
+  h1{font-size:1.1rem;color:#4caf70;margin:0 0 14px}
+  .box{background:#161b22;border:1px solid #21262d;border-radius:10px;padding:14px;margin-bottom:12px}
+  .ok{border-color:#4caf70}
+  .warn{border-color:#d4a017}
+  .err{border-color:#db4545}
+  textarea{width:100%;height:130px;background:#0d1117;color:#e6edf3;border:1px solid #30363d;
+           border-radius:8px;padding:10px;font-size:11px;font-family:ui-monospace,monospace;
+           box-sizing:border-box}
+  button{width:100%;padding:14px;font-size:15px;font-weight:600;border-radius:10px;
+         border:none;background:#4caf70;color:#0d1117;margin-top:10px;font-family:inherit}
+  button:disabled{background:#30363d;color:#7d8590}
+  .grau{background:#30363d;color:#e6edf3}
+  .k{color:#7d8590;font-size:.8rem}
+</style>
+</head>
+<body>
+<h1>🌱 GrowSmart · Wiederherstellung</h1>
+
+<div id="jetzt" class="box">Prüfe den aktuellen Stand …</div>
+
+<div class="box">
+  <div style="font-weight:600;margin-bottom:6px">Sicherung einfügen</div>
+  <div class="k" style="margin-bottom:8px">Den kompletten Text der Sicherung hier hineinkopieren.
+  Er beginnt mit <code>{"cycles":</code> und endet mit einer geschweiften Klammer.</div>
+  <textarea id="feld" placeholder='{"cycles":[ …'></textarea>
+  <button id="pruefen" class="grau">1 · Prüfen</button>
+  <div id="pruef"></div>
+</div>
+
+<div class="box">
+  <div class="k"><b>Wichtig:</b> Das Einspielen ersetzt den aktuellen Stand vollständig.
+  Der bisherige Stand wird vorher unter einem zweiten Schlüssel gesichert und lässt sich
+  mit dem Knopf ganz unten zurückholen.</div>
+</div>
+
+<div id="zurueck"></div>
+
+<script>
+(function () {
+  var KEY = 'growsmart_v4';
+  var SICHER = 'growsmart_v4_vor_wiederherstellung';
+  var jetzt = document.getElementById('jetzt');
+  var feld = document.getElementById('feld');
+  var pruefBtn = document.getElementById('pruefen');
+  var pruef = document.getElementById('pruef');
+  var zurueck = document.getElementById('zurueck');
+  var geprueft = null;
+
+  function beschreibe(txt) {
+    try {
+      var d = JSON.parse(txt);
+      var z = (d.cycles || []).length;
+      var e = Object.keys(d.entries || {}).length;
+      var a = (d.cycles || []).filter(function (c) { return c.active && !c.archived; })[0];
+      return { ok: true, z: z, e: e, name: a ? (a.name || 'ohne Namen') : null,
+               start: a ? a.startDate : null, groesse: (txt.length / 1024).toFixed(0) };
+    } catch (err) {
+      return { ok: false, fehler: err.message };
+    }
+  }
+
+  // Aktuellen Stand zeigen
+  var akt = null;
+  try { akt = localStorage.getItem(KEY); } catch (e) {}
+  if (!akt) {
+    jetzt.className = 'box warn';
+    jetzt.innerHTML = '<b>Aktuell keine Daten gespeichert.</b> Eine Wiederherstellung überschreibt also nichts.';
+  } else {
+    var b = beschreibe(akt);
+    jetzt.className = 'box';
+    jetzt.innerHTML = b.ok
+      ? '<b>Aktueller Stand:</b> ' + b.z + ' Zyklen · ' + b.e + ' Tageseinträge'
+        + (b.name ? '<br>Aktiv: ' + b.name + ', Start ' + b.start : '') + '<br>' + b.groesse + ' KB'
+      : '<b>Aktueller Stand vorhanden</b>, ließ sich aber nicht lesen.';
+  }
+
+  pruefBtn.onclick = function () {
+    var txt = feld.value.trim();
+    if (!txt) { pruef.innerHTML = '<div class="k" style="margin-top:8px">Noch nichts eingefügt.</div>'; return; }
+    var b = beschreibe(txt);
+    if (!b.ok) {
+      pruef.innerHTML = '<div class="box err" style="margin-top:10px"><b>Das ist keine gültige Sicherung.</b><br>'
+        + b.fehler + '<br><br>Häufigste Ursache: Der Text wurde nicht vollständig kopiert.</div>';
+      geprueft = null;
+      return;
+    }
+    if (!b.z) {
+      pruef.innerHTML = '<div class="box err" style="margin-top:10px"><b>Kein Zyklus in der Sicherung.</b> Nicht einspielen.</div>';
+      geprueft = null;
+      return;
+    }
+    geprueft = txt;
+    pruef.innerHTML = '<div class="box ok" style="margin-top:10px"><b>Sicherung sieht gut aus.</b><br>'
+      + b.z + ' Zyklen · ' + b.e + ' Tageseinträge · ' + b.groesse + ' KB'
+      + (b.name ? '<br>Aktiv: ' + b.name + ', Start ' + b.start : '')
+      + '</div>';
+    var b2 = document.createElement('button');
+    b2.textContent = '2 · Jetzt einspielen';
+    b2.onclick = function () {
+      try {
+        if (akt) localStorage.setItem(SICHER, akt);
+        localStorage.setItem(KEY, geprueft);
+        b2.textContent = '✓ Eingespielt — GrowSmart öffnen und prüfen';
+        b2.disabled = true;
+      } catch (e) {
+        alert('Konnte nicht schreiben: ' + e.message);
+      }
+    };
+    pruef.appendChild(b2);
+  };
+
+  // Rückweg anbieten, falls eine Sicherung des vorherigen Stands existiert
+  var vorher = null;
+  try { vorher = localStorage.getItem(SICHER); } catch (e) {}
+  if (vorher) {
+    var d = document.createElement('div');
+    d.className = 'box';
+    d.innerHTML = '<div class="k">Es liegt ein Stand von <b>vor</b> der letzten Wiederherstellung vor.</div>';
+    var b3 = document.createElement('button');
+    b3.className = 'grau';
+    b3.textContent = '↩ Vorherigen Stand zurückholen';
+    b3.onclick = function () {
+      try {
+        localStorage.setItem(KEY, vorher);
+        b3.textContent = '✓ Zurückgeholt';
+        b3.disabled = true;
+      } catch (e) { alert('Fehlgeschlagen: ' + e.message); }
+    };
+    d.appendChild(b3);
+    zurueck.appendChild(d);
+  }
+})();
+</script>
+</body>
+</html>
