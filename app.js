@@ -480,6 +480,23 @@ const CAL_SVG = {
 };
 
 /**
+ * Klartext-Namen der Tagesaufgaben. Vorher griff die Anzeige auf PN zurueck —
+ * das ist aber die Tabelle der PHASEN-Namen. Die Schluessel passen nur bei
+ * 'ice' zufaellig zusammen, deshalb standen 'saettigung', 'sprueh', 'spuelen',
+ * 'ernte' und 'trocknen' als roher Programmtext auf dem Bildschirm.
+ */
+const ACT_NAME = {
+  giess: 'Gießtag',
+  giess_anz: 'Anzucht-Guss',
+  saettigung: 'Sättigungsguss',
+  sprueh: 'Sprühen',
+  spuelen: 'Spülen',
+  ice: 'IceFlush',
+  ernte: 'Ernte',
+  trocknen: 'Trocknen',
+};
+
+/**
  * Get icon HTML for a calendar cell. Returns SVG string for actions with
  * dedicated designs (spuelen/ernte/trocknen), else falls back to emoji.
  */
@@ -4937,6 +4954,20 @@ document.getElementById('modal-ok').onclick = () => {
   document.getElementById('modal-cancel').textContent = 'Abbrechen';
   if (_modalResolve) { _modalResolve(true); _modalResolve = null; }
 };
+
+// Zwei Fluchtwege aus dem Dialog: Tippen auf den abgedunkelten Hintergrund und
+// die Escape-Taste. Beide wirken wie "Abbrechen" (also die sichere Antwort).
+// Ohne sie sass man fest, sobald der Text so lang war, dass die Knoepfe unten
+// nicht mehr auf den Schirm passten — der einzige Ausweg war Neuladen.
+document.getElementById('modal-overlay').addEventListener('click', (e) => {
+  // Nur der Hintergrund selbst, nicht ein Klick im Kasten.
+  if (e.target === e.currentTarget) document.getElementById('modal-cancel').click();
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'Escape') return;
+  if (!document.getElementById('modal-overlay').classList.contains('show')) return;
+  document.getElementById('modal-cancel').click();
+});
 
 /**
  * Zahlen-Eingabe-Dialog. Ersetzt native prompt() mit konsistentem UI.
@@ -13905,7 +13936,7 @@ function renderDash() {
           ${fcDry ? `<div style="font-size:10px;color:var(--text-hint);margin-top:1px">Schätzung aus deinem Trocknungs-Tempo · Hebe-Test entscheidet</div>` : ''}
         </div>
         <div style="font-size:12px;color:${cl.hex};font-weight:500;white-space:nowrap">${a
-          ? (ACT_ICON[a] || '') + ' ' + (a === 'giess' ? 'Gießtag' : a === 'giess_anz' ? 'Anzucht' : PN[a] || a)
+          ? (ACT_ICON[a] || '') + ' ' + (a === 'giess' ? 'Gießtag' : a === 'giess_anz' ? 'Anzucht' : ACT_NAME[a] || PN[a] || a)
           : (fcDry ? '💧 ~' + _drybackShort(fcDry.dateIso, fcDry.days) : (next ? 'in ' + next.days + 'd' : '—'))
         }</div>
       </div>`;
@@ -14138,7 +14169,7 @@ function renderDash() {
         </div>
         <div style="text-align:center">
           <div style="font-size:26px">${a ? ACT_ICON[a] || '💤' : '💤'}</div>
-          <div style="font-size:10px;color:${a ? cl.hex : 'var(--text-hint)'};font-weight:600;margin-top:1px">${a ? (a === 'giess' ? 'Gießen' : a === 'giess_anz' ? 'Gießen 🌱' : PN[a] || a) : 'Pause'}</div>
+          <div style="font-size:10px;color:${a ? cl.hex : 'var(--text-hint)'};font-weight:600;margin-top:1px">${a ? (a === 'giess' ? 'Gießen' : a === 'giess_anz' ? 'Gießen 🌱' : ACT_NAME[a] || PN[a] || a) : 'Pause'}</div>
         </div>
       </div>
       ${!a && next ? `<div data-tour="next-water" onclick="event.stopPropagation();entryFrom='dash';openEntry('${next.iso}')" style="background:${cl.hex}0c;border:0.5px solid ${cl.hex}22;border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:10px;cursor:pointer">

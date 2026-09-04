@@ -517,15 +517,29 @@ input:checked + .sl:before { transform: translateX(18px); background: var(--gree
   background: var(--card); border: 0.5px solid var(--border); border-radius: 18px;
   padding: 24px; max-width: 340px; width: 100%;
   box-shadow: 0 20px 60px rgba(0,0,0,0.6); animation: modalIn 0.2s ease;
+  /* Der Kasten darf nie hoeher werden als der Bildschirm. Sonst rutschen die
+     Knoepfe unten aus dem Bild und der Dialog laesst sich nicht mehr schliessen
+     — auf kleinen Handys und in jedem Querformat. Titel und Knoepfe bleiben
+     stehen, gescrollt wird nur der Text dazwischen. */
+  box-sizing: border-box;
+  max-height: 100%;
+  display: flex; flex-direction: column;
 }
 @keyframes modalIn { from { opacity: 0; transform: scale(0.92) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
 #modal-title {
   font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 8px;
+  flex: none;
 }
 #modal-msg {
   font-size: 13px; color: var(--text-sub); line-height: 1.6; margin-bottom: 20px;
+  /* Die Dialogtexte sind mit echten Zeilenumbruechen und Aufzaehlungen
+     geschrieben und werden per textContent gesetzt. Ohne pre-line macht HTML
+     daraus einen einzigen Fliesstext mit Punkten mittendrin. */
+  white-space: pre-line;
+  flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
 }
-.modal-btns { display: flex; gap: 10px; }
+.modal-btns { display: flex; gap: 10px; flex: none; }
 .modal-btns button {
   flex: 1; padding: 12px; border-radius: 10px; font-size: 13px;
   font-weight: 600; cursor: pointer; font-family: var(--font); border: none;
