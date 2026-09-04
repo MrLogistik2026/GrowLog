@@ -13437,6 +13437,50 @@ function getTodayAction(c, p, a, iso) {
     };
   }
 
+  // SÄTTIGUNGSGUSS (Tag 1, Einpflanztag). Ohne eigenen Zweig lieferte
+  // getTodayAction hier null — die Startseite zeigte dann keine Handlungskarte
+  // und der Anfänger las ausgerechnet am wichtigsten Tag "Heute alles ruhig".
+  // Die Mengen folgen derselben Rechnung wie getAutoFillTemplate, damit
+  // Startseite und Tageseintrag nicht zwei verschiedene Zahlen nennen.
+  if (a === 'saettigung') {
+    const plants = (typeof getEffectivePlantCount === 'function') ? getEffectivePlantCount(c, iso) : 1;
+    const satMl = _savedWater > 0 ? _savedWater : 700 * plants;   // 600–800 ml pro Topf, Mitte 700
+    // Auf 50 runden, damit die Zahl zur Formulierung "je ~250 ml" passt, die
+    // plainSentence im Erklaertext direkt darueber nennt. Zwei verschiedene
+    // Zahlen auf derselben Karte verunsichern mehr, als die Praezision nuetzt.
+    const etappe = Math.round(satMl / 3 / 50) * 50;
+    return {
+      title: '💦 Heute: Sättigungsguss (Tag 1)',
+      icon: '💦',
+      color: cl.hex,
+      steps: [
+        `Wasser anmischen: pH ${pht.mid.toFixed(1)}, EC ~0.6 — CalMag und etwas Bio-Heaven, <b>kein Bio-Grow</b>`,
+        `<b>${satMl} ml in 3 Etappen</b> zu je ~${etappe} ml, dazwischen jeweils 15 min Pause`,
+        'Kreisförmig von außen nach innen gießen — nie direkt auf den Samen',
+        'Nach 1–2 h den Topf wiegen: das ist dein <b>100%-Referenzgewicht</b> für den Hebe-Test',
+      ],
+      hint: 'Ab morgen bis Tag 8 wird nicht mehr gegossen, nur gesprüht — das ist Absicht. Der Sämling hat noch kaum Wurzeln.',
+    };
+  }
+
+  // SPRÜH-TAGE (Tag 2–8 der Anzucht). Hier wird bewusst NICHT gegossen — aber
+  // "nicht gießen" heißt nicht "nichts tun", und genau das war die Lücke.
+  if (a === 'sprueh') {
+    // Tag 9 ist laut getAction der erste echte Giesstag.
+    const restTage = Math.max(1, 9 - p.day);
+    return {
+      title: '🫧 Heute: Nur sprühen — nicht gießen',
+      icon: '🫧',
+      color: cl.hex,
+      steps: [
+        'Erst schauen: sind die obersten 1–2 cm Erde trocken und heller? Dann sprühen.',
+        `3–5 Sprühstöße pH-Wasser (pH ${pht.mid.toFixed(1)}) auf die Erdoberfläche — nicht auf die Keimblätter`,
+        'Heute kein Gießen und kein Hebe-Test: Sprühen ändert das Topfgewicht nicht messbar',
+      ],
+      hint: `Ab Tag 9 beginnt der normale Gießrhythmus — noch ${restTage} ${restTage === 1 ? 'Tag' : 'Tage'} sprühen.`,
+    };
+  }
+
   if (a === 'giess_anz') {
     const isOutdoor = c.growType === 'outdoor';
     const isVorzucht = p.ph === 'vorzucht';
