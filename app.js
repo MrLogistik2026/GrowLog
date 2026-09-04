@@ -1909,6 +1909,7 @@ const ARC_RHYTHM = { 1:'F', 2:'F', 3:'FFW', 4:'FFW', 5:'FFW', 6:'FWF', 7:'FWF', 
 const FERT_PRESETS = {
   sensi_amnesia_auto: {
     name: 'Sensi Amnesia XXL Auto (V6.0)',
+    medium: 'erde',   // Light-Mix
     subtitle: '4 Pfl. · 11L Stofftopf (aufgemoundet 14–16L) · Light-Mix · Lumatek Zeus Pro 3.1 300W 18/6 · pH 6,2–6,4 · EC 0,3→1,1 · jeder Guss ist ein Feed · 17 Wochen · Trigger schlägt Kalender',
     doseMode: 'per-watering',
     // Es gibt keine reinen Wasser-Tage mehr — jede Gabe ist eine Feed-Gabe. Die Dosen unten
@@ -2017,6 +2018,7 @@ const FERT_PRESETS = {
     // Blütedünger im Wochenplan steht.
     weekPhases: ['anzucht','anzucht','anzucht','bloom','bloom','bloom','bloom','bloom','bloom','bloom','flush','ice'],
     name: 'BioBizz Master (Premium)',
+    medium: 'erde',   // organischer Erdduenger
     subtitle: '11L Stofftöpfe · Light-Mix · LED · jedes Gießen · pH 6.2 · EC ~0.4→1.4 · 49d Bloom',
     doseMode: 'per-watering',
     bloomDaysHint: 49,
@@ -2071,6 +2073,7 @@ const FERT_PRESETS = {
     // Blütedünger im Wochenplan steht.
     weekPhases: ['anzucht','anzucht','anzucht','bloom','bloom','bloom','bloom','bloom','bloom','bloom','flush','ice'],
     name: 'BioBizz Outdoor',
+    medium: 'erde',   // organischer Erdduenger
     subtitle: 'Offizieller Outdoor-Plan · Fish·Mix in Vegi · Soil / All-Mix · pH 6.2–6.5 · EC ~0.4→1.5',
     doseMode: 'weekly-split',
     bloomDaysHint: 49,
@@ -2127,6 +2130,7 @@ const FERT_PRESETS = {
     // Blütedünger im Wochenplan steht.
     weekPhases: ['anzucht','anzucht','bloom','bloom','bloom','bloom','bloom','bloom','bloom','bloom','flush','ice'],
     name: 'BioBizz Official',
+    medium: 'erde',   // organischer Erdduenger
     subtitle: 'Offizieller Herstellerplan 2025 · Light-Mix · für Anfänger · EC ~0.4→1.6',
     doseMode: 'weekly-split',
     bloomDaysHint: 49,
@@ -2167,6 +2171,7 @@ const FERT_PRESETS = {
     // Blütedünger im Wochenplan steht.
     weekPhases: ['anzucht','anzucht','anzucht','bloom','bloom','bloom','bloom','bloom','bloom','bloom','flush','ice'],
     name: 'BioBizz Light',
+    medium: 'erde',   // organischer Erdduenger
     subtitle: 'Master × 50% · CalMag voll für LED · für Einsteiger · EC ~0.3→0.8',
     doseMode: 'per-watering',
     bloomDaysHint: 49,
@@ -2208,6 +2213,8 @@ const FERT_PRESETS = {
     // Blütedünger im Wochenplan steht.
     weekPhases: ['anzucht','anzucht','bloom','bloom','bloom','bloom','bloom','bloom','bloom','flush'],
     name: 'Plagron Terra',
+    medium: 'erde',   // Terra-Linie
+    subtitle: 'Mineralisch · Terra Grow + Terra Bloom · 10 Wochen',
     mixOrder: ['Terra Grow','Terra Bloom','Power Roots','Pure Zym','Green Sensation'],
     mixInfo: '1. Basisdünger zuerst (mineralisch, löst sich sofort). 2. Wurzelstimulator & Enzyme (biologisch aktiv, ins stabile Milieu). 3. Green Sensation zuletzt (PK-Booster mit Chelat-Wirkung). pH 5.5–6.5.',
     products: [
@@ -2232,6 +2239,8 @@ const FERT_PRESETS = {
     // Blütedünger im Wochenplan steht.
     weekPhases: ['anzucht','anzucht','bloom','bloom','bloom','bloom','bloom','bloom','bloom','flush'],
     name: 'CANNA Terra',
+    medium: 'erde',   // Terra-Linie
+    subtitle: 'Mineralisch · Terra Vega + Terra Flores · 10 Wochen',
     mixOrder: ['CANNA Terra Vega','CANNA Terra Flores','PK 13/14','RHIZOTONIC','CANNAZYM'],
     mixInfo: '1. Basisdünger zuerst (Vega oder Flores je nach Phase). 2. PK 13/14 nur Wo 4-6 der Blüte (Phosphor/Kalium-Booster). 3. RHIZOTONIC & CANNAZYM zuletzt (biologische Additive ins stabile Milieu). pH 5.5–6.5.',
     products: [
@@ -2260,6 +2269,8 @@ const FERT_PRESETS = {
     // Blütedünger im Wochenplan steht.
     weekPhases: ['anzucht','anzucht','anzucht','bloom','bloom','bloom','bloom','bloom','bloom','flush'],
     name: 'Hesi (Erde)',
+    medium: 'erde',
+    subtitle: 'TNT Complex + Blüh Complex · 10 Wochen',
     mixOrder: ['TNT Complex','Blüh Complex','Phosphor Plus','Wurzel Complex','PowerZyme','Boost','SuperVit'],
     mixInfo: '1. Basisdünger zuerst (TNT oder Blüh Complex – stärkste pH/EC-Veränderung). 2. PK-Booster (Phosphor Plus). 3. Bio-Additive (Wurzel Complex, PowerZyme, Boost). 4. SuperVit ganz zuletzt (hochkonzentriert, 1 Tropfen/4L!). pH reguliert sich meist durch Blüh Complex.',
     products: [
@@ -2290,6 +2301,7 @@ const FERT_PRESETS = {
     // Blütedünger im Wochenplan steht.
     weekPhases: ['anzucht','anzucht','anzucht','bloom','bloom','bloom','bloom','bloom','bloom','bloom','flush','ice'],
     name: 'BioBizz konservativ + Bodenbiom',
+    medium: 'erde',   // organischer Erdduenger
     subtitle: 'Erde / Light-Mix · Indoor · weiches Wasser · konservativ dosiert · EC ~0.4→1.2',
     doseMode: 'per-watering',
     bloomDaysHint: 49,
@@ -2345,6 +2357,7 @@ const FERT_PRESETS = {
     // Blütedünger im Wochenplan steht.
     weekPhases: ['anzucht','anzucht','anzucht','bloom','bloom','bloom','bloom','bloom','bloom','flush','flush','ice'],
     name: 'CANNA Coco A+B',
+    medium: 'coco',   // inertes Substrat, pH 5,8-6,2, CalMag Pflicht
     subtitle: 'Coco-Substrat · Mineral · 2-Komponenten-System · pH 5.8–6.2',
     doseMode: 'per-watering',
     mixOrder: ['CalMag','CANNA Coco A','CANNA Coco B','RHIZOTONIC','CANNAZYM','CANNABOOST','PK 13/14'],
@@ -2395,11 +2408,12 @@ const FERT_PRESETS = {
     // Blütedünger im Wochenplan steht.
     weekPhases: ['anzucht','anzucht','anzucht','bloom','bloom','bloom','bloom','bloom','bloom','flush','flush','ice'],
     name: 'GHE Flora-Serie (3-Komponenten)',
-    subtitle: 'Hydro / Coco / Erde · Mineral · Micro+Grow+Bloom · pH 5.8–6.2',
+    medium: 'coco',   // pH-Fuehrung 5,8-6,2 — bewusst nicht fuer Erde freigegeben
+    subtitle: 'Mineral · Micro + Grow + Bloom · pH 5,8–6,2',
     doseMode: 'per-watering',
     mixOrder: ['CalMag','FloraMicro','FloraGrow','FloraBloom','Diamond Nectar','Ripen'],
     mixInfo: '3-Komponenten-System (Universal-Mineral-Linie). Reihenfolge GANZ WICHTIG: 1. CalMag zuerst. 2. FloraMicro zuerst nach CalMag (Mikronährstoffe + Calcium-Komplex). 3. FloraGrow. 4. FloraBloom. 5. Diamond Nectar (Huminsäuren) als Additiv. 6. Ripen nur in den letzten 2 Wochen. Niemals FloraGrow/FloraBloom vor FloraMicro mischen — sonst Ausfällung. pH 5.8–6.2.',
-    drainInfo: '🧪 Universal-Plan: GHE Flora funktioniert in Hydro, Coco UND Erde. Verhältnis Micro/Grow/Bloom ändern für Phase: Vegi 3-2-1, Übergang 2-2-2, Blüte 1-2-3 oder 1-3-2. Immer in dieser Reihenfolge mischen. Drain-EC checken — bei zu hoch: weniger A/B/C, gleiche Verhältnis.',
+    drainInfo: '🧪 Die Flora-Serie selbst läuft in Hydro, Coco und Erde — dieser Plan hier ist auf Coco ausgelegt und führt den pH auf 5,8–6,2. In Erde gehört der pH auf 6,2–6,5; nimm dort einen der Erd-Pläne. Verhältnis Micro/Grow/Bloom ändern für Phase: Vegi 3-2-1, Übergang 2-2-2, Blüte 1-2-3 oder 1-3-2. Immer in dieser Reihenfolge mischen. Drain-EC checken — bei zu hoch: weniger A/B/C, gleiche Verhältnis.',
     weekFocus: {
       1:  { phase: 'Anzucht',  tip: 'Sehr niedrige EC. Nur CalMag + Micro + minimal Grow.' },
       2:  { phase: 'Vegi I',   tip: 'Vegi-Verhältnis 3-2-1 (Micro-Grow-Bloom). Diamond Nectar dazu.' },
@@ -2442,6 +2456,7 @@ const FERT_PRESETS = {
       // (v1.5.93) Phasen-Rückgrat — siehe die übrigen Pläne.
       weekPhases: ['anzucht','anzucht','anzucht','bloom','bloom','bloom','bloom','bloom','bloom','bloom','flush','ice'],
       name: 'Cup-Sieger-Plan (Premium)',
+      medium: 'erde',   // Light-Mix
       subtitle: '12 Wochen · 12 Produkte · EC 0.4→2.3 · Auto-optimiert · 49 Tage Bloom',
       feedDayBasis: true,
       doseMode: 'per-watering',
@@ -2667,6 +2682,37 @@ function listAllPresets() {
     result.push(...custom);
   }
   return result;
+}
+
+const MEDIUM_NAMEN = { erde: 'Erde', coco: 'Coco', hydro: 'Hydro' };
+function mediumName(m) { return MEDIUM_NAMEN[m] || m || 'Erde'; }
+
+/**
+ * Passt ein Duengeplan zum Substrat der laufenden Zyklen?
+ *
+ * Das ist keine Geschmacksfrage: Coco ist inert und haengt komplett am
+ * Duengerwasser (jeder Guss ein Feed, CalMag Pflicht, pH 5,8-6,2). Erde ist
+ * vorgeduengt und puffert (pH 6,2-6,5, nicht jeder Guss duengt). Wer den
+ * falschen Plan faehrt, bekommt entweder Ueberduengung und pH-Absturz oder
+ * einen schleichenden Mangel — beides kostet Ertrag.
+ *
+ * @returns {null|{text: string}} null wenn alles passt oder nichts zu pruefen ist.
+ */
+function presetMediumMismatch(key) {
+  const pr = FERT_PRESETS[key];
+  if (!pr || !pr.medium) return null;
+  const media = [...new Set(active().map(c => c.medium || 'erde'))];
+  if (media.length === 0 || media.includes(pr.medium)) return null;
+  const ziel = mediumName(media[0]);
+  const plan = mediumName(pr.medium);
+  const grund = pr.medium === 'coco'
+    ? `Coco-Pläne düngen bei jedem Guss und führen den pH auf 5,8–6,2. In ${ziel} bedeutet das Überdüngung und einen zu niedrigen pH — die Wurzel kann Nährstoffe dann nicht mehr aufnehmen.`
+    : `Erd-Pläne setzen einen vorgedüngten, puffernden Boden voraus. ${ziel} ist inert: Dort braucht die Pflanze bei jedem Guss Dünger plus CalMag, sonst wächst sie in einen Mangel hinein.`;
+  return { text: `Dein Zyklus läuft in ${ziel}, dieser Plan ist für ${plan} gemacht.
+
+${grund}
+
+Wenn du weißt, was du tust, kannst du trotzdem fortfahren.` };
 }
 
 /**
@@ -17013,15 +17059,15 @@ function renderDuenger() {
         .map(pre => {
           const isActive = S.presetKey === pre.key;
           return `<button onclick="loadPreset('${pre.key}')" style="background:${isActive?'var(--green-dk)':'var(--green-bg)'};border:1px solid ${isActive?'var(--green)':'var(--green-dk)'};border-radius:10px;padding:10px 14px;cursor:pointer;font-family:var(--font);text-align:left">
-            <div style="font-size:13px;font-weight:700;color:var(--green)">${isActive ? '✓ ' : ''}${pre.name}</div>
+            <div style="font-size:13px;font-weight:700;color:var(--green);display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+              <span>${isActive ? '✓ ' : ''}${pre.name}</span>
+              ${FERT_PRESETS[pre.key] && FERT_PRESETS[pre.key].medium
+                ? `<span style="background:var(--card2);border:0.5px solid var(--border);color:var(--text-muted);font-size:9px;font-weight:600;padding:2px 6px;border-radius:4px">für ${mediumName(FERT_PRESETS[pre.key].medium)}</span>`
+                : ''}
+            </div>
             ${pre.subtitle ? `<div style="font-size:10px;font-weight:400;color:var(--text-muted);margin-top:2px;line-height:1.35">${pre.subtitle}</div>` : ''}
           </button>`;
         }).join('')}
-    </div>
-    <div style="display:flex;gap:8px;margin-top:10px;opacity:0.35;pointer-events:none">
-      <button style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px 10px;font-size:11px;color:var(--text-muted);font-family:var(--font)">🧪 Plagron · bald</button>
-      <button style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px 10px;font-size:11px;color:var(--text-muted);font-family:var(--font)">🔬 CANNA · bald</button>
-      <button style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px 10px;font-size:11px;color:var(--text-muted);font-family:var(--font)">💜 Hesi · bald</button>
     </div>
     ${(() => {
       // CUSTOM PRESETS (Phase 4 Schritt 5): Liste eigener Presets + Aktionen
@@ -17388,6 +17434,19 @@ function _planRueckgratAuffrischen(plan, preset) {
 async function loadPreset(key) {
   const pr = FERT_PRESETS[key];
   if (!pr) return;
+
+  // Substrat-Abgleich vor allem anderen. Wir blockieren nicht — ein Profi darf
+  // bewusst abweichen — aber niemand soll versehentlich einen Coco-Plan in Erde
+  // fahren, nur weil er in derselben Liste stand.
+  const abweichung = presetMediumMismatch(key);
+  if (abweichung) {
+    const trotzdem = await customConfirm(
+      '⚠️ Plan passt nicht zum Substrat',
+      abweichung.text,
+      'Trotzdem laden', 'var(--orange)'
+    );
+    if (!trotzdem) return;
+  }
 
   // Check ob schon ein Plan mit diesem Preset existiert
   const existing = (S.fertPlans || []).find(p => p.presetKey === key);
@@ -20362,10 +20421,16 @@ function _wizStepFertPlan(a) {
   // Indoor: Light (Empfohlen für Anfänger) → Cup-Sieger (Premium) → Master → Official
   // Outdoor: Outdoor zuerst (passt zum Grow-Typ), dann Indoor-Alternativen
   // Cup-Sieger nur Indoor anbieten (49-Tage-Bloom-Plan ist Indoor-optimiert)
-  const presetKeys = isOutdoor
-    ? ['biobizz_outdoor', 'biobizz_light', 'biobizz_master', 'biobizz_official']
-    : ['biobizz_light', 'cup_sieger', 'biobizz_master', 'biobizz_official', 'biobizz_outdoor'];
-  const recommendedKey = isOutdoor ? 'biobizz_outdoor' : 'biobizz_light';
+  // Nur Plaene anbieten, die zum gewaehlten Substrat passen (siehe
+  // presetMediumMismatch). Im Assistenten wird streng gefiltert statt nur
+  // gewarnt — wer hier sitzt, faengt gerade erst an.
+  const med = a.medium || 'erde';
+  const presetKeys = med === 'coco'
+    ? ['canna_coco', 'ghe_flora']
+    : isOutdoor
+      ? ['biobizz_outdoor', 'biobizz_light', 'canna', 'hesi', 'plagron', 'biobizz_master', 'biobizz_official']
+      : ['biobizz_light', 'cup_sieger', 'canna', 'hesi', 'plagron', 'biobizz_master', 'biobizz_official', 'biobizz_outdoor'];
+  const recommendedKey = med === 'coco' ? 'canna_coco' : isOutdoor ? 'biobizz_outdoor' : 'biobizz_light';
   const presetOptions = presetKeys
     .filter(key => !plans.some(p => p.presetKey === key))
     .map(key => {
@@ -20381,6 +20446,11 @@ function _wizStepFertPlan(a) {
         biobizz_official: '📋',
         biobizz_outdoor: '☀️',
         cup_sieger: '🥇',
+        canna: '🌿',
+        hesi: '🔬',
+        plagron: '🌾',
+        canna_coco: '🥥',
+        ghe_flora: '⚗️',
       }[key] || '🧪';
       const summary = {
         biobizz_light: 'Master × 50% · fehlerverzeihend für Einsteiger',
@@ -20388,6 +20458,11 @@ function _wizStepFertPlan(a) {
         biobizz_official: 'Herstellerplan · automatisch verteilt',
         biobizz_outdoor: 'Fish·Mix in Vegi · für Erdanbau im Freien',
         cup_sieger: '12 Wochen · 12 Produkte · Auto-optimiert · 49 Tage Bloom',
+        canna: 'Terra Vega + Flores · Herstellerplan für Erde',
+        hesi: 'TNT & Blüh Complex · Blüh Complex regelt den pH mit',
+        plagron: 'Terra Grow + Bloom · mineralisch, für Erde',
+        canna_coco: 'A+B Mineral · CalMag Pflicht · jeder Guss ist ein Feed',
+        ghe_flora: 'Micro + Grow + Bloom · Verhältnis wechselt je Phase',
       }[key] || '';
       return `
         <button onclick="_wizAnswer('fertPresetKey','${key}')" style="display:block;width:100%;background:${isRecommended ? 'rgba(76,175,112,0.08)' : 'var(--card)'};border:1px solid ${isRecommended ? 'var(--green)' : 'var(--border)'};border-radius:12px;padding:12px 14px;margin-bottom:8px;cursor:pointer;text-align:left;font-family:var(--font)">
