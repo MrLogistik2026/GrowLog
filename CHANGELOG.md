@@ -4,6 +4,13 @@ Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
 ## 2026-09-05 — v1.5.96
 
+- **Übergabe fortgeschrieben.** Abschnitt 1 enthält jetzt den am 05.09.2026 gemessenen
+  Befund zur Bedienung (Modus-Vergleich, Kopplungs-Messung, doppelte Erntetage, beide
+  Bildschirme hinter der Einstellungs-Tür) und die vorgeschlagene Richtung in vier
+  Schritten. Abschnitt 3 auf Tag 113 aktualisiert; die offene Frage nach dem rückwirkend
+  gesetzten Spülstart ist beantwortet und gestrichen. Warum: Ohne das müsste die Analyse
+  nach einem Neustart von vorn gemacht werden.
+
 - **Pflanzen-Zähler löscht keine erfasste Ernte mehr stumm.** Beim Verkleinern von
   `plantCount` kürzte `saveDraft()` das `plants`-Array wortlos von hinten — samt
   Schnitt-Datum und Ertrag ausgerechnet der Pflanzen, die zuerst geschnitten wurden.

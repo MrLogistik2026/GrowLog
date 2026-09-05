@@ -2,29 +2,110 @@
 
 Stand: **v1.5.96** · index.html 2,11 MB · 627 Funktionen
 Ausgeliefert am Ende der Sitzung vom 01.09.2026
-Zuletzt fortgeschrieben am 05.09.2026 — v1.5.96, drei Fehler behoben
+Zuletzt fortgeschrieben am 05.09.2026 — v1.5.96, drei Fehler behoben;
+Abschnitt 1 um den gemessenen Befund zur Bedienung erweitert
 
 ---
 
 ## 1 · Wichtigster offener Punkt
 
 **Die Einstellungen und ihre Verknüpfung mit dem Düngeplan müssen vereinfacht werden.**
-Patricks Worte: „Die Einstellungen sind wichtig, aber die automatischen Funktionen sind
-nicht auf dem Niveau, wie ich es gerne hätte."
+Patricks Worte vom 05.09.2026: „Ich finde die ganze Handhabung kompliziert, aber trotzdem
+sehr smart und auch teilweise nötig. Diese Einstellung macht es uns sehr flexibel alles
+einzustellen. Ich bin nur mit der Handhabung unzufrieden bzw. mache mir Sorgen, dass die
+User nicht damit zurechtkommen."
 
-Der Befund ist messbar. Siebzehn Funktionen ändern Zeit oder Dosis, verteilt über sechs
-Bildschirme: `holdPlanWeek`, `confirmPlanWeek`, `moveGussDay`, `doShift`, `shiftPlanToDay`,
+Das ist die Aufgabe: **nicht Funktionen wegnehmen, sondern die Kopplung beherrschbar
+machen.** Die Flexibilität ist gewollt und teilweise nötig.
+
+### Was am 05.09.2026 gemessen wurde
+
+Die App wurde mit Patricks echter Sicherung in jsdom durchlaufen — Einstellungen,
+Düngeplan, Wochenplan und Gieß-Fahrplan, je einmal als Einsteiger und als Profi. Vier
+Befunde, alle nachgemessen:
+
+**Der Einsteiger-Modus wirkt dort nicht, wo es am dichtesten ist.**
+
+| Bildschirm | Profi (Klick / Feld) | Einsteiger |
+|---|---|---|
+| Einstellungen | 65 / 38 | 56 / 26 |
+| Dünger & Wochenplan | 33 / 0 | 34 / 0 |
+| Gieß-Fahrplan | 51 / 9 | **51 / 9** |
+| Wochenplan bearbeiten | 55 / 84 | 55 / 84 |
+
+Der Gieß-Fahrplan ist in beiden Modi **zeichengenau identisch** (4465 Zeichen). Der
+Düngeplan hat im Einsteiger-Modus einen Klick mehr als im Profi-Modus. Nur die
+Einstellungen schrumpfen überhaupt.
+
+**Ursache und Wirkung stehen nie auf demselben Bildschirm.** Eine Zahl in den
+Einstellungen ändern und zählen, was sich wo mitverändert:
+
+| Änderung | Einstellungen | Gieß-Fahrplan | Dashboard | Folge |
+|---|---|---|---|---|
+| Gießintervall Blüte 3 → 4 | 891 Wörter | 729 Wörter | 30 Wörter | Endspurt-Anker weg (war Fehler B) |
+| Blütedauer 85 → 80 | 1778 Wörter | 1107 Wörter | 202 Wörter | Kette rückt zurück, Fehlalarm „1 Aktion verpasst" |
+| Topfgröße 11 → 15 L | 891 Wörter | 1494 Wörter | — | alle Mengen neu |
+
+Bei „Blütedauer 85 → 80" wandert die ganze Kette in die Vergangenheit (Spülen 107/110 →
+102/105, Ernte 116 → 111) und das Dashboard meldet daraufhin verpasste Gießtage. **Ein
+Eingabefeld erzeugt einen Fehlalarm über die Vergangenheit.**
+
+**Dieselbe Tatsache hat zwei Zahlen, ohne dass es jemand erklärt.** Auf dem
+Einstellungs-Bildschirm steht gleichzeitig „Erntefenster: Tag 118–158" (aus den Trichomen)
+und „Ernte Tag 116" (aus der Kette). `harvestWindow()` gibt den Plan-Tag bereits als
+`planTag` mit zurück — die Differenz wird nur nirgends ausgesprochen. Noch offen.
+
+**Beide zentralen Bildschirme liegen hinter der Einstellungs-Tür.** `duenger` und
+`gussplan` sind aus der Navigation nicht direkt erreichbar, nur über zwei Zeilen oben in
+`scr-set` (dazu über die Befehlssuche und einen Kontext-Link im Eintrag). Was täglich
+gebraucht wird — „was gieße ich morgen, in welcher Menge" — liegt damit hinter dem
+Bildschirm, den man aufsucht, wenn etwas nicht stimmt.
+
+### Vorgeschlagene Richtung (Stand 05.09.2026, von Patrick noch nicht entschieden)
+
+Die Zahl der Regler ist nicht das Problem. Es fehlt die Antwort auf **„was passiert, wenn
+ich das anfasse?"** Daraus folgen vier Schritte, in dieser Reihenfolge:
+
+**1 · Eine Vorschau statt siebzehn Warnungen.** `endspurtState(c, iso)` ist ein reines,
+aus dem Zustand berechnetes Objekt. Damit lässt sich jede Änderung generisch abfangen:
+Schnappschuss nehmen, Wert setzen, zweiten Schnappschuss nehmen, vergleichen, dem Nutzer
+den Unterschied zeigen, erst dann sichern. *Ein* Mechanismus für alle siebzehn Funktionen
+statt siebzehn handgeschriebener Sonderwarnungen. Bei „Intervall 3 → 4" stünde da:
+„Letzter Guss: Tag 104 → fällt weg." Mit „Trotzdem" und „Abbrechen". Jede künftige
+Einstellung wird damit automatisch selbsterklärend, ohne dass je wieder ein Warntext von
+Hand geschrieben wird.
+
+**2 · Die Kette als Bedienelement, nicht als Ergebnis.** Die Endspurt-Karte ist inhaltlich
+schon fast richtig, aber eine Liste aus ±-Knöpfen am falschen Ort. Sie sollte eine
+waagerechte Zeitleiste sein — `Guss 104 → Spülen 107 · 110 → Dryback → Ice 114 → Ernte 116
+→ trocken bis 123` — auf der ein Knoten angefasst wird und alles dahinter sichtbar
+mitwandert. So denkt ein Grower über seinen Grow, und so rechnet die App ohnehin schon.
+
+**3 · Trennung nach Frage, nicht nach Thema.** In die Einstellungen gehört, *was für ein
+Grow das ist* (Sorte, Topf, Substrat, Plan). Alles, was *wann etwas passiert* beantwortet,
+gehört auf die Zeitleiste. Heute liegen `bloomDays` und `intBloom` in den Einstellungen,
+ihre Wirkung im Gieß-Fahrplan — genau diese Trennung stört.
+
+**4 · Den Einsteiger-Modus am Gieß-Fahrplan wirksam machen.** Dort gehören für ihn die
+Zeitleiste und „nächster Guss" hin; ml-Korridore, Muster-Baukasten und das 84-Felder-Raster
+bleiben Profi.
+
+**Das Prinzip dahinter ist das bewährte:** Bevor eine neue Einstellung gebaut wird, erst
+prüfen, ob die App die Antwort selbst kennen kann. Vorbild `_snapFlushToRhythm`
+(v1.5.80/82) — der Spülstart rastet automatisch auf den Gießrhythmus ein, statt dass der
+Nutzer ihn nachzieht. Regeln ersetzen Regler. Die Vorschau ist derselbe Gedanke eine Ebene
+höher.
+
+### Die siebzehn koppelnden Funktionen
+
+`holdPlanWeek`, `confirmPlanWeek`, `moveGussDay`, `doShift`, `shiftPlanToDay`,
 `setEndspurtGuss`, `setEndspurtErnte`, `setEndspurtDry`, `setEndspurtPhase`,
 `setEndspurtSpuelStart`, `setEndspurtIceStart`, `endspurtNormal`, `clearEndspurt`,
-`setWaterRange`, `setWaterMl`, `toggleFwDay`, `setGD`, `uDose`. Jede mit eigenem Wort:
-verschieben, dranbleiben, nachziehen, abtrocknen lassen, einrasten.
+`setWaterRange`, `setWaterMl`, `toggleFwDay`, `setGD`, `uDose` — verteilt über sechs
+Bildschirme, jede mit eigenem Wort: verschieben, dranbleiben, nachziehen, abtrocknen
+lassen, einrasten.
 
-**Die Richtung, die sich in dieser Sitzung als richtig erwiesen hat:** Bevor eine neue
-Einstellung gebaut wird, erst prüfen, ob die App die Antwort selbst kennen kann. Beispiel
-`_snapFlushToRhythm` (v1.5.80/82) — der Spülstart rastet automatisch auf den Gießrhythmus
-ein, statt dass der Nutzer ihn nachzieht. Solche Regeln ersetzen Regler.
-
-**Konkrete Kandidaten für den nächsten Umbau:**
+### Weitere Kandidaten, unverändert offen
 
 - Der **Tageseintrag** hat im Profi-Modus 29 Knöpfe, 8 Eingabefelder und vierzehn Blöcke.
   An einem normalen Tag sind drei relevant. Vorschlag lag vor: oben eine Aufgabenzeile
@@ -72,11 +153,15 @@ Eintrag), **nicht** im Motor. Wer dort etwas ändert, ändert jeden Gießtag jed
 ## 3 · Patricks laufender Grow
 
 Sensi Amnesia XXL Auto · Erde Light-Mix · 11 L Airpot · Start 16.05.2026
-Aktuell etwa **Tag 109** (Anfang September), in der Endphase.
+Am 05.09.2026 **Tag 113**, in der Endphase. Bei jedem Sitzungsbeginn neu ausrechnen —
+`endspurtState(c, todayISO()).heuteTag` sagt es direkt.
 
-**Vier Pflanzen im Zelt**, eine wurde früher geerntet (Einzelernte, siehe `plants[].harvestedAt`).
+**Fünf Pflanzen angelegt, drei stehen noch.** Zwei Einzelernten sind erfasst: Pflanze 5 am
+16.08. mit 37 g trocken, Pflanze 4 am 27.08. `getEffectivePlantCount` rechnet deshalb mit
+3 — der Gieß-Fahrplan zeigt „× 3 Pflanzen", die Erntegewicht-Zeile in den Einstellungen
+nennt dagegen die angelegten 5. Kein Fehler, aber eine bekannte Ungenauigkeit im Text.
 
-Seine Zielkette für die Endphase, mehrfach bestätigt:
+Seine Zielkette für die Endphase:
 
 | Tag | Was |
 |---|---|
@@ -89,10 +174,10 @@ Seine Zielkette für die Endphase, mehrfach bestätigt:
 Daraus folgen: Blütedauer 85, `flushWetDays` 4, `iceDryDays` 3, `iceDays` 2,
 `flushDryDays` 0 (aus), Gießintervall Blüte und Spülen je 3 Tage.
 
-**Achtung:** Er hat an Tag 107 tatsächlich gespült, die App hatte dort einen Düngerguss
-protokolliert. Seit v1.5.84 kann der Spülstart rückwirkend gesetzt werden, seit v1.5.85 auch
-der letzte Guss („Letzter Guss −", jeweils mit Rückfrage). Ob er das gemacht hat, ist zu
-Sitzungsbeginn zu erfragen.
+**Erledigt:** Die offene Frage aus der letzten Übergabe — ob er den rückwirkend gesetzten
+Spülstart tatsächlich eingetragen hat — ist beantwortet. Am 05.09.2026 nachgesehen:
+`endspurtState` liefert `letzterGuss` 104, `spuelGaenge` [107, 110], `iceStart` 114,
+`ernteTag` 116. Das deckt sich genau mit seiner Zielkette. Nicht erneut nachfragen.
 
 ---
 
