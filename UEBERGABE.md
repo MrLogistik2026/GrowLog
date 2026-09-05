@@ -289,11 +289,48 @@ schon im Datenmodell steht. Hier lag sie seit jeher da und wurde nur nicht geles
 bleiben" ist wertvoller als jede erfundene Testlage. Eine Regel, die die reale Praxis
 blockiert, wäre schlimmer als keine Regel.
 
+### Geprüft und in Ordnung — nicht erneut aufrollen
+
+Am 05.09.2026 im Browser mit echten Daten durchgerechnet. Alles unauffällig:
+
+- **Trichom-Eingabe (`uTrich`).** Acht Fälle: Die Summe der drei Werte bleibt ausnahmslos
+  100, negative Eingaben werden 0, Werte über 100 gekappt, Buchstaben zu 0. Bei Klar 80 +
+  Bernstein 40 wird Klar sauber auf 60 zurückgenommen. Milchig ist rechnerisch der Rest —
+  deshalb kann die Summe gar nicht auseinanderlaufen.
+- **EC-Ziele über den Zyklus.** Sämling 0,4–0,6 → Vegi 0,7–1,0 → Stretch 1,0–1,4 → Bud-Set
+  1,5–1,9 (Höhepunkt) → Reifung 1,3–1,7 → Spät-Reifung 0,8–1,2 → Spülen 0,2–0,4 → IceFlush
+  nur Wasser. Anstieg, bewusste Absenkung, Spülung: fachlich richtig. Warnschwelle 2,5.
+- **Klima-Ziele je Phase.** Anzucht 22–28 °C / 55–70 %, mittlere Blüte 22–26 °C / 45–55 %,
+  Spätblüte 18–24 °C / 40–50 % (niedrige Feuchte gegen Schimmel), Spülen 20–24 °C / 40–50 %.
+- **Hebe-Test (`classifyRestPct`).** Erde: Sweet Spot 25–35 %, darunter Wasserstress. Coco:
+  Sweet Spot 60–75 %, ab 50 % zu trocken — Coco wird richtigerweise viel früher gegossen.
+  Finisher: Sweet Spot 30–40 % als bewusster Trockenstress. Ungültige Eingaben ergeben null.
+- **Gießmenge über den Zyklus.** Rampe 100 → 150 → 250 → 350 → 450 → 550 → 700 ml je
+  Pflanze, danach Korridor-begrenzt; Spülen deutlich mehr, IceFlush wenig, ab Ernte 0.
+  Plausibel für 11 L.
+
+**Eine Auffälligkeit in den DATEN, kein Fehler im Code:** Im Eintrag vom 03.06.2026 (Tag 19)
+steht `plantsAtWatering: 7`, obwohl die Pflanzenliste nur fünf kennt. Die Gießempfehlung für
+diesen Tag fällt dadurch 40 % höher aus. Der Stempel ist Absicht — er hält die Menge je
+Pflanze korrekt, wenn später Pflanzen wegfallen —, und die App schreibt ihn immer aus
+`getEffectivePlantCount`, kann also selbst keine 7 erzeugt haben. Wahrscheinlich standen dort
+wirklich sieben Pflanzen und zwei wurden später aus der Liste entfernt. **Eine Deckelung wäre
+falsch**, sie würde einen korrekten Mechanismus beschädigen. Auf die aktuelle Empfehlung
+wirkt es nicht (die letzten vier Güsse liegen bei 3000 ml). Bei Gelegenheit Patrick fragen.
+
+### Beim Prüfen selbst aufgepasst
+
+Drei Funktionen wurden beim Prüfen zunächst mit falscher Signatur aufgerufen und lieferten
+dadurch beinahe Fehlalarme — am deutlichsten `classifyRestPct(restPct, isFinisher, isCoco,
+noWaterPhase)`: Mit Zyklus und Datum als zweitem und drittem Argument gilt `isCoco` als wahr,
+und für einen Erde-Grow erscheinen Coco-Texte und Coco-Schwellen. Das sah nach einem schweren
+Fehler aus und war keiner. **Regel: Vor jedem Prüfaufruf die Signatur nachlesen.** Ein
+gemeldeter Fehler, den es nicht gibt, kostet mehr Vertrauen als ein übersehener.
+
 ### Noch nicht geprüft
 
-Die Gießmengen-Rechnung (`waterSuggestion`, `_waterDailyNeedPour`), die EC-Bewertung, der
-Hebe-Test/das Restgewicht und der Rest des Tageseintrags. Der Trichom-Check ist nur beim
-Erntefenster geprüft, nicht in der Eingabe (Prozent-Schieber, Summenbildung).
+Der Rest des Tageseintrags (pH-Eingabe, Notiz-Chips, Foto-Anhang), die Diagnose-Datenbank
+`PROBLEMS`, der Outdoor-Pfad und die Kalender-Ansicht im Detail.
 
 ---
 
