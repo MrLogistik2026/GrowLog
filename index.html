@@ -4245,7 +4245,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.99';
+const APP_VERSION = 'v1.5.100';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -10291,16 +10291,33 @@ function hasFertPlan(c) {
 }
 
 function getWeekDoses(cId, w, c) {
-  const raw = S.weekSchedule[cId + '_w' + w] || S.weekSchedule['global_w' + w] || {};
-  // STATE-SYNC-FIX (Mai 2026, v1.1.07): doseMode aus dem AKTIVEN PLAN lesen, nicht
-  // aus S.presetKey. Der globale S.presetKey kann veraltet sein wenn der User
-  // zwischendurch andere Presets angetippt hat (auch wenn ein anderer Plan aktiv ist).
-  // Beispiel: User hat biobizz_official mal probiert, dann Cup-Sieger als aktiven Plan
-  // gesetzt. S.presetKey blieb auf biobizz_official ('weekly-split') hängen während
-  // der echte aktive Plan cup_sieger ('per-watering') war → Cup-Werte wurden
-  // fälschlicherweise durch wateringsPerWeek geteilt.
-  // Source of truth ist der aktive Plan, nicht der globale State.
-  const plan = (typeof getActivePlan === 'function') ? getActivePlan() : null;
+  // (v1.5.100) DER PLAN DES ZYKLUS ENTSCHEIDET — nicht der global aktive.
+  //
+  // Vorher kamen sowohl die Dosen (aus dem globalen `S.weekSchedule`) als auch der
+  // `doseMode` (aus `getActivePlan()`) vom global aktiven Plan. `switchFertPlan()` setzt
+  // diesen Plan aber schon dann um, wenn man im Dünger-Bildschirm einen anderen Plan nur
+  // ANSIEHT — `c.fertPlanId` bleibt dabei unberührt. Wer zwei Pläne hatte, bekam danach im
+  // Tageseintrag die Produkte und Mengen des falschen Plans angezeigt: bei Patricks Daten
+  // statt sechs BioBizz-Produkten neun Sensi-Produkte, darunter POWHUMUS mit 10 ml/L, das
+  // in seinem laufenden Plan überhaupt nicht vorkommt. Bei unterschiedlichem `doseMode`
+  // kam zusätzlich der Faktor 7/Intervall danebenzuliegen — also grob das Zweieinhalbfache
+  // oder Zweifünftel der richtigen Menge.
+  //
+  // Gelesen wird deshalb aus dem Plan des Zyklus. Ausnahme: Ist dieser Plan zugleich der
+  // global aktive, gelten weiter die Globals — dort stehen die noch nicht zurückgeschriebenen
+  // Bearbeitungen aus dem Dünger-Bildschirm (`syncGlobalsToActivePlan`). Für den bisherigen
+  // Normalfall (ein Zyklus, ein Plan) ändert sich damit nichts.
+  const _cyc = c || ((S.cycles || []).find(x => x.id === cId) || null);
+  const plan = (typeof getPlanForCycle === 'function' && _cyc)
+    ? getPlanForCycle(_cyc)
+    : ((typeof getActivePlan === 'function') ? getActivePlan() : null);
+  const _globals = S.weekSchedule[cId + '_w' + w] || S.weekSchedule['global_w' + w] || {};
+  const _istAktiver = !!(plan && plan.id && plan.id === S._activePlanId);
+  const raw = (plan && plan.schedule && !_istAktiver)
+    ? (plan.schedule['w' + w] || {})
+    : _globals;
+  // doseMode ebenfalls aus dem Plan des Zyklus. Der globale S.presetKey taugt nicht als
+  // Quelle: Er kann von einem nur kurz angetippten Preset stammen.
   const presetKey = plan?.presetKey || S.presetKey;
   const preset = presetKey ? getPreset(presetKey) : null;
   const mode = preset?.doseMode || 'per-watering';

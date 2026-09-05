@@ -2,6 +2,34 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-05 — v1.5.100
+
+- **Die Düngermengen kamen aus dem falschen Plan, sobald es mehr als einen gab.**
+  `getWeekDoses` las die Dosen aus dem globalen `S.weekSchedule` und den `doseMode` aus
+  `getActivePlan()` — beides also aus dem **global aktiven** Plan, obwohl der Zyklus als
+  Parameter übergeben wird und über `c.fertPlanId` seinen eigenen Plan kennt.
+  `switchFertPlan()` setzt den aktiven Plan aber schon dann um, wenn man im
+  Dünger-Bildschirm einen anderen Plan nur **ansieht**; `c.fertPlanId` bleibt unberührt.
+  Damit reichte ein Blick auf den zweiten Plan, um im Tageseintrag die Produkte und Mengen
+  eines fremden Plans zu bekommen. Mit Patricks Daten nachgestellt: Statt der sechs
+  BioBizz-Produkte (Bio·Grow 1,29 · CalMag 0,86 · Top·Max 0,43 …) erschienen die neun
+  Sensi-Produkte, darunter POWHUMUS mit 10 ml/L — ein Mittel, das in seinem laufenden Plan
+  überhaupt nicht vorkommt. Unterscheiden sich die Pläne zusätzlich im `doseMode`, kam der
+  Faktor 7/Gießintervall danebenzuliegen: bei Intervall 3 also grob das Zweieinhalbfache
+  oder zwei Fünftel der richtigen Menge.
+  Gelesen wird jetzt aus dem Plan des Zyklus. Ausnahme mit Absicht: Ist dieser Plan zugleich
+  der global aktive, gelten weiter die Globals — dort stehen die noch nicht
+  zurückgeschriebenen Bearbeitungen aus dem Dünger-Bildschirm. Für den bisherigen Normalfall
+  (ein Zyklus, ein Plan) ändert sich dadurch nichts, was die 25 bestehenden Testdateien
+  bestätigen.
+  Warum das schwer wog: Es ist der Rechenweg, an dessen Ende eine Milliliterzahl steht, die
+  jemand in eine Gießkanne füllt. Ein Anzeigefehler wäre ärgerlich — dieser hier führt zu
+  einer real falschen Düngung.
+  Abgesichert durch `test_dosisquelle.js` (16 Prüfungen, beide Zeitzonen): Ein zweiter
+  Zyklus mit dem jeweils anderen Plan muss unabhängig vom global aktiven Plan dieselben
+  Dosen liefern, der echte Zyklus darf kein Fremdprodukt bekommen, der weekly-split-Teiler
+  muss weiter greifen, und ein Zyklus ohne `fertPlanId` darf nicht abstürzen.
+
 ## 2026-09-05 — v1.5.99
 
 - **Erfasste Ernteerträge waren an zwei Stellen gespeichert und wurden nur an einer

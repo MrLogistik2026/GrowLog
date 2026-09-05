@@ -1,12 +1,16 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.99** · index.html 2,11 MB · 628 Funktionen
-Zuletzt fortgeschrieben am 05.09.2026. Vier Fehler behoben: Der Widerspruch zwischen
+Stand: **v1.5.100** · index.html 2,11 MB · 628 Funktionen
+Zuletzt fortgeschrieben am 05.09.2026. Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
-die Ernte-Kacheln widersprechen der Erntekarte nicht mehr (v1.5.99). Die ersten beiden
-hätten zu einer zu frühen Ernte geführt. Grundlage war der erste vollständige
-Browser-Durchlauf mit echten Daten (Abschnitt 2) — neun Befunde, vier davon behoben.
+die Ernte-Kacheln widersprechen der Erntekarte nicht mehr (v1.5.99), und **die Düngermengen
+kamen aus dem falschen Plan, sobald es mehr als einen gab** (v1.5.100 — der schwerste der
+fünf, siehe Abschnitt 3).
+
+Grundlage waren zwei Durchläufe im echten Browser mit Patricks Daten: erst über alle
+Bildschirme (Abschnitt 2), dann gezielt über die Rechenwege — VPD, Düngedosis, Trichome
+(Abschnitt 3).
 
 ---
 
@@ -220,7 +224,62 @@ Patricks Zustand; ein frischer Grow kann andere Fehler zeigen.
 
 ---
 
-## 3 · Am 05.09.2026 behoben (v1.5.96)
+## 3 · Rechenwege im Browser geprüft (05.09.2026)
+
+Zweiter Durchlauf, diesmal gezielt auf die Zahlen statt auf die Bildschirme: VPD-Formel
+gegen die Magnus-Gleichung nachgerechnet, Düngedosen über beide `doseMode`-Wege verfolgt,
+Trichom-Prognose zerlegt.
+
+### Behoben: die Düngermengen kamen aus dem falschen Plan (v1.5.100)
+
+Der schwerste bisher gefundene Fehler, weil an seinem Ende eine Milliliterzahl steht, die
+jemand in eine Gießkanne füllt.
+
+`getWeekDoses` las die Dosen aus dem globalen `S.weekSchedule` und den `doseMode` aus
+`getActivePlan()` — beides aus dem **global aktiven** Plan, obwohl der Zyklus als Parameter
+übergeben wird und über `c.fertPlanId` seinen eigenen Plan kennt. `switchFertPlan()` setzt
+den aktiven Plan aber schon um, wenn man im Dünger-Bildschirm einen anderen Plan nur
+**ansieht**. Ein Blick genügte also, um im Tageseintrag fremde Produkte und Mengen zu
+bekommen — mit Patricks Daten: statt sechs BioBizz-Produkten neun Sensi-Produkte, darunter
+POWHUMUS 10 ml/L, das in seinem Plan gar nicht vorkommt. Bei unterschiedlichem `doseMode`
+kam zusätzlich der Faktor 7/Gießintervall daneben.
+
+**Daraus zu lernen:** Eine Funktion, die den Zyklus als Parameter bekommt, ihn dann aber
+nicht für die Datenquelle benutzt, ist ein Warnzeichen. Bei allem, was pro Zyklus
+verschieden sein kann, gilt `getPlanForCycle(c)` — nie `getActivePlan()`.
+
+### Geprüft und in Ordnung
+
+- **VPD-Formel.** `_svp` ist die Magnus-Gleichung, `calcVPD` das Blatt-VPD daraus. Zwölf
+  Wertepaare gegen eine unabhängig gerechnete Referenz geprüft, darunter 0 °C, −5 °C, 40 °C,
+  0 % und 100 % Luftfeuchte — **alle exakt deckungsgleich**. Auch die Beispielwerte im
+  Codekommentar (1,07 kPa Blatt gegen 1,43 kPa Luft bei 25 °C/55 %) stimmen.
+- **weekly-split-Teiler.** Wochendosis ÷ (7/Gießintervall), danach die
+  Feed-Tag-Kompensation. Rechnerisch korrekt.
+
+### Offen: die VPD-Bewertung unterscheidet nicht zwischen feucht und nass
+
+`vpdZone` vergibt für **−0,5 · −0,36 · −0,01 · 0 · 0,05** dasselbe Etikett: „Zu feucht ·
+Lüfter an!". Physikalisch ist das ein Unterschied ums Ganze: Ein negatives Blatt-VPD heißt,
+dass Wasser auf dem Blatt **kondensiert** — stehende Nässe auf den Blüten, in der Blüte der
+direkte Weg zu Botrytis. „Lüfter an" ist dafür zu schwach; nötig wäre eine eigene Stufe mit
+konkreter Handlung.
+
+Dazu ein Anzeigefehler: Der Marker auf der VPD-Skala wird mit `Math.min(95, z.pct)`
+positioniert (zwei Stellen: im Klima-Block und in der Live-Aktualisierung). Bei negativem
+VPD ist `pct` negativ — der Marker rutscht aus der Skala und ist **unsichtbar**.
+Ausgerechnet in der gefährlichsten Lage zeigt die Anzeige nichts. Fix wäre
+`Math.max(0, Math.min(95, z.pct))`.
+
+### Noch nicht geprüft
+
+Trainings (Topping/LST/Entlauben) und ihre Zeitfenster, die Gießmengen-Rechnung
+(`waterSuggestion`, `_waterDailyNeedPour`), die EC-Bewertung und der Rest des
+Tageseintrags.
+
+---
+
+## 4 · Am 05.09.2026 behoben (v1.5.96)
 
 Die drei Fehler aus diesem Abschnitt sind erledigt und abgesichert durch
 `test_fixes_0905.js` (38 Prüfungen, beide Zeitzonen). Die Einzelheiten stehen im
@@ -247,7 +306,7 @@ Eintrag), **nicht** im Motor. Wer dort etwas ändert, ändert jeden Gießtag jed
 
 ---
 
-## 4 · Patricks laufender Grow
+## 5 · Patricks laufender Grow
 
 Sensi Amnesia XXL Auto · Erde Light-Mix · 11 L Airpot · Start 16.05.2026
 Am 05.09.2026 **Tag 113**, in der Endphase. Bei jedem Sitzungsbeginn neu ausrechnen —
@@ -278,7 +337,7 @@ Spülstart tatsächlich eingetragen hat — ist beantwortet. Am 05.09.2026 nachg
 
 ---
 
-## 5 · Was in dieser Sitzung passiert ist (v1.5.44 → v1.5.84)
+## 6 · Was in dieser Sitzung passiert ist (v1.5.44 → v1.5.84)
 
 **Trichome und Prognose** — Tagesberechnung folgt dem gemessenen Tempo statt dem Erntetag
 (v1.5.45). Bernstein-Korrekturen führen Klar und Milchig am eigenen Tempo mit (v1.5.47).
@@ -313,7 +372,7 @@ Stelle; Tage direkt eintippbar; Spülstart rastet auf den Rhythmus ein; rückwir
 
 ---
 
-## 6 · Fehler dieser Sitzung, aus denen zu lernen ist
+## 7 · Fehler dieser Sitzung, aus denen zu lernen ist
 
 Diese vier Punkte haben Patrick am meisten Zeit gekostet. Sie stehen hier, damit sie sich
 nicht wiederholen.
@@ -356,7 +415,7 @@ Feld, mit Datum.
 
 ---
 
-## 7 · Testinfrastruktur
+## 8 · Testinfrastruktur
 
 Seit 04.09.2026 liegt alles dauerhaft auf dem Laptop unter
 `C:\Users\laura\Desktop\Claude Growsmart\projekt` und im Repo
@@ -373,9 +432,9 @@ cat head.html app.js tail.html | cmp - index.html && echo "BYTE-IDENTISCH OK"
 **Byte-Identität mit `cmp` ist Pflicht, bevor irgendetwas geändert wird.** Danach wird
 `app.js` geändert, mit `build.sh` neu gebaut und erneut verglichen.
 
-24 Testdateien, alle grün in beiden Zeitzonen (Stand v1.5.99):
+25 Testdateien, alle grün in beiden Zeitzonen (Stand v1.5.100):
 
-`test_audit_screens` · `test_befehle` · `test_dialog_und_namen` · `test_duengeplaene` ·
+`test_audit_screens` · `test_befehle` · `test_dialog_und_namen` · `test_dosisquelle` · `test_duengeplaene` ·
 `test_endspurt` · `test_entwurf` · `test_ernteabgleich` · `test_ertrag` ·
 `test_fixes_0905` ·
 `test_gussmenge` · `test_gussmove` ·
@@ -400,7 +459,7 @@ mit echtem Zustand sichtbar.
 
 ---
 
-## 8 · Schlüsselkonzepte im Code
+## 9 · Schlüsselkonzepte im Code
 
 - `contextFor(c, iso)` für Phasen-/Seedtype-Entscheidungen
 - `fertPlanWeek(c, iso)` für die Düngeplan-Woche · `phase().week` taugt nicht als Referenz
@@ -416,7 +475,7 @@ mit echtem Zustand sichtbar.
 
 ---
 
-## 9 · Kleinere offene Punkte
+## 10 · Kleinere offene Punkte
 
 - „Erledigt"-Karte erscheint an Tagen ohne Aufgabe (von Patrick zurückgestellt)
 - „Messungen berichtigen"-Liste schneidet am angezeigten Tag ab
