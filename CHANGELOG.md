@@ -2,6 +2,36 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-05 — v1.5.97
+
+- **Die App fordert nicht mehr zum Ernten auf, wenn die eigene Messung dagegen spricht.**
+  Auf dem Dashboard stand „In 3 Tagen: Erntetag. Ab jetzt täglich Trichome prüfen" (Plan-Tag
+  116), während die Einstellungen aus denselben Daten „Erntefenster: Tag 118–158 — inzwischen
+  aus deinen Trichomen" meldeten. Zwei Zahlen zur selben Frage, keine erklärte die andere.
+  Wer der Dashboard-Karte folgt, schneidet zwei Tage vor dem frühesten gemessenen Reifepunkt.
+  Neu ist `_trichVsPlan(c, iso)`: Es vergleicht den Plan-Tag aus `harvestWindow` mit dem
+  unteren Ende des Trichom-Fensters und liefert null, solange beide zusammenpassen oder die
+  Messung früher liegt — früher ist kein Widerspruch, sondern ein bereits offenes Fenster.
+  Liegt die Messung später, nennt die Erntekarte jetzt den gemessenen Stand (4 % Bernstein
+  gegen ein Ziel von 5 %), den frühesten Reifetag, die Differenz in Tagen und den Satz, dass
+  die Messung gilt und nicht der Kalender. Die Einstellungs-Zeile erklärt die zweite Zahl
+  ebenfalls, statt sie unkommentiert danebenzustellen.
+  Warum in dieser Form: Der Plan-Tag stammt aus einer Wochenangabe von der Samentüte, das
+  Fenster aus einer Messung an der Pflanze. Zu früh geerntet kostet Wirkung und Gewicht und
+  lässt sich nicht nachholen — deshalb gewinnt die Messung, und deshalb steht der Hinweis
+  dort, wo zum Schneiden aufgefordert wird, nicht auf einem Bildschirm daneben.
+  Ohne Widerspruch bleibt der alte, kurze Text unverändert; keine neue Dauerwarnung.
+  Abgesichert durch `test_ernteabgleich.js` (31 Prüfungen, beide Zeitzonen), darunter zwei
+  Gegenproben gegen Fehlalarm: veraltete Messung und Plan-Tag hinter der Messung.
+
+- **Breite Prognosefenster werden als unsicher ausgewiesen.** Reicht die Schätzung über mehr
+  als 20 Tage, sagt der Text das ausdrücklich und nennt den Grund, wenn er bekannt ist
+  („dein Reifetempo hat zuletzt nachgelassen"). Warum: Bei Patricks Stand spannen Nahtempo
+  (0,025 %/Tag) und Gesamttempo (0,1 %/Tag) das Fenster Tag 118–158 auf — vierzig Tage. Als
+  blanke Zahl gelesen wirkt das wie eine Messung, ist aber eine offene Frage. `harvestWindow`
+  und `_trichForecast` wurden dafür nicht angefasst; die Rechnung ist richtig, nur ihre
+  Darstellung war es nicht.
+
 ## 2026-09-05 — v1.5.96
 
 - **Arbeitsregeln geschärft (kein App-Code, deshalb keine neue Version).** Vier

@@ -1,9 +1,9 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.96** · index.html 2,11 MB · 627 Funktionen
-Ausgeliefert am Ende der Sitzung vom 01.09.2026
-Zuletzt fortgeschrieben am 05.09.2026 — v1.5.96, drei Fehler behoben;
-Abschnitt 1 um den gemessenen Befund zur Bedienung erweitert
+Stand: **v1.5.97** · index.html 2,11 MB · 628 Funktionen
+Zuletzt fortgeschrieben am 05.09.2026 — v1.5.97: Der Widerspruch zwischen Plan-Erntetag
+und Trichom-Messung wird jetzt ausgesprochen. Neu ist außerdem ein vollständiger
+Browser-Durchlauf mit echten Daten (Abschnitt 2) — acht Befunde, einer davon behoben.
 
 ---
 
@@ -50,10 +50,12 @@ Bei „Blütedauer 85 → 80" wandert die ganze Kette in die Vergangenheit (Spü
 102/105, Ernte 116 → 111) und das Dashboard meldet daraufhin verpasste Gießtage. **Ein
 Eingabefeld erzeugt einen Fehlalarm über die Vergangenheit.**
 
-**Dieselbe Tatsache hat zwei Zahlen, ohne dass es jemand erklärt.** Auf dem
-Einstellungs-Bildschirm steht gleichzeitig „Erntefenster: Tag 118–158" (aus den Trichomen)
-und „Ernte Tag 116" (aus der Kette). `harvestWindow()` gibt den Plan-Tag bereits als
-`planTag` mit zurück — die Differenz wird nur nirgends ausgesprochen. Noch offen.
+**Dieselbe Tatsache hat zwei Zahlen** — seit v1.5.97 erklärt die App die Differenz
+(`_trichVsPlan`, siehe Abschnitt 2). Was bleibt: Die Dashboard-Kachel nennt weiterhin
+prominent „Ernte in 3 ±5d", während die Karte darüber sagt, dass die Messung Tag 118
+nennt. Die Toleranz deckt den Fall formal ab, die große „3" widerspricht dem Text
+trotzdem. Nicht angefasst, weil unklar ist, ob die Kachel überhaupt den Plan-Tag oder
+das gemessene Fenster zeigen soll — Patrick entscheidet.
 
 **Beide zentralen Bildschirme liegen hinter der Einstellungs-Tür.** `duenger` und
 `gussplan` sind aus der Navigation nicht direkt erreichbar, nur über zwei Zeilen oben in
@@ -107,8 +109,9 @@ lassen, einrasten.
 
 ### Weitere Kandidaten, unverändert offen
 
-- Der **Tageseintrag** hat im Profi-Modus 29 Knöpfe, 8 Eingabefelder und vierzehn Blöcke.
-  An einem normalen Tag sind drei relevant. Vorschlag lag vor: oben eine Aufgabenzeile
+- Der **Tageseintrag** hat im Profi-Modus **83 Knöpfe und 154 sichtbare Eingabefelder**
+  (am 05.09.2026 im Browser nachgemessen; die früher notierten „29 Knöpfe, 8 Felder" waren
+  überholt). An einem normalen Tag sind drei davon relevant. Vorschlag lag vor: oben eine Aufgabenzeile
   („Heute: Hebe-Test + Trichome"), darunter nur die zugehörigen Blöcke, alles Übrige hinter
   „Mehr eintragen ▾". Patrick hat dazu noch nicht entschieden.
 - **Statuszeile statt fünf Infokarten** im Eintrag: „Tag 103 · kein Gießtag · nächster
@@ -123,7 +126,76 @@ lassen, einrasten.
 
 ---
 
-## 2 · Am 05.09.2026 behoben (v1.5.96)
+## 2 · Browser-Durchlauf vom 05.09.2026 — acht Befunde, einer behoben
+
+Erstmals wurde die App nicht nur in jsdom, sondern **im echten Browser** mit Patricks
+Sicherung durchlaufen (lokaler Server auf Port 8099, Handy-Format 375×812, beide Modi,
+alle neun Bildschirme plus Tageseintrag an 13 Tagen). Keine Abstürze, kein `NaN`, kein
+`undefined`. Die Fehler lagen nicht in der Mechanik, sondern im Inhalt.
+
+**Achtung beim Testen im Browser:** Der Service Worker liefert nach `stale-while-revalidate`
+zuerst aus dem Cache. Nach einem Neubau zeigt die Seite **beim ersten Laden noch die alte
+Fassung** — erst der zweite Start hat die neue. Beim Prüfen also entweder zweimal laden oder
+den Worker abmelden (`navigator.serviceWorker.getRegistrations()` → `unregister()`, dann
+`caches.keys()` → `delete`). Das kostete in dieser Sitzung eine Fehlersuche an der falschen
+Stelle.
+
+**Behoben (v1.5.97):** Erntekarte gegen Trichom-Messung, siehe `CHANGELOG.md`.
+
+### Als Nächstes: die Sortenliste
+
+**Alle 15 Automatic-Sorten in `STRAINS` tragen Züchter-Bestwerte** (56–75 Tage). Der
+Kommentar über der Liste sagt korrekt, dass die Zahl bei Autos der Gesamt-Zyklus ab Samen
+ist — nur stimmt sie nicht. Nachgerechnet in der laufenden App:
+
+| Weg | geplanter Erntetag |
+|---|---|
+| Chip „Sensi Amnesia XXL · 75d" antippen | **76** |
+| „Samen bis Ernte 16–17 Wochen" eintippen | 119 |
+| Patricks laufender Grow | 116 |
+| Der App-eigene Düngeplan `sensi_amnesia_auto` (17 Wochen, `bloomDaysHint: 77`) | 116 |
+
+`_wizFinish` rechnet dabei richtig (`75 − 21 − 8 − 3 = 43` Blütetage); falsch ist die
+Eingangszahl. Die Photoperioden-Sorten sind nicht betroffen, dort ist `flowering` die reine
+Blütezeit und plausibel.
+
+Patrick hat am 05.09.2026 entschieden: **Spanne statt Einzelzahl**, geplant wird mit dem
+oberen Ende — dieselbe Regel wie bei der Wochen-Eingabe („zu spät spülen kostet nichts, zu
+früh spülen kostet die Ernte"). Sensi Amnesia XXL bekommt den belegten Wert; die übrigen 14
+werden ihm als Tabelle zum Gegenlesen vorgelegt, nichts geht ungeprüft in die App.
+
+**Drei Stellen beschriften die Zahl außerdem falsch.** Bei Autos ist sie Keimung-bis-Ernte,
+aber die Sortensuche nennt sie „⚡ Auto · Blüte 75d" und der Steckbrief „Blüte-Dauer 75
+Tage". Der Chip nennt gar keine Einheit. Nur `_strainInfoHTML` sagt es richtig
+(„Reife: ~75 Tage von Keimung bis Ernte").
+
+### Offen, mit allem Nötigen zum Weiterarbeiten
+
+**Der Einsteiger-Modus wirkt im Tageseintrag überhaupt nicht.** Gemessen an Tag 113:
+**154 sichtbare Eingabefelder in beiden Modi**, und der Einsteiger hat sogar **zwei Knöpfe
+mehr** (85 gegen 83). Die früher notierten „29 Knöpfe, 8 Felder" stimmen nicht mehr. Der
+Vorschlag aus Abschnitt 1 (Aufgabenzeile oben, Rest hinter „Mehr eintragen ▾") ist damit
+dringender als gedacht.
+
+**Der Gieß-Fahrplan bleibt in beiden Modi zeichengleich** (6866 Zeichen, 21 Knöpfe,
+9 Felder). Unverändert gegenüber der letzten Messung.
+
+**Der Düngeplan hat im Einsteiger-Modus einen Knopf mehr** als im Profi-Modus. Der Grund
+ist jetzt bekannt: Es ist „Alle 12 Wochen zeigen" — im Einsteiger-Modus wird die
+Wochentabelle gekürzt und braucht einen Aufklapp-Knopf, den der Profi nicht braucht.
+Harmlos in der Sache, verkehrt in der Wirkung.
+
+**Fünf Pflanzen angelegt, drei stehen** — die Erntegewicht-Zeile in den Einstellungen nennt
+weiterhin 5, `getEffectivePlantCount` rechnet mit 3. Kein Rechenfehler, nur eine
+irreführende Zeile.
+
+**Nicht geprüft:** Lexikon-Inhalte (302.000 Zeichen), Kalender im Detail, Foto-Galerie,
+der Outdoor-Pfad und andere Substrat-/Sorten-Kombinationen. Alle Messungen stammen aus
+Patricks Zustand; ein frischer Grow kann andere Fehler zeigen.
+
+---
+
+## 3 · Am 05.09.2026 behoben (v1.5.96)
 
 Die drei Fehler aus diesem Abschnitt sind erledigt und abgesichert durch
 `test_fixes_0905.js` (38 Prüfungen, beide Zeitzonen). Die Einzelheiten stehen im
@@ -150,7 +222,7 @@ Eintrag), **nicht** im Motor. Wer dort etwas ändert, ändert jeden Gießtag jed
 
 ---
 
-## 3 · Patricks laufender Grow
+## 4 · Patricks laufender Grow
 
 Sensi Amnesia XXL Auto · Erde Light-Mix · 11 L Airpot · Start 16.05.2026
 Am 05.09.2026 **Tag 113**, in der Endphase. Bei jedem Sitzungsbeginn neu ausrechnen —
@@ -181,7 +253,7 @@ Spülstart tatsächlich eingetragen hat — ist beantwortet. Am 05.09.2026 nachg
 
 ---
 
-## 4 · Was in dieser Sitzung passiert ist (v1.5.44 → v1.5.84)
+## 5 · Was in dieser Sitzung passiert ist (v1.5.44 → v1.5.84)
 
 **Trichome und Prognose** — Tagesberechnung folgt dem gemessenen Tempo statt dem Erntetag
 (v1.5.45). Bernstein-Korrekturen führen Klar und Milchig am eigenen Tempo mit (v1.5.47).
@@ -216,7 +288,7 @@ Stelle; Tage direkt eintippbar; Spülstart rastet auf den Rhythmus ein; rückwir
 
 ---
 
-## 5 · Fehler dieser Sitzung, aus denen zu lernen ist
+## 6 · Fehler dieser Sitzung, aus denen zu lernen ist
 
 Diese vier Punkte haben Patrick am meisten Zeit gekostet. Sie stehen hier, damit sie sich
 nicht wiederholen.
@@ -259,7 +331,7 @@ Feld, mit Datum.
 
 ---
 
-## 6 · Testinfrastruktur
+## 7 · Testinfrastruktur
 
 Seit 04.09.2026 liegt alles dauerhaft auf dem Laptop unter
 `C:\Users\laura\Desktop\Claude Growsmart\projekt` und im Repo
@@ -276,10 +348,11 @@ cat head.html app.js tail.html | cmp - index.html && echo "BYTE-IDENTISCH OK"
 **Byte-Identität mit `cmp` ist Pflicht, bevor irgendetwas geändert wird.** Danach wird
 `app.js` geändert, mit `build.sh` neu gebaut und erneut verglichen.
 
-21 Testdateien, alle grün in beiden Zeitzonen (Stand v1.5.96):
+22 Testdateien, alle grün in beiden Zeitzonen (Stand v1.5.97):
 
 `test_audit_screens` · `test_befehle` · `test_dialog_und_namen` · `test_duengeplaene` ·
-`test_endspurt` · `test_entwurf` · `test_fixes_0905` · `test_gussmenge` · `test_gussmove` ·
+`test_endspurt` · `test_entwurf` · `test_ernteabgleich` · `test_fixes_0905` ·
+`test_gussmenge` · `test_gussmove` ·
 `test_gussmove_kombi` · `test_navscroll` · `test_planladen` · `test_planpause` ·
 `test_planrueckgrat` · `test_planzuordnung` · `test_saemling_tage` · `test_startup` ·
 `test_trichchart` · `test_trichedit` · `test_trichphasen` · `test_wochenfolgen`
@@ -301,7 +374,7 @@ mit echtem Zustand sichtbar.
 
 ---
 
-## 7 · Schlüsselkonzepte im Code
+## 8 · Schlüsselkonzepte im Code
 
 - `contextFor(c, iso)` für Phasen-/Seedtype-Entscheidungen
 - `fertPlanWeek(c, iso)` für die Düngeplan-Woche · `phase().week` taugt nicht als Referenz
@@ -317,7 +390,7 @@ mit echtem Zustand sichtbar.
 
 ---
 
-## 8 · Kleinere offene Punkte
+## 9 · Kleinere offene Punkte
 
 - „Erledigt"-Karte erscheint an Tagen ohne Aufgabe (von Patrick zurückgestellt)
 - „Messungen berichtigen"-Liste schneidet am angezeigten Tag ab

@@ -1156,8 +1156,26 @@ const T = {
     toIceSoon: ({ daysUntil }) =>
       `In ${daysUntil} Tagen: <b>IceFlush</b>. Eiskaltes Wasser zum Abschluss — eine beliebte Grower-Technik (ein Trichom-Plus ist wissenschaftlich allerdings nicht belegt).`,
 
-    toHarvestSoon: ({ daysUntil }) =>
-      `In ${daysUntil} Tagen: <b>Erntetag</b>. Ab jetzt täglich Trichome mit Lupe prüfen — milchig = bereit, bernsteinfarben = Peak. Schere und Handschuhe bereitlegen.`,
+    // (v1.5.97) Wenn die eigene Trichom-Messung einen späteren Tag nennt als der Plan, darf
+    // hier nicht zum Schneiden aufgefordert werden. Der Plan-Tag stammt aus einer
+    // Wochenangabe, die Messung von der Pflanze — die Messung gewinnt.
+    toHarvestSoon: ({ daysUntil, vsPlan }) => {
+      const kopf = `In ${daysUntil} Tagen: <b>Erntetag</b> — so steht es in deinem Plan.`;
+      if (!vsPlan) {
+        return `${kopf} Ab jetzt täglich Trichome mit Lupe prüfen — milchig = bereit, bernsteinfarben = Peak. Schere und Handschuhe bereitlegen.`;
+      }
+      const stand = vsPlan.letzte
+        ? ` Zuletzt gemessen: <b>${vsPlan.letzte.amber} % bernsteinfarben</b>${vsPlan.ziel ? `, dein Ziel sind ${vsPlan.ziel} %` : ''}.`
+        : '';
+      const tage = vsPlan.tageSpaeter === 1 ? '1 Tag' : `${vsPlan.tageSpaeter} Tage`;
+      let wann = ` Nach deinem gemessenen Tempo wird das Ziel <b>frühestens an Tag ${vsPlan.fruehestens}</b> erreicht — ${tage} nach dem Plan-Tag.`;
+      if (vsPlan.unsicher) {
+        wann += ` Wie viel später genau, ist offen${vsPlan.verlangsamt ? ', denn dein Reifetempo hat zuletzt nachgelassen' : ''} — die Schätzung reicht bis Tag ${vsPlan.spaetestens}.`;
+      }
+      return `${kopf} <b>Deine Trichome sagen aber: noch nicht.</b>${stand}${wann}`
+        + ` Der Plan-Tag ist eine Schätzung aus Wochenangaben, die Trichome sind eine Messung an deiner Pflanze — <b>richte dich nach der Messung</b>.`
+        + ` Miss weiter täglich und schneide erst, wenn du dein Ziel siehst. Zu früh geerntet kostet Wirkung und Gewicht und lässt sich nicht nachholen; ein paar Tage länger kosten nichts.`;
+    },
 
     toDrySoon: ({ daysUntil }) =>
       `In ${daysUntil} Tagen: <b>Trocknung</b>. Ziel: 18–21 °C, 55–65% RLF für 7–14 Tage. Aufhängen an einer Schnur, dunkel.`,
@@ -4186,7 +4204,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.96';
+const APP_VERSION = 'v1.5.97';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -10542,6 +10560,40 @@ function harvestWindow(c, iso) {
 }
 
 /**
+ * (v1.5.97) Sagt die Messung etwas anderes als der Plan?
+ *
+ * `harvestWindow` kennt beide Zahlen längst — den gerechneten Plan-Tag und das aus den
+ * Trichomen abgeleitete Fenster —, aber die Differenz stand nirgends. Auf dem Dashboard
+ * forderte die Erntekarte zum Schneiden auf ("In 3 Tagen: Erntetag"), während dieselbe
+ * App an anderer Stelle ein Fenster nannte, das erst SPÄTER beginnt. Wer der Karte folgt,
+ * erntet unreif — und das ist der teuerste der Anfängerfehler, weil er sich nicht
+ * korrigieren lässt.
+ *
+ * Ergebnis ist null, solange Messung und Plan zusammenpassen oder die Messung früher
+ * liegt: Früher ist kein Widerspruch, sondern nur ein Erntefenster, das schon offen ist.
+ */
+function _trichVsPlan(c, iso) {
+  const hw = harvestWindow(c, iso);
+  if (!hw || hw.basis !== 'trichome') return null;
+  if (!isFinite(hw.lo) || !isFinite(hw.planTag)) return null;
+  const tageSpaeter = hw.lo - hw.planTag;
+  if (tageSpaeter <= 0) return null;
+  const fc = _trichForecast(c, iso);
+  return {
+    planTag: hw.planTag,
+    fruehestens: hw.lo,
+    spaetestens: hw.hi,
+    tageSpaeter,
+    // Ein breites Fenster ist keine Prognose mehr, sondern eine offene Frage. Das gehört
+    // ausgesprochen, sonst liest sich "Tag 118–158" wie eine Messung.
+    unsicher: isFinite(hw.hi) && (hw.hi - hw.lo) > 20,
+    verlangsamt: !!(fc && fc.verlangsamt),
+    ziel: fc ? fc.target : null,
+    letzte: fc && fc.last ? fc.last : null,
+  };
+}
+
+/**
  * Blütetage, die sich aus einer Wochen-Angabe der Samentüte ergeben. Bewusst das OBERE
  * Ende der Spanne: zu spät spülen kostet nichts, zu früh spülen kostet die Ernte.
  */
@@ -13120,7 +13172,7 @@ function getAlerts(c) {
     } else if (p3.ph === 'ice') {
       hint = { icon: '🧊', text: T.phaseTransition.toIceSoon({ daysUntil: 3 }) };
     } else if (p3.ph === 'harvest') {
-      hint = { icon: '✂️', text: T.phaseTransition.toHarvestSoon({ daysUntil: 3 }) };
+      hint = { icon: '✂️', text: T.phaseTransition.toHarvestSoon({ daysUntil: 3, vsPlan: _trichVsPlan(c, today) }) };
     } else if (p3.ph === 'dry') {
       hint = { icon: '🍂', text: T.phaseTransition.toDrySoon({ daysUntil: 3 }) };
     }
@@ -19435,7 +19487,13 @@ function renderSet() {
             ${_warn ? `<div style="font-size:10px;color:var(--yellow);line-height:1.5;margin-bottom:9px;background:var(--card2);border-radius:6px;padding:7px 9px">⚠ ${_warn}</div>` : ''}
             ${_tage && !_warn ? `<div style="font-size:10px;color:var(--green);line-height:1.5;margin-bottom:9px;background:var(--card2);border-radius:6px;padding:7px 9px">
               Geplant wird mit dem <b>oberen Ende</b> (${_hi || _lo} Wochen → ${_tage} Blütetage). Zu spät spülen kostet nichts, zu früh spülen kostet die Ernte.
-              ${_hw && _hw.lo !== _hw.hi ? `<br>Erntefenster: <b>Tag ${_hw.lo}–${_hw.hi}</b>${_hw.basis === 'trichome' ? ' — inzwischen aus deinen Trichomen' : ''}.` : ''}
+              ${_hw && _hw.lo !== _hw.hi ? `<br>Erntefenster: <b>Tag ${_hw.lo}–${_hw.hi}</b>${_hw.basis === 'trichome' ? ' — inzwischen aus deinen Trichomen' : ''}.${
+              // (v1.5.97) Beginnt das gemessene Fenster NACH dem Plan-Tag, standen hier zwei
+              // Zahlen nebeneinander, ohne dass eine die andere erklärte. Jetzt sagt die Zeile,
+              // welche gilt.
+              _hw.basis === 'trichome' && isFinite(_hw.planTag) && _hw.lo > _hw.planTag
+                ? ` Dein Plan rechnet mit Tag ${_hw.planTag} — die Messung liegt später, und die Messung gilt.`
+                : ''}` : ''}
             </div>` : ''}
             ${!_lo && !_hi ? `<div style="font-size:10px;color:var(--text-hint);line-height:1.5;margin-bottom:9px">Weißt du es nicht? Leer lassen und die Tage unten direkt eintragen.</div>` : ''}`;
           })()}
