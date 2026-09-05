@@ -2,6 +2,53 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-05 — v1.5.108
+
+- **Die Diagnose begründete ihren Vorschlag mit internen Programmier-Schlüsseln.** Unter
+  „Warum diese Hypothese" stand wörtlich „• Symptome: oldLeaves; yellow" und „• Kontext:
+  passt zu Phase (flush)". Das sind die englischen Feldnamen aus dem Code — genau an der
+  Stelle, an der ein Anfänger nachliest, warum die App gerade diese Ursache vorschlägt.
+  `diagnoseProblems` legte die Begründung aus den Roh-Schlüsseln an (`matchedLoc.join`), statt
+  aus den deutschen Beschriftungen, die auf den Auswahl-Knöpfen direkt darüber stehen.
+  Beide Namenslisten lagen längst im Code: `DIAG_LABELS` für die Symptome — dieselbe Quelle,
+  aus der die Knöpfe im Assistenten beschriftet werden — und `PN` für die Phasen, dieselbe,
+  die auch der Kalender benutzt. Zwei kleine Übersetzer (`_diagWort`, `_phasenWort`) setzen
+  sie jetzt ein, mit Rückfall auf den Schlüssel, falls je eine Beschriftung fehlt.
+  Aus „• Symptome: oldLeaves; yellow · Kontext: passt zu Phase (flush)" wird damit
+  „• Symptome: Alte Blätter (unten); Gelb · Kontext: passt zur Phase Spülen".
+  Gefunden beim sichtbaren Durchklicken der Diagnose im Browser — im Konsolentest war der
+  Wert korrekt, er las sich nur für niemanden.
+  Abgesichert in `test_naehrstoffort.js` (jetzt 20 Prüfungen, beide Zeitzonen), das auf keinen
+  der internen Schlüssel mehr trifft und den Rückfall bei unbekanntem Schlüssel mitprüft.
+
+## 2026-09-05 — v1.5.107
+
+- **Die Diagnose führte Magnesium und Calcium in einem Eintrag — und verortete beide oben.**
+  Nach `ANBAU.md` 6.1 verhalten sich die zwei gegenläufig: Magnesium kann die Pflanze im
+  Blatt umlagern und holt es bei Mangel aus den **alten** Blättern, das Symptom steht deshalb
+  **unten** und wandert nach oben. Calcium kann sie nach dem Einbau nicht mehr umlagern, sein
+  Mangel steht immer **oben**. Der bisherige Eintrag `calmag_deficiency` beschrieb das
+  Magnesium-Bild (gelb zwischen den Blattadern), trug aber `location: newLeaves` — also den
+  Ort des Calcium-Mangels.
+  Die Folge war messbar: Bei der Eingabe „untere Blätter · gelb · gefleckt" in der Blüte —
+  dem Lehrbuchbild für Magnesium — stand Stickstoff-Mangel an erster Stelle und der richtige
+  Eintrag auf Platz 3. Bei der häufigeren Anfängereingabe „unten · gelb" fiel er auf Platz 5
+  hinter Phosphor zurück. Wer der Liste folgt, düngt Stickstoff nach, und genau das hält die
+  Pflanze in der Blüte vegetativ.
+  Zweiter, schwererer Teil: Die Handlung lautete pauschal „CalMag-Additiv 1–2 ml/L". Nach
+  `ANBAU.md` 6.2 ist der praxisrelevanteste Fall in der Blüte aber gar kein
+  Magnesium-Defizit im Substrat, sondern Verdrängung durch kaliumbetonte Blütedünger und
+  PK-Booster — und Calcium verdrängt Magnesium zusätzlich. Die App empfahl also ein Mittel,
+  das den häufigsten Fall verschärfen kann.
+  Jetzt zwei Einträge: **Magnesium-Mangel** (unten, gelb zwischen grün bleibenden Adern) mit
+  der Handlung in Reihenfolge — erst Blüte-Booster aussetzen, dann pH prüfen, erst dann
+  gezielt Bittersalz statt pauschal CalMag — und **Calcium-Mangel** (oben, braune Flecken,
+  verdrehte Triebspitzen), der zuerst auf Umluft und Luftfeuchte zeigt, weil Calcium nur mit
+  dem Verdunstungsstrom ins Blatt kommt (`ANBAU.md` 1). Beide tragen ihr
+  Unterscheidungskriterium im Text, nach Regel 3: Ein Symptom bekommt nie nur eine Ursache.
+  Abgesichert durch `test_naehrstoffort.js` (13 Prüfungen, beide Zeitzonen), das auch die
+  Gegenprobe fährt — Calcium darf bei einem Bild von unten nicht vorn stehen.
+
 ## 2026-09-05 — v1.5.106
 
 - **Nach der Zurück-Taste aus dem Gieß-Fahrplan war der Düngeplan leer.** `goTo(t)` rendert

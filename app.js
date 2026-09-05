@@ -1101,18 +1101,33 @@ const PROBLEMS = [
     lexiconKey: 'k_deficiency',
   },
   {
-    id: 'calmag_deficiency',
-    name: 'Calcium/Magnesium-Mangel',
+    id: 'mg_deficiency',
+    name: 'Magnesium-Mangel (Mg)',
     category: 'nutrient',
     severity: 'medium',
     symptoms: {
-      location: ['newLeaves', 'allLeaves'],
+      location: ['oldLeaves', 'allLeaves'],
       color: ['yellow', 'spots'],
       shape: ['spotted', 'curlUp'],
     },
-    description: 'Zwischen den Blattadern (interveinale) gelbe Flecken, besonders auf mittleren/neuen Blättern. Blätter können sich nach oben kräuseln.',
+    description: 'Gelb zwischen den Blattadern, die Adern selbst bleiben grün — das Blatt wirkt wie ein grünes Netz auf gelbem Grund. Beginnt <b>unten</b> und wandert nach oben, weil die Pflanze Magnesium aus alten Blättern abzieht und ins neue Wachstum schickt. Später rollen die Ränder nach oben und werden brüchig. <b>Abgrenzung:</b> Steht dasselbe Muster an den <b>obersten</b> Blättern, ist es kein Magnesium — dann eher Eisen (pH zu hoch) oder Calcium.',
     context: { phase: ['vegi', 'bloom'], ecLow: true, phLow: true },
-    action: 'CalMag-Additiv (1–2 ml/L) vor jedem Guss vor dem Basisdünger. Häufig bei Coco/Hydro oder weichem Wasser. pH-Check (< 6.0 blockt Ca/Mg).',
+    action: 'Erst die Ursache, dann das Mittel — in der Blüte fehlt meist gar nicht Magnesium, sondern zu viel Kalium verdrängt es an der Wurzel. <b>1.</b> Läuft ein Blüte-Booster (PK 13/14, MKP)? Dann diesen zuerst aussetzen, nicht zusätzlich düngen. <b>2.</b> pH prüfen — unter 6,0 in Erde nimmt die Pflanze Magnesium schlecht auf, das ist die häufigste zweite Ursache. <b>3.</b> Erst dann gezielt Bittersalz (Epsom, 0,3 g/L) geben. Ein CalMag-Mittel bringt auch Calcium mit, und Calcium verdrängt Magnesium ebenfalls — bei reinem Magnesium-Bild ist Bittersalz der sauberere Weg. In der Spätblüte gilt: gleichmäßiges Vergilben von unten ist normale Alterung, kein Mangel.',
+    lexiconKey: 'calmag_deficiency',
+  },
+  {
+    id: 'ca_deficiency',
+    name: 'Calcium-Mangel (Ca)',
+    category: 'nutrient',
+    severity: 'medium',
+    symptoms: {
+      location: ['newLeaves'],
+      color: ['brown', 'spots', 'yellow'],
+      shape: ['spotted', 'curlUp'],
+    },
+    description: 'Braune, trockene Flecken auf den <b>jüngsten</b> Blättern, dazu verdrehte oder verkrüppelte Triebspitzen und rostige Ränder. Steht immer oben, weil die Pflanze Calcium nach dem Einbau nicht mehr umlagern kann. <b>Abgrenzung:</b> Gelb zwischen den Adern <b>unten</b> ist Magnesium, nicht Calcium.',
+    context: { phase: ['vegi', 'bloom'], phLow: true, humidityHigh: true },
+    action: 'Calcium kommt nur mit dem Verdunstungsstrom ins Blatt — steht die Luft oder ist sie zu feucht, verdunstet die Pflanze kaum, und das Calcium kommt oben nicht an, obwohl genug im Topf ist. <b>1.</b> Deshalb zuerst Umluft und Luftfeuchte prüfen (VPD im Zielbereich?), bevor mehr gedüngt wird. <b>2.</b> pH prüfen — unter 6,0 in Erde wird Calcium schlecht aufgenommen. <b>3.</b> Erst dann CalMag (1–2 ml/L), immer <b>vor</b> dem Basisdünger ins Wasser. Bei weichem Wasser und in Coco ist CalMag ohnehin Grundversorgung, kein Zusatz.',
     lexiconKey: 'calmag_deficiency',
   },
   {
@@ -1419,6 +1434,21 @@ const PROBLEMS = [
 ];
 
 /**
+ * Uebersetzt einen internen Symptom-Schluessel in die Beschriftung, die auch auf den
+ * Auswahl-Knoepfen steht. Faellt auf den Schluessel zurueck, falls einer fehlt — dann
+ * steht dort zwar Technik, aber nichts bricht.
+ */
+function _diagWort(art, key) {
+  const g = (typeof DIAG_LABELS !== 'undefined' && DIAG_LABELS[art]) ? DIAG_LABELS[art][key] : null;
+  return (g && g.label) || key;
+}
+
+/** Dasselbe fuer die Phase — PN ist die Namensliste, die auch der Kalender benutzt. */
+function _phasenWort(ph) {
+  return (typeof PN !== 'undefined' && PN[ph]) || ph;
+}
+
+/**
  * Diagnose-Engine: Bewertet alle Probleme gegen ein User-Symptom-Profil
  * und liefert die wahrscheinlichsten Diagnosen sortiert nach Match-Score.
  *
@@ -1457,15 +1487,17 @@ function diagnoseProblems(symptoms, ctx = {}) {
     const matchedReasons = [];
     const contextReasons = [];
 
-    if (matchedLoc.length > 0) matchedReasons.push(matchedLoc.join(', '));
-    if (matchedCol.length > 0) matchedReasons.push(matchedCol.join(', '));
-    if (matchedShp.length > 0) matchedReasons.push(matchedShp.join(', '));
+    // Die Begruendung liest der Nutzer — deshalb die deutschen Beschriftungen aus
+    // DIAG_LABELS statt der internen Schluessel ('oldLeaves' sagt niemandem etwas).
+    if (matchedLoc.length > 0) matchedReasons.push(matchedLoc.map(k => _diagWort('location', k)).join(', '));
+    if (matchedCol.length > 0) matchedReasons.push(matchedCol.map(k => _diagWort('color', k)).join(', '));
+    if (matchedShp.length > 0) matchedReasons.push(matchedShp.map(k => _diagWort('shape', k)).join(', '));
 
     const pCtx = p.context || {};
     let ctxBoost = 0;
     if (pCtx.phase && ctx.phase) {
       if (pCtx.phase.includes(ctx.phase) || (pCtx.phase.includes('vegi') && ['anzucht','vorzucht','vegi_out','abhärten'].includes(ctx.phase))) {
-        ctxBoost += 0.05; contextReasons.push(`passt zu Phase (${ctx.phase})`);
+        ctxBoost += 0.05; contextReasons.push(`passt zur Phase ${_phasenWort(ctx.phase)}`);
       }
     }
     if (pCtx.phHigh && ctx.phHigh) { ctxBoost += 0.05; contextReasons.push('pH zu hoch'); }
@@ -3268,7 +3300,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.106';
+const APP_VERSION = 'v1.5.108';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,

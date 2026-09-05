@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.106** · index.html 2,11 MB · 628 Funktionen
+Stand: **v1.5.108** · index.html 2,11 MB · 628 Funktionen
 Zuletzt fortgeschrieben am 05.09.2026. Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
@@ -13,7 +13,10 @@ größer sein als die Zahl der Pflanzen (v1.5.103). Mit v1.5.104 wird die Ablauf
 auf ihre Gültigkeit geprüft, bevor sie bewertet wird — die erste Änderung, die direkt aus
 `ANBAU.md` folgt. Zuletzt zwei Punkte aus der Restliste: Die Berichtigen-Liste der
 Trichom-Messungen zeigt wieder die ganze Reihe (v1.5.105), und der Düngeplan ist nach der
-Zurück-Taste aus dem Gieß-Fahrplan nicht mehr leer (v1.5.106).
+Zurück-Taste aus dem Gieß-Fahrplan nicht mehr leer (v1.5.106). Mit v1.5.107 trennt die
+Diagnose Magnesium und Calcium, statt beide in einem Eintrag am falschen Blattort zu
+führen — der zweite Befund direkt aus `ANBAU.md` (6.1 und 6.2), siehe Abschnitt 3.
+Mit v1.5.108 steht die Begründung der Diagnose in Klartext statt in internen Schlüsseln.
 
 Grundlage waren drei Durchläufe im echten Browser mit Patricks Daten: erst über alle
 Bildschirme (Abschnitt 2), dann gezielt über die Rechenwege — VPD, Düngedosis, Trichome,
@@ -401,12 +404,59 @@ fiel **nur beim sichtbaren Durchklicken** auf. Im Konsolentest waren alle Werte 
 Patricks Vorgabe, die Vorschau beim Prüfen mitlaufen zu lassen, hat sich damit sofort
 bezahlt gemacht.
 
+### Behoben: Magnesium und Calcium lagen in einem Eintrag, am falschen Blattort (v1.5.107)
+
+Die Diagnose-Datenbank `PROBLEMS` führte beide Nährstoffe als `calmag_deficiency` zusammen
+und verortete sie an den **neuen** Blättern. Nach `ANBAU.md` 6.1 verhalten sie sich aber
+gegenläufig: Magnesium ist im Blatt beweglich, die Pflanze zieht es bei Mangel aus den alten
+Blättern ab — das Symptom steht **unten**. Calcium kann sie nach dem Einbau nicht mehr
+umlagern, sein Mangel steht **oben**. Der Eintragstext beschrieb dabei das Magnesium-Bild.
+
+Gemessen mit `diagnoseProblems`: Bei „untere Blätter · gelb · gefleckt" in der Blüte stand
+Stickstoff-Mangel vorn, der richtige Eintrag auf Platz 3; bei „unten · gelb" fiel er auf
+Platz 5 hinter Phosphor. Die Handlung lautete pauschal „CalMag 1–2 ml/L" — nach `ANBAU.md`
+6.2 in der Blüte oft die falsche Richtung, weil dort meist Kalium das Magnesium verdrängt
+und zusätzliches Calcium denselben Effekt hat.
+
+Jetzt zwei Einträge mit je eigenem Ort, eigenem Bild und dem Unterscheidungskriterium im
+Text. Die Magnesium-Handlung nennt die Reihenfolge: erst Blüte-Booster aussetzen, dann pH,
+erst dann Bittersalz. Die Calcium-Handlung zeigt zuerst auf Umluft und Luftfeuchte, weil
+Calcium nur mit dem Verdunstungsstrom ins Blatt kommt (`ANBAU.md` 1).
+
+**Daraus zu lernen:** Wo zwei Stoffe im Namen eines Eintrags zusammengefasst sind, lohnt der
+Blick, ob sie sich physiologisch gleich verhalten. Hier war die Zusammenfassung „CalMag" aus
+der Produktwelt übernommen — es gibt ein Mittel, das beides enthält —, und die Datenbank hat
+die Produktlogik statt der Pflanzenlogik geerbt.
+
+### Behoben: Die Diagnose begründete sich mit Programmier-Vokabeln (v1.5.108)
+
+Unter „Warum diese Hypothese" stand „• Symptome: oldLeaves; yellow · Kontext: passt zu Phase
+(flush)". `diagnoseProblems` baute die Begründung aus den internen Schlüsseln, obwohl die
+deutschen Beschriftungen zwei Bildschirme weiter oben auf den Auswahl-Knöpfen stehen —
+`DIAG_LABELS` für die Symptome, `PN` für die Phasen. Zwei Übersetzer (`_diagWort`,
+`_phasenWort`) setzen sie jetzt ein, mit Rückfall auf den Schlüssel.
+
+**Daraus zu lernen, zweifach:** Erstens dasselbe Muster wie bei `_trainingFit` — die Antwort
+lag längst im Datenmodell und wurde nur nicht gelesen. Zweitens: Aufgefallen ist es **nur
+beim sichtbaren Durchklicken**. Der Wert war im Konsolentest korrekt; er war bloß für
+niemanden lesbar. Das ist nach v1.5.104 der zweite Fehler, den die mitlaufende Vorschau
+gefunden hat und ein Zahlentest nicht finden konnte.
+
 ### Noch nicht geprüft
 
-Der Rest des Tageseintrags (pH-Eingabe, Notiz-Chips, Foto-Anhang), die Diagnose-Datenbank
-`PROBLEMS`, der Outdoor-Pfad und die Kalender-Ansicht im Detail. Aus `ANBAU.md` noch offen:
-die Antagonismen aus Abschnitt 6.2 (K/Mg in der Blüte) und die Mischreihenfolge aus
-Abschnitt 10 — beides bisher nicht gegen die Düngeplan-Logik gehalten.
+Der Rest des Tageseintrags (pH-Eingabe, Notiz-Chips, Foto-Anhang), der Outdoor-Pfad und die
+Kalender-Ansicht im Detail. Aus der Diagnose-Datenbank `PROBLEMS` sind die Nährstoff-Einträge
+jetzt gegen die Mobilität aus `ANBAU.md` 6.1 gehalten; die Schädlings- und Pilz-Einträge noch
+nicht. Offen bleibt außerdem, ob ein eigener Eintrag für **Eisenmangel** fehlt — das Bild
+(gelbe junge Blätter mit grün bleibenden Adern bei zu hohem pH, `ANBAU.md` 4) läuft derzeit
+über `ph_lockout` mit und hat keine eigene Zeile.
+
+Die Mischreihenfolge aus `ANBAU.md` 10 wurde am 05.09.2026 geprüft und ist **in Ordnung**:
+Alle Presets führen Silikat zuerst, dann Calcium/Magnesium, Sulfate, Huminstoffe, Phosphate,
+Basisdünger und biologische Mittel zuletzt — genau die Reihenfolge aus dem Dokument. Nicht
+erneut aufrollen. Ungeprüft bleibt dort nur der Fall **eigener Pläne**: Sie übernehmen die
+Reihenfolge, in der der Nutzer seine Produkte angelegt hat, ohne dass die App prüft, ob ein
+Silikat weiter hinten steht. Das wäre eine neue Automatik und damit Patricks Entscheidung.
 
 ---
 
@@ -563,13 +613,13 @@ cat head.html app.js tail.html | cmp - index.html && echo "BYTE-IDENTISCH OK"
 **Byte-Identität mit `cmp` ist Pflicht, bevor irgendetwas geändert wird.** Danach wird
 `app.js` geändert, mit `build.sh` neu gebaut und erneut verglichen.
 
-30 Testdateien, alle grün in beiden Zeitzonen (Stand v1.5.106):
+31 Testdateien, alle grün in beiden Zeitzonen (Stand v1.5.108):
 
 `test_audit_screens` · `test_befehle` · `test_dialog_und_namen` · `test_dosisquelle` · `test_drain` · `test_duengeplaene` ·
 `test_endspurt` · `test_entwurf` · `test_ernteabgleich` · `test_ertrag` ·
 `test_fixes_0905` ·
 `test_gussmenge` · `test_gussmove` ·
-`test_gussmove_kombi` · `test_navrender` · `test_navscroll` · `test_planladen` · `test_planpause` ·
+`test_gussmove_kombi` · `test_naehrstoffort` · `test_navrender` · `test_navscroll` · `test_planladen` · `test_planpause` ·
 `test_planrueckgrat` · `test_pflanzenzahl` · `test_planzuordnung` · `test_saemling_tage` · `test_sortendauer` · `test_startup` ·
 `test_training` · `test_trichchart` · `test_trichedit` · `test_trichphasen` · `test_vpd` · `test_wochenfolgen`
 
