@@ -11,7 +11,9 @@ leichte Feuchte zu behandeln (v1.5.101), Trainings werden nur noch passend zur
 Wachstumsphase angeboten (v1.5.102), und eine gespeicherte Pflanzenzahl kann nicht mehr
 größer sein als die Zahl der Pflanzen (v1.5.103). Mit v1.5.104 wird die Ablaufmessung erst
 auf ihre Gültigkeit geprüft, bevor sie bewertet wird — die erste Änderung, die direkt aus
-`ANBAU.md` folgt.
+`ANBAU.md` folgt. Zuletzt zwei Punkte aus der Restliste: Die Berichtigen-Liste der
+Trichom-Messungen zeigt wieder die ganze Reihe (v1.5.105), und der Düngeplan ist nach der
+Zurück-Taste aus dem Gieß-Fahrplan nicht mehr leer (v1.5.106).
 
 Grundlage waren drei Durchläufe im echten Browser mit Patricks Daten: erst über alle
 Bildschirme (Abschnitt 2), dann gezielt über die Rechenwege — VPD, Düngedosis, Trichome,
