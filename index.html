@@ -4245,7 +4245,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.102';
+const APP_VERSION = 'v1.5.103';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -11284,13 +11284,41 @@ function plantsStandingAt(c, iso) {
   return Math.max(0, gesamt - plantsHarvestedBy(c, iso).length);
 }
 
+/**
+ * (v1.5.103) Wie viele Pflanzen kann es in diesem Zyklus höchstens gegeben haben?
+ *
+ * Obergrenze für jede pro-Tag gespeicherte Pflanzenzahl. Mehr Pflanzen, als je angelegt
+ * wurden, kann es nicht gegeben haben — und ein solcher Wert würde jede Gießmenge dieses
+ * Tages im selben Verhältnis aufblähen.
+ */
+function _plantsCap(c) {
+  if (!c) return 1;
+  const ausListe = Array.isArray(c.plants) ? c.plants.length : 0;
+  const ausZaehler = parseInt(c.plantCount) || 0;
+  return Math.max(1, ausListe, ausZaehler);
+}
+
 function getEffectivePlantCount(c, iso) {
   if (!c) return 1;
   if (!c.scaleByPlants) return 1;  // Skalierung aus → kein Multiplikator
-  // Eintrag-spezifischer Override (User hat im Tageseintrag eine andere Zahl gesetzt)
+  // Eintrag-spezifischer Override (aus einer früheren Version, in der die Pflanzenzahl im
+  // Tageseintrag stand).
+  //
+  // (v1.5.103) DECKELUNG. Diesen Wert schreibt heute keine Stelle im Code mehr — er wird
+  // nur noch gelesen und überstimmte dabei alles andere. Ein alter, falscher Eintrag wirkte
+  // dadurch dauerhaft weiter, ohne dass er sich in der Oberfläche korrigieren ließe: Das
+  // zugehörige Eingabefeld gibt es nicht mehr. In Patricks Sicherung steht im Eintrag vom
+  // 03.06.2026 eine 7, obwohl nie mehr als fünf Pflanzen angelegt waren — die Gießmenge
+  // dieses Tages fiel damit 40 % zu hoch aus, und über `plantsAtWatering` verzerrte die Zahl
+  // zusätzlich die gemessene Menge je Pflanze (3500 ÷ 7 statt ÷ 5), die in künftige
+  // Empfehlungen einfließt.
+  //
+  // Gedeckelt statt gelöscht: Ein Override kann sinnvoll sein („heute nur drei gegossen"),
+  // aber niemals größer als die Zahl der je angelegten Pflanzen. Die Daten bleiben
+  // unangetastet — korrigiert wird beim Lesen.
   if (iso && S.entries[iso]?.cycleData?.[c.id]?.plantCount) {
     const n = parseInt(S.entries[iso].cycleData[c.id].plantCount);
-    if (n >= 1) return n;
+    if (n >= 1) return Math.min(n, _plantsCap(c));
   }
   // Früher geerntete Pflanzen zählen ab ihrem Schnitttag nicht mehr mit. Untergrenze 1,
   // damit keine Division durch null entsteht — sind alle geschnitten, wird ohnehin nicht
@@ -11845,7 +11873,9 @@ function _waterAnchorInfo(c, p, iso) {
     if (cd._suggested && cd._suggested.water) continue;        // Echo-Schutz
     const pPast = phase(dIso, c);
     if (!pPast || pPast.ph === 'flush' || pPast.ph === 'ice') continue;
-    let plantsAt = parseInt(cd.plantsAtWatering);
+    // (v1.5.103) Auch der historische Stempel wird gedeckelt — er stammt aus
+    // getEffectivePlantCount und trägt einen alten Übersteuerungswert sonst weiter.
+    let plantsAt = Math.min(parseInt(cd.plantsAtWatering) || 0, _plantsCap(c));
     if (!plantsAt || plantsAt < 1) plantsAt = getEffectivePlantCount(c, dIso);
     real.push({ iso: dIso, perPlant: ml / Math.max(1, plantsAt), p: pPast });
   }
@@ -12306,8 +12336,10 @@ function _recentPourPerPlant(c, iso, n) {
     if (!isFinite(ml) || ml <= 0) continue;
     const ph = phase(k, c);
     if (!ph || ph.ph === 'flush' || ph.ph === 'ice' || ph.ph === 'anzucht') continue;
+    // (v1.5.103) Gedeckelt: Ein zu hoher Stempel rechnete die gemessene Menge je Pflanze
+    // klein (3500 ÷ 7 statt ÷ 5) und zog damit künftige Empfehlungen nach unten.
     const pl = (cd.plantsAtWatering && cd.plantsAtWatering > 0)
-      ? cd.plantsAtWatering
+      ? Math.min(cd.plantsAtWatering, _plantsCap(c))
       : getEffectivePlantCount(c, k);
     if (!pl || pl <= 0) continue;
     out.push(ml / pl);

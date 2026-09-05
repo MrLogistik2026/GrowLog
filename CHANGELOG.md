@@ -2,6 +2,30 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-05 — v1.5.103
+
+- **Eine gespeicherte Pflanzenzahl konnte größer sein als die Zahl der Pflanzen.**
+  `getEffectivePlantCount` liest einen eintragsspezifischen Übersteuerungswert
+  `cd.plantCount` — ein Feld, das im heutigen Code **keine Stelle mehr schreibt**. Es stammt
+  aus einer früheren Version, in der die Pflanzenzahl im Tageseintrag stand, und überstimmte
+  trotzdem alles andere. Ein alter, falscher Wert wirkte dadurch dauerhaft weiter, ohne dass
+  er sich in der Oberfläche korrigieren ließe: Das zugehörige Eingabefeld gibt es nicht mehr.
+  In Patricks Sicherung steht im Eintrag vom 03.06.2026 eine 7, obwohl nie mehr als fünf
+  Pflanzen angelegt waren — von ihm am 05.09.2026 ausdrücklich bestätigt. Zwei Folgen: Die
+  Gießmenge dieses Tages fiel **40 % zu hoch** aus (3150 statt 2250 ml), und über den
+  historischen Stempel `plantsAtWatering` verzerrte die Zahl zusätzlich die gemessene Menge
+  je Pflanze (3500 ÷ 7 = 500 statt ÷ 5 = 700 ml) — ein Wert, der über
+  `_recentPourPerPlant` in künftige Empfehlungen einfließt und sie nach unten zieht.
+  Neu ist `_plantsCap(c)` als Obergrenze aus Pflanzenliste und Zähler; sie deckelt sowohl den
+  Eintrags-Override als auch den Gieß-Stempel an allen drei Lesestellen.
+  **Gedeckelt statt gelöscht, und nur beim Lesen:** Ein Override kleiner als die Pflanzenzahl
+  bleibt gültig („heute nur drei gegossen"), die gespeicherten Daten werden nicht angefasst.
+  So wirkt die Korrektur sofort, ohne dass eine Migration Nutzerdaten verändert — und falls
+  sich die Annahme je als falsch erweist, ist nichts verloren.
+  Abgesichert durch `test_pflanzenzahl.js` (19 Prüfungen, beide Zeitzonen), darunter die
+  Gegenproben, dass ein legitimer kleinerer Override durchkommt und dass geerntete Pflanzen
+  weiter korrekt herunterzählen — ohne je wieder anzusteigen.
+
 ## 2026-09-05 — v1.5.102
 
 - **Die App bot am Tag vor dem IceFlush an, eine Sämlings-Haube aufzusetzen.**

@@ -1,17 +1,23 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.102** · index.html 2,11 MB · 628 Funktionen
+Stand: **v1.5.103** · index.html 2,11 MB · 628 Funktionen
 Zuletzt fortgeschrieben am 05.09.2026. Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
 die Ernte-Kacheln widersprechen der Erntekarte nicht mehr (v1.5.99), und **die Düngermengen
 kamen aus dem falschen Plan, sobald es mehr als einen gab** (v1.5.100 — der schwerste der
-fünf, siehe Abschnitt 3). Dazu warnt die App jetzt vor Kondensation auf dem Blatt, statt
-sie wie leichte Feuchte zu behandeln (v1.5.101).
+fünf, siehe Abschnitt 3). Dazu warnt die App vor Kondensation auf dem Blatt, statt sie wie
+leichte Feuchte zu behandeln (v1.5.101), Trainings werden nur noch passend zur
+Wachstumsphase angeboten (v1.5.102), und eine gespeicherte Pflanzenzahl kann nicht mehr
+größer sein als die Zahl der Pflanzen (v1.5.103).
 
-Grundlage waren zwei Durchläufe im echten Browser mit Patricks Daten: erst über alle
-Bildschirme (Abschnitt 2), dann gezielt über die Rechenwege — VPD, Düngedosis, Trichome
-(Abschnitt 3).
+Grundlage waren drei Durchläufe im echten Browser mit Patricks Daten: erst über alle
+Bildschirme (Abschnitt 2), dann gezielt über die Rechenwege — VPD, Düngedosis, Trichome,
+EC, Hebe-Test, Gießmenge (Abschnitt 3).
+
+**Fachwissen:** Seit dem 05.09.2026 bindet `CLAUDE.md` zusätzlich `ANBAU.md` ein — die
+biophysikalischen Grundlagen, gegen die jede Zahl und jeder Text in dieser App geprüft
+werden. Wer hier etwas über Pflanzen entscheidet, liest dort nach, statt zu schätzen.
 
 ---
 
@@ -309,14 +315,39 @@ Am 05.09.2026 im Browser mit echten Daten durchgerechnet. Alles unauffällig:
   Pflanze, danach Korridor-begrenzt; Spülen deutlich mehr, IceFlush wenig, ab Ernte 0.
   Plausibel für 11 L.
 
-**Eine Auffälligkeit in den DATEN, kein Fehler im Code:** Im Eintrag vom 03.06.2026 (Tag 19)
-steht `plantsAtWatering: 7`, obwohl die Pflanzenliste nur fünf kennt. Die Gießempfehlung für
-diesen Tag fällt dadurch 40 % höher aus. Der Stempel ist Absicht — er hält die Menge je
-Pflanze korrekt, wenn später Pflanzen wegfallen —, und die App schreibt ihn immer aus
-`getEffectivePlantCount`, kann also selbst keine 7 erzeugt haben. Wahrscheinlich standen dort
-wirklich sieben Pflanzen und zwei wurden später aus der Liste entfernt. **Eine Deckelung wäre
-falsch**, sie würde einen korrekten Mechanismus beschädigen. Auf die aktuelle Empfehlung
-wirkt es nicht (die letzten vier Güsse liegen bei 3000 ml). Bei Gelegenheit Patrick fragen.
+### Behoben: eine Pflanzenzahl größer als die Zahl der Pflanzen (v1.5.103)
+
+Im Eintrag vom 03.06.2026 (Tag 19) stand `plantCount: 7` und daraus abgeleitet
+`plantsAtWatering: 7`, obwohl nie mehr als fünf Pflanzen angelegt waren. **Patrick hat am
+05.09.2026 bestätigt: „Ich hatte nie 7 Pflanzen."** Erst hatte ich das für einen legitimen
+historischen Stempel gehalten und eine Deckelung ausdrücklich als falsch bezeichnet — die
+Rückfrage hat das widerlegt.
+
+Die Ursache liegt in `getEffectivePlantCount`: Es liest den eintragsspezifischen
+Übersteuerungswert `cd.plantCount`, **ein Feld, das im heutigen Code keine Stelle mehr
+schreibt.** Es stammt aus einer früheren Version, in der die Pflanzenzahl im Tageseintrag
+stand. Der alte Wert überstimmte trotzdem alles andere und ließ sich nicht korrigieren, weil
+es das Eingabefeld nicht mehr gibt. Zwei Folgen: Gießmenge dieses Tages 40 % zu hoch (3150
+statt 2250 ml), und über den Stempel eine verzerrte Menge je Pflanze (3500 ÷ 7 = 500 statt
+÷ 5 = 700 ml), die über `_recentPourPerPlant` in künftige Empfehlungen einfließt.
+
+`_plantsCap(c)` deckelt beides jetzt an allen drei Lesestellen — **nur beim Lesen, die Daten
+bleiben unverändert.** Ein Override kleiner als die Pflanzenzahl bleibt gültig.
+
+**Daraus zu lernen, zweifach:**
+1. Ein Feld, das gelesen aber nicht mehr geschrieben wird, ist eine Falle: Alte Werte wirken
+   unsichtbar weiter, und die Oberfläche bietet keinen Weg, sie zu korrigieren. Beim
+   Entfernen eines Eingabefelds gehört die Leseregel mit auf den Prüfstand.
+2. **Ich hätte diesen Fehler beinahe wegerklärt.** Die Begründung „der Stempel ist Absicht"
+   war für sich richtig und trotzdem die falsche Schlussfolgerung. Patricks Rückfrage-Antwort
+   hat ihn aufgedeckt. Bei einer Auffälligkeit in den Daten also fragen, statt sie plausibel
+   zu erklären — er weiß, was in seinem Zelt stand.
+
+Sein Hinweis dazu, noch unbestätigt: Er erinnert sich an ein früheres Problem, dass „die
+Wassermengen hochskaliert wurden, sobald ich eine Pflanze geerntet habe". Der Schreibweg für
+`cd.plantCount` existiert heute nicht mehr, die Ursache lässt sich also nicht mehr
+nachstellen. Die Deckelung fängt die Folgen ab; falls das Verhalten je wieder auftritt,
+ist hier der Anfang der Spur.
 
 ### Beim Prüfen selbst aufgepasst
 
@@ -487,14 +518,14 @@ cat head.html app.js tail.html | cmp - index.html && echo "BYTE-IDENTISCH OK"
 **Byte-Identität mit `cmp` ist Pflicht, bevor irgendetwas geändert wird.** Danach wird
 `app.js` geändert, mit `build.sh` neu gebaut und erneut verglichen.
 
-27 Testdateien, alle grün in beiden Zeitzonen (Stand v1.5.102):
+28 Testdateien, alle grün in beiden Zeitzonen (Stand v1.5.103):
 
 `test_audit_screens` · `test_befehle` · `test_dialog_und_namen` · `test_dosisquelle` · `test_duengeplaene` ·
 `test_endspurt` · `test_entwurf` · `test_ernteabgleich` · `test_ertrag` ·
 `test_fixes_0905` ·
 `test_gussmenge` · `test_gussmove` ·
 `test_gussmove_kombi` · `test_navscroll` · `test_planladen` · `test_planpause` ·
-`test_planrueckgrat` · `test_planzuordnung` · `test_saemling_tage` · `test_sortendauer` · `test_startup` ·
+`test_planrueckgrat` · `test_pflanzenzahl` · `test_planzuordnung` · `test_saemling_tage` · `test_sortendauer` · `test_startup` ·
 `test_training` · `test_trichchart` · `test_trichedit` · `test_trichphasen` · `test_vpd` · `test_wochenfolgen`
 
 **Zeitzonen unter Windows:** `TZ=Europe/Berlin node test.js` wirkt in Git Bash **nicht** —

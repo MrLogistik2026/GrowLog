@@ -3,14 +3,29 @@
 Single-File-PWA für Cannabis-Anbau. Vanilla JS, kein Build-Tool, soll in zehn Jahren
 noch laufen. Sprache im Projekt und im Gespräch: Deutsch, Du-Form, direkt, nüchtern.
 
-Diese Datei bindet die drei Projektdokumente ein, damit sie bei jedem Sitzungsstart
-automatisch geladen werden. Wer hier etwas sucht, findet es dort:
+Diese Datei bindet die Projektdokumente ein, damit sie bei jedem Sitzungsstart automatisch
+geladen werden. Wer hier etwas sucht, findet es dort:
 
 @ANWEISUNG.md
+
+@ANBAU.md
 
 @UEBERGABE.md
 
 @START-HIER.md
+
+**`ANBAU.md` ist das Fachwissen hinter der App** — Wasserhaushalt, VPD, pH und
+Nährstoffverfügbarkeit, EC und osmotischer Druck, Licht, Trichomreife, Trocknung, die
+tödlichen Fehler mit ihrem Mechanismus, und ein eigener Abschnitt darüber, was in der
+Grower-Praxis verbreitet, aber **nicht belegt** ist.
+
+Der Zweck: **Über Pflanzen wird nicht geschätzt.** Jede Zahl in dieser App — jede Gießmenge,
+jeder EC-Zielwert, jede Warnung, jeder erklärende Satz — muss sich auf einen Mechanismus
+zurückführen lassen. Wo `ANBAU.md` keine Antwort gibt, wird nachgefragt statt geraten; ein
+selbstbewusst vorgetragener falscher Pflanzenrat ist schlimmer als ein Eingeständnis.
+
+Vor jeder neuen Automatik gilt Abschnitt 9 („Was verbreitet, aber nicht belegt ist"): Eine
+Funktion, die einen Fehler verhindern soll, den es nicht gibt, ist selbst ein Fehler.
 
 ---
 
