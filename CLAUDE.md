@@ -49,6 +49,28 @@ durchlaufen, statt gegen einen leeren Grow zu testen.
 
 ---
 
+## Beim Testen die Vorschau sichtbar halten
+
+Wird die App geprüft, läuft sie **im sichtbaren Browser-Fenster** mit, damit Patrick live
+mitverfolgen kann, was passiert (seine Ansage vom 05.09.2026). Das heißt: Bildschirme
+wirklich ansteuern und anklicken, nicht nur im Hintergrund Funktionen aufrufen.
+Zwischendurch Bildschirmfotos zeigen, wenn sich etwas Sichtbares ändert.
+
+Reine Rechenprüfungen dürfen weiterhin direkt über die Konsole laufen — sie sind genauer
+als Klicken und liefern Zahlen statt Eindrücke. Aber was sich anschauen lässt, wird
+angeschaut.
+
+Gestartet wird über `.claude/launch.json` (Name `growsmart`, Port 8099); die Datei zeigt
+auf ein kleines Server-Skript im Sitzungs-Temp-Ordner und ist deshalb nicht im Repo.
+
+**Nach jedem Neubau den Zwischenspeicher leeren**, sonst prüft man die alte Fassung:
+Service Worker abmelden (`navigator.serviceWorker.getRegistrations()` → `unregister()`),
+dann `caches.keys()` → `delete`, dann neu laden. Ohne das zeigt die Seite beim ersten Laden
+weiter den vorherigen Stand — das hat schon eine Fehlersuche an der falschen Stelle
+gekostet.
+
+---
+
 ## Versionsnummer
 
 `APP_VERSION` in `app.js` (Zeile ~3188) wird bei **jeder** ausgelieferten Änderung um

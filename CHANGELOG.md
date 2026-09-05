@@ -2,6 +2,38 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-05 — v1.5.102
+
+- **Die App bot am Tag vor dem IceFlush an, eine Sämlings-Haube aufzusetzen.**
+  `openTrainingPicker` zeigte alle acht Methoden ungefiltert, und `pickTrainingType`
+  speicherte die Wahl kommentarlos ab („✂️ FIM dokumentiert"). An Tag 113 — Spülphase,
+  IceFlush am nächsten Tag, Ernte in wenigen Tagen — standen dort unverändert Sämlings-Haube,
+  FIM, Mainlining und SCROG. Ein Schnitt in der Spülphase kostet die Ernte: Die Wunde heilt
+  so kurz vor Schluss nicht mehr und ist eine Eintrittsstelle für Schimmel. Ein Anfänger
+  konnte das der App nicht ansehen — Topping hatte als einzige Methode einen eigenen Weg mit
+  Warnung, die übrigen sieben nicht.
+  Das Bemerkenswerte: Jede Methode trägt in `T.training` längst ein `phase`-Feld
+  (`haube: 'anzucht'`, `fim: 'vegi'`, `lollipopping: 'bloom'`). Es wurde nur nirgends
+  ausgewertet. Neu ist `_trainingFit(c, iso, type)`, das genau dieses Feld gegen die aktuelle
+  Phase hält — kein neuer Regler, keine handgeschriebene Warnung je Methode.
+  Der Picker sortiert jetzt: „Was jetzt sinnvoll ist" oben, darunter eine Trennlinie „Heute
+  nicht dran" mit den übrigen, ausgegraut, mit Marke („zu spät", „spät", „zu früh") und
+  Begründung. Wer eine unpassende Methode wählt, bekommt vor dem Eintrag eine Rückfrage mit
+  Grund und Rat — aber die Wahl bleibt seine. Weggenommen wird nichts.
+  Bei Automatics kommt der Zusatz dazu, dass sie verlorene Tage nicht aufholen.
+  Abgesichert durch `test_training.js` (29 Prüfungen, beide Zeitzonen). Wichtigste
+  Gegenprobe: **Patricks sieben echte Trainings aus der Sicherung müssen alle weiter als
+  passend gelten** — Haube an Tag 4, FIM an Tag 21, viermal LST, Lollipopping an Tag 42. Eine
+  Regel, die die reale Praxis blockiert, wäre schlimmer als keine Regel.
+
+- **Ein eigener Test war zeitzonenabhängig und lief nur zufällig durch.** Abschnitt E in
+  `test_ernteabgleich.js` rief `renderSet()` auf, das intern `todayISO()` fragt. In
+  `Pacific/Kiritimati` (UTC+14) ist je nach Uhrzeit schon der nächste Kalendertag; damit war
+  die Trichom-Messung vom 02.09. älter als drei Tage, `harvestWindow` fiel aus der
+  Trichom-Basis, und drei Prüfungen schlugen fehl. Kein App-Fehler, ein Testfehler: Die
+  übrigen Abschnitte nagelten das Datum bereits fest, dieser eine nicht. `todayISO` wird dort
+  jetzt ebenfalls auf den festen Prüftag gesetzt.
+
 ## 2026-09-05 — v1.5.101
 
 - **Kondensation auf dem Blatt heißt nicht mehr nur „zu feucht".** `vpdZone` vergab für

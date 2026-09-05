@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.101** · index.html 2,11 MB · 628 Funktionen
+Stand: **v1.5.102** · index.html 2,11 MB · 628 Funktionen
 Zuletzt fortgeschrieben am 05.09.2026. Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
@@ -273,11 +273,27 @@ unsichtbar.
 eigene Aussage. „Zu wenig von etwas Gutem" und „das Gegenteil tritt ein" sind nicht
 dieselbe Kategorie — hier war es der Unterschied zwischen trägem Wachstum und Schimmel.
 
+### Behoben: Trainings wurden ohne jeden Phasenbezug angeboten (v1.5.102)
+
+`openTrainingPicker` zeigte alle acht Methoden ungefiltert, `pickTrainingType` speicherte
+kommentarlos. An Tag 113 — Spülphase, IceFlush am Folgetag — standen dort Sämlings-Haube,
+FIM, Mainlining und SCROG zur Auswahl. Jede Methode trug in `T.training` längst ein
+`phase`-Feld; es wurde nur nirgends ausgewertet. `_trainingFit(c, iso, type)` hält es jetzt
+gegen die aktuelle Phase, der Picker sortiert nach „Was jetzt sinnvoll ist" / „Heute nicht
+dran", und eine unpassende Wahl bekommt vor dem Eintrag eine Rückfrage mit Grund.
+
+**Daraus zu lernen:** Bevor eine neue Regel gebaut wird, erst nachsehen, ob die Antwort
+schon im Datenmodell steht. Hier lag sie seit jeher da und wurde nur nicht gelesen.
+
+**Und für Tests:** Die Gegenprobe „Patricks sieben echte Trainings müssen alle erlaubt
+bleiben" ist wertvoller als jede erfundene Testlage. Eine Regel, die die reale Praxis
+blockiert, wäre schlimmer als keine Regel.
+
 ### Noch nicht geprüft
 
-Trainings (Topping/LST/Entlauben) und ihre Zeitfenster, die Gießmengen-Rechnung
-(`waterSuggestion`, `_waterDailyNeedPour`), die EC-Bewertung und der Rest des
-Tageseintrags.
+Die Gießmengen-Rechnung (`waterSuggestion`, `_waterDailyNeedPour`), die EC-Bewertung, der
+Hebe-Test/das Restgewicht und der Rest des Tageseintrags. Der Trichom-Check ist nur beim
+Erntefenster geprüft, nicht in der Eingabe (Prozent-Schieber, Summenbildung).
 
 ---
 
@@ -434,7 +450,7 @@ cat head.html app.js tail.html | cmp - index.html && echo "BYTE-IDENTISCH OK"
 **Byte-Identität mit `cmp` ist Pflicht, bevor irgendetwas geändert wird.** Danach wird
 `app.js` geändert, mit `build.sh` neu gebaut und erneut verglichen.
 
-26 Testdateien, alle grün in beiden Zeitzonen (Stand v1.5.101):
+27 Testdateien, alle grün in beiden Zeitzonen (Stand v1.5.102):
 
 `test_audit_screens` · `test_befehle` · `test_dialog_und_namen` · `test_dosisquelle` · `test_duengeplaene` ·
 `test_endspurt` · `test_entwurf` · `test_ernteabgleich` · `test_ertrag` ·
@@ -442,7 +458,7 @@ cat head.html app.js tail.html | cmp - index.html && echo "BYTE-IDENTISCH OK"
 `test_gussmenge` · `test_gussmove` ·
 `test_gussmove_kombi` · `test_navscroll` · `test_planladen` · `test_planpause` ·
 `test_planrueckgrat` · `test_planzuordnung` · `test_saemling_tage` · `test_sortendauer` · `test_startup` ·
-`test_trichchart` · `test_trichedit` · `test_trichphasen` · `test_vpd` · `test_wochenfolgen`
+`test_training` · `test_trichchart` · `test_trichedit` · `test_trichphasen` · `test_vpd` · `test_wochenfolgen`
 
 **Zeitzonen unter Windows:** `TZ=Europe/Berlin node test.js` wirkt in Git Bash **nicht** —
 `process.env.TZ` bleibt leer und der Test läuft still in der Systemzeitzone. Die

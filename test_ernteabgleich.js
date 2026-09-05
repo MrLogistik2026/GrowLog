@@ -150,6 +150,12 @@ function pruef(name, bedingung, info) {
   console.log('E - Einstellungen erklaeren die zweite Zahl');
   {
     const { E, errors } = await load();
+    // `renderSet()` fragt intern `todayISO()`. Ohne festes Datum haengt dieser Abschnitt am
+    // echten Kalendertag: In Pacific/Kiritimati (UTC+14) ist je nach Uhrzeit schon der
+    // naechste Tag, die Messung vom 02.09. damit aelter als drei Tage - und `harvestWindow`
+    // nimmt dann nicht mehr die Trichom-Basis. Der Test schlug deshalb je nach Tageszeit mal
+    // an und mal nicht. Datum also auch hier festnageln.
+    E(`todayISO = function () { return "${HEUTE}"; };`);
     E('S.beginnerMode = false');
     E('renderSet()');
     const txt = E('document.getElementById("scr-set").textContent.replace(/\\s+/g," ")');

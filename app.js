@@ -3244,7 +3244,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.101';
+const APP_VERSION = 'v1.5.102';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -15860,12 +15860,114 @@ async function undoTopping(cId) {
  * Öffnet den Training-Picker als Modal. User wählt eine der 8 Trainings-
  * Methoden (Topping hat eigenen Flow, siehe doTopping) und optional eine Notiz.
  */
+/**
+ * (v1.5.102) Passt diese Trainingsmethode zum heutigen Tag?
+ *
+ * Jede Methode in `T.training` trägt längst ein `phase`-Feld — es wurde nur nirgends
+ * ausgewertet. Der Picker bot deshalb an Tag 113, einen Tag vor dem IceFlush, unverändert
+ * die Sämlings-Haube, FIM, Mainlining und SCROG an, und `pickTrainingType` speicherte die
+ * Wahl kommentarlos ab („✂️ FIM dokumentiert"). Ein Schnitt in der Spülphase kostet die
+ * Ernte; ein Anfänger konnte das der App nicht ansehen.
+ *
+ * Die App kennt die Phase, also beantwortet sie die Frage selbst, statt einen Warntext je
+ * Methode von Hand zu pflegen.
+ *
+ * @returns {null|{passt:'jetzt'|'spaet'|'vorbei'|'zufrueh', warum:string, rat:string}}
+ */
+function _trainingFit(c, iso, type) {
+  const meta = (typeof T !== 'undefined' && T.training) ? T.training[type] : null;
+  if (!c || !meta) return null;
+  const p = (typeof phase === 'function') ? phase(iso, c) : null;
+  const ph = p && p.ph;
+  const tag = (c.startDate && typeof isoDiff === 'function') ? isoDiff(iso, c.startDate) + 1 : null;
+  const bWoche = (ph === 'bloom' && p && p.week) ? p.week : null;
+
+  const vorBluete = ph === 'anzucht' || ph === 'vorzucht' || ph === 'vegi_out' || ph === 'abhärten';
+  const inBluete  = ph === 'bloom';
+  const endspurt  = ph === 'flush' || ph === 'ice';
+  const fertig    = ph === 'harvest' || ph === 'dry' || ph === 'cure';
+
+  const ja   = (warum) => ({ passt: 'jetzt', warum: warum || '', rat: '' });
+  const nein = (stufe, warum, rat) => ({ passt: stufe, warum, rat });
+
+  // Bud-Trimmen ist ein Ernte-Handgriff, kein Training.
+  if (type === 'schucking') {
+    if (fertig) return ja('Genau jetzt — beim Abnehmen der Buds.');
+    return nein('zufrueh', 'Das ist ein Handgriff für den Erntetag, keine Trainingsmethode.',
+      'Kommt dran, wenn du die Buds von den Zweigen nimmst.');
+  }
+
+  // Ab dem Spülstart wird an der Pflanze nicht mehr geschnitten oder gebogen.
+  if (endspurt || fertig) {
+    return nein('vorbei',
+      fertig ? 'Die Pflanze ist geerntet.' : 'Du bist im Endspurt — Spülen und IceFlush laufen.',
+      'Jeder Schnitt und jedes Biegen kostet jetzt Kraft, die in die letzten Tage der Reife gehört. '
+      + 'So kurz vor der Ernte heilen Wunden kaum noch und sind eine Eintrittsstelle für Schimmel. '
+      + 'Merk dir die Methode für den nächsten Zyklus.');
+  }
+
+  // Die Sämlings-Haube schützt nur die ganz junge Pflanze.
+  if (type === 'haube') {
+    if (vorBluete && tag != null && tag <= 14) return ja('Die ersten 7–10 Tage sind genau die Zeit dafür.');
+    if (vorBluete && tag != null && tag <= 24) {
+      return nein('spaet', `Deine Pflanze ist schon ${tag} Tage alt.`,
+        'Ab etwa Tag 10–14 braucht sie die Haube nicht mehr. Zu lange darunter bleibt sie weich und wird anfällig für Schimmel.');
+    }
+    return nein('vorbei', tag != null ? `Die Sämlingszeit ist vorbei (Tag ${tag}).` : 'Die Sämlingszeit ist vorbei.',
+      'Die Haube hält Feuchtigkeit für Keimlinge — eine gestandene Pflanze würde darunter nur schwitzen.');
+  }
+
+  const autoHinweis = (c.seedType === 'auto')
+    ? ' Bei Automatics zählt das doppelt: Sie blühen nach Kalender und holen verlorene Tage nicht wieder auf.'
+    : '';
+
+  // Ab hier entscheidet das `phase`-Feld der Methode.
+  if (meta.phase === 'vegi') {
+    if (vorBluete) return ja('Gute Zeit dafür — die Pflanze hat danach Ruhe zum Erholen.');
+    if (inBluete && bWoche != null && bWoche <= 2) {
+      return nein('spaet', `Die Blüte läuft schon (Woche ${bWoche}).`,
+        'In den ersten Blütewochen streckt sich die Pflanze noch, ein Eingriff ist gerade so vertretbar — sie wirft dich aber um einige Tage zurück.' + autoHinweis);
+    }
+    return nein('vorbei', inBluete ? `Die Blüte ist zu weit (Woche ${bWoche || '?'}).` : 'Der richtige Zeitpunkt ist vorbei.',
+      'Diese Methode gehört in die Wachstumsphase, bevor die Blüte beginnt. Jetzt würde der Schnitt Ertrag kosten statt bringen.' + autoHinweis);
+  }
+
+  if (meta.phase === 'vegi-bloom') {
+    if (vorBluete) return ja('Gute Zeit dafür.');
+    if (inBluete && bWoche != null && bWoche <= 3) return ja('Noch im Rahmen — die Pflanze streckt sich gerade.');
+    if (inBluete && bWoche != null && bWoche <= 5) {
+      return nein('spaet', `Blütewoche ${bWoche} — spät dafür.`,
+        'Ab hier steckt die Pflanze alles in die Blüten. Wenn überhaupt, dann sehr zurückhaltend.' + autoHinweis);
+    }
+    return nein('vorbei', inBluete ? `Blütewoche ${bWoche || '?'} — zu weit.` : 'Der richtige Zeitpunkt ist vorbei.',
+      'In der Spätblüte kann sich die Pflanze von einem Eingriff nicht mehr erholen.' + autoHinweis);
+  }
+
+  if (meta.phase === 'bloom') {
+    if (inBluete && bWoche != null && bWoche <= 4) return ja('Passt — früh in der Blüte ist der richtige Moment.');
+    if (inBluete) {
+      return nein('spaet', `Blütewoche ${bWoche || '?'} — spät dafür.`,
+        'Der Nutzen liegt in den ersten Blütewochen. Jetzt entfernst du Blätter, die die Blüten noch versorgen.' + autoHinweis);
+    }
+    return nein('zufrueh', 'Die Blüte hat noch nicht begonnen.',
+      'Diese Methode wirkt erst, wenn die Blüten ansetzen — sonst nimmst du der Pflanze Blattmasse, die sie zum Wachsen braucht.');
+  }
+
+  return ja('');
+}
+
 async function openTrainingPicker(cId, iso) {
   const c = S.cycles.find(x => x.id === cId);
   if (!c) return;
 
-  // Training-Einträge als Buttons — Topping ausgeschlossen (hat eigenen Flow)
-  const options = Object.entries(T.training).filter(([key]) => key !== 'topping');
+  // Training-Einträge als Buttons — Topping ausgeschlossen (hat eigenen Flow).
+  // (v1.5.102) Passende Methoden zuerst, unpassende darunter mit Begründung. Weggenommen
+  // wird nichts: Wer weiß, was er tut, kommt weiter an jede Methode heran.
+  const _alle = Object.entries(T.training).filter(([key]) => key !== 'topping');
+  const _mitFit = _alle.map(([key, meta]) => [key, meta, _trainingFit(c, iso, key)]);
+  const _passend = _mitFit.filter(([, , f]) => !f || f.passt === 'jetzt');
+  const _unpassend = _mitFit.filter(([, , f]) => f && f.passt !== 'jetzt');
+  const options = _passend.concat(_unpassend);
 
   const overlay = document.createElement('div');
   overlay.setAttribute('data-day-picker', '1');
@@ -15878,17 +15980,31 @@ async function openTrainingPicker(cId, iso) {
         <div style="font-size:15px;font-weight:700;color:var(--text)">🌿 Training hinzufügen</div>
         <div style="font-size:11px;color:var(--text-muted);margin-top:2px">${fmtDE(iso, {day:'2-digit', month:'2-digit', year:'numeric'})}</div>
       </div>
-      <div style="font-size:11px;color:var(--text-hint);margin:12px 0 8px">Welche Methode?</div>
+      <div style="font-size:11px;color:var(--text-hint);margin:12px 0 8px">${
+        _passend.length
+          ? 'Was jetzt sinnvoll ist'
+          : 'Für heute passt keine dieser Methoden — hier stehen sie trotzdem, mit dem Grund'
+      }</div>
       <div style="display:flex;flex-direction:column;gap:6px">
-        ${options.map(([key, meta]) =>
-          `<button onclick="pickTrainingType('${cId}','${iso}','${key}');this.closest('[data-day-picker]').remove()" style="display:flex;align-items:flex-start;gap:10px;width:100%;padding:10px 12px;background:var(--card2);border:0.5px solid var(--border);border-radius:10px;cursor:pointer;font-family:var(--font);color:var(--text);text-align:left">
+        ${options.map(([key, meta, fit], i) => {
+          const schlecht = fit && fit.passt !== 'jetzt';
+          const trenner = (schlecht && i === _passend.length && _passend.length > 0)
+            ? `<div style="font-size:10px;color:var(--text-hint);margin:10px 0 2px;padding-top:8px;border-top:0.5px solid var(--border)">Heute nicht dran</div>`
+            : '';
+          const marke = schlecht
+            ? { vorbei: 'zu spät', spaet: 'spät', zufrueh: 'zu früh' }[fit.passt] || 'unpassend'
+            : null;
+          return trenner + `<button onclick="pickTrainingType('${cId}','${iso}','${key}');this.closest('[data-day-picker]').remove()" style="display:flex;align-items:flex-start;gap:10px;width:100%;padding:10px 12px;background:var(--card2);border:0.5px solid var(--border);border-radius:10px;cursor:pointer;font-family:var(--font);color:var(--text);text-align:left${schlecht ? ';opacity:0.55' : ''}">
             <span style="font-size:18px;flex-shrink:0">${meta.icon}</span>
             <div style="flex:1;min-width:0">
-              <div style="font-size:13px;font-weight:600;margin-bottom:2px">${meta.label}</div>
+              <div style="font-size:13px;font-weight:600;margin-bottom:2px">${meta.label}${
+                marke ? ` <span style="font-size:9px;font-weight:600;color:var(--yellow);border:0.5px solid var(--yellow);border-radius:5px;padding:1px 5px;vertical-align:1px">${marke}</span>` : ''
+              }</div>
               <div style="font-size:10px;color:var(--text-muted);line-height:1.4">${meta.short}</div>
+              ${schlecht ? `<div style="font-size:10px;color:var(--yellow);line-height:1.4;margin-top:3px">${fit.warum}</div>` : ''}
             </div>
-          </button>`
-        ).join('')}
+          </button>`;
+        }).join('')}
       </div>
       <button onclick="this.closest('[data-day-picker]').remove()" style="width:100%;background:transparent;border:none;color:var(--text-muted);padding:12px;font-size:12px;cursor:pointer;font-family:var(--font);margin-top:8px">Abbrechen</button>
     </div>
@@ -15902,10 +16018,26 @@ async function openTrainingPicker(cId, iso) {
  * Fügt das Event direkt zum Zyklus hinzu. Notiz kann der User in den
  * allgemeinen Zyklus-Notizen ergänzen (Flow bleibt schnell, ein Tap).
  */
-function pickTrainingType(cId, iso, type) {
+async function pickTrainingType(cId, iso, type) {
   const c = S.cycles.find(x => x.id === cId);
   const meta = T.training[type];
   if (!c || !meta) return;
+
+  // (v1.5.102) Vorher wurde jede Wahl kommentarlos gespeichert — auch FIM einen Tag vor dem
+  // IceFlush. Passt die Methode nicht zur Phase, kommt die Begründung VOR dem Eintrag.
+  // Verboten wird nichts: Der Grower kennt seinen Grow, er soll nur wissen, was er tut.
+  const fit = (typeof _trainingFit === 'function') ? _trainingFit(c, iso, type) : null;
+  if (fit && fit.passt !== 'jetzt') {
+    const titel = { vorbei: 'Dafür ist es zu spät', spaet: 'Reichlich spät dafür', zufrueh: 'Dafür ist es zu früh' }[fit.passt]
+      || 'Passt gerade nicht';
+    const ok = await customConfirm(
+      `${meta.icon} ${titel}`,
+      `${fit.warum}\n\n${fit.rat}\n\nTrotzdem eintragen?`,
+      'Trotzdem eintragen',
+      fit.passt === 'vorbei' ? 'var(--orange)' : 'var(--yellow)'
+    );
+    if (!ok) return;
+  }
 
   if (!c.trainingEvents) c.trainingEvents = [];
   c.trainingEvents.push({ date: iso, type, notes: '' });
