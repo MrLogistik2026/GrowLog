@@ -2,6 +2,33 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-05 — v1.5.109
+
+- **Die Karte „Dünge-Regeln" unter Tipps gab feste Zahlen aus, die dem eigenen Zustand
+  widersprachen.** Drei der fünf Zeilen waren fest verdrahtet und wussten nichts vom
+  Substrat und nichts vom aktiven Düngeplan:
+  „🎯 pH-Wert: Fertige Mischung **immer auf 6.4**" ist der Erde-Wert. Für Coco gehört der pH
+  auf 5,8–6,2, für Hydro auf 5,5–6,0 — 0,4 bis 0,9 Einheiten tiefer. Wer einen der
+  mitgelieferten Coco-Pläne fährt und dieser Zeile folgt, landet nach `ANBAU.md` 4 im
+  Bereich, in dem Eisen und Mangan schwerlöslich werden. Dabei gibt es `phTargetFor(medium)`
+  im Code ausdrücklich als „die EINE Quelle für alle dynamischen pH-Anzeigen" — die Karte
+  hat sie nur nicht benutzt.
+  „⚗️ Reihenfolge: **Erst CalMag** → umrühren → dann Rest" ist falsch, sobald ein Silikat im
+  Plan steht. Kaliumsilikat ist mit pH 11–12 stark alkalisch; trifft es auf eine Lösung, die
+  schon Calcium enthält, fällt sofort Calciumsilikat aus (`ANBAU.md` 10) — sichtbar als weiße
+  Flocken, und Silizium wie Calcium sind für die Pflanze verloren. Der App-eigene
+  cup_sieger-Plan sagt an seiner eigenen Stelle völlig richtig „Silica Force IMMER zuerst,
+  dann 2–5 Min warten — sonst Calcium-Ausfällung". Die Tipps-Karte sagte das Gegenteil.
+  „📉 Überdüngung: **Bio·Bloom** um 20% reduzieren" nannte ein Produkt aus einem bestimmten
+  BioBizz-Plan als allgemeine Regel — auch für alle, die diesen Plan nicht fahren.
+  Jetzt kommen alle drei aus dem Zustand: das pH-Ziel aus `phTargetFor(c.medium)` samt
+  Nennung des Substrats („das Ziel für Erde"), die Reihenfolge aus `S.mixOrder` des aktiven
+  Plans — mit dem Grund dahinter, wenn der erste Schritt ein Silikat ist —, und die
+  Überdüngungs-Zeile spricht vom „Blütedünger deines Plans" statt von einem fremden Produkt.
+  Läuft kein Plan, steht dort die allgemeine Regel aus `ANBAU.md` 10 statt einer Lücke.
+  Abgesichert durch `test_duengeregeln.js` (13 Prüfungen, beide Zeitzonen) über vier Fälle:
+  Erde, Coco, Hydro und ein Plan mit Silikat an erster Stelle.
+
 ## 2026-09-05 — v1.5.108
 
 - **Die Diagnose begründete ihren Vorschlag mit internen Programmier-Schlüsseln.** Unter

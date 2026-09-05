@@ -3300,7 +3300,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.108';
+const APP_VERSION = 'v1.5.109';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -16496,6 +16496,25 @@ function renderTips() {
   const p4vpd = act.length > 0 ? phase(today, act[0]) : null;
   const gt4vpd = act.length > 0 ? act[0].growType : 'indoor';
   const z = vpdZone(vpd, p4vpd, gt4vpd);
+
+  // (v1.5.109) Die Dünge-Regeln weiter unten kommen aus dem eigenen Zustand statt aus
+  // festen Zahlen. Vorher stand dort ein fester Erde-pH von 6.4 — falsch für jeden Coco-
+  // und Hydro-Plan, obwohl phTargetFor die Quelle dafür ist — und "Erst CalMag", was jedem
+  // Plan mit Silikat widerspricht: Silikat ist stark alkalisch und fällt mit Calcium sofort
+  // als Calciumsilikat aus (ANBAU.md 10). Der aktive Plan sagt an seiner eigenen Stelle
+  // richtig "Silica Force IMMER zuerst" — die Tipps-Karte sagte das Gegenteil.
+  const _regMedien = [...new Set(act.map(c => c.medium || 'erde'))];
+  const _regMed = _regMedien[0] || 'erde';
+  const phZeile = _regMedien.length > 1
+    ? _regMedien.map(m => `${mediumName(m)} auf ${phTargetFor(m).labelComma}`).join(' · ')
+    : `Fertige Mischung auf ${phTargetFor(_regMed).labelComma} einstellen — das Ziel für ${mediumName(_regMed)}`;
+  const _mixErst = (S.mixOrder && S.mixOrder.length) ? S.mixOrder[0] : null;
+  const mixZeile = _mixErst
+    ? `<b>${_mixErst}</b> zuerst ins Wasser → umrühren → dann der Rest in der Reihenfolge deines Plans`
+      + (/silic|silik/i.test(_mixErst)
+          ? ' — Silikat <b>muss</b> zuerst, sonst fällt es mit dem Calcium als weiße Flocken aus, und beides ist für die Pflanze verloren'
+          : '')
+    : 'Nutzt du ein Silikat, kommt das zuerst ins Wasser (2–5 Minuten warten). Dann CalMag → umrühren → dann der Rest.';
   let tips = [];
 
   if (vpd !== null && z) {
@@ -16581,10 +16600,10 @@ function renderTips() {
       </div>
       <div style="display:${S._tipsOpen.duenge ? 'block' : 'none'};padding:0 12px 12px">
       <div style="display:flex;flex-direction:column;gap:6px;font-size:11px;color:var(--text-sub);line-height:1.6">
-        <div>🎯 <b>pH-Wert:</b> Fertige Mischung immer auf 6.4 einstellen (Bereich 6.2–6.4)</div>
-        <div>⚗️ <b>Reihenfolge:</b> Erst CalMag → umrühren → dann Rest der Nährstoffe</div>
+        <div>🎯 <b>pH-Wert:</b> ${phZeile}</div>
+        <div>⚗️ <b>Reihenfolge:</b> ${mixZeile}</div>
         <div>🚿 <b>Drain:</b> 5–10% Drain bei jedem Guss um Salzansammlungen zu vermeiden</div>
-        <div>📉 <b>Überdüngung:</b> Gelbe/braune Blattspitzen? Bio·Bloom um 20% reduzieren</div>
+        <div>📉 <b>Überdüngung:</b> Gelbe/braune Blattspitzen? Den Blütedünger deines Plans um 20 % zurücknehmen</div>
         <div>🧪 <b>EC-Wert:</b> Drain-EC messen. Steigt er über 2.5 → Zwischenguss mit reinem Wasser</div>
       </div>
       </div>

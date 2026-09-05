@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.108** · index.html 2,11 MB · 628 Funktionen
+Stand: **v1.5.109** · index.html 2,11 MB · 628 Funktionen
 Zuletzt fortgeschrieben am 05.09.2026. Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
@@ -16,7 +16,9 @@ Trichom-Messungen zeigt wieder die ganze Reihe (v1.5.105), und der Düngeplan is
 Zurück-Taste aus dem Gieß-Fahrplan nicht mehr leer (v1.5.106). Mit v1.5.107 trennt die
 Diagnose Magnesium und Calcium, statt beide in einem Eintrag am falschen Blattort zu
 führen — der zweite Befund direkt aus `ANBAU.md` (6.1 und 6.2), siehe Abschnitt 3.
-Mit v1.5.108 steht die Begründung der Diagnose in Klartext statt in internen Schlüsseln.
+Mit v1.5.108 steht die Begründung der Diagnose in Klartext statt in internen Schlüsseln,
+und mit v1.5.109 nehmen die Dünge-Regeln pH-Ziel und Mischreihenfolge aus dem eigenen
+Zustand statt aus festen Zahlen.
 
 Grundlage waren drei Durchläufe im echten Browser mit Patricks Daten: erst über alle
 Bildschirme (Abschnitt 2), dann gezielt über die Rechenwege — VPD, Düngedosis, Trichome,
@@ -442,6 +444,38 @@ beim sichtbaren Durchklicken**. Der Wert war im Konsolentest korrekt; er war blo
 niemanden lesbar. Das ist nach v1.5.104 der zweite Fehler, den die mitlaufende Vorschau
 gefunden hat und ein Zahlentest nicht finden konnte.
 
+### Behoben: Die Dünge-Regeln kannten weder Substrat noch Plan (v1.5.109)
+
+Drei der fünf Zeilen in der Tipps-Karte „Dünge-Regeln" waren feste Zahlen: pH „immer auf
+6.4" (der Erde-Wert, für Coco 0,4 und für Hydro 0,9 Einheiten zu hoch), „Erst CalMag" (falsch
+bei jedem Plan mit Silikat — es fällt mit Calcium aus, `ANBAU.md` 10) und ein namentlich
+genanntes BioBizz-Produkt als allgemeine Regel. Alle drei kommen jetzt aus dem Zustand:
+`phTargetFor(c.medium)` fürs pH-Ziel, `S.mixOrder` für den ersten Mischschritt.
+
+**Daraus zu lernen:** Der Widerspruch stand innerhalb derselben App an zwei Stellen — der
+cup_sieger-Plan sagt selbst „Silica Force IMMER zuerst, sonst Calcium-Ausfällung", die
+Tipps-Karte sagte „Erst CalMag". Wo eine allgemeine Karte dasselbe Thema behandelt wie eine
+plan-spezifische Angabe, muss die Karte aus dem Plan lesen — sonst widersprechen sie sich,
+sobald jemand den Plan wechselt.
+
+### Zur Entscheidung: 5–10 % oder 15–25 % Ablauf?
+
+Beim Prüfen aufgefallen, **bewusst nicht geändert**, weil es ein Umbau über acht Stellen wäre.
+Die App empfiehlt durchgängig „5–10 % Drain bei jedem Guss" (Tipps-Karte, Gieß-Leitfaden,
+Tageseintrag, die `drainInfo` mehrerer Pläne, Lexikon, Anfänger-Fragen). Seit v1.5.104 stuft
+`drainFlow` aber nach `ANBAU.md` 5.1 ein: unter 10 % Durchfluss ist eine Ablaufmessung
+**gar keine**, aussagekräftig wird sie erst ab 15 %.
+
+Beides kann richtig sein, weil es zwei verschiedene Dinge sind: 5–10 % ist eine sinnvolle
+**Gieß**praxis für Erde (spült Salze, ohne den Topf dauernass zu halten), 15–25 % ist die
+**Mess**bedingung für einen belastbaren Drain-EC. Nur steht das nirgends, und in der Wirkung
+heißt es: Wer nach den Gieß-Regeln der App gießt, bekommt von der App bei jeder Messung „zu
+wenig Ablauf".
+
+Vorschlag zur Entscheidung: Die Gießempfehlung bleibt bei 5–10 %, aber überall dort, wo eine
+Ablaufmessung eingetragen wird, steht dazu „zum Messen brauchst du diesmal mehr — etwa ein
+Fünftel der Gießmenge". Das ist ein Satz an zwei, drei Stellen statt einer neuen Zahl an acht.
+
 ### Noch nicht geprüft
 
 Der Rest des Tageseintrags (pH-Eingabe, Notiz-Chips, Foto-Anhang), der Outdoor-Pfad und die
@@ -613,9 +647,9 @@ cat head.html app.js tail.html | cmp - index.html && echo "BYTE-IDENTISCH OK"
 **Byte-Identität mit `cmp` ist Pflicht, bevor irgendetwas geändert wird.** Danach wird
 `app.js` geändert, mit `build.sh` neu gebaut und erneut verglichen.
 
-31 Testdateien, alle grün in beiden Zeitzonen (Stand v1.5.108):
+32 Testdateien, alle grün in beiden Zeitzonen (Stand v1.5.109):
 
-`test_audit_screens` · `test_befehle` · `test_dialog_und_namen` · `test_dosisquelle` · `test_drain` · `test_duengeplaene` ·
+`test_audit_screens` · `test_befehle` · `test_dialog_und_namen` · `test_dosisquelle` · `test_drain` · `test_duengeregeln` · `test_duengeplaene` ·
 `test_endspurt` · `test_entwurf` · `test_ernteabgleich` · `test_ertrag` ·
 `test_fixes_0905` ·
 `test_gussmenge` · `test_gussmove` ·
