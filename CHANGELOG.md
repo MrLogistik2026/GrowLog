@@ -16,6 +16,15 @@ Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
   Das Vorziehen des Fortschreibens hat einen belegten Grund: Eine Sitzung endet selten
   geplant, und was beim Abbruch ungeschrieben ist, ist verloren.
 
+- **Hochladen ist jetzt Teil des Ausliefern-Ablaufs.** Bisher endete der Ablauf beim
+  Commit. Da `.github/workflows/static.yml` bei jedem Push auf `main` automatisch bei
+  GitHub Pages veröffentlicht, ist der Push aber genau der Schritt, über den die App auf
+  Patricks Handy kommt — ohne ihn testet er einen alten Stand. Gebunden an vier
+  Bedingungen: `node --check` grün, Tests in beiden Zeitzonen gelaufen, `cmp` schweigt,
+  Versionsnummer an allen drei Stellen gleich. Ist etwas rot, wird committet, aber nicht
+  hochgeladen, und das wird gesagt. Warum die Bindung: Der Workflow lädt das gesamte
+  Repository hoch (`path: '.'`) — ein kaputter Stand ist sofort der Stand auf dem Handy.
+
 - **Ablauf-Schritt 7 zeigte auf einen Ordner, den es nicht gibt.** `ANWEISUNG.md` verlangte,
   die fertige `index.html` nach `/mnt/user-data/outputs/` zu legen und per `present_files`
   bereitzustellen — beides stammt aus der Container-Umgebung vor dem Umzug auf den Laptop

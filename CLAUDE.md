@@ -62,6 +62,33 @@ und oben in `UEBERGABE.md`.
 
 ---
 
+## Hochladen gehört zum Ausliefern dazu
+
+Jeder Push auf `main` löst über `.github/workflows/static.yml` automatisch eine
+Veröffentlichung bei GitHub Pages aus. **Das ist der Weg, auf dem die App aufs Handy
+kommt** — ohne Push testet Patrick einen alten Stand. Deshalb wird nach jeder
+fertigen Änderung committet **und** hochgeladen, ohne Rückfrage (seine Ansage vom
+05.09.2026). Es kostet praktisch nichts.
+
+Hochgeladen wird erst, wenn diese vier Dinge stimmen:
+
+1. `node --check app.js` läuft durch
+2. Die betroffenen Tests sind wirklich gelaufen, in beiden Zeitzonen
+3. `cat head.html app.js tail.html | cmp - index.html` schweigt
+4. `APP_VERSION`, `CHANGELOG.md` und `UEBERGABE.md` nennen dieselbe neue Nummer
+
+Ist etwas davon rot, wird committet, aber **nicht** hochgeladen — und das wird gesagt.
+Ein kaputter Stand auf GitHub Pages ist ein kaputter Stand auf Patricks Handy.
+
+**Der Workflow lädt das gesamte Repository hoch** (`path: '.'`). Alles, was je
+committet wird, ist danach unter der Pages-Adresse direkt abrufbar. Das ist der
+eigentliche Grund für die breite `.gitignore`: Eine versehentlich mitcommittete
+Sicherung läge nicht nur sichtbar auf GitHub, sie wäre per Link herunterladbar.
+Vor jedem Push gilt deshalb: `git status` ansehen, und wenn etwas Unerwartetes
+mitgeht, erst fragen.
+
+---
+
 ## Nach jeder ausgelieferten Änderung — nicht erst am Sitzungsende
 
 Drei Schritte, immer in dieser Reihenfolge, und zwar **sofort nachdem eine Änderung
