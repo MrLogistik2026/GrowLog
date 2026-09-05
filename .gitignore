@@ -1,6 +1,10 @@
 # Abhaengigkeiten - werden nicht hochgeladen
 node_modules/
 
+# Oertliche Werkzeug-Konfiguration. launch.json zeigt auf einen Sitzungs-Temp-Pfad,
+# der nur auf diesem Rechner und nur in dieser Sitzung existiert.
+.claude/
+
 # Sicherungsdateien mit persoenlichen Grow-Daten - NIEMALS ins oeffentliche Repository.
 # Absichtlich breit gefasst: Das Repository ist oeffentlich, und wer den Link zum
 # Testen weitergibt, gibt sonst seine Grow-Daten mit weiter. Lieber eine Datei zu
