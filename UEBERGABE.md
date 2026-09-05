@@ -1,12 +1,13 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.100** · index.html 2,11 MB · 628 Funktionen
+Stand: **v1.5.101** · index.html 2,11 MB · 628 Funktionen
 Zuletzt fortgeschrieben am 05.09.2026. Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
 die Ernte-Kacheln widersprechen der Erntekarte nicht mehr (v1.5.99), und **die Düngermengen
 kamen aus dem falschen Plan, sobald es mehr als einen gab** (v1.5.100 — der schwerste der
-fünf, siehe Abschnitt 3).
+fünf, siehe Abschnitt 3). Dazu warnt die App jetzt vor Kondensation auf dem Blatt, statt
+sie wie leichte Feuchte zu behandeln (v1.5.101).
 
 Grundlage waren zwei Durchläufe im echten Browser mit Patricks Daten: erst über alle
 Bildschirme (Abschnitt 2), dann gezielt über die Rechenwege — VPD, Düngedosis, Trichome
@@ -257,19 +258,20 @@ verschieden sein kann, gilt `getPlanForCycle(c)` — nie `getActivePlan()`.
 - **weekly-split-Teiler.** Wochendosis ÷ (7/Gießintervall), danach die
   Feed-Tag-Kompensation. Rechnerisch korrekt.
 
-### Offen: die VPD-Bewertung unterscheidet nicht zwischen feucht und nass
+### Behoben: die VPD-Bewertung unterschied nicht zwischen feucht und nass (v1.5.101)
 
-`vpdZone` vergibt für **−0,5 · −0,36 · −0,01 · 0 · 0,05** dasselbe Etikett: „Zu feucht ·
-Lüfter an!". Physikalisch ist das ein Unterschied ums Ganze: Ein negatives Blatt-VPD heißt,
-dass Wasser auf dem Blatt **kondensiert** — stehende Nässe auf den Blüten, in der Blüte der
-direkte Weg zu Botrytis. „Lüfter an" ist dafür zu schwach; nötig wäre eine eigene Stufe mit
-konkreter Handlung.
+`vpdZone` vergab für **−0,5 · −0,36 · −0,01 · 0 · 0,05** dasselbe Etikett: „Zu feucht ·
+Lüfter an!". Physikalisch ist das ein Unterschied ums Ganze: Ein Blatt-VPD von 0 oder
+darunter heißt, dass Wasser auf dem Blatt **kondensiert** — stehende Nässe auf den Blüten,
+in der Blüte der direkte Weg zu Botrytis. Es gibt jetzt eine eigene rote Stufe „Nass —
+Schimmelgefahr" mit Handlung statt Etikett, phasen- und Indoor/Outdoor-abhängig.
+Dazu der Marker-Fix: `Math.max(0, Math.min(95, z.pct))` an beiden Stellen — vorher rutschte
+er bei negativem VPD aus der Skala und war ausgerechnet in der gefährlichsten Lage
+unsichtbar.
 
-Dazu ein Anzeigefehler: Der Marker auf der VPD-Skala wird mit `Math.min(95, z.pct)`
-positioniert (zwei Stellen: im Klima-Block und in der Live-Aktualisierung). Bei negativem
-VPD ist `pct` negativ — der Marker rutscht aus der Skala und ist **unsichtbar**.
-Ausgerechnet in der gefährlichsten Lage zeigt die Anzeige nichts. Fix wäre
-`Math.max(0, Math.min(95, z.pct))`.
+**Daraus zu lernen:** Eine Skala, die nach unten offen ist, braucht am unteren Ende eine
+eigene Aussage. „Zu wenig von etwas Gutem" und „das Gegenteil tritt ein" sind nicht
+dieselbe Kategorie — hier war es der Unterschied zwischen trägem Wachstum und Schimmel.
 
 ### Noch nicht geprüft
 
@@ -432,7 +434,7 @@ cat head.html app.js tail.html | cmp - index.html && echo "BYTE-IDENTISCH OK"
 **Byte-Identität mit `cmp` ist Pflicht, bevor irgendetwas geändert wird.** Danach wird
 `app.js` geändert, mit `build.sh` neu gebaut und erneut verglichen.
 
-25 Testdateien, alle grün in beiden Zeitzonen (Stand v1.5.100):
+26 Testdateien, alle grün in beiden Zeitzonen (Stand v1.5.101):
 
 `test_audit_screens` · `test_befehle` · `test_dialog_und_namen` · `test_dosisquelle` · `test_duengeplaene` ·
 `test_endspurt` · `test_entwurf` · `test_ernteabgleich` · `test_ertrag` ·
@@ -440,7 +442,7 @@ cat head.html app.js tail.html | cmp - index.html && echo "BYTE-IDENTISCH OK"
 `test_gussmenge` · `test_gussmove` ·
 `test_gussmove_kombi` · `test_navscroll` · `test_planladen` · `test_planpause` ·
 `test_planrueckgrat` · `test_planzuordnung` · `test_saemling_tage` · `test_sortendauer` · `test_startup` ·
-`test_trichchart` · `test_trichedit` · `test_trichphasen` · `test_wochenfolgen`
+`test_trichchart` · `test_trichedit` · `test_trichphasen` · `test_vpd` · `test_wochenfolgen`
 
 **Zeitzonen unter Windows:** `TZ=Europe/Berlin node test.js` wirkt in Git Bash **nicht** —
 `process.env.TZ` bleibt leer und der Test läuft still in der Systemzeitzone. Die

@@ -2,6 +2,31 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-05 — v1.5.101
+
+- **Kondensation auf dem Blatt heißt nicht mehr nur „zu feucht".** `vpdZone` vergab für
+  −0,5 · −0,36 · −0,01 · 0 und 0,05 dasselbe Etikett: „Zu feucht · Lüfter an!". Ein
+  Blatt-VPD von 0 oder darunter bedeutet aber, dass die Luft am kühleren Blatt gesättigt ist
+  und sich **Wasser niederschlägt** — stehende Nässe auf den Blüten, in der Blüte der
+  direkte Weg zu Botrytis. Neu ist dafür eine eigene, rote Stufe „Nass — Schimmelgefahr" mit
+  Handlungsanweisung statt Etikett: entfeuchten, Luft bewegen, Temperatur um 2–3 °C anheben.
+  In der Blüte kommt der Zusatz dazu, jetzt täglich die dichten Blüten auf graue, matschige
+  Stellen zu prüfen, weil Schimmel dort binnen Stunden entsteht. Outdoor rät der Text nicht
+  zu Geräten, die es dort nicht gibt, sondern zum Abschütteln nach Regen und Nebel.
+  Ab 0,05 bleibt alles wie bisher — die neue Stufe ist eine Ergänzung, keine Verschiebung.
+
+- **Der VPD-Marker verschwand ausgerechnet bei Gefahr aus der Skala.** Er wurde mit
+  `Math.min(95, z.pct)` positioniert; bei negativem VPD ist `pct` negativ, der Marker
+  rutschte also nach links aus dem Balken. Jetzt `Math.max(0, Math.min(95, z.pct))`, an
+  beiden Stellen (Klima-Block und Live-Aktualisierung).
+
+- **Die VPD-Formel selbst ist nachgerechnet und unverändert.** `_svp` ist die
+  Magnus-Gleichung, `calcVPD` das Blatt-VPD daraus. 14 Wertepaare gegen eine unabhängig
+  ausgeschriebene Referenz geprüft, darunter 0 °C, −5 °C, 40 °C, 0 % und 100 % Luftfeuchte —
+  alle deckungsgleich, ebenso die Beispielwerte im Codekommentar. Das steht jetzt als Test
+  fest, weil an dieser Formel Gießmenge, Klimabewertung und Trocknungsprognose hängen.
+  `test_vpd.js`, 24 Prüfungen, beide Zeitzonen.
+
 ## 2026-09-05 — v1.5.100
 
 - **Die Düngermengen kamen aus dem falschen Plan, sobald es mehr als einen gab.**

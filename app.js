@@ -3244,7 +3244,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.100';
+const APP_VERSION = 'v1.5.101';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -12852,6 +12852,22 @@ function vpdZone(v, phaseInfo, growType) {
   // Die VPD-Skala ist universal, aber der Status ✓/⚠ hängt von der Phase ab.
   // Sämling will 0.4–0.8 — bei 1.0 ist das "zu hoch" obwohl es in Vegi/Blüte ok wäre.
   // Vegi will 0.8–1.2. Blüte will 1.0–1.6. Späte Blüte will 1.4–1.6.
+  // (v1.5.101) Bei einem Blatt-VPD von 0 oder darunter ist die Luft am kühleren Blatt
+  // bereits gesättigt: Es schlägt sich WASSER NIEDER. Das ist kein „etwas zu feucht" mehr,
+  // sondern stehende Nässe auf den Blüten — in der Blüte der direkte Weg zu Botrytis.
+  // Vorher bekam dieser Fall dasselbe Etikett wie VPD 0.39: „Zu feucht · Lüfter an!".
+  if (v <= 0) {
+    return {
+      label: 'Nass — Schimmelgefahr',
+      color: '#e06060', bg: '#2a0d0d',
+      hint: outdoor
+        ? 'Am Blatt schlägt sich Wasser nieder. Draußen nicht steuerbar — nach Regen und Nebel die Blüten vorsichtig abschütteln und auf graue, matschige Stellen prüfen.'
+        : (isBloom
+            ? 'Am Blatt schlägt sich Wasser nieder. Sofort entfeuchten, Luft in Bewegung bringen, Temperatur um 2–3 °C anheben. In der Blüte jetzt täglich die dichten Blüten aufdrücken und auf graue, matschige Stellen prüfen — Schimmel entsteht hier binnen Stunden.'
+            : 'Am Blatt schlägt sich Wasser nieder. Sofort entfeuchten, Luft in Bewegung bringen und die Temperatur um 2–3 °C anheben.'),
+      pct: 0,
+    };
+  }
   if (v < 0.4) {
     return { label: 'Zu feucht', color: '#7a7af0', bg: '#1e1e3a', hint: outdoor ? 'Hohe Luftfeuchte — Schimmelrisiko beobachten.' : 'Lüfter an!', pct: v / 0.4 * 15 };
   }
@@ -23525,7 +23541,7 @@ function renderEntry(iso) {
               <div class="vpd-seg" style="background:#1e6e3a"></div>
               <div class="vpd-seg" style="background:#6e4a1e"></div>
             </div>
-            <div class="vpd-mrow"><div class="vpd-marker" id="vpd-m" style="left:${Math.min(95, z.pct)}%"></div></div>
+            <div class="vpd-mrow"><div class="vpd-marker" id="vpd-m" style="left:${Math.max(0, Math.min(95, z.pct))}%"></div></div>
             <div style="display:flex;justify-content:space-between;font-size:8px;color:var(--text-hint)"><span>0.4</span><span>0.8</span><span>1.2</span><span>1.8</span></div>
           </div>
         </div>${(() => {
@@ -26900,7 +26916,9 @@ function uEnv() {
     const vm = document.getElementById('vpd-m');
     if (vv) vv.textContent = v.toFixed(2);
     if (vp) { vp.textContent = z.label; vp.style.background = z.bg; vp.style.color = z.color; }
-    if (vm) vm.style.left = Math.min(95, z.pct) + '%';
+    // (v1.5.101) Untergrenze ergänzt: Bei negativem VPD war `pct` negativ und der Marker
+    // rutschte aus der Skala — ausgerechnet in der gefährlichsten Lage war nichts zu sehen.
+    if (vm) vm.style.left = Math.max(0, Math.min(95, z.pct)) + '%';
   }
 }
 
