@@ -302,6 +302,30 @@ const T = {
     ecWarningLow: ({ inputEc, runoffEc }) =>
       `Runoff-EC ${ecFmt(runoffEc)} ${ecUnitLabel()} ist niedriger als Input ${ecFmt(inputEc)} — Pflanze frisst die Nährstoffe gut. Normal in Stretch & früher Blüte.`,
 
+    // (v1.5.104) Zu wenig Ablauf heißt: gemessen wurde nicht die Wurzelzone.
+    flowTooLow: ({ pct, ml, gegossen, schwach }) =>
+      `Bei diesem Guss sind nur <b>${String(pct).replace('.', ',')} %</b> unten wieder herausgekommen (${Math.round(ml)} ml von ${Math.round(gegossen)} ml). `
+      + `Das ist ${schwach ? 'wenig' : 'zu wenig'}, um daraus etwas abzulesen: Bei so kleinem Durchfluss läuft das Wasser überwiegend am Topfrand entlang, statt durch den Wurzelballen zu ziehen. `
+      + `Was du auffängst, ist dann die konzentrierte Restlösung vom Vorgänger-Guss — sie misst sich <b>systematisch zu hoch</b>. `
+      + `<b>Die Werte werden deshalb nicht bewertet.</b> Für eine belastbare Messung beim nächsten Mal so lange gießen, bis etwa <b>ein Fünftel</b> der Gießmenge unten ankommt `
+      + `(bei ${Math.round(gegossen)} ml also rund ${Math.round(gegossen * 0.2)} ml Ablauf). Erst dann sagen pH und EC etwas über die Erde im Topf.`,
+
+    flowHigh: ({ pct }) =>
+      `<b>${String(pct).replace('.', ',')} % Ablauf</b> — die Messung ist gültig, aber bei so viel Durchfluss spülst du bereits mit. `
+      + `Der niedrige Wert unten ist deshalb teilweise dein eigenes Gießwasser und nicht nur der Zustand der Wurzelzone. Zum reinen Messen reicht ein Fünftel.`,
+
+    // (v1.5.104) Organisches Substrat, zweite Blütehälfte: derselbe Messwert hat zwei mögliche
+    // Ursachen. Beide nennen und das Unterscheidungskriterium mitliefern.
+    ecHighOrganic: ({ inputEc, runoffEc, ecMax, flow }) =>
+      `Runoff-EC ${ecFmt(runoffEc)} ${ecUnitLabel()} liegt über dem Zielbereich${ecMax ? ` (bis ${ecFmt(ecMax)})` : ''}. `
+      + `In Erde und in dieser Phase hat das <b>zwei mögliche Ursachen</b>, und der Messwert allein unterscheidet sie nicht:<br><br>`
+      + `<b>1 · Es sammelt sich wirklich Salz an.</b> Dann steigt der Wert schon seit Wochen, und die Pflanze zeigt Symptome — verbrannte, eingerollte Blattspitzen, fleckige Vergilbung.<br>`
+      + `<b>2 · Die Erde gibt nach und die Pflanze nimmt weniger auf.</b> Organisch gebundene Nährstoffe werden bis zuletzt aufgeschlossen, während die Pflanze zum Ende hin die Aufnahme zurückfährt. Der Rest bleibt im Topf. Dann steigt der Wert <b>erst spät</b>, die Blätter vergilben <b>gleichmäßig von unten nach oben</b>, und die Pflanze sieht sonst gesund aus.<br><br>`
+      + `<b>Der zweite Fall ist normal und braucht nichts.</b> Er ist in der Spätblüte sogar erwünscht — die Pflanze holt sich den Stickstoff aus den alten Blättern.<br><br>`
+      + `<b>So trennst du die beiden:</b> Sieh dir die Blätter an, nicht die Zahl. Gleichmäßige Vergilbung von unten ohne verbrannte Spitzen spricht für Fall 2 — dann nicht spülen, das würde ihr die Reserve nehmen. `
+      + `Verbrannte Spitzen oder fleckige Blätter sprechen für Fall 1 — dann beim nächsten Guss mehr Volumen mit der normalen Nährlösung geben, bis reichlich unten herausläuft.`
+      + (flow && flow.pct < 20 ? `<br><br><span style="color:var(--text-hint)">Hinweis: Mit ${String(flow.pct).replace('.', ',')} % Ablauf ist die Messung gerade noch gültig, liegt aber am unteren Rand. Beim nächsten Mal etwas mehr Durchfluss macht sie sicherer.</span>` : ''),
+
     // Runoff-pH-Analyse
     phLabel: ({ delta, medium }) => {
       if (delta === null || delta === undefined) return 'pH-Differenz unbekannt';
@@ -1551,7 +1575,7 @@ function buildDiagnosticContext(c, iso = null) {
 
   // Runoff-Analyse aus letztem Entry
   if (latestEntry) {
-    const ra = analyzeRunoff(latestEntry.cd, c.medium, _ecTargetFor(c, latestEntry.iso || iso));
+    const ra = analyzeRunoff(latestEntry.cd, c.medium, _ecTargetFor(c, latestEntry.iso || iso), { c, iso: latestEntry.iso || iso });
     if (ra.ecStatus === 'warning-high') result.ecDeltaPos = true;
     if (ra.ecStatus === 'warning-low') result.ecDeltaNeg = true;
     if (ra.phStatus === 'warning-high') result.runoffDriftHigh = true;
@@ -3244,7 +3268,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.103';
+const APP_VERSION = 'v1.5.104';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -7592,9 +7616,59 @@ function _ecTargetFor(c, iso) {
   } catch (e) { return null; }
 }
 
-function analyzeRunoff(cd, medium, ecTarget) {
+/**
+ * (v1.5.104) Wie aussagekräftig ist diese Ablaufmessung überhaupt?
+ *
+ * Grundlage ist `ANBAU.md`, Abschnitt 5.1: Ein Drain-EC bei 5 % Durchfluss ist keine
+ * schlechte Messung, sondern gar keine. Was da unten herausläuft, ist dann eine
+ * Randfraktion — Wasser, das an der Topfwand entlanggelaufen ist, ohne die Wurzelzone zu
+ * durchqueren. Solche Proben liegen systematisch zu hoch, weil sie die konzentrierte
+ * Restlösung am Topfboden mitnehmen.
+ *
+ * Bis v1.5.103 bewertete die App jeden eingetragenen Drain-EC gleich, egal aus wie viel
+ * Durchfluss er stammte — und konnte es auch nicht anders, weil die Ablaufmenge nirgends
+ * erfasst wurde.
+ *
+ * @returns {null|{ml,gegossen,pct,guete,kurz,gueltig}} null, wenn die Menge fehlt
+ */
+function drainFlow(cd) {
+  if (!cd) return null;
+  const ml = parseFloat(cd.drainMl);
+  const gegossen = parseFloat(cd.water);
+  if (!isFinite(ml) || ml < 0) return null;
+  if (!isFinite(gegossen) || gegossen <= 0) return null;
+  const pct = Math.round((ml / gegossen) * 1000) / 10;
+  let guete, kurz;
+  if (pct < 10)       { guete = 'keine';        kurz = 'zu wenig Ablauf'; }
+  else if (pct < 15)  { guete = 'schwach';      kurz = 'wenig Ablauf'; }
+  else if (pct <= 30) { guete = 'gut';          kurz = 'aussagekräftig'; }
+  else                { guete = 'auswaschend';  kurz = 'viel Ablauf'; }
+  return { ml, gegossen, pct, guete, kurz, gueltig: (guete === 'gut' || guete === 'auswaschend') };
+}
+
+/**
+ * (v1.5.104) Steht die Pflanze in einem organischen Substrat in der zweiten Blütehälfte?
+ *
+ * Dort hat ein steigender Drain-EC zwei mögliche Ursachen, die sich nicht am Messwert
+ * unterscheiden lassen (`ANBAU.md` 5.1): Anreicherung durch Überdüngung — oder
+ * Mineralisierung und nachlassende Aufnahme in der Seneszenz. Die App darf dann nicht auf
+ * eine der beiden schließen, sondern nennt beide mit dem Unterscheidungskriterium.
+ */
+function _organischSpaetbluete(c, iso) {
+  if (!c || !iso) return false;
+  const med = c.medium || 'erde';
+  if (med === 'coco' || med === 'hydro') return false;   // inert, kein Mineralisierungsanteil
+  try {
+    const p = (typeof phase === 'function') ? phase(iso, c) : null;
+    if (!p) return false;
+    if (p.ph === 'flush' || p.ph === 'ice') return true;
+    return p.ph === 'bloom' && (p.week || 0) >= 5;
+  } catch (e) { return false; }
+}
+
+function analyzeRunoff(cd, medium, ecTarget, ctx) {
   if (!cd) {
-    return { hasRunoff: false, ecDelta: null, phDelta: null, ecStatus: null, phStatus: null, ecLabel: '', phLabel: '', warnings: [] };
+    return { hasRunoff: false, ecDelta: null, phDelta: null, ecStatus: null, phStatus: null, ecLabel: '', phLabel: '', warnings: [], flow: null };
   }
 
   const inputPh = parseFloat(cd.ph);
@@ -7636,32 +7710,60 @@ function analyzeRunoff(cd, medium, ecTarget) {
     else phStatus = 'ok';
   }
 
+  // (v1.5.104) VALIDITÄT VOR BEWERTUNG. Ohne genug Durchfluss misst der Ablauf nicht die
+  // Wurzelzone. Dann wird der Wert nicht interpretiert, sondern eingeordnet — die richtige
+  // Ausgabe ist ein Hinweis, keine Warnung (`ANBAU.md` 5.1).
+  const flow = drainFlow(cd);
+  const _ecUngueltig = !!(flow && !flow.gueltig && hasRunoffEc);
+  const _organisch = !!(ctx && _organischSpaetbluete(ctx.c, ctx.iso));
+
   // Warnungen sammeln (nur die wichtigen)
   const warnings = [];
-  if (ecStatus === 'warning-high') {
-    warnings.push(T.runoff.ecWarningHigh({ inputEc, runoffEc, ecMax: _ecMax }));
-  }
-  if (ecStatus === 'rising-ok') {
+  if (_ecUngueltig) {
+    warnings.push(T.runoff.flowTooLow({ pct: flow.pct, ml: flow.ml, gegossen: flow.gegossen, schwach: flow.guete === 'schwach' }));
+  } else if (ecStatus === 'warning-high') {
+    // Im organischen Substrat der Spätblüte hat derselbe Messwert zwei mögliche Ursachen.
+    // Beide nennen, mit dem Kriterium zur Unterscheidung — statt auf eine zu schließen.
+    warnings.push(_organisch
+      ? T.runoff.ecHighOrganic({ inputEc, runoffEc, ecMax: _ecMax, flow })
+      : T.runoff.ecWarningHigh({ inputEc, runoffEc, ecMax: _ecMax }));
+  } else if (ecStatus === 'rising-ok') {
     warnings.push(T.runoff.ecRisingOk({ inputEc, runoffEc, ecMax: _ecMax }));
-  }
-  if (ecStatus === 'warning-low') {
+  } else if (ecStatus === 'warning-low') {
     warnings.push(T.runoff.ecWarningLow({ inputEc, runoffEc }));
   }
-  if (phStatus === 'warning-high') {
+  // Sehr hoher Durchfluss ist gültig, aber er wäscht bereits aus — das gehört gesagt,
+  // damit niemand den niedrigen Wert für eine gute Nachricht hält.
+  if (flow && flow.guete === 'auswaschend' && hasRunoffEc) {
+    warnings.push(T.runoff.flowHigh({ pct: flow.pct }));
+  }
+  // (v1.5.104) Auch der Drain-pH braucht Durchfluss. `ANBAU.md` 4.1 nennt „fehlender oder
+  // minimaler Drain" ausdrücklich als Grund, warum ein abweichender Wert kein Befund ist —
+  // gemessen wird dann eine Randfraktion, nicht das Gleichgewicht der Wurzelzone.
+  const _phUngueltig = !!(flow && !flow.gueltig && hasRunoffPh);
+  if (!_phUngueltig && phStatus === 'warning-high') {
     warnings.push(T.runoff.phWarningHigh({ inputPh, runoffPh, medium }));
   }
-  if (phStatus === 'warning-low') {
+  if (!_phUngueltig && phStatus === 'warning-low') {
     warnings.push(T.runoff.phWarningLow({ inputPh, runoffPh, medium }));
+  }
+  // Der Validitätshinweis steht nur einmal, auch wenn beide Werte betroffen sind.
+  if (_phUngueltig && !_ecUngueltig) {
+    warnings.push(T.runoff.flowTooLow({ pct: flow.pct, ml: flow.ml, gegossen: flow.gegossen, schwach: flow.guete === 'schwach' }));
   }
 
   // (v1.4.75) Medium-abhängige Schwere für die Farbgebung: In gepufferter Erde ist eine
   // pH-Abweichung meist der Puffer → „info" (ruhige Farbe). In inertem Coco/Hydro ist es ein
   // echtes Warnsignal → „warning" (orange). Ohne Medium → Erde-Variante (info).
-  const phSeverity = phStatus === 'ok' ? 'ok'
+  // (v1.5.104) Eine ungültige Messung ist kein Alarm, sondern ein Hinweis — sonst bliebe die
+  // Box orange, obwohl gerade gar nichts über die Wurzelzone bekannt ist.
+  const phSeverity = _phUngueltig ? 'info'
+    : phStatus === 'ok' ? 'ok'
     : (phStatus === 'warning-high' || phStatus === 'warning-low')
       ? ((medium === 'coco' || medium === 'hydro') ? 'warning' : 'info')
       : null;
-  const ecSeverity = ecStatus === 'ok' ? 'ok'
+  const ecSeverity = _ecUngueltig ? 'info'
+    : ecStatus === 'ok' ? 'ok'
     : (ecStatus === 'warning-high' || ecStatus === 'warning-low') ? 'warning'
     : null;
   const boxSeverity = (ecSeverity === 'warning' || phSeverity === 'warning') ? 'warning'
@@ -7679,6 +7781,8 @@ function analyzeRunoff(cd, medium, ecTarget) {
     ecLabel: T.runoff.ecLabel({ delta: ecDelta }),
     phLabel: T.runoff.phLabel({ delta: phDelta, medium }),
     warnings,
+    flow,
+    ecGueltig: !_ecUngueltig,
   };
 }
 
@@ -9500,7 +9604,7 @@ function dayDataPreview(iso, opts = {}) {
     }
 
     // Runoff-Diff (kompakt, nur wenn Daten da)
-    const ra = analyzeRunoff(cd, c.medium, _ecTargetFor(c, iso));
+    const ra = analyzeRunoff(cd, c.medium, _ecTargetFor(c, iso), { c, iso });
     if (ra.hasRunoff && (ra.phDelta !== null || ra.ecDelta !== null)) {
       const warn = ra.warnings.length > 0;
       const color = warn ? 'var(--orange)' : 'var(--green)';
@@ -24706,7 +24810,7 @@ function renderEntry(iso) {
           // Diagnose-Tool: Differenz zu Input zeigt was in der Erde passiert.
           // Warning-Box via analyzeRunoff() liefert konkrete Handlungsempfehlung.
           // Im Einsteiger-Modus versteckt — Profi-Feature.
-          const ra = analyzeRunoff(cd, c.medium, _ecTargetFor(c, iso));
+          const ra = analyzeRunoff(cd, c.medium, _ecTargetFor(c, iso), { c, iso });
           const ecColor = _runoffSevColor(ra.ecSeverity);
           const phColor = _runoffSevColor(ra.phSeverity);
           const boxBd = ra.boxSeverity === 'warning' ? 'var(--orange)' : 'rgba(90,171,240,0.5)';
@@ -24742,10 +24846,19 @@ function renderEntry(iso) {
                   <button onclick="stepRunoffEc('${c.id}',1)" class="stepper-btn">+</button>
                 </div>
               </div>
+              <div>
+                <div style="font-size:10px;color:var(--text-hint);margin-bottom:2px">Ablauf (ml)</div>
+                <div style="display:flex;align-items:center;gap:3px">
+                  <input class="inp-field" type="number" step="10" min="0" max="20000" id="runoff-ml-${c.id}" value="${cd.drainMl || ''}" placeholder="${cd.water ? Math.round(parseFloat(cd.water) * 0.2) : '—'}"
+                    style="width:58px;font-size:15px;font-weight:600;font-family:var(--mono);text-align:center;padding:6px 2px;border-color:${ra.flow ? (ra.flow.gueltig ? 'var(--green-dk)' : 'var(--yellow)') : 'var(--border)'}"
+                    oninput="uEF('${c.id}','drainMl',this.value);refreshRunoffAnalysis('${c.id}')"/>
+                </div>
+              </div>
               <div id="runoff-delta-${c.id}" style="flex:1;text-align:right;font-size:10px;color:var(--text-hint);line-height:1.4">
                 ${hasDiff ? `Δ pH ${ra.phDelta !== null ? (ra.phDelta > 0 ? '+' : '') + ra.phDelta.toFixed(1) : '—'}<br>Δ EC ${ra.ecDelta !== null ? (ra.ecDelta > 0 ? '+' : '') + ra.ecDelta.toFixed(1) : '—'}` : 'Drain-Wasser messen'}
               </div>
             </div>
+            <div id="runoff-flow-${c.id}">${_runoffFlowLine(ra, cd)}</div>
             <div id="runoff-warn-${c.id}">${ra.warnings.length > 0 ? ra.warnings.map(w =>
               _foldNote(w, `background:${boxBg};border-left:2px solid ${boxBd};padding:8px 10px;border-radius:6px;font-size:11px;line-height:1.5;color:var(--text-sub);margin-top:4px`)
             ).join('') : ''}</div>
@@ -26866,7 +26979,7 @@ function refreshRunoffAnalysis(cId) {
   const cd = S.entries[editISO] && S.entries[editISO].cycleData && S.entries[editISO].cycleData[cId];
   if (!cd) return;
   const _rc = S.cycles.find(x => x.id === cId);
-  const ra = analyzeRunoff(cd, (_rc || {}).medium, _ecTargetFor(_rc, editISO));
+  const ra = analyzeRunoff(cd, (_rc || {}).medium, _ecTargetFor(_rc, editISO), { c: _rc, iso: editISO });
   const ecColor = _runoffSevColor(ra.ecSeverity);
   const phColor = _runoffSevColor(ra.phSeverity);
   const boxBd = ra.boxSeverity === 'warning' ? 'var(--orange)' : 'rgba(90,171,240,0.5)';
@@ -26882,6 +26995,37 @@ function refreshRunoffAnalysis(cId) {
   if (phEl) phEl.style.borderColor = phColor !== 'var(--text-hint)' ? phColor : 'var(--border)';
   const ecEl = document.getElementById('runoff-ec-' + cId);
   if (ecEl) ecEl.style.borderColor = ecColor !== 'var(--text-hint)' ? ecColor : 'var(--border)';
+  // (v1.5.104) Die Durchfluss-Zeile muss mitziehen — sonst steht beim Tippen die alte
+  // Aussage über der neuen Auswertung.
+  const fl = document.getElementById('runoff-flow-' + cId);
+  if (fl) fl.innerHTML = _runoffFlowLine(ra, cd);
+  const mlEl = document.getElementById('runoff-ml-' + cId);
+  if (mlEl) mlEl.style.borderColor = ra.flow ? (ra.flow.gueltig ? 'var(--green-dk)' : 'var(--yellow)') : 'var(--border)';
+}
+
+/**
+ * (v1.5.104) Die Durchfluss-Zeile unter den Runoff-Feldern.
+ *
+ * Eigene Funktion, weil sie an zwei Stellen gebraucht wird: beim vollen Rendern des
+ * Eintrags und beim Nachziehen während der Eingabe. Als sie nur im Render-Zweig stand,
+ * blieb beim Tippen die alte Zeile („Ohne Ablaufmenge …") über der neuen Auswertung stehen.
+ */
+function _runoffFlowLine(ra, cd) {
+  if (!ra || !ra.flow) {
+    return (cd && (cd.runoffPh || cd.runoffEc))
+      ? `<div style="font-size:10px;color:var(--yellow);padding:0 4px;line-height:1.45">⚠ Ohne Ablaufmenge lässt sich nicht sagen, ob die Messung etwas taugt — trag sie oben ein.</div>`
+      : `<div style="font-size:10px;color:var(--text-hint);padding:0 4px;line-height:1.45">Auffangen, messen, Menge eintragen. Erst ab etwa einem Fünftel Ablauf sagen pH und EC etwas über die Erde im Topf.</div>`;
+  }
+  const f = ra.flow;
+  const farbe = f.guete === 'gut' ? 'var(--green)'
+    : (f.guete === 'auswaschend' ? 'rgba(90,171,240,0.85)' : 'var(--yellow)');
+  const wort = {
+    keine: 'zu wenig für eine Aussage',
+    schwach: 'knapp — Werte eher zu hoch',
+    gut: 'aussagekräftig',
+    auswaschend: 'viel — spült schon mit',
+  }[f.guete];
+  return `<div style="font-size:10px;color:${farbe};padding:0 4px;line-height:1.45">Durchfluss <b>${String(f.pct).replace('.', ',')} %</b> · ${wort}</div>`;
 }
 
 /** Step Runoff-pH (0.1 steps), analog zu stepPH */

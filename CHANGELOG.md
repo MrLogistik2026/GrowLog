@@ -2,6 +2,48 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-05 — v1.5.104
+
+- **Die Ablaufmessung wird nicht mehr bewertet, bevor feststeht, dass sie etwas misst.**
+  Grundlage ist `ANBAU.md` 5.1: Ein Drain-EC bei 5 % Durchfluss ist keine schlechte Messung,
+  sondern gar keine. Bei so kleinem Durchfluss läuft das Wasser überwiegend am Topfrand
+  entlang, statt den Wurzelballen zu durchqueren; was unten ankommt, ist die konzentrierte
+  Restlösung des vorigen Gusses und misst sich systematisch zu hoch. Die App bewertete bisher
+  jeden eingetragenen Wert gleich — und konnte es auch nicht anders, weil die Ablaufmenge
+  nirgends erfasst wurde.
+  Neu ist das Feld **„Ablauf (ml)"** neben Drain-pH und Drain-EC, mit einem Vorschlagswert von
+  einem Fünftel der Gießmenge, sowie `drainFlow(cd)` als Einstufung: unter 10 % keine Aussage,
+  10–15 % schwach, 15–30 % gültig, darüber gültig aber bereits auswaschend. Unter der
+  Eingabezeile steht das Ergebnis dauerhaft („Durchfluss 20 % · aussagekräftig"), nicht in
+  einer wegklickbaren Warnung.
+  Ist die Messung ungültig, unterbleiben **beide** Bewertungen — auch die des Drain-pH, den
+  `ANBAU.md` 4.1 aus demselben Grund nennt. Stattdessen steht dort, wie viel Ablauf beim
+  nächsten Mal nötig wäre, in Millilitern ausgerechnet. Die Box bleibt dabei blau statt
+  orange: Eine unbekannte Lage ist kein Alarm.
+
+- **Ein hoher Drain-EC in organischer Spätblüte bekommt keine Diagnose mehr, sondern zwei
+  Erklärungen.** Dort laufen zwei Prozesse gegenläufig zur naheliegenden Deutung
+  (`ANBAU.md` 5.1): Organisch gebundene Nährstoffe werden bis zuletzt mineralisiert, und die
+  Pflanze fährt in der Seneszenz die Aufnahme zurück. Beides hebt den Ablaufwert, ohne dass
+  überdüngt wurde. Am Messwert sind die Fälle nicht zu unterscheiden — an der Pflanze schon.
+  Die App nennt jetzt beide Ursachen und liefert das Kriterium mit: gleichmäßige Vergilbung
+  von unten ohne verbrannte Spitzen spricht für Seneszenz (nicht spülen, das nähme ihr die
+  Reserve), fleckige Blätter oder Spitzenbrand für echte Anreicherung. In Coco und Hydro
+  bleibt die klare Ansage, weil es dort keinen Mineralisierungsanteil gibt.
+  Warum das nötig war: Ohne diese Unterscheidung meldet die App bei jedem organischen Grow ab
+  Blütewoche 5 einen Fehler, den es nicht gibt.
+
+- **Beim sichtbaren Durchklicken gefunden und mitbehoben:** Die Durchfluss-Zeile stand nur im
+  Render-Zweig. Beim Tippen in das neue Feld aktualisierte sich zwar die Auswertung darunter,
+  die Zeile darüber behielt aber ihren alten Text („Ohne Ablaufmenge lässt sich nicht
+  sagen…"). Sie ist jetzt eine eigene Funktion `_runoffFlowLine`, die beide Wege benutzen.
+  In einem reinen Konsolentest wäre das nicht aufgefallen.
+
+  Abgesichert durch `test_drain.js` (45 Prüfungen, beide Zeitzonen): die sieben Stufen der
+  Durchfluss-Einteilung, das Ausbleiben und Wiederkommen der Bewertung, die
+  Differenzialdiagnose samt Gegenprobe in Coco und in früher Blüte, Randfälle (0 ml, negativ,
+  Buchstaben, mehr Ablauf als gegossen, fehlende Gießmenge) und das Mitziehen der Anzeigezeile.
+
 ## 2026-09-05 — v1.5.103
 
 - **Eine gespeicherte Pflanzenzahl konnte größer sein als die Zahl der Pflanzen.**

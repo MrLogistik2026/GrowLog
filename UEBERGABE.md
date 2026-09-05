@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.103** · index.html 2,11 MB · 628 Funktionen
+Stand: **v1.5.104** · index.html 2,11 MB · 628 Funktionen
 Zuletzt fortgeschrieben am 05.09.2026. Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
@@ -9,7 +9,9 @@ kamen aus dem falschen Plan, sobald es mehr als einen gab** (v1.5.100 — der sc
 fünf, siehe Abschnitt 3). Dazu warnt die App vor Kondensation auf dem Blatt, statt sie wie
 leichte Feuchte zu behandeln (v1.5.101), Trainings werden nur noch passend zur
 Wachstumsphase angeboten (v1.5.102), und eine gespeicherte Pflanzenzahl kann nicht mehr
-größer sein als die Zahl der Pflanzen (v1.5.103).
+größer sein als die Zahl der Pflanzen (v1.5.103). Mit v1.5.104 wird die Ablaufmessung erst
+auf ihre Gültigkeit geprüft, bevor sie bewertet wird — die erste Änderung, die direkt aus
+`ANBAU.md` folgt.
 
 Grundlage waren drei Durchläufe im echten Browser mit Patricks Daten: erst über alle
 Bildschirme (Abschnitt 2), dann gezielt über die Rechenwege — VPD, Düngedosis, Trichome,
@@ -358,10 +360,44 @@ und für einen Erde-Grow erscheinen Coco-Texte und Coco-Schwellen. Das sah nach 
 Fehler aus und war keiner. **Regel: Vor jedem Prüfaufruf die Signatur nachlesen.** Ein
 gemeldeter Fehler, den es nicht gibt, kostet mehr Vertrauen als ein übersehener.
 
+### Die App gegen ANBAU.md geprüft (05.09.2026)
+
+Nach Patricks Überarbeitung der Fachgrundlage wurden die dort neu formulierten Regeln gegen
+den Code gehalten. Das Ergebnis spricht für die App:
+
+| Regel in `ANBAU.md` | Stand |
+|---|---|
+| 4.1 Drain-pH über 6,8 ist in gekalktem Torf normal | war bereits richtig — substratabhängig, Kalkpuffer wird erklärt |
+| 8.1 Sättigung bei 900–1000 gilt fürs Einzelblatt, nicht den Bestand | war bereits richtig — Bleaching-Warnung erst ab ~1200 PPFD |
+| 8.2 Thermischer Stress und Photobleaching sind zwei Mechanismen | war bereits getrennt geführt |
+| 11 Griffelbräunung ist kein Reifekriterium | stand bereits wörtlich so drin |
+| 5 ppm nur mit Skalenangabe | war bereits richtig — intern mS/cm, Skala 500/700 wählbar |
+| **5.1 Drain-EC braucht eine Validitätsprüfung** | **fehlte — behoben in v1.5.104** |
+
+**Bemerkenswert:** Bei der Lichtsättigung war meine erste Fassung von `ANBAU.md` falsch und
+die App richtig. Patricks Überarbeitung hat das korrigiert. Die Fachgrundlage ist also
+keine Einbahnstraße — sie wird auch am Code geprüft, nicht nur der Code an ihr.
+
+### Behoben: Ablaufmessung ohne Gültigkeitsprüfung (v1.5.104)
+
+Die App bewertete jeden eingetragenen Drain-Wert gleich, egal aus wie viel Durchfluss er
+stammte — und konnte es auch nicht anders, weil die Ablaufmenge nirgends erfasst wurde. Neu
+sind das Feld „Ablauf (ml)", `drainFlow(cd)` mit den vier Stufen aus 5.1, und die
+Zurückhaltung beider Bewertungen (EC **und** pH), solange die Messung nichts aussagt.
+Dazu die Differenzialdiagnose für organische Spätblüte: zwei mögliche Ursachen mit
+Unterscheidungskriterium statt einer Diagnose.
+
+**Daraus zu lernen:** Der Anzeigefehler, dass die Durchfluss-Zeile beim Tippen nicht mitzog,
+fiel **nur beim sichtbaren Durchklicken** auf. Im Konsolentest waren alle Werte korrekt.
+Patricks Vorgabe, die Vorschau beim Prüfen mitlaufen zu lassen, hat sich damit sofort
+bezahlt gemacht.
+
 ### Noch nicht geprüft
 
 Der Rest des Tageseintrags (pH-Eingabe, Notiz-Chips, Foto-Anhang), die Diagnose-Datenbank
-`PROBLEMS`, der Outdoor-Pfad und die Kalender-Ansicht im Detail.
+`PROBLEMS`, der Outdoor-Pfad und die Kalender-Ansicht im Detail. Aus `ANBAU.md` noch offen:
+die Antagonismen aus Abschnitt 6.2 (K/Mg in der Blüte) und die Mischreihenfolge aus
+Abschnitt 10 — beides bisher nicht gegen die Düngeplan-Logik gehalten.
 
 ---
 
@@ -518,9 +554,9 @@ cat head.html app.js tail.html | cmp - index.html && echo "BYTE-IDENTISCH OK"
 **Byte-Identität mit `cmp` ist Pflicht, bevor irgendetwas geändert wird.** Danach wird
 `app.js` geändert, mit `build.sh` neu gebaut und erneut verglichen.
 
-28 Testdateien, alle grün in beiden Zeitzonen (Stand v1.5.103):
+29 Testdateien, alle grün in beiden Zeitzonen (Stand v1.5.104):
 
-`test_audit_screens` · `test_befehle` · `test_dialog_und_namen` · `test_dosisquelle` · `test_duengeplaene` ·
+`test_audit_screens` · `test_befehle` · `test_dialog_und_namen` · `test_dosisquelle` · `test_drain` · `test_duengeplaene` ·
 `test_endspurt` · `test_entwurf` · `test_ernteabgleich` · `test_ertrag` ·
 `test_fixes_0905` ·
 `test_gussmenge` · `test_gussmove` ·
