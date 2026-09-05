@@ -2,6 +2,42 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-05 — v1.5.99
+
+- **Erfasste Ernteerträge waren an zwei Stellen gespeichert und wurden nur an einer
+  gelesen.** Die Einzelernte in der Pflanzenliste schreibt seit v1.5.54
+  `plants[].yieldWet/yieldDry`, das ältere Formular in den Einstellungen dagegen
+  `c.plantHarvest[id].wetG/dryG`. `getPlantHarvest` und `getTotalHarvest` kannten nur den
+  älteren Ort. Folge bei Patricks echtem Stand: 37 g trocken und 195 g nass aus Pflanze 5
+  waren erfasst, die Einstellungen meldeten „noch nichts erfasst", und die Zyklus-Bilanz
+  wies überhaupt kein Erntegewicht aus — `cycleStats().harvestWeight` war null, `g/Pflanze`
+  fehlte ganz. Beide Funktionen lesen jetzt aus beiden Quellen; steht dieselbe Pflanze in
+  beiden, gewinnt der Wert an der Pflanze und wird nicht doppelt gezählt.
+  Der gefährlichere Teil war das Schreiben: Eine Eingabe im Einstellungs-Formular hätte
+  eine **zweite** Zahl für dieselbe Pflanze angelegt, ohne dass jemand sagen könnte, welche
+  gilt. `setPlantHarvest` schreibt Gewichte deshalb jetzt an die Pflanze — dorthin, wo auch
+  der andere Eingabeweg schreibt — und räumt einen etwaigen Altwert derselben Pflanze ab.
+  Warum `plants` gewinnt: Es ist bereits die Quelle der Wahrheit für die Pflanzenzahl
+  (`c.plantCount = c.plants.length`); zwei Wahrheiten für dieselbe Sache waren genau das
+  Problem. Zyklen ohne `plants`-Array und das ganz alte `c.harvestWeight` funktionieren
+  unverändert weiter.
+  Abgesichert durch `test_ertrag.js` (30 Prüfungen, beide Zeitzonen), darunter die
+  Gegenproben gegen Doppelzählung, gegen Datenverlust bei verwaisten Alt-Einträgen und für
+  beide Rückfall-Ebenen.
+
+- **Die Ernte-Kacheln auf dem Dashboard widersprachen der Erntekarte darüber nicht mehr.**
+  Die Karte sagt seit v1.5.97 „richte dich nach der Messung", zwei Zentimeter darunter stand
+  aber weiter „Ernte in 3 ±5d" und „Erntedatum 08. Sept." aus dem Plan. Beim Überfliegen
+  gewinnt die große Zahl. Nennt die eigene Trichom-Messung einen späteren Tag, zeigen die
+  Kacheln jetzt ihn: „min. 5 d" und „ab 10. Sept.", mit dem ganzen Abgleich als Tooltip.
+  Der Vergleich läuft in `renderDash` und bewusst **nicht** in `harvestCountdown` — denn
+  `harvestWindow` ruft `harvestCountdown` auf, ein Abgleich dort wäre eine Endlosschleife.
+
+- **„Erntegewicht pro Pflanze (5)" erklärt sich jetzt selbst.** Die Zahl warf die Frage auf,
+  warum der Gieß-Fahrplan mit 3 Pflanzen rechnet. Beide Zahlen stimmen, sie beantworten nur
+  verschiedene Fragen — erfasst wird für alle angelegten Pflanzen, gegossen nur für die noch
+  stehenden. Die Überschrift sagt das jetzt: „(5, davon 2 schon geschnitten)".
+
 ## 2026-09-05 — v1.5.98
 
 - **Die Sortenliste plant keine Ernte mehr 40 Tage zu früh.** In `STRAINS` standen bei den

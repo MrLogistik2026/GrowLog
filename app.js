@@ -3244,7 +3244,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.98';
+const APP_VERSION = 'v1.5.99';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -10575,17 +10575,30 @@ function setPlantNote(cId, iso, plantId, text) {
 // =====================================================================
 /**
  * Liest Erntegewicht-Daten für eine bestimmte Pflanze. Liefert immer ein
- * Object mit wetG/dryG/notes (auch leer). Vereinfacht UI-Code der direkt
- * .wetG, .dryG schreiben kann.
+ * Object mit wetG/dryG/notes (auch leer).
+ *
+ * (v1.5.99) ZWEI SPEICHERORTE, EINE ANTWORT. Erträge landeten an zwei Stellen, die
+ * nichts voneinander wussten: Die Einzelernte in der Pflanzenliste schreibt seit v1.5.54
+ * `plants[].yieldWet/yieldDry`, dieses ältere Formular `c.plantHarvest[id].wetG/dryG`.
+ * Gelesen wurde hier nur der ältere Ort — Patricks 37 g trocken aus Pflanze 5 waren
+ * deshalb in den Einstellungen unsichtbar („noch nichts erfasst"), und die Zyklus-Bilanz
+ * wies gar kein Erntegewicht aus. `plants` ist die Quelle der Wahrheit (so wie schon bei
+ * `plantCount`); der alte Ort dient nur noch als Rückfall für Zyklen ohne `plants`-Array.
  */
 function getPlantHarvest(c, plantId) {
-  if (!c || !c.plantHarvest || !plantId) return { wetG: '', dryG: '', notes: '' };
-  const ph = c.plantHarvest[plantId];
-  if (!ph) return { wetG: '', dryG: '', notes: '' };
+  const leer = { wetG: '', dryG: '', notes: '' };
+  if (!c || !plantId) return leer;
+  const alt = (c.plantHarvest && c.plantHarvest[plantId]) || {};
+  const p = Array.isArray(c.plants) ? c.plants.find(x => x && x.id === plantId) : null;
+  const nimm = (neu, altWert) => (neu !== undefined && neu !== null && neu !== '')
+    ? neu
+    : (altWert !== undefined ? altWert : '');
   return {
-    wetG: ph.wetG !== undefined ? ph.wetG : '',
-    dryG: ph.dryG !== undefined ? ph.dryG : '',
-    notes: ph.notes || '',
+    wetG: nimm(p && p.yieldWet, alt.wetG),
+    dryG: nimm(p && p.yieldDry, alt.dryG),
+    // Für die Ernte-Notiz gibt es an der Pflanze kein Gegenstück — `plants[].notes` ist die
+    // allgemeine Pflanzen-Notiz und hat eine andere Bedeutung. Sie bleibt, wo sie war.
+    notes: alt.notes || '',
   };
 }
 
@@ -10601,6 +10614,26 @@ function setPlantHarvest(cId, plantId, field, value) {
   if (!allowedFields.includes(field)) return false;
   const c = S.cycles.find(x => x.id === cId);
   if (!c) return false;
+
+  // (v1.5.99) Gewichte gehören an die Pflanze — dorthin schreibt auch die Einzelernte in
+  // der Pflanzenliste. Sonst stünden nach einer Eingabe hier zwei verschiedene Zahlen für
+  // dieselbe Pflanze nebeneinander, ohne dass jemand sagen könnte, welche gilt.
+  const _p = Array.isArray(c.plants) ? c.plants.find(x => x && x.id === plantId) : null;
+  if (_p && (field === 'wetG' || field === 'dryG')) {
+    const feld = field === 'wetG' ? 'yieldWet' : 'yieldDry';
+    const num = parseFloat(value);
+    if (!isFinite(num) || num <= 0 || value === '' || value === null) delete _p[feld];
+    else _p[feld] = Math.round(num);   // ganze Gramm, wie in der Pflanzenliste
+    // Einen etwaigen Altwert derselben Pflanze abräumen, damit keine zweite Zahl bleibt.
+    if (c.plantHarvest && c.plantHarvest[plantId]) {
+      delete c.plantHarvest[plantId][field];
+      if (Object.keys(c.plantHarvest[plantId]).length === 0) delete c.plantHarvest[plantId];
+      if (Object.keys(c.plantHarvest).length === 0) delete c.plantHarvest;
+    }
+    saveS();
+    return true;
+  }
+
   if (!c.plantHarvest) c.plantHarvest = {};
   if (!c.plantHarvest[plantId]) c.plantHarvest[plantId] = {};
   const ph = c.plantHarvest[plantId];
@@ -10634,20 +10667,30 @@ function setPlantHarvest(cId, plantId, field, value) {
  * @returns {object} { totalWetG, totalDryG, hasPlantData }
  */
 function getTotalHarvest(c) {
-  if (!c) return { totalWetG: 0, totalDryG: 0, hasPlantData: false };
-  if (c.plantHarvest && Object.keys(c.plantHarvest).length > 0) {
-    let totalWetG = 0, totalDryG = 0;
-    Object.values(c.plantHarvest).forEach(ph => {
-      if (ph.wetG) totalWetG += parseFloat(ph.wetG) || 0;
-      if (ph.dryG) totalDryG += parseFloat(ph.dryG) || 0;
-    });
-    return { totalWetG, totalDryG, hasPlantData: true };
-  }
+  if (!c) return { totalWetG: 0, totalDryG: 0, hasPlantData: false, plantsWithData: 0 };
+  let totalWetG = 0, totalDryG = 0, plantsWithData = 0;
+  const gezaehlt = new Set();
+
+  // (v1.5.99) Zuerst die Pflanzen selbst — dort schreibt die Einzelernte seit v1.5.54.
+  (Array.isArray(c.plants) ? c.plants : []).forEach(p => {
+    if (!p) return;
+    const w = parseFloat(p.yieldWet) || 0, d = parseFloat(p.yieldDry) || 0;
+    if (w > 0 || d > 0) { totalWetG += w; totalDryG += d; plantsWithData++; gezaehlt.add(p.id); }
+  });
+  // Dann der ältere Speicherort — aber nur für Pflanzen, die oben nicht schon gezählt
+  // wurden. Sonst stünde ein Ertrag doppelt in der Summe.
+  Object.entries(c.plantHarvest || {}).forEach(([pid, ph]) => {
+    if (!ph || gezaehlt.has(pid)) return;
+    const w = parseFloat(ph.wetG) || 0, d = parseFloat(ph.dryG) || 0;
+    if (w > 0 || d > 0) { totalWetG += w; totalDryG += d; plantsWithData++; }
+  });
+
+  if (plantsWithData > 0) return { totalWetG, totalDryG, hasPlantData: true, plantsWithData };
   // Legacy: c.harvestWeight als Trockengewicht verstanden
   if (c.harvestWeight) {
-    return { totalWetG: 0, totalDryG: parseFloat(c.harvestWeight) || 0, hasPlantData: false };
+    return { totalWetG: 0, totalDryG: parseFloat(c.harvestWeight) || 0, hasPlantData: false, plantsWithData: 0 };
   }
-  return { totalWetG: 0, totalDryG: 0, hasPlantData: false };
+  return { totalWetG: 0, totalDryG: 0, hasPlantData: false, plantsWithData: 0 };
 }
 
 // Ordnet einen Tag einer der einstellbaren Gieß-Phasen zu (für eigene Wassermengen,
@@ -14284,15 +14327,30 @@ function renderDash() {
 
   // Ernte-Countdown mit Unsicherheit (±X Tage) — ehrlicher als feste Zahl
   const fcCountdown = fc ? harvestCountdown(fc) : null;
-  const harvestStatLabel = fcCountdown
-    ? `${fcCountdown.daysRemaining >= 0 ? fcCountdown.daysRemaining : '—'}<span class="stat-unit"> ±${fcCountdown.uncertainty}d</span>`
-    : '—';
-  const harvestStatTitle = fcCountdown ? fcCountdown.tooltip : '';
+  // (v1.5.99) Sagt die eigene Trichom-Messung einen späteren Tag als der Plan, zeigen die
+  // Kacheln ihn. Sonst stünde direkt unter der Erntekarte („richte dich nach der Messung")
+  // weiter die Plan-Zahl — zwei Wahrheiten auf einem Bildschirm, und die große Zahl gewinnt
+  // beim Überfliegen. Der Abgleich läuft hier und NICHT in `harvestCountdown`, weil
+  // `harvestWindow` seinerseits `harvestCountdown` aufruft — das gäbe eine Endlosschleife.
+  const fcVsPlan = fc ? _trichVsPlan(fc, today) : null;
+  const fcHeuteTag = fc ? isoDiff(today, fc.startDate) + 1 : null;
+  const harvestStatLabel = (fcVsPlan && isFinite(fcHeuteTag))
+    ? `min. ${Math.max(0, fcVsPlan.fruehestens - fcHeuteTag)}<span class="stat-unit"> d</span>`
+    : (fcCountdown
+        ? `${fcCountdown.daysRemaining >= 0 ? fcCountdown.daysRemaining : '—'}<span class="stat-unit"> ±${fcCountdown.uncertainty}d</span>`
+        : '—');
+  const harvestStatTitle = fcVsPlan
+    ? `Dein Plan nennt Tag ${fcVsPlan.planTag}. Deine Trichome sagen: frühestens Tag ${fcVsPlan.fruehestens}${fcVsPlan.unsicher ? ` — wie viel später, ist noch offen (Schätzung bis Tag ${fcVsPlan.spaetestens})` : ''}. Es gilt die Messung, nicht der Kalender: weiter täglich prüfen und erst schneiden, wenn das Ziel erreicht ist.`
+    : (fcCountdown ? fcCountdown.tooltip : '');
+  // Erntedatum entsprechend: Tag N liegt auf startDate + (N − 1).
+  const harvestDateShown = (fcVsPlan && fc)
+    ? `ab ${fmtDE(isoPlus(fc.startDate, fcVsPlan.fruehestens - 1), { day: '2-digit', month: 'short' })}`
+    : harvestDate;
 
   const stats = act.length > 0 ? (S.beginnerMode ? `<div class="stat-row">
     <div class="stat-box" title="${harvestStatTitle}"><div class="stat-lbl">Ernte in</div><div class="stat-val">${harvestStatLabel}</div></div>
     <div class="stat-box"><div class="stat-lbl">Heute</div><div class="stat-val" style="font-size:22px">${fcAction ? ACT_ICON[fcAction] || '💤' : '💤'}</div></div>
-    <div class="stat-box"><div class="stat-lbl">Erntedatum</div><div class="stat-val" style="font-size:14px">${harvestDate}</div></div>
+    <div class="stat-box" title="${harvestStatTitle}"><div class="stat-lbl">Erntedatum</div><div class="stat-val" style="font-size:14px">${harvestDateShown}</div></div>
   </div>` : (() => {
     const streak = fc ? calcStreak(fc) : 0;
     const fcPht = phTargetFor(fc && fc.medium);
@@ -14307,7 +14365,7 @@ function renderDash() {
     </div>
     <div class="stat-row" style="margin-top:6px">
       <div class="stat-box"><div class="stat-lbl">Gesamt 💧</div><div class="stat-val">${totalWater > 0 ? (totalWater/1000).toFixed(1) : '—'}<span class="stat-unit"> L</span></div></div>
-      <div class="stat-box"><div class="stat-lbl">Erntedatum</div><div class="stat-val" style="font-size:14px">${harvestDate}</div></div>
+      <div class="stat-box" title="${harvestStatTitle}"><div class="stat-lbl">Erntedatum</div><div class="stat-val" style="font-size:14px">${harvestDateShown}</div></div>
       <div class="stat-box"><div class="stat-lbl">Streak ${infoBtn('streak', 14, 'var(--blue)')}</div><div class="stat-val">${streakDisplay}</div></div>
     </div>`;
   })()) : '';
@@ -21972,8 +22030,10 @@ function renderCycleSummaryCard(c, opts = {}) {
   // Pflanzen-Zahl für Per-Pflanze-Statistik. Bevorzugt: Anzahl Pflanzen die
   // tatsächlich Erntegewicht erfasst haben (echte Daten). Fallback: plantCount
   // (alte Logik, wenn nur Total-Erntegewicht bekannt ist).
-  const plantsWithHarvest = c.plantHarvest
-    ? Object.values(c.plantHarvest).filter(ph => ph.dryG && parseFloat(ph.dryG) > 0).length
+  // (v1.5.99) Zählte nur den älteren Speicherort und übersah damit jede Einzelernte aus der
+  // Pflanzenliste — `getTotalHarvest` liefert die Zahl jetzt aus beiden Quellen mit.
+  const plantsWithHarvest = (typeof getTotalHarvest === 'function')
+    ? (getTotalHarvest(c).plantsWithData || 0)
     : 0;
   const plants = plantsWithHarvest > 0
     ? plantsWithHarvest
@@ -22030,9 +22090,13 @@ function renderCycleSummaryCard(c, opts = {}) {
       const total = (typeof getTotalHarvest === 'function') ? getTotalHarvest(c) : null;
       const showByDefault = isComplete || (total && total.totalDryG > 0);
       // Aktive Cycles in früher Phase: collapsed default
+      // (v1.5.99) „(5)" allein warf die Frage auf, warum der Gieß-Fahrplan mit 3 rechnet.
+      // Beide Zahlen stimmen, sie beantworten nur verschiedene Fragen: Erfasst wird für alle
+      // angelegten Pflanzen, gegossen nur für die noch stehenden. Das steht jetzt da.
+      const _geschnitten = c.plants.filter(p => p && p.harvestedAt).length;
       const headerLabel = c.plants.length === 1
         ? '🌾 Erntegewicht erfassen'
-        : `🌾 Erntegewicht pro Pflanze (${c.plants.length})`;
+        : `🌾 Erntegewicht pro Pflanze (${c.plants.length}${_geschnitten > 0 ? `, davon ${_geschnitten} schon geschnitten` : ''})`;
       const totalSummary = total && total.totalDryG > 0
         ? `<span style="color:var(--green);font-weight:600">· ${Math.round(total.totalDryG)} g trocken${total.totalWetG > 0 ? ' · ' + Math.round(total.totalWetG) + ' g nass' : ''}</span>`
         : '<span style="color:var(--text-hint);font-weight:400">· noch nichts erfasst</span>';

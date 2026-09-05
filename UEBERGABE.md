@@ -1,11 +1,12 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.98** · index.html 2,11 MB · 628 Funktionen
-Zuletzt fortgeschrieben am 05.09.2026. Zwei Fehler behoben, die beide zu einer zu frühen
-Ernte geführt hätten: Der Widerspruch zwischen Plan-Erntetag und Trichom-Messung wird jetzt
-ausgesprochen (v1.5.97), und die Sortenliste plant nicht mehr mit Züchter-Bestwerten
-(v1.5.98). Grundlage war der erste vollständige Browser-Durchlauf mit echten Daten
-(Abschnitt 2) — acht Befunde, zwei davon behoben.
+Stand: **v1.5.99** · index.html 2,11 MB · 628 Funktionen
+Zuletzt fortgeschrieben am 05.09.2026. Vier Fehler behoben: Der Widerspruch zwischen
+Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
+mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
+die Ernte-Kacheln widersprechen der Erntekarte nicht mehr (v1.5.99). Die ersten beiden
+hätten zu einer zu frühen Ernte geführt. Grundlage war der erste vollständige
+Browser-Durchlauf mit echten Daten (Abschnitt 2) — neun Befunde, vier davon behoben.
 
 ---
 
@@ -52,12 +53,12 @@ Bei „Blütedauer 85 → 80" wandert die ganze Kette in die Vergangenheit (Spü
 102/105, Ernte 116 → 111) und das Dashboard meldet daraufhin verpasste Gießtage. **Ein
 Eingabefeld erzeugt einen Fehlalarm über die Vergangenheit.**
 
-**Dieselbe Tatsache hat zwei Zahlen** — seit v1.5.97 erklärt die App die Differenz
-(`_trichVsPlan`, siehe Abschnitt 2). Was bleibt: Die Dashboard-Kachel nennt weiterhin
-prominent „Ernte in 3 ±5d", während die Karte darüber sagt, dass die Messung Tag 118
-nennt. Die Toleranz deckt den Fall formal ab, die große „3" widerspricht dem Text
-trotzdem. Nicht angefasst, weil unklar ist, ob die Kachel überhaupt den Plan-Tag oder
-das gemessene Fenster zeigen soll — Patrick entscheidet.
+**Dieselbe Tatsache hat zwei Zahlen** — erledigt. Seit v1.5.97 erklärt die App die
+Differenz zwischen Plan-Erntetag und Trichom-Fenster (`_trichVsPlan`), seit v1.5.99 zeigen
+auch die Dashboard-Kacheln den gemessenen Tag („min. 5 d", „ab 10. Sept.") statt weiter den
+Plan-Tag. **Als Muster bleibt der Punkt aber gültig:** Wo zwei Bildschirme dieselbe Frage
+verschieden beantworten, gewinnt beim Überfliegen immer die größere Zahl — nicht die
+richtigere. Bei neuen Anzeigen mitprüfen.
 
 **Beide zentralen Bildschirme liegen hinter der Einstellungs-Tür.** `duenger` und
 `gussplan` sind aus der Navigation nicht direkt erreichbar, nur über zwei Zeilen oben in
@@ -128,7 +129,7 @@ lassen, einrasten.
 
 ---
 
-## 2 · Browser-Durchlauf vom 05.09.2026 — acht Befunde, zwei behoben
+## 2 · Browser-Durchlauf vom 05.09.2026 — neun Befunde, vier behoben
 
 Erstmals wurde die App nicht nur in jsdom, sondern **im echten Browser** mit Patricks
 Sicherung durchlaufen (lokaler Server auf Port 8099, Handy-Format 375×812, beide Modi,
@@ -143,6 +144,17 @@ den Worker abmelden (`navigator.serviceWorker.getRegistrations()` → `unregiste
 Stelle.
 
 **Behoben (v1.5.97):** Erntekarte gegen Trichom-Messung, siehe `CHANGELOG.md`.
+
+**Behoben (v1.5.99):** Erfasste Ernteerträge waren unsichtbar. Der Ertrag lag an zwei
+Stellen — `plants[].yieldWet/yieldDry` (Einzelernte seit v1.5.54) und
+`c.plantHarvest[id].wetG/dryG` (älteres Formular) —, gelesen wurde nur der ältere Ort.
+Patricks 37 g trocken meldeten die Einstellungen als „noch nichts erfasst", und
+`cycleStats().harvestWeight` war null, die Zyklus-Bilanz zeigte also gar kein Erntegewicht.
+Beide Funktionen lesen jetzt aus beiden Quellen ohne Doppelzählung; `setPlantHarvest`
+schreibt an die Pflanze. **Daraus zu lernen:** Der Anzeigefehler war das Kleinere. Der
+gefährliche Teil war, dass eine Eingabe im Formular eine zweite Zahl für dieselbe Pflanze
+angelegt hätte. Wo zwei Eingabewege dieselbe Größe erfassen, muss vorher geklärt sein,
+welcher Speicherort gilt.
 
 **Behoben (v1.5.98):** Sortenliste — Spanne statt Züchter-Bestwert, siehe unten.
 
@@ -361,10 +373,11 @@ cat head.html app.js tail.html | cmp - index.html && echo "BYTE-IDENTISCH OK"
 **Byte-Identität mit `cmp` ist Pflicht, bevor irgendetwas geändert wird.** Danach wird
 `app.js` geändert, mit `build.sh` neu gebaut und erneut verglichen.
 
-23 Testdateien, alle grün in beiden Zeitzonen (Stand v1.5.98):
+24 Testdateien, alle grün in beiden Zeitzonen (Stand v1.5.99):
 
 `test_audit_screens` · `test_befehle` · `test_dialog_und_namen` · `test_duengeplaene` ·
-`test_endspurt` · `test_entwurf` · `test_ernteabgleich` · `test_fixes_0905` ·
+`test_endspurt` · `test_entwurf` · `test_ernteabgleich` · `test_ertrag` ·
+`test_fixes_0905` ·
 `test_gussmenge` · `test_gussmove` ·
 `test_gussmove_kombi` · `test_navscroll` · `test_planladen` · `test_planpause` ·
 `test_planrueckgrat` · `test_planzuordnung` · `test_saemling_tage` · `test_sortendauer` · `test_startup` ·
