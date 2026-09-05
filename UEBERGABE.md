@@ -1,7 +1,8 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.95** · index.html 2,11 MB · 627 Funktionen
+Stand: **v1.5.96** · index.html 2,11 MB · 627 Funktionen
 Ausgeliefert am Ende der Sitzung vom 01.09.2026
+Zuletzt fortgeschrieben am 05.09.2026 — v1.5.96, drei Fehler behoben
 
 ---
 
@@ -41,7 +42,34 @@ ein, statt dass der Nutzer ihn nachzieht. Solche Regeln ersetzen Regler.
 
 ---
 
-## 2 · Patricks laufender Grow
+## 2 · Am 05.09.2026 behoben (v1.5.96)
+
+Die drei Fehler aus diesem Abschnitt sind erledigt und abgesichert durch
+`test_fixes_0905.js` (38 Prüfungen, beide Zeitzonen). Die Einzelheiten stehen im
+`CHANGELOG.md`. Was hier bleibt, ist das, woraus zu lernen ist:
+
+**Ein Regler, der still Daten löscht, ist schlimmer als ein fehlender Regler.** Der
+Pflanzen-Zähler kürzte das `plants`-Array von hinten und traf damit ausgerechnet die
+zuerst geernteten Pflanzen — mit Schnitt-Datum und Ertrag. Niemand hätte es bemerkt, denn
+`getEffectivePlantCount` zählt die Geernteten ohnehin nicht mit: Auf dem Gieß-Fahrplan
+änderte sich kein einziger Wert. **Regel: Wo eine Zahl ein Array kürzt, gehört vorher die
+Frage, was in den weggeschnittenen Einträgen steckt.**
+
+**Eine Karte, die bei fehlenden Daten verschwindet, nimmt dem Nutzer die Bedienung weg.**
+`endspurtCard()` stieg bei fehlendem `letzterGuss` mit leerem String aus — und damit war
+die einzige Stelle weg, an der Spülen, Hard-Dryback, IceFlush und Ernte einzustellen sind.
+**Regel: Fehlt ein einzelner Wert, wird dieser Wert als offen ausgewiesen — nicht der ganze
+Bildschirm ausgeblendet.**
+
+**Der Rhythmus-Motor ist empfindlicher, als er aussieht.** Ursache war ein Gießintervall,
+das nicht zu den eingetragenen Güssen passt: `getAction` verankert die Blüte am letzten
+Wassereintrag (ANKER 2), und liegt der immer 3 Tage zurück, geht ein Intervall von 4 nie
+auf — kein Blütetag ist dann noch Gießtag. Behoben wurde am Rand (Rückfall auf den echten
+Eintrag), **nicht** im Motor. Wer dort etwas ändert, ändert jeden Gießtag jedes Zyklus.
+
+---
+
+## 3 · Patricks laufender Grow
 
 Sensi Amnesia XXL Auto · Erde Light-Mix · 11 L Airpot · Start 16.05.2026
 Aktuell etwa **Tag 109** (Anfang September), in der Endphase.
@@ -68,7 +96,7 @@ Sitzungsbeginn zu erfragen.
 
 ---
 
-## 3 · Was in dieser Sitzung passiert ist (v1.5.44 → v1.5.84)
+## 4 · Was in dieser Sitzung passiert ist (v1.5.44 → v1.5.84)
 
 **Trichome und Prognose** — Tagesberechnung folgt dem gemessenen Tempo statt dem Erntetag
 (v1.5.45). Bernstein-Korrekturen führen Klar und Milchig am eigenen Tempo mit (v1.5.47).
@@ -103,7 +131,7 @@ Stelle; Tage direkt eintippbar; Spülstart rastet auf den Rhythmus ein; rückwir
 
 ---
 
-## 4 · Fehler dieser Sitzung, aus denen zu lernen ist
+## 5 · Fehler dieser Sitzung, aus denen zu lernen ist
 
 Diese vier Punkte haben Patrick am meisten Zeit gekostet. Sie stehen hier, damit sie sich
 nicht wiederholen.
@@ -146,43 +174,49 @@ Feld, mit Datum.
 
 ---
 
-## 5 · Testinfrastruktur
+## 6 · Testinfrastruktur
 
-Container ist flüchtig. Aufbau zu Sitzungsbeginn:
+Seit 04.09.2026 liegt alles dauerhaft auf dem Laptop unter
+`C:\Users\laura\Desktop\Claude Growsmart\projekt` und im Repo
+`MrLogistik2026/GrowLog`. Der frühere Aufbau im flüchtigen Container entfällt —
+`head.html`, `app.js`, `tail.html`, `harness.js` und alle Testdateien sind da,
+`node_modules` mit jsdom ebenfalls.
+
+Vor jeder Änderung:
 
 ```bash
-cd /home/claude && rm -rf work && mkdir work && cd work
-SRC=/mnt/user-data/outputs/index.html
-SS=$(grep -n "<script>" "$SRC" | head -1 | cut -d: -f1)
-SE=$(grep -n "</script>" "$SRC" | head -1 | cut -d: -f1)
-sed -n "1,${SS}p" "$SRC" > head.html
-sed -n "$((SS+1)),$((SE-1))p" "$SRC" > app.js
-sed -n "${SE},\$p" "$SRC" > tail.html
-printf '#!/bin/bash\ncat head.html app.js tail.html > index.html\n' > build.sh
-chmod +x build.sh && ./build.sh && cmp index.html "$SRC" && echo "BYTE-IDENTISCH OK"
-cp app.js /tmp/base.js && npm install jsdom --silent
+cat head.html app.js tail.html | cmp - index.html && echo "BYTE-IDENTISCH OK"
 ```
 
-**Byte-Identität mit `cmp` ist Pflicht, bevor irgendetwas geändert wird.**
+**Byte-Identität mit `cmp` ist Pflicht, bevor irgendetwas geändert wird.** Danach wird
+`app.js` geändert, mit `build.sh` neu gebaut und erneut verglichen.
 
-Aktuell vorhandene Testdateien (gehen bei Container-Reset verloren, müssen mit ausgeliefert
-oder neu geschrieben werden):
+21 Testdateien, alle grün in beiden Zeitzonen (Stand v1.5.96):
 
-`test_startup` · `test_planzuordnung` · `test_planladen` · `test_planrueckgrat` · `test_gussmenge` · `test_trichedit` · `test_trichchart` · `test_trichphasen` · `test_navscroll` · `test_planpause` · `test_entwurf` · `test_endspurt` ·
-`test_befehle` · `test_gussmove` · `test_gussmove_kombi` · `test_wochenfolgen` ·
-`test_audit_screens`
+`test_audit_screens` · `test_befehle` · `test_dialog_und_namen` · `test_duengeplaene` ·
+`test_endspurt` · `test_entwurf` · `test_fixes_0905` · `test_gussmenge` · `test_gussmove` ·
+`test_gussmove_kombi` · `test_navscroll` · `test_planladen` · `test_planpause` ·
+`test_planrueckgrat` · `test_planzuordnung` · `test_saemling_tage` · `test_startup` ·
+`test_trichchart` · `test_trichedit` · `test_trichphasen` · `test_wochenfolgen`
 
-Ältere Tests aus früheren Sitzungen sind bei einem Container-Reset verlorengegangen:
-`test_amber`, `test_fillday`, `test_modi`, `test_lextable`, `test_lexduenger`,
-`test_planblatt`, `test_gussblatt`, `test_rueckgrat`, `test_presetv6`, `test_wochen`,
-`test_holdback`, `test_planmigration`, `test_plantsheet`, `test_einzelernte`,
-`test_korridor`, `test_festmenge`, `test_flushgap` und weitere. Bei Bedarf neu schreiben.
+**Zeitzonen unter Windows:** `TZ=Europe/Berlin node test.js` wirkt in Git Bash **nicht** —
+`process.env.TZ` bleibt leer und der Test läuft still in der Systemzeitzone. Die
+Zeitzonen-Läufe gehören in PowerShell:
 
-Jeder Lauf in **beiden Zeitzonen**: `TZ=Europe/Berlin` und `TZ=Pacific/Kiritimati`.
+```powershell
+$env:TZ='Europe/Berlin';      node test_startup.js
+$env:TZ='Pacific/Kiritimati'; node test_startup.js
+```
+
+Tests, die mit Patricks echten Daten arbeiten, lesen
+`growsmart-sicherung-2026-09-04.txt` und legen den Inhalt vor dem Laden unter den
+localStorage-Schlüssel `growsmart_v4` — siehe `test_fixes_0905.js` als Vorlage. Das ist
+aussagekräftiger als ein leerer Grow: Beide am 05.09. gefundenen Anzeigefehler waren nur
+mit echtem Zustand sichtbar.
 
 ---
 
-## 6 · Schlüsselkonzepte im Code
+## 7 · Schlüsselkonzepte im Code
 
 - `contextFor(c, iso)` für Phasen-/Seedtype-Entscheidungen
 - `fertPlanWeek(c, iso)` für die Düngeplan-Woche · `phase().week` taugt nicht als Referenz
@@ -198,7 +232,7 @@ Jeder Lauf in **beiden Zeitzonen**: `TZ=Europe/Berlin` und `TZ=Pacific/Kiritimat
 
 ---
 
-## 7 · Kleinere offene Punkte
+## 8 · Kleinere offene Punkte
 
 - „Erledigt"-Karte erscheint an Tagen ohne Aufgabe (von Patrick zurückgestellt)
 - „Messungen berichtigen"-Liste schneidet am angezeigten Tag ab

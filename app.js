@@ -3185,7 +3185,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.95';
+const APP_VERSION = 'v1.5.96';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -7795,6 +7795,19 @@ function endspurtState(c, iso) {
     if (!p2 || p2.ph !== 'bloom') continue;
     if (getAction(dIso, c) === 'giess') { letzter = d; break; }
   }
+  // (v1.5.96) Findet das Raster keinen Gießtag, zählt der letzte ECHTE Guss aus den
+  // Einträgen. Das passiert, sobald das eingestellte Gießintervall nicht mehr zu den
+  // tatsächlich eingetragenen Güssen passt: getAction verankert die Blüte am letzten
+  // Wassereintrag, und liegt der immer 3 Tage zurück, geht ein Intervall von 4 nie auf —
+  // kein einziger Blütetag ist dann noch ein Gießtag. Die Frage „wann war der letzte Guss"
+  // beantwortet der Eintrag des Growers ohnehin zuverlässiger als eine Projektion.
+  if (!letzter) {
+    for (let d = spuelStart - 1; d > spuelStart - 30 && d > 0; d--) {
+      const dIso = isoPlus(c.startDate, d - 1);
+      const cd = S.entries && S.entries[dIso] && S.entries[dIso].cycleData && S.entries[dIso].cycleData[c.id];
+      if (cd && cd.water && parseFloat(cd.water) > 0) { letzter = d; break; }
+    }
+  }
   const iv = (typeof _ivAt === 'function') ? (_ivAt(c, 'bloom', iso || todayISO()) || 3) : 3;
   // (v1.5.74) Welche Tage der Spülphase sind wirklich Spülgänge? Der Hard-Dryback vor dem
   // IceFlush frisst das Ende der Phase — das muss man sehen, sonst wirkt ein geändertes
@@ -8145,7 +8158,12 @@ function _rerenderEndspurt() {
  */
 function endspurtCard(c, iso) {
   const st = endspurtState(c, iso);
-  if (!st || !st.letzterGuss) return '';
+  // (v1.5.96) Früher stieg die Karte bei fehlendem letzten Guss stumm aus — und damit war
+  // die EINZIGE Bedienstelle für Spülen, Hard-Dryback, IceFlush und Ernte ersatzlos weg.
+  // Ein unbekannter letzter Guss ist kein Grund, dem Grower die ganze Endphase wegzunehmen;
+  // er ist ein Grund, ihn danach zu fragen.
+  if (!st) return '';
+  const lgDa = st.letzterGuss != null;
   // Erst im Anflug auf das Ende zeigen — vorher ist die Kette nicht die richtige Frage.
   if (st.spuelStart - st.heuteTag > 21 || st.heuteTag > st.ernteTag) return '';
 
@@ -8183,7 +8201,9 @@ function endspurtCard(c, iso) {
       ${knopf('+', `setEndspurtPhase('${c.id}','${feld}',${dauer + 1})`, dauer >= max)}
     </div>`;
 
-  const vor = st.letzterGuss - st.iv, zurueck = st.letzterGuss + st.iv;
+  // Ohne bekannten letzten Guss ist der Tag, den der Rhythmus wollen würde, die beste Basis.
+  const lgBasis = lgDa ? st.letzterGuss : Math.max(st.anz + 1, st.spuelStart - st.iv);
+  const vor = lgBasis - st.iv, zurueck = lgBasis + st.iv;
   // (v1.5.85) Nur sperren, wenn der Tag vor dem Ende der Anzucht läge. Vergangene Tage
   // sind erlaubt und werden beim Tippen abgefragt.
   const vorAus = vor <= st.anz;
@@ -8196,15 +8216,17 @@ function endspurtCard(c, iso) {
       <div style="flex:1;font-size:14px;font-weight:700;color:var(--text)">Endspurt</div>
       ${c.flushDryFrom ? `<button onclick="clearEndspurt('${c.id}')" style="background:none;border:none;color:var(--text-hint);font-size:10px;cursor:pointer;font-family:var(--font);text-decoration:underline">zurücksetzen</button>` : ''}
     </div>
-    ${(st.dry > 0 && st.abstand !== st.iv) ? `<button onclick="endspurtNormal('${c.id}')" style="width:100%;background:rgba(76,175,112,0.1);border:0.5px solid rgba(76,175,112,0.4);border-radius:9px;padding:9px;font-size:11px;color:var(--green);cursor:pointer;font-family:var(--font);margin-bottom:6px;line-height:1.4">🔁 Auf normalen Rhythmus stellen<br><span style="font-size:9px;opacity:0.85">Letzter Guss Tag ${st.letzterGuss}, dann wie gewohnt ${st.iv} Tage bis zum ersten Spülgang</span></button>` : ''}
+    ${(lgDa && st.dry > 0 && st.abstand !== st.iv) ? `<button onclick="endspurtNormal('${c.id}')" style="width:100%;background:rgba(76,175,112,0.1);border:0.5px solid rgba(76,175,112,0.4);border-radius:9px;padding:9px;font-size:11px;color:var(--green);cursor:pointer;font-family:var(--font);margin-bottom:6px;line-height:1.4">🔁 Auf normalen Rhythmus stellen<br><span style="font-size:9px;opacity:0.85">Letzter Guss Tag ${st.letzterGuss}, dann wie gewohnt ${st.iv} Tage bis zum ersten Spülgang</span></button>` : ''}
     <div style="display:none">
     </div>
     <div style="font-size:10px;color:var(--text-hint);line-height:1.5;margin-bottom:6px">Der letzte Guss legt fest, wann es losgeht — der erste Spülgang folgt einen Rhythmus-Schritt später. Alles darunter ergibt sich daraus und rückt automatisch mit.</div>
 
-    ${zeileEin('Letzter Guss', 'Tag ' + st.letzterGuss,
+    ${zeileEin('Letzter Guss', lgDa ? 'Tag ' + st.letzterGuss : 'noch offen',
       knopf('−', `setEndspurtGuss('${c.id}',${vor})`, vorAus),
       knopf('+', `setEndspurtGuss('${c.id}',${zurueck})`, false),
-      `springt in deinem Rhythmus von ${st.iv} Tagen`)}
+      lgDa
+        ? `springt in deinem Rhythmus von ${st.iv} Tagen`
+        : `aus deinen Einträgen nicht ableitbar — tipp auf − oder +, dann steht er auf Tag ${vor} bzw. ${zurueck}`)}
 
     ${st.dry > 0 ? zeileEin('Abtrocknen vor dem Spülen', st.dry + ' Tage',
       knopf('−', `setEndspurtDry('${c.id}',${st.dry - 1})`, dryMinusAus),
@@ -8219,8 +8241,10 @@ function endspurtCard(c, iso) {
     ${zeileAus('🍯 Ernte', 'Tag ' + st.ernteTag, '', `setEndspurtErnte('${c.id}')`)}
     ${zeileAus('🍂 Trocknen bis', 'Tag ' + st.trockenBis, '')}
 
-    <div style="font-size:10px;color:${st.abstand >= st.dry ? 'var(--text-hint)' : 'var(--yellow)'};line-height:1.5;margin-top:7px;padding-top:7px;border-top:0.5px solid var(--border)">
-      ${st.abstand >= st.dry
+    <div style="font-size:10px;color:${(!lgDa || st.abstand >= st.dry) ? 'var(--text-hint)' : 'var(--yellow)'};line-height:1.5;margin-top:7px;padding-top:7px;border-top:0.5px solid var(--border)">
+      ${!lgDa
+        ? `Der letzte Guss steht noch nicht fest — solange bleibt offen, ob vor dem ersten Spülgang genug Zeit zum Abtrocknen ist. Alles darunter kannst du trotzdem einstellen.`
+        : st.abstand >= st.dry
         ? `Nach dem Guss an Tag ${st.letzterGuss} bleiben ${st.abstand} Tage zum Abtrocknen — das passt.`
         : `⚠ Nach dem Guss an Tag ${st.letzterGuss} bleiben nur ${st.abstand} Tage bis zum Spülen. Tipp auf − oder + beim letzten Guss, dann rückt die Kette zurecht.`}
     </div>
@@ -18425,11 +18449,16 @@ function renderSet() {
             const _hw = harvestWindow(_b, todayISO());
             const _df = planSkeletonDiff(_b);
             const _namen = { anzuchtDays: 'Anzucht', flushDays: 'Spülen', iceDays: 'IceFlush', harvestDays: 'Ernte', dryDays: 'Trocknen' };
-            const _sk = _plan.phaseSkeleton || {};
+            // (v1.5.96) Nicht jeder Plan mit Wochenraster hat auch ein Phasen-Gerüst:
+            // planHasSkeleton() prüft weekPhases, phaseSkeleton kann trotzdem fehlen
+            // (z. B. BioBizz Official). Dann stand hier vier Mal „undefined". Die Zeile
+            // entfällt in dem Fall — Plan, Sorte und Erntefenster stehen ohnehin darüber.
+            const _sk = _plan.phaseSkeleton || null;
+            const _skDa = !!_sk && ['anzucht', 'flush', 'ice', 'harvest'].every(k => Number.isFinite(Number(_sk[k])));
             return `<div style="background:var(--card2);border-radius:9px;padding:10px 11px;margin-bottom:9px">
               <div style="font-size:11px;color:var(--text-sub);line-height:1.6">
                 <b>Plan:</b> ${_plan.name} · ${_wochen} Wochen<br>
-                <b>Feste Phasen aus dem Plan:</b> Anzucht ${_sk.anzucht} · Spülen ${_sk.flush} · IceFlush ${_sk.ice} · Ernte ${_sk.harvest} Tage<br>
+                ${_skDa ? `<b>Feste Phasen aus dem Plan:</b> Anzucht ${_sk.anzucht} · Spülen ${_sk.flush} · IceFlush ${_sk.ice} · Ernte ${_sk.harvest} Tage<br>` : ''}
                 <b>Dehnbar:</b> die Blüte — sie richtet sich nach deiner Sorte und deinen Trichomen.
                 ${_hw ? `<br><b>Ernte:</b> ${_hw.lo === _hw.hi ? 'etwa Tag ' + _hw.lo : 'Tag ' + _hw.lo + '–' + _hw.hi}${_hw.basis === 'trichome' ? ' (aus deinen Trichomen)' : (_hw.basis === 'packung' ? ' (aus der Samentüte)' : '')}` : ''}
               </div>
@@ -19222,6 +19251,41 @@ async function saveDraft() {
         });
       }
     } else if (c.plants.length > target) {
+      // (v1.5.96) Kürzen darf keine erfasste Ernte verschlucken. Von hinten wegzuschneiden
+      // trifft ausgerechnet die Pflanzen, die zuerst geschnitten wurden — mit Schnitt-Datum
+      // und Ertrag. Das war der einzige Weg in der App, auf dem erfasste Ernten ohne ein
+      // Wort verschwanden; über das ✕ an der Pflanze läuft es durch removePlant(). Schlimmer
+      // noch: Weil getEffectivePlantCount die geernteten ohnehin nicht mitzählt, änderte sich
+      // auf dem Gieß-Fahrplan kein einziger Wert — der Verlust war unsichtbar.
+      const weg = c.plants.slice(target);
+      const mitDaten = weg.filter(p => p && (p.harvestedAt || p.yieldDry || p.yieldWet));
+      if (mitDaten.length) {
+        const liste = mitDaten.map(p => {
+          const teile = [];
+          if (p.harvestedAt) teile.push('geerntet am ' + fmtDE(p.harvestedAt));
+          if (p.yieldDry) teile.push(p.yieldDry + ' g trocken');
+          else if (p.yieldWet) teile.push(p.yieldWet + ' g frisch');
+          return '• ' + (p.label || 'Pflanze') + (teile.length ? ' — ' + teile.join(', ') : '');
+        }).join('\n');
+        const ok = await customConfirm(
+          '⚠ Erfasste Ernte geht verloren',
+          `Du setzt die Anzahl auf ${target}. Dabei fällt ${weg.length === 1 ? 'eine Pflanze' : weg.length + ' Pflanzen'} weg — `
+          + `${mitDaten.length === 1 ? 'davon eine mit erfassten Daten' : 'davon ' + mitDaten.length + ' mit erfassten Daten'}:\n\n${liste}\n\n`
+          + 'Diese Ernte-Daten sind danach weg und lassen sich nicht zurückholen.\n\n'
+          + 'Willst du stattdessen nur eine bestimmte Pflanze entfernen, brich hier ab und '
+          + 'nimm das ✕ neben ihrem Namen in der Pflanzenliste.',
+          'Ja, entfernen', 'var(--orange)'
+        );
+        if (!ok) {
+          // Alles Übrige bleibt gespeichert — nur die Anzahl geht auf den echten Stand zurück.
+          c.plantCount = c.plants.length;
+          if (draft) draft.plantCount = c.plants.length;
+          saveS();
+          toast('Anzahl unverändert — Ernte-Daten behalten');
+          renderSet();
+          return;
+        }
+      }
       c.plants = c.plants.slice(0, target);
     }
     c.plantCount = c.plants.length;  // immer synchron
