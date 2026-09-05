@@ -14,17 +14,30 @@ geladen werden. Wer hier etwas sucht, findet es dort:
 
 @START-HIER.md
 
-**`ANBAU.md` ist das Fachwissen hinter der App** — Wasserhaushalt, VPD, pH und
-Nährstoffverfügbarkeit, EC und osmotischer Druck, Licht, Trichomreife, Trocknung, die
-tödlichen Fehler mit ihrem Mechanismus, und ein eigener Abschnitt darüber, was in der
-Grower-Praxis verbreitet, aber **nicht belegt** ist.
+**`ANBAU.md` ist das Fachwissen hinter der App**, in 15 Abschnitten: Wasserhaushalt und
+Transpirationssog · VPD samt seiner Grenzen · Wasserqualität und Alkalinität · pH und
+Nährstoffverfügbarkeit · EC und osmotischer Druck · Nährstoff-Mobilität und Antagonismen ·
+Substrat, Sauerstoff und Volumen · Licht · Genetik · Lösungschemie · Trichomreife ·
+Trocknen und Fermentieren · die tödlichen Fehler mit ihrem Mechanismus · was **nicht belegt**
+ist · und was daraus für Entscheidungen in dieser App folgt.
 
 Der Zweck: **Über Pflanzen wird nicht geschätzt.** Jede Zahl in dieser App — jede Gießmenge,
 jeder EC-Zielwert, jede Warnung, jeder erklärende Satz — muss sich auf einen Mechanismus
 zurückführen lassen. Wo `ANBAU.md` keine Antwort gibt, wird nachgefragt statt geraten; ein
 selbstbewusst vorgetragener falscher Pflanzenrat ist schlimmer als ein Eingeständnis.
 
-Vor jeder neuen Automatik gilt Abschnitt 9 („Was verbreitet, aber nicht belegt ist"): Eine
+**Die drei Regeln aus dem Kopf des Dokuments gelten für jeden Patch:**
+
+1. **Jede Schwelle braucht eine Gültigkeitsbedingung.** Der häufigste Fehler ist eine Regel
+   für inerte Substrate, die auf organische angewandt wird. Substrattyp ist eine
+   Eingangsgröße, keine Anzeigeoption.
+2. **Jeder Messwert braucht eine Validitätsprüfung**, bevor er bewertet wird. Ein Drain-EC
+   bei 5 % Durchfluss ist keine schlechte Messung, sondern gar keine — die richtige Ausgabe
+   ist dann eine Rückfrage, keine Warnung.
+3. **Ein Symptom hat selten eine Ursache.** Wo mehrere Mechanismen dasselbe Bild erzeugen,
+   nennt die App alle und liefert das Unterscheidungskriterium mit.
+
+Vor jeder neuen Automatik gilt Abschnitt 14 („Was verbreitet, aber nicht belegt ist"): Eine
 Funktion, die einen Fehler verhindern soll, den es nicht gibt, ist selbst ein Fehler.
 
 ---
