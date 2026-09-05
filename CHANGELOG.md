@@ -4,6 +4,32 @@ Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
 ## 2026-09-05 — v1.5.96
 
+- **Arbeitsregeln geschärft (kein App-Code, deshalb keine neue Version).** Vier
+  Festlegungen von Patrick: `APP_VERSION` wird bei jeder ausgelieferten Änderung um eine
+  Stelle angehoben; gefundene Fehler werden sofort mitbehoben statt gemeldet, aber je
+  Fehler mit eigenem Changelog-Eintrag, eigener Version und eigener Prüfung; Changelog und
+  Übergabe werden nach jeder Änderung fortgeschrieben statt am Sitzungsende; und bei allem
+  Gebauten gilt der Doppelblick Anfänger/Profi mit fünf konkreten Prüfpunkten
+  (`ANWEISUNG.md`, Abschnitt „Beide Sichten, jedes Mal"). Die alte Gegenregel „Bug nur
+  nennen, nicht mitfixen" wurde ersetzt, nicht ergänzt. Warum: Zwei widersprüchliche Regeln
+  in derselben Datei sind schlimmer als keine — es wäre nicht mehr erkennbar, welche gilt.
+  Das Vorziehen des Fortschreibens hat einen belegten Grund: Eine Sitzung endet selten
+  geplant, und was beim Abbruch ungeschrieben ist, ist verloren.
+
+- **Ablauf-Schritt 7 zeigte auf einen Ordner, den es nicht gibt.** `ANWEISUNG.md` verlangte,
+  die fertige `index.html` nach `/mnt/user-data/outputs/` zu legen und per `present_files`
+  bereitzustellen — beides stammt aus der Container-Umgebung vor dem Umzug auf den Laptop
+  am 04.09.2026. Der Schritt beschreibt jetzt den echten Weg: Version anheben, mit
+  `build.sh` bauen, Changelog und Übergabe schreiben.
+
+- **Ausschlussliste gegen versehentlich veröffentlichte Grow-Daten verbreitert.** Die
+  `.gitignore` erfasste nur `growsmart-sicherung-*.txt`. Jetzt fallen auch beliebig
+  benannte Sicherungen, Backups, `.bak`- und Export-Dateien darunter. Warum: Das
+  Repository ist öffentlich, und der Link wird zum Testen weitergegeben — eine Sicherung
+  mit abweichendem Namen wäre mitgegangen. Geprüft: keine bisher getrackte Datei wird von
+  den neuen Regeln erfasst, und in der gesamten Repo-Historie war nie eine Sicherungsdatei
+  enthalten.
+
 - **Übergabe fortgeschrieben.** Abschnitt 1 enthält jetzt den am 05.09.2026 gemessenen
   Befund zur Bedienung (Modus-Vergleich, Kopplungs-Messung, doppelte Erntetage, beide
   Bildschirme hinter der Einstellungs-Tür) und die vorgeschlagene Richtung in vier

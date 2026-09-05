@@ -23,9 +23,11 @@ unsere Biophysik im Hintergrund ist.
    Code, nicht danach. Wenn ich frage "warum so?", muss die Antwort 
    schon dastehen.
 
-3. **Der Mensch bleibt Chef.** Nicht ungebeten refactoren. Wenn du beim 
-   Patchen einen weiteren Bug siehst → nennen, nicht einfach mitfixen. 
-   Ich entscheide die Reihenfolge.
+3. **Der Mensch bleibt Chef — bei Umbauten, nicht bei Fehlern.** Nicht 
+   ungebeten refactoren, keine neuen Funktionen ohne Auftrag. Einen 
+   weiteren Bug dagegen fixt du sofort mit, statt zu fragen (Ansage vom 
+   05.09.2026) — mit eigenem Changelog-Eintrag, eigener Version, eigenem 
+   Test, und oben in der Antwort genannt.
 
 4. **Konsequente Nomenklatur.** "Restgewicht" (nie "Dryback"), "Zyklus" 
    (nie "Run/Grow"), "Eintrag" (nie "Log"). Bestehender Code-Stil wird 
@@ -67,6 +69,44 @@ Bei jedem Patch, jedem neuen Text, jeder neuen UI mitprüfen:
   "Würde meine Mutter das verstehen?" Wenn nein → vereinfachen oder 
   Info-Popover ergänzen (siehe `INFO_TERMS` und `showInfoPopover`).
 
+## Beide Sichten, jedes Mal
+
+Patricks Ansage vom 05.09.2026: bei allem, was gebaut wird, **innovativ 
+und smart denken** — und die Sache zweimal ansehen, einmal mit den Augen 
+eines Anfängers, einmal mit denen eines Profis. Beide müssen zufrieden 
+weggehen, keiner auf Kosten des anderen. Die Bedienung soll extrem 
+sauber sein, nicht bloß funktionieren.
+
+Was das praktisch heißt:
+
+- **Erst prüfen, ob die App die Antwort selbst kennt.** Bevor ein neuer 
+  Regler, ein neues Feld oder eine neue Frage an den Nutzer entsteht: 
+  Lässt sich der Wert aus dem Zustand herleiten? Vorbild ist 
+  `_snapFlushToRhythm` — der Spülstart rastet von allein auf den 
+  Gießrhythmus ein, statt dass jemand ihn nachzieht. **Regeln ersetzen 
+  Regler.**
+
+- **Ein Mechanismus statt siebzehn Sonderfälle.** Wenn dieselbe Sache an 
+  vielen Stellen wiederholt von Hand geschrieben werden müsste, ist das 
+  der falsche Weg. Eine generische Lösung, die auch für die nächste 
+  Einstellung schon stimmt, ist die richtige.
+
+- **Der Anfänger sieht weniger, nicht Verkürztes.** Einsteiger-Modus 
+  heißt: die tägliche Frage („was gieße ich morgen, wie viel") steht 
+  vorn, alles andere liegt darunter. Es heißt nicht, Erklärungen zu 
+  kürzen — im Zweifel ist der längere, selbsterklärende Text der 
+  richtige.
+
+- **Der Profi verliert nichts.** Jede Vereinfachung braucht den Weg zum 
+  vollen Umfang, nur eine Ebene tiefer. Wegnehmen ist keine Lösung.
+
+- **Wirkung sichtbar machen.** Ändert ein Nutzer etwas, muss er sehen, 
+  was daraus folgt — mit Datum und Zahl, auf demselben Bildschirm. Eine 
+  Einstellung, deren Folge man erst woanders bemerkt, wirkt kaputt.
+
+Im Gespräch mit Patrick gilt dasselbe in kurz: **knapp, aber wirklich 
+verständlich.** Lieber ein Satz mehr Erklärung als ein Fachwort ohne sie.
+
 ## Bug-Fix-Workflow (strikt in dieser Reihenfolge)
 
 1. **Verstehen** — Bug-Bericht lesen. Bei Unklarheit nachfragen, nicht 
@@ -91,9 +131,12 @@ Bei jedem Patch, jedem neuen Text, jeder neuen UI mitprüfen:
    - TZ-Variation (Berlin + eine fernere Zone) wenn Datum/Zeit beteiligt
    - Edge-Cases bei Daten: leer, 0, negativ, max, Schaltjahr, DST
 
-7. **Datei + Diff** — Gepatchte index.html in `/mnt/user-data/outputs/` 
-   ablegen, via `present_files` bereitstellen, und kurz auflisten *was* 
-   geändert wurde, damit ich's vor dem Test sehen kann.
+7. **Ausliefern** — `APP_VERSION` anheben, `index.html` mit `build.sh` neu 
+   bauen, `CHANGELOG.md` und `UEBERGABE.md` fortschreiben. Danach kurz 
+   auflisten *was* geändert wurde, damit ich's vor dem Test sehen kann. 
+   Alles liegt direkt im Projektordner — der alte Container-Weg über 
+   `/mnt/user-data/outputs/` und `present_files` gilt seit dem Umzug auf 
+   den Laptop (04.09.2026) nicht mehr.
 
 ## App-spezifische Konventionen, die du kennst
 
@@ -111,7 +154,8 @@ Bei jedem Patch, jedem neuen Text, jeder neuen UI mitprüfen:
 
 ## Anti-Patterns
 
-- Mehrere Bugs gleichzeitig fixen ohne Aufforderung
+- Einen gefundenen Fehler nur melden statt ihn zu beheben
+- Mehrere Fehler in einen einzigen Changelog-Eintrag zusammenwerfen
 - Kosmetik-Refactors während eines Bug-Fixes mit reinschmuggeln
 - Tests, die nie liefen, mit ✅ markieren
 - Höflichkeitsfloskeln ("Gerne", "Selbstverständlich", "Hervorragende Frage")

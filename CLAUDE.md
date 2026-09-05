@@ -49,10 +49,26 @@ durchlaufen, statt gegen einen leeren Grow zu testen.
 
 ---
 
-## Am Ende jeder Sitzung
+## Versionsnummer
 
-Drei Schritte, immer in dieser Reihenfolge. Sie sind kein Papierkram — ohne sie beginnt
-die nächste Sitzung bei null, und genau das ist schon passiert.
+`APP_VERSION` in `app.js` (Zeile ~3188) wird bei **jeder** ausgelieferten Änderung um
+eine Stelle hinten angehoben — v1.5.96 → v1.5.97 → v1.5.98. Auch bei einem
+Einzeiler-Fix, auch bei reiner Textänderung. Ohne Anhebung lässt sich hinterher nicht
+sagen, welche Datei auf dem Handy welchen Stand hat, und der Browser hält womöglich
+die alte Fassung im Zwischenspeicher.
+
+Die neue Nummer steht danach an drei Stellen gleich: in `app.js`, im `CHANGELOG.md`
+und oben in `UEBERGABE.md`.
+
+---
+
+## Nach jeder ausgelieferten Änderung — nicht erst am Sitzungsende
+
+Drei Schritte, immer in dieser Reihenfolge, und zwar **sofort nachdem eine Änderung
+fertig ist**, nicht gesammelt zum Schluss. Grund: Eine Sitzung endet selten geplant —
+sie bricht ab, das Fenster wird geschlossen, der Laptop schläft ein. Was dann noch
+nicht geschrieben ist, ist weg, und die nächste Sitzung beginnt bei null. Genau das ist
+schon passiert. Patrick muss dafür nichts sagen; das läuft von selbst mit.
 
 **1 · `CHANGELOG.md` fortschreiben.** Jede ausgelieferte Änderung bekommt einen Eintrag
 mit **Datum**, **was** geändert wurde und **warum**. Das Warum ist der wichtigere Teil:
@@ -72,10 +88,28 @@ gelernt wurde, bleibt allerdings stehen, auch wenn der Fehler behoben ist.
 
 ---
 
+## Gefundene Fehler werden gleich mitbehoben
+
+Fällt beim Arbeiten ein weiterer Fehler auf, wird er **sofort mitbehoben** — nicht
+gemeldet und liegengelassen (Patricks Ansage vom 05.09.2026). Nachfragen kostet einen
+Umweg, den er nicht will.
+
+Damit das nicht in ein unprüfbares Sammelpaket kippt, gelten drei Bedingungen:
+
+- Jeder Fehler bekommt einen **eigenen Eintrag** im `CHANGELOG.md`, mit eigener
+  Versionsnummer. Stellt sich einer als falsch heraus, ist genau er rücknehmbar.
+- Jeder Fehler bekommt seine **eigene Prüfung** — Tests laufen wirklich, in beiden
+  Zeitzonen.
+- Was mitbehoben wurde, steht **oben in der Antwort**, nicht versteckt am Ende.
+
+Das gilt für Fehler. Es gilt **nicht** für Umbauten, neue Funktionen oder
+Aufhübschungen — die bleiben Patricks Entscheidung.
+
+---
+
 ## Was nie passiert
 
 - `index.html` von Hand bearbeiten
-- Mehrere Bugs auf einmal fixen, ohne dass Patrick die Reihenfolge bestimmt hat
 - Kosmetik-Refactors in einen Bug-Fix mitschmuggeln
 - Tests mit ✅ markieren, die nie gelaufen sind
 - `.toISOString().split('T')[0]` — dafür gibt es `_localISO(d)`
