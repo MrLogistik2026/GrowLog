@@ -2,6 +2,31 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-05 — v1.5.106
+
+- **Nach der Zurück-Taste aus dem Gieß-Fahrplan war der Düngeplan leer.** `goTo(t)` rendert
+  `dash`, `cal`, `tips`, `set` und `gussplan` — `duenger` fehlte als einziger Bildschirm mit
+  eigenem Inhalt. Der Zurück-Handler schickt aus dem Gieß-Fahrplan auf den Düngeplan; der
+  wurde damit sichtbar geschaltet, aber nie gefüllt und stand leer bis auf die Kopfzeile.
+  Dass es nie auffiel, liegt an der Befehlssuche: Sie ruft hinter `goTo` zusätzlich
+  `renderDuenger()` auf und kaschierte den Fehler auf ihrem Weg. Über die Zurück-Taste — auf
+  dem Handy der übliche Weg — gab es diesen Zusatz nicht.
+  Behoben in `goTo` selbst statt an der Aufrufstelle, damit jeder künftige Weg dorthin
+  gedeckt ist. Der Test prüft deshalb alle sechs Hauptbildschirme, nicht nur diesen einen.
+
+## 2026-09-05 — v1.5.105
+
+- **Die Berichtigen-Liste der Trichom-Messungen schnitt am angezeigten Tag ab.**
+  `_trichHistoryEditor` holte die Reihe mit `_trichHistory(c.id, c, iso)` — also nur bis zum
+  geöffneten Tag. Das Diagramm direkt darüber zeigt seit v1.5.27 aber bewusst den **ganzen**
+  Verlauf, auch später eingetragene Messungen. An Tag 95 fehlten dadurch 15 der 47 Messungen:
+  Wer im Diagramm einen Ausreißer entdeckte, der später lag, konnte ihn in der Liste darunter
+  nicht berichtigen und musste erst zu dessen Tag navigieren.
+  Der Zweck der Liste ist das Berichtigen einer Messreihe, nicht die Ansicht eines Tages —
+  sie zeigt jetzt immer alle Messungen. Damit man sich in bis zu 47 Zeilen zurechtfindet,
+  ist der gerade geöffnete Tag grün hervorgehoben.
+  Beides zusammen abgesichert durch `test_navrender.js` (16 Prüfungen, beide Zeitzonen).
+
 ## 2026-09-05 — v1.5.104
 
 - **Die Ablaufmessung wird nicht mehr bewertet, bevor feststeht, dass sie etwas misst.**

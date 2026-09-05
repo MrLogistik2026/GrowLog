@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.104** · index.html 2,11 MB · 628 Funktionen
+Stand: **v1.5.106** · index.html 2,11 MB · 628 Funktionen
 Zuletzt fortgeschrieben am 05.09.2026. Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
@@ -223,9 +223,16 @@ ist jetzt bekannt: Es ist „Alle 12 Wochen zeigen" — im Einsteiger-Modus wird
 Wochentabelle gekürzt und braucht einen Aufklapp-Knopf, den der Profi nicht braucht.
 Harmlos in der Sache, verkehrt in der Wirkung.
 
-**Fünf Pflanzen angelegt, drei stehen** — die Erntegewicht-Zeile in den Einstellungen nennt
-weiterhin 5, `getEffectivePlantCount` rechnet mit 3. Kein Rechenfehler, nur eine
-irreführende Zeile.
+**Behoben (v1.5.106): Nach der Zurück-Taste aus dem Gieß-Fahrplan war der Düngeplan leer.**
+`goTo(t)` rendert `dash`, `cal`, `tips`, `set` und `gussplan` — `duenger` fehlte als einziger
+Bildschirm mit eigenem Inhalt. Der Zurück-Handler schickt aus dem Gieß-Fahrplan dorthin;
+sichtbar geschaltet, nie gefüllt.
+
+**Daraus zu lernen:** Aufgefallen ist es nie, weil die Befehlssuche hinter `goTo` zusätzlich
+`renderDuenger()` aufruft und den Fehler auf ihrem Weg kaschierte. Auf dem Handy ist die
+Zurück-Taste aber der übliche Weg. **Wo eine Aufrufstelle einen fehlenden Schritt von Hand
+nachholt, ist der Schritt an der falschen Stelle** — behoben wurde deshalb in `goTo` selbst,
+nicht am Aufruf.
 
 **Nicht geprüft:** Lexikon-Inhalte (302.000 Zeichen), Kalender im Detail, Foto-Galerie,
 der Outdoor-Pfad und andere Substrat-/Sorten-Kombinationen. Alle Messungen stammen aus
@@ -554,13 +561,13 @@ cat head.html app.js tail.html | cmp - index.html && echo "BYTE-IDENTISCH OK"
 **Byte-Identität mit `cmp` ist Pflicht, bevor irgendetwas geändert wird.** Danach wird
 `app.js` geändert, mit `build.sh` neu gebaut und erneut verglichen.
 
-29 Testdateien, alle grün in beiden Zeitzonen (Stand v1.5.104):
+30 Testdateien, alle grün in beiden Zeitzonen (Stand v1.5.106):
 
 `test_audit_screens` · `test_befehle` · `test_dialog_und_namen` · `test_dosisquelle` · `test_drain` · `test_duengeplaene` ·
 `test_endspurt` · `test_entwurf` · `test_ernteabgleich` · `test_ertrag` ·
 `test_fixes_0905` ·
 `test_gussmenge` · `test_gussmove` ·
-`test_gussmove_kombi` · `test_navscroll` · `test_planladen` · `test_planpause` ·
+`test_gussmove_kombi` · `test_navrender` · `test_navscroll` · `test_planladen` · `test_planpause` ·
 `test_planrueckgrat` · `test_pflanzenzahl` · `test_planzuordnung` · `test_saemling_tage` · `test_sortendauer` · `test_startup` ·
 `test_training` · `test_trichchart` · `test_trichedit` · `test_trichphasen` · `test_vpd` · `test_wochenfolgen`
 
@@ -600,7 +607,16 @@ mit echtem Zustand sichtbar.
 ## 10 · Kleinere offene Punkte
 
 - „Erledigt"-Karte erscheint an Tagen ohne Aufgabe (von Patrick zurückgestellt)
-- „Messungen berichtigen"-Liste schneidet am angezeigten Tag ab
-- Zwei verbliebene Wiederholungen des Plan-Untertitels im Düngeplan-Bildschirm
 - Getrennte Trichom-Verläufe je Pflanze — bewusst nicht gebaut, stattdessen `ripeOffset`
 - Ertragserfassung existiert je Pflanze, aber keine Auswertung über Zyklen hinweg
+
+**Am 05.09.2026 abgeschlossen und deshalb hier gestrichen:**
+
+- *„Messungen berichtigen"-Liste schneidet ab* — behoben in v1.5.105.
+- *Fünf Pflanzen angelegt, drei stehen* — behoben in v1.5.99, die Zeile nennt jetzt
+  „(5, davon 2 schon geschnitten)".
+- *Zwei Wiederholungen des Plan-Untertitels im Düngeplan* — **nachgeprüft, kein Fehler.**
+  Die zwei Stellen sind die Kopfkarte des aktiven Plans („7 Produkte · …", `heroSub`) und
+  die Vorlagen-Liste, die jede Vorlage mit ihrem Untertitel zeigt — darunter zwangsläufig
+  auch die gerade aktive. Sie stehen weit auseinander und erfüllen verschiedene Zwecke.
+  Nicht anfassen.

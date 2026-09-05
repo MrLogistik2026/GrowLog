@@ -3268,7 +3268,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.104';
+const APP_VERSION = 'v1.5.106';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -13505,6 +13505,12 @@ function goTo(t) {
   else if (t === 'tips') renderTips();
   else if (t === 'set') renderSet();
   else if (t === 'gussplan') renderGussplan();
+  // (v1.5.106) `duenger` fehlte hier als einziger Bildschirm mit eigenem Inhalt. Wer im
+  // Gieß-Fahrplan die Zurück-Taste drückte, landete über den Handler in `_onBack` auf dem
+  // Düngeplan — sichtbar geschaltet, aber nie gefüllt, also leer bis auf die Kopfzeile.
+  // Die Befehlssuche kaschierte das, weil sie hinter `goTo` zusätzlich `renderDuenger()`
+  // aufruft; über die Zurück-Taste gab es diesen Zusatz nicht.
+  else if (t === 'duenger') renderDuenger();
   // Always scroll to top when switching tabs
   const scrollEl = scr.querySelector('.scroll');
   if (scrollEl) scrollEl.scrollTop = 0;
@@ -28701,9 +28707,18 @@ async function smoothTrichHistory(cId, iso) {
 }
 
 function _trichHistoryEditor(c, iso) {
-  const hist = _trichHistory(c.id, c, iso);
+  // (v1.5.105) ALLE Messungen, nicht nur die bis zum angezeigten Tag.
+  //
+  // Vorher stand hier `_trichHistory(c.id, c, iso)`. Wer einen früheren Tag aufschlug, sah
+  // im Diagramm daneben zwar den ganzen Verlauf — das zeigt seit v1.5.27 bewusst auch
+  // spätere Messungen —, konnte in der Liste darunter aber nur den Teil bis zu diesem Tag
+  // berichtigen. An Tag 95 fehlten so 15 der 47 Messungen. Wer im Diagramm einen Ausreißer
+  // entdeckte, der später lag, musste erst zu dessen Tag navigieren, um ihn zu ändern.
+  // Der Zweck der Liste ist das Berichtigen einer Messreihe, nicht die Ansicht eines Tages.
+  const hist = _trichHistory(c.id, c, null);
   if (hist.length < 2) return '';
   const dayOf = (i) => isoDiff(i, c.startDate) + 1;
+  const heuteTag = iso ? dayOf(iso) : null;
   const fld = (h, key, col) => `<input id="tre-${h.iso}-${key}" type="number" min="0" max="100" step="0.1" value="${_tFmt(h[key]).replace(',', '.')}"
       onchange="uTrich('${c.id}','${key}',this.value,'${h.iso}')"
       style="width:100%;background:var(--card);border:0.5px solid var(--border);border-radius:6px;padding:5px 2px;font-size:11px;color:${col};font-family:var(--mono);text-align:center"/>`;
@@ -28719,7 +28734,13 @@ function _trichHistoryEditor(c, iso) {
       <span style="width:22px"></span>
     </div>
     ${hist.map(h => `<div style="display:flex;gap:4px;align-items:center;margin-bottom:4px">
-      <span style="width:34px;font-size:9px;color:var(--text-hint);font-family:var(--mono)">T${dayOf(h.iso)}</span>
+      <span style="width:34px;font-size:9px;font-family:var(--mono);${
+        // (v1.5.105) Der gerade geöffnete Tag wird hervorgehoben — in einer Liste über den
+        // ganzen Zyklus braucht es sonst einen Anker, um sich zurechtzufinden.
+        (heuteTag !== null && dayOf(h.iso) === heuteTag)
+          ? 'color:var(--green);font-weight:700'
+          : 'color:var(--text-hint)'
+      }">T${dayOf(h.iso)}</span>
       <span style="flex:1">${fld(h, 'clear', '#8a7fd0')}</span>
       <span style="flex:1">${fld(h, 'milky', 'var(--text-sub)')}</span>
       <span style="flex:1">${fld(h, 'amber', '#e08040')}</span>
