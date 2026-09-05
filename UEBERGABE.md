@@ -1,9 +1,11 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.97** · index.html 2,11 MB · 628 Funktionen
-Zuletzt fortgeschrieben am 05.09.2026 — v1.5.97: Der Widerspruch zwischen Plan-Erntetag
-und Trichom-Messung wird jetzt ausgesprochen. Neu ist außerdem ein vollständiger
-Browser-Durchlauf mit echten Daten (Abschnitt 2) — acht Befunde, einer davon behoben.
+Stand: **v1.5.98** · index.html 2,11 MB · 628 Funktionen
+Zuletzt fortgeschrieben am 05.09.2026. Zwei Fehler behoben, die beide zu einer zu frühen
+Ernte geführt hätten: Der Widerspruch zwischen Plan-Erntetag und Trichom-Messung wird jetzt
+ausgesprochen (v1.5.97), und die Sortenliste plant nicht mehr mit Züchter-Bestwerten
+(v1.5.98). Grundlage war der erste vollständige Browser-Durchlauf mit echten Daten
+(Abschnitt 2) — acht Befunde, zwei davon behoben.
 
 ---
 
@@ -126,7 +128,7 @@ lassen, einrasten.
 
 ---
 
-## 2 · Browser-Durchlauf vom 05.09.2026 — acht Befunde, einer behoben
+## 2 · Browser-Durchlauf vom 05.09.2026 — acht Befunde, zwei behoben
 
 Erstmals wurde die App nicht nur in jsdom, sondern **im echten Browser** mit Patricks
 Sicherung durchlaufen (lokaler Server auf Port 8099, Handy-Format 375×812, beide Modi,
@@ -142,7 +144,9 @@ Stelle.
 
 **Behoben (v1.5.97):** Erntekarte gegen Trichom-Messung, siehe `CHANGELOG.md`.
 
-### Als Nächstes: die Sortenliste
+**Behoben (v1.5.98):** Sortenliste — Spanne statt Züchter-Bestwert, siehe unten.
+
+### Die Sortenliste (v1.5.98 — teilweise erledigt)
 
 **Alle 15 Automatic-Sorten in `STRAINS` tragen Züchter-Bestwerte** (56–75 Tage). Der
 Kommentar über der Liste sagt korrekt, dass die Zahl bei Autos der Gesamt-Zyklus ab Samen
@@ -161,13 +165,22 @@ Blütezeit und plausibel.
 
 Patrick hat am 05.09.2026 entschieden: **Spanne statt Einzelzahl**, geplant wird mit dem
 oberen Ende — dieselbe Regel wie bei der Wochen-Eingabe („zu spät spülen kostet nichts, zu
-früh spülen kostet die Ernte"). Sensi Amnesia XXL bekommt den belegten Wert; die übrigen 14
-werden ihm als Tabelle zum Gegenlesen vorgelegt, nichts geht ungeprüft in die App.
+früh spülen kostet die Ernte").
 
-**Drei Stellen beschriften die Zahl außerdem falsch.** Bei Autos ist sie Keimung-bis-Ernte,
-aber die Sortensuche nennt sie „⚡ Auto · Blüte 75d" und der Steckbrief „Blüte-Dauer 75
-Tage". Der Chip nennt gar keine Einheit. Nur `_strainInfoHTML` sagt es richtig
-(„Reife: ~75 Tage von Keimung bis Ernte").
+**Erledigt in v1.5.98:** `floweringLo`/`floweringHi` als Spanne, `strainDays(s)` als einzige
+Stelle, die sie auslegt. Sensi Amnesia XXL trägt 105–120 Tage (Erntetag jetzt 121 statt 76).
+Die drei falschen Beschriftungen sind behoben — Chip, Suchliste, Steckbrief und Wizard holen
+ihren Text aus `strainDays()`.
+
+**Noch offen: die übrigen 14 Automatics.** Sie tragen weiterhin Züchter-Bestwerte
+(Northern Lights 65, White Widow 70, Gorilla Cookies 70, AK-47 65, Blueberry 70, Zkittlez 75,
+Critical 65, Royal Gorilla 70, Quick One 56, Girl Scout Cookies 70, Sour Diesel 75,
+Think Different 70, Jack Herer 75, OG Kush 70). Bewusst nicht geändert: Für sie liegt kein
+Beleg im Projekt vor, und geschätzte Zahlen als Messwerte auszugeben wäre derselbe Fehler
+noch einmal. In der App sind sie als „Züchter-Angabe, nicht nachgemessen" gekennzeichnet,
+mit dem Rat, die Wochen-Angabe von der eigenen Samentüte einzutragen — dieser Weg rechnet
+nachweislich richtig. Sobald Patrick belastbare Spannen freigibt, werden sie in derselben
+Form nachgetragen; die Struktur steht bereits.
 
 ### Offen, mit allem Nötigen zum Weiterarbeiten
 
@@ -348,13 +361,13 @@ cat head.html app.js tail.html | cmp - index.html && echo "BYTE-IDENTISCH OK"
 **Byte-Identität mit `cmp` ist Pflicht, bevor irgendetwas geändert wird.** Danach wird
 `app.js` geändert, mit `build.sh` neu gebaut und erneut verglichen.
 
-22 Testdateien, alle grün in beiden Zeitzonen (Stand v1.5.97):
+23 Testdateien, alle grün in beiden Zeitzonen (Stand v1.5.98):
 
 `test_audit_screens` · `test_befehle` · `test_dialog_und_namen` · `test_duengeplaene` ·
 `test_endspurt` · `test_entwurf` · `test_ernteabgleich` · `test_fixes_0905` ·
 `test_gussmenge` · `test_gussmove` ·
 `test_gussmove_kombi` · `test_navscroll` · `test_planladen` · `test_planpause` ·
-`test_planrueckgrat` · `test_planzuordnung` · `test_saemling_tage` · `test_startup` ·
+`test_planrueckgrat` · `test_planzuordnung` · `test_saemling_tage` · `test_sortendauer` · `test_startup` ·
 `test_trichchart` · `test_trichedit` · `test_trichphasen` · `test_wochenfolgen`
 
 **Zeitzonen unter Windows:** `TZ=Europe/Berlin node test.js` wirkt in Git Bash **nicht** —

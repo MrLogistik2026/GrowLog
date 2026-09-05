@@ -2,6 +2,39 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-05 — v1.5.98
+
+- **Die Sortenliste plant keine Ernte mehr 40 Tage zu früh.** In `STRAINS` standen bei den
+  Automatics Züchter-Bestwerte. Bei Sensi Amnesia XXL waren es 75 Tage; Patricks Pflanze
+  brauchte 116, und der App-eigene Düngeplan `sensi_amnesia_auto` rechnet für dieselbe Sorte
+  mit 17 Wochen und `bloomDaysHint: 77`. Wer den Chip „Sensi Amnesia XXL · 75d" antippte,
+  bekam über `_pickStrain` → `_wizFinish` (`75 − 21 − 8 − 3 = 43` Blütetage) eine Ernte an
+  Tag 76 geplant — vierzig Tage zu früh. Die Rechnung war richtig, die Eingangszahl nicht.
+  Neu ist die Spanne `floweringLo`/`floweringHi` samt `strainDays(s)` als einziger Stelle,
+  die sie auslegt. Sensi Amnesia XXL trägt jetzt 105–120 Tage; geplant wird mit dem oberen
+  Ende, wodurch der Erntetag bei 121 statt 76 landet. Warum das obere Ende: dieselbe Regel
+  wie bei der Wochen-Angabe von der Samentüte — zu spät ernten kostet nichts, zu früh kostet
+  die Ernte, und zu früh geschnitten lässt sich nicht nachholen.
+  Die übrigen 14 Automatics wurden **bewusst nicht** geändert: Für sie liegt kein Beleg im
+  Projekt vor, und geschätzte Zahlen als Messwerte auszugeben wäre derselbe Fehler noch
+  einmal. Sie tragen weiter den Züchter-Wert, werden im Steckbrief aber ausdrücklich als
+  „Züchter-Angabe, nicht nachgemessen" gekennzeichnet, mit dem Rat, die Wochen-Angabe von
+  der eigenen Samentüte einzutragen. Patrick liegt eine Tabelle zum Gegenlesen vor.
+  Die Photoperioden-Sorten sind unangetastet — dort ist `flowering` die reine Blütezeit und
+  plausibel.
+
+- **Drei Stellen beschrifteten dieselbe Zahl falsch.** Bei Automatics zählt sie ab Keimung,
+  die Sortensuche nannte sie aber „⚡ Auto · Blüte 75d" und der Steckbrief „Blüte-Dauer 75
+  Tage"; der Chip nannte gar keine Einheit („· 75d" — 75 Tage wovon?). Nur `_strainInfoHTML`
+  sagte es richtig. Alle vier Stellen holen den Text jetzt aus `strainDays()`, das neben den
+  Zahlen auch mitliefert, worauf sie sich beziehen. Warum als eigener Helfer statt vier
+  Korrekturen: Vier Stellen, die dieselbe Zahl selbst auslegen, laufen wieder auseinander —
+  eine Stelle kann das nicht.
+
+  Abgesichert durch `test_sortendauer.js` (27 Prüfungen, beide Zeitzonen), darunter die
+  Gegenprobe, dass keine Photoperiode eine Auto-Spanne bekommen hat und dass der Erntetag
+  nicht ins andere Extrem gekippt ist.
+
 ## 2026-09-05 — v1.5.97
 
 - **Die App fordert nicht mehr zum Ernten auf, wenn die eigene Messung dagegen spricht.**

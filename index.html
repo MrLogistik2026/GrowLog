@@ -1847,10 +1847,23 @@ function stageForCycle(cyc, iso) {
 const STRAINS = [
   // ===================================================================
   // AUTOFLOWERING (Automatics) — blühen automatisch, keine 12/12-Umstellung nötig
-  // flowering = Gesamt-Zyklus in Tagen ab Samen (typisch 65-90 T.)
+  // flowering = Gesamt-Zyklus in Tagen ab Samen
   // difficulty: 1 = anfängerfreundlich, 2 = Fortgeschritten, 3 = anspruchsvoll
+  //
+  // (v1.5.98) ACHTUNG, hier lag ein teurer Fehler: Die Zahlen waren Züchter-Bestwerte —
+  // was unter idealen Bedingungen erreichbar ist, nicht was ein Grow wirklich braucht.
+  // Bei Sensi Amnesia XXL standen 75 Tage; Patricks Pflanze brauchte 116, und der
+  // App-eigene Düngeplan für dieselbe Sorte rechnet mit 17 Wochen. Wer den Chip antippte,
+  // bekam eine Ernte 40 Tage zu früh geplant — der teuerste Anfängerfehler, weil zu früh
+  // geschnitten nicht nachzuholen ist.
+  //
+  // Deshalb: `floweringLo`/`floweringHi` als SPANNE, sobald der Wert belegt ist. Geplant
+  // wird mit dem oberen Ende — dieselbe Regel wie bei der Wochen-Angabe von der Samentüte:
+  // zu spät spülen kostet nichts, zu früh spülen kostet die Ernte. Sorten OHNE Spanne
+  // tragen weiter nur den Züchter-Wert; sie werden in der App ausdrücklich als
+  // „Züchter-Angabe" gekennzeichnet, damit niemand sie für eine Erfahrungszahl hält.
   // ===================================================================
-  { name: 'Sensi Amnesia XXL Auto', type: 'auto', subtype: 'Sativa-dominant', flowering: 75, yieldIndoor: '150-200 g/Pflanze', yieldOutdoor: '200-300 g/Pflanze', height: 'mittel-hoch', difficulty: 1, smell: 'stark', notes: 'Beliebter Auto, Haze-Aroma, hohe Erträge', commonIssues: ['Stretch in Frühblüte'] },
+  { name: 'Sensi Amnesia XXL Auto', type: 'auto', subtype: 'Sativa-dominant', flowering: 120, floweringLo: 105, floweringHi: 120, yieldIndoor: '150-200 g/Pflanze', yieldOutdoor: '200-300 g/Pflanze', height: 'mittel-hoch', difficulty: 1, smell: 'stark', notes: 'Beliebter Auto, Haze-Aroma, hohe Erträge — Haze braucht Zeit, plane 15–17 Wochen ein', commonIssues: ['Stretch in Frühblüte', 'reift langsam aus — nicht nach Kalender ernten, Trichome entscheiden'] },
   { name: 'Northern Lights Auto', type: 'auto', subtype: 'Indica-dominant', flowering: 65, yieldIndoor: '100-150 g/Pflanze', yieldOutdoor: '150-200 g/Pflanze', height: 'kompakt', difficulty: 1, smell: 'mittel', notes: 'Anfänger-Klassiker, sehr robust, entspannend', commonIssues: ['dichte Buds — bei hoher Luftfeuchte auf Schimmel achten'] },
   { name: 'White Widow Auto', type: 'auto', subtype: 'Hybrid', flowering: 70, yieldIndoor: '120-170 g/Pflanze', yieldOutdoor: '150-250 g/Pflanze', height: 'mittel', difficulty: 1, smell: 'mittel', notes: 'Ausgewogen, harzreich, verlässlich', commonIssues: ['harzige, dichte Buds — Luftfeuchte in der Blüte im Blick behalten'] },
   { name: 'Gorilla Cookies Auto', type: 'auto', subtype: 'Indica-dominant', flowering: 70, yieldIndoor: '150-200 g/Pflanze', yieldOutdoor: '200-300 g/Pflanze', height: 'mittel', difficulty: 2, smell: 'stark', notes: 'Harzig-klebrig, hohe THC, kräftig', commonIssues: ['empfindlich auf Überdüngung'] },
@@ -1909,6 +1922,34 @@ const STRAINS = [
   { name: 'CBD Critical Mass', type: 'fem', subtype: 'CBD (Indica-dom.)', flowering: 56, yieldIndoor: '550 g/m²', yieldOutdoor: '650 g/Pflanze', height: 'mittel', difficulty: 1, smell: 'mittel', notes: 'Ertragreich, CBD-Variante des Klassikers', commonIssues: ['sehr dichte Buds — Schimmelgefahr, für Luftbewegung sorgen'] },
   { name: 'ACDC', type: 'fem', subtype: 'CBD (Sativa-dom.)', flowering: 63, yieldIndoor: '400 g/m²', yieldOutdoor: '500 g/Pflanze', height: 'mittel', difficulty: 2, smell: 'schwach', notes: 'Sehr hoher CBD, fast kein THC, medizinisch geschätzt', commonIssues: ['sativa-typischer Wuchs — leichter Stretch, Training einplanen'] },
 ];
+
+/**
+ * (v1.5.98) Wie lange braucht diese Sorte — und wie sicher ist die Zahl?
+ *
+ * Eine Stelle für die Frage, damit Chip, Suchliste, Steckbrief und Wizard nicht länger
+ * dieselbe Zahl verschieden auslegen. Vorher nannte die Suchliste den Gesamt-Zyklus einer
+ * Automatic „Blüte 75d" und der Steckbrief „Blüte-Dauer 75 Tage" — beides falsch, denn bei
+ * Autos zählt die Zahl ab Keimung.
+ *
+ * `plan` ist die Zahl, mit der gerechnet wird: bei einer belegten Spanne deren OBERES Ende.
+ * Lieber ein paar Tage zu lang geplant als zu kurz — zu früh geerntet lässt sich nicht
+ * nachholen.
+ */
+function strainDays(s) {
+  if (!s) return null;
+  const auto = s.type === 'auto';
+  const hatSpanne = isFinite(s.floweringLo) && isFinite(s.floweringHi) && s.floweringHi >= s.floweringLo;
+  return {
+    auto,
+    lo: hatSpanne ? s.floweringLo : s.flowering,
+    hi: hatSpanne ? s.floweringHi : s.flowering,
+    plan: hatSpanne ? s.floweringHi : s.flowering,
+    geprueft: hatSpanne,
+    // Worauf sich die Zahl bezieht. Bei Autos ab Keimung, bei Photoperiodischen ab Blühbeginn.
+    was: auto ? 'bis Ernte' : 'Blüte',
+    langform: auto ? 'von Keimung bis Ernte' : 'reine Blütezeit ab Blühbeginn',
+  };
+}
 
 /**
  * Sucht Strain-Vorlagen die zum gegebenen Namens-Fragment passen.
@@ -4204,7 +4245,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.97';
+const APP_VERSION = 'v1.5.98';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -21701,7 +21742,12 @@ function _wizStepNameSummary(a) {
       <div style="display:flex;flex-wrap:wrap;gap:6px">
         ${popularStrains.map(s => `
           <button onclick="_pickStrain('${s.name.replace(/'/g, "\\'")}')" style="background:var(--card);border:0.5px solid var(--border);border-radius:20px;padding:6px 12px;font-size:11px;color:var(--text-sub);cursor:pointer;font-family:var(--font);white-space:nowrap">
-            ${s.name.replace(/ Auto$/, '')} <span style="color:var(--text-hint);font-size:10px">· ${s.flowering}d</span>
+            ${s.name.replace(/ Auto$/, '')} <span style="color:var(--text-hint);font-size:10px">· ${(() => {
+              // (v1.5.98) Vorher stand hier nur "75d" — ohne ein Wort, wovon. Bei Autos ist
+              // das die Zeit ab Keimung, bei Photoperiodischen die reine Blüte.
+              const d = strainDays(s);
+              return `${d.geprueft ? `${d.lo}–${d.hi}` : `~${d.hi}`} d ${d.was}`;
+            })()}</span>
           </button>
         `).join('')}
       </div>
@@ -21773,7 +21819,11 @@ function _renderStrainSuggestions(query) {
   el.innerHTML = matches.map(s => `
     <div onclick="_pickStrain('${s.name.replace(/'/g, "\\'")}')" style="padding:10px 12px;cursor:pointer;border-bottom:0.5px solid var(--border);display:flex;flex-direction:column;gap:2px">
       <div style="font-size:13px;color:var(--text);font-weight:500">${s.name}</div>
-      <div style="font-size:10px;color:var(--text-muted)">${s.type === 'auto' ? '⚡ Auto' : '♀ Photo'} · Blüte ${s.flowering}d · ${s.notes}</div>
+      <div style="font-size:10px;color:var(--text-muted)">${s.type === 'auto' ? '⚡ Auto' : '♀ Photo'} · ${(() => {
+        // (v1.5.98) Hieß bei Autos faelschlich "Blüte" — die Zahl zaehlt dort ab Keimung.
+        const d = strainDays(s);
+        return `${d.geprueft ? `${d.lo}–${d.hi}` : `~${d.hi}`} d ${d.was}`;
+      })()} · ${s.notes}</div>
     </div>
   `).join('');
 }
@@ -21791,9 +21841,16 @@ function _strainInfoHTML(name, growType) {
   const s = STRAINS.find(x => x.name === name);
   if (!s) return '';
   const diff = { 1: ['Anfänger-freundlich', 'var(--green)'], 2: ['Etwas Erfahrung hilft', 'var(--yellow)'], 3: ['Anspruchsvoll', 'var(--orange)'] }[s.difficulty] || ['—', 'var(--text-muted)'];
-  const bloomLine = s.type === 'auto'
-    ? `Reife: <b>~${s.flowering} Tage</b> <span style="color:var(--text-hint)">von Keimung bis Ernte</span>`
-    : `Blütephase: <b>${s.flowering} Tage</b>`;
+  // (v1.5.98) Eine belegte Spanne wird als Spanne gezeigt; ein reiner Züchter-Wert wird als
+  // solcher gekennzeichnet, damit niemand ihn für eine Erfahrungszahl hält.
+  const _sd = strainDays(s);
+  const _zahl = _sd.geprueft ? `${_sd.lo}–${_sd.hi} Tage` : `~${_sd.hi} Tage`;
+  const bloomLine = (s.type === 'auto'
+    ? `Reife: <b>${_zahl}</b> <span style="color:var(--text-hint)">${_sd.langform}</span>`
+    : `Blütephase: <b>${_zahl}</b>`)
+    + (_sd.geprueft
+      ? `<br><span style="color:var(--text-hint);font-size:10px">Geplant wird mit ${_sd.hi} Tagen — dem oberen Ende. Zu spät ernten kostet nichts, zu früh kostet die Ernte.</span>`
+      : `<br><span style="color:var(--text-hint);font-size:10px">Züchter-Angabe, nicht nachgemessen — Autos brauchen in der Praxis oft länger. Steht auf deiner Samentüte eine Wochen-Angabe, trag lieber die ein.</span>`);
   // Ertrag kontextabhängig (Outdoor-Zyklus → Outdoor-Zahl). „mit Erfahrung" ist bewusst —
   // ein Erstgrow erreicht den oberen Wert selten; lieber ehrlich einordnen als übertreiben.
   const yieldStr = growType === 'outdoor' ? s.yieldOutdoor : s.yieldIndoor;
@@ -21825,8 +21882,9 @@ function _pickStrain(name) {
   if (!s) return;
   _wizAnswers.name = s.name;
   _wizAnswers.strain = s.name;            // (v1.4.37) für den Sorten-Steckbrief
-  // Blüte-Dauer speichern — greift im _wizFinish (auto-korrigiert) falls übernommen
-  _wizAnswers.bloomDaysHint = s.flowering;
+  // Blüte-Dauer speichern — greift im _wizFinish (auto-korrigiert) falls übernommen.
+  // (v1.5.98) Bei einer belegten Spanne das obere Ende, sonst der Züchter-Wert wie bisher.
+  _wizAnswers.bloomDaysHint = strainDays(s).plan;
   // Name-Feld aktualisieren + Suggestion-Liste schließen
   const inp = document.getElementById('wiz-name');
   if (inp) inp.value = s.name;
@@ -21838,7 +21896,8 @@ function _pickStrain(name) {
   const info = document.getElementById('wiz-strain-info');
   if (info) info.innerHTML = _strainInfoHTML(s.name, _wizAnswers.growType);
   const short = s.name.split(' ').slice(0, 2).join(' ');
-  toast(s.type === 'auto' ? `✓ ${short} · ~${s.flowering}d bis Ernte` : `✓ ${short} · ${s.flowering}d Blüte`);
+  const _td = strainDays(s);
+  toast(`✓ ${short} · ${_td.geprueft ? `${_td.lo}–${_td.hi}` : `~${_td.hi}`} d ${_td.was}`);
 }
 
 /** Löst aus den Wizard-Antworten ein ISO-Startdatum ab. */
@@ -23285,7 +23344,11 @@ function exportReportPDF(cId) {
     <div class="meta">
       <div class="meta-box"><div class="meta-label">Name</div><div class="meta-val">${strainDetails.name}</div></div>
       <div class="meta-box"><div class="meta-label">Typ</div><div class="meta-val">${strainDetails.subtype || (strainDetails.type === 'auto' ? 'Automatic' : 'Feminisiert')}</div></div>
-      <div class="meta-box"><div class="meta-label">Blüte-Dauer</div><div class="meta-val">${strainDetails.flowering} Tage</div></div>
+      ${(() => {
+        // (v1.5.98) Hieß pauschal "Blüte-Dauer" — bei Autos zaehlt die Zahl aber ab Keimung.
+        const d = strainDays(strainDetails);
+        return `<div class="meta-box"><div class="meta-label">${d.auto ? 'Keimung bis Ernte' : 'Blüte-Dauer'}</div><div class="meta-val">${d.geprueft ? `${d.lo}–${d.hi}` : `~${d.hi}`} Tage</div></div>`;
+      })()}
       <div class="meta-box"><div class="meta-label">Schwierigkeit</div><div class="meta-val">${strainDifficultyLabel(strainDetails.difficulty)}</div></div>
       <div class="meta-box"><div class="meta-label">Ertrag Indoor</div><div class="meta-val">${strainDetails.yieldIndoor || '—'}</div></div>
       <div class="meta-box"><div class="meta-label">Höhe</div><div class="meta-val">${strainDetails.height || '—'}</div></div>
