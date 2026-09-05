@@ -1,5 +1,16 @@
 # Abhaengigkeiten - werden nicht hochgeladen
 node_modules/
 
-# Sicherungsdateien mit persoenlichen Grow-Daten - NIEMALS ins oeffentliche Repository
+# Sicherungsdateien mit persoenlichen Grow-Daten - NIEMALS ins oeffentliche Repository.
+# Absichtlich breit gefasst: Das Repository ist oeffentlich, und wer den Link zum
+# Testen weitergibt, gibt sonst seine Grow-Daten mit weiter. Lieber eine Datei zu
+# viel ausgeschlossen als eine zu wenig - Verlust im Repo ist harmlos, ein
+# versehentlich veroeffentlichter Grow nicht.
 growsmart-sicherung-*.txt
+*sicherung*
+*Sicherung*
+*backup*
+*Backup*
+*.bak
+export-*.txt
+export-*.json
