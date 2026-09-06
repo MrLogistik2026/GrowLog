@@ -4301,7 +4301,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.118';
+const APP_VERSION = 'v1.5.122';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -16225,7 +16225,23 @@ function renderCal() {
     </span>`
   ).join(' ');
 
+  // (v1.5.122) Ohne Zyklus zeigte der Kalender ein leeres Monatsraster — kein Wort dazu,
+  // warum nichts drinsteht. Darunter stand trotzdem „lange drücken für Gießtag verschieben",
+  // also ein Versprechen auf eine Funktion, die ohne Zyklus nichts tun kann. Der Kalender
+  // ist einer von vier Haupt-Tabs und damit für viele der zweite Bildschirm überhaupt.
+  const _calLeer = act.length === 0 && (typeof archived !== 'function' || archived().length === 0)
+    ? `<div style="background:var(--card);border:0.5px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;text-align:center">
+        <div style="font-size:12px;font-weight:700;color:var(--text-sub);margin-bottom:4px">🌱 Noch kein Zyklus</div>
+        <div style="font-size:11px;color:var(--text-hint);line-height:1.55;margin-bottom:10px">
+          Sobald du einen anlegst, stehen hier deine Gieß-, Dünge- und Ernte-Tage im Monat.
+          Einen Tag kannst du trotzdem schon antippen und Notizen hinterlegen.
+        </div>
+        <button onclick="openCycleWizard('dash')" style="background:var(--green);border:none;border-radius:10px;padding:9px 16px;font-size:12px;color:#fff;cursor:pointer;font-family:var(--font);font-weight:700">🌱 Zyklus jetzt anlegen</button>
+      </div>`
+    : '';
+
   document.getElementById('cal-body').innerHTML = `
+    ${_calLeer}
     ${act.map(c => cycleOverviewStrip(c)).join('')}
     <div style="display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:4px">
       ${['Mo','Di','Mi','Do','Fr','Sa','So'].map(x => `<div style="text-align:center;font-size:11px;color:var(--text-muted);font-weight:600">${x}</div>`).join('')}
@@ -16233,7 +16249,7 @@ function renderCal() {
     <div class="cal-grid">${cells}</div>
     <!-- (v1.5.46) Ohne diesen Satz findet niemand die Zusatzfunktionen: Antippen öffnet den
          Tag, langes Drücken zeigt das Menü. Steht in beiden Modi da, weil es in beiden gilt. -->
-    <div style="text-align:center;font-size:10px;color:var(--text-hint);padding:6px 0 2px">Tippen öffnet den Tag · lange drücken für Gießtag verschieben &amp; mehr</div>
+    <div style="text-align:center;font-size:10px;color:var(--text-hint);padding:6px 0 2px">${_calLeer ? 'Tippen öffnet den Tag' : 'Tippen öffnet den Tag · lange drücken für Gießtag verschieben &amp; mehr'}</div>
     <div style="padding:6px 0;border-top:0.5px solid var(--border);margin-top:5px;display:flex;flex-wrap:wrap;gap:6px">${cycLeg}</div>
     ${S.beginnerMode ? `
     <div style="padding:4px 0 2px;display:flex;flex-wrap:wrap;gap:4px 10px;font-size:10px;color:var(--text-hint)">
@@ -18172,10 +18188,45 @@ function renderGussplan() {
   const body = document.getElementById('gussplan-body');
   if (!body) return;
   const c = gussplanActiveCycle();
-  if (!c) { body.innerHTML = '<div style="padding:30px 16px;text-align:center;color:var(--text-muted)">Kein Zyklus aktiv.</div>'; return; }
+  // (v1.5.120) Beide Leer-Zustände waren Sackgassen: eine graue Zeile auf schwarzer
+  // Fläche, kein Wort dazu, was fehlt, kein Weg weiter. Erreichbar ist das ohne Umweg —
+  // die Einstellungen laden mit der Zeile „💧 Gieß-Fahrplan · Wann düngen, wann nur
+  // wässern · Menge pro Guss" ausdrücklich zum Antippen ein, auch bevor ein Zyklus
+  // besteht. Vorbild ist der Düngeplan (`_emptyProds`): sagen, was fehlt, und den Weg
+  // dorthin anbieten — dieselben zwei Wege, die auch das leere Dashboard anbietet.
+  if (!c) {
+    body.innerHTML = `<div class="empty-state" style="padding:44px 22px">
+      <div style="font-size:38px;opacity:0.3">💧</div>
+      <div style="font-size:14px;font-weight:700;color:var(--text-sub);margin:8px 0 6px">Noch kein Zyklus</div>
+      <div style="font-size:11px;color:var(--text-hint);line-height:1.6;max-width:290px;margin:0 auto 16px">
+        Der Gieß-Fahrplan rechnet aus deinem Zyklus — Sorte, Topfgröße, Substrat und
+        Düngeplan —, wann du gießt und wie viel. Ohne Zyklus gibt es nichts zu rechnen.
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px;align-items:stretch;max-width:260px;margin:0 auto">
+        <button onclick="openCycleWizard('dash')" style="background:var(--green);border:none;border-radius:12px;padding:12px 18px;font-size:13px;color:#fff;cursor:pointer;font-family:var(--font);font-weight:700">🌱 Zyklus jetzt anlegen</button>
+        <button onclick="welcomeStartDemo()" style="background:transparent;border:1px solid var(--border);border-radius:12px;padding:11px 18px;font-size:12px;color:var(--text-sub);cursor:pointer;font-family:var(--font)">🎓 Demo-Zyklus laden</button>
+      </div>
+    </div>`;
+    return;
+  }
   const steps = collectBloomGusse(c);
   if (!steps.length) {
-    body.innerHTML = '<div style="padding:30px 16px;text-align:center;color:var(--text-muted)">Für diesen Zyklus sind (noch) keine Blüte-Güsse berechenbar.</div>';
+    // Sicherheitsnetz: tritt normalerweise nicht ein (selbst an Tag 1 sind es 13 Güsse),
+    // deshalb nennt der Text ehrlich die zwei Stellen, an denen die Ursache liegen kann,
+    // statt eine zu behaupten.
+    body.innerHTML = `<div class="empty-state" style="padding:44px 22px">
+      <div style="font-size:38px;opacity:0.3">💧</div>
+      <div style="font-size:14px;font-weight:700;color:var(--text-sub);margin:8px 0 6px">Noch keine Güsse berechenbar</div>
+      <div style="font-size:11px;color:var(--text-hint);line-height:1.6;max-width:290px;margin:0 auto 16px">
+        Für die Blütephase dieses Zyklus lässt sich noch kein Rhythmus ausrechnen. Meist
+        fehlt dazu die Blütedauer oder das Gießintervall in den Einstellungen. Deine
+        heutigen Aufgaben stehen unabhängig davon auf der Startseite und im Kalender.
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px;align-items:stretch;max-width:260px;margin:0 auto">
+        <button onclick="goTo('set')" style="background:var(--green);border:none;border-radius:12px;padding:12px 18px;font-size:13px;color:#fff;cursor:pointer;font-family:var(--font);font-weight:700">⚙ Einstellungen öffnen</button>
+        <button onclick="goTo('dash')" style="background:transparent;border:1px solid var(--border);border-radius:12px;padding:11px 18px;font-size:12px;color:var(--text-sub);cursor:pointer;font-family:var(--font)">🌱 Zur Startseite</button>
+      </div>
+    </div>`;
     return;
   }
   const curPattern = (c.fwPattern || '').toUpperCase().replace(/[^FW]/g, '');
@@ -18227,7 +18278,46 @@ function renderGussplan() {
   // der Vergangenheit — die eine Zeile, die zählt, lag irgendwo in der Mitte. Jetzt steht
   // der nächste Guss groß obendrauf, mit Menge, und Erledigtes klappt zusammen.
   const _heuteTag = (c && c.startDate) ? isoDiff(todayISO(), c.startDate) + 1 : 0;
-  const _naechster = steps.find(s => s.tag >= _heuteTag) || null;
+  // (v1.5.119) Diese Zeile hieß bis heute `steps.find(s => s.tag >= _heuteTag)` — und
+  // `steps` sind ausschließlich die BLÜTE-Güsse (`collectBloomGusse` beginnt bei
+  // `anzuchtDays + 1`). Für einen frisch angelegten Zyklus war das lebensgefährlich:
+  // An Tag 1 sagte das Dashboard „💦 Heute: Sättigungsguss (Tag 1) — 700 ml", der
+  // Gieß-Fahrplan gleichzeitig „Nächster Guss · in 23 Tagen · Tag 24". Die fünf
+  // Anzucht-Güsse (Tag 9, 12, 15, 18, 21) und der Sättigungsguss kommen in dieser
+  // Liste schlicht nicht vor. Ein Anfänger, der dem Bildschirm glaubt, der
+  // „Gieß-Fahrplan" heißt, gießt seinen Sämling drei Wochen nicht.
+  //
+  // Die App kannte die richtige Antwort längst: `isGiessTag` zählt genau die Aktionen,
+  // die ein Guss sind (`giess`, `giess_anz`, `spuelen`, `ice`, `saettigung` — Sprühen
+  // ausdrücklich nicht), und `nextGiessTag` sucht sie 60 Tage voraus. Die Karte fragte
+  // nur die falsche Quelle. Die Liste darunter bleibt unverändert eine Blüte-Liste —
+  // sie sagt das ab sofort auch (siehe `listHdr`).
+  const _naechster = (() => {
+    const _heuteISO = todayISO();
+    let _zielISO = null;
+    if (c && c.startDate && typeof isGiessTag === 'function') {
+      if (isGiessTag(_heuteISO, c)) _zielISO = _heuteISO;
+      else if (typeof nextGiessTag === 'function') {
+        const _n = nextGiessTag(c, _heuteISO);
+        if (_n) _zielISO = _n.iso;
+      }
+    }
+    // Rückfall auf das bisherige Verhalten, wenn die Helfer nichts liefern.
+    if (!_zielISO) return steps.find(s => s.tag >= _heuteTag) || null;
+    // Liegt der Guss in der Blüte-Liste, wird ihr Eintrag benutzt — damit Feed/Wasser,
+    // Sperren und Guss-Index unverändert wie bisher gelten.
+    const _inListe = steps.find(s => s.iso === _zielISO);
+    if (_inListe) return _inListe;
+    // Sonst steht er vor der Blüte und muss selbst beschrieben werden.
+    const _a = (typeof getAction === 'function') ? getAction(_zielISO, c) : null;
+    return {
+      iso: _zielISO,
+      tag: isoDiff(_zielISO, c.startDate) + 1,
+      kind: _a === 'saettigung' ? 'saettigung' : _a === 'giess_anz' ? 'anzucht'
+        : _a === 'spuelen' ? 'flush' : _a === 'ice' ? 'ice' : 'giess',
+      type: 'feed', locked: false, vorBluete: true,
+    };
+  })();
   const _erledigt = steps.filter(s => s.tag < _heuteTag);
   // (v1.5.57) Nicht nur die Gesamtmenge, sondern auch woraus sie entsteht. Eine Zahl wie
   // „17800 ml", die man nicht nachrechnen kann, ist selbst ein Fehler — man weiß nicht, ob
@@ -18247,9 +18337,15 @@ function renderGussplan() {
     : '';
   const _naechsteKarte = _naechster ? (() => {
     const cd = S.entries[_naechster.iso] && S.entries[_naechster.iso].cycleData && S.entries[_naechster.iso].cycleData[c.id];
-    const eff = (typeof getFeedWaterEffective === 'function') ? getFeedWaterEffective(c, phase(_naechster.iso, c), _naechster.iso, cd) : _naechster.type;
+    // Feed/Wasser gilt nur für Blüte-Güsse. Vor der Blüte gibt es keinen Guss-Index,
+    // deshalb wird die Frage dort gar nicht erst gestellt.
+    const eff = (_naechster.vorBluete || typeof getFeedWaterEffective !== 'function')
+      ? _naechster.type
+      : getFeedWaterEffective(c, phase(_naechster.iso, c), _naechster.iso, cd);
     const art = _naechster.kind === 'ice' ? '🧊 IceFlush'
       : _naechster.kind === 'flush' ? '💧 Spülen (nur Wasser)'
+      : _naechster.kind === 'saettigung' ? '💦 Sättigungsguss'
+      : _naechster.kind === 'anzucht' ? '🌱 Anzucht-Guss'
       : (eff === 'water' ? '💧 Nur Wasser' : '🌿 Düngen');
     const ml = _mlFor(_naechster);
     const inTagen = _naechster.tag - _heuteTag;
@@ -18295,8 +18391,20 @@ function renderGussplan() {
       <div style="font-size:10px;color:var(--text-hint);margin-top:6px">👆 Antippen öffnet den heutigen Eintrag</div>
     </div>`;
   })();
+  // (v1.5.119) Die Liste enthält nur Blüte-Güsse. Solange der Zyklus noch in der Anzucht
+  // steht, fehlt darin also genau das, wonach der Nutzer gerade sucht — die Güsse der
+  // nächsten Tage. Statt sie hier nachzubauen (der ganze Feed/Wasser-Umschalter hängt am
+  // Blüte-Guss-Index) sagt die Liste, was sie ist und wo das Fehlende steht.
+  const _vorBlueteHinweis = (_naechster && _naechster.vorBluete)
+    ? `<div style="font-size:10px;color:var(--yellow);margin-top:5px;line-height:1.5;background:rgba(240,208,80,0.06);border:0.5px solid rgba(240,208,80,0.2);border-radius:7px;padding:7px 9px">
+        🌱 <b>Diese Liste beginnt mit der Blüte.</b> Deine Güsse in der Anzucht — inklusive
+        Sättigungsguss und Sprühtagen — stehen im Kalender und auf der Startseite. Die Karte
+        oben zeigt immer den nächsten, egal in welcher Phase.
+      </div>`
+    : '';
   const listHdr = `<div data-tour="gusse-list" style="margin-bottom:8px;padding-left:2px">
     <div style="font-size:11px;color:var(--text-muted);font-weight:700">📅 So fällt's auf deine Güsse</div>
+    ${_vorBlueteHinweis}
     <div style="font-size:10px;color:var(--text-sub);margin-top:3px;line-height:1.45">👆 Tippe einen <span style="color:var(--green)">🌿</span>/<span style="color:var(--blue)">💧</span>-Tag an, um ihn einzeln zwischen Düngen und nur Wasser umzuschalten. Ein <span style="color:var(--yellow)">gelber Punkt</span> = von Hand geändert. Gesperrte Tage (🔒 Topping, Flush, Iceflush) bleiben fest.</div>
   </div>`;
   const rowsAll = steps.map(s => {
@@ -27450,7 +27558,14 @@ function renderEntry(iso) {
 
   // Einsteiger-Banner beim ersten Eintrag-Öffnen: entlastet den "Cockpit-Schock"
   // mit vielen unbekannten Feldern (pH, EC, VPD...). Einmal wegklickbar, danach nie wieder.
-  const entryHelpBanner = (S.beginnerMode && !S._entryHelpSeen) ? `
+  // (v1.5.121) `act.length > 0` ist neu. Ohne Zyklus hat der Eintrag KEIN einziges Feld —
+  // der Banner versprach dort „Die App funktioniert auch mit nur dem Wasser-Feld" über
+  // einer leeren Fläche. Schlimmer als der falsche Satz war die Folge: Sein ✕ setzt
+  // `S._entryHelpSeen` DAUERHAFT. Wer im Kalender einen Tag antippt, bevor er einen Zyklus
+  // angelegt hat (der Kalender ist einer von vier Haupt-Tabs), klickte den Hinweis dort
+  // als nutzlos weg — und bekam ihn beim ersten echten Eintrag, für den er gedacht ist,
+  // nie wieder zu sehen.
+  const entryHelpBanner = (S.beginnerMode && !S._entryHelpSeen && act.length > 0) ? `
     <div style="background:linear-gradient(135deg,rgba(76,175,112,0.12),rgba(76,175,112,0.04));border:1px solid rgba(76,175,112,0.4);border-radius:12px;padding:14px;margin-bottom:10px;position:relative">
       <button onclick="S._entryHelpSeen=true;saveS();this.parentElement.remove()" style="position:absolute;top:8px;right:8px;background:none;border:none;color:var(--text-muted);font-size:18px;cursor:pointer;padding:4px 6px" aria-label="Ausblenden">✕</button>
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
@@ -27525,8 +27640,18 @@ function renderEntry(iso) {
     ${envHTML}
     ${bottomBlocks}
     ${archBlocks}
-    <button class="big-save" style="background:${act.length > 0 ? col(act[0]).hex : 'var(--green-dk)'}" onclick="saveEntry()">💾 Speichern</button>
+    ${act.length > 0 ? `<button class="big-save" style="background:${col(act[0]).hex}" onclick="saveEntry()">💾 Speichern</button>` : ''}
     <div style="height:20px"></div>`;
+
+  // (v1.5.121) Ohne Zyklus gibt es nichts zu speichern. Beide Speichern-Knöpfe — der große
+  // unten und die Pille in der Kopfzeile — standen trotzdem da, und ein Druck darauf tat
+  // NICHTS: keine Meldung, keine Bewegung, kein gespeicherter Eintrag. Ein Knopf, der
+  // schweigend nichts tut, ist schlimmer als kein Knopf; der Nutzer weiß nicht, ob es
+  // geklappt hat. Der große unten entfällt oben mit, die Pille wird hier ausgeblendet.
+  (function () {
+    const pille = document.querySelector('#scr-entry .save-pill');
+    if (pille) pille.style.display = act.length > 0 ? '' : 'none';
+  })();
 
   // EINGABE-KOMFORT (Handy): Die Zahlentastatur zeigt bei jedem Eingabefeld statt
   // der generischen Aktions-Taste ("Öffnen") jetzt "Weiter" (enterkeyhint). Enter/

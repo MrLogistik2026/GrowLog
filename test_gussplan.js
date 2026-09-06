@@ -201,6 +201,71 @@ const mess = (E, anfaenger) => JSON.parse(E(`(function(){
   }
 
   console.log('');
+  console.log('G - (v1.5.119) Die Karte zeigt den naechsten Guss ALLER Phasen, nicht nur der Bluete');
+  {
+    // Der schwerste Befund vom 06.09.2026. `steps` = collectBloomGusse() beginnt bei
+    // `anzuchtDays + 1`. Die Karte las nur daraus - und sagte einem frisch angelegten
+    // Zyklus an Tag 1 "Naechster Guss: in 23 Tagen", waehrend das Dashboard gleichzeitig
+    // "Heute: Saettigungsguss (Tag 1), 700 ml" meldete. Wer dem Bildschirm glaubt, der
+    // "Giess-Fahrplan" heisst, giesst seinen Saemling drei Wochen lang nicht.
+    //
+    // Geprueft wird gegen `isGiessTag` - die Funktion, die die App selbst als Wahrheit
+    // benutzt (Saettigung, Anzucht-Guss, Guss, Spuelen, Ice zaehlen; Spruehen nicht).
+    const anTag = (tag) => JSON.parse(E(`(function(){
+      var c = S.cycles[0];
+      var altStart = c.startDate, echt = todayISO;
+      // Zyklus auf Tag ${tag} stellen, indem "heute" verschoben wird.
+      todayISO = function(){ return isoPlus(c.startDate, ${tag - 1}); };
+      try {
+        S.beginnerMode = false;
+        goTo('gussplan');
+        var t = document.getElementById('scr-gussplan').textContent.replace(/\\s+/g,' ').trim();
+        var m = t.match(/Nächster Guss · (heute|morgen|in \\d+ Tagen) Tag (\\d+)/);
+        return JSON.stringify({
+          wann: m ? m[1] : null,
+          zielTag: m ? Number(m[2]) : null,
+          heuteIstGuss: isGiessTag(todayISO(), c),
+          aktion: getAction(todayISO(), c) || null,
+          hinweisVorBluete: /Diese Liste beginnt mit der Blüte/.test(t),
+          text: t.slice(0, 170)
+        });
+      } finally { todayISO = echt; c.startDate = altStart; }
+    })()`));
+
+    // Patricks Zyklus ist in der Endphase; fuer die Anzucht-Pruefung zaehlt die Logik,
+    // nicht sein Stand. Geprueft wird deshalb ueber die ganze Spanne.
+    const t1 = anTag(1);
+    pruef('Tag 1: die Karte sagt "heute", nicht "in 23 Tagen"',
+      t1.heuteIstGuss ? t1.wann === 'heute' : t1.wann !== null, JSON.stringify(t1));
+    pruef('Tag 1: der genannte Tag ist der heutige',
+      t1.heuteIstGuss ? t1.zielTag === 1 : true, JSON.stringify(t1));
+
+    // Die eigentliche Regel: Ist heute laut isGiessTag ein Guss, MUSS die Karte "heute"
+    // sagen. Ist es keiner, darf sie keinen Tag nennen, der vor dem naechsten echten liegt.
+    let verletzt = [];
+    for (const tag of [1, 2, 5, 8, 9, 12, 15, 18, 21, 24, 30, 45]) {
+      const r = anTag(tag);
+      if (r.wann === null) continue;
+      if (r.heuteIstGuss && r.wann !== 'heute') verletzt.push(`Tag ${tag}: ist Gusstag (${r.aktion}), Karte sagt "${r.wann}"`);
+      if (!r.heuteIstGuss && r.wann === 'heute') verletzt.push(`Tag ${tag}: kein Gusstag, Karte sagt "heute"`);
+    }
+    pruef('Karte und isGiessTag stimmen an allen 12 geprueften Tagen ueberein',
+      verletzt.length === 0, verletzt.join(' | '));
+
+    // Sprühen ist KEIN Guss - die Karte darf an Spruehtagen nicht "heute" sagen.
+    const t2 = anTag(2);
+    pruef('Tag 2 (Sprühtag): die Karte sagt NICHT "heute"',
+      !(t2.aktion === 'sprueh' && t2.wann === 'heute'), JSON.stringify(t2));
+
+    // Der Hinweis, dass die Liste erst mit der Bluete beginnt, erscheint nur solange
+    // er stimmt.
+    pruef('Vor der Bluete steht der Hinweis zur Liste da',
+      anTag(2).hinweisVorBluete === true, JSON.stringify(anTag(2)));
+    pruef('Ab dem ersten Bluete-Guss ist er wieder weg',
+      anTag(30).hinweisVorBluete === false, JSON.stringify(anTag(30)));
+  }
+
+  console.log('');
   console.log(`Ergebnis: ${ok} OK, ${fail} Fehler`);
   process.exit(fail ? 1 : 0);
 })();

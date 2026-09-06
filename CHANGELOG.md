@@ -2,6 +2,75 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-06 — v1.5.122
+
+- **Der Kalender ohne Zyklus erklärte sich nicht und versprach etwas Falsches.** Er zeigte
+  ein leeres Monatsraster ohne ein Wort dazu, warum nichts drinsteht — darunter aber
+  „lange drücken für Gießtag verschieben & mehr", eine Funktion, die ohne Zyklus nichts tun
+  kann. Der Kalender ist einer von vier Haupt-Tabs und damit für viele der zweite
+  Bildschirm überhaupt. Jetzt steht dort, was hier später zu sehen sein wird, mit Knopf zum
+  Zyklus; der Verschieben-Hinweis erscheint erst, wenn er stimmt. Das Monatsraster bleibt —
+  einen Tag antippen und eine Notiz hinterlegen geht auch ohne Zyklus.
+
+## 2026-09-06 — v1.5.121
+
+- **Der Tageseintrag ohne Zyklus versprach Felder, die es nicht gab, und hatte zwei stumme
+  Speichern-Knöpfe.** Wer im Kalender einen Tag antippt, bevor er einen Zyklus angelegt hat,
+  bekam den Einsteiger-Banner „Die App funktioniert auch mit **nur dem Wasser-Feld**. pH,
+  EC, Temp & Co. sind hilfreich, aber nicht Pflicht" — über einem Bildschirm mit **null**
+  Eingabefeldern. Dazu ein großes „💾 Speichern" unten und eine Speichern-Pille oben;
+  nachgemessen: ein Druck darauf tat **nichts** — keine Meldung, keine Bewegung, kein
+  Eintrag. Ein Knopf, der schweigend nichts tut, ist schlimmer als kein Knopf.
+  **Der eigentliche Schaden lag aber im Banner:** Sein ✕ setzt `S._entryHelpSeen`
+  **dauerhaft**. Wer den Hinweis dort als nutzlos wegklickt, bekommt ihn beim ersten echten
+  Eintrag — für den er gedacht ist — nie wieder zu sehen. Beides erscheint jetzt nur noch,
+  wenn es einen Zyklus gibt; stehen bleibt „Keine aktiven Zyklen" mit „Zyklus erstellen".
+
+## 2026-09-06 — v1.5.120
+
+- **Der Gieß-Fahrplan ohne Zyklus war eine Sackgasse.** „Kein Zyklus aktiv." auf schwarzer
+  Fläche, ein Zurück-Pfeil, sonst nichts. Erreichbar ohne Umweg: Die Einstellungen laden mit
+  der Zeile „💧 Gieß-Fahrplan · Wann düngen, wann nur wässern · Menge pro Guss · einzelne
+  Tage tippbar" ausdrücklich zum Antippen ein, auch bevor ein Zyklus besteht. Jetzt erklärt
+  der Bildschirm, woraus er rechnet, und bietet dieselben zwei Wege wie das leere Dashboard
+  (Zyklus anlegen · Demo laden). Der zweite Leer-Zustand („keine Blüte-Güsse berechenbar",
+  ein Sicherheitsnetz, das normalerweise nicht eintritt — selbst an Tag 1 sind es 13 Güsse)
+  nennt jetzt die zwei möglichen Ursachen, statt eine zu behaupten.
+  **Vorbild ist `_emptyProds` im Düngeplan**, der es längst richtig macht. Als Muster: Ein
+  leerer Zustand ist dieselbe Kategorie wie eine Fehlermeldung — er braucht *was fehlt* und
+  *was tun*.
+
+## 2026-09-06 — v1.5.119
+
+- **Der Gieß-Fahrplan sagte einem frisch angelegten Zyklus, er solle 23 Tage nicht gießen.**
+  Der schwerste Befund dieser Sitzung. Die Karte „Nächster Guss" las aus `steps`, und
+  `steps` ist `collectBloomGusse(c)` — eine Liste, die erst bei `anzuchtDays + 1` beginnt.
+  Die fünf Anzucht-Güsse (Tag 9, 12, 15, 18, 21) und der Sättigungsguss an Tag 1 kommen
+  darin schlicht nicht vor. Ergebnis an **Tag 1**, beides gleichzeitig auf dem Bildschirm
+  nebenan:
+
+  | Dashboard | Gieß-Fahrplan |
+  |---|---|
+  | „💦 Heute: Sättigungsguss (Tag 1) — 700 ml in 3 Etappen" | „Nächster Guss · **in 23 Tagen** · Tag 24" |
+
+  Wer dem Bildschirm glaubt, der „Gieß-Fahrplan" heißt, lässt seinen Sämling drei Wochen
+  ohne Wasser. Das ist genau das Muster aus Abschnitt 1 der Übergabe — zwei Bildschirme,
+  dieselbe Frage, verschiedene Antworten —, hier mit einer toten Pflanze am Ende.
+  **Die App kannte die richtige Antwort längst:** `isGiessTag(iso, c)` zählt genau die
+  Aktionen, die ein Guss sind (`giess`, `giess_anz`, `spuelen`, `ice`, `saettigung` —
+  Sprühen ausdrücklich nicht, mit Kommentar im Code), und `nextGiessTag(c, from)` sucht sie
+  60 Tage voraus. Die Karte fragte nur die falsche Quelle. Sie benutzt jetzt beide, fällt
+  bei fehlendem Ergebnis auf das bisherige Verhalten zurück, und benutzt weiterhin den
+  Listeneintrag, wenn der nächste Guss in der Blüte-Liste steht — damit Feed/Wasser, Sperren
+  und Guss-Index unverändert gelten.
+- **Die Liste sagt jetzt, dass sie eine Blüte-Liste ist.** Solange der Zyklus in der Anzucht
+  steht, fehlt darin genau das, wonach man sucht. Sie hier nachzubauen wäre ein Eingriff in
+  den Feed/Wasser-Umschalter (der am Blüte-Guss-Index hängt); stattdessen steht ein Hinweis
+  darüber, der ab dem ersten Blüte-Guss wieder verschwindet.
+- Abgesichert durch `test_gussplan.js` Abschnitt G (12 Tage gegen `isGiessTag` gegengeprüft)
+  und `test_leerzustand.js` (27 Prüfungen, läuft bewusst **ohne** Patricks Sicherung — der
+  leere Speicher ist der Prüfgegenstand).
+
 ## 2026-09-06 — v1.5.118
 
 - **Der Gieß-Fahrplan sagt auch dann etwas, wenn kein Guss mehr ansteht.** `_naechster` ist

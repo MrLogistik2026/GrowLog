@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.118** · index.html 2,11 MB · 629 Funktionen
+Stand: **v1.5.122** · index.html 2,12 MB · 629 Funktionen
 Zuletzt fortgeschrieben am 05.09.2026. Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
@@ -161,6 +161,71 @@ Abgesichert durch `test_tageseintrag.js` (33 Prüfungen, beide Zeitzonen).
 **Noch offen am Tageseintrag:** Die 53 Knöpfe des Gießtags sind unangetastet, und der
 Einsteiger-Modus wirkt dort weiterhin kaum (26 gegen 29 Felder, Knöpfe gleichauf). Erst
 sehen, ob die Sprungmarken im Alltag reichen, bevor Blöcke verschoben werden.
+
+---
+
+## 0e · Der leere Zustand ist der erste Zustand (v1.5.119–122)
+
+Patricks Auftrag: die übrigen leeren Zustände mit durchsehen. Geprüft wurde im Browser mit
+**geleertem Speicher** — also genau das, was ein neuer Nutzer sieht. Das hat den schwersten
+Befund dieser Sitzung zutage gefördert, und der hat mit „leer" nur indirekt zu tun.
+
+### Der Gieß-Fahrplan sagte einem neuen Zyklus, er solle 23 Tage nicht gießen (v1.5.119)
+
+An **Tag 1** stand auf zwei Bildschirmen nebeneinander:
+
+| Dashboard | Gieß-Fahrplan |
+|---|---|
+| „💦 Heute: Sättigungsguss (Tag 1) — 700 ml in 3 Etappen" | „Nächster Guss · **in 23 Tagen** · Tag 24" |
+
+Ursache: Die Karte las aus `steps`, und `steps` ist `collectBloomGusse(c)` — eine Liste, die
+erst bei `anzuchtDays + 1` beginnt. Der Sättigungsguss an Tag 1 und die fünf Anzucht-Güsse
+(Tag 9, 12, 15, 18, 21) kommen darin nicht vor.
+
+**Warum das schwer wiegt:** Der Bildschirm heißt „Gieß-Fahrplan". Wer ihm glaubt, lässt
+seinen Sämling drei Wochen ohne Wasser — nach `ANBAU.md` 13.1 der Weg zur toten Pflanze.
+Und es ist exakt das Muster aus Abschnitt 1: *zwei Bildschirme, dieselbe Frage, verschiedene
+Antworten — beim Überfliegen gewinnt die größere Zahl, nicht die richtigere.* Hier war die
+größere Zahl die tödliche.
+
+**Die App kannte die Antwort längst.** `isGiessTag(iso, c)` zählt genau die Aktionen, die
+ein Guss sind (`giess`, `giess_anz`, `spuelen`, `ice`, `saettigung`; Sprühen ausdrücklich
+nicht, mit Kommentar im Code), `nextGiessTag(c, from)` sucht sie 60 Tage voraus. Die Karte
+fragte nur die falsche Quelle. Das ist zum vierten Mal dasselbe Muster in dieser Sitzung
+(`_trainingFit`, `_helpCurrentScreen`, `meta.phase`, jetzt `isGiessTag`): **Bevor eine neue
+Regel gebaut wird, erst nachsehen, ob die Antwort schon im Datenmodell steht.**
+
+Die Liste darunter bleibt eine Blüte-Liste — sie sagt das jetzt auch, solange der Zyklus in
+der Anzucht steht. Sie dort nachzubauen wäre ein Eingriff in den Feed/Wasser-Umschalter,
+der am Blüte-Guss-Index hängt.
+
+### Drei Sackgassen im leeren Zustand (v1.5.120–122)
+
+| Bildschirm | war | ist |
+|---|---|---|
+| **Gieß-Fahrplan** ohne Zyklus | „Kein Zyklus aktiv." auf schwarzer Fläche | erklärt, woraus er rechnet · Zyklus anlegen / Demo laden |
+| **Tageseintrag** ohne Zyklus | Banner „…nur dem Wasser-Feld" über **null** Feldern, zwei stumme Speichern-Knöpfe | Banner und Knöpfe entfallen · „Zyklus erstellen" |
+| **Kalender** ohne Zyklus | leeres Raster, dazu „lange drücken für Gießtag verschieben" | erklärt, was hier später steht · Knopf zum Zyklus |
+
+Der Tageseintrag hatte dabei den unangenehmsten Nebeneffekt: Das ✕ des Banners setzt
+`S._entryHelpSeen` **dauerhaft**. Wer im Kalender einen Tag antippt, bevor er einen Zyklus
+hat — der Kalender ist einer von vier Haupt-Tabs —, klickte den Hinweis dort als nutzlos weg
+und bekam ihn beim ersten echten Eintrag nie wieder zu sehen. Und beide Speichern-Knöpfe
+taten nachgemessen **nichts**: keine Meldung, keine Bewegung, kein Eintrag.
+
+**Als Muster für den Rest der App:** Ein leerer Zustand ist dieselbe Kategorie wie eine
+Fehlermeldung — er braucht *was fehlt* und *was tun*. Das Dashboard und `_emptyProds` im
+Düngeplan machen es richtig vor und sind die Vorlage.
+
+### Geprüft und in Ordnung — nicht erneut aufrollen
+
+- **Erstlauf:** Haftungsausschluss → Willkommen → Wizard bzw. Demo. Sauber, keine Lücke.
+- **Demo-Zyklus:** füllt alle Bildschirme korrekt.
+- **„Keine Verschiebungen vorhanden"** ist ein *Toast* nach einer Aktion, kein leerer
+  Zustand — korrekte Rückmeldung, bleibt.
+- **Tipps, Lexikon, Anleitung** sind vom Zyklus unabhängig und auch im leeren Zustand voll.
+- **Rundlauf mit Patricks Daten nach allen Änderungen:** unverändert, kein `undefined`,
+  kein `NaN`.
 
 ---
 
@@ -488,10 +553,8 @@ nicht am Aufruf.
 **Nicht geprüft:** Lexikon-**Inhalte** (302.000 Zeichen — die *Wege* dorthin sind seit
 v1.5.115/116 geprüft), Kalender im Detail, der Outdoor-Pfad und andere Substrat-/
 Sorten-Kombinationen. Alle Messungen stammen aus Patricks Zustand; ein frischer Grow kann
-andere Fehler zeigen — und der zeigt bei ihm überall leere Zustände, von denen einer
-(die Galerie) sich am 06.09. als Sackgasse erwies. **Die übrigen leeren Zustände sind
-deshalb einen eigenen Durchgang wert:** „Keine Verschiebungen vorhanden", „Noch keine
-Daten" (Diagramme), „Noch keinen Plan — später einrichten".
+andere Fehler zeigen. **Erledigt:** Der Durchgang durch die leeren Zustände fand am
+06.09.2026 statt, siehe Abschnitt 0e — vier Befunde, alle behoben.
 
 ---
 
@@ -895,8 +958,12 @@ cat head.html app.js tail.html | cmp - index.html && echo "BYTE-IDENTISCH OK"
 **Byte-Identität mit `cmp` ist Pflicht, bevor irgendetwas geändert wird.** Danach wird
 `app.js` geändert, mit `build.sh` neu gebaut und erneut verglichen.
 
-37 Testdateien, alle grün in beiden Zeitzonen (Stand v1.5.118) — dazu
-`test_tageseintrag` (33 Prüfungen) und `test_navwege` (28 Prüfungen):
+38 Testdateien, alle grün in beiden Zeitzonen (Stand v1.5.122) — neu dazu
+`test_tageseintrag` (33), `test_navwege` (28) und `test_leerzustand` (27):
+
+**`test_leerzustand.js` ist die Ausnahme von der Sicherungs-Regel:** Es lädt Patricks
+Sicherung bewusst **nicht**, weil der leere Speicher der Prüfgegenstand ist. Wer den
+Erstlauf prüft, darf keine Daten voraussetzen.
 
 `test_audit_screens` · `test_befehle` · `test_dialog_und_namen` · `test_dosisquelle` · `test_drain` · `test_drainregelkreis` · `test_duengeregeln` · `test_duengeplaene` ·
 `test_endspurt` · `test_entwurf` · `test_ernteabgleich` · `test_ertrag` ·
