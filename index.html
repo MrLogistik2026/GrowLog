@@ -3142,7 +3142,7 @@ const FERT_PRESETS = {
     feedWaterRhythm: ARC_RHYTHM,
     mixOrder: ['CalMag','Bio·Grow','Bio·Bloom','Root·Juice','Bio·Heaven','Alg·A·Mic','Acti·Vera','Top·Max'],
     mixInfo: '1. CalMag zuerst ins Wasser, umrühren. 2. Basisdünger (Bio·Grow/Bio·Bloom). 3. Bio-Additive (Root·Juice, Bio·Heaven, Alg·A·Mic, Acti·Vera). 4. Top·Max zuletzt (Humin-/Fulvosäuren als Chelator). pH am Ende auf 6.2 korrigieren.',
-    drainInfo: '⚠️ Premium-Plan: Bewusst früher & härter Stickstoff-Cutoff (Wo 7 halbiert, Wo 8 hart auf 0) um blättrige Buds zu vermeiden. Ab Wo 8 nur noch P/K + Top·Max für dichte, trichomreiche Blüten. Bei jedem Gießen 5–10% Drain, Drain sofort entsorgen.',
+    drainInfo: '⚠️ Premium-Plan: Bewusst früher & härter Stickstoff-Cutoff (Wo 7 halbiert, Wo 8 hart auf 0) um blättrige Buds zu vermeiden. Ab Wo 8 nur noch P/K + Top·Max für dichte, trichomreiche Blüten. Bei jedem Gießen 15–20% Drain, Drain sofort entsorgen.',
     weekFocus: {
       1:  { phase: 'Keimung',     tip: 'Wurzel-Taxis. Kein Stickstoff! Energie kommt aus dem Keimblatt. Nur kleine Ringbewässerung.' },
       2:  { phase: 'Vegi I',      tip: 'Etablierung. Grow-Start für erste Blätter, Root·Juice ausschleichen, Alg·A·Mic als LED-Schutz dazu.' },
@@ -3295,7 +3295,7 @@ const FERT_PRESETS = {
     feedWaterRhythm: ARC_RHYTHM,
     mixOrder: ['CalMag','Bio·Grow','Bio·Bloom','Root·Juice','Bio·Heaven','Alg·A·Mic','Acti·Vera','Top·Max'],
     mixInfo: 'Halbierte Dosen vom Master-Plan — mit einer Ausnahme: CalMag ist nicht reduziert, weil unter LED der Bedarf gleich hoch ist. Jedes Gießen düngen. Gut für Einsteiger, empfindliche Genetiken, oder wenn der Master-Plan zu stark ist.',
-    drainInfo: '⚠️ Wenn Pflanze gesund aussieht und kräftig wächst: kann über die Zeit Richtung Master-Dosen erhöht werden. Drain immer 5–10%, Drain sofort entsorgen.',
+    drainInfo: '⚠️ Wenn Pflanze gesund aussieht und kräftig wächst: kann über die Zeit Richtung Master-Dosen erhöht werden. Drain immer 15–20%, Drain sofort entsorgen.',
     products: [
       { name: 'CalMag',      unit: 'ml/L', color: '#f0d050', note: '① Calcium & Magnesium (immer zuerst!)', waterDayDose: 0.3 },
       { name: 'Bio·Grow',    unit: 'ml/L', color: '#4caf70', note: '② Wachstumsdünger (organisch, NPK)' },
@@ -3851,7 +3851,7 @@ function createCustomPresetFromCurrent(name, subtitle = '') {
     doseMode: 'per-watering',
     mixOrder: products.map(p => p.name),
     mixInfo: S.mixInfo || 'Reihenfolge wie oben — CalMag zuerst, Chelat-Additive zuletzt.',
-    drainInfo: '5–10 % Drain bei jedem Guss erzeugen. Drain sofort entsorgen.',
+    drainInfo: '15–20 % Drain bei jedem Guss erzeugen. Drain sofort entsorgen.',
     weekFocus: {},
     products,
     schedule,
@@ -4301,7 +4301,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.111';
+const APP_VERSION = 'v1.5.112';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -6291,7 +6291,7 @@ const INFO_TERMS = {
   drain: {
     title: 'Drain (Ablaufwasser)',
     text: 'Drain ist das Wasser, das beim Gießen unten aus dem Topf wieder herausläuft.',
-    tip: 'Ziel: etwa <b>5–10 %</b> der Gießmenge sollten unten ankommen — das spült überschüssige Salze mit aus. <b>Sofort wegschütten</b>, nicht stehen lassen (enthält konzentrierte Dünger-Salze).',
+    tip: 'Ziel: etwa <b>15–20 %</b> der Gießmenge sollten unten ankommen — das spült überschüssige Salze mit aus. <b>Sofort wegschütten</b>, nicht stehen lassen (enthält konzentrierte Dünger-Salze).',
     lex: 'Drain-Kontrolle',
   },
   mischreihenfolge: {
@@ -7229,7 +7229,7 @@ const FAQ = [
     q: 'Wie oft muss ich gießen?',
     icon: '⏰',
     category: 'Wasser',
-    a: '<b>Nicht nach Kalender</b>, sondern nach Topfgewicht! Topf anheben: leicht = gießen, schwer = warten. Ziel: 5-10% Drain beim Gießen. Orientierung: Indoor alle 2-4 Tage, Outdoor je nach Wetter.',
+    a: '<b>Nicht nach Kalender</b>, sondern nach Topfgewicht! Topf anheben: leicht = gießen, schwer = warten. Ziel: 15-20% Drain beim Gießen. Orientierung: Indoor alle 2-4 Tage, Outdoor je nach Wetter.',
     lex: 'Restgewicht (Dryback · Trocken-Nass-Zyklus)',
   },
   {
@@ -12571,13 +12571,30 @@ function waterSuggestion(c, p, iso) {
   // Ausreißer nach oben und schützt vor Vertrocknen nach unten — er widerspricht aber nicht
   // mehr der Messung.
   const _gemessen = _measuredPerPlant(c, isoForVpd);
-  // Ein SELBST gesetzter Korridor bleibt unangetastet — er ist die Steuerung des Growers und
-  // wiegt schwerer als jede Messung. Aufgeweitet wird nur der Standard-Korridor der App.
+  // (v1.5.112) Nachführung aus dem gemessenen Ablauf — siehe `drainAdjust`.
+  const _drainF = (typeof drainAdjust === 'function') ? drainAdjust(c, isoForVpd) : null;
+
+  // Ein SELBST gesetzter Korridor bleibt die Steuerung des Growers und wiegt schwerer als
+  // eine bloße Beobachtung des Gießverhaltens.
+  //
+  // (v1.5.112) EINE AUSNAHME: eine echte Ablaufmessung. Bis hierher schaltete ein eigener
+  // Korridor das Lernen vollständig ab — und genau daraus entstand eine Falle, in die
+  // Patrick gelaufen ist: Die App schlug zu wenig vor, er setzte einen Korridor, um es zu
+  // korrigieren, und schaltete damit unbemerkt die Selbstkorrektur aus. Danach blieb die
+  // Empfehlung dauerhaft in den alten Grenzen; über 35 eigene Güsse lag sie im Mittel 23 %
+  // daneben, fast immer nach unten.
+  // Eine Ablaufmessung ist kein Verhaltensmuster, sondern ein physikalischer Befund über
+  // genau diesen Topf. Sie darf den Korridor deshalb aufweiten — begrenzt und nur in die
+  // Richtung, die die Messung belegt.
   const _eigenerKorridor = !!(c && c.waterRange && c.waterRange[_wmlKey]
     && c.waterRange[_wmlKey].min != null && c.waterRange[_wmlKey].max != null);
+  // Jede gültige Ablaufmessung zählt — auch eine, die „passt" meldet. Sonst entsteht ein
+  // Sprung: Bei 25 % Ablauf käme mehr heraus als bei 17,8 %, weil im einen Fall der Korridor
+  // mitgeht und im anderen nicht. „Die Menge stimmt" ist genauso ein Befund wie „zu wenig".
+  const _messungDarfWeiten = !_eigenerKorridor || !!_drainF;
   const _rangeEff = _phaseRange ? {
-    min: (_gemessen && !_eigenerKorridor) ? Math.min(_phaseRange.min, _gemessen * 0.8) : _phaseRange.min,
-    max: (_gemessen && !_eigenerKorridor) ? Math.max(_phaseRange.max, _gemessen * 1.15) : _phaseRange.max,
+    min: (_gemessen && _messungDarfWeiten) ? Math.min(_phaseRange.min, _gemessen * 0.8) : _phaseRange.min,
+    max: (_gemessen && _messungDarfWeiten) ? Math.max(_phaseRange.max, _gemessen * 1.15) : _phaseRange.max,
   } : null;
   const _klemm = (perPlant) => _rangeEff
     ? Math.min(_rangeEff.max, Math.max(_rangeEff.min, perPlant))
@@ -12591,8 +12608,16 @@ function waterSuggestion(c, p, iso) {
     if (!_gemessen || !p) return perPlant;
     if (p.ph === 'flush' || p.ph === 'ice' || p.ph === 'anzucht') return perPlant;
     const maxSchritt = 0.12;            // höchstens 12 % Änderung je Guss
-    const obere = _gemessen * (1 + maxSchritt);
-    const untere = _gemessen * (1 - maxSchritt);
+    // (v1.5.112) Die Rampe hält am bisherigen Gießverhalten fest — das ist gegen Sprünge
+    // richtig, machte die Ablauf-Nachführung aber wirkungslos: Bei 30 % gemessenem Ablauf
+    // wollte die Bilanz 15 % weniger, die Rampe ließ nur 12 % zu und klemmte auf den alten
+    // Wert zurück. Das Ergebnis war Guss für Guss identisch, obwohl die Messung eindeutig war.
+    // Eine Ablaufmessung ist kein Modellsprung, sondern ein Befund über diesen Topf. Der
+    // Mittelpunkt der Rampe wandert deshalb mit ihr; gedämpft wird weiterhin, nur eben um
+    // das neue Ziel herum statt um das alte.
+    const basis = _gemessen * (_drainF ? _drainF.faktor : 1);
+    const obere = basis * (1 + maxSchritt);
+    const untere = basis * (1 - maxSchritt);
     return Math.min(obere, Math.max(untere, perPlant));
   };
   if (_phaseRange) {
@@ -12624,7 +12649,10 @@ function waterSuggestion(c, p, iso) {
   {
     const dn = _waterDailyNeedPour(c, p, isoForVpd);
     if (dn.applied) {
-      const totalDN = _rampe(_klemm(dn.perPlant)) * plants;
+      // (v1.5.112) Der gemessene Ablauf korrigiert die Menge, bevor Korridor und Rampe greifen.
+      // Beim Spülen und beim IceFlush nicht: Dort ist der Durchfluss absichtlich ein anderer.
+      const _f = (_drainF && p && p.ph !== 'flush' && p.ph !== 'ice') ? _drainF.faktor : 1;
+      const totalDN = _rampe(_klemm(dn.perPlant * _f)) * plants;
       return totalDN < 100 ? Math.round(totalDN / 5) * 5 : Math.round(totalDN / 50) * 50;
     }
   }
@@ -12636,7 +12664,10 @@ function waterSuggestion(c, p, iso) {
   if (p && c) {
     const _ai = _waterAnchorInfo(c, p, isoForVpd);
     if (_ai.applied) {
-      const totalA = _rampe(_klemm(_ai.suggestedPerPlant)) * plants;
+      // (v1.5.112) Auch der Anker-Weg wird am Ablauf nachgeführt — sonst hinge es davon ab,
+      // welcher Rechenweg gerade greift, ob die Messung zählt.
+      const _fA = (_drainF && p && p.ph !== 'flush' && p.ph !== 'ice') ? _drainF.faktor : 1;
+      const totalA = _rampe(_klemm(_ai.suggestedPerPlant * _fA)) * plants;
       return totalA < 100 ? Math.round(totalA / 5) * 5 : Math.round(totalA / 50) * 50;
     }
   }
@@ -12646,6 +12677,87 @@ function waterSuggestion(c, p, iso) {
   // Sonst würde aus 15ml entweder 0ml oder 50ml — beides falsch.
   if (final < 100) return Math.round(final / 5) * 5;
   return Math.round(final / 50) * 50;
+}
+
+// ── DRAIN-NACHFÜHRUNG (v1.5.112) ─────────────────────────────────────────────
+/**
+ * Wie viel Prozent der Gießmenge sollen unten ankommen?
+ *
+ * (v1.5.112) Angehoben von 5–10 % auf 15–20 %. Grund steht in `ANBAU.md` 5.1: Unter 15 %
+ * Durchfluss läuft das Wasser überwiegend am Topfrand entlang, statt den Wurzelballen zu
+ * durchqueren — was unten ankommt, ist dann eine Randfraktion und misst sich systematisch
+ * zu hoch. Mit 5–10 % war weder das Auswaschen von Salzen zuverlässig noch die Messung
+ * gültig. Über 25 % wäscht man bereits aus und verliert Nährstoffe.
+ */
+const DRAIN_ZIEL = { min: 15, mid: 17.5, max: 20, obergrenze: 25 };
+
+/**
+ * (v1.5.112) DER ABLAUF SAGT, OB DIE MENGE STIMMT.
+ *
+ * Das Problem, das diese Funktion löst (Patricks Meldung vom 06.09.2026): Niemand kann die
+ * richtige Gießmenge in Millilitern angeben — er selbst nur aus Erfahrung, ein Anfänger gar
+ * nicht. Die App verlangte trotzdem genau das: Phasen-Mengen und Korridore von Hand.
+ * Über 35 seiner eigenen Güsse lag die Empfehlung im Mittel 23 % daneben, fast immer nach
+ * unten, und er musste jedes Mal nachbessern.
+ *
+ * Die Frage „wie viele ml?" kann niemand beantworten. Die Frage „läuft genug unten raus?"
+ * kann jeder beantworten, vom ersten Tag an. Genau daraus wird die Menge jetzt hergeleitet.
+ *
+ * Die Umrechnung ist keine Faustregel, sondern eine Mengenbilanz: Was nicht abläuft, hat das
+ * Substrat aufgenommen. Soll bei gleicher Aufnahme ein anderer Anteil ablaufen, ergibt sich
+ * die neue Gießmenge aus
+ *
+ *     aufgenommen  = alt · (1 − ist)
+ *     neu          = aufgenommen / (1 − ziel)
+ *     Faktor       = (1 − ist) / (1 − ziel)
+ *
+ * Bei 10 % gemessenem Ablauf und 17,5 % Ziel sind das +9 %; bei 30 % gemessen −15 %.
+ *
+ * Gewertet werden nur Güsse mit eingetragener Ablaufmenge — die Prüfung aus v1.5.104 sortiert
+ * unbrauchbare Messungen selbst aus, denn ein Ablauf unter 10 % misst gar nichts. Deshalb
+ * zählt hier nur, was mindestens „schwach" ist, und der Median statt des Mittelwerts, damit
+ * ein einzelner Ausreißer die Menge nicht verreißt.
+ *
+ * @returns {null|{faktor:number, istPct:number, proben:number, richtung:'mehr'|'weniger'|'passt'}}
+ */
+function drainAdjust(c, iso) {
+  if (!c || !c.startDate) return null;
+  const bis = iso || todayISO();
+  const werte = [];
+  const isos = Object.keys(S.entries || {}).filter((k) => k <= bis).sort().reverse();
+  for (const k of isos) {
+    if (werte.length >= 3) break;
+    const cd = S.entries[k] && S.entries[k].cycleData && S.entries[k].cycleData[c.id];
+    if (!cd) continue;
+    // Vorgeschlagene Güsse zählen nicht — sonst lernt die App aus sich selbst.
+    if (cd._suggested && cd._suggested.water) continue;
+    const f = (typeof drainFlow === 'function') ? drainFlow(cd) : null;
+    if (!f) continue;
+    // Spülen und IceFlush haben absichtlich einen ganz anderen Durchfluss.
+    const ph = (phase(k, c) || {}).ph;
+    if (ph === 'flush' || ph === 'ice') continue;
+    if (f.pct < 5) continue;              // unter 5 % ist es keine Messung, sondern ein Tropfen
+    werte.push(f.pct);
+  }
+  if (!werte.length) return null;
+  const s = werte.slice().sort((a, b) => a - b);
+  const istPct = s.length % 2 ? s[(s.length - 1) / 2] : (s[s.length / 2 - 1] + s[s.length / 2]) / 2;
+
+  if (istPct >= DRAIN_ZIEL.min && istPct <= DRAIN_ZIEL.max) {
+    return { faktor: 1, istPct, proben: werte.length, richtung: 'passt' };
+  }
+  const ist = Math.min(0.6, Math.max(0, istPct / 100));   // über 60 % wird die Bilanz sinnlos
+  const ziel = DRAIN_ZIEL.mid / 100;
+  let faktor = (1 - ist) / (1 - ziel);
+  // Nie in einem Schritt mehr als ein Viertel ändern — die Rampe in waterSuggestion
+  // begrenzt zusätzlich auf 12 % je Guss.
+  faktor = Math.min(1.25, Math.max(0.75, faktor));
+  return {
+    faktor,
+    istPct,
+    proben: werte.length,
+    richtung: faktor > 1 ? 'mehr' : 'weniger',
+  };
 }
 
 // ── PHYSIK-DECKEL (v1.2.67, Stufe 2) ─────────────────────────────────────────
@@ -14948,7 +15060,7 @@ function getTodayAction(c, p, a, iso) {
       ],
       hint: isOutdoor
         ? 'Outdoor-Regel: nach Regentag 1–2 Tage nicht gießen. Den Regen-Button nutzen!'
-        : (p.day >= 25 ? '5–10% Drain erzeugen, Drain sofort entsorgen' : 'Noch kein Drain nötig (Topf nicht vollgesättigt)'),
+        : (p.day >= 25 ? '15–20% Drain erzeugen, Drain sofort entsorgen' : 'Noch kein Drain nötig (Topf nicht vollgesättigt)'),
     };
   }
   if (a === 'spuelen') {
@@ -17655,7 +17767,7 @@ function renderTips() {
       <div style="display:flex;flex-direction:column;gap:6px;font-size:11px;color:var(--text-sub);line-height:1.6">
         <div>🎯 <b>pH-Wert:</b> ${phZeile}</div>
         <div>⚗️ <b>Reihenfolge:</b> ${mixZeile}</div>
-        <div>🚿 <b>Drain:</b> 5–10% Drain bei jedem Guss um Salzansammlungen zu vermeiden</div>
+        <div>🚿 <b>Drain:</b> 15–20% Drain bei jedem Guss — erst ab 15% läuft das Wasser wirklich durch den Wurzelballen</div>
         <div>📉 <b>Überdüngung:</b> Gelbe/braune Blattspitzen? Den Blütedünger deines Plans um 20 % zurücknehmen</div>
         <div>🧪 <b>EC-Wert:</b> Drain-EC messen. Steigt er über 2.5 → Zwischenguss mit reinem Wasser</div>
       </div>
@@ -25854,6 +25966,18 @@ function renderEntry(iso) {
           line = 'Noch kein eigener Guss erfasst — Startwert aus Topf und Phase. Ab deinem ersten Guss folgt die App dir.';
           col = 'var(--text-hint)';
         } else return '';
+        // (v1.5.112) Führt der gemessene Ablauf die Menge gerade nach, gehört das dazu —
+        // sonst wirkt eine veränderte Empfehlung wie ein Eigenleben der App.
+        const _dj = (typeof drainAdjust === 'function') ? drainAdjust(c, iso) : null;
+        if (_dj && _p2 && _p2.ph !== 'flush' && _p2.ph !== 'ice') {
+          const _p = String(_dj.istPct).replace('.', ',');
+          const _n = _dj.proben === 1 ? 'deinem letzten Guss' : `deinen letzten ${_dj.proben} Güssen`;
+          line += _dj.richtung === 'passt'
+            ? ` <span style="color:var(--green)">Ablauf bei ${_p} % — im Ziel (${DRAIN_ZIEL.min}–${DRAIN_ZIEL.max} %), die Menge stimmt.</span>`
+            : _dj.richtung === 'mehr'
+              ? ` <span style="color:var(--yellow)">Bei ${_n} kamen nur ${_p} % unten an — zu wenig, um den Wurzelballen zu durchziehen. Ich gehe deshalb mit der Menge nach oben, bis ${DRAIN_ZIEL.min}–${DRAIN_ZIEL.max} % ablaufen.</span>`
+              : ` <span style="color:var(--yellow)">Bei ${_n} liefen ${_p} % ab — mehr als nötig, das wäscht Nährstoffe aus. Ich nehme die Menge etwas zurück.</span>`;
+        }
         const _lernCol = !!(S._setUI && S._setUI.entryLern);
         const _lernCore = (String(line).match(/~\d+\s*ml\/Pflanze/) || String(line).match(/~\d+\s*ml/) || [''])[0];
         return `<div style="display:flex;align-items:flex-start;gap:7px;padding:8px 10px;background:var(--card2);border-radius:8px;font-size:11px;line-height:1.45;color:${col}"><span>🧠</span><span style="flex:1;min-width:0"><span onclick="toggleEntrySection('entryLern')" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:8px"><span><b>Lern-Status:</b>${_lernCol && _lernCore ? ` <span style="color:var(--text-hint);font-weight:400">${_lernCore}</span>` : ''}</span><span style="font-size:11px;color:var(--text-hint);flex-shrink:0">${_lernCol ? '▸' : '▾'}</span></span>${_lernCol ? '' : `<span style="display:block;margin-top:2px">${line}</span>`}</span></div>${_lernCol ? '' : trendCtrl}`;
@@ -26242,7 +26366,7 @@ function renderEntry(iso) {
             ${prodRows || `<div style="padding:10px 12px;font-size:12px;color:var(--text-muted)">Keine Dünger konfiguriert. <span style="color:var(--blue);cursor:pointer" onclick="openDuenger()">Dünger einrichten →</span></div>`}
           </div>
           ${mixSteps}
-          ${S.beginnerMode ? '' : `<div class="ph-hint">🎯 pH: ${pht.mid.toFixed(1)} · EC: ${ecFmt(0.8)}–${ecFmt(2.0)} ${ecUnitLabel()} · Drain: 5–10%</div>`}
+          ${S.beginnerMode ? '' : `<div class="ph-hint">🎯 pH: ${pht.mid.toFixed(1)} · EC: ${ecFmt(0.8)}–${ecFmt(2.0)} ${ecUnitLabel()} · Drain: 15–20%</div>`}
           ${c.medium === 'hydro' ? hydroResBlock : `<div style="background:var(--card);border:0.5px solid var(--border);border-radius:10px;overflow:hidden;margin-top:6px">
             <div onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none';this.querySelector('.gtgl').textContent=this.nextElementSibling.style.display==='none'?'▸':'▾'" style="padding:8px 12px;cursor:pointer;display:flex;align-items:center;gap:6px">
               <span style="font-size:13px">🚰</span>
@@ -26257,7 +26381,7 @@ function renderEntry(iso) {
                 <div>${c.medium === 'coco' ? `<b style="color:var(--green)">③ Gießpunkt:</b> Gießen sobald der Topf merklich leichter wird (~60–70% Restgewicht) — jedes Mal mit Nährlösung. (${getInt(c, p?.ph || 'bloom') <= 1 ? 'meist täglich' : '~alle ' + getInt(c, p?.ph || 'bloom') + ' Tage'})` : `<b style="color:var(--green)">③ Sweetspot:</b> Erst gießen bei ~40% Restgewicht. Obere 3–5cm knochentrocken. (~alle ${getInt(c, p?.ph || 'bloom')} Tage)`}</div>
                 <div style="background:rgba(240,208,80,0.06);border-radius:6px;padding:6px 8px;color:var(--yellow)">${c.medium === 'coco' ? '💡 <b>Tipp:</b> In Coco lieber etwas früher gießen als zu spät — Coco verzeiht Austrocknen schlecht. Staunässe trotzdem vermeiden, aber nie knochentrocken werden lassen.' : '💡 <b>Unsicher?</b> Lieber 1 Tag länger warten. Hängende Blätter = 2h Erholung. Staunässe-Wurzelfäule = irreversibel.'}</div>
                 <div><b style="color:var(--orange)">🧪 Mischen:</b> CalMag zuerst → umrühren → Basisdünger → Additive → pH auf ${pht.mid.toFixed(1)}</div>
-                <div><b style="color:var(--orange)">🚿 Drain:</b> 5–10% Drain bei jedem Guss. Drain-Wasser sofort entsorgen!</div>
+                <div><b style="color:var(--orange)">🚿 Drain:</b> 15–20% Drain bei jedem Guss. Drain-Wasser sofort entsorgen!</div>
               </div>
             </div>
           </div>`}`;
@@ -29169,7 +29293,7 @@ function getAutoFillTemplate(c, p, a, iso) {
     if (isSeedling) {
       tpl.notePlaceholder = 'Mit Sprühflasche oder dünnem Strahl — Erde feucht halten, NICHT nass.';
     } else if (ph === 'anzucht') {
-      tpl.notePlaceholder = 'Gleichmäßig durchgießen, 5–10% Drain auffangen.';
+      tpl.notePlaceholder = 'Gleichmäßig durchgießen, 15–20% Drain auffangen.';
     } else if (ph === 'bloom' && week <= 3) {
       tpl.notePlaceholder = _pickNote([
       'Stretch-Phase. RLF Richtung 50% halten, Schimmel vorbeugen.',
@@ -31167,7 +31291,7 @@ const LEXIKON = [
       practice: '<b>Wasserhärte checken:</b> Bei Wasserwerk-Website oder mit Teststreifen (Aquaristik).<br><br><b>Lösungen:</b><br>• Hartes Wasser: 2-3 Tage abstehen lassen (Kalk fällt teilweise aus), etwas mehr pH-Down<br>• Weiches Wasser: CalMag immer dazu<br>• Premium: <b>Umkehrosmose (RO)</b> — filtert 99 % aller Mineralien raus, EC ~0.0. Perfekte „leere Leinwand".<br><br><b>Bei RO:</b> CalMag ist Pflicht! Ohne → sofortiger Ca/Mg-Mangel, weil nichts mehr drin ist.',
       pitfall: 'Viele Grower kaufen RO-Anlage ohne zu verstehen dass dann das komplette Dünger-Regime umgestellt werden muss. Bei weichem Wasser reicht oft Leitungswasser + CalMag — RO-Anlage ist 300-600 € die oft unnötig ausgegeben sind.' },
     { t: 'Drain-Kontrolle',
-      brief: '5-10 % des Gießwassers soll unten ablaufen. Der wichtigste Hebel gegen Versalzung.',
+      brief: '15-20 % des Gießwassers soll unten ablaufen. Der wichtigste Hebel gegen Versalzung.',
       mechanism: 'Bei jedem Guss sammeln sich <b>ungenutzte Salze</b> im Substrat — was die Pflanze nicht aufnimmt, bleibt drin. Durch das überschüssige Drain-Wasser werden diese Salze <b>aktiv ausgewaschen</b>. Ohne Drain würden sie sich ansammeln bis der EC-Wert im Topf gefährlich steigt (Nutrient Burn).',
       practice: '<b>Menge:</b> 10-20 % der Gieß-Menge soll unten als Drain austreten. Bei 1 L Guss → ~100-200 ml Drain.<br><br><b>Drain-Wasser sofort entsorgen</b>, NIEMALS zurück in die Dünger-Kanne — es ist Salz-angereichert.<br><br><b>Runoff-Messung</b> (pH und EC) am Drain zeigt den echten Zustand im Substrat — oft erstes Warnsignal vor sichtbaren Mangel-Symptomen.',
       pitfall: 'Untersetzer die vollaufen und NICHT geleert werden → Wurzeln saugen das Salz-angereicherte Wasser zurück → doppelt schlimm. Immer Drain komplett entsorgen, Topf eventuell kurz hochstellen bis abgetropft.' },

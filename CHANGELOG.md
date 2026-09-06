@@ -2,6 +2,49 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-06 — v1.5.112
+
+- **Die Gießmenge stellt niemand mehr von Hand ein — sie führt sich am gemessenen Ablauf
+  nach.** Patricks Einwand: „Ich bin kein Fan davon, wenn ich selbst meine Wassermengen der
+  Phasen einstellen muss. Ich weiß dies zb. nur aus Erfahrungswerten. Wie will das ein User
+  schaffen, der wenig oder noch keine Erfahrung hat?"
+  Nachgemessen an seinen eigenen Daten: Über 35 selbst eingetragene Güsse lag die Empfehlung
+  im Mittel **23 % daneben**, fast immer nach unten. Die Ursache war eine Falle. Weil die
+  Vorschläge nicht passten, hatte er eigene Phasen-Korridore gesetzt — und genau das schaltete
+  die Selbstkorrektur ab. Im Code stand: „Ein SELBST gesetzter Korridor bleibt unangetastet …
+  Aufgeweitet wird nur der Standard-Korridor der App." Gut gemeint, aber die Folge war ein
+  Kreislauf: zu wenig vorgeschlagen → Korridor gesetzt → Lernen aus → weiter danebengelegen →
+  weiter von Hand korrigiert.
+  Die Frage „wie viele ml?" kann niemand beantworten. Die Frage „läuft genug unten raus?"
+  kann jeder beantworten, vom ersten Tag an — und seit v1.5.104 hat die App das Feld dafür.
+  Neu ist `drainAdjust(c, iso)`: Es liest die letzten bis zu drei eigenen Güsse mit
+  eingetragener Ablaufmenge (Median, damit ein Ausreißer die Menge nicht verreißt) und leitet
+  daraus einen Faktor ab. Keine Faustregel, sondern eine Mengenbilanz — was nicht abläuft, hat
+  das Substrat aufgenommen: `Faktor = (1 − ist) / (1 − ziel)`. Bei 10 % gemessenem Ablauf sind
+  das +9 %, bei 30 % −15 %.
+  Zwei Anpassungen waren nötig, damit das überhaupt durchschlägt, beide beim Durchspielen der
+  Kurve gefunden: Der eigene Korridor sperrt eine **Messung** nicht mehr aus (ein
+  Verhaltensmuster ist etwas anderes als ein physikalischer Befund über diesen Topf), und die
+  Rampe — höchstens 12 % Änderung je Guss — hängt jetzt am korrigierten Ziel statt am alten
+  Median. Vorher hielt sie exakt dagegen: Bei 30 % Ablauf wollte die Bilanz 15 % weniger, die
+  Rampe ließ 12 % zu und klemmte auf den alten Wert zurück — Guss für Guss dasselbe Ergebnis
+  trotz eindeutiger Messung.
+  Das Ergebnis mit Patricks Zahlen (Tag 104, 9000 ml gegossen): 5 % Ablauf → 10350 ml
+  vorgeschlagen, 10 % → 9800, **15–20 % → 9000 ml**, 25 % → 8200, 30 % → 7650, 40 % → 6750.
+  Im Zielfenster bestätigt die App also genau die Menge, die er tatsächlich gegeben hat.
+  Spülen und IceFlush bleiben unberührt — dort ist der Durchfluss absichtlich ein anderer.
+  Der Lern-Status sagt jedes Mal, was gerade passiert und warum.
+
+- **Der Drain-Zielwert steigt von 5–10 % auf 15–20 %**, an allen elf Textstellen. Grund steht
+  in `ANBAU.md` 5.1: Unter 15 % Durchfluss läuft das Wasser überwiegend am Topfrand entlang,
+  statt den Wurzelballen zu durchqueren. Mit 5–10 % war weder das Auswaschen von Salzen
+  zuverlässig noch die Messung gültig. Über 25 % wäscht man aus und verliert Nährstoffe.
+  Beides gehörte in **eine** Änderung: Ein höheres Drain-Ziel ohne größere Gießmenge wäre ein
+  Widerspruch in sich.
+  Abgesichert durch `test_drainregelkreis.js` (24 Prüfungen, beide Zeitzonen), darunter die
+  Monotonie über acht Ablaufwerte, die Gegenproben für Spülen und IceFlush, und dass ein von
+  der App selbst gefüllter Guss nicht als Messung zählt.
+
 ## 2026-09-06 — v1.5.111
 
 - **Am IceFlush-Tag stand eine Gießmenge, obwohl dort nichts gegossen wird.** Die grüne Karte

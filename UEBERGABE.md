@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.111** · index.html 2,11 MB · 628 Funktionen
+Stand: **v1.5.112** · index.html 2,11 MB · 628 Funktionen
 Zuletzt fortgeschrieben am 05.09.2026. Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
@@ -30,7 +30,46 @@ werden. Wer hier etwas über Pflanzen entscheidet, liest dort nach, statt zu sch
 
 ---
 
-## 0 · Am 06.09.2026 behoben — zwei Meldungen von Patrick
+## 0 · Am 06.09.2026 behoben — Meldungen von Patrick
+
+### Die Gießmenge stellt niemand mehr von Hand ein (v1.5.112)
+
+Patricks Einwand: „Ich bin kein Fan davon, wenn ich selbst meine Wassermengen der Phasen
+einstellen muss … Wie will das ein User schaffen, der wenig oder noch keine Erfahrung hat?"
+
+Nachgemessen an seinen 35 selbst eingetragenen Güssen: Die Empfehlung lag im Mittel **23 %
+daneben**, fast immer nach unten. Ursache war eine Falle — weil die Vorschläge nicht passten,
+hatte er eigene Phasen-Korridore gesetzt, und genau das schaltete die Selbstkorrektur ab
+(„Ein SELBST gesetzter Korridor bleibt unangetastet"). Der Kreislauf: zu wenig vorgeschlagen
+→ Korridor gesetzt → Lernen aus → weiter danebengelegen → weiter von Hand korrigiert.
+
+`drainAdjust(c, iso)` leitet die Menge jetzt aus dem gemessenen Ablauf her — Mengenbilanz
+statt Faustregel: `Faktor = (1 − ist) / (1 − ziel)`, Ziel 17,5 %. Mit Patricks Zahlen an
+Tag 104 (9000 ml gegossen): 5 % Ablauf → 10350 ml, 10 % → 9800, **15–20 % → 9000**,
+30 % → 7650, 40 % → 6750. Im Zielfenster bestätigt die App also seine eigene Menge.
+
+**Zwei Stolpersteine, beide erst beim Durchspielen der ganzen Kurve sichtbar:**
+1. Der eigene Korridor sperrte die Messung aus. Jetzt gilt: Ein *Verhaltensmuster* ist etwas
+   anderes als ein *physikalischer Befund über diesen Topf* — eine Ablaufmessung darf weiten.
+2. Die Rampe (max. 12 % Änderung je Guss) hing am alten Median und hielt exakt dagegen: Bei
+   30 % Ablauf wollte die Bilanz −15 %, die Rampe ließ 12 % zu und klemmte zurück. Ergebnis
+   war Guss für Guss dieselbe Zahl trotz eindeutiger Messung. Sie hängt jetzt am korrigierten
+   Ziel.
+
+**Daraus zu lernen:** Eine einzelne Stichprobe hätte beide nicht gezeigt — der Fehler war erst
+in der *Reihe* zu sehen (bei 25 % kam mehr heraus als bei 17,8 %). Bei Regelkreisen die ganze
+Kennlinie durchspielen und auf Monotonie prüfen, nicht einen Punkt.
+
+**Drain-Ziel 5–10 % → 15–20 %** an elf Stellen, nach `ANBAU.md` 5.1. Das gehörte in dieselbe
+Änderung: ein höheres Drain-Ziel ohne größere Gießmenge wäre ein Widerspruch in sich.
+
+**Noch offen aus diesem Auftrag:** Der Gieß-Fahrplan selbst. Patrick: „Der sieht mir zu
+unübersichtlich und unhandlich aus. Damit kann niemand so richtig arbeiten, der nicht viel
+rumversuchen will." Gemessen: 6866 Zeichen, 21 Knöpfe, 9 Felder — in beiden Modi identisch.
+
+---
+
+## 0b · Zwei weitere Meldungen vom 06.09.2026
 
 **Der vorgezogene IceFlush verschwand spurlos (v1.5.110).** `moveGussDay` verschiebt nur die
 Aktion, nicht die Phase. Am Zieltag griff dann `_dryLeadIn` mit dem Grund `'ice'` — die
@@ -672,9 +711,9 @@ cat head.html app.js tail.html | cmp - index.html && echo "BYTE-IDENTISCH OK"
 **Byte-Identität mit `cmp` ist Pflicht, bevor irgendetwas geändert wird.** Danach wird
 `app.js` geändert, mit `build.sh` neu gebaut und erneut verglichen.
 
-33 Testdateien, alle grün in beiden Zeitzonen (Stand v1.5.111):
+34 Testdateien, alle grün in beiden Zeitzonen (Stand v1.5.112):
 
-`test_audit_screens` · `test_befehle` · `test_dialog_und_namen` · `test_dosisquelle` · `test_drain` · `test_duengeregeln` · `test_duengeplaene` ·
+`test_audit_screens` · `test_befehle` · `test_dialog_und_namen` · `test_dosisquelle` · `test_drain` · `test_drainregelkreis` · `test_duengeregeln` · `test_duengeplaene` ·
 `test_endspurt` · `test_entwurf` · `test_ernteabgleich` · `test_ertrag` ·
 `test_fixes_0905` ·
 `test_gussmenge` · `test_iceflush` · `test_gussmove` ·
