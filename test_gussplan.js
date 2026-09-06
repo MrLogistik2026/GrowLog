@@ -161,6 +161,46 @@ const mess = (E, anfaenger) => JSON.parse(E(`(function(){
   }
 
   console.log('');
+  console.log('F - (v1.5.118) Die Karte bleibt, auch wenn kein Guss mehr ansteht');
+  {
+    // Gefunden am 06.09.2026, weil derselbe Test in Kiritimati fehlschlug: Dort war schon
+    // Tag 115, und damit lag KEIN geplanter Guss mehr in der Zukunft. `_naechster` wurde
+    // null und die Karte zu einem leeren String - der Fahrplan oeffnete mit der Liste der
+    // 30 vergangenen Guesse, ohne ein Wort dazu, was jetzt gilt. Ausgerechnet in den
+    // letzten Tagen vor der Ernte, in denen man den Bildschirm am oeftesten aufmacht.
+    //
+    // Der Test setzt das Datum deshalb fest, statt sich auf die Systemzeit zu verlassen.
+    const anTag = (tag) => JSON.parse(E(`(function(){
+      var c = S.cycles[0];
+      var echt = todayISO;
+      todayISO = function(){ return isoPlus(c.startDate, ${tag - 1}); };
+      try {
+        S.beginnerMode = false;
+        goTo('gussplan');
+        var t = document.getElementById('scr-gussplan').textContent.replace(/\\s+/g,' ').trim();
+        var b = document.getElementById('gussplan-body') || document.querySelector('#scr-gussplan .scroll');
+        var erste = b.firstElementChild ? b.firstElementChild.textContent.replace(/\\s+/g,' ').trim() : '';
+        return JSON.stringify({ hatKarte: /Nächster Guss/.test(t), obenSteht: erste.slice(0, 120), text: t.slice(0, 400) });
+      } finally { todayISO = echt; }
+    })()`));
+
+    const t114 = anTag(114), t115 = anTag(115), t116 = anTag(116), t125 = anTag(125);
+    pruef('Tag 114 (IceFlush): Karte da', t114.hatKarte, t114.obenSteht);
+    pruef('Tag 115 (kein Guss mehr): Karte trotzdem da', t115.hatKarte, t115.obenSteht);
+    pruef('Tag 115: sie nennt den Erntetag', /Ernte an Tag 116/.test(t115.text), t115.text.slice(0, 160));
+    pruef('Tag 115: sie sagt, dass nicht mehr gegossen wird',
+      /nicht mehr gegossen/.test(t115.text), t115.text.slice(0, 160));
+    pruef('Tag 115: die Karte steht weiterhin ganz oben',
+      /^Nächster Guss/.test(t115.obenSteht), t115.obenSteht);
+    pruef('Tag 116 (Erntetag): Karte da', t116.hatKarte, t116.obenSteht);
+    pruef('Tag 125 (Trocknen/Curing): Karte da', t125.hatKarte, t125.obenSteht);
+    pruef('Tag 125: kein Erntedatum in der Zukunft behauptet',
+      !/in \d+ Tagen\)/.test(t125.obenSteht), t125.obenSteht);
+    pruef('Die Karte fuehrt weiter (kein toter Text)',
+      /Antippen öffnet den heutigen Eintrag/.test(t115.text), t115.text.slice(0, 200));
+  }
+
+  console.log('');
   console.log(`Ergebnis: ${ok} OK, ${fail} Fehler`);
   process.exit(fail ? 1 : 0);
 })();

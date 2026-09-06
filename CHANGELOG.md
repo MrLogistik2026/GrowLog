@@ -2,6 +2,72 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-06 — v1.5.118
+
+- **Der Gieß-Fahrplan sagt auch dann etwas, wenn kein Guss mehr ansteht.** `_naechster` ist
+  `steps.find(s => s.tag >= heuteTag) || null` — liegt kein geplanter Guss mehr in der
+  Zukunft, wurde die Karte zu einem leeren String. Der Bildschirm öffnete dann direkt mit
+  der Liste der 30 vergangenen Güsse, ohne ein Wort dazu, was jetzt gilt. Bei Patricks
+  Zyklus heißt das: an Tag 114 (IceFlush) stand die Karte noch da, ab **Tag 115 nicht mehr**
+  — also ausgerechnet in den letzten Tagen vor der Ernte, in denen man den Bildschirm am
+  häufigsten aufmacht, und seit v1.5.113 ist sie dort die oberste Karte und damit die
+  Antwort auf die tägliche Frage. **Warum so:** Das ist die Regel aus v1.5.96 an einer
+  anderen Stelle — fehlt ein Wert, wird *dieser Wert* als offen ausgewiesen, nicht die
+  ganze Karte ausgeblendet. Sie zeigt jetzt drei Zustände: vor der Ernte „Kein Guss mehr —
+  Ernte an Tag 116 · Dienstag, 08.09. (morgen). Bis dahin wird nicht mehr gegossen — der
+  Topf trocknet ab, und das gehört so", nach der Ernte „Trocknen läuft" bzw. „Curing läuft",
+  und ohne bekannten Erntetag den schlichten Satz, dass kein Guss mehr im Fahrplan steht.
+  Antippen öffnet weiterhin einen Eintrag, damit die Karte kein toter Text ist.
+  **Gefunden wurde er durch den Zeitzonen-Lauf:** In `Pacific/Kiritimati` war schon Tag 115,
+  und `test_gussplan.js` fiel um. Der neue Abschnitt F prüft die Tage 114, 115, 116 und 125
+  jetzt mit **festgesetztem Datum**, statt sich auf die Systemzeit zu verlassen.
+
+## 2026-09-06 — v1.5.117
+
+- **Der leere Zustand der Foto-Galerie war eine Sackgasse.** Ein Kamerasymbol und der Satz
+  „Noch keine Fotos." — kein Wort dazu, wo Fotos herkommen. Wer die Galerie zum ersten Mal
+  öffnet, steht vor einer schwarzen Fläche und weiß nicht, was er tun soll. Vorbild ist der
+  Düngeplan (`_emptyProds`), der es längst richtig macht: erklären, was fehlt, **und** den
+  Weg dorthin anbieten. Jetzt steht dort, dass Fotos im Tageseintrag angehängt werden, und
+  ein Knopf öffnet den heutigen Eintrag. Ohne angelegten Zyklus erscheint der Knopf nicht —
+  ein Weg, der ins Leere führt, wäre schlimmer als keiner.
+
+## 2026-09-06 — v1.5.116
+
+- **Der Sprung ins Lexikon landete mitten im Text.** Ein angesteuerter Eintrag wird
+  aufgeklappt und ist dann 1000–1600 px hoch; `scrollIntoView({block:'center'})` zentriert
+  ihn in einem 445-px-Fenster und schiebt damit seine Überschrift rund 500 px über den
+  Bildrand. Gemessen: Wer im Tageseintrag auf „VPD" tippte, landete bei „🌿 Anzucht/Vegi
+  (Tag 11–28)"; wer „IceFlush" ansteuerte, las oben „Hard Dryback" — die Überschrift eines
+  **anderen** Abschnitts. Ein Anfänger kann so nicht erkennen, ob er im richtigen Eintrag
+  ist. Mit `block:'start'` beginnt man dort, wo der Eintrag beginnt — Titel, dann der
+  persönliche Bezug („Dein Zyklus · Tag 114 · Richtwert jetzt 1.4–1.6 kPa").
+
+## 2026-09-06 — v1.5.115
+
+- **Fünf Funktionen bauten `goTo` von Hand nach — mit fehlenden Schritten.**
+  `openDuenger`, `openLexikon`, `openLexikonEntry`, `openHowto` und `openGallery` schalteten
+  den Bildschirm selbst um (`querySelectorAll('.screen')` … `classList.add('active')`) und
+  ließen dabei alles weg, was `goTo` sonst erledigt. Drei messbare Folgen:
+  **(1) Der Lichtsensor lief weiter.** `AmbientLightSensor` (2 Hz) wird ausschließlich in
+  `goTo` gestoppt. Wer auf dem Tipps-Bildschirm eine Lichtmessung startet und dann auf
+  „📖 Lexikon" tippt — um nachzulesen, was DLI heißt, also genau der vorgesehene Weg —,
+  ließ den Sensor an. Auf dem Handy heißt das Akku und ein aktiver Sensor, den man für aus
+  hält; der Knopf sagte weiterhin „⏹ Stoppen" auf einem verlassenen Bildschirm.
+  **(2) Die Variable `tab` blieb stehen.** Die App hielt sich für „tips", während der Nutzer
+  im Lexikon stand. Daran hängen mehrere Auffrisch-Weichen (`if (tab === 'cal') renderCal()`).
+  **(3) `goTo('lexikon'/'howto'/'gallery')` zeigte einen leeren Bildschirm** — genau die
+  Falle, die vor v1.5.106 schon einmal bei `duenger` zugeschnappt ist.
+  **Warum so und nicht dreimal geflickt:** Das ist die Lehre aus v1.5.106 wörtlich — „wo eine
+  Aufrufstelle einen fehlenden Schritt von Hand nachholt, ist der Schritt an der falschen
+  Stelle". Die fünf Öffner rufen jetzt `goTo` auf, und `goTo` rendert die drei fehlenden
+  Bildschirme mit. `goTo(t, arg)` reicht ein Argument an den Renderer durch, damit
+  `openLexikonEntry` weiterhin direkt beim Eintrag landet — **ohne zweiten Render**: ein
+  Lexikon-Render kostet gemessen ~40 ms auf dem Laptop, auf dem Handy eher das Dreifache.
+  Aus demselben Grund scrollt `goTo` nur dann nach oben, wenn kein Argument kam — sonst
+  machte es den Sprung zum Eintrag wieder zunichte.
+- Abgesichert durch `test_navwege.js` (28 Prüfungen, beide Zeitzonen).
+
 ## 2026-09-06 — v1.5.114
 
 - **Die Fortschrittszeile im Tageseintrag springt jetzt zum Feld.** Gemessen an Patricks

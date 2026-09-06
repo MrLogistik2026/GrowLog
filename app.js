@@ -3300,7 +3300,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.114';
+const APP_VERSION = 'v1.5.118';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -13636,7 +13636,11 @@ function renderHelp(nurTreffer) {
   }
 }
 
-function goTo(t) {
+/**
+ * Bildschirm wechseln. `arg` wird an den Renderer durchgereicht — bisher nur vom
+ * Lexikon genutzt, um direkt bei einem Eintrag zu landen (v1.5.115).
+ */
+function goTo(t, arg) {
   // Stop PPFD sensor if leaving tips tab
   if (tab === 'tips' && t !== 'tips' && typeof stopPPFD === 'function' && _ppfdSensor) {
     stopPPFD();
@@ -13660,9 +13664,21 @@ function goTo(t) {
   // Die Befehlssuche kaschierte das, weil sie hinter `goTo` zusätzlich `renderDuenger()`
   // aufruft; über die Zurück-Taste gab es diesen Zusatz nicht.
   else if (t === 'duenger') renderDuenger();
-  // Always scroll to top when switching tabs
-  const scrollEl = scr.querySelector('.scroll');
-  if (scrollEl) scrollEl.scrollTop = 0;
+  // (v1.5.115) Lexikon, Anleitung und Galerie fehlten hier aus genau demselben Grund
+  // wie `duenger` vor v1.5.106: Sie wurden nur über `openLexikon()` & Co. erreicht, und
+  // diese Funktionen schalteten den Bildschirm selbst um. `goTo` dorthin zeigte deshalb
+  // einen leeren Bildschirm. Seit die Öffner über `goTo` laufen, gehören die Renderer
+  // hierher — und der leere Bildschirm ist als Falle beseitigt, nicht nur umgangen.
+  else if (t === 'lexikon') renderLexikon(arg);
+  else if (t === 'howto') renderHowto();
+  else if (t === 'gallery') renderGallery();
+  // Beim Bildschirmwechsel nach oben — außer der Renderer positioniert selbst.
+  // `renderLexikon(titel)` scrollt zum gesuchten Eintrag; ein Rücksprung nach oben
+  // würde genau das zunichtemachen.
+  if (arg === undefined) {
+    const scrollEl = scr.querySelector('.scroll');
+    if (scrollEl) scrollEl.scrollTop = 0;
+  }
   _syncHelpFab();
 }
 
@@ -17070,9 +17086,8 @@ function _snippet(html, query, maxLen) {
 function openDuenger() {
   // Ensure legacy globals reflect the active plan (needed after cycle switches etc.)
   syncActivePlanToGlobals();
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById('scr-duenger').classList.add('active');
-  renderDuenger();
+  // (v1.5.115) Über `goTo` statt von Hand umschalten — siehe die Begründung dort.
+  goTo('duenger');
 }
 
 /* ====================== GIEß-FAHRPLAN (Gießmap) ======================
@@ -17244,7 +17259,41 @@ function renderGussplan() {
       <div style="font-size:12px;color:var(--text-sub);margin-top:3px">${art}${ml ? ` · etwa <b>${ml.ges} ml</b>` : ''}</div>
       ${ml && ml.proPfl ? `<div style="font-size:10px;color:var(--text-hint);margin-top:2px">${ml.proPfl} ml je Pflanze × ${ml.pflanzen} Pflanzen</div>` : ''}
     </div>`;
-  })() : '';
+  })() : (() => {
+    // (v1.5.118) Steht kein Guss mehr an, verschwand diese Karte ersatzlos — und der
+    // Gieß-Fahrplan öffnete mit der Liste der vergangenen Güsse, ohne ein Wort dazu, was
+    // jetzt gilt. Gemessen an Patricks Zyklus: an Tag 114 (IceFlush) stand sie noch da,
+    // an Tag 115 nicht mehr, also ausgerechnet in den letzten Tagen vor der Ernte, in
+    // denen man den Bildschirm am häufigsten aufmacht.
+    //
+    // Das ist die Regel aus v1.5.96, nur an anderer Stelle: Fehlt ein Wert, wird DIESER
+    // Wert als offen ausgewiesen — nicht die ganze Karte ausgeblendet. Seit v1.5.113 ist
+    // sie zudem die oberste Karte und damit die Antwort auf die tägliche Frage.
+    const _p = (typeof phase === 'function') ? phase(todayISO(), c) : null;
+    const _es = (typeof endspurtState === 'function') ? endspurtState(c, todayISO()) : null;
+    const _nachErnte = _p && (_p.ph === 'harvest' || _p.ph === 'dry' || _p.ph === 'cure');
+    let _titel, _satz;
+    if (_nachErnte) {
+      _titel = _p.ph === 'harvest' ? 'Geerntet' : (_p.ph === 'dry' ? 'Trocknen läuft' : 'Curing läuft');
+      _satz = 'Ab der Ernte wird nicht mehr gegossen. Die Liste darunter bleibt als Rückschau auf den Zyklus stehen.';
+    } else if (_es && isFinite(_es.ernteTag) && _es.ernteTag >= _heuteTag) {
+      const _bis = _es.ernteTag - _heuteTag;
+      const _erntISO = isoPlus(c.startDate, _es.ernteTag - 1);
+      _titel = 'Kein Guss mehr';
+      _satz = `Ernte an Tag ${_es.ernteTag} · ${fmtDE(_erntISO, { weekday: 'long', day: '2-digit', month: '2-digit' })}`
+        + ` (${_bis <= 0 ? 'heute' : _bis === 1 ? 'morgen' : 'in ' + _bis + ' Tagen'}).`
+        + ' Bis dahin wird nicht mehr gegossen — der Topf trocknet ab, und das gehört so.';
+    } else {
+      _titel = 'Kein Guss mehr geplant';
+      _satz = 'Für diesen Zyklus steht kein weiterer Guss im Fahrplan.';
+    }
+    return `<div onclick="openEntry(todayISO())" style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:10px;cursor:pointer">
+      <div style="font-size:10px;color:var(--text-hint);text-transform:uppercase;letter-spacing:0.5px">Nächster Guss</div>
+      <div style="font-size:15px;font-weight:700;color:var(--text-sub);margin-top:2px">${_titel}</div>
+      <div style="font-size:11px;color:var(--text-sub);margin-top:4px;line-height:1.5">${_satz}</div>
+      <div style="font-size:10px;color:var(--text-hint);margin-top:6px">👆 Antippen öffnet den heutigen Eintrag</div>
+    </div>`;
+  })();
   const listHdr = `<div data-tour="gusse-list" style="margin-bottom:8px;padding-left:2px">
     <div style="font-size:11px;color:var(--text-muted);font-weight:700">📅 So fällt's auf deine Güsse</div>
     <div style="font-size:10px;color:var(--text-sub);margin-top:3px;line-height:1.45">👆 Tippe einen <span style="color:var(--green)">🌿</span>/<span style="color:var(--blue)">💧</span>-Tag an, um ihn einzeln zwischen Düngen und nur Wasser umzuschalten. Ein <span style="color:var(--yellow)">gelber Punkt</span> = von Hand geändert. Gesperrte Tage (🔒 Topping, Flush, Iceflush) bleiben fest.</div>
@@ -26074,7 +26123,7 @@ function renderEntry(iso) {
           • <b>pH:</b> 6.0–6.5 (Erde) / 5.5–6.0 (Coco/Hydro)
         </div>
         <div style="margin-top:8px;font-size:11px;color:var(--text-hint);line-height:1.5">
-          📖 Mehr im Lexikon: <span style="color:var(--green);text-decoration:underline;cursor:pointer" onclick="goTo('lexikon');setTimeout(()=>renderLexikon('Sämlingsphase'),100)">Sämlingsphase</span> · <span style="color:var(--green);text-decoration:underline;cursor:pointer" onclick="goTo('lexikon');setTimeout(()=>renderLexikon('VPD (Vapour Pressure Deficit)'),100)">VPD</span>
+          📖 Mehr im Lexikon: <span style="color:var(--green);text-decoration:underline;cursor:pointer" onclick="openLexikonEntry('Sämlingsphase')">Sämlingsphase</span> · <span style="color:var(--green);text-decoration:underline;cursor:pointer" onclick="openLexikonEntry('VPD (Vapour Pressure Deficit)')">VPD</span>
         </div>
       </div>`;
     })() : '';
@@ -32611,9 +32660,7 @@ function getContextLexRecos() {
 }
 
 function openLexikon() {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById('scr-lexikon').classList.add('active');
-  renderLexikon();
+  goTo('lexikon');
 }
 
 /** Open Lexikon and auto-expand a specific entry by title */
@@ -32737,9 +32784,7 @@ function lexCycleNote(itemTitle) {
 }
 
 function openLexikonEntry(title) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById('scr-lexikon').classList.add('active');
-  renderLexikon(title);
+  goTo('lexikon', title);
 }
 
 function renderLexikon(highlightTitle, searchQuery) {
@@ -33027,7 +33072,13 @@ function renderLexikon(highlightTitle, searchQuery) {
   if (highlightTitle) {
     setTimeout(() => {
       const el = document.getElementById('lex-' + highlightTitle.replace(/[^a-zA-Z]/g, ''));
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      // (v1.5.116) 'start' statt 'center'. Ein angesteuerter Eintrag wird aufgeklappt und
+      // ist dann 1000–1600 px hoch; in einem 445-px-Fenster schiebt 'center' seine
+      // Überschrift ~500 px über den Bildrand. Gemessen am 06.09.2026: Wer im Tageseintrag
+      // auf „VPD" tippte, landete bei „Anzucht/Vegi (Tag 11–28)", bei „IceFlush" sogar bei
+      // der Überschrift „Hard Dryback" — man sah nicht, ob man im richtigen Eintrag ist.
+      // Mit 'start' beginnt man dort, wo der Eintrag beginnt.
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 150);
   }
 }
@@ -33310,9 +33361,7 @@ const HOWTO = [
 ];
 
 function openHowto() {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById('scr-howto').classList.add('active');
-  renderHowto();
+  goTo('howto');
 }
 
 function renderHowto() {
@@ -33888,9 +33937,7 @@ function _renderHowtoFull(query) {
 //  [SEKTION]: FOTO-GALERIE
 // =====================================================================
 function openGallery() {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById('scr-gallery').classList.add('active');
-  renderGallery();
+  goTo('gallery');
 }
 
 function renderGallery() {
@@ -33920,9 +33967,20 @@ function renderGallery() {
   });
 
   if (allPhotos.length === 0) {
+    // (v1.5.117) Der leere Zustand war eine Sackgasse: ein Kamera-Symbol und der Satz
+    // „Noch keine Fotos." — kein Wort dazu, wo Fotos überhaupt herkommen. Wer die Galerie
+    // zum ersten Mal öffnet, steht damit vor einer schwarzen Fläche. Vorbild ist der
+    // Düngeplan (`_emptyProds`): erklären, was fehlt, und den Weg dorthin anbieten.
+    const _gibtZyklus = (S.cycles || []).length > 0;
     document.getElementById('gallery-body').innerHTML = `
       <div class="empty-state"><div style="font-size:40px;opacity:0.3">📷</div>
-      <div style="font-size:13px;color:var(--text-muted)">Noch keine Fotos.</div></div>`;
+      <div style="font-size:13px;color:var(--text-muted);margin-bottom:6px">Noch keine Fotos.</div>
+      <div style="font-size:11px;color:var(--text-hint);line-height:1.55;max-width:280px;margin:0 auto 14px">
+        Fotos hängst du im <b>Tageseintrag</b> an — ganz unten bei „Fotos 📷". Sie erscheinen
+        dann hier nach Monaten sortiert, und du siehst deinen Grow wachsen.
+      </div>
+      ${_gibtZyklus ? `<button onclick="openEntry(todayISO())" style="background:var(--green-dk);color:#fff;border:none;border-radius:10px;padding:10px 18px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font)">Heutigen Eintrag öffnen</button>` : ''}
+      </div>`;
     return;
   }
 

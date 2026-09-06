@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.114** · index.html 2,11 MB · 629 Funktionen
+Stand: **v1.5.118** · index.html 2,11 MB · 629 Funktionen
 Zuletzt fortgeschrieben am 05.09.2026. Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
@@ -161,6 +161,87 @@ Abgesichert durch `test_tageseintrag.js` (33 Prüfungen, beide Zeitzonen).
 **Noch offen am Tageseintrag:** Die 53 Knöpfe des Gießtags sind unangetastet, und der
 Einsteiger-Modus wirkt dort weiterhin kaum (26 gegen 29 Felder, Knöpfe gleichauf). Erst
 sehen, ob die Sprungmarken im Alltag reichen, bevor Blöcke verschoben werden.
+
+---
+
+## 0d · Rundlauf über die nie geprüften Bereiche (v1.5.115–118)
+
+Patricks Auftrag vom 06.09.2026: „überprüfe dann erst noch andere Optionen die in der
+Handhabung unsauber oder schlecht laufen könnten." Geprüft wurde im echten Browser über
+alle neun Bildschirme. Vier Befunde, alle behoben, alle mit derselben Wurzel oder demselben
+Muster.
+
+### Fünf Funktionen bauten `goTo` von Hand nach (v1.5.115)
+
+`openDuenger`, `openLexikon`, `openLexikonEntry`, `openHowto`, `openGallery` schalteten den
+Bildschirm selbst um und ließen dabei weg, was `goTo` sonst erledigt:
+
+| Folge | Wirkung |
+|---|---|
+| Lichtsensor wird nur in `goTo` gestoppt | **lief weiter**, Knopf sagte weiter „⏹ Stoppen" |
+| `tab` wurde nicht gesetzt | App hielt sich für „tips", während man im Lexikon stand |
+| Renderer fehlten in `goTo` | `goTo('lexikon')` zeigte **einen leeren Bildschirm** |
+
+Der Sensor-Fall ist der greifbarste, weil der Weg dorthin der vorgesehene ist: Lichtmessung
+auf dem Tipps-Bildschirm starten, dann auf „📖 Lexikon" tippen, um nachzulesen, was DLI
+bedeutet — und der `AmbientLightSensor` läuft mit 2 Hz weiter.
+
+Der dritte Punkt ist **wörtlich die Falle aus v1.5.106**, nur an drei weiteren Bildschirmen.
+Behoben wurde deshalb nicht dreimal einzeln, sondern an der Wurzel: Die fünf Öffner rufen
+`goTo` auf, `goTo` rendert die drei fehlenden Bildschirme mit. `goTo(t, arg)` reicht ein
+Argument durch, damit `openLexikonEntry` **ohne zweiten Render** direkt beim Eintrag landet —
+ein Lexikon-Render kostet gemessen ~40 ms auf dem Laptop.
+
+**Daraus zu lernen:** Eine Funktion, die einen Teil einer anderen nachbaut, altert schlecht.
+`goTo` hat seit ihrer Entstehung drei Aufgaben dazubekommen (Sensor stoppen, `tab` führen,
+Renderer aufrufen) — die fünf Nachbauten haben keine davon mitbekommen. **Wo eine
+Aufrufstelle einen fehlenden Schritt von Hand nachholt, ist der Schritt an der falschen
+Stelle.** Genau dieser Satz stand schon seit v1.5.106 in dieser Übergabe.
+
+### Der Sprung ins Lexikon landete mitten im Text (v1.5.116)
+
+Ein angesteuerter Eintrag wird aufgeklappt (1000–1600 px) und dann mit `block:'center'`
+zentriert — im 445-px-Fenster liegt die Überschrift damit ~500 px über dem Rand. Wer im
+Tageseintrag auf „VPD" tippte, landete bei „🌿 Anzucht/Vegi (Tag 11–28)"; bei „IceFlush"
+las man oben „Hard Dryback", die Überschrift eines **anderen** Abschnitts. `block:'start'`.
+
+### Der leere Zustand der Galerie war eine Sackgasse (v1.5.117)
+
+Kamerasymbol, „Noch keine Fotos.", Ende. Der Düngeplan macht es mit `_emptyProds` längst
+richtig vor: erklären **und** den Weg anbieten. **Als Muster für den Rest der App:** Ein
+leerer Zustand ist dieselbe Kategorie wie eine Fehlermeldung — er braucht *was fehlt* und
+*was tun*. Ohne Zyklus erscheint der Knopf nicht; ein Weg ins Leere wäre schlimmer als keiner.
+
+### Der Gieß-Fahrplan verstummte vor der Ernte (v1.5.118)
+
+`_naechster = steps.find(s => s.tag >= heuteTag) || null` — ohne geplanten Guss wurde die
+oberste Karte zu einem leeren String, und der Bildschirm öffnete mit der Liste der
+30 vergangenen Güsse. Bei Patrick: an Tag 114 noch da, **ab Tag 115 weg** — in den letzten
+Tagen vor der Ernte, in denen man den Fahrplan am häufigsten aufmacht. Seit v1.5.113 ist
+diese Karte die Antwort auf die tägliche Frage.
+
+Das ist die Regel aus v1.5.96 an neuer Stelle: **Fehlt ein Wert, wird dieser Wert als offen
+ausgewiesen — nicht die ganze Karte ausgeblendet.** Sie zeigt jetzt drei Zustände (vor der
+Ernte mit Erntedatum und Begründung, nach der Ernte „Trocknen"/„Curing", sonst ein
+schlichter Satz) und bleibt antippbar.
+
+**Wie er gefunden wurde — das ist der eigentliche Wert dieses Befundes:** durch den
+Zeitzonen-Lauf. In `Pacific/Kiritimati` war schon Tag 115, und `test_gussplan.js` fiel um.
+Der Zeitzonen-Lauf ist damit nicht nur eine Datumsprüfung, er ist auch ein **Blick einen Tag
+in die Zukunft**. Ein umfallender Test in nur einer Zone ist deshalb nie „Testproblem",
+bevor nicht nachgesehen wurde, was die App an diesem Tag anzeigt. Abschnitt F von
+`test_gussplan.js` setzt das Datum jetzt fest (Tage 114, 115, 116, 125), statt sich auf die
+Systemzeit zu verlassen.
+
+### Geprüft und in Ordnung — nicht erneut aufrollen
+
+- **Der Hilfe-Knopf** („Wo du gerade bist") liest den aktiven Bildschirm aus dem DOM
+  (`_helpCurrentScreen`), nicht die Variable `tab`. Er zeigte auch mit veraltetem `tab` das
+  Richtige. Ich hatte hier zuerst einen Fehler gemeldet — das Anklicken hat ihn widerlegt.
+- **`setLexCat`** scrollt nach dem Kategoriewechsel korrekt nach oben; `#lexikon-body` **ist**
+  das scrollende Element.
+- **Rundlauf über neun Bildschirme:** kein `undefined`, kein `NaN`, kein `[object Object]`,
+  keine JS-Fehler, keine wirkungslosen Knöpfe.
 
 ---
 
@@ -404,9 +485,13 @@ Zurück-Taste aber der übliche Weg. **Wo eine Aufrufstelle einen fehlenden Schr
 nachholt, ist der Schritt an der falschen Stelle** — behoben wurde deshalb in `goTo` selbst,
 nicht am Aufruf.
 
-**Nicht geprüft:** Lexikon-Inhalte (302.000 Zeichen), Kalender im Detail, Foto-Galerie,
-der Outdoor-Pfad und andere Substrat-/Sorten-Kombinationen. Alle Messungen stammen aus
-Patricks Zustand; ein frischer Grow kann andere Fehler zeigen.
+**Nicht geprüft:** Lexikon-**Inhalte** (302.000 Zeichen — die *Wege* dorthin sind seit
+v1.5.115/116 geprüft), Kalender im Detail, der Outdoor-Pfad und andere Substrat-/
+Sorten-Kombinationen. Alle Messungen stammen aus Patricks Zustand; ein frischer Grow kann
+andere Fehler zeigen — und der zeigt bei ihm überall leere Zustände, von denen einer
+(die Galerie) sich am 06.09. als Sackgasse erwies. **Die übrigen leeren Zustände sind
+deshalb einen eigenen Durchgang wert:** „Keine Verschiebungen vorhanden", „Noch keine
+Daten" (Diagramme), „Noch keinen Plan — später einrichten".
 
 ---
 
@@ -810,7 +895,8 @@ cat head.html app.js tail.html | cmp - index.html && echo "BYTE-IDENTISCH OK"
 **Byte-Identität mit `cmp` ist Pflicht, bevor irgendetwas geändert wird.** Danach wird
 `app.js` geändert, mit `build.sh` neu gebaut und erneut verglichen.
 
-35 Testdateien, alle grün in beiden Zeitzonen (Stand v1.5.113):
+37 Testdateien, alle grün in beiden Zeitzonen (Stand v1.5.118) — dazu
+`test_tageseintrag` (33 Prüfungen) und `test_navwege` (28 Prüfungen):
 
 `test_audit_screens` · `test_befehle` · `test_dialog_und_namen` · `test_dosisquelle` · `test_drain` · `test_drainregelkreis` · `test_duengeregeln` · `test_duengeplaene` ·
 `test_endspurt` · `test_entwurf` · `test_ernteabgleich` · `test_ertrag` ·
