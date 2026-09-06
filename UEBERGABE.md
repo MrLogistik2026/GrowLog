@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.109** · index.html 2,11 MB · 628 Funktionen
+Stand: **v1.5.111** · index.html 2,11 MB · 628 Funktionen
 Zuletzt fortgeschrieben am 05.09.2026. Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
@@ -27,6 +27,31 @@ EC, Hebe-Test, Gießmenge (Abschnitt 3).
 **Fachwissen:** Seit dem 05.09.2026 bindet `CLAUDE.md` zusätzlich `ANBAU.md` ein — die
 biophysikalischen Grundlagen, gegen die jede Zahl und jeder Text in dieser App geprüft
 werden. Wer hier etwas über Pflanzen entscheidet, liest dort nach, statt zu schätzen.
+
+---
+
+## 0 · Am 06.09.2026 behoben — zwei Meldungen von Patrick
+
+**Der vorgezogene IceFlush verschwand spurlos (v1.5.110).** `moveGussDay` verschiebt nur die
+Aktion, nicht die Phase. Am Zieltag griff dann `_dryLeadIn` mit dem Grund `'ice'` — die
+Regel, die einen normalen Guss aus dem Hard-Dryback heraushält — und blockte den
+vorgezogenen IceFlush selbst. Danach war er nirgends mehr, während das Wort „IceFlush" am
+alten Tag klebte und der Eintrag dort die Spülmenge zeigte.
+`moveGussDay` ruft für `'ice'` jetzt `_moveIceFlushTo` und verschiebt die **Phase**.
+
+**Daraus zu lernen:** Ein Phasen-Ereignis lässt sich nicht mit dem Werkzeug für einen
+Gießtag verschieben. Wo eine Schutzregel eine Aufgabe blockiert, muss geprüft werden, ob die
+Aufgabe genau die ist, vor der die Regel schützen soll — hier war es umgekehrt.
+
+**Am IceFlush-Tag stand eine Gießmenge (v1.5.111).** Die Zahl war richtig (Schmelzwasser aus
+1 L Crushed Ice), die Frage falsch: Dort wird Eis gelegt und **nichts** gegossen. Die Karte
+zeigt jetzt die Eismenge mit dem Satz „Wasser gießt du keines dazu".
+
+**Offen geblieben, bewusst:** Am IceFlush-Tag stehen nun zwei Karten mit derselben
+Information — die ältere „CRUSHED ICE HEUTE" und die umgewidmete Mengenkarte. Beide sind in
+sich richtig und widersprechen sich nicht. Sie zusammenzulegen wäre ein Umbau des
+Eintrag-Aufbaus und gehört zum großen Thema „Tageseintrag entschlacken", nicht in einen
+Fehlerfix.
 
 ---
 
@@ -647,12 +672,12 @@ cat head.html app.js tail.html | cmp - index.html && echo "BYTE-IDENTISCH OK"
 **Byte-Identität mit `cmp` ist Pflicht, bevor irgendetwas geändert wird.** Danach wird
 `app.js` geändert, mit `build.sh` neu gebaut und erneut verglichen.
 
-32 Testdateien, alle grün in beiden Zeitzonen (Stand v1.5.109):
+33 Testdateien, alle grün in beiden Zeitzonen (Stand v1.5.111):
 
 `test_audit_screens` · `test_befehle` · `test_dialog_und_namen` · `test_dosisquelle` · `test_drain` · `test_duengeregeln` · `test_duengeplaene` ·
 `test_endspurt` · `test_entwurf` · `test_ernteabgleich` · `test_ertrag` ·
 `test_fixes_0905` ·
-`test_gussmenge` · `test_gussmove` ·
+`test_gussmenge` · `test_iceflush` · `test_gussmove` ·
 `test_gussmove_kombi` · `test_naehrstoffort` · `test_navrender` · `test_navscroll` · `test_planladen` · `test_planpause` ·
 `test_planrueckgrat` · `test_pflanzenzahl` · `test_planzuordnung` · `test_saemling_tage` · `test_sortendauer` · `test_startup` ·
 `test_training` · `test_trichchart` · `test_trichedit` · `test_trichphasen` · `test_vpd` · `test_wochenfolgen`

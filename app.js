@@ -3300,7 +3300,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.109';
+const APP_VERSION = 'v1.5.111';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -8844,7 +8844,12 @@ function getAction(iso, c) {
   // ihn dann nicht stillschweigend schlucken, sonst lässt sich der Guss scheinbar gar nicht
   // verschieben. Das Fenster vor dem IceFlush bleibt hart: dort geht es um den Hard-Dryback,
   // und ein Guss dort macht den ganzen Schritt zunichte.
-  if (_mv && _lead !== 'ice' && ['anzucht', 'bloom', 'flush'].includes(ph)) return _mv;
+  // (v1.5.110) Ein verschobener IceFlush darf nicht an seinem eigenen Vorlauf scheitern.
+  // `_lead === 'ice'` hält normale Güsse aus dem Hard-Dryback heraus — für den IceFlush
+  // selbst gilt das nicht, er beendet den Dryback ja gerade. Neue Verschiebungen gehen
+  // seit v1.5.110 ohnehin über `_moveIceFlushTo`; diese Zeile rettet Vermerke, die vorher
+  // angelegt wurden, davor, dass die Aufgabe spurlos verschwindet.
+  if (_mv && (_mv === 'ice' || _lead !== 'ice') && ['anzucht', 'bloom', 'flush'].includes(ph)) return _mv;
 
   if (_lead) return null;
 
@@ -15473,6 +15478,23 @@ function moveGussDay(cId, fromISO, days) {
   }
 
   const act = vorhanden ? vorhanden.act : (getAction(fromISO, c) || 'giess');
+
+  // (v1.5.110) DER ICEFLUSH IST KEIN GUSS, SONDERN EIN PHASEN-EREIGNIS.
+  //
+  // Ein Verschiebe-Vermerk nimmt nur der AKTION ihren Tag — die Phase rechnet weiter aus
+  // `flushWetDays` und `iceDryDays`. Beim IceFlush lief das doppelt schief:
+  //
+  //   1. Am Zieltag griff `_dryLeadIn` mit 'ice' (Hard-Dryback vor dem IceFlush) und gab
+  //      null zurück. Diese Regel soll einen normalen Guss aus dem Dryback halten — sie
+  //      blockte aber den vorgezogenen IceFlush selbst. Die Aufgabe verschwand damit
+  //      spurlos: kein Symbol am neuen Tag, keines am alten.
+  //   2. Die Phase blieb, wo sie war. Im Kalender stand das Wort „IceFlush" weiter am alten
+  //      Tag, und der Tageseintrag zeigte dort die Spülmenge statt der Eismenge.
+  //
+  // Richtig ist, die Phase selbst zu verschieben — genau das, was `setEndspurtIceStart`
+  // tut. Dann wandern Symbol, Beschriftung, Menge und Düngeplan gemeinsam.
+  if (act === 'ice') return _moveIceFlushTo(c, ziel);
+
   if (vorhanden) { vorhanden.to = ziel; }
   else { c.gussMoves.push({ from: ursprung, to: ziel, act }); }
   // Ist das Ziel wieder der Ursprung, ist der Vermerk überflüssig.
@@ -15483,6 +15505,36 @@ function moveGussDay(cId, fromISO, days) {
   toast(n > 0
     ? `→ Guss auf ${tagNr ? 'Tag ' + tagNr + ' · ' : ''}${fmtDE(ziel)} verschoben`
     : `← Guss auf ${tagNr ? 'Tag ' + tagNr + ' · ' : ''}${fmtDE(ziel)} vorgezogen`);
+  return true;
+}
+
+/**
+ * (v1.5.110) Den IceFlush auf einen anderen Tag legen — als Phase, nicht als Vermerk.
+ *
+ * Dieselbe Rechnung wie in `setEndspurtIceStart`, nur ohne Dialog: Der Abstand zwischen
+ * Spülstart und Zieltag wird auf Spültage und Hard-Dryback aufgeteilt, der Dryback behält
+ * so viel, wie übrig bleibt. Dadurch wandert die ganze Kette mit — Symbol, Beschriftung,
+ * Gießmenge, Düngeplan und Erntetag.
+ */
+function _moveIceFlushTo(c, zielISO) {
+  const st = (typeof endspurtState === 'function') ? endspurtState(c, todayISO()) : null;
+  if (!st || !isFinite(st.spuelStart)) {
+    toast('Der Spülstart steht noch nicht fest — leg ihn zuerst im Endspurt fest.');
+    return false;
+  }
+  const zielTag = isoDiff(zielISO, c.startDate) + 1;
+  const gesamt = zielTag - st.spuelStart;
+  if (gesamt < 1) {
+    toast(`Der IceFlush muss nach dem Spülstart liegen (ab Tag ${st.spuelStart + 1}).`);
+    return false;
+  }
+  const dry = Math.min(st.iceDry, gesamt - 1);
+  c.iceDryDays = Math.max(0, dry);
+  c.flushWetDays = Math.max(1, gesamt - c.iceDryDays);
+  if (typeof _syncFlushPhase === 'function') _syncFlushPhase(c);
+  saveS();
+  vibrate(10);
+  toast(`🧊 IceFlush auf Tag ${zielTag} · ${c.flushWetDays} Spültage + ${c.iceDryDays} Tage Hard-Dryback`);
   return true;
 }
 
@@ -24619,22 +24671,42 @@ function renderEntry(iso) {
       const _mixTotal = Math.round(_plannedTotal * _rf);
       const _mixPerPlant = Math.round(_mixTotal / effPlants);
       const _reservePct = Math.round((_rf - 1) * 100);
-      const _showMixCard = (c.scaleByPlants && (c.plantCount || 1) > 1) || _rf > 1.0001;
+      // (v1.5.111) Am IceFlush-Tag immer zeigen — dort trägt die Karte die Eismenge, und die
+      // braucht auch, wer nur eine Pflanze hat.
+      const _istIceTag = (a === 'ice');
+      const _showMixCard = _istIceTag || (c.scaleByPlants && (c.plantCount || 1) > 1) || _rf > 1.0001;
       // (v1.5.54) Zeigt an, wenn schon einzeln geerntet wurde — sonst wirkt eine gesunkene
       // Menge wie ein Rechenfehler.
       const _geerntet = (typeof plantsHarvestedBy === 'function') ? plantsHarvestedBy(c, iso).length : 0;
       const _gesamtPfl = Array.isArray(c.plants) ? c.plants.length : (parseInt(c.plantCount) || 1);
-      const _badgeHeading = _rf > 1.0001
-        ? `Anmischen mit <b style="color:var(--green)">${_reservePct}%</b> Reserve`
-        : `Berechnet für <b style="color:var(--green)">${effPlants}</b> Pflanze${effPlants===1?'':'n'}`;
+      // (v1.5.111) AM ICEFLUSH-TAG WIRD NICHT GEGOSSEN.
+      //
+      // Die Karte nannte auch dort eine „Gießmenge" — bei Patrick 3750 ml je Pflanze. Die
+      // Zahl selbst stimmt (`_waterSuggestionRaw` liefert für die Ice-Phase das
+      // Schmelzwasser aus 1 L Crushed Ice, ~700 ml je 11-L-Topf), aber sie beantwortet die
+      // falsche Frage: Am IceFlush legt man Eis an den Topfrand und gießt **nichts** dazu.
+      // Wer der Zahl folgt, gibt zusätzlich Wasser — und macht den Hard-Dryback zunichte,
+      // auf den die ganzen Tage davor hingearbeitet haben.
+      // Gezeigt wird deshalb die Eismenge, und das Schmelzwasser steht als Folge daneben.
+      const _istIce = _istIceTag;
+      const _icePerPot = Math.round(getPotSize(c) / 11 * 1000);   // 1 L Eis je 11-L-Topf
+      const _badgeHeading = _istIce
+        ? `🧊 Crushed Ice für <b style="color:var(--green)">${effPlants}</b> Pflanze${effPlants===1?'':'n'}`
+        : _rf > 1.0001
+          ? `Anmischen mit <b style="color:var(--green)">${_reservePct}%</b> Reserve`
+          : `Berechnet für <b style="color:var(--green)">${effPlants}</b> Pflanze${effPlants===1?'':'n'}`;
       // Steht unabhängig von der Reserve-Variante darunter: eine gesunkene Menge ohne
       // Erklärung sieht sonst aus wie ein Rechenfehler.
       const _ernteNote = _geerntet > 0
         ? `<div style="font-size:10px;color:var(--yellow);margin-top:3px">🪴 ${effPlants} von ${_gesamtPfl} Pflanzen · ${_geerntet} früher geerntet</div>`
         : '';
-      const _badgeValue = effPlants > 1
-        ? `≈ ${_mixPerPlant} ml/Pflanze<span style="display:block;font-size:13px;color:var(--text-sub);font-weight:600;margin-top:2px">= ${_mixTotal} ml gesamt</span>`
-        : `${_mixTotal} ml gesamt`;
+      const _badgeValue = _istIce
+        ? `${_icePerPot} ml Eis/Topf${effPlants > 1
+            ? `<span style="display:block;font-size:13px;color:var(--text-sub);font-weight:600;margin-top:2px">= ${_icePerPot * effPlants} ml gesamt</span>`
+            : ''}<span style="display:block;font-size:10px;color:var(--text-hint);font-weight:400;font-family:var(--font);line-height:1.4;margin-top:3px">Am Rand verteilen, nicht auf den Stamm. Daraus werden ~${waterSug} ml Schmelzwasser — <b>Wasser gießt du keines dazu.</b></span>`
+        : effPlants > 1
+          ? `≈ ${_mixPerPlant} ml/Pflanze<span style="display:block;font-size:13px;color:var(--text-sub);font-weight:600;margin-top:2px">= ${_mixTotal} ml gesamt</span>`
+          : `${_mixTotal} ml gesamt`;
       const plantsBadge = _showMixCard ? `
         <div onclick="openPlantSheet('${c.id}','${iso}')" title="Pflanzen verwalten" style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:rgba(122,194,90,0.08);border:0.5px solid rgba(122,194,90,0.3);border-radius:10px;cursor:pointer">
           <span style="font-size:18px">🌱</span>

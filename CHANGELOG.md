@@ -2,6 +2,44 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-06 — v1.5.111
+
+- **Am IceFlush-Tag stand eine Gießmenge, obwohl dort nichts gegossen wird.** Die grüne Karte
+  nannte „Berechnet für 3 Pflanzen · 3750 ml/Pflanze · 11250 ml gesamt". Die Zahl selbst ist
+  richtig — `_waterSuggestionRaw` liefert für die Ice-Phase das Schmelzwasser aus 1 L Crushed
+  Ice, rund 700 ml je 11-L-Topf —, aber sie beantwortet die falsche Frage. Beim IceFlush legt
+  man Eis an den Topfrand und gießt **nichts** dazu. Wer der Zahl folgt, macht den
+  Hard-Dryback zunichte, auf den die drei Tage davor hingearbeitet haben.
+  Die Karte zeigt am Ice-Tag jetzt die **Eismenge** (1000 ml je Topf, skaliert mit der
+  Topfgröße), die Gesamtmenge, den Hinweis zum Topfrand und den Satz „Wasser gießt du keines
+  dazu". Das Schmelzwasser steht als Folge daneben, nicht als Anweisung. An allen anderen
+  Tagen bleibt die Karte unverändert.
+  Patricks Worte dazu: „Ebenso gieße ich hier kein Wasser sondern lege nur 1kg Eis
+  ringförmig in den Topf."
+
+## 2026-09-06 — v1.5.110
+
+- **Ein vorgezogener IceFlush verschwand spurlos.** `moveGussDay` legt einen datierten
+  Vermerk an, der die **Aktion** verschiebt; die Phase rechnet weiter aus `flushWetDays` und
+  `iceDryDays`. Beim IceFlush lief das doppelt schief.
+  Erstens griff am Zieltag `_dryLeadIn` mit dem Grund `'ice'` — die Regel, die einen normalen
+  Guss aus dem Hard-Dryback heraushält — und lieferte `null`. Sie blockte damit **den
+  vorgezogenen IceFlush selbst**, obwohl der den Dryback ja gerade beendet. Die Aufgabe war
+  danach nirgends mehr: kein Symbol am neuen Tag, keines am alten.
+  Zweitens blieb die Phase stehen. Im Kalender klebte das Wort „IceFlush" weiter am
+  ursprünglichen Tag, und der Tageseintrag zeigte dort die Spülmenge (3750 ml je Pflanze)
+  statt der Eismenge — genau der Widerspruch, den Patrick fotografiert hat.
+  Der IceFlush ist kein Guss, sondern ein **Phasen-Ereignis**. `moveGussDay` legt dafür jetzt
+  keinen Vermerk mehr an, sondern ruft `_moveIceFlushTo` — dieselbe Rechnung wie
+  `setEndspurtIceStart`, nur ohne Dialog: Der Abstand zum Spülstart wird neu auf Spültage und
+  Hard-Dryback aufgeteilt. Damit wandern Symbol, Beschriftung, Gießmenge, Düngeplan und
+  Erntetag gemeinsam.
+  Für bereits angelegte Vermerke greift zusätzlich eine Ausnahme in `getAction`: Ein
+  verschobener `'ice'` scheitert nicht mehr an seinem eigenen Vorlauf. Ohne sie bliebe der
+  IceFlush in Patricks laufendem Grow unsichtbar.
+  Abgesichert durch `test_iceflush.js` (26 Prüfungen, beide Zeitzonen), darunter der
+  Altbestands-Fall und die Gegenprobe, dass ein normaler Guss-Tag unverändert bleibt.
+
 ## 2026-09-05 — v1.5.109
 
 - **Die Karte „Dünge-Regeln" unter Tipps gab feste Zahlen aus, die dem eigenen Zustand
