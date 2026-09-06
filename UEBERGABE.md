@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.112** · index.html 2,11 MB · 628 Funktionen
+Stand: **v1.5.113** · index.html 2,11 MB · 628 Funktionen
 Zuletzt fortgeschrieben am 05.09.2026. Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
@@ -63,9 +63,26 @@ Kennlinie durchspielen und auf Monotonie prüfen, nicht einen Punkt.
 **Drain-Ziel 5–10 % → 15–20 %** an elf Stellen, nach `ANBAU.md` 5.1. Das gehörte in dieselbe
 Änderung: ein höheres Drain-Ziel ohne größere Gießmenge wäre ein Widerspruch in sich.
 
-**Noch offen aus diesem Auftrag:** Der Gieß-Fahrplan selbst. Patrick: „Der sieht mir zu
-unübersichtlich und unhandlich aus. Damit kann niemand so richtig arbeiten, der nicht viel
-rumversuchen will." Gemessen: 6866 Zeichen, 21 Knöpfe, 9 Felder — in beiden Modi identisch.
+### Der Gieß-Fahrplan ist nach Häufigkeit geordnet (v1.5.113)
+
+Patrick: „Der sieht mir zu unübersichtlich und unhandlich aus. Damit kann niemand so richtig
+arbeiten, der nicht viel rumversuchen will."
+
+Der Bildschirm beantwortete vier Fragen gleichzeitig und in der falschen Reihenfolge: oben die
+Endspurt-Kette mit acht ±-Knöpfen — eine Terminfrage, die man zweimal im Zyklus stellt —,
+darunter erst „was gieße ich als Nächstes", die tägliche Frage. Beide Modi waren zeichengleich
+(4472 Zeichen, 21 Knöpfe, 9 Felder).
+
+Neue Reihenfolge in beiden Modi: **nächster Guss mit Menge → Liste → Termine → Einstellungen.**
+Im Einsteiger-Modus liegt die Kette hinter dem Aufklapper „Termine bis zur Ernte", der
+Listentext ist auf einen Satz gekürzt, und die Mengen-Regler entfallen dort ganz — sie würden
+seit v1.5.112 nur die Selbstkorrektur abschalten. Ergebnis: **3166 Zeichen, 10 Knöpfe,
+0 Eingabefelder.** Der Profi behält alles (4472 / 21 / 9), nur anders sortiert.
+
+**Daraus zu lernen:** Nicht die *Menge* der Elemente machte den Bildschirm unhandlich, sondern
+ihre *Reihenfolge*. Was täglich gebraucht wird, gehört nach oben; was zweimal im Zyklus
+gebraucht wird, hinter einen Aufklapper. Beim nächsten dichten Bildschirm — dem Tageseintrag
+mit 154 Feldern — zuerst danach fragen, bevor etwas entfernt wird.
 
 ---
 
@@ -711,12 +728,12 @@ cat head.html app.js tail.html | cmp - index.html && echo "BYTE-IDENTISCH OK"
 **Byte-Identität mit `cmp` ist Pflicht, bevor irgendetwas geändert wird.** Danach wird
 `app.js` geändert, mit `build.sh` neu gebaut und erneut verglichen.
 
-34 Testdateien, alle grün in beiden Zeitzonen (Stand v1.5.112):
+35 Testdateien, alle grün in beiden Zeitzonen (Stand v1.5.113):
 
 `test_audit_screens` · `test_befehle` · `test_dialog_und_namen` · `test_dosisquelle` · `test_drain` · `test_drainregelkreis` · `test_duengeregeln` · `test_duengeplaene` ·
 `test_endspurt` · `test_entwurf` · `test_ernteabgleich` · `test_ertrag` ·
 `test_fixes_0905` ·
-`test_gussmenge` · `test_iceflush` · `test_gussmove` ·
+`test_gussmenge` · `test_iceflush` · `test_gussmove` · `test_gussplan` ·
 `test_gussmove_kombi` · `test_naehrstoffort` · `test_navrender` · `test_navscroll` · `test_planladen` · `test_planpause` ·
 `test_planrueckgrat` · `test_pflanzenzahl` · `test_planzuordnung` · `test_saemling_tage` · `test_sortendauer` · `test_startup` ·
 `test_training` · `test_trichchart` · `test_trichedit` · `test_trichphasen` · `test_vpd` · `test_wochenfolgen`

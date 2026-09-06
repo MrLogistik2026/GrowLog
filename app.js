@@ -3300,7 +3300,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.112';
+const APP_VERSION = 'v1.5.113';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -17373,7 +17373,46 @@ function renderGussplan() {
   // wieder oben steht.
   const _scroller = body.closest('.scroll') || body.parentElement;
   const _scrollY = _scroller ? _scroller.scrollTop : 0;
-  body.innerHTML = `<div style="padding:14px 14px 30px">${_gapKarte}${_naechsteKarte}${listHdr}${_erledigtVoll}${rows}${ovResetBtn}${darkNote}${_einstellungen}</div>`;
+
+  // (v1.5.113) DIE TÄGLICHE FRAGE ZUERST.
+  //
+  // Patrick: „Der sieht mir zu unübersichtlich und unhandlich aus. Damit kann niemand so
+  // richtig arbeiten, der nicht viel rumversuchen will."
+  //
+  // Der Bildschirm beantwortete vier Fragen gleichzeitig und in der falschen Reihenfolge:
+  // ganz oben die Endspurt-Kette mit acht ±-Knöpfen (eine Terminfrage, die man ein- oder
+  // zweimal im Zyklus stellt), darunter erst „was gieße ich als Nächstes" — die Frage, für
+  // die man diesen Bildschirm täglich öffnet.
+  //
+  // Neu ist die Reihenfolge nach Häufigkeit: nächster Guss, dann die Liste, dann die
+  // Termine, ganz unten die Einstellungen. Weggenommen wird nichts.
+  //
+  // Im Einsteiger-Modus liegt die Endspurt-Kette zusätzlich hinter einem Aufklapper und die
+  // Rhythmus-/Mengen-Einstellungen entfallen dort ganz: Seit v1.5.112 führt die App die
+  // Menge am gemessenen Ablauf selbst nach — wer sie von Hand einstellt, schaltet genau
+  // diese Selbstkorrektur ab. Das ist Profi-Werkzeug, keine Grundeinstellung.
+  const _anf = !!S.beginnerMode;
+  const _endspurtBlock = (!_gapKarte || !_anf) ? _gapKarte : `
+    <details ${S._gussEndspurt ? 'open' : ''} ontoggle="S._gussEndspurt=this.open" style="margin-bottom:10px;border-radius:14px;background:var(--card);border:0.5px solid var(--border)">
+      <summary style="cursor:pointer;padding:12px 14px;list-style:none;font-family:var(--font);display:flex;align-items:center;gap:10px">
+        <span style="font-size:16px">🏁</span>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:600;color:var(--text)">Termine bis zur Ernte</div>
+          <div style="font-size:10px;color:var(--text-muted);margin-top:1px">Letzter Guss, Spülen, IceFlush, Ernte — nur anfassen, wenn sich etwas verschiebt</div>
+        </div>
+        <span style="color:var(--text-hint);font-size:13px">▾</span>
+      </summary>
+      <div style="padding:2px 12px 12px">${_gapKarte}</div>
+    </details>`;
+  const _listHdrEff = _anf
+    ? `<div data-tour="gusse-list" style="margin-bottom:8px;padding-left:2px">
+        <div style="font-size:11px;color:var(--text-muted);font-weight:700">📅 Deine nächsten Güsse</div>
+        <div style="font-size:10px;color:var(--text-sub);margin-top:3px;line-height:1.45">Tippe einen Tag an, um ihn zwischen <span style="color:var(--green)">🌿 Düngen</span> und <span style="color:var(--blue)">💧 nur Wasser</span> umzuschalten.</div>
+      </div>`
+    : listHdr;
+  const _einstellungenEff = _anf ? '' : _einstellungen;
+
+  body.innerHTML = `<div style="padding:14px 14px 30px">${_naechsteKarte}${_listHdrEff}${_erledigtVoll}${rows}${ovResetBtn}${darkNote}${_endspurtBlock}${_einstellungenEff}</div>`;
   if (_scroller && _scrollY) requestAnimationFrame(() => { _scroller.scrollTop = _scrollY; });
 }
 

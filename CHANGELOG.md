@@ -2,6 +2,31 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-06 — v1.5.113
+
+- **Der Gieß-Fahrplan ist nach Häufigkeit geordnet statt nach Themen.** Patrick: „Der sieht
+  mir zu unübersichtlich und unhandlich aus. Damit kann niemand so richtig arbeiten, der
+  nicht viel rumversuchen will."
+  Der Bildschirm beantwortete vier Fragen gleichzeitig und in der falschen Reihenfolge: ganz
+  oben die Endspurt-Kette mit acht ±-Knöpfen — eine Terminfrage, die man ein- oder zweimal im
+  Zyklus stellt —, darunter erst „was gieße ich als Nächstes", die Frage, für die man diesen
+  Bildschirm täglich öffnet. Gemessen war er in beiden Modi zeichengleich: 4472 Zeichen,
+  21 Knöpfe, 9 Eingabefelder. Der Einsteiger-Modus wirkte dort überhaupt nicht.
+  Neue Reihenfolge für beide Modi: nächster Guss (mit Menge), dann die Liste, dann die
+  Termine, ganz unten die Einstellungen. Im **Einsteiger-Modus** liegt die Endspurt-Kette
+  zusätzlich hinter dem Aufklapper „Termine bis zur Ernte — nur anfassen, wenn sich etwas
+  verschiebt", der Listen-Erklärtext ist auf einen Satz gekürzt, und die Rhythmus- und
+  Mengen-Einstellungen entfallen dort ganz. Ergebnis: **3166 statt 4472 Zeichen, 10 statt 21
+  Knöpfe, 0 statt 9 Eingabefelder.**
+  Warum die Mengen-Regler beim Einsteiger verschwinden: Seit v1.5.112 führt die App die Menge
+  am gemessenen Ablauf selbst nach. Wer sie von Hand einstellt, schaltet genau diese
+  Selbstkorrektur ab — das war die Falle, in die Patrick gelaufen war. Das ist Profi-Werkzeug,
+  keine Grundeinstellung.
+  Im **Profi-Modus** ändert sich nur die Reihenfolge: 4472 Zeichen, 21 Knöpfe, 9 Felder
+  unverändert. Weggenommen wird nichts.
+  Abgesichert durch `test_gussplan.js` (24 Prüfungen, beide Zeitzonen), darunter die
+  Gegenprobe, dass der Profi-Modus vollständig bleibt und die Gussliste in beiden Modi steht.
+
 ## 2026-09-06 — v1.5.112
 
 - **Die Gießmenge stellt niemand mehr von Hand ein — sie führt sich am gemessenen Ablauf
