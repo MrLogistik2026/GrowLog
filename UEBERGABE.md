@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.113** · index.html 2,11 MB · 628 Funktionen
+Stand: **v1.5.114** · index.html 2,11 MB · 629 Funktionen
 Zuletzt fortgeschrieben am 05.09.2026. Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
@@ -81,8 +81,86 @@ seit v1.5.112 nur die Selbstkorrektur abschalten. Ergebnis: **3166 Zeichen, 10 K
 
 **Daraus zu lernen:** Nicht die *Menge* der Elemente machte den Bildschirm unhandlich, sondern
 ihre *Reihenfolge*. Was täglich gebraucht wird, gehört nach oben; was zweimal im Zyklus
-gebraucht wird, hinter einen Aufklapper. Beim nächsten dichten Bildschirm — dem Tageseintrag
-mit 154 Feldern — zuerst danach fragen, bevor etwas entfernt wird.
+gebraucht wird, hinter einen Aufklapper. Am Tageseintrag hat sich derselbe Gedanke am
+06.09.2026 bestätigt (v1.5.114, Abschnitt 0c).
+
+---
+
+## 0c · Der Tageseintrag: eine falsche Zahl, ein echter Fehler (v1.5.114)
+
+### Zuerst die Korrektur einer eigenen Messung
+
+**Die früher hier notierten „154 sichtbaren Eingabefelder" waren falsch.** Gemessen wurde
+mit `offsetParent !== null` — und das schließt Inhalte in **zugeklappten `<details>` nicht
+aus**. Richtig ist an Tag 113:
+
+| | |
+|---|---|
+| Felder im ganzen Bildschirm | 162 |
+| davon in der zugeklappten Liste „🔬 Messungen berichtigen (47)" | **141** |
+| **wirklich sichtbar** | **21** |
+
+Die Aufklapp-Liste hatte ich in v1.5.105 selbst von 32 auf alle 47 Messungen erweitert. Sie
+war also die Ursache der Schreckenszahl, und sie ist zugeklappt völlig unauffällig.
+**Regel: Wer Sichtbarkeit misst, muss zugeklappte Behälter mitprüfen — `offsetParent` tut
+das nicht.**
+
+### Was wirklich gemessen wurde (06.09.2026, Browser, Patricks Daten)
+
+| Tag | | Einsteiger (Felder/Knöpfe) | Profi |
+|---|---|---|---|
+| 30, 60 | kein Guss | 10 / 29 | 10 / 28 |
+| 90 | kein Guss | 13 / 32 | 13 / 30 |
+| **104** | **Gießtag** | **26 / 53** | **29 / 53** |
+| 110 | Spülen | 21 / 40 | 24 / 40 |
+| 114 | IceFlush | 21 / 46 | 24 / 46 |
+
+An normalen Tagen ist der Eintrag harmlos. **Am Gießtag ist er 3486 px hoch bei 691 px
+Fensterhöhe — fünf Bildschirmlängen.** Und die Felder liegen weit unten: Wassermenge bei
+y = 1144, pH/EC bei 1368/1377, Temperatur und Luftfeuchte erst bei **2014**, Notiz bei 2751.
+Über den ersten 1144 px steht ausschließlich Lesestoff.
+
+Ganz oben stand dabei die ganze Zeit die Zeile „3/6 eingetragen · ✓💧 Wasser · 🧪 pH ·
+✓🌡 Temp · 💨 RLF". **Die App wusste also präzise, was heute noch fehlt, und legte die
+zugehörigen Felder 1144 bzw. 2014 px darunter, ohne einen Weg dorthin.**
+
+### Die Zeile ist jetzt der Weg, nicht das Schild
+
+`jumpToEntryField(cId, was)` — jeder der sechs Chips ist ein Knopf, der zum Feld scrollt, es
+kurz gelb umrandet und den Cursor hineinsetzt. Kein neuer Regler, keine neue Einstellung:
+dieselbe Zeile, dieselben sechs Zustände, nur benutzbar. Drei Feinheiten, alle im Browser
+durchgeklickt:
+
+- Liegt das Ziel in einem zugeklappten Bereich, wird der vorher geöffnet — sonst springt es
+  ins Nichts.
+- Am Foto-Knopf wird der Fokus **weggenommen** statt gesetzt. Bliebe der Cursor im vorherigen
+  Feld, stünde auf dem Handy die Tastatur offen, genau über dem Ziel des Sprungs.
+- Gibt es das Feld an diesem Tag nicht (kein Gießtag → kein Wasser-Feld), sagt die App das,
+  statt stumm zu bleiben.
+
+**Die Zeile erscheint jetzt auch am leeren Tag.** Früher blieb sie bei 0/6 weg („sonst zu
+verwirrend"). Seit sie zum Feld springt, ist der leere Tag genau der Moment, in dem man sie
+braucht: Sie ist dann die Aufgabenliste für heute, nicht bloß eine Erfolgsmeldung.
+
+### Der echte Fehler daneben: Notizfelder für geerntete Pflanzen
+
+An Tag 104 standen **fünf** Pflanzen-Notizfelder, obwohl Pflanze 5 seit Tag 93 geerntet ist
+und `getEffectivePlantCount` am selben Tag bereits mit **3** rechnete. Ursache: ein
+ungefiltertes `c.plants.map(...)`. Jetzt zählt der Schnitt-Tag noch dazu (an ihm will man
+etwas notieren), der Tag danach nicht mehr — und wer für eine geerntete Pflanze schon etwas
+geschrieben hat, sieht es weiter: **eine vorhandene Notiz darf nicht unsichtbar werden.**
+Ergebnis: Tag 50 → 5 Felder, Tag 93 → 5, Tag 94 → 4, Tag 104 → 4, Tag 113 → 3.
+
+**Dazu:** Die Verschiebungs-Historie („5 Verschiebungen · ✕ = einzeln zurücknehmen") lag an
+**jedem** Tag aufgeschlagen zwischen Sorten-Karte und Gießkarte — fünf Rücknahme-Knöpfe im
+Weg zu den Feldern, die man täglich braucht. Sie ist zugeklappt; die Kopfzeile bleibt.
+Der Gießtag schrumpft damit von 3486 auf 3282 px.
+
+Abgesichert durch `test_tageseintrag.js` (33 Prüfungen, beide Zeitzonen).
+
+**Noch offen am Tageseintrag:** Die 53 Knöpfe des Gießtags sind unangetastet, und der
+Einsteiger-Modus wirkt dort weiterhin kaum (26 gegen 29 Felder, Knöpfe gleichauf). Erst
+sehen, ob die Sprungmarken im Alltag reichen, bevor Blöcke verschoben werden.
 
 ---
 
@@ -213,11 +291,14 @@ lassen, einrasten.
 
 ### Weitere Kandidaten, unverändert offen
 
-- Der **Tageseintrag** hat im Profi-Modus **83 Knöpfe und 154 sichtbare Eingabefelder**
-  (am 05.09.2026 im Browser nachgemessen; die früher notierten „29 Knöpfe, 8 Felder" waren
-  überholt). An einem normalen Tag sind drei davon relevant. Vorschlag lag vor: oben eine Aufgabenzeile
-  („Heute: Hebe-Test + Trichome"), darunter nur die zugehörigen Blöcke, alles Übrige hinter
-  „Mehr eintragen ▾". Patrick hat dazu noch nicht entschieden.
+- Der **Tageseintrag am Gießtag**: 29 sichtbare Felder und **53 Knöpfe** im Profi-Modus,
+  26 / 53 im Einsteiger-Modus (06.09.2026 nachgemessen, siehe Abschnitt 0c — die früher hier
+  notierten „154 Felder" waren eine Fehlmessung und sind dort korrigiert). An normalen Tagen
+  sind es 10 Felder. Mit v1.5.114 sind die sechs Tagesfelder von oben aus antippbar; die Zahl
+  der Blöcke ist unverändert. Vorschlag liegt weiter vor: oben eine Aufgabenzeile („Heute:
+  Hebe-Test + Trichome"), darunter nur die zugehörigen Blöcke, alles Übrige hinter „Mehr
+  eintragen ▾". Patrick hat dazu noch nicht entschieden — erst sehen, ob die Sprungmarken
+  reichen.
 - **Statuszeile statt fünf Infokarten** im Eintrag: „Tag 103 · kein Gießtag · nächster
   morgen · Topf mittel · Trichome vor 2 Tagen", jeder Teil antippbar.
 - **Zustand statt Zahl**: EC 1150, VPD 1,2, Restgewicht 75 % brauchen ein Wort davor
@@ -297,11 +378,12 @@ Form nachgetragen; die Struktur steht bereits.
 
 ### Offen, mit allem Nötigen zum Weiterarbeiten
 
-**Der Einsteiger-Modus wirkt im Tageseintrag überhaupt nicht.** Gemessen an Tag 113:
-**154 sichtbare Eingabefelder in beiden Modi**, und der Einsteiger hat sogar **zwei Knöpfe
-mehr** (85 gegen 83). Die früher notierten „29 Knöpfe, 8 Felder" stimmen nicht mehr. Der
-Vorschlag aus Abschnitt 1 (Aufgabenzeile oben, Rest hinter „Mehr eintragen ▾") ist damit
-dringender als gedacht.
+**Der Einsteiger-Modus wirkt im Tageseintrag kaum.** Die hier zuerst notierten „154
+sichtbaren Eingabefelder in beiden Modi" waren **falsch gemessen** — die Zahl enthielt 141
+Felder aus einer zugeklappten Liste. Die richtigen Zahlen und die Ursache stehen in
+Abschnitt 0c. Was bleibt: Am Gießtag hat der Einsteiger 26 Felder gegen 29 beim Profi und
+**genauso viele Knöpfe** (53), an normalen Tagen sogar einen mehr. Der Vorschlag aus
+Abschnitt 1 (Aufgabenzeile oben, Rest hinter „Mehr eintragen ▾") steht weiter offen.
 
 **Der Gieß-Fahrplan bleibt in beiden Modi zeichengleich** (6866 Zeichen, 21 Knöpfe,
 9 Felder). Unverändert gegenüber der letzten Messung.

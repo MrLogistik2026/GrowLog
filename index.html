@@ -4301,7 +4301,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.113';
+const APP_VERSION = 'v1.5.114';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -24822,6 +24822,58 @@ function openEntryAndScroll(iso, elementId) {
 }
 
 /**
+ * (v1.5.114) Springt im Tageseintrag zu einem der sechs Tagesfelder.
+ *
+ * Gemessen am 06.09.2026 an Patricks Tag 104: Der Eintrag ist an einem Gießtag
+ * 3486 px hoch bei 691 px Fensterhöhe — fünf Bildschirmlängen. Das erste
+ * Eingabefeld (Wassermenge) liegt bei 1144 px, Temperatur und Luftfeuchte erst
+ * bei 2014 px. Ganz oben steht dabei längst, was heute noch fehlt
+ * („3/6 eingetragen · 💧 Wasser · 💨 RLF").
+ *
+ * Diese Zeile war bisher nur ein Schild. Jetzt ist sie der Weg dorthin:
+ * Antippen scrollt zum Feld und setzt den Cursor hinein. Kein neuer Regler,
+ * keine neue Einstellung — die App wusste die Antwort schon.
+ *
+ * Liegt das Ziel in einem zugeklappten Bereich, wird der vorher geöffnet,
+ * sonst springt es ins Nichts.
+ */
+function jumpToEntryField(cId, was) {
+  const body = document.getElementById('entry-body');
+  if (!body) return;
+  let el = null;
+  if (was === 'water') el = document.getElementById('water-calc-' + cId) || body.querySelector('[id^="water-calc-"]');
+  else if (was === 'ph') el = document.getElementById('ph-' + cId) || body.querySelector('[id^="ph-"]');
+  else if (was === 'temp') el = document.getElementById('et');
+  else if (was === 'rh') el = document.getElementById('er');
+  else if (was === 'note') el = document.getElementById('note-' + cId) || body.querySelector('.note-ta');
+  else if (was === 'photo') el = body.querySelector('.photo-add') || body.querySelector('.photo-grid');
+  if (!el) {
+    // Kein Wegweiser ins Leere: an einem Tag ohne Guss gibt es kein Wasser-Feld.
+    toast(was === 'water' ? 'Heute ist kein Gießtag — kein Wasser-Feld vorhanden.' : 'Dieses Feld gibt es an diesem Tag nicht.');
+    return;
+  }
+  for (let n = el.parentElement; n && n !== body; n = n.parentElement) {
+    if (n.tagName === 'DETAILS') n.open = true;
+    else if (n.style && n.style.display === 'none') n.style.display = '';
+  }
+  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  el.style.transition = 'box-shadow 0.4s ease';
+  el.style.boxShadow = '0 0 0 2px var(--yellow)';
+  setTimeout(() => { el.style.boxShadow = ''; }, 1500);
+  // Cursor gleich ins Feld — sonst muss man nach dem Sprung noch einmal tippen.
+  // Erst nach dem Scrollen, sonst zieht der Fokus die Seite wieder zurück.
+  if (was !== 'photo' && typeof el.focus === 'function') {
+    setTimeout(() => { try { el.focus(); } catch (e) {} }, 400);
+  } else if (was === 'photo' && document.activeElement && document.activeElement.blur) {
+    // Der Foto-Knopf ist kein Eingabefeld. Bliebe der Cursor im vorherigen Feld,
+    // stünde auf dem Handy die Tastatur offen — genau über dem Knopf, zu dem
+    // gerade gesprungen wurde.
+    try { document.activeElement.blur(); } catch (e) {}
+  }
+  vibrate(5);
+}
+
+/**
  * Restore the entry state from the snapshot taken on open.
  * Called when user picks "Verwerfen & weiter" in the dirty prompt.
  */
@@ -26862,10 +26914,15 @@ function renderEntry(iso) {
           <div style="margin-bottom:8px;background:rgba(232,136,74,0.06);border:0.5px solid rgba(232,136,74,0.2);border-radius:8px;overflow:hidden">
             <div onclick="toggleOffsetList('${c.id}')" style="padding:8px 10px;display:flex;align-items:center;gap:8px;cursor:pointer">
               <span style="font-size:14px">↔</span>
-              <span style="font-size:11px;color:var(--text-sub);flex:1">${c.offsetHistory.length} Verschiebung${c.offsetHistory.length === 1 ? '' : 'en'} · ✕ = einzeln zurücknehmen</span>
-              <span id="offset-arrow-${c.id}" style="font-size:11px;color:var(--orange)">▴</span>
+              <span style="font-size:11px;color:var(--text-sub);flex:1">${c.offsetHistory.length} Verschiebung${c.offsetHistory.length === 1 ? '' : 'en'}<span style="color:var(--text-hint)"> · antippen zum Anzeigen</span></span>
+              <span id="offset-arrow-${c.id}" style="font-size:11px;color:var(--orange)">▾</span>
             </div>
-            <div id="offset-list-${c.id}" style="display:block;padding:0 10px 8px">
+            <!-- (v1.5.114) Zugeklappt statt offen. Die Liste ist Vergangenheit und stand
+                 an JEDEM Tag aufgeschlagen zwischen Sorten-Karte und Gießkarte — bei
+                 Patrick fünf Einträge mit fünf ✕-Knöpfen zum Zurücknehmen, direkt im Weg
+                 zu den Feldern, die man täglich braucht. Die Kopfzeile ("5 Verschiebungen")
+                 bleibt sichtbar, ein Tipp öffnet sie. -->
+            <div id="offset-list-${c.id}" style="display:none;padding:0 10px 8px">
               <div style="font-size:9px;color:var(--text-hint);padding:2px 0 4px">Antippen = zu dem Tag springen · ✕ = nur diese eine zurücknehmen</div>
               ${c.offsetHistory.slice().sort((a, b) => a.date.localeCompare(b.date)).map(e => {
                 const fwd = e.offset > 0;
@@ -27260,7 +27317,16 @@ function renderEntry(iso) {
           // werden im Header gezählt damit der User sieht "3 Pflanzen-Notizen".
           if (!Array.isArray(c.plants) || c.plants.length <= 1) return '';
           const plantNotes = cd.plantNotes || {};
-          const filled = Object.values(plantNotes).filter(t => t && t.trim()).length;
+          // (v1.5.114) Geerntete Pflanzen bekommen kein Notizfeld mehr. An Patricks
+          // Tag 104 standen fünf Felder, obwohl seit Tag 93 nur noch drei Pflanzen
+          // im Zelt sind — `getEffectivePlantCount` rechnete an demselben Tag längst
+          // mit 3. Der Schnitt-Tag selbst bleibt drin (an ihm will man etwas notieren),
+          // und wer für eine geerntete Pflanze schon etwas geschrieben hat, sieht es
+          // weiter: eine vorhandene Notiz darf nicht unsichtbar werden.
+          const _plAktiv = c.plants.filter(pl =>
+            !pl.harvestedAt || pl.harvestedAt >= iso || String(plantNotes[pl.id] || '').trim());
+          if (_plAktiv.length <= 1) return '';
+          const filled = _plAktiv.filter(pl => String(plantNotes[pl.id] || '').trim()).length;
           const ariaId = `plant-notes-${c.id}-${iso}`;
           const _plSugs = (typeof plantNoteSuggestions === 'function') ? plantNoteSuggestions(c, p, iso, c.plants.length) : [];
           return `<div style="margin-top:8px;border-top:0.5px dashed var(--border);padding-top:8px">
@@ -27273,10 +27339,15 @@ function renderEntry(iso) {
               <span class="pn-tgl" style="color:var(--text-muted);font-size:12px">${filled > 0 ? '▾' : '▸'}</span>
             </div>
             <div id="${ariaId}" style="display:${filled > 0 ? 'block' : 'none'};margin-top:6px;display:flex;flex-direction:column;gap:6px">
-              ${c.plants.map((pl, _pi) => {
+              ${_plAktiv.map((pl) => {
+                // Der Vorschlagstext hängt an der Position in `c.plants` — deshalb der
+                // ursprüngliche Index, nicht der in der gefilterten Liste.
+                const _pi = c.plants.indexOf(pl);
                 const noteText = (plantNotes[pl.id] || '').replace(/"/g, '&quot;');
                 const _phs = (_plSugs[_pi] || 'Blattfarbe, Wuchs, Geruch...').replace(/"/g, '&quot;');
-                const display = pl.strain ? `${pl.label} · ${pl.strain}` : pl.label;
+                const _geerntet = pl.harvestedAt && pl.harvestedAt < iso;
+                const display = (pl.strain ? `${pl.label} · ${pl.strain}` : pl.label)
+                  + (_geerntet ? ` <span style="color:var(--text-hint)">· geerntet ${fmtDE(pl.harvestedAt)}</span>` : '');
                 return `<div>
                   <div style="font-size:10px;color:var(--text-muted);margin-bottom:3px">${display}</div>
                   <textarea placeholder="${_phs}" onchange="setPlantNote('${c.id}','${iso}','${pl.id}',this.value)" style="background:var(--card);border:0.5px solid var(--border);border-radius:6px;padding:8px;color:var(--text);font-size:11px;font-family:var(--font);width:100%;resize:vertical;min-height:50px;outline:none">${escHtml(noteText)}</textarea>
@@ -27360,21 +27431,28 @@ function renderEntry(iso) {
     const hasPhoto = Array.isArray(fcCd.photos) && fcCd.photos.length > 0;
     const filled = [hasWater, hasPh, hasTemp, hasRh, hasNote, hasPhoto].filter(Boolean).length;
     const total = 6;
-    // Nur anzeigen wenn mindestens irgendwas eingetragen — sonst zu verwirrend bei leerem Tag
-    if (filled > 0) {
-      const chips = [
-        { ok: hasWater, icon: '💧', label: 'Wasser' },
-        { ok: hasPh, icon: '🧪', label: 'pH' },
-        { ok: hasTemp, icon: '🌡', label: 'Temp' },
-        { ok: hasRh, icon: '💨', label: 'RLF' },
-        { ok: hasNote, icon: '📝', label: 'Notiz' },
-        { ok: hasPhoto, icon: '📸', label: 'Foto' },
-      ];
-      fillStatusChip = `<div style="display:flex;align-items:center;gap:5px;padding:7px 10px;background:rgba(76,175,112,0.05);border:0.5px solid rgba(76,175,112,0.2);border-radius:10px;flex-wrap:wrap">
-        <span style="font-size:11px;color:var(--green);font-weight:700;margin-right:2px">${filled}/${total} <span style="font-weight:500">eingetragen</span></span>
-        ${chips.map(ch => `<span style="font-size:10px;padding:2px 6px;border-radius:6px;background:${ch.ok ? 'rgba(76,175,112,0.15)' : 'var(--surface)'};color:${ch.ok ? 'var(--green)' : 'var(--text-hint)'};opacity:${ch.ok ? '1' : '0.55'}">${ch.ok ? '✓' : ''}${ch.icon} ${ch.label}</span>`).join('')}
-      </div>`;
-    }
+    // (v1.5.114) Die Zeile erscheint jetzt auch am leeren Tag. Früher blieb sie
+    // bei 0/6 weg ("sonst zu verwirrend"), doch seit die Chips zum Feld springen,
+    // ist genau der leere Tag der Moment, in dem man sie braucht: Sie ist dann
+    // die Aufgabenliste für heute, nicht bloß eine Erfolgsmeldung.
+    const chips = [
+      { ok: hasWater, icon: '💧', label: 'Wasser', ziel: 'water' },
+      { ok: hasPh, icon: '🧪', label: 'pH', ziel: 'ph' },
+      { ok: hasTemp, icon: '🌡', label: 'Temp', ziel: 'temp' },
+      { ok: hasRh, icon: '💨', label: 'RLF', ziel: 'rh' },
+      { ok: hasNote, icon: '📝', label: 'Notiz', ziel: 'note' },
+      { ok: hasPhoto, icon: '📸', label: 'Foto', ziel: 'photo' },
+    ];
+    // Der Hinweis steht nur im Einsteiger-Modus: Wer die App kennt, sieht den
+    // Chips an, dass sie Knöpfe sind; wer sie zum ersten Mal öffnet, nicht.
+    const tippHint = S.beginnerMode
+      ? `<div style="width:100%;font-size:9px;color:var(--text-hint);margin-top:3px">Antippen springt zum passenden Feld</div>`
+      : '';
+    fillStatusChip = `<div style="display:flex;align-items:center;gap:5px;padding:7px 10px;background:rgba(76,175,112,0.05);border:0.5px solid rgba(76,175,112,0.2);border-radius:10px;flex-wrap:wrap">
+      <span style="font-size:11px;color:var(--green);font-weight:700;margin-right:2px">${filled}/${total} <span style="font-weight:500">eingetragen</span></span>
+      ${chips.map(ch => `<button onclick="jumpToEntryField('${fc.id}','${ch.ziel}')" title="Zum Feld ${ch.label} springen" style="font-size:10px;padding:3px 7px;border-radius:6px;border:0.5px solid ${ch.ok ? 'rgba(76,175,112,0.3)' : 'var(--border)'};background:${ch.ok ? 'rgba(76,175,112,0.15)' : 'var(--surface)'};color:${ch.ok ? 'var(--green)' : 'var(--text-hint)'};opacity:${ch.ok ? '1' : '0.75'};cursor:pointer;font-family:var(--font)">${ch.ok ? '✓' : ''}${ch.icon} ${ch.label}</button>`).join('')}
+      ${tippHint}
+    </div>`;
   }
 
   // Quick-Mode-Toggle: Pill-Bar oben im Eintrag, sichtbar wenn aktive Cycles vorhanden.

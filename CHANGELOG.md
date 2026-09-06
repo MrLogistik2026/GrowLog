@@ -2,6 +2,49 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-06 — v1.5.114
+
+- **Die Fortschrittszeile im Tageseintrag springt jetzt zum Feld.** Gemessen an Patricks
+  Tag 104 (Gießtag): Der Eintrag ist 3486 px hoch bei 691 px Fensterhöhe — fünf
+  Bildschirmlängen. Das erste Eingabefeld (Wassermenge) liegt bei y = 1144, pH und EC bei
+  1368/1377, Temperatur und Luftfeuchte erst bei 2014, die Notiz bei 2751. Über den ersten
+  1144 px steht ausschließlich Lesestoff.
+  Ganz oben stand dabei die ganze Zeit „3/6 eingetragen · ✓💧 Wasser · 🧪 pH · ✓🌡 Temp ·
+  💨 RLF" — die App wusste also präzise, was heute fehlt, und bot keinen Weg dorthin.
+  Neu `jumpToEntryField(cId, was)`: Jeder der sechs Chips ist ein Knopf, der zum Feld
+  scrollt, es kurz gelb umrandet und den Cursor hineinsetzt. **Warum so und nicht durch
+  Wegnehmen:** Derselbe Befund wie beim Gieß-Fahrplan (v1.5.113) — nicht die Menge der
+  Elemente macht den Bildschirm unhandlich, sondern die Erreichbarkeit dessen, was täglich
+  gebraucht wird. Kein neuer Regler, keine neue Einstellung; dieselbe Zeile, nur benutzbar.
+  Drei Feinheiten: zugeklappte Bereiche über dem Ziel werden vorher geöffnet (sonst springt
+  es ins Nichts); am Foto-Knopf wird der Fokus weggenommen statt gesetzt (sonst bliebe auf
+  dem Handy die Tastatur offen, genau über dem Ziel); und gibt es das Feld an diesem Tag
+  nicht — kein Gießtag, kein Wasser-Feld —, sagt die App das, statt stumm zu bleiben.
+- **Die Zeile erscheint jetzt auch am leeren Tag.** Sie blieb bisher bei 0/6 weg („sonst zu
+  verwirrend bei leerem Tag"). Diese Entscheidung galt für ein Schild; als Wegweiser ist der
+  leere Tag genau der Moment, in dem man sie braucht — sie ist dann die Aufgabenliste für
+  heute statt einer Erfolgsmeldung. Der Hinweis „Antippen springt zum passenden Feld" steht
+  nur im Einsteiger-Modus.
+- **Fehler: Notizfelder für längst geerntete Pflanzen.** An Tag 104 standen fünf
+  Pflanzen-Notizfelder, obwohl Pflanze 5 seit Tag 93 geerntet ist und
+  `getEffectivePlantCount` am selben Tag bereits mit 3 rechnete. Ursache war ein
+  ungefiltertes `c.plants.map(...)`. Der Schnitt-Tag selbst zählt weiter mit — an ihm will
+  man etwas notieren —, der Tag danach nicht mehr. Wer für eine geerntete Pflanze schon
+  etwas geschrieben hat, sieht es weiter: eine vorhandene Notiz darf nicht unsichtbar
+  werden. Ergebnis: Tag 50 → 5 Felder, 93 → 5, 94 → 4, 104 → 4, 113 → 3.
+- **Die Verschiebungs-Historie liegt zugeklappt statt offen.** Sie stand an *jedem* Tag
+  aufgeschlagen zwischen Sorten-Karte und Gießkarte — bei Patrick fünf Einträge mit fünf
+  ✕-Knöpfen zum Zurücknehmen, direkt im Weg zu den täglich gebrauchten Feldern. Die
+  Kopfzeile („5 Verschiebungen · antippen zum Anzeigen") bleibt sichtbar. Der Gießtag
+  schrumpft dadurch von 3486 auf 3282 px.
+- Abgesichert durch `test_tageseintrag.js` (33 Prüfungen, beide Zeitzonen); alle 36
+  Testdateien laufen grün.
+- **Korrektur einer eigenen Fehlmessung:** Die in der Übergabe notierten „154 sichtbaren
+  Eingabefelder" waren falsch. Gemessen wurde mit `offsetParent !== null`, das Inhalte in
+  zugeklappten `<details>` **nicht** ausschließt. Richtig: 162 Felder gesamt, davon 141 in
+  der zugeklappten Liste „Messungen berichtigen", also 21 wirklich sichtbar. Die Zahl ist an
+  allen drei Fundstellen in `UEBERGABE.md` berichtigt.
+
 ## 2026-09-06 — v1.5.113
 
 - **Der Gieß-Fahrplan ist nach Häufigkeit geordnet statt nach Themen.** Patrick: „Der sieht
