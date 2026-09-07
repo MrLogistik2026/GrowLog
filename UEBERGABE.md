@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.127** · index.html 2,12 MB · 631 Funktionen
+Stand: **v1.5.128** · index.html 2,12 MB · 631 Funktionen
 Zuletzt fortgeschrieben am 05.09.2026. Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
@@ -785,15 +785,27 @@ Stelle, die sie auslegt. Sensi Amnesia XXL trägt 105–120 Tage (Erntetag jetzt
 Die drei falschen Beschriftungen sind behoben — Chip, Suchliste, Steckbrief und Wizard holen
 ihren Text aus `strainDays()`.
 
-**Noch offen: die übrigen 14 Automatics.** Sie tragen weiterhin Züchter-Bestwerte
-(Northern Lights 65, White Widow 70, Gorilla Cookies 70, AK-47 65, Blueberry 70, Zkittlez 75,
-Critical 65, Royal Gorilla 70, Quick One 56, Girl Scout Cookies 70, Sour Diesel 75,
-Think Different 70, Jack Herer 75, OG Kush 70). Bewusst nicht geändert: Für sie liegt kein
-Beleg im Projekt vor, und geschätzte Zahlen als Messwerte auszugeben wäre derselbe Fehler
-noch einmal. In der App sind sie als „Züchter-Angabe, nicht nachgemessen" gekennzeichnet,
-mit dem Rat, die Wochen-Angabe von der eigenen Samentüte einzutragen — dieser Weg rechnet
-nachweislich richtig. Sobald Patrick belastbare Spannen freigibt, werden sie in derselben
-Form nachgetragen; die Struktur steht bereits.
+**Erledigt in v1.5.128 — die übrigen 14 Automatics.** Patrick am 07.09.2026: „Über die
+Spannen der einzelnen Pflanzen kann ich nichts sagen. Suche dir immer die realistischen
+Zeitspannen raus."
+
+**Die Recherche ergab, dass es nichts zu recherchieren gibt.** Öffentlich verfügbar sind nur
+Züchterangaben (systematisch optimistisch), Einzel-Grow-Berichte (n = 1) und Marketing-Seiten,
+die die Züchterangabe recyceln — eine als Datenübersicht auftretende Seite war beim Nachlesen
+ein Werbetext ohne Stichprobe. 14 handverlesene Zahlen daraus wären v1.5.98 noch einmal
+gewesen, nur mit dem Anschein von Recherche.
+
+Stattdessen **eine Regel in `strainDays`**, direkt aus `ANBAU.md` 9 (30–50 % über der
+Züchterangabe): unteres Ende ×1,4, oberes ×1,6. An zwei unabhängigen Punkten gegengeprüft —
+Patricks Sensi Amnesia (75 → 105–120 = ×1,40–1,60) und ein Northern-Lights-Grow-Bericht mit
+101 Tagen (liegt in den hergeleiteten 91–104). Die Automatics planen jetzt mit 11–17 Wochen
+statt 8–11.
+
+**Die Herkunft steht dran.** `strainDays().quelle` kennt *gemessen*, *hochgerechnet* und
+*zuechter*; der Steckbrief formuliert jeden Fall anders und nennt bei der Herleitung die
+Züchterzahl, auf der sie beruht. Der Rat, die Wochen-Angabe von der eigenen Samentüte
+einzutragen, bleibt — dieser Weg rechnet weiterhin am genauesten. Sobald jemand eine Sorte
+wirklich durchzählt, schlägt seine Spanne die Herleitung.
 
 ### Offen, mit allem Nötigen zum Weiterarbeiten
 

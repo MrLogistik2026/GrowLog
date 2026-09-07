@@ -1963,12 +1963,41 @@ function strainDays(s) {
   if (!s) return null;
   const auto = s.type === 'auto';
   const hatSpanne = isFinite(s.floweringLo) && isFinite(s.floweringHi) && s.floweringHi >= s.floweringLo;
+
+  // (v1.5.128) Automatics ohne eigene Messung bekommen ihre Spanne jetzt HERGELEITET,
+  // statt die Züchterzahl als Planungswert auszugeben.
+  //
+  // `ANBAU.md` 9: „Züchterangaben zur Gesamtdauer sind systematisch optimistisch. Sie
+  // gelten für Idealbedingungen und beschreiben oft den frühesten möglichen Erntezeitpunkt,
+  // nicht den optimalen. Abweichungen von 30–50 % nach oben sind in Hobbyanlagen die Regel."
+  //
+  // Der Faktor ist an zwei unabhängigen Punkten geprüft:
+  //   Patricks Sensi Amnesia XXL — Züchter 75 d, real 105–120 d  → ×1,40 bis ×1,60
+  //   Northern Lights Auto       — Züchter 65 d, Grow-Bericht 101 d → liegt in 91–104
+  // Beides deckt sich mit der 30–50-%-Angabe. Gerechnet wird deshalb mit ×1,4 (unteres
+  // Ende, frühestes realistisches Erntefenster) und ×1,6 (oberes Ende, Planungswert).
+  //
+  // Das ist eine HERLEITUNG, keine Messung — und wird auch so beschriftet. Eine echte
+  // Spanne am Strain (`floweringLo`/`floweringHi`) hat immer Vorrang; sie entsteht nur
+  // dort, wo jemand tatsächlich durchgezählt hat. Für Photoperiodische bleibt alles wie
+  // bisher: Dort ist `flowering` die reine Blütezeit, die Vegi-Länge bestimmt der Grower
+  // selbst, und die Züchterangabe ist deshalb belastbar.
+  const herleiten = auto && !hatSpanne && isFinite(s.flowering) && s.flowering > 0;
+  const lo = hatSpanne ? s.floweringLo : (herleiten ? Math.round(s.flowering * 1.4) : s.flowering);
+  const hi = hatSpanne ? s.floweringHi : (herleiten ? Math.round(s.flowering * 1.6) : s.flowering);
+
   return {
     auto,
-    lo: hatSpanne ? s.floweringLo : s.flowering,
-    hi: hatSpanne ? s.floweringHi : s.flowering,
-    plan: hatSpanne ? s.floweringHi : s.flowering,
-    geprueft: hatSpanne,
+    lo,
+    hi,
+    plan: hi,
+    // Woher die Zahl kommt — davon hängt ab, wie sie beschriftet wird.
+    //   'gemessen'      echte Spanne aus einem durchgezogenen Grow
+    //   'hochgerechnet' aus der Züchterangabe nach ANBAU.md 9 hergeleitet
+    //   'zuechter'      unveränderte Züchterangabe (Photoperiodische)
+    quelle: hatSpanne ? 'gemessen' : (herleiten ? 'hochgerechnet' : 'zuechter'),
+    zuechterTage: isFinite(s.flowering) ? s.flowering : null,
+    geprueft: hatSpanne || herleiten,
     // Worauf sich die Zahl bezieht. Bei Autos ab Keimung, bei Photoperiodischen ab Blühbeginn.
     was: auto ? 'bis Ernte' : 'Blüte',
     langform: auto ? 'von Keimung bis Ernte' : 'reine Blütezeit ab Blühbeginn',
@@ -4379,7 +4408,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.127';
+const APP_VERSION = 'v1.5.128';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -22800,9 +22829,14 @@ function _strainInfoHTML(name, growType) {
   const bloomLine = (s.type === 'auto'
     ? `Reife: <b>${_zahl}</b> <span style="color:var(--text-hint)">${_sd.langform}</span>`
     : `Blütephase: <b>${_zahl}</b>`)
-    + (_sd.geprueft
-      ? `<br><span style="color:var(--text-hint);font-size:10px">Geplant wird mit ${_sd.hi} Tagen — dem oberen Ende. Zu spät ernten kostet nichts, zu früh kostet die Ernte.</span>`
-      : `<br><span style="color:var(--text-hint);font-size:10px">Züchter-Angabe, nicht nachgemessen — Autos brauchen in der Praxis oft länger. Steht auf deiner Samentüte eine Wochen-Angabe, trag lieber die ein.</span>`);
+    // (v1.5.128) Drei Herkünfte, drei Sätze. Eine hergeleitete Spanne darf sich nicht als
+    // Erfahrungswert ausgeben — deshalb steht dort die Züchterzahl mit dabei, damit jeder
+    // sieht, worauf die Rechnung beruht.
+    + (_sd.quelle === 'gemessen'
+      ? `<br><span style="color:var(--text-hint);font-size:10px">Aus einem echten Grow. Geplant wird mit ${_sd.hi} Tagen — dem oberen Ende. Zu spät ernten kostet nichts, zu früh kostet die Ernte.</span>`
+      : _sd.quelle === 'hochgerechnet'
+        ? `<br><span style="color:var(--text-hint);font-size:10px">Hochgerechnet aus der Züchter-Angabe (${_sd.zuechterTage} Tage), <b>nicht nachgemessen</b>. Autos brauchen in der Praxis 30–50 % länger als angegeben. Geplant wird mit ${_sd.hi} Tagen. Steht auf deiner Samentüte eine Wochen-Angabe, trag lieber die ein — die rechnet genauer.</span>`
+        : `<br><span style="color:var(--text-hint);font-size:10px">Züchter-Angabe für die reine Blütezeit. Wie lange du vorher wachsen lässt, bestimmst du selbst.</span>`);
   // Ertrag kontextabhängig (Outdoor-Zyklus → Outdoor-Zahl). „mit Erfahrung" ist bewusst —
   // ein Erstgrow erreicht den oberen Wert selten; lieber ehrlich einordnen als übertreiben.
   const yieldStr = growType === 'outdoor' ? s.yieldOutdoor : s.yieldIndoor;

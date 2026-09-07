@@ -2,6 +2,40 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-07 — v1.5.128
+
+- **Die 14 Automatics planen nicht mehr mit der Züchterzahl.** Patricks Auftrag: „Über die
+  Spannen der einzelnen Pflanzen kann ich nichts sagen. Suche dir immer die realistischen
+  Zeitspannen raus." Recherchiert wurde — und das Ergebnis war unbrauchbar: **Es gibt keine
+  belastbare öffentliche Datenbasis für echte Sorten-Laufzeiten.** Was existiert, ist die
+  Züchterangabe (systematisch optimistisch), Einzel-Grow-Berichte (n = 1, stark streuend)
+  und Marketing-Seiten, die die Züchterangabe recyceln. Eine Seite, die wie aggregierte
+  Daten aussah, entpuppte sich beim Nachlesen als Werbetext ohne jede Stichprobe.
+  14 handverlesene Zahlen daraus wären derselbe Fehler wie v1.5.98 gewesen — nur mit dem
+  Anschein von Recherche.
+  **Stattdessen eine Regel an einer Stelle**, direkt aus `ANBAU.md` 9: „Abweichungen von
+  30–50 % nach oben sind in Hobbyanlagen die Regel." `strainDays` leitet für Automatics
+  ohne eigene Messung jetzt eine Spanne her — unteres Ende **×1,4**, oberes **×1,6** (der
+  Planungswert). Der Faktor ist an zwei unabhängigen Punkten geprüft:
+
+  | | Züchter | real | Faktor |
+  |---|---|---|---|
+  | Sensi Amnesia XXL (Patricks Grow) | 75 d | 105–120 d | ×1,40–1,60 |
+  | Northern Lights Auto (Grow-Bericht) | 65 d | 101 d | liegt in 91–104 |
+
+  Ergebnis: Die Automatics planen jetzt mit **11–17 Wochen statt 8–11**. Quick One 78–90
+  Tage, Jack Herer und Sour Diesel 105–120.
+- **Eine Herleitung gibt sich nicht als Messung aus.** `strainDays` liefert neu ein Feld
+  `quelle` mit drei Zuständen, und der Steckbrief sagt jeden davon anders: *gemessen*
+  („Aus einem echten Grow"), *hochgerechnet* („Hochgerechnet aus der Züchter-Angabe
+  (65 Tage), **nicht nachgemessen** … Steht auf deiner Samentüte eine Wochen-Angabe, trag
+  lieber die ein — die rechnet genauer") und *zuechter* für Photoperiodische.
+  **Photoperiodische bleiben unverändert** — dort ist die Angabe die reine Blütezeit, die
+  Vegi-Länge bestimmt der Grower selbst, und die Züchterangabe ist deshalb belastbar.
+  Eine echte Spanne am Strain schlägt die Herleitung immer.
+- `test_sortendauer.js` um 21 Prüfungen erweitert (jetzt 45). Zwei alte Regeln prüfen jetzt
+  das Gegenteil von vorher — mit Begründung im Test, warum das Absicht ist.
+
 ## 2026-09-07 — v1.5.127
 
 - **Bei zwei gleichzeitigen Grows gehörten Symbol und Tagesnummer zu verschiedenen
