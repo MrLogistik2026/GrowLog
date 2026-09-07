@@ -4379,7 +4379,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.124';
+const APP_VERSION = 'v1.5.125';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -31612,7 +31612,12 @@ const LEXIKON = [
       brief: 'Zwei Messungen die zusammen sagen wie viel Photosynthese tatsächlich passiert. PPFD ist der Tacho, DLI der Tages-Tank.',
       mechanism: '<b>PPFD (Photosynthetische Photonenflussdichte):</b> Momentan-Dichte nutzbarer Photonen pro Sekunde pro m². Messung: µmol/m²/s. Zu hoch ohne passenden CO₂/Temperatur → Chlorophyll bleicht aus (Light Bleach).<br><br><b>DLI (Tageslichtintegral):</b> Kumulierte Photonen pro Tag, mol/m²/d. Jede Pflanze hat ein biologisches Tages-Limit — ist es erreicht, erzeugt sie keine weitere Biomasse mehr, egal wie hell es noch ist.',
       practice: '<b>PPFD-Ziele:</b><br>• Anzucht: 200–400<br>• Vegi: 400–600<br>• Blüte: 600–900 µmol/m²/s<br><br><b>DLI-Ziele:</b><br>• Anzucht: 15–25<br>• Vegi: 25–35<br>• Blüte: 30–45 mol/m²/d<br><br>DLI = PPFD × Lichtstunden × 0.0036. Formel im Kopf: 500 PPFD bei 12h = 21.6 DLI.<br><br>Messen: Quantum-Meter (Apogee, Photone App mit Kalibrierung).',
-      pitfall: 'Mehr Licht ist nicht linear mehr Ertrag. Über 900 PPFD ohne CO₂-Anreicherung (1200+ ppm) ist verschenkte Energie und stresst die Pflanze. Auf die Canopy-Ebene messen, nicht am Blatt-Ende wo das Meter leicht verschattet wird.' },
+      // (v1.5.125) Zweite Fundstelle derselben falschen Decke — hier stand „Über 900 PPFD
+      // ohne CO₂-Anreicherung ist verschenkte Energie". Nach `ANBAU.md` 8.1 ist das der
+      // Sättigungswert des EINZELNEN Blattes; der Bestand steigt weiter, weil zusätzliches
+      // Licht tiefer eindringt. Der Satz widersprach außerdem der Zeile direkt darüber, die
+      // 600–900 als Blüte-ZIEL nennt — 900 wäre danach gleichzeitig Ziel und Verschwendung.
+      pitfall: 'Mehr Licht ist nicht linear mehr Ertrag — aber die oft genannte Decke „über 900 PPFD bringt ohne CO₂ nichts" stimmt so nicht. Die gilt für ein <b>einzelnes Blatt</b>; der ganze Bestand nutzt mehr Licht weiter, weil es tiefer eindringt und die unteren Etagen mitversorgt. In einem normalen Zelt ist Licht meist der Engpass, nicht der Überschuss.<br><br>Ein echtes Zuviel zeigt sich sichtbar: <b>ausgebleichte, weiße Blütenspitzen</b> (siehe „Photo-Bleaching") — dann Abstand vergrößern oder dimmen. Und immer auf <b>Canopy-Ebene</b> messen, nicht am Blatt-Ende, wo das Meter leicht verschattet wird.' },
     { t: 'Transpiration (Hydraulische Pumpe)',
       brief: 'Mehr als „Schwitzen" — ist der Motor der Wasser und Nährstoffe entgegen der Schwerkraft bis in die oberste Blüte zieht.',
       mechanism: 'Wasser verdunstet durch Stomata und erzeugt <b>Unterdruck im Xylem</b> (den Leitbahnen). Dieser Transpirationssog wirkt wie ein physikalisches Vakuum — zieht Wasser + gelöste Ionen aus den Wurzeln nach oben. Gleichzeitig <b>kühlt</b> die Verdunstung das Blatt. Ohne Transpiration würden Blätter unter starken LEDs überhitzen.',
@@ -31622,7 +31627,15 @@ const LEXIKON = [
       brief: 'Die Umwandlung von Licht + CO₂ + Wasser in Zucker. Alles andere — Wachstum, Blüte, Harz — wird aus diesem Zucker gebaut.',
       mechanism: 'Photonen treffen auf <b>Chlorophyll</b> in den Chloroplasten. Die Energie wird genutzt um H₂O (aus Wurzeln) und CO₂ (aus Luft) in <b>Glukose</b> umzuwandeln. Abfall-Produkt: Sauerstoff. Die Glukose ist der <b>universelle Baustoff</b> — daraus werden Zellulose (Struktur), Proteine, Terpene, Harz gebaut.',
       practice: 'Photosynthese braucht <b>alle drei Inputs gleichzeitig</b> — Licht (PPFD), CO₂ (Luft-Umsatz!), Wasser. Fehlt einer, limitiert er alles andere (Liebig-Minimum).<br><br>Praxis-Konsequenz: perfekter Dünger hilft nichts wenn Ventilation mies (CO₂-Mangel). 900 PPFD bringt nichts wenn Blätter welken (H₂O-Mangel).',
-      pitfall: 'Grower erhöhen gern Licht weil es sichtbar mehr ist. Aber wenn CO₂ bei Raum-Standard 400 ppm bleibt, bringt mehr Licht über 700 PPFD kaum mehr Wachstum. Die Reihenfolge der Upgrades ist: Klima → Dünger → Licht → CO₂.' },
+      // (v1.5.125) Der Satz „über 700 PPFD bringt kaum mehr Wachstum" stand hier bis heute
+      // und war gleich doppelt falsch. Nach `ANBAU.md` 8.1 sättigt bei Umgebungs-CO₂ das
+      // EINZELNE BLATT bei etwa 900–1000 µmol — der BESTAND aber nicht: Zusätzliches Licht
+      // dringt tiefer ein und aktiviert vorher unterversorgte Etagen, weshalb kontrollierte
+      // Versuche den Ertrag bis in die Größenordnung 1800 µmol nahezu linear steigen sahen.
+      // Und die App widersprach sich selbst: Ihr eigener PPFD-Messer zeigt in der Blüte
+      // 600–900 als Zielbereich an. Die Richtung war die schädliche — wer den Satz glaubt,
+      // beleuchtet zu schwach, und Licht ist in Hobbyanlagen fast immer der Engpass.
+      pitfall: 'Grower erhöhen gern Licht, weil es sichtbar mehr ist — vergessen aber, dass Photosynthese <b>alle drei</b> Inputs braucht: Ohne Luftumsatz fehlt CO₂, ohne Wasser läuft die Pumpe nicht. Die Reihenfolge der Upgrades ist deshalb: Klima → Dünger → Licht → CO₂.<br><br><b>Was oft falsch erzählt wird:</b> „Über 700–900 PPFD bringt ohne CO₂-Anlage nichts mehr." Das gilt für ein <b>einzelnes Blatt</b>. Der ganze Bestand sättigt viel später, weil zusätzliches Licht tiefer eindringt und die unteren Etagen mitversorgt — gemessen steigt der Ertrag bis in die Größenordnung 1800 PPFD weiter. In typischen Hobbyzelten ist Licht deshalb fast immer der Engpass, nicht der Überschuss. Ein echtes Zuviel beginnt erst beim Ausbleichen der obersten Blüten (siehe „Photo-Bleaching").' },
     { t: 'Makro- vs. Mikronährstoffe & Mobilität',
       brief: 'Welche Nährstoffe bewegt die Pflanze durch sich durch — und welche nicht. Der Schlüssel zur Diagnose: oben oder unten?',
       mechanism: '<b>Makronährstoffe</b> werden in großen Mengen gebraucht:<br>• Primär: Stickstoff (N), Phosphor (P), Kalium (K)<br>• Sekundär: Calcium (Ca), Magnesium (Mg), Schwefel (S)<br><br><b>Mikronährstoffe</b> nur in Spuren, aber essenziell: Eisen (Fe), Mangan (Mn), Zink (Zn), Kupfer (Cu), Bor (B), Molybdän (Mo).<br><br><b>Mobilität — der Diagnose-Schlüssel:</b><br>• <b>Mobil</b> (N, P, K, Mg): Pflanze zieht sie aus alten Blättern ins neue Wachstum → <b>Mangel zeigt sich unten zuerst</b>.<br>• <b>Immobil</b> (Ca, Fe, S, Mn, Zn, B): einmal in der Zelle, bleiben sie dort → <b>Mangel zeigt sich oben</b>.',
@@ -32241,12 +32254,19 @@ const LEXIKON = [
       pitfall: 'HPS durch LED ersetzen aber gleichen Abstand nutzen = LED zu nah = Bleach. LEDs brauchen mehr Abstand weil PPFD konzentrierter ist. Auch: „600-W-LED" auf Verpackung oft nur Stromverbrauch von 80-150 W — marketing-Wattage, nicht echter Draw.' },
     { t: 'Lichtspektrum & Emerson-Effekt',
       brief: 'Verschiedene Wellenlängen machen verschiedene Jobs. Vollspektrum deckt alles ab — gezieltes Spektrum feintunt.',
-      mechanism: '<b>UV (280-400 nm):</b> Stress-Trigger → Harz-Produktion hoch. Nur in Spätblüte nützlich.<br><br><b>Blau (400-500 nm):</b> Kurze Internodien, kompakter Wuchs. Wichtig in Veg.<br><br><b>Grün (500-600 nm):</b> Dringt tiefer ins Blätterdach ein als Blau/Rot (wird nicht so stark absorbiert).<br><br><b>Rot (600-700 nm):</b> Haupt-Antreiber für Blüten-Masse. Stärkster PAR-Absorber.<br><br><b>Fern-Rot (700-780 nm):</b> <b>Emerson-Effekt</b> — Kombination 680+730 nm steigert Photosyntheserate überproportional. Auch: löst Blüte in Feminisierten bei Lichtphasen-Ende schneller aus.',
-      practice: 'Moderne Vollspektrum-LEDs decken 380-780 nm ab — reicht für die meisten Grower.<br><br><b>Spezial-Upgrades wenn Bestleistung:</b><br>• UV-Bar (280-315 nm UV-B): 2-3 Std/Tag in letzten 2-4 Wochen Blüte → +5-15% THC<br>• Fern-Rot-Emitter: 10-15 Min vor Lichtaus schaltet Fern-Rot allein → signalisiert „Sonnenuntergang" → schnellere Dunkelphase-Anpassung<br>• Mehr Blau in Veg: kompaktere Struktur, besser für kleine Zelte',
+      mechanism: '<b>UV (280-400 nm):</b> Stress-Trigger. Ein Harz- oder Wirkstoff-Plus in der Blüte ist nicht belegt (siehe „UV-Bestrahlung"); Vollspektrum-LEDs kommen ohne aus.<br><br><b>Blau (400-500 nm):</b> Kurze Internodien, kompakter Wuchs. Wichtig in Veg.<br><br><b>Grün (500-600 nm):</b> Dringt tiefer ins Blätterdach ein als Blau/Rot (wird nicht so stark absorbiert).<br><br><b>Rot (600-700 nm):</b> Haupt-Antreiber für Blüten-Masse. Stärkster PAR-Absorber.<br><br><b>Fern-Rot (700-780 nm):</b> <b>Emerson-Effekt</b> — Kombination 680+730 nm steigert Photosyntheserate überproportional. Auch: löst Blüte in Feminisierten bei Lichtphasen-Ende schneller aus.',
+      practice: 'Moderne Vollspektrum-LEDs decken 380-780 nm ab — reicht für die meisten Grower.<br><br><b>Spezial-Upgrades wenn Bestleistung:</b><br>• UV-Bar (280-315 nm UV-B): 2-3 Std/Tag in letzten 2-4 Wochen Blüte — <b>ein Wirkstoff-Plus ist allerdings nicht belegt</b>, siehe „UV-Bestrahlung"<br>• Fern-Rot-Emitter: 10-15 Min vor Lichtaus schaltet Fern-Rot allein → signalisiert „Sonnenuntergang" → schnellere Dunkelphase-Anpassung<br>• Mehr Blau in Veg: kompaktere Struktur, besser für kleine Zelte',
       pitfall: 'UV ist zweischneidig — Schutzbrille Pflicht beim Arbeiten im Zelt. Zu viel UV tötet Pflanze statt sie zu pushen. Fern-Rot während gesamter Lichtphase (nicht nur am Ende) = Pflanze „denkt" es ist Schatten, streckt sich massiv → lange Zweige.' },
     { t: 'UV-Bestrahlung (UV-A / UV-B)',
-      brief: 'Gezielter Stress in der Spätblüte. UV-B treibt Harzproduktion hoch — aber Augenschutz Pflicht.',
-      mechanism: 'UV-B (280-315 nm) <b>schädigt zelluläre Strukturen</b>. Die Pflanze reagiert mit Produktion von <b>sekundären Metaboliten als „Sonnencreme"</b> — Flavonoide, Cannabinoide (THC!), Terpene. Der Stress wird in harzige Verteidigung umgeleitet. Studien zeigen 5-15 % mehr Cannabinoide bei korrektem UV-B-Einsatz.',
+      brief: 'Gezielter Stress in der Spätblüte. Ein Wirkstoff-Plus in der Blüte ist nicht belegt — die Gefahr für deine Augen dagegen sehr real.',
+      // (v1.5.125) `ANBAU.md` 14: „UV-Ergänzung für mehr Harz. Die Befundlage ist gemischt
+      // bis negativ. Kontrollierte Versuche fanden keinen Cannabinoidzuwachs in den Blüten,
+      // teils Rückgänge und Wuchsschäden; ein berichteter Zuwachs betraf Zuckerblätter, die
+      // ohnehin entfernt werden. Nicht als Qualitätsmaßnahme ausgeben."
+      // Der Mechanismus (UV als Stressor, sekundäre Metabolite als Schutz) ist als
+      // Pflanzenphysiologie richtig — die Übertragung auf mehr Wirkstoff in der Blüte nicht.
+      // Die Sicherheitshinweise bleiben vollständig: Netzhautschäden sind irreversibel.
+      mechanism: 'UV-B (280-315 nm) <b>schädigt zelluläre Strukturen</b>. Pflanzen reagieren darauf allgemein mit <b>sekundären Metaboliten als „Sonnencreme"</b> — Flavonoide, Terpene, bei Cannabis auch Cannabinoide.<br><br><b>Der Sprung von dort zu „mehr THC in der Blüte" ist aber nicht belegt.</b> Kontrollierte Versuche fanden <b>keinen</b> Cannabinoid-Zuwachs in den Blüten, teils sogar Rückgänge und Wuchsschäden; wo ein Zuwachs berichtet wurde, betraf er die Zuckerblätter, die ohnehin entfernt werden. Die oft zitierten „5–15 % mehr" halten einer Prüfung nicht stand.<br><br>Wer UV einsetzen will, kann das tun — als Qualitätsmaßnahme taugt es nach heutiger Datenlage nicht, und das Risiko für die eigenen Augen ist real.',
       practice: '<b>Setup:</b><br>• UV-Bar (Philips, Migro, Kind UV) oder Reptilien-UV-B-Röhre<br>• 2-4 Std/Tag mitten in der Lichtphase<br>• Nur in den <b>letzten 2-4 Blüte-Wochen</b><br>• Abstand 40-60 cm von der Canopy<br><br><b>Sicherheit:</b><br>• <b>UV-Schutzbrille (UV400)</b> beim Zelt-Öffnen — UV-B schädigt Netzhaut irreversibel<br>• Lange Ärmel beim längeren Arbeiten im Zelt<br>• UV-Bar zeitsteuern, nicht selbst ein-/ausschalten (Gefahr Überdosis)',
       pitfall: 'Überdosis führt zu echten Strahlenschäden an Blättern (weiße Flecken, nekrotische Bereiche) → Pflanze geschwächt. UV während der gesamten Lichtphase laufen lassen = zu viel. Auch: <b>UV-B ist gefährlich für dich</b>, nicht unterschätzen. Netzhaut-Schäden sind nicht heilbar.' },
     { t: 'Photoperiode (18/6 vs. 12/12)',
@@ -32527,7 +32547,14 @@ const LEXIKON = [
         '<b>Wo prüfen:</b><br>' +
         '• Direkt am <b>Calyx</b> (Blüten-Knospe) der Hauptbuds, nicht an Sugar-Leaves<br>' +
         '• Immer an den <b>Hauptbuds oben</b>, nicht an Popcorn-Buds unten — die unteren reifen später und geben falsche Werte<br>' +
-        '• 3–4 verschiedene Stellen, verschiedene Pflanzen (bei mehreren) prüfen<br><br>' +
+        // (v1.5.125) Zwei Punkte aus `ANBAU.md` 11 ergänzt, beide mit konkreter Folge.
+        // Foxtails: „Nachgeschobene Kelchtürme sind jung und tragen fast ausschließlich
+        // klare Köpfe. Wer dort misst, wartet zu lange." Und: „Immer dieselben Stellen,
+        // damit eine Kurve entsteht statt einer Folge von Momentaufnahmen" — genau darauf
+        // baut die Trichom-Prognose dieser App auf.
+        '• <b>Nicht auf Foxtails messen</b> — die nachgeschobenen, spitz herauswachsenden Kelchtürme sind junges Gewebe und fast nur klar. Wer dort prüft, hält die Pflanze für unreif und <b>wartet zu lange</b><br>' +
+        '• 3–4 verschiedene Stellen, verschiedene Pflanzen (bei mehreren) prüfen<br>' +
+        '• Und dann <b>immer dieselben Stellen</b> wiederverwenden. Nur so entsteht eine Kurve statt einer Reihe von Momentaufnahmen — die Ernte-Prognose dieser App rechnet mit dem Tempo, nicht mit dem letzten Einzelwert<br><br>' +
         '<b>Zielprofile nach Effekt-Wunsch:</b><br>' +
         '<table style="width:100%;border-collapse:collapse;font-size:13px;margin-top:6px">' +
         '<tr style="background:rgba(255,255,255,0.04)"><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Profil</b></td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Klar</b></td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Milchig</b></td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Bernstein</b></td></tr>' +
@@ -32578,12 +32605,17 @@ const LEXIKON = [
         '• Bei Welkanzeichen (Blätter hängen) trotzdem warten → das ist Wasserstress, sofort abbrechen mit kleinem Guss<br><br>' +
         'Hard Dryback ist <b>kein Pflichtschritt</b>. Wer ohne Iceflush erntet, kann auch ohne ausgeprägten Dryback einen Tag früher die Bewässerung einstellen — der Unterschied ist gering.' },
     { t: 'Dunkelphase vor der Ernte (24–72 h)',
-      brief: 'Lampe komplett aus für 1–3 Tage vor dem Schnitt. Schützt Terpene und triggert einen letzten Stress-Schub in der Trichom-Produktion.',
+      // (v1.5.125) `ANBAU.md` 14: „Dunkelphase 24–72 h vor der Ernte. Kein belegter
+      // THC-Zuwachs. Was belegt ist: Terpene sind flüchtig und verlieren sich unter Licht
+      // und Wärme. Ein kühler, dunkler Schnitt ist deshalb sinnvoll — die Begründung liegt
+      // in der Ernte, nicht im Stoffwechsel." Genau so steht es jetzt hier: Der
+      // Terpen-Grund bleibt, die Trichom- und THC-Zusagen gehen raus.
+      brief: 'Lampe komplett aus für 1–3 Tage vor dem Schnitt. Der belegte Nutzen liegt beim Aroma: Terpene sind flüchtig und verlieren sich unter Licht und Wärme.',
       mechanism: 'In absoluter Dunkelheit stoppt die Pflanze ihre <b>Photosynthese</b> komplett. Stattdessen passieren drei Dinge:<br><br>' +
         '<b>1. Terpen-Erhalt.</b> Terpene sind <b>flüchtige Aromastoffe</b>, die unter Licht- und Wärmeeinwirkung verdunsten. Wenn die Lampe aus ist, fällt die Blattdach-Temperatur um 2–4°C — das verlangsamt die Terpen-Verdunstung deutlich. In der Pflanze konzentrieren sich die Aromen.<br><br>' +
-        '<b>2. Stärke-Mobilisierung.</b> Ohne Licht baut die Pflanze über Nacht gespeicherte Stärke ab und verschiebt Energie in die Blüten. Studien zeigen messbare Erhöhung der Trichom-Dichte in den letzten 24–48 h dieses Zustands.<br><br>' +
-        '<b>3. Stress-Antwort.</b> Längere Dunkelheit signalisiert „Winter naht" — die Pflanze schaltet auf Reproduktions-Maximum, manche Studien deuten auf 5–10% mehr THC hin. Der Effekt ist kleiner als oft behauptet, aber nicht null.<br><br>' +
-        '<b>Kombination mit IceFlush:</b> Dunkelphase + Iceflush ergibt einen Synergie-Effekt. Erst Iceflush (Kältereiz, Trichom-Schub), dann sofort Licht aus. Die Pflanze geht in den letzten Notfall-Modus.',
+        '<b>2. Stärke-Abbau.</b> Ohne Licht baut die Pflanze gespeicherte Stärke ab. Das ist normaler Nachtstoffwechsel und der Grund, warum viele früh morgens ernten — nicht mehr und nicht weniger.<br><br>' +
+        '<b>3. Was NICHT belegt ist.</b> Verbreitet ist die Aussage, die Dunkelphase steigere THC oder die Trichom-Dichte („5–10 % mehr THC"). Dafür gibt es <b>keinen Nachweis</b>. Der Grund, es trotzdem zu tun, liegt oben unter Punkt 1 und in der Ernte selbst: kühl und dunkel schneiden erhält Aroma. Wer die Dunkelphase weglässt, verliert nichts an Wirkstoff.<br><br>' +
+        '<b>Kombination mit IceFlush:</b> Beides zusammen ist üblich — erst der IceFlush, dann Licht aus. Ein darüber hinausgehender „Synergie-Effekt" ist allerdings nicht belegt; für den IceFlush selbst gibt es keinen nachgewiesenen Trichom-Effekt (siehe dort).',
       practice: '<b>Dauer:</b><br>' +
         '• <b>24 h:</b> Minimum, klar messbarer Terpen-Erhalt<br>' +
         '• <b>36 h:</b> guter Kompromiss aus Effekt und Schimmelrisiko (besonders nach IceFlush)<br>' +
@@ -32665,10 +32697,18 @@ const LEXIKON = [
         '• Beim Trimmen nach der Trocknung in warmem Raum → Trichome werden brüchig und fallen ab<br><br>' +
         '<b>Übergreifende Regel:</b> <b>Klima ist entscheidender als die Trim-Methode.</b> Eine perfekte Wet-Trim-Sitzung in einem 20°C/55%-RLF-Trockenraum schlägt einen schlechten Dry-Trim in einem 25°C/70%-Raum. Hygrometer und Thermometer im Trockenraum sind Pflicht — ohne diese Daten ist die Methodenwahl Glücksspiel.' },
     { t: 'Spülung (Final-Flush)',
-      brief: 'In den letzten 7–14 Tagen nur klares Wasser, kein Dünger. Pflanze verbraucht Nährstoffreste, Salze werden ausgeschwemmt. Macht den Unterschied zwischen kratzigem und sauberem Rauch.',
+      // (v1.5.125) `ANBAU.md` 14: „Spülen vor der Ernte. Kontrovers. Kontrollierte
+      // Vergleiche fanden keinen belastbaren Unterschied in Geschmack, Aschequalität oder
+      // Analytik zwischen gespülten und ungespülten Pflanzen. Der sichtbare
+      // ‚Nährstoffabbau' in den letzten Tagen ist überwiegend natürliche Seneszenz.
+      // Als Praxis unschädlich und verbreitet — aber kein Qualitätsversprechen."
+      // Der Kurztext sagte bisher „Macht den Unterschied zwischen kratzigem und sauberem
+      // Rauch" — also genau das Versprechen. Die Praxis bleibt vollständig beschrieben und
+      // die App plant sie weiter ein; nur die Zusage ist raus.
+      brief: 'In den letzten 7–14 Tagen nur klares Wasser, kein Dünger. Weit verbreitete Praxis und unschädlich — ein belastbarer Unterschied in Geschmack oder Asche ließ sich in Vergleichen allerdings nicht nachweisen.',
       mechanism: 'Wenn die Düngung gestoppt wird, beginnt die Pflanze ihre <b>internen Reserven</b> zu verbrauchen — gespeicherte Nährstoffe in Blättern und im Substrat werden mobilisiert und in die Blüten umgeleitet. Gleichzeitig spült das klare Wasser <b>angesammelte Salze</b> aus dem Substrat. Drei Effekte:<br><br>' +
-        '<b>1. Salzfreie Buds.</b> Restliche Düngersalze in den Blüten verursachen beim Verbrennen <b>schwarze Asche, kratzigen Rauch und bittere Noten</b>. Saubere Buds brennen mit weißer Asche und schmeckem rund.<br><br>' +
-        '<b>2. Chlorophyll-Abbau startet früher.</b> Während der Spülung verbraucht die Pflanze ihre Stickstoff-Reserven — Blätter werden gelb, dann lila/braun. Das beschleunigt den späteren Chlorophyll-Abbau in der Trocknung — weniger „grüner" Geschmack.<br><br>' +
+        '<b>1. Weniger Salz im Substrat.</b> Das klare Wasser trägt angesammelte Salze aus — das ist messbar am fallenden Drain-EC. <b>Der oft genannte Schritt weiter — salzfreie Buds, weiße statt schwarzer Asche, runderer Rauch — ist dagegen nicht belegt:</b> Kontrollierte Vergleiche zwischen gespülten und ungespülten Pflanzen fanden keinen belastbaren Unterschied in Geschmack, Aschequalität oder Analytik. Kratziger Rauch entsteht vor allem durch zu schnelles Trocknen und fehlendes Curing (siehe dort).<br><br>' +
+        '<b>2. Die Vergilbung kommt ohnehin.</b> Während der Spülung verbraucht die Pflanze ihre Stickstoff-Reserven, die Blätter werden gelb, dann lila/braun. Das sieht nach Wirkung aus, ist aber <b>überwiegend natürliche Seneszenz</b> — sie läuft in der Spätblüte auch ohne Spülung ab (siehe „Seneszenz"). Ein Grund zum Nachdüngen ist es in beiden Fällen nicht.<br><br>' +
         '<b>3. Niedriger Drain-EC als Indikator.</b> Beim Auffangen des Spülwassers (Drain) lässt sich der EC-Wert messen. Hoch = noch viele Salze drin, niedrig = sauber. Drain-EC ≤ 0.4 mS/cm signalisiert: Substrat ist neutralisiert, fertig für Hard Dryback / Iceflush.',
       practice: '<b>Dauer je nach Substrat:</b><br>' +
         '<table style="width:100%;border-collapse:collapse;font-size:13px;margin-top:6px">' +
@@ -32712,8 +32752,13 @@ const LEXIKON = [
         '• IceFlush = <b>Kältereiz</b> (einmaliger Crushed-Ice-Schritt)<br>' +
         'Die typische Reihenfolge: Spülung → Hard Dryback → IceFlush → Dunkelphase → Ernte.' },
     { t: 'IceFlush',
-      brief: 'Crushed Ice am Topfrand verteilen, 1–2 Tage vor der Ernte. Kältereiz triggert finalen Trichom-Schub und (bei manchen Genetiken) lila Farben.',
-      mechanism: 'Schmelzendes Eis kühlt die Wurzelzone langsam auf etwa 8–12 °C ab. Die Pflanze interpretiert diesen Temperatursturz als <b>nahenden Winter</b> und schaltet auf Notfall-Modus:<br>• <b>Anthocyan-Produktion</b> hoch (Frostschutz-Pigmente, sichtbar als lila/violette Verfärbung — nur bei Genetiken mit Anthocyan-Anlage)<br>• Letzter <b>Trichom-Schub</b> als Schutzmaßnahme — Studien zeigen je nach Bedingungen 5–20% mehr Trichome<br>• <b>Salze werden ausgespült</b>, da das Schmelzwasser durch das Substrat zieht<br><br>Wichtig: Crushed Ice schmilzt <b>langsam und gleichmäßig</b>. Eiswürfel sind zu kompakt (lokal zu kalt), Eisblöcke zu langsam, einfach kaltes Wasser kühlt zu schnell wieder ab. Die graduelle Temperaturabsenkung über 4–6 h ist biologisch wirksamer als ein Schock.',
+      // (v1.5.125) Wirkungszusage entfernt. `ANBAU.md` 14: „IceFlush. Kein belegter
+      // Trichom- oder Potenzeffekt. Die App sagt das selbst offen — dieser Ton ist richtig
+      // und soll so bleiben." Die Karten im Eintrag taten das auch; nur dieser
+      // Lexikon-Text versprach „5–20 % mehr Trichome". Die Anthocyan-Färbung bleibt
+      // beschrieben: Kälteinduzierte Anthocyane sind belegte Pflanzenphysiologie.
+      brief: 'Crushed Ice am Topfrand verteilen, 1–2 Tage vor der Ernte. Beliebte Grower-Technik; bei Genetiken mit Anthocyan-Anlage entstehen dabei lila Farben. Ein Trichom-Plus ist wissenschaftlich nicht belegt.',
+      mechanism: 'Schmelzendes Eis kühlt die Wurzelzone langsam auf etwa 8–12 °C ab. Die Pflanze interpretiert diesen Temperatursturz als <b>nahenden Winter</b> und schaltet auf Notfall-Modus:<br>• <b>Anthocyan-Produktion</b> hoch (Frostschutz-Pigmente, sichtbar als lila/violette Verfärbung — nur bei Genetiken mit Anthocyan-Anlage)<br>• <b>Salze werden ausgespült</b>, da das Schmelzwasser durch das Substrat zieht<br><br><b>Was NICHT belegt ist:</b> Der oft genannte „letzte Trichom-Schub". Kontrollierte Vergleiche dazu gibt es nicht; die kursierenden Zahlen (5–20 % mehr Trichome) stammen aus Erfahrungsberichten, nicht aus Messungen. Wer den IceFlush machen will, soll ihn machen — die App plant ihn sauber ein. Sie verspricht dir dafür aber nichts.<br><br>Wichtig: Crushed Ice schmilzt <b>langsam und gleichmäßig</b>. Eiswürfel sind zu kompakt (lokal zu kalt), Eisblöcke zu langsam, einfach kaltes Wasser kühlt zu schnell wieder ab. Die graduelle Temperaturabsenkung über 4–6 h ist biologisch wirksamer als ein Schock.',
       practice: '<b>Voraussetzungen vor dem IceFlush:</b><br>' +
         '• Trichome 80–95% milchig (mit Lupe geprüft, max. 10% Bernstein)<br>' +
         '• <b>Hard Dryback</b>: Topf 2–3 Tage vorher auf ~35% Restgewicht trocknen lassen — trockenes Substrat absorbiert das Schmelzwasser langsamer und gleichmäßiger. Volles Substrat würde das Eiswasser durchspülen, Kontaktzeit zu kurz<br>' +

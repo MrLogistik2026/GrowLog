@@ -2,6 +2,56 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-07 — v1.5.125
+
+- **Vier Wirkungszusagen im Lexikon, die `ANBAU.md` 14 ausdrücklich als unbelegt führt.**
+  Geprüft wurden die 139 Einträge gezielt dort, wo sie etwas *empfehlen* oder eine Wirkung
+  *zusagen*. Gefunden:
+
+  | Eintrag | stand da | `ANBAU.md` 14 |
+  |---|---|---|
+  | IceFlush | „Studien zeigen 5–20 % mehr Trichome" | „Kein belegter Trichom- oder Potenzeffekt" |
+  | UV-Bestrahlung (2 Stellen) | „Studien zeigen 5–15 % mehr Cannabinoide", „→ +5-15% THC" | „Befundlage gemischt bis negativ … nicht als Qualitätsmaßnahme ausgeben" |
+  | Dunkelphase | „manche Studien deuten auf 5–10 % mehr THC hin" | „Kein belegter THC-Zuwachs" |
+  | Spülung | „Macht den Unterschied zwischen kratzigem und sauberem Rauch" | „Keinen belastbaren Unterschied in Geschmack, Aschequalität oder Analytik" |
+
+  **Nichts davon ist verboten worden** — `ANBAU.md` 14 sagt selbst, wie es stattdessen
+  dastehen soll: „Beliebte Grower-Technik, ein Trichom-Plus ist wissenschaftlich allerdings
+  nicht belegt." Die Techniken bleiben vollständig beschrieben und die App plant sie weiter
+  ein. Was bleibt, ist auch das **Belegte**: die kälteinduzierte Anthocyan-Färbung beim
+  IceFlush, der Terpen-Erhalt als echter Grund für die Dunkelphase, der messbar fallende
+  Drain-EC beim Spülen — und beim UV sämtliche Sicherheitshinweise, denn Netzhautschäden
+  sind irreversibel.
+  **Die Spülung fand erst der Test.** Mein erster Suchlauf hatte sie für ehrlich gehalten,
+  weil sie einen *anderen* Mythos entkräftet („Spülung ist immer nötig" bei Living Soil) —
+  der eigentliche Punkt stand unentkräftet im Kurztext.
+- **Eine Lichtgrenze, mit der die App sich selbst widersprach — an zwei Stellen.**
+  „Photosynthese" sagte: „wenn CO₂ bei Raum-Standard 400 ppm bleibt, bringt mehr Licht über
+  **700 PPFD** kaum mehr Wachstum." „PPFD & DLI" sagte: „Über **900 PPFD** ohne
+  CO₂-Anreicherung ist verschenkte Energie." Nach `ANBAU.md` 8.1 gilt die Sättigung bei
+  900–1000 für das **einzelne Blatt**; der Bestand nutzt mehr Licht weiter, weil es tiefer
+  eindringt und die unteren Etagen mitversorgt — gemessen bis in die Größenordnung 1800.
+  Die zweite Stelle stand dabei direkt unter der Zeile, die 600–900 als Blüte-**Ziel**
+  nennt: 900 wäre danach gleichzeitig Ziel und Verschwendung.
+  **Die Richtung war die schädliche:** Wer den Satz glaubt, beleuchtet zu schwach — und
+  Licht ist in Hobbyanlagen fast immer der Engpass. Beide Stellen nennen jetzt das
+  sichtbare Kriterium für ein echtes Zuviel: ausgebleichte, weiße Blütenspitzen.
+- **Trichom-Messung um zwei Punkte aus `ANBAU.md` 11 ergänzt.** Erstens die Warnung vor
+  **Foxtails**: Die nachgeschobenen Kelchtürme sind junges Gewebe und fast nur klar — wer
+  dort misst, hält die Pflanze für unreif und wartet zu lange. Zweitens **immer dieselben
+  Stellen** wiederverwenden, damit eine Kurve entsteht statt einer Reihe von
+  Momentaufnahmen; genau darauf baut die Ernte-Prognose dieser App auf. Was schon
+  richtig dastand und bleibt: Messung am Calyx statt an Sugar-Leaves, mehrere Stellen und
+  Pflanzen, Bernstein als Oxidation zu CBN, und Pistillen ausdrücklich **kein** Kriterium.
+- Abgesichert durch `test_lexikon.js` (42 Prüfungen, beide Zeitzonen). Der Test
+  unterscheidet zwischen einer Zahl als **Behauptung** und derselben Zahl als **zitierter
+  und entkräfteter** Zahl — beim ersten Lauf hatte er mir zweimal die eigene
+  Richtigstellung als Fehler gemeldet.
+- **Geprüft und in Ordnung:** Trocknen 18–20 °C / 55–62 % RLF und Curing 58–62 % im Glas
+  decken sich mit `ANBAU.md` 12; die Drain-Angabe steht seit v1.5.112 korrekt auf 15–20 %;
+  ppm wird nirgends ohne Skalen-Angabe genannt (`ANBAU.md` 5); Entlaubung und die
+  Griffelbräunung als Nicht-Kriterium waren bereits richtig.
+
 ## 2026-09-07 — v1.5.124
 
 - **Das klassische Eisenbild fiel durch das Raster — und der Vorschlag war der falsche.**

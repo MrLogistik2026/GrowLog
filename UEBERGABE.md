@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.124** · index.html 2,12 MB · 630 Funktionen
+Stand: **v1.5.125** · index.html 2,12 MB · 630 Funktionen
 Zuletzt fortgeschrieben am 05.09.2026. Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
@@ -161,6 +161,67 @@ Abgesichert durch `test_tageseintrag.js` (33 Prüfungen, beide Zeitzonen).
 **Noch offen am Tageseintrag:** Die 53 Knöpfe des Gießtags sind unangetastet, und der
 Einsteiger-Modus wirkt dort weiterhin kaum (26 gegen 29 Felder, Knöpfe gleichauf). Erst
 sehen, ob die Sprungmarken im Alltag reichen, bevor Blöcke verschoben werden.
+
+---
+
+## 0h · Das Lexikon gegen ANBAU.md (v1.5.125)
+
+139 Einträge, rund 306.000 Zeichen. Nicht flächendeckend gelesen, sondern gezielt dort, wo
+das Lexikon etwas **empfiehlt** oder eine Wirkung **zusagt** — dort kostet eine falsche
+Aussage Ertrag oder Vertrauen.
+
+### Vier unbelegte Wirkungszusagen
+
+| Eintrag | stand da | `ANBAU.md` 14 |
+|---|---|---|
+| IceFlush | „Studien zeigen 5–20 % mehr Trichome" | „Kein belegter Trichom- oder Potenzeffekt" |
+| UV (2 Stellen) | „5–15 % mehr Cannabinoide", „+5-15% THC" | „gemischt bis negativ … nicht als Qualitätsmaßnahme ausgeben" |
+| Dunkelphase | „5–10 % mehr THC" | „Kein belegter THC-Zuwachs" |
+| Spülung | „Macht den Unterschied zwischen kratzigem und sauberem Rauch" | „keinen belastbaren Unterschied in Geschmack, Aschequalität oder Analytik" |
+
+Das ist bemerkenswert, weil `ANBAU.md` 14 beim IceFlush ausdrücklich lobt, die App sage das
+selbst offen — und das stimmte auch: **auf den Karten im Tageseintrag.** Der Lexikon-Text
+sagte das Gegenteil. **Regel: Wo dieselbe Sache an zwei Orten erklärt wird, reicht es nicht,
+den einen zu prüfen.**
+
+Nichts wurde verboten, und das Belegte bleibt: die kälteinduzierte Anthocyan-Färbung, der
+Terpen-Erhalt als echter Grund für die Dunkelphase, der messbar fallende Drain-EC beim
+Spülen — beim UV sämtliche Sicherheitshinweise.
+
+**Die Spülung fand erst der Test.** Mein Suchlauf hatte sie für ehrlich gehalten, weil sie
+einen *anderen* Mythos entkräftet („Spülung ist immer nötig" bei Living Soil). **Regel: Ein
+Eintrag, der irgendwo das Wort „Mythos" führt, ist damit nicht geprüft — es zählt, ob genau
+die eigene Kernaussage belegt ist.**
+
+### Eine Lichtgrenze, mit der die App sich selbst widersprach
+
+„Photosynthese" nannte **700 PPFD** als Decke, „PPFD & DLI" nannte **900** — letzteres
+direkt unter der Zeile, die 600–900 als Blüte-**Ziel** ausweist. Nach `ANBAU.md` 8.1 ist
+900–1000 der Sättigungswert des **einzelnen Blattes**; der Bestand nutzt mehr Licht weiter.
+Die Richtung war die schädliche: zu schwach beleuchten, obwohl Licht in Hobbyanlagen fast
+immer der Engpass ist. Beide Stellen nennen jetzt das sichtbare Kriterium für ein echtes
+Zuviel — ausgebleichte weiße Blütenspitzen.
+
+### Trichom-Messung ergänzt
+
+Zwei Punkte aus `ANBAU.md` 11 fehlten: die Warnung vor **Foxtails** (junges Gewebe, fast nur
+klare Köpfe — wer dort misst, wartet zu lange) und **immer dieselben Stellen**
+wiederzuverwenden, worauf die Ernte-Prognose dieser App aufbaut.
+
+### Geprüft und in Ordnung — nicht erneut aufrollen
+
+Trocknen 18–20 °C / 55–62 % und Curing 58–62 % decken sich mit `ANBAU.md` 12; Drain steht
+seit v1.5.112 auf 15–20 %; ppm wird nirgends ohne Skalen-Angabe genannt; Entlaubung und die
+Griffelbräunung als Nicht-Kriterium waren bereits richtig.
+
+### Offen geblieben, bewusst
+
+Zwei Einträge behaupten, **kontrollierter Trockenstress erhöhe die Trichomdichte**
+(„Luftfeuchtigkeit", „VPD"). `ANBAU.md` sagt dazu nichts — und wo das Dokument keine
+Antwort gibt, wird nach seiner eigenen Regel **nachgefragt statt geraten**. Es gibt
+Literatur zu mildem Wasserdefizit und Cannabinoidgehalt, aber nichts, worauf ich mich hier
+berufen könnte. Zur Entscheidung: entweder in `ANBAU.md` aufnehmen (dann mit Quelle) oder
+im Lexikon auf „verbreitete Praxis, Datenlage dünn" abschwächen.
 
 ---
 
@@ -698,9 +759,8 @@ Zurück-Taste aber der übliche Weg. **Wo eine Aufrufstelle einen fehlenden Schr
 nachholt, ist der Schritt an der falschen Stelle** — behoben wurde deshalb in `goTo` selbst,
 nicht am Aufruf.
 
-**Nicht geprüft:** Lexikon-**Inhalte** (302.000 Zeichen — die *Wege* dorthin sind seit
-v1.5.115/116 geprüft), Kalender im Detail, der Outdoor-Pfad und andere Substrat-/
-Sorten-Kombinationen. Alle Messungen stammen aus Patricks Zustand; ein frischer Grow kann
+**Nicht geprüft:** Kalender im Detail und andere Sorten-Kombinationen. **Erledigt:** die
+Lexikon-Inhalte (Abschnitt 0h), der Outdoor-Pfad und die Substrate (0f). Alle Messungen stammen aus Patricks Zustand; ein frischer Grow kann
 andere Fehler zeigen. **Erledigt:** Der Durchgang durch die leeren Zustände fand am
 06.09.2026 statt, siehe Abschnitt 0e — vier Befunde, alle behoben.
 
@@ -1104,9 +1164,9 @@ cat head.html app.js tail.html | cmp - index.html && echo "BYTE-IDENTISCH OK"
 **Byte-Identität mit `cmp` ist Pflicht, bevor irgendetwas geändert wird.** Danach wird
 `app.js` geändert, mit `build.sh` neu gebaut und erneut verglichen.
 
-40 Testdateien, alle grün in beiden Zeitzonen (Stand v1.5.124) — neu dazu
+41 Testdateien, alle grün in beiden Zeitzonen (Stand v1.5.125) — neu dazu
 `test_tageseintrag` (33), `test_navwege` (28), `test_leerzustand` (27),
-`test_outdoor` (29) und `test_diagnose` (38):
+`test_outdoor` (29), `test_diagnose` (38) und `test_lexikon` (42):
 
 **`test_leerzustand.js` ist die Ausnahme von der Sicherungs-Regel:** Es lädt Patricks
 Sicherung bewusst **nicht**, weil der leere Speicher der Prüfgegenstand ist. Wer den
