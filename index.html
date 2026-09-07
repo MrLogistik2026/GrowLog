@@ -4301,7 +4301,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.122';
+const APP_VERSION = 'v1.5.123';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -4993,9 +4993,20 @@ function loadS() {
   S.cycles.forEach((c, i) => {
     if (!c.colorId)    c.colorId = COLORS[i % COLORS.length].id;
     if (!c.symbol)     c.symbol = SYMS[i % SYMS.length];
-    if (c.intAnzucht === undefined) c.intAnzucht = RI.anzucht;
-    if (c.intBloom === undefined)   c.intBloom = RI.bloom;
-    if (c.intFlush === undefined)   c.intFlush = RI.flush;
+    // (v1.5.123) Diese drei Zeilen stempelten `RI.*` — die ERDE-Werte 3/3/4 — in jeden
+    // Zyklus, dem die Felder fehlten, ohne aufs Substrat zu sehen. `mediumIntervals(medium)`
+    // gibt es seit Langem und liefert für Coco 2/1/1, für Hydro 1/1/1; benutzt wurde es nur
+    // beim Anlegen (`createCycle`) und beim Umstellen des Substrats (`setCycleMedium`).
+    // Ein Coco-Zyklus ohne diese Felder — etwa aus einer älteren Fassung — bekam damit
+    // still einen 3-Tage-Rhythmus, während `classifyRestPct` für dasselbe Substrat unter
+    // 60 % Restgewicht bereits „Zu trocken für Coco" meldet. Nach `ANBAU.md` 7.1 hat Coco
+    // kaum Pufferkapazität und verzeiht Austrocknen schlecht: Der Stempel war also nicht
+    // nur inkonsistent, er führte zu Trockenstress. Und er ist dauerhaft — wer das
+    // Substrat-Feld nie wieder anfasst, löst `setCycleMedium` nie aus.
+    const _mi = (typeof mediumIntervals === 'function') ? mediumIntervals(c.medium) : RI;
+    if (c.intAnzucht === undefined) c.intAnzucht = _mi.anzucht;
+    if (c.intBloom === undefined)   c.intBloom = _mi.bloom;
+    if (c.intFlush === undefined)   c.intFlush = _mi.flush;
     if (c.intIce === undefined)     c.intIce = RI.ice;
     if (c.intErnte === undefined)   c.intErnte = RI.ernte;
     if (c.intDry === undefined)     c.intDry = RI.dry;
@@ -7850,7 +7861,7 @@ function _datebasedPhase(iso, c) {
   const dryLen = c.dryDays || PHASE_DEFAULTS.dryDays; // 7
   const cureLen = c.cureDays || PHASE_DEFAULTS.cureDays; // 21 — geführte Curing-Phase (Gläser + Burpen)
   // Outdoor: kein IceFlush
-  const iceLen = c.growType === 'outdoor' ? 0 : (c.iceDays || PHASE_DEFAULTS.iceDays);
+  const iceLen = iceLenFor(c);
 
   const msPerDay = 86400000;
   const flushStart = new Date(bs.getTime() + bloomLen * msPerDay);
@@ -7943,7 +7954,7 @@ function phase(iso, c) {
   const b  = a + (c.bloomDays || PHASE_DEFAULTS.bloomDays);
   const f  = b + (c.flushDays || PHASE_DEFAULTS.flushDays);
   // Outdoor skips IceFlush phase (Indoor Premium trick, not practical outside)
-  const iceLen = c.growType === 'outdoor' ? 0 : (c.iceDays || PHASE_DEFAULTS.iceDays);
+  const iceLen = iceLenFor(c);
   const ic = f + iceLen;
   const h  = ic + (c.harvestDays || PHASE_DEFAULTS.harvestDays);
   const dr = h + (c.dryDays || PHASE_DEFAULTS.dryDays);
@@ -7970,6 +7981,31 @@ function mediumIntervals(medium) {
   if (medium === 'coco') return { anzucht: 2, bloom: 1, flush: 1 };
   if (medium === 'hydro') return { anzucht: 1, bloom: 1, flush: 1 }; // Hydro "gießt" nicht — Platzhalter; H1 ersetzt die Gieß-Logik durch Reservoir-Pflege
   return { anzucht: RI.anzucht, bloom: RI.bloom, flush: RI.flush }; // Erde (Default)
+}
+
+/**
+ * (v1.5.123) Länge der IceFlush-Phase — die EINE Quelle.
+ *
+ * Draußen gibt es keinen IceFlush: Die Phase ist ein Indoor-Ablauf (Crushed Ice am
+ * Topfrand, danach 24–36 h Pitch-Black vor der Ernte), und das Phasenmodell lässt sie
+ * für `growType === 'outdoor'` deshalb weg — `phase()` und `getAction()` rechnen dort
+ * seit jeher mit 0.
+ *
+ * Dieselbe Rechnung stand allerdings zwölfmal von Hand im Code, und nur fünf davon
+ * prüften den `growType`. Die anderen acht zählten die Ice-Tage auch draußen mit, wo es
+ * sie nicht gibt. Gemessen am 07.09.2026 an Patricks Zyklus, testweise auf Outdoor
+ * gestellt: `getAction` erntete an Tag 114, `endspurtState` meldete gleichzeitig Ernte
+ * Tag 116 und einen IceFlush an Tag 114, den es gar nicht gibt.
+ *
+ * Die Richtungen widersprachen sich sogar untereinander: Erntezähler und Endspurt lagen
+ * zu SPÄT, die Umrechnung der Samentüten-Wochen dagegen zog die Blütezeit zu kurz und
+ * damit die Ernte zu FRÜH — nach `ANBAU.md` 11 der teuerste Fehler im ganzen Zyklus.
+ *
+ * Für Indoor liefert der Helfer exakt denselben Wert wie bisher.
+ */
+function iceLenFor(c) {
+  if (!c) return PHASE_DEFAULTS.iceDays;
+  return c.growType === 'outdoor' ? 0 : (c.iceDays || PHASE_DEFAULTS.iceDays);
 }
 
 /**
@@ -8213,7 +8249,7 @@ function contextFor(c, iso) {
   const totalDays = (c.anzuchtDays || PHASE_DEFAULTS.anzuchtDays) +
                     (c.bloomDays || PHASE_DEFAULTS.bloomDays) +
                     (c.flushDays || PHASE_DEFAULTS.flushDays) +
-                    (c.iceDays || PHASE_DEFAULTS.iceDays);
+                    iceLenFor(c);
   const daysFromStart = isoDiff(iso, c.startDate);
   const daysUntilHarvest = totalDays - daysFromStart;
   const isFinisher = daysUntilHarvest <= 14 && daysUntilHarvest >= 0 &&
@@ -8976,7 +9012,7 @@ function endspurtState(c, iso) {
   const flNass = flushWetDays(c);
   const flDry  = iceDryDays(c);
   const fl  = flNass + flDry;                 // gesamte Spülphase inkl. Abtrocknen
-  const ic  = c.iceDays     || PHASE_DEFAULTS.iceDays;
+  const ic  = iceLenFor(c);
   const hv  = c.harvestDays || PHASE_DEFAULTS.harvestDays;
   const tr  = c.dryDays     || PHASE_DEFAULTS.dryDays;
   const dry = flushDryDays(c);
@@ -9432,8 +9468,13 @@ function endspurtCard(c, iso) {
     <div style="border-top:0.5px dashed var(--border);margin:6px 0 2px"></div>
     ${zeileDauer('💧 Spülen ab', 'Tag ' + st.spuelStart, st.spuelDauer, 'flushWetDays', 1, 20, `setEndspurtSpuelStart('${c.id}')`)}
     <div style="font-size:9px;color:var(--text-hint);padding:0 0 4px 2px">Spülgänge: ${st.spuelGaenge.length ? 'Tag ' + st.spuelGaenge.join(' · ') : 'keine'} · Intervall ${st.intFlush} Tage${st.spuelGaenge.length === 1 && st.spuelDauer > st.intFlush ? ' — mehr passen nicht, der Hard-Dryback belegt das Ende' : ''}</div>
+    ${/* (v1.5.123) Draußen gibt es keinen IceFlush — das Phasenmodell lässt die Phase für
+          Outdoor weg. Die beiden Zeilen standen trotzdem da und ließen einen Tag einstellen,
+          den es nie gab; die Einstellungen blenden `iceDays` für Outdoor längst aus
+          (`durListAll`). Hard-Dryback hängt am IceFlush und geht deshalb mit. */
+      (c.growType === 'outdoor') ? '' : `
     ${zeileDauer('🌵 Hard-Dryback', 'vor dem Ice', st.iceDry, 'iceDryDays', 0, 6)}
-    ${zeileDauer('🧊 IceFlush', 'Tag ' + st.iceStart, st.iceDauer, 'iceDays', 0, 5, `setEndspurtIceStart('${c.id}')`)}
+    ${zeileDauer('🧊 IceFlush', 'Tag ' + st.iceStart, st.iceDauer, 'iceDays', 0, 5, `setEndspurtIceStart('${c.id}')`)}`}
     ${zeileAus('🍯 Ernte', 'Tag ' + st.ernteTag, '', `setEndspurtErnte('${c.id}')`)}
     ${zeileAus('🍂 Trocknen bis', 'Tag ' + st.trockenBis, '')}
 
@@ -9612,7 +9653,7 @@ function getAction(iso, c) {
   const b  = a + (c.bloomDays || PHASE_DEFAULTS.bloomDays);
   const f  = b + (c.flushDays || PHASE_DEFAULTS.flushDays);
   // Outdoor skips IceFlush (same logic as phase())
-  const iceLen = c.growType === 'outdoor' ? 0 : (c.iceDays || PHASE_DEFAULTS.iceDays);
+  const iceLen = iceLenFor(c);
   const ic = f + iceLen;
   const h  = ic + (c.harvestDays || PHASE_DEFAULTS.harvestDays);
   const dr = h + (c.dryDays || PHASE_DEFAULTS.dryDays);
@@ -10088,7 +10129,7 @@ async function shiftPlanToDay(cId, zielTag, ohneRueckfrage) {
   if (!c || !c.startDate) return;
   const anz = c.anzuchtDays || PHASE_DEFAULTS.anzuchtDays;
   const fl  = c.flushDays   || PHASE_DEFAULTS.flushDays;
-  const ic  = c.iceDays     || PHASE_DEFAULTS.iceDays;
+  const ic  = iceLenFor(c);
   const neu = zielTag - 1 - anz - fl - ic;
   const alt = c.bloomDays || PHASE_DEFAULTS.bloomDays;
   if (neu === alt) { toast(`Plan steht schon auf Tag ${zielTag}`); return; }
@@ -10300,7 +10341,7 @@ function planWeekBounds(c) {
     bloom:   c.bloomDays   || PHASE_DEFAULTS.bloomDays,
     flush:   c.flushDays   || PHASE_DEFAULTS.flushDays,
     // IceFlush und Erntetag stecken in derselben Plan-Woche.
-    ice:    (c.iceDays || PHASE_DEFAULTS.iceDays) + (c.harvestDays || PHASE_DEFAULTS.harvestDays),
+    ice:    iceLenFor(c) + (c.harvestDays || PHASE_DEFAULTS.harvestDays),
   };
   const start = { anzucht: 0 };
   start.bloom = start.anzucht + d.anzucht;
@@ -10572,7 +10613,7 @@ function nextGiessTag(c, from) {
 
 function daysToHarvest(c) {
   if (!c.startDate) return null;
-  const hd = (c.anzuchtDays || PHASE_DEFAULTS.anzuchtDays) + (c.bloomDays || PHASE_DEFAULTS.bloomDays) + (c.flushDays || PHASE_DEFAULTS.flushDays) + (c.iceDays || PHASE_DEFAULTS.iceDays);
+  const hd = (c.anzuchtDays || PHASE_DEFAULTS.anzuchtDays) + (c.bloomDays || PHASE_DEFAULTS.bloomDays) + (c.flushDays || PHASE_DEFAULTS.flushDays) + iceLenFor(c);
   const harvestISO = isoPlus(c.startDate, hd);
   const diff = isoDiff(harvestISO, todayISO());
   return diff > 0 ? diff : 0;
@@ -10744,7 +10785,7 @@ function harvestWindow(c, iso) {
   if (isFinite(wLo) && isFinite(wHi) && wLo > 0 && wHi >= wLo) {
     const anz = c.anzuchtDays || PHASE_DEFAULTS.anzuchtDays;
     const fl  = c.flushDays   || PHASE_DEFAULTS.flushDays;
-    const ic  = c.iceDays     || PHASE_DEFAULTS.iceDays;
+    const ic  = iceLenFor(c);
     // (v1.5.34) Welche Art Angabe es ist, sagt der User selbst — geraten wird nicht mehr.
     // Auf Tüten steht mal „Blütezeit", mal „Samen bis Ernte"; beides kommt bei Autos
     // wie bei Photoperiodischen vor.
@@ -10801,7 +10842,7 @@ function bloomDaysFromSeedWeeks(c, wochen) {
   if (!isFinite(w) || w <= 0) return null;
   const anz = c.anzuchtDays || PHASE_DEFAULTS.anzuchtDays;
   const fl  = c.flushDays   || PHASE_DEFAULTS.flushDays;
-  const ic  = c.iceDays     || PHASE_DEFAULTS.iceDays;
+  const ic  = iceLenFor(c);
   const tage = seedWeeksKind(c) === 'total'
     ? Math.round(w * 7) - 1 - anz - fl - ic   // Gesamtzeit ab Keimung
     : Math.round(w * 7);                       // reine Blütezeit
@@ -10830,7 +10871,7 @@ function seedWeeksWarning(c) {
   if (isFinite(lo) && isFinite(hi) && hi < lo) return 'Die zweite Zahl sollte größer sein als die erste.';
   const anz = c.anzuchtDays || PHASE_DEFAULTS.anzuchtDays;
   const fl  = c.flushDays   || PHASE_DEFAULTS.flushDays;
-  const ic  = c.iceDays     || PHASE_DEFAULTS.iceDays;
+  const ic  = iceLenFor(c);
   const art = seedWeeksKind(c);
   if (art === 'total' && Math.round(w * 7) - 1 - anz - fl - ic < 21) {
     return 'Das wäre sehr kurz — nach Anzucht und Spülen bliebe kaum Blütezeit übrig. Meinst du vielleicht die <b>Blütezeit</b> statt der Gesamtdauer?';
@@ -10851,7 +10892,7 @@ function harvestCountdown(c, iso = null) {
   const anzucht = c.anzuchtDays || PHASE_DEFAULTS.anzuchtDays;
   const bloom = c.bloomDays || PHASE_DEFAULTS.bloomDays;
   const flush = c.flushDays || PHASE_DEFAULTS.flushDays;
-  const ice = c.iceDays || PHASE_DEFAULTS.iceDays;
+  const ice = iceLenFor(c);
   // Ernte = ERSTER Erntetag = der Tag NACH Anzucht+Blüte+Flush+Ice (also nach der
   // Dunkelphase, morgens). (v1.4.65) Früher zog ein irrtümliches „- 1" die Ernte auf den
   // LETZTEN Ice-/Dunkel-Tag statt dahinter → Ernte einen Tag zu früh, Dunkelphase dadurch
@@ -10921,7 +10962,7 @@ function cycleOverviewStrip(c) {
   const anzucht = c.anzuchtDays || PHASE_DEFAULTS.anzuchtDays;
   const bloom = c.bloomDays || PHASE_DEFAULTS.bloomDays;
   const flush = c.flushDays || PHASE_DEFAULTS.flushDays;
-  const ice = c.iceDays || PHASE_DEFAULTS.iceDays;
+  const ice = iceLenFor(c);
   const harvest = c.harvestDays || PHASE_DEFAULTS.harvestDays;
   const dry = c.dryDays || PHASE_DEFAULTS.dryDays;
   const cure = c.cureDays || PHASE_DEFAULTS.cureDays;
@@ -13497,10 +13538,10 @@ function getAlerts(c) {
     if (bs) {
       const bloomLen = c.bloomDays || PHASE_DEFAULTS.bloomDays;
       const flushLen = c.flushDays || PHASE_DEFAULTS.flushDays;
-      const iceLen = c.growType === 'outdoor' ? 0 : (c.iceDays || PHASE_DEFAULTS.iceDays);
+      const iceLen = iceLenFor(c);
       harvestISO = isoPlus(bs, bloomLen + flushLen + iceLen);
     } else {
-      const totalGrowDays = (c.anzuchtDays || PHASE_DEFAULTS.anzuchtDays) + (c.bloomDays || PHASE_DEFAULTS.bloomDays) + (c.flushDays || PHASE_DEFAULTS.flushDays) + (c.iceDays || PHASE_DEFAULTS.iceDays);
+      const totalGrowDays = (c.anzuchtDays || PHASE_DEFAULTS.anzuchtDays) + (c.bloomDays || PHASE_DEFAULTS.bloomDays) + (c.flushDays || PHASE_DEFAULTS.flushDays) + iceLenFor(c);
       harvestISO = isoPlus(c.startDate, totalGrowDays);
     }
     const daysLeft = isoDiff(harvestISO, today);
@@ -18141,7 +18182,7 @@ function collectBloomGusse(c) {
   const bl = c.bloomDays || PHASE_DEFAULTS.bloomDays;
   const fl = c.flushDays || PHASE_DEFAULTS.flushDays;
   // Ice-Phase mitnehmen (Indoor): Tag 1 = Iceflush, danach Dunkelphase (kein Guss).
-  const ic = (c.growType === 'outdoor') ? 0 : (c.iceDays || PHASE_DEFAULTS.iceDays);
+  const ic = iceLenFor(c);
   const lastDay = az + bl + fl + ic;
   const steps = [];
   for (let d = az + 1; d <= lastDay; d++) {
@@ -27372,7 +27413,7 @@ function renderEntry(iso) {
                   // (zu wenig Daten) bleibt die Bernstein-Prognose die einzige Marke.
                   const _ziel = _rw ? _rw.offenTag : _fc.dayLo;
                   const _anz = (c.anzuchtDays || PHASE_DEFAULTS.anzuchtDays);
-                  const _spuelVon = (z) => _anz + (z - 1 - _anz - (c.flushDays || PHASE_DEFAULTS.flushDays) - (c.iceDays || PHASE_DEFAULTS.iceDays)) + 1;
+                  const _spuelVon = (z) => _anz + (z - 1 - _anz - (c.flushDays || PHASE_DEFAULTS.flushDays) - iceLenFor(c)) + 1;
 
                   if (_rw && _rw.spaetBernstein) {
                     _out += `<div style="font-size:10px;color:var(--yellow);margin-top:6px;line-height:1.55;background:var(--card2);border-radius:6px;padding:7px 9px">
@@ -34760,7 +34801,7 @@ function buildChartsSection(cycleId) {
   const a = cyc.anzuchtDays || PHASE_DEFAULTS.anzuchtDays;
   const b = a + (cyc.bloomDays || PHASE_DEFAULTS.bloomDays);
   const f = b + (cyc.flushDays || PHASE_DEFAULTS.flushDays);
-  const ic = f + (cyc.iceDays || PHASE_DEFAULTS.iceDays);
+  const ic = f + iceLenFor(cyc);
   const h = ic + (cyc.harvestDays || PHASE_DEFAULTS.harvestDays);
   const dr = h + (cyc.dryDays || PHASE_DEFAULTS.dryDays);
 

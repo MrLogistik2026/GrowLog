@@ -2,6 +2,48 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-07 — v1.5.123
+
+- **Draußen wurde die IceFlush-Phase mitgezählt, die es draußen nicht gibt.** Das
+  Phasenmodell (`phase`, `getAction`) lässt sie für `growType === 'outdoor'` seit jeher
+  weg — der IceFlush ist ein Indoor-Ablauf (Crushed Ice am Topfrand, danach 24–36 h
+  Pitch-Black). Dieselbe Rechnung stand aber **zwölfmal von Hand** im Code, und nur fünf
+  davon prüften den `growType`. Patricks Zyklus testweise auf Outdoor gestellt:
+
+  | | sagt |
+  |---|---|
+  | `getAction` (die echte Kette) | Ernte an Tag **114**, kein einziger Ice-Tag |
+  | `endspurtState` (die Endspurt-Karte) | Ernte Tag **116**, IceFlush an Tag 114 |
+
+  Betroffen waren `endspurtState`, `harvestCountdown`, `daysToHarvest`, `contextFor`
+  (Finisher-Fenster), `planWeekBounds` (Düngeplan-Wochenraster), `shiftPlanToDay`, die
+  Trichom-Prognose und die Zyklus-Diagramme. **Die Richtungen widersprachen sich sogar
+  untereinander:** Erntezähler und Endspurt lagen zu *spät*, die Umrechnung der
+  Samentüten-Wochen (`bloomDaysFromSeedWeeks`) zog die Blütezeit dagegen zu kurz und damit
+  die Ernte zu *früh* — nach `ANBAU.md` 11 der teuerste Fehler im ganzen Zyklus, weil er
+  sich nicht mehr korrigieren lässt.
+  Neu ist `iceLenFor(c)` als **einzige Quelle**; alle zwölf Handkopien rufen sie jetzt auf.
+  Für Indoor liefert sie exakt denselben Wert wie zuvor — Patricks Kette steht unverändert
+  auf Guss 104 · Spülen 107/110 · Ice 114 · Ernte 116.
+- **Die Endspurt-Karte bot draußen einen IceFlush an, den es nicht gibt.** Die Zeilen
+  „🧊 IceFlush ändern" und „🌵 Hard-Dryback vor dem Ice" ließen einen Tag einstellen, der
+  nie eintrat. Die Einstellungen blenden `iceDays` für Outdoor längst aus (`durListAll`) —
+  die Endspurt-Karte zog nicht mit. Beide Zeilen entfallen dort jetzt; Spülen und Ernte
+  bleiben einstellbar.
+- **Die Migration stempelte Erde-Rhythmen in jeden Zyklus.** `RI.*` (Anzucht 3 · Blüte 3 ·
+  Spülen 4) wurde beim Laden in jeden Zyklus geschrieben, dem die Intervall-Felder fehlten
+  — **ohne aufs Substrat zu sehen**, obwohl `mediumIntervals()` seit Langem für Coco 2/1/1
+  und für Hydro 1/1/1 liefert und beim Anlegen auch benutzt wird. Ein Coco-Zyklus aus einer
+  älteren Fassung bekam damit still einen 3-Tage-Rhythmus, während `classifyRestPct` für
+  dasselbe Substrat unter 60 % Restgewicht bereits „Zu trocken für Coco" meldet. Nach
+  `ANBAU.md` 7.1 hat Coco kaum Pufferkapazität und verzeiht Austrocknen schlecht — der
+  Stempel war also nicht nur widersprüchlich, er führte zu Trockenstress. Und er war
+  dauerhaft: Wer das Substrat-Feld nie wieder anfasst, löst `setCycleMedium` nie aus.
+  Bereits gesetzte Werte bleiben unangetastet.
+- Abgesichert durch `test_outdoor.js` (29 Prüfungen, beide Zeitzonen). Der Test prüft vor
+  allem, dass **Indoor sich nicht verändert hat** — im Phasenmotor hängt jeder Gießtag
+  jedes Zyklus.
+
 ## 2026-09-06 — v1.5.122
 
 - **Der Kalender ohne Zyklus erklärte sich nicht und versprach etwas Falsches.** Er zeigte

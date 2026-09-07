@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.122** · index.html 2,12 MB · 629 Funktionen
+Stand: **v1.5.123** · index.html 2,12 MB · 630 Funktionen
 Zuletzt fortgeschrieben am 05.09.2026. Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
@@ -161,6 +161,78 @@ Abgesichert durch `test_tageseintrag.js` (33 Prüfungen, beide Zeitzonen).
 **Noch offen am Tageseintrag:** Die 53 Knöpfe des Gießtags sind unangetastet, und der
 Einsteiger-Modus wirkt dort weiterhin kaum (26 gegen 29 Felder, Knöpfe gleichauf). Erst
 sehen, ob die Sprungmarken im Alltag reichen, bevor Blöcke verschoben werden.
+
+---
+
+## 0f · Outdoor und Substrat — erstmals durchgespielt (v1.5.123)
+
+Zwei Bereiche, die nie jemand geprüft hatte. Beide zeigten denselben Fehlertyp: **eine
+Regel, die zwölfmal von Hand dasteht, und nur fünfmal richtig.**
+
+### Draußen wurde eine Phase mitgezählt, die es draußen nicht gibt
+
+`phase()` und `getAction()` lassen die IceFlush-Phase für `growType === 'outdoor'` seit
+jeher weg. Zwölf andere Stellen rechneten dieselbe Gesamtlänge, sieben davon ohne
+`growType`-Prüfung. Patricks Zyklus testweise auf Outdoor:
+
+| | sagt |
+|---|---|
+| `getAction` (die echte Kette) | Ernte **Tag 114**, kein Ice-Tag |
+| `endspurtState` (die Endspurt-Karte) | Ernte **Tag 116**, IceFlush Tag 114 |
+
+Betroffen: `endspurtState`, `harvestCountdown`, `daysToHarvest`, `contextFor`
+(Finisher-Fenster), `planWeekBounds` (Düngeplan-Wochen), `shiftPlanToDay`, die
+Trichom-Prognose, die Zyklus-Diagramme.
+
+**Das Unangenehmste war die Uneinigkeit untereinander:** Erntezähler und Endspurt lagen zu
+*spät*, `bloomDaysFromSeedWeeks` (die Umrechnung der Wochenangabe von der Samentüte) zog die
+Blütezeit zu kurz und die Ernte damit zu *früh*. Nach `ANBAU.md` 11 ist genau das der
+teuerste Fehler im ganzen Zyklus.
+
+Neu: **`iceLenFor(c)` als einzige Quelle**, alle zwölf Stellen rufen sie auf. Für Indoor
+identisch zu vorher — das ist der Punkt, an dem der Test ansetzt.
+
+**Daraus zu lernen — es ist zum dritten Mal dieselbe Form:** Nach `goTo` (v1.5.115) und
+`isGiessTag` (v1.5.119) jetzt die Phasenlänge. Immer dasselbe Bild: Eine Regel wird an
+vielen Stellen von Hand wiederholt, ein Teil der Kopien bekommt eine spätere Verfeinerung
+mit, der Rest nicht — und die Kopien widersprechen sich, ohne dass jemand es merkt.
+**Wo dieselbe Rechnung ein zweites Mal auftaucht, gehört sie in eine Funktion, bevor die
+dritte entsteht.** Bei der Suche hilft ein Grep nach dem Ausdruck, nicht nach dem Symptom.
+
+### Die Migration stempelte Erde-Rhythmen in jedes Substrat
+
+`RI.*` (3/3/4) wurde beim Laden in jeden Zyklus geschrieben, dem die Intervall-Felder
+fehlten, ohne aufs Substrat zu sehen — obwohl `mediumIntervals()` für Coco 2/1/1 liefert und
+beim Anlegen benutzt wird. Ein Coco-Zyklus bekam so einen 3-Tage-Rhythmus, während
+`classifyRestPct` unter 60 % Restgewicht schon „Zu trocken für Coco" meldet. Nach
+`ANBAU.md` 7.1 verzeiht Coco Austrocknen schlecht.
+
+**Regel, die schon einmal galt (v1.5.103, `cd.plantCount`):** Ein Feld, das im Hintergrund
+gesetzt wird, muss dieselben Eingangsgrößen kennen wie der Weg, der es normalerweise setzt.
+Sonst entsteht ein stiller Stempel, den die Oberfläche nie wieder anfasst.
+
+### Geprüft und in Ordnung — nicht erneut aufrollen
+
+- **`classifyRestPct` für Coco** (≥85 frisch · ≥60 gießen · ≥40 zu trocken · darunter
+  Stress) ist **richtig**, auch wenn 80 % zunächst früh wirkt: Die Grenzen folgen bewusst
+  den drei Hebe-Test-Knöpfen (Voll/Mittel/Leicht), und wer mit der Hand hebt, unterscheidet
+  80 % nicht von 65 %. Früher gießen ist in Coco zudem die sichere Richtung (`ANBAU.md` 7.1).
+- **`mediumIntervals`** (Erde 3/3/4 · Coco 2/1/1 · Hydro 1/1/1) und **`phTargetFor`** waren
+  bereits substratabhängig. Mein erster Messversuch setzte `c.medium` direkt und umging
+  `setCycleMedium` — die App war richtig, der Test falsch.
+- **Der Outdoor-Tageseintrag** ist kürzer als der Indoor-Eintrag, weil die Phase eine andere
+  ist (ohne Ice-Tage ist der Zyklus früher im Trocknen), nicht weil Blöcke fehlen.
+- **`endspurtCard` gibt nach der Ernte nichts mehr aus** — richtig, es gibt nichts mehr
+  einzustellen. Auch hier hatte zuerst mein Test verglichen, was nicht vergleichbar war.
+
+### Offen: eine Abweichung zwischen App und ANBAU.md
+
+`phTargetFor` führt **Coco mit pH 5,8–6,2**, `ANBAU.md` 4 nennt für „Coco / Hydro"
+gemeinsam **5,5–6,0**. Beides ist verbreitet: 5,5–6,0 ist der Wert für reine
+Hydrokultur, 5,8–6,2 der in der Coco-Praxis übliche. **Bewusst nicht geändert** — beim
+Licht (`ANBAU.md` 8.1) war schon einmal die App richtig und der Dokument-Entwurf falsch.
+Zur Entscheidung durch Patrick: entweder die App auf 5,5–6,0 ziehen oder `ANBAU.md` 4 so
+präzisieren, dass Coco und Hydro getrennte Zeilen bekommen. Letzteres halte ich für richtig.
 
 ---
 
@@ -958,8 +1030,9 @@ cat head.html app.js tail.html | cmp - index.html && echo "BYTE-IDENTISCH OK"
 **Byte-Identität mit `cmp` ist Pflicht, bevor irgendetwas geändert wird.** Danach wird
 `app.js` geändert, mit `build.sh` neu gebaut und erneut verglichen.
 
-38 Testdateien, alle grün in beiden Zeitzonen (Stand v1.5.122) — neu dazu
-`test_tageseintrag` (33), `test_navwege` (28) und `test_leerzustand` (27):
+39 Testdateien, alle grün in beiden Zeitzonen (Stand v1.5.123) — neu dazu
+`test_tageseintrag` (33), `test_navwege` (28), `test_leerzustand` (27) und
+`test_outdoor` (29):
 
 **`test_leerzustand.js` ist die Ausnahme von der Sicherungs-Regel:** Es lädt Patricks
 Sicherung bewusst **nicht**, weil der leere Speicher der Prüfgegenstand ist. Wer den
