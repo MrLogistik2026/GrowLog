@@ -139,7 +139,7 @@ function pruef(name, bedingung, info) {
       var t = el.textContent.replace(/\\s+/g,' ').trim();
       return JSON.stringify({
         text: t,
-        verschiebenVersprochen: /lange drücken für Gießtag/.test(t),
+        verschiebenVersprochen: /lange drücken.{0,40}für Gießtag/.test(t),
         knoepfe: [].slice.call(el.querySelectorAll('button')).map(function(b){ return b.textContent.trim(); }),
       });
     })()`));
@@ -183,7 +183,7 @@ function pruef(name, bedingung, info) {
     const cal = E(`(function(){
       goTo('cal');
       var t = document.getElementById('scr-cal').textContent;
-      return (/lange drücken für Gießtag/.test(t) ? 'ja' : 'nein') + '|' +
+      return (/lange drücken.{0,40}für Gießtag/.test(t) ? 'ja' : 'nein') + '|' +
              (/Noch kein Zyklus/.test(t) ? 'leerText' : 'kein leerText');
     })()`);
     pruef('Kalender: der Verschieben-Hinweis ist zurueck', cal.split('|')[0] === 'ja', cal);

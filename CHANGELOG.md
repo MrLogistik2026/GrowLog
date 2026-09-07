@@ -2,6 +2,45 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-07 — v1.5.127
+
+- **Bei zwei gleichzeitigen Grows gehörten Symbol und Tagesnummer zu verschiedenen
+  Pflanzen.** Die Kalenderzelle wählt Farbe und Symbol nach dem Zyklus, der an diesem Tag
+  eine Aufgabe hat (`actionDay`) — die Tagesnummer nahm sie aber immer vom ersten Zyklus in
+  der Liste (`phaseDay = dayInfo[0]`). Nachgemessen mit zwei Grows: Am 03.09. zeigte die
+  Zelle **„🌿 T111"** — das Gieß-Symbol gehörte zum 52 Tage alten zweiten Grow, die Nummer
+  T111 zum ersten, der längst in der Trocknung war. Zwei Angaben nebeneinander, die
+  verschiedene Pflanzen beschrieben, ohne dass man es sehen konnte. Die Nummer folgt jetzt
+  demselben Zyklus wie Farbe und Symbol.
+  **Warum das jetzt zählt:** Patrick will vor dem Release zwei Sorten in einem Zelt testen —
+  genau dieser Fall.
+- **Hatte ein zweiter Zyklus am selben Tag etwas zu tun, war davon nichts zu sehen.** Am
+  06.09. stand „🧊 IceFlush" (Zyklus 1), während Zyklus 2 einen **Gießtag** hatte — die
+  Zelle zeigt nur ein Symbol. Jetzt markiert ein kleiner Punkt in der Farbe des jeweiligen
+  Zyklus, dass dort noch etwas ist; der Tooltip nennt Grow und Aufgabe, das Antippen öffnet
+  ohnehin den Tag mit allen Zyklen.
+- **Das Tagesmenü war am Rechner überhaupt nicht erreichbar.** `showCtx` hing ausschließlich
+  am Touch-Langdruck (`ontouchstart` → `lpS`), und `oncontextmenu="return false"` schaltete
+  den einzigen anderen Weg ausdrücklich ab. Zwei Funktionen hängen sogar **nur** daran:
+  „Gieß-Tag überspringen" bei Regen (`skipDayFromCal`) und „Tag zurückholen"
+  (`restoreDayFromCal`) — am Laptop gab es für sie keinen einzigen Aufrufweg, während der
+  Hinweis unter dem Kalender sie auf jedem Gerät bewarb. Der Rechtsklick öffnet das Menü
+  jetzt; der Hinweis nennt ihn.
+  **Der heikle Teil war die Doppelauslösung:** Android feuert beim langen Drücken zusätzlich
+  `contextmenu`, und die Reihenfolge zum 450-ms-Timer ist nicht garantiert. Beide Fälle
+  werden abgefangen. **Und ein Fehler, den ich mir dabei fast eingebaut hätte:** Der erste
+  Entwurf setzte die Klick-Sperre `lpDone` auch beim Mausklick — eine Maus feuert nach einem
+  Rechtsklick aber gar keinen Klick, die Sperre wäre stehengeblieben und hätte den *nächsten*
+  Linksklick geschluckt. Nachgemessen: Der Tag ließ sich danach erst beim zweiten Antippen
+  öffnen. Die Sperre wird jetzt nur noch gesetzt, wenn ein Langdruck-Timer lief — also bei
+  Berührung.
+- Abgesichert durch `test_kalender.js` (23 Prüfungen, beide Zeitzonen).
+- **Geprüft und in Ordnung:** Das Datumsraster stimmt über sieben Monate hinweg, inklusive
+  beider Zeitumstellungen 2026 (29.03. und 25.10.), Februar und Jahreswechsel — keine
+  doppelten, fehlenden oder falsch beschrifteten Tage. Jeder Aktionstag trägt sein Symbol.
+  Dass die Beschriftung nur am **ersten** Tag einer Phase steht, ist Absicht: sonst stünde
+  siebenmal „Trocknen" untereinander.
+
 ## 2026-09-07 — v1.5.126
 
 - **„Kontrollierter Trockenstress = mehr Trichome" abgeschwächt — auf Patricks Entscheidung

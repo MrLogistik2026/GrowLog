@@ -3378,7 +3378,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.126';
+const APP_VERSION = 'v1.5.127';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -15253,6 +15253,28 @@ function renderCal() {
 
     const tagCol = actionDay ? col(actionDay.c).hex : (manualWaterDay ? col(manualWaterDay.c).hex : (phaseDay ? col(phaseDay.c).hex : 'rgba(255,255,255,0.35)'));
 
+    // (v1.5.127) Die Tagesnummer folgt jetzt DEMSELBEN Zyklus wie Farbe und Symbol.
+    // Bisher stand hier `phaseDay` = `dayInfo[0]`, also immer der erste Zyklus in der
+    // Liste, während `tagCol` und das Symbol schon dem Zyklus mit der Aktion folgten.
+    // Bei zwei gleichzeitigen Grows las man deshalb Unsinn: Am 03.09. zeigte die Zelle
+    // „🌿 T111" — das Gieß-Symbol gehörte zum 52 Tage alten zweiten Grow, die Nummer
+    // T111 zum ersten, der längst in der Trocknung war. Symbol und Zahl beschrieben
+    // verschiedene Pflanzen, ohne dass man es sehen konnte.
+    const tagDay = actionDay || (manualWaterDay && manualWaterDay.p ? manualWaterDay : null) || phaseDay;
+
+    // (v1.5.127) Haben MEHRERE Zyklen an diesem Tag etwas zu tun, war der zweite bisher
+    // unsichtbar — die Zelle zeigt nur ein Symbol. Am 06.09. stand dort „🧊 IceFlush"
+    // (Zyklus 1), während Zyklus 2 einen Gießtag hatte, von dem nichts zu sehen war.
+    // Ein Punkt in der Farbe des jeweiligen Zyklus zeigt jetzt an, dass dort noch etwas
+    // ist; das Antippen öffnet ohnehin den Tag mit allen Zyklen.
+    const weitereAktionen = dayInfo.filter(x => x.a && x !== actionDay);
+    const weitereHTML = weitereAktionen.length
+      ? `<span title="${weitereAktionen.map(x => x.c.name + ': ' + (ACT_NAME[x.a] || x.a)).join(' · ')}"
+           style="position:absolute;top:2px;right:3px;display:flex;gap:2px;pointer-events:none">
+          ${weitereAktionen.map(x => `<span style="width:5px;height:5px;border-radius:50%;background:${col(x.c).hex};display:block"></span>`).join('')}
+        </span>`
+      : '';
+
     // Phase-Marker: dünner farbiger Strich am linken Rand (nicht am Start-Tag,
     // der hat schon seine eigene goldene Markierung)
     const phaseMarkerHTML = (phaseMarkerColor && !isStart)
@@ -15310,13 +15332,14 @@ function renderCal() {
       }
     }
     cells += `<div class="cal-cell ${isToday ? 'today' : ''}" style="background:${bg};border-color:${border};position:relative"
-      onclick="calClick('${iso}')" oncontextmenu="return false" ontouchstart="lpS('${iso}',event)" ontouchend="lpE()" ontouchmove="lpE()">
+      onclick="calClick('${iso}')" oncontextmenu="return calCtxMenu('${iso}',event)" ontouchstart="lpS('${iso}',event)" ontouchend="lpE()" ontouchmove="lpE()">
       ${phaseMarkerHTML}
       ${weatherHTML}
       ${trainingHTML}
+      ${weitereHTML}
       ${icon ? `<span class="cal-icon">${icon}</span>` : ''}
       <span class="cal-num" ${isStart ? 'style="color:#f0d050;font-weight:800"' : ''}>${d}</span>
-      ${phaseDay ? `<span class="cal-tag" style="color:${tagCol}">T${phaseDay.p.day}</span>` : 
+      ${tagDay ? `<span class="cal-tag" style="color:${tagCol}">T${tagDay.p.day}</span>` :
         archInfo ? `<span class="cal-tag" style="color:${col(archInfo.c).hex}44;font-size:8px">T${archInfo.p.day}</span>` : ''}
       ${(phaseMarkerColor && phaseMarkerLabel && !isStart) ? `<span style="font-size:7px;font-weight:700;line-height:1.1;margin-top:1px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:${phaseMarkerColor}">${phaseMarkerLabel}</span>` : ''}
       ${(() => {
@@ -15367,7 +15390,7 @@ function renderCal() {
     <div class="cal-grid">${cells}</div>
     <!-- (v1.5.46) Ohne diesen Satz findet niemand die Zusatzfunktionen: Antippen öffnet den
          Tag, langes Drücken zeigt das Menü. Steht in beiden Modi da, weil es in beiden gilt. -->
-    <div style="text-align:center;font-size:10px;color:var(--text-hint);padding:6px 0 2px">${_calLeer ? 'Tippen öffnet den Tag' : 'Tippen öffnet den Tag · lange drücken für Gießtag verschieben &amp; mehr'}</div>
+    <div style="text-align:center;font-size:10px;color:var(--text-hint);padding:6px 0 2px">${_calLeer ? 'Tippen öffnet den Tag' : 'Tippen öffnet den Tag · lange drücken (am Rechner: Rechtsklick) für Gießtag verschieben &amp; mehr'}</div>
     <div style="padding:6px 0;border-top:0.5px solid var(--border);margin-top:5px;display:flex;flex-wrap:wrap;gap:6px">${cycLeg}</div>
     ${S.beginnerMode ? `
     <div style="padding:4px 0 2px;display:flex;flex-wrap:wrap;gap:4px 10px;font-size:10px;color:var(--text-hint)">
@@ -15423,6 +15446,40 @@ function lpS(iso, e) {
 }
 
 function lpE() { if (lpT) { clearTimeout(lpT); lpT = null; } }
+
+/**
+ * (v1.5.127) Das Tagesmenü per Rechtsklick — für alle Geräte ohne Touch.
+ *
+ * `showCtx` hing bis hierher ausschließlich am Touch-Langdrücken (`lpS` über
+ * `ontouchstart`), und `oncontextmenu="return false"` schaltete den einzigen anderen
+ * Weg ausdrücklich ab. Auf einem Laptop war das Menü damit gar nicht erreichbar —
+ * während der Hinweis unter dem Kalender „lange drücken für Gießtag verschieben & mehr"
+ * es auf jedem Gerät bewirbt.
+ *
+ * Zwei Funktionen hängen sogar ausschließlich daran: „Gieß-Tag überspringen (Regen)"
+ * (`skipDayFromCal`) und „Tag zurückholen" (`restoreDayFromCal`). Sie hatten am Rechner
+ * keinen einzigen Aufrufweg.
+ *
+ * Die Doppelauslösung ist der heikle Teil: Android feuert beim langen Drücken zusätzlich
+ * `contextmenu`, und in welcher Reihenfolge das zum 450-ms-Timer kommt, ist nicht
+ * garantiert. Deshalb wird hier beides abgefangen — ein schon gelaufener Langdruck wird
+ * übersprungen, ein noch laufender Timer abgebrochen.
+ */
+function calCtxMenu(iso, e) {
+  if (e && e.preventDefault) e.preventDefault();
+  if (lpDone) { lpDone = false; return false; }  // Langdruck hat das Menü schon geöffnet
+  // `lpDone` sperrt den Klick, der einem Langdruck auf dem Handy noch hinterherkommt.
+  // Ein Rechtsklick mit der Maus löst dagegen GAR KEINEN Klick aus — die Sperre bliebe
+  // stehen und würde den nächsten normalen Linksklick schlucken. Nachgemessen: Der Tag
+  // ließ sich danach erst beim zweiten Antippen öffnen.
+  // Unterschieden wird am laufenden Langdruck-Timer: Läuft einer, kam das Ereignis von
+  // einer Berührung (Android feuert `contextmenu` zusätzlich zum Timer), sonst von der Maus.
+  const ausBeruehrung = lpT !== null;
+  lpE();                       // einen noch laufenden Langdruck-Timer abbrechen
+  lpDone = ausBeruehrung;      // nur bei Berührung folgt noch ein Klick
+  showCtx(iso);
+  return false;
+}
 
 function calClick(iso, fromMenu) {
   // (v1.5.15) Der Guard verhindert, dass nach einem Long-Press auch noch der normale Klick

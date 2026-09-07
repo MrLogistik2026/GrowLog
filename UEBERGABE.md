@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.126** · index.html 2,12 MB · 630 Funktionen
+Stand: **v1.5.127** · index.html 2,12 MB · 631 Funktionen
 Zuletzt fortgeschrieben am 05.09.2026. Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
@@ -161,6 +161,57 @@ Abgesichert durch `test_tageseintrag.js` (33 Prüfungen, beide Zeitzonen).
 **Noch offen am Tageseintrag:** Die 53 Knöpfe des Gießtags sind unangetastet, und der
 Einsteiger-Modus wirkt dort weiterhin kaum (26 gegen 29 Felder, Knöpfe gleichauf). Erst
 sehen, ob die Sprungmarken im Alltag reichen, bevor Blöcke verschoben werden.
+
+---
+
+## 0i · Der Kalender (v1.5.127)
+
+Der letzte nie geprüfte Bildschirm. Drei Befunde, zwei davon betreffen genau den Fall, den
+Patrick vor dem Release testen will: **zwei Sorten in einem Zelt.**
+
+### Symbol und Tagesnummer gehörten zu verschiedenen Pflanzen
+
+Die Zelle wählt Farbe und Symbol nach dem Zyklus mit der Aufgabe (`actionDay`), die
+Tagesnummer nahm sie aber immer vom ersten Zyklus (`phaseDay = dayInfo[0]`). Mit zwei Grows:
+
+| Tag | Grow 1 | Grow 2 | Zelle zeigte |
+|---|---|---|---|
+| 03.09. | T111, nichts | T52 **Gießtag** | „🌿 **T111**" |
+| 06.09. | T114 IceFlush | T55 **Gießtag** | „🧊 T114 IceFlush" — Guss unsichtbar |
+
+Im ersten Fall standen Symbol und Zahl für verschiedene Pflanzen, ohne erkennbaren Hinweis.
+Die Nummer folgt jetzt demselben Zyklus wie Farbe und Symbol; ein Punkt in der Zyklusfarbe
+zeigt an, dass ein weiterer Grow an diesem Tag etwas zu tun hat.
+
+**Daraus zu lernen:** Wo mehrere Datenquellen in dieselbe kleine Fläche gerendert werden,
+muss **eine** von ihnen die Auswahl bestimmen — hier tat es `tagCol` bereits richtig, und
+nur die Zahl scherte aus. Bei jeder Zelle, die mehr als eine Sache anzeigen kann, gehört
+geprüft, ob alle Teile denselben Gegenstand meinen.
+
+### Das Tagesmenü war am Rechner unerreichbar
+
+`showCtx` hing nur am Touch-Langdruck, `oncontextmenu="return false"` schloss den anderen
+Weg. **Zwei Funktionen hängen ausschließlich daran** — „Gieß-Tag überspringen" bei Regen
+(`skipDayFromCal`) und „Tag zurückholen" (`restoreDayFromCal`). Am Laptop gab es für sie
+keinen Aufrufweg, während der Hinweis unter dem Kalender sie bewarb. Jetzt öffnet der
+Rechtsklick das Menü.
+
+**Beinahe-Fehler beim Fix, festgehalten:** Mein erster Entwurf setzte die Klick-Sperre
+`lpDone` auch bei der Maus. Eine Maus feuert nach einem Rechtsklick aber keinen Klick — die
+Sperre wäre stehengeblieben und hätte den *nächsten* Linksklick geschluckt. Nachgemessen:
+Der Tag ließ sich erst beim zweiten Antippen öffnen. **Regel: Ein Riegel, der ein
+nachfolgendes Ereignis abfangen soll, braucht die Prüfung, ob dieses Ereignis auf dem
+jeweiligen Gerät überhaupt kommt.**
+
+### Geprüft und in Ordnung — nicht erneut aufrollen
+
+- **Datumsraster über sieben Monate**, inklusive beider Zeitumstellungen 2026 (29.03. und
+  25.10.), Februar und Jahreswechsel: keine doppelten, fehlenden oder falsch beschrifteten
+  Tage.
+- **Jeder Aktionstag trägt sein Symbol** (die Symbole sind SVGs, nicht Text — ein erster
+  Textvergleich meinerseits meldete 15 Fehlalarme).
+- **Die Beschriftung steht nur am ersten Tag einer Phase.** Das ist Absicht; sonst stünde
+  siebenmal „Trocknen" untereinander.
 
 ---
 
@@ -772,8 +823,9 @@ Zurück-Taste aber der übliche Weg. **Wo eine Aufrufstelle einen fehlenden Schr
 nachholt, ist der Schritt an der falschen Stelle** — behoben wurde deshalb in `goTo` selbst,
 nicht am Aufruf.
 
-**Nicht geprüft:** Kalender im Detail und andere Sorten-Kombinationen. **Erledigt:** die
-Lexikon-Inhalte (Abschnitt 0h), der Outdoor-Pfad und die Substrate (0f). Alle Messungen stammen aus Patricks Zustand; ein frischer Grow kann
+**Nicht geprüft:** andere Sorten-Kombinationen. **Erledigt:** die Lexikon-Inhalte
+(Abschnitt 0h), der Outdoor-Pfad und die Substrate (0f) und der Kalender (0i) — damit ist
+jeder Bildschirm der App mindestens einmal systematisch durchgegangen. Alle Messungen stammen aus Patricks Zustand; ein frischer Grow kann
 andere Fehler zeigen. **Erledigt:** Der Durchgang durch die leeren Zustände fand am
 06.09.2026 statt, siehe Abschnitt 0e — vier Befunde, alle behoben.
 
@@ -1177,9 +1229,9 @@ cat head.html app.js tail.html | cmp - index.html && echo "BYTE-IDENTISCH OK"
 **Byte-Identität mit `cmp` ist Pflicht, bevor irgendetwas geändert wird.** Danach wird
 `app.js` geändert, mit `build.sh` neu gebaut und erneut verglichen.
 
-41 Testdateien, alle grün in beiden Zeitzonen (Stand v1.5.126) — neu dazu
+42 Testdateien, alle grün in beiden Zeitzonen (Stand v1.5.127) — neu dazu
 `test_tageseintrag` (33), `test_navwege` (28), `test_leerzustand` (27),
-`test_outdoor` (29), `test_diagnose` (38) und `test_lexikon` (49):
+`test_outdoor` (29), `test_diagnose` (38) `test_lexikon` (49) und `test_kalender` (23):
 
 **`test_leerzustand.js` ist die Ausnahme von der Sicherungs-Regel:** Es lädt Patricks
 Sicherung bewusst **nicht**, weil der leere Speicher der Prüfgegenstand ist. Wer den
