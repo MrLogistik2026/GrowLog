@@ -3378,7 +3378,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.125';
+const APP_VERSION = 'v1.5.126';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -12501,7 +12501,7 @@ function getAlerts(c) {
           icon: isHardFrost ? '🥶' : '❄️',
           text: isHardFrost
             ? `${dayLabel}: ${frostDay.tmin}°C — HARTER FROST. Pflanze unbedingt reinholen oder dick abdecken (Vlies + Folie). Zellschäden ab dem ersten Frost möglich.`
-            : `${dayLabel}: ${frostDay.tmin}°C — Frost-Risiko. Bei jungen Pflanzen reinholen, bei Spätblüte ist's ein Trichom-Booster aber Schimmelrisiko durch Kondenswasser steigt.`,
+            : `${dayLabel}: ${frostDay.tmin}°C — Frost-Risiko. Junge Pflanzen reinholen. In der Spätblüte ist die Kälte für sich genommen verkraftbar (manche Genetiken färben dann lila), aber das Kondenswasser auf den Blüten erhöht das Schimmelrisiko deutlich — das ist hier die eigentliche Gefahr.`,
           type: 'warn',
         });
       }
@@ -13289,13 +13289,13 @@ function vpdZone(v, phaseInfo, growType) {
     // „Späte Blüte: VPD 1.4–1.6" — zwei widersprüchliche Aussagen übereinander. Das Label
     // bewertet jetzt den Wert gegen die AKTUELLE Phase, nicht gegen irgendeinen Bereich,
     // in den er zufällig fällt.
-    if (isLateBloom) return { label: 'Zu niedrig für Spätblüte', color: '#c8a04a', bg: '#2a1e0d', hint: 'In der Spätblüte sind 1.4–1.6 kPa ideal — der milde Trockenstress fördert die Harzbildung. Luftfeuchte senken oder Temperatur leicht anheben.', pct: 50 + (v - 0.8) / 0.4 * 25 };
+    if (isLateBloom) return { label: 'Zu niedrig für Spätblüte', color: '#c8a04a', bg: '#2a1e0d', hint: 'In der Spätblüte sind 1.4–1.6 kPa ideal — trockene Luft schützt die dichten Buds vor Schimmel. Luftfeuchte senken oder Temperatur leicht anheben.', pct: 50 + (v - 0.8) / 0.4 * 25 };
     if (isBloom) return { label: 'Frühe Blüte ✓', color: '#4caf70', bg: '#0d1e0d', hint: 'Optimal für Stretch und frühe Blüte.', pct: 50 + (v - 0.8) / 0.4 * 25 };
     return { label: 'Vegi/Blüte ✓', color: '#4caf70', bg: '#0d1e0d', hint: 'Optimal.', pct: 50 + (v - 0.8) / 0.4 * 25 };
   }
   if (v < 1.6) {
     if (isLateBloom) {
-      return { label: 'Spätblüte ✓', color: '#4caf70', bg: '#0d1e0d', hint: 'Premium: Trichom-Boost durch milden Trockenstress.', pct: 75 + (v - 1.2) / 0.4 * 15 };
+      return { label: 'Spätblüte ✓', color: '#4caf70', bg: '#0d1e0d', hint: 'Genau richtig für die letzten Wochen — trocken genug, dass die dichten Buds nicht schimmeln.', pct: 75 + (v - 1.2) / 0.4 * 15 };
     }
     if (isBloom) {
       return { label: 'Mittlere Blüte ✓', color: '#4caf70', bg: '#0d1e0d', hint: 'Optimal für Bud-Bildung.', pct: 75 + (v - 1.2) / 0.4 * 15 };
@@ -27407,8 +27407,9 @@ function _renderIceFlushPanel(c, iso) {
         <span style="font-size:13px;font-weight:700;color:#a5f3fc">IceFlush-Anleitung · Premium</span>
       </div>
       <div style="font-size:11px;color:var(--text-muted);line-height:1.55;margin-bottom:10px">
-        Kältereiz (8–12°C Wurzelzone) triggert Trichom-Boost in den letzten 24–36 h.
-        Studien zeigen 10–20% mehr Trichomproduktion. Präzision entscheidet.
+        Kältereiz (8–12°C Wurzelzone) in den letzten 24–36 h. Ein Trichom-Plus wird oft
+        berichtet, ist aber <b>nicht belegt</b> — die Anleitung unten sorgt dafür, dass der
+        IceFlush deiner Pflanze zumindest nicht schadet.
       </div>
 
       <details ${allChecked ? '' : 'open'} style="margin-bottom:10px">
@@ -30574,7 +30575,11 @@ const LEXIKON = [
         '<b>🌿 Anzucht/Vegi:</b> 55–70% RLF<br>' +
         '<b>🌸 Frühe Blüte:</b> 50–60% RLF (Stretch-Phase, schon runter)<br>' +
         '<b>🌺 Mittlere Blüte:</b> 45–55% RLF (Buds werden dicht — Schimmelrisiko steigt)<br>' +
-        '<b>🍯 Späte Blüte:</b> 40–50% RLF (kontrollierter Trockenstress = mehr Trichome)<br>' +
+        // (v1.5.126) „= mehr Trichome" abgeschwächt. Der belegte Grund für trockene Luft in
+        // der Spätblüte ist der Schimmelschutz (`ANBAU.md` 13.5: Botrytis ab 60–65 % RLF,
+        // im dichten Bud liegt das Mikroklima darüber). Das Trichom-Plus durch Trockenstress
+        // ist verbreitete Praxis, aber dünn belegt — `ANBAU.md` sagt dazu nichts.
+        '<b>🍯 Späte Blüte:</b> 40–50% RLF (vor allem Schimmelschutz — dichte Buds sind innen feuchter als der Raum)<br>' +
         '<b>🚿 Spülen:</b> 40–50% RLF<br>' +
         '<b>🍂 Trocknen:</b> 55–62% RLF konstant (langsames gleichmäßiges Trocknen)<br><br>' +
         '<b>Wichtig:</b> RLF zur kühlsten Stunde messen (Nacht-Ende), nicht bei Lampen-an. Tagsüber 50% kann nachts 70% bedeuten → Schimmelfalle.',
@@ -30597,7 +30602,7 @@ const LEXIKON = [
         '<i>Buds werden dicht. Strikt unter 55% RLF um Botrytis (Bud-Rot) zu vermeiden.</i><br><br>' +
         '<b>🍯 Späte Blüte/Reife (letzte 2 Wochen):</b><br>' +
         'VPD 1.4–1.6 · Temp 18–24°C · RLF 40–50%<br>' +
-        '<i>Kontrollierter Trockenstress → massive Trichom-Überproduktion. Tag 18–22°C, Nacht 16–20°C (Tag-Nacht-Diff 5–8°C verstärkt Farben).</i><br><br>' +
+        '<i>Der sichere Grund für den trockeneren Korridor ist der Schimmelschutz — dichte Buds sind innen feuchter als der Raum. Dass milder Trockenstress zusätzlich die Harzbildung anschiebt, ist verbreitete Praxis, aber dünn belegt. Tag 18–22°C, Nacht 16–20°C (Tag-Nacht-Diff 5–8°C verstärkt Farben).</i><br><br>' +
         '<b>🚿 Spülen (8 Tage):</b><br>' +
         'VPD 1.4–1.6 · Temp 20–24°C · RLF 40–50%<br>' +
         '<i>Wie späte Blüte. Pflanze baut Restnährstoffe ab.</i><br><br>' +
@@ -30605,8 +30610,8 @@ const LEXIKON = [
         'Temp 18–20°C · RLF 55–62%<br>' +
         '<i>VPD-Konzept gilt nicht mehr — abgeschnittene Pflanze. Langsam und gleichmäßig trocknen für Aroma-Erhalt.</i><br><br>' +
         '<b>VPD-Rechner</b> in der App nutzen (Umgebungs-Sektion).<br><br>' +
-        '<b>Cup-Level-Trick:</b> In der letzten Blüte-Woche gezielt auf 1.4–1.6 kPa fahren. Kontrollierter Trockenstress → massive Trichom-Überproduktion zum Selbstschutz.',
-      pitfall: 'VPD wird oft ignoriert weil es abstrakt wirkt. Dabei ist es der Hebel für 30%+ mehr Ertrag bei gleichem Licht und Dünger. Temperatur- oder Feuchte-Werte allein sagen wenig — die Kombination ist entscheidend.<br><br><b>Fallen:</b><br>• Sämling bei 1.2 kPa → trocknet aus<br>• Späte Blüte bei 0.8 kPa + 65% RLF → Botrytis (Bud-Rot, alles weg)<br>• RLF tagsüber gemessen aber nachts steigt sie um 10–20% → Schimmel in der Nacht<br><br>RLF-Differenz Tag/Nacht beachten: nachts kühler = höhere relative Feuchte bei gleichem Wassergehalt der Luft. Daher Klima-Werte zur kühlsten Stunde messen.' },
+        '<b>Für die letzte Blüte-Woche:</b> gezielt auf 1.4–1.6 kPa fahren. Das hält die Buds trocken, wenn sie am dichtesten und am anfälligsten sind. Ein zusätzlicher Trichom-Schub durch den milden Trockenstress wird oft berichtet — belastbar belegt ist er nicht.',
+      pitfall: 'VPD wird oft ignoriert, weil es abstrakt wirkt. Dabei entscheidet es darüber, ob die Pflanze überhaupt transpiriert — und ohne Transpiration kommen die unbeweglichen Nährstoffe (allen voran Calcium) nicht oben an. Temperatur- oder Feuchte-Werte allein sagen wenig, die Kombination ist entscheidend.<br><br><b>Fallen:</b><br>• Sämling bei 1.2 kPa → trocknet aus<br>• Späte Blüte bei 0.8 kPa + 65% RLF → Botrytis (Bud-Rot, alles weg)<br>• RLF tagsüber gemessen aber nachts steigt sie um 10–20% → Schimmel in der Nacht<br><br>RLF-Differenz Tag/Nacht beachten: nachts kühler = höhere relative Feuchte bei gleichem Wassergehalt der Luft. Daher Klima-Werte zur kühlsten Stunde messen.' },
     { t: 'PPFD & DLI (Licht-Matrix)',
       brief: 'Zwei Messungen die zusammen sagen wie viel Photosynthese tatsächlich passiert. PPFD ist der Tacho, DLI der Tages-Tank.',
       mechanism: '<b>PPFD (Photosynthetische Photonenflussdichte):</b> Momentan-Dichte nutzbarer Photonen pro Sekunde pro m². Messung: µmol/m²/s. Zu hoch ohne passenden CO₂/Temperatur → Chlorophyll bleicht aus (Light Bleach).<br><br><b>DLI (Tageslichtintegral):</b> Kumulierte Photonen pro Tag, mol/m²/d. Jede Pflanze hat ein biologisches Tages-Limit — ist es erreicht, erzeugt sie keine weitere Biomasse mehr, egal wie hell es noch ist.',
@@ -31575,7 +31580,7 @@ const LEXIKON = [
     { t: 'Hard Dryback (Ernte-Vorbereitung)',
       brief: 'Topf 2–4 Tage vor IceFlush oder Ernte gezielt auf ~35% Restgewicht trocknen lassen. Bereitet den finalen Schritt vor und triggert leichten Stress.',
       mechanism: 'In der Endphase der Blüte wird das normale Gieß-Intervall <b>verlängert</b>, statt regulär bei ~50% nachzugießen. Der Topf darf bis ~35% Restgewicht trocknen. Das hat zwei Effekte:<br><br>' +
-        '<b>1. Pflanzliche Stress-Antwort:</b> Leichter Trockenstress signalisiert der Pflanze „Ressourcen werden knapp". Sie reagiert mit erhöhter Trichom-Produktion und beschleunigt die Reifung der bereits gebildeten Buds. Der Effekt ist messbar, aber kleiner als der von IceFlush oder Dunkelphase.<br><br>' +
+        '<b>1. Pflanzliche Stress-Antwort:</b> Leichter Trockenstress signalisiert der Pflanze „Ressourcen werden knapp". Dass sie darauf mit mehr Harz antwortet, ist eine verbreitete Annahme — <b>belastbar belegt ist sie nicht</b>, und die App verspricht dir dafür nichts. Der handfeste Nutzen steht unter Punkt 2.<br><br>' +
         '<b>2. Vorbereitung für IceFlush:</b> Ein <b>trockenes Substrat absorbiert Schmelzwasser langsam und gleichmäßig</b>. Volles Substrat würde das Eiswasser durchspülen — die Kontaktzeit für den Kältereiz in der Wurzelzone wäre zu kurz. Hard Dryback ist also nicht nur Stress-Trick, sondern technische Voraussetzung für Iceflush.<br><br>' +
         'Auch ohne Iceflush: Eine letzte Trocken-Phase vor der Ernte verhindert dass die Pflanze mit nassem Substrat geerntet wird — was den Trocknungsstart erschwert.',
       practice: '<b>Wann starten:</b><br>' +
@@ -33971,7 +33976,7 @@ function buildChartsSection(cycleId) {
     ${_chartBlock('📊 EC-Verlauf', ecData.length, `Grüner Bereich: ${ecFmt(1.2)}–${ecFmt(2.2)} ${ecUnitLabel()} (typisch Vegi→Blüte)`, ecChart)}
     ${drainEcData.length >= minPoints ? _chartBlock('🌊 Drain-EC-Verlauf', drainEcData.length, `Drain-EC > Input × 1.5 = Salz-Akkumulation, Spülung nötig. Grüner Bereich: ${ecFmt(0.8)}–${ecFmt(2.0)} ${ecUnitLabel()} typisch.`, drainEcChart) : ''}
     ${restPctData.length >= minPoints ? _chartBlock('⚖️ Restgewicht-Verlauf', restPctData.length, 'Sweet-Spot 30–50% (gewollter Dryback). Über 80% = noch nass, unter 25% = zu trocken (Stress).', restPctChart) : ''}
-    ${_chartBlock('📊 VPD-Verlauf', vpdData.length, 'Grüner Bereich: 0.8–1.2 kPa (Blüte optimal) · Premium-Spätblüte: gezielt 1.4–1.6 für Trichom-Boost · aus Temp + Luftfeuchte berechnet', vpdChart)}
+    ${_chartBlock('📊 VPD-Verlauf', vpdData.length, 'Grüner Bereich: 0.8–1.2 kPa (Blüte optimal) · Spätblüte: gezielt 1.4–1.6 gegen Schimmel in dichten Buds · aus Temp + Luftfeuchte berechnet', vpdChart)}
     ${_chartBlock('📊 Wassermenge', waterData.length, 'Bar = Liter pro Gießtag', waterChart)}
   `;
 }

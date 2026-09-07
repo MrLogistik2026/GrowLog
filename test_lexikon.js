@@ -268,6 +268,46 @@ function pruef(name, bedingung, info) {
   }
 
   console.log('');
+  console.log('G - (v1.5.126) Die Regel gilt fuer die GANZE App, nicht nur fuers Lexikon');
+  {
+    // Beim ersten Durchgang hat dieser Test nur `LEXIKON` durchsucht - und dabei drei
+    // Stellen ausserhalb uebersehen, darunter eine IceFlush-Karte im Tageseintrag mit
+    // "Studien zeigen 10-20% mehr Trichomproduktion". Geprueft wird deshalb jetzt der
+    // gesamte ausgelieferte Quelltext.
+    const quelle = fs.readFileSync(path.join(__dirname, 'app.js'), 'utf8');
+    // Kommentarzeilen zaehlen nicht - dort steht absichtlich, was frueher dastand.
+    const ohneKommentare = quelle.split('\n')
+      .filter(z => !/^\s*(\/\/|\*|\/\*)/.test(z))
+      .join('\n');
+
+    const muster = [
+      [/Studien zeigen\s*\d/i, '"Studien zeigen <Zahl>"'],
+      [/Trichom-?(Boost|Überproduktion|Booster)/i, '"Trichom-Boost/-Überproduktion"'],
+      [/=\s*mehr Trichome/i, '"= mehr Trichome"'],
+      [/\d\s?%\s?mehr (THC|Trichom|Cannabinoide)/i, '"<Zahl> % mehr THC/Trichome"'],
+    ];
+    // Eine Zeile, die die Zahl ZITIERT und im selben Zug entkraeftet, ist kein Verstoss —
+    // im Gegenteil, sie ist das gewuenschte Ergebnis. (Diese Unterscheidung hat mir der
+    // Test inzwischen dreimal beigebracht.)
+    const entkraeftetZeile = /(nicht belegt|kein Nachweis|nicht nachgewiesen|Was NICHT belegt ist|stammen aus Erfahrungsberichten|halten einer Prüfung nicht stand|dünn belegt|nicht bestätigt)/i;
+    muster.forEach(([re, name]) => {
+      const zeilen = ohneKommentare.split('\n')
+        .map((z, i) => ({ nr: i + 1, z }))
+        .filter(x => re.test(x.z) && !entkraeftetZeile.test(x.z))
+        .map(x => 'Zeile ~' + x.nr + ': ' + x.z.trim().slice(0, 90));
+      pruef(`Nirgends als Tatsache: ${name}`, zeilen.length === 0, JSON.stringify(zeilen));
+    });
+
+    // Die Empfehlung selbst darf sich NICHT veraendert haben - nur ihre Begruendung.
+    pruef('Der Spaetblueten-Korridor steht weiterhin bei 1.4–1.6 kPa',
+      /1\.4[–-]1\.6/.test(ohneKommentare));
+    pruef('Und die Luftfeuchte weiterhin bei 40–50 %',
+      /40[–-]50%? RLF/.test(ohneKommentare));
+    pruef('Der neue Grund ist der Schimmelschutz',
+      /Schimmel/.test(text(/^VPD/)), text(/^VPD/).slice(-400));
+  }
+
+  console.log('');
   console.log(`Ergebnis: ${ok} OK, ${fail} Fehler`);
   process.exit(fail ? 1 : 0);
 })();

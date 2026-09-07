@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.125** · index.html 2,12 MB · 630 Funktionen
+Stand: **v1.5.126** · index.html 2,12 MB · 630 Funktionen
 Zuletzt fortgeschrieben am 05.09.2026. Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
@@ -214,14 +214,27 @@ Trocknen 18–20 °C / 55–62 % und Curing 58–62 % decken sich mit `ANBAU.md`
 seit v1.5.112 auf 15–20 %; ppm wird nirgends ohne Skalen-Angabe genannt; Entlaubung und die
 Griffelbräunung als Nicht-Kriterium waren bereits richtig.
 
-### Offen geblieben, bewusst
+### Nachtrag: Trockenstress abgeschwächt (v1.5.126)
 
-Zwei Einträge behaupten, **kontrollierter Trockenstress erhöhe die Trichomdichte**
-(„Luftfeuchtigkeit", „VPD"). `ANBAU.md` sagt dazu nichts — und wo das Dokument keine
-Antwort gibt, wird nach seiner eigenen Regel **nachgefragt statt geraten**. Es gibt
-Literatur zu mildem Wasserdefizit und Cannabinoidgehalt, aber nichts, worauf ich mich hier
-berufen könnte. Zur Entscheidung: entweder in `ANBAU.md` aufnehmen (dann mit Quelle) oder
-im Lexikon auf „verbreitete Praxis, Datenlage dünn" abschwächen.
+Der offene Punkt — „kontrollierter Trockenstress = mehr Trichome" — ist von Patrick am
+07.09.2026 entschieden worden: leicht abschwächen. Es waren am Ende **neun** Stellen, nicht
+die zwei aus dem ersten Suchlauf; darunter die **IceFlush-Karte im Tageseintrag** mit
+„Studien zeigen 10–20 % mehr Trichomproduktion", die Outdoor-Frostwarnung und die Legende
+des VPD-Diagramms.
+
+**Die Empfehlungen selbst sind unverändert** (Spätblüte 40–50 % RLF, VPD 1,4–1,6 kPa) — nur
+ihre Begründung. Der belegte Grund ist der **Schimmelschutz** nach `ANBAU.md` 13.5, nicht
+das Harz.
+
+**Und eine Korrektur an mir selbst:** Im Abschnitt darüber stand, die App sei beim IceFlush
+„auf den Karten im Tageseintrag" ehrlich gewesen. Das stimmte nicht — genau dort stand die
+stärkste Zahl. Mein Test hatte sie nicht gefunden, weil er nur `LEXIKON` durchsuchte.
+`test_lexikon.js` prüft jetzt den **ganzen ausgelieferten Quelltext**.
+
+**Regel daraus:** Eine Prüfung, die eine Datenstruktur durchsucht, prüft die Datenstruktur —
+nicht die App. Wo ein Text auch im Code stehen kann, muss der Quelltext selbst der
+Prüfgegenstand sein. Das gilt genauso für die nächste Aussage, die jemand gegen `ANBAU.md`
+hält.
 
 ---
 
@@ -1164,9 +1177,9 @@ cat head.html app.js tail.html | cmp - index.html && echo "BYTE-IDENTISCH OK"
 **Byte-Identität mit `cmp` ist Pflicht, bevor irgendetwas geändert wird.** Danach wird
 `app.js` geändert, mit `build.sh` neu gebaut und erneut verglichen.
 
-41 Testdateien, alle grün in beiden Zeitzonen (Stand v1.5.125) — neu dazu
+41 Testdateien, alle grün in beiden Zeitzonen (Stand v1.5.126) — neu dazu
 `test_tageseintrag` (33), `test_navwege` (28), `test_leerzustand` (27),
-`test_outdoor` (29), `test_diagnose` (38) und `test_lexikon` (42):
+`test_outdoor` (29), `test_diagnose` (38) und `test_lexikon` (49):
 
 **`test_leerzustand.js` ist die Ausnahme von der Sicherungs-Regel:** Es lädt Patricks
 Sicherung bewusst **nicht**, weil der leere Speicher der Prüfgegenstand ist. Wer den

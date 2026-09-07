@@ -2,6 +2,44 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-07 — v1.5.126
+
+- **„Kontrollierter Trockenstress = mehr Trichome" abgeschwächt — auf Patricks Entscheidung
+  hin.** Der Punkt stand seit v1.5.125 als offene Frage in der Übergabe: `ANBAU.md` sagt
+  dazu nichts, und wo das Dokument keine Antwort gibt, wird nach seiner eigenen Regel
+  nachgefragt statt geraten. Es waren am Ende **neun** Stellen, nicht die zwei aus dem
+  ersten Suchlauf:
+
+  | Ort | stand da |
+  |---|---|
+  | Lexikon „Luftfeuchtigkeit" | „40–50% RLF (kontrollierter Trockenstress = mehr Trichome)" |
+  | Lexikon „VPD", zweimal | „Kontrollierter Trockenstress → massive Trichom-Überproduktion" |
+  | Lexikon „Hard Dryback" | „reagiert mit erhöhter Trichom-Produktion … Der Effekt ist messbar" |
+  | VPD-Ampel im Eintrag, zweimal | „der milde Trockenstress fördert die Harzbildung", „Premium: Trichom-Boost" |
+  | **IceFlush-Karte im Eintrag** | **„Studien zeigen 10–20% mehr Trichomproduktion"** |
+  | Outdoor-Frostwarnung | „bei Spätblüte ist's ein Trichom-Booster" |
+  | VPD-Diagramm-Legende | „gezielt 1.4–1.6 für Trichom-Boost" |
+
+  **Die Empfehlungen selbst sind unverändert geblieben** — Spätblüte weiterhin 40–50 % RLF
+  und VPD 1,4–1,6 kPa. Geändert hat sich nur ihre *Begründung*: Der belegte Grund für
+  trockene Luft in der Spätblüte ist der **Schimmelschutz** (`ANBAU.md` 13.5 — Botrytis ab
+  60–65 % RLF, und im dichten Bud liegt das Mikroklima über dem Raumwert). Das Trichom-Plus
+  wird jetzt als „oft berichtet, nicht belastbar belegt" geführt, statt als Tatsache.
+- **Eine Korrektur an meiner eigenen Aussage von gestern.** In der Übergabe zu v1.5.125
+  stand, `ANBAU.md` 14 lobe zu Recht, dass die App beim IceFlush offen sei — „auf den Karten
+  im Tageseintrag". Das war zu großzügig: Genau dort stand „Studien zeigen 10–20 % mehr
+  Trichomproduktion". Mein Lexikon-Test hatte es nicht gefunden, weil er nur `LEXIKON`
+  durchsuchte.
+  `test_lexikon.js` prüft deshalb jetzt den **gesamten ausgelieferten Quelltext** auf die
+  vier Muster („Studien zeigen <Zahl>", „Trichom-Boost", „= mehr Trichome", „<Zahl> % mehr
+  THC") — und unterscheidet dabei die Zahl als **Behauptung** von derselben Zahl als
+  **zitierter und entkräfteter** Zahl. Diese Unterscheidung hat mir der Test inzwischen
+  dreimal beigebracht.
+- Nebenbei entfernt: „VPD ist der Hebel für **30 %+ mehr Ertrag**" — auch eine Zahl ohne
+  Beleg. Die Begründung steht jetzt auf dem, was `ANBAU.md` 1 und 2 tatsächlich hergeben:
+  Ohne Transpiration kommen die unbeweglichen Nährstoffe, allen voran Calcium, nicht oben an.
+- `test_lexikon.js` jetzt 49 Prüfungen, beide Zeitzonen. Alle 41 Testdateien grün.
+
 ## 2026-09-07 — v1.5.125
 
 - **Vier Wirkungszusagen im Lexikon, die `ANBAU.md` 14 ausdrücklich als unbelegt führt.**
