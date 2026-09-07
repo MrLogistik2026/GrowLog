@@ -2,6 +2,50 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-07 — v1.5.124
+
+- **Das klassische Eisenbild fiel durch das Raster — und der Vorschlag war der falsche.**
+  `ANBAU.md` 4 beschreibt es genau: „Zu hoch (> 6,8): Eisen, Mangan, Zink und Bor gehen in
+  schwerlösliche Formen über. Klassisches Bild: Eisenchlorose — hellgelbe **junge** Blätter
+  mit zunächst grün bleibenden Blattadern." `ph_lockout` kannte aber nur `allLeaves`. Wer im
+  Symptom-Checker „Neue Blätter (oben)" und „Gelb" wählte, bekam:
+  `ca_deficiency 72% · nutrient_burn 72% · light_burn 72% · photo_bleaching 72%` — also den
+  **Calcium-Mangel zuoberst**, dessen Handlung „CalMag geben" nach `ANBAU.md` 6.2 hier die
+  falsche Richtung ist: Calcium ist selbst ein Magnesium-Antagonist, und die Ursache liegt
+  fast nie in der Menge, sondern in der Verfügbarkeit. `ph_lockout` selbst stand nicht
+  einmal unter den ersten fünf — der Kontext-Bonus „pH zu hoch" greift nur bei Einträgen,
+  die über die Symptome überhaupt hereinkommen.
+  Neu: ein eigener Eintrag **`iron_deficiency`** („Eisen-Mangel (Fe) — meist eine pH-Frage")
+  mit dem Unterscheidungsmerkmal zum Magnesium-Mangel im Text (Fe oben, Mg unten,
+  `ANBAU.md` 6.1), dem Kalkpuffer-Vorbehalt für Erde (`ANBAU.md` 4.1) und der ausdrücklichen
+  Warnung, nicht mit CalMag gegenzusteuern. **Er hat bewusst keine Form-Symptome** —
+  Chlorose verformt das Blatt nicht, sie färbt es. Dadurch wird er über den *Kontext*
+  sichtbar, und genau das ist richtig: ohne pH-Auffälligkeit bleibt Calcium der bessere
+  erste Verdacht, mit hohem pH führt das Eisen. `ph_lockout` bekommt zusätzlich `newLeaves`.
+- **`light_burn` lief in zwei von drei Diagnosen mit.** Gemessen über alle möglichen
+  Ein-Symptom-Kombinationen erschien es in **66 %** davon unter den ersten fünf — mit
+  Abstand der häufigste Eintrag, und mit zehn gelisteten Symptomen das breiteste Profil
+  (nächstes: sieben). Zwei davon widersprechen `ANBAU.md` 8.2: `wilting` (hängende Blätter
+  sind nach `ANBAU.md` 1 das Bild von Wassermangel, Überwässerung oder osmotischem Entzug)
+  und `paleGreen` (Photobleaching bleicht nach **weiß** aus, thermischer Stress vergilbt —
+  genau die Farbe trennt die beiden Mechanismen mit ihren verschiedenen Gegenmaßnahmen).
+  Beide entfernt; das echte Bild (verbrannte Spitzen, Taco, knisternd, gelb/braun) bleibt.
+- **Bei Punktgleichstand entschied die Reihenfolge im Quelltext.** `Math.min(1, score +
+  ctxBoost)` deckelt bei 1 — wer über die Symptome schon bei 100 % liegt, kann durch den
+  Kontext nicht mehr steigen, der Hinweis „zu warm" verpuffte. Folge: „verbrannte Spitzen
+  **+ zu warm**" nannte die Überdüngung vor dem Lichtbrand, „Taco oben **+ zu warm**" den
+  Calcium-Mangel. **Die Punktzahlen bleiben unverändert** — nur die Reihenfolge
+  gleichwertiger Treffer entscheidet sich jetzt der Reihe nach nach: Kontext-Bonus
+  (Messwerte schlagen Zufall), **Schweregrad** (nach `ANBAU.md` 15 wird bei Unsicherheit in
+  Richtung Sicherheit gerundet — die gefährlichere Erklärung braucht die schnellere
+  Reaktion), dann engeres Profil.
+  **Der Schweregrad kam erst durch den Test dazu:** Ohne ihn stand „Trauermücken" (medium)
+  vor „Überwässerung" (high) bei „alle Blätter hängend, Erde dauernass" — und Überwässerung
+  ist nach `ANBAU.md` 13.1 der häufigste Anfängertod.
+- Abgesichert durch `test_diagnose.js` (38 Prüfungen, beide Zeitzonen), darunter eine
+  Stimmigkeitsprüfung der ganzen Datenbank: keine unbekannten Symptom-Schlüssel, keine
+  doppelten IDs, jeder Eintrag mit Name, Beschreibung und Handlung.
+
 ## 2026-09-07 — v1.5.123
 
 - **Draußen wurde die IceFlush-Phase mitgezählt, die es draußen nicht gibt.** Das

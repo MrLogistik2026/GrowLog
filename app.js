@@ -1131,6 +1131,40 @@ const PROBLEMS = [
     lexiconKey: 'calmag_deficiency',
   },
   {
+    // (v1.5.124) Neu. Bis dahin lief das Eisenbild über `ph_lockout` mit, und weil dieser
+    // Eintrag nur `allLeaves` kannte, kam bei „neue Blätter oben, gelb" der Calcium-Mangel
+    // zuoberst — dessen Handlung „CalMag geben" nach `ANBAU.md` 6.2 hier die falsche
+    // Richtung ist: Calcium ist selbst ein Mg-Antagonist, und die Ursache liegt fast nie
+    // in der Menge, sondern in der Verfügbarkeit (`ANBAU.md` 4).
+    //
+    // Kein `shape`: Eisenchlorose verformt das Blatt nicht, sie färbt es. Der Eintrag kann
+    // damit nur 2 von 3 Bereichen treffen — sichtbar wird er über den Kontext, und genau
+    // das ist richtig: Ohne pH-Auffälligkeit ist Calcium der bessere erste Verdacht,
+    // mit hohem pH das Eisen.
+    id: 'iron_deficiency',
+    name: 'Eisen-Mangel (Fe) — meist eine pH-Frage',
+    category: 'nutrient',
+    severity: 'medium',
+    symptoms: {
+      location: ['newLeaves'],
+      // Nur `yellow`: Eisenchlorose ist nach `ANBAU.md` 4 „hellgelb". `paleGreen`
+      // (Hellgrün) gehört zum Photobleaching-Bild und würde sich mit ihm ins Gehege kommen.
+      color: ['yellow'],
+    },
+    description: 'Die <b>jüngsten</b> Blätter werden hellgelb, während die Blattadern zunächst <b>grün bleiben</b> — das Blatt sieht aus wie ein grünes Netz auf gelbem Grund. '
+      + 'Steht immer oben: Eisen ist unbeweglich, die Pflanze kann es nicht aus alten Blättern nachschieben. '
+      + '<b>Unterscheidung zum Magnesium-Mangel:</b> Der sieht ganz ähnlich aus, steht aber <b>unten</b> an den alten Blättern — Magnesium ist beweglich und wird nach oben umgelagert.',
+    context: { phase: ['vegi', 'bloom'], phHigh: true, runoffDriftHigh: true },
+    action: 'Zuerst den pH prüfen, nicht Eisen nachlegen — Eisen fehlt selten wirklich, es ist meist nur nicht verfügbar. '
+      + 'Ab pH 6,8 gehen Eisen, Mangan und Zink in schwerlösliche Formen über. Ziel am Zulauf: Erde 6,2–6,4, Coco 5,8–6,2, Hydro 5,5–6,0. '
+      + '<b>In Erde vorher gegenprüfen:</b> Ein Drain-pH über dem Zulauf ist dort meist der Dolomitkalk im Substrat und normal — dann den Zulauf NICHT weiter absenken. '
+      + 'Ein Befund ist er erst, wenn er über Wochen weiter steigt und die Vergilbung oben zunimmt. '
+      + '<b>Huminstoffe und Chelate</b> halten Eisen auch bei höherem pH in Lösung: Wer sie im Plan hat, ist deutlich weniger empfindlich. '
+      + 'Erst wenn der pH stimmt und das Bild bleibt, ein chelatiertes Eisen ergänzen. '
+      + 'Nicht mit CalMag gegensteuern — zusätzliches Calcium verdrängt Magnesium und löst das eigentliche Problem nicht.',
+    lexiconKey: 'ph_lockout',
+  },
+  {
     id: 'nutrient_burn',
     name: 'Nährstoff-Burn (Überdüngung)',
     category: 'nutrient',
@@ -1156,7 +1190,14 @@ const PROBLEMS = [
     category: 'ph',
     severity: 'high',
     symptoms: {
-      location: ['allLeaves'],
+      // (v1.5.124) `newLeaves` ergänzt. Bisher stand hier nur `allLeaves` — damit fiel
+      // ausgerechnet das klassische Lockout-Bild aus `ANBAU.md` 4 durch das Raster:
+      // „Zu hoch (> 6,8): Eisen, Mangan, Zink und Bor gehen in schwerlösliche Formen über.
+      // Klassisches Bild: Eisenchlorose — hellgelbe JUNGE Blätter." Wer „neue Blätter oben,
+      // gelb" auswählte, bekam diesen Eintrag gar nicht zu sehen, obwohl er mit „pH zu hoch"
+      // den passenden Kontext mitbringt — und der Kontext-Bonus greift nur bei Einträgen,
+      // die über die Symptome überhaupt erst hereinkommen.
+      location: ['allLeaves', 'newLeaves'],
       color: ['yellow', 'spots'],
       shape: ['spotted', 'curlUp', 'curlDown'],
     },
@@ -1233,11 +1274,22 @@ const PROBLEMS = [
       // - manchmal "alle Blätter" wenn der User an der ganzen Pflanze Schäden sieht
       //   und nicht zwischen oben/unten unterscheidet (UI-Realismus)
       location: ['newLeaves', 'allLeaves', 'buds'],
-      color: ['yellow', 'brown', 'paleGreen'],
-      // Lichtbrand-Bild: Ränder rollen sich nach oben (Taco), Spitzen verbrennen,
-      // Blätter werden trocken/knisternd, manchmal hängend (Spaltöffnungen schließen).
-      // Auch fleckig wenn Foto-Bleaching mitspielt — siehe photo_bleaching.
-      shape: ['burnTips', 'curlUp', 'crispy', 'wilting'],
+      // (v1.5.124) `paleGreen` entfernt. Nach `ANBAU.md` 8.2 sind thermischer Lichtstress
+      // und Photobleaching zwei verschiedene Mechanismen mit verschiedenen Gegenmaßnahmen,
+      // und genau die Farbe trennt sie: Photobleaching bleicht nach WEISS aus, thermischer
+      // Stress vergilbt oder verbrennt. Solange beide `paleGreen` führten, stand der breitere
+      // Eintrag bei Punktgleichstand vor dem spezifischeren — und der Nutzer regelte den
+      // Abstand, wo er die Leistung hätte senken müssen.
+      color: ['yellow', 'brown'],
+      // (v1.5.124) `wilting` entfernt. Lichtbrand-Bild nach `ANBAU.md` 8.2: gelbe bis braune
+      // Ränder, Aufwölbung, Taco — mit nachweisbarem Wärmegradienten. Hängende Blätter sind
+      // nach `ANBAU.md` 1 das Bild von Wassermangel, Überwässerung oder osmotischem Entzug;
+      // sie hier mitzuführen holte den Lichtbrand in jede Wasser-Diagnose.
+      //
+      // Gemessen vor der Änderung: `light_burn` erschien in 66 % ALLER 225 möglichen
+      // Symptomkombinationen unter den ersten fünf — mit Abstand am häufigsten. Ein Eintrag,
+      // der bei zwei von drei Eingaben mitläuft, trägt nichts mehr bei; er verdrängt nur.
+      shape: ['burnTips', 'curlUp', 'crispy'],
     },
     description: 'Obere Blätter und Top-Buds direkt unter der Lampe verbrennen — gelb-braune Spitzen, Ränder rollen nach oben (Taco), Blätter werden trocken-knistrig. Untere Pflanzenteile bleiben gesund. Lampe zu nah oder zu stark.',
     context: { phase: ['vegi', 'bloom', 'anzucht'], tempHot: true },
@@ -1520,11 +1572,37 @@ function diagnoseProblems(symptoms, ctx = {}) {
     if (pCtx.ignoreInFlush && ctx.phase === 'flush') return null;
 
     score = Math.min(1, score + ctxBoost);
-    return { problem: p, score, matchedReasons, contextReasons };
+    // Breite des Profils = wie viele Symptome der Eintrag überhaupt listet. Dient nur der
+    // Reihenfolge bei Gleichstand (siehe unten), nicht der Punktzahl.
+    const breite = pLoc.length + pCol.length + pShp.length;
+    const rang = { critical: 3, high: 2, medium: 1, low: 0 }[p.severity] ?? 1;
+    return { problem: p, score, matchedReasons, contextReasons, ctxBoost, breite, rang };
   }).filter(Boolean);
 
-  // Sortiert absteigend nach Score, top 5
-  return results.sort((a, b) => b.score - a.score).slice(0, 5);
+  // (v1.5.124) Bei Punktgleichstand entschied bisher die Reihenfolge im Quelltext — also
+  // der Zufall, in welcher Kategorie ein Eintrag steht. Zwei Fälle liefen damit falsch
+  // herum: „obere Blätter braun, Taco, ZU WARM" nannte den Calcium-Mangel vor dem
+  // Lichtbrand, und „verbrannte Spitzen, ZU WARM" die Überdüngung vor dem Lichtbrand.
+  // Ursache ist die Deckelung `Math.min(1, ...)`: Wer über die Symptome schon bei 100 %
+  // liegt, kann durch den Kontext nicht mehr steigen — der Hinweis „zu warm" verpufft.
+  //
+  // Statt an der Punktzahl zu drehen (das verschöbe jede Diagnose) entscheidet bei
+  // Gleichstand jetzt der Reihe nach:
+  //   1. der höhere Kontext-Bonus — die Messwerte des Nutzers schlagen den Zufall,
+  //   2. der Schweregrad — nach `ANBAU.md` 15 wird bei Unsicherheit in Richtung Sicherheit
+  //      gerundet. Sind zwei Erklärungen gleich wahrscheinlich, gehört die gefährlichere
+  //      nach oben: Sie braucht die schnellere Reaktion, und der Nutzer liest von oben.
+  //      Ohne dieses Kriterium stand „Trauermücken" (medium) vor „Überwässerung" (high),
+  //      obwohl beide zu „alle Blätter hängend, Erde dauernass" passen — und Überwässerung
+  //      nach `ANBAU.md` 13.1 der häufigste Anfängertod ist.
+  //   3. das engere Profil — ein Eintrag, der auf drei Symptome passt, ist aussagekräftiger
+  //      als einer, der auf zehn passt.
+  // Die Punktzahlen selbst bleiben unverändert, es ändert sich nur die Reihenfolge
+  // gleichwertiger Treffer.
+  return results
+    .sort((a, b) => (b.score - a.score) || (b.ctxBoost - a.ctxBoost)
+      || (b.rang - a.rang) || (a.breite - b.breite))
+    .slice(0, 5);
 }
 
 /**
@@ -3300,7 +3378,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.123';
+const APP_VERSION = 'v1.5.124';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,

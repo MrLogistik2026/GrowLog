@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.123** · index.html 2,12 MB · 630 Funktionen
+Stand: **v1.5.124** · index.html 2,12 MB · 630 Funktionen
 Zuletzt fortgeschrieben am 05.09.2026. Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
@@ -161,6 +161,82 @@ Abgesichert durch `test_tageseintrag.js` (33 Prüfungen, beide Zeitzonen).
 **Noch offen am Tageseintrag:** Die 53 Knöpfe des Gießtags sind unangetastet, und der
 Einsteiger-Modus wirkt dort weiterhin kaum (26 gegen 29 Felder, Knöpfe gleichauf). Erst
 sehen, ob die Sprungmarken im Alltag reichen, bevor Blöcke verschoben werden.
+
+---
+
+## 0g · Die Diagnose-Datenbank gegen ANBAU.md (v1.5.124)
+
+Der letzte offene Punkt aus dem Fachwissen-Abgleich: Bisher waren nur die
+Nährstoff-Einträge gegen `ANBAU.md` 6.1 gehalten worden.
+
+### Das Eisenbild fiel durch das Raster — und der Vorschlag war der falsche
+
+`ANBAU.md` 4 beschreibt es genau: hellgelbe **junge** Blätter mit grün bleibenden Adern bei
+zu hohem pH. Wer im Symptom-Checker „Neue Blätter (oben)" + „Gelb" wählte, bekam:
+
+| Platz | vorher | jetzt (mit „pH zu hoch") |
+|---|---|---|
+| 1 | `ca_deficiency` 72 % | **`iron_deficiency` 77 %** |
+| 2 | `nutrient_burn` 72 % | `ph_lockout` 80 % (mit Drain-Drift) |
+| … | `ph_lockout` gar nicht in den Top 5 | |
+
+Der Calcium-Vorschlag lautet „CalMag geben" — nach `ANBAU.md` 6.2 hier die falsche
+Richtung: Calcium ist selbst ein Magnesium-Antagonist, und die Ursache liegt fast nie in der
+Menge, sondern in der Verfügbarkeit.
+
+**Warum `ph_lockout` unsichtbar war:** Es kannte nur `allLeaves`. Der Kontext-Bonus „pH zu
+hoch" greift aber **nur bei Einträgen, die über die Symptome überhaupt hereinkommen** —
+`areas === 0` filtert vorher raus. **Regel: Ein Kontext-Signal kann eine Diagnose nicht
+retten, deren Symptomprofil sie ausschließt.** Wer eine Kontext-Bedingung ergänzt, muss
+prüfen, ob das Profil sie überhaupt erreichbar macht.
+
+Der neue Eintrag hat **bewusst keine Form-Symptome** — Chlorose verformt das Blatt nicht,
+sie färbt es. Dadurch wird er über den Kontext sichtbar, und das ist genau richtig: ohne
+pH-Auffälligkeit bleibt Calcium der bessere erste Verdacht.
+
+### Ein Eintrag, der überall mitlief
+
+`light_burn` erschien in **66 %** aller möglichen Symptomkombinationen unter den ersten
+fünf. Es führte `wilting` (nach `ANBAU.md` 1 das Bild von Wasser/Osmose) und `paleGreen`
+(nach `ANBAU.md` 8.2 das Kennzeichen von Photobleaching — genau die Farbe trennt die beiden
+Lichtschäden mit ihren **verschiedenen** Gegenmaßnahmen). Beide entfernt.
+
+`allLeaves` bleibt im Profil, obwohl es der Hauptgrund für die hohe Trefferquote ist: Der
+ursprüngliche Kommentar begründet es mit „UI-Realismus" — wer nicht zwischen oben und unten
+unterscheidet, soll den Lichtbrand trotzdem finden. Das ist ein bewusster Kompromiss und
+bleibt Patricks Entscheidung.
+
+### Bei Gleichstand entschied der Zufall
+
+`Math.min(1, score + ctxBoost)` deckelt bei 1: Wer über die Symptome schon bei 100 % liegt,
+kann durch den Kontext nicht mehr steigen — der Hinweis „zu warm" verpuffte, und die
+Reihenfolge im Quelltext gewann. Die Punktzahlen sind unverändert geblieben; bei Gleichstand
+entscheidet jetzt **Kontext-Bonus → Schweregrad → engeres Profil**.
+
+**Der Schweregrad kam erst durch den Test dazu**, und das ist der lehrreiche Teil: Meine
+erste Fassung sortierte nur nach „engeres Profil" — und stellte damit „Trauermücken"
+(medium) vor „Überwässerung" (high). Der Test hat es gefangen. **Regel: Wo zwei
+Erklärungen gleich wahrscheinlich sind, gehört die gefährlichere nach oben** (`ANBAU.md` 15,
+„bei Unsicherheit in Richtung Sicherheit runden") — der Nutzer liest von oben, und die
+gefährlichere braucht die schnellere Reaktion.
+
+### Geprüft und in Ordnung
+
+Schädlinge und Pilze wurden mitgeprüft und stimmen: Spinnmilben, Wurzelfäule und Bud Rot
+treffen ihr Bild mit 100 %, Bud Rot steht bei hoher Luftfeuchte an erster Stelle
+(`ANBAU.md` 13.5). Die Datenbank ist außerdem in sich stimmig — keine unbekannten
+Symptom-Schlüssel, keine doppelten IDs, jeder Eintrag mit Name, Beschreibung und Handlung.
+
+### Bewusst nicht gemacht — zur Entscheidung
+
+**Der Ort müsste stärker wiegen als Farbe und Form.** `ANBAU.md` 6.1 sagt es deutlich: „Die
+diagnostische Erstfrage lautet immer: oben oder unten? Sie halbiert den Suchraum, bevor eine
+Farbe interpretiert wird." Die Punktvergabe behandelt aber alle drei Bereiche gleich
+(`score = areas / 3`). Sichtbare Folge: Bei „Wurzeln braun" steht der Lichtbrand noch auf
+Platz 4 mit 38 % — er teilt nur die Farbe, der Ort passt gar nicht.
+Das zu ändern hieße, die Punktvergabe **aller** Diagnosen anzufassen. Vorschlag, falls
+gewünscht: Wer einen Ort angibt und der Eintrag hat keinen passenden, bekommt einen Abschlag
+statt eines vollen Bereichs-Punkts. Nicht ohne Ansage gebaut.
 
 ---
 
@@ -861,12 +937,10 @@ Fünftel der Gießmenge". Das ist ein Satz an zwei, drei Stellen statt einer neu
 
 ### Noch nicht geprüft
 
-Der Rest des Tageseintrags (pH-Eingabe, Notiz-Chips, Foto-Anhang), der Outdoor-Pfad und die
-Kalender-Ansicht im Detail. Aus der Diagnose-Datenbank `PROBLEMS` sind die Nährstoff-Einträge
-jetzt gegen die Mobilität aus `ANBAU.md` 6.1 gehalten; die Schädlings- und Pilz-Einträge noch
-nicht. Offen bleibt außerdem, ob ein eigener Eintrag für **Eisenmangel** fehlt — das Bild
-(gelbe junge Blätter mit grün bleibenden Adern bei zu hohem pH, `ANBAU.md` 4) läuft derzeit
-über `ph_lockout` mit und hat keine eigene Zeile.
+Der Rest des Tageseintrags (pH-Eingabe, Notiz-Chips, Foto-Anhang) und die Kalender-Ansicht im
+Detail. **Erledigt:** Der Outdoor-Pfad (Abschnitt 0f) und die Diagnose-Datenbank samt
+Schädlingen und Pilzen (Abschnitt 0g). Der fehlende **Eisenmangel-Eintrag** ist mit v1.5.124
+angelegt — und er fehlte nicht nur, er führte zur falschen Empfehlung.
 
 Die Mischreihenfolge aus `ANBAU.md` 10 wurde am 05.09.2026 geprüft und ist **in Ordnung**:
 Alle Presets führen Silikat zuerst, dann Calcium/Magnesium, Sulfate, Huminstoffe, Phosphate,
@@ -1030,9 +1104,9 @@ cat head.html app.js tail.html | cmp - index.html && echo "BYTE-IDENTISCH OK"
 **Byte-Identität mit `cmp` ist Pflicht, bevor irgendetwas geändert wird.** Danach wird
 `app.js` geändert, mit `build.sh` neu gebaut und erneut verglichen.
 
-39 Testdateien, alle grün in beiden Zeitzonen (Stand v1.5.123) — neu dazu
-`test_tageseintrag` (33), `test_navwege` (28), `test_leerzustand` (27) und
-`test_outdoor` (29):
+40 Testdateien, alle grün in beiden Zeitzonen (Stand v1.5.124) — neu dazu
+`test_tageseintrag` (33), `test_navwege` (28), `test_leerzustand` (27),
+`test_outdoor` (29) und `test_diagnose` (38):
 
 **`test_leerzustand.js` ist die Ausnahme von der Sicherungs-Regel:** Es lädt Patricks
 Sicherung bewusst **nicht**, weil der leere Speicher der Prüfgegenstand ist. Wer den
