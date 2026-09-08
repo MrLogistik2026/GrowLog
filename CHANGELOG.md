@@ -2,6 +2,82 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-08 — v1.5.132
+
+- **Eine Warnung, die zweimal falsch war — und ein Knopf, der die Ernte 36 Tage zurückwarf.**
+  Patrick: „Die Info verwirrt selbst mich, obwohl ich die App mit baue. Eigentlich muss sich
+  der Düngeplan automatisch nach der Blütedauer richten, damit man überhaupt nichts mehr
+  umstellen muss."
+  Die Karte sagte: „Dieser Düngeplan ist für **49 Tage Blüte** gemacht, dein Zyklus steht auf
+  **85** … Für die paar Extra-Tage führt die App die Düngung einfach sinnvoll weiter."
+
+  | Behauptung | Wirklichkeit |
+  |---|---|
+  | „paar Extra-Tage" | 36 Tage — nicht paar |
+  | „führt die Düngung weiter" | Seit v1.5.51 verteilt `planWeekBounds` die Plan-Wochen über den **echten** Zyklus. Nachgemessen: 12 Plan-Wochen über 113 Tage, eine Plan-Woche dauert rund 9 Tage. |
+
+  Die Karte beschrieb also einen Zustand, den es seit v1.5.51 nicht mehr gibt — der Plan
+  richtet sich längst automatisch. **Und der Knopf „auf 49 angleichen" war gefährlich:**
+  Nachgerechnet an Patricks Zyklus verschiebt `bloomDays = 49` die Ernte von Tag 116 auf
+  Tag **80**, samt Spülgängen und IceFlush — 36 Tage in die Vergangenheit. Angeboten als
+  harmlose Korrektur „nur falls die 85 ein Versehen waren". Die Blütedauer kommt aus Sorte
+  und Samentüte; sie ist kein Versehen, und der Plan-Hinweis ist kein Ziel.
+  Stattdessen steht dort jetzt, was tatsächlich passiert — gerechnet aus `planWeekBounds`,
+  also aus genau der Zuordnung, nach der die Dosen ausgegeben werden. Passen Plan und Zyklus
+  ohnehin zusammen, bleibt die Karte still.
+
+## 2026-09-08 — v1.5.131
+
+- **Das Ernte-Log schrieb ins Leere.** Patrick am Erntetag: „Ich kann an dem heutigen Tag
+  kein Gewicht der Ernte eintragen." Die Felder waren da und nahmen Eingaben an — sie
+  schrieben nach `cd.harvestLog`, und **diesen Ort liest außer der Karte selbst niemand.**
+  `getTotalHarvest` kennt `plants[].yieldWet/yieldDry` und `c.plantHarvest`, nicht aber
+  `harvestLog`. Was dort eingetragen wurde, tauchte in der Zyklus-Bilanz, in den
+  Einstellungen und in jeder Auswertung nie auf. Das ist v1.5.99 noch einmal, mit einem
+  **dritten** Speicherort — und aus Nutzersicht heißt „steht nirgends" eben „geht nicht".
+- **Jetzt je Pflanze**, wie Patrick es wollte: „Eigentlich müsste ich auch jede Pflanze
+  einzeln eingeben bei der Ernte. So kann man besser vergleichen." Die Karte schreibt über
+  `setPlantHarvest` an die Pflanze — also dorthin, wo gezählt wird. Schon früher geerntete
+  Pflanzen stehen mit ihrem Schnitt-Datum dabei; der Vergleich über die Pflanzen hinweg ist
+  ja der Zweck. Darunter Nass- und Trockensumme plus Trocken-Anteil, und die Summenzeile
+  zieht beim Tippen sofort mit (`_ernteSummeAktualisieren` — ein voller Neuaufbau würde den
+  Fokus aus dem Feld reißen).
+- **Ein früher eingetragener Wert verschwindet nicht stillschweigend.** Steht noch etwas im
+  alten `harvestLog`, wird es angezeigt, mit dem Hinweis, dass es nie mitgezählt wurde und
+  wohin es gehört.
+- **Die Karte bleibt bis zum Ende des Curings erreichbar.** Vorher verschwand sie mit dem
+  Ende der Trocknung — also genau dann, wenn das Trockengewicht endlich feststeht
+  (`ANBAU.md` 12.1: 7–14 Tage Trocknung).
+
+## 2026-09-08 — v1.5.130
+
+- **„Hier wird aus 1 L Eis, 11250 ml Wasser."** Exakt nachgerechnet: 11 L Topf × 341 =
+  3750 ml — das ist die **Spül**-Formel — × 3 Pflanzen = 11250. Die Zahl stand auf der
+  IceFlush-Karte, weil zwei Stellen verschiedene Quellen befragen: Die Karte prüft
+  `getAction(iso) === 'ice'`, die Menge ging über `p.ph`. Solange beides zusammenfällt,
+  merkt das niemand — bei einem **vorgezogenen** IceFlush fällt es auseinander: Aktion
+  `ice` an Tag 113, Phase dort noch `flush`. Die Menge folgt jetzt der Aktion; sie
+  beschreibt, was an diesem Tag getan wird. Ergebnis: 2100 ml statt 11250 (700 ml je Topf
+  × 3). Der Kartentext nennt außerdem die Menge **je Topf** und die Summe getrennt — vorher
+  las sich „~1 L Crushed Ice pro Topf … schmilzt zu ~11250 ml", als würde ein Liter Eis zum
+  Elffachen schmelzen.
+- **Zwei widersprechende Karten am selben Tag.** Tag 113 zeigte „Hard-Dryback-Phase ·
+  IceFlush in 1 Tag" und direkt darunter „🧊 IceFlush!" — also „ab jetzt nicht mehr gießen,
+  Eis kommt morgen" neben „leg jetzt Eis". Ist heute der Eistag, hat der Dryback-Hinweis
+  nichts mehr zu sagen.
+- **Symbol und Beschriftung standen auf verschiedenen Tagen.** Im Kalender trug Tag 113 das
+  Symbol 🧊 ohne Wort, Tag 114 das Wort „IceFlush" ohne Symbol. Ursache: Die Beschriftung
+  markiert den Phasenwechsel, das Symbol die Aktion. **„IceFlush" und „Ernte" sind aber
+  Ereignisse, keine Zeiträume** — ihre Beschriftung gehört auf den Tag, an dem sie
+  stattfinden. Für Zeitraum-Phasen (Blüte, Spülen, Trocknen, Curing) bleibt alles wie bisher.
+- **Woher der Bruch kam:** Patrick hat den IceFlush vorgezogen, bevor v1.5.110 ausgeliefert
+  war. Der damalige `moveGussDay` legte einen Vermerk an, der nur die **Aktion** verschiebt;
+  v1.5.110 hat den Weg repariert, die bereits entstandenen Daten aber nie aufgeräumt.
+  **Bewusst nicht nachträglich migriert:** Eine Phasenverschiebung würde heute seinen
+  Erntetag von 116 auf 115 ziehen — mitten in der Ernte. Die Anzeige folgt jetzt der Aktion,
+  das genügt und ist ungefährlich.
+- Abgesichert durch `test_ernte_iceflush.js` (35 Prüfungen, beide Zeitzonen).
+
 ## 2026-09-08 — v1.5.129
 
 Patricks Entscheidung: „Wir bleiben bei der kleinen Variante" — also keine tausend

@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.129** · index.html 2,12 MB · 631 Funktionen
+Stand: **v1.5.132** · index.html 2,12 MB · 633 Funktionen
 Zuletzt fortgeschrieben am 05.09.2026. Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
@@ -161,6 +161,68 @@ Abgesichert durch `test_tageseintrag.js` (33 Prüfungen, beide Zeitzonen).
 **Noch offen am Tageseintrag:** Die 53 Knöpfe des Gießtags sind unangetastet, und der
 Einsteiger-Modus wirkt dort weiterhin kaum (26 gegen 29 Felder, Knöpfe gleichauf). Erst
 sehen, ob die Sprungmarken im Alltag reichen, bevor Blöcke verschoben werden.
+
+---
+
+## 0j · Patricks Erntetag, 08.09.2026 (v1.5.130–132)
+
+Vier Meldungen an seinem Erntetag, alle mit seinen Daten reproduziert. Drei davon hatten
+**dieselbe Wurzel**, die vierte war ein dritter Speicherort.
+
+### Der vorgezogene IceFlush: Aktion und Phase liefen auseinander
+
+Patrick hatte den IceFlush auf Tag 113 vorgezogen — **bevor** v1.5.110 ausgeliefert war.
+Der damalige `moveGussDay` legte einen Vermerk an, der nur die *Aktion* bewegt. v1.5.110 hat
+den Weg repariert, die schon entstandenen Daten aber nie aufgeräumt. Ergebnis: Aktion `ice`
+an Tag 113, Phase dort noch `flush`. Daraus folgten drei sichtbare Fehler:
+
+| Symptom | Ursache |
+|---|---|
+| „Aus 1 L Eis werden **11250 ml**" | 11 L × 341 (Spül-Formel) × 3 Pflanzen. Die Karte fragt die Aktion, die Menge fragte die Phase. |
+| „Hard-Dryback · IceFlush **in 1 Tag**" direkt über „🧊 **IceFlush!**" | Dryback-Fenster aus der Phase, Eis-Karte aus der Aktion |
+| Kalender: 🧊 an Tag 113 **ohne Wort**, „IceFlush" an Tag 114 **ohne Symbol** | Beschriftung markiert den Phasenwechsel, Symbol die Aktion |
+
+**Die gemeinsame Lehre:** Wo Aktion und Phase dasselbe meinen können, muss **eine** von
+beiden die Quelle sein. Für alles, was beschreibt *was heute zu tun ist*, ist das die
+**Aktion** — sie folgt Verschiebungen, die Phase nicht. „IceFlush" und „Ernte" sind
+Ereignisse, keine Zeiträume.
+
+**Bewusst nicht migriert:** Eine nachträgliche Phasenverschiebung hätte seinen Erntetag von
+116 auf 115 gezogen — am Erntetag selbst. Die Anzeige folgt jetzt der Aktion; das genügt und
+ist ungefährlich.
+
+### „Ich kann kein Gewicht der Ernte eintragen" — ein dritter Speicherort
+
+Die Felder waren da und nahmen Eingaben an. Sie schrieben nach `cd.harvestLog`, und **diesen
+Ort liest außer der Karte selbst niemand**: `getTotalHarvest` kennt `plants[].yieldWet/Dry`
+und `c.plantHarvest`. Was dort stand, tauchte in keiner Auswertung auf.
+
+**Das ist v1.5.99 zum zweiten Mal.** Damals waren es zwei Speicherorte für den Ertrag, jetzt
+kam ein dritter dazu — und niemand hat gemerkt, dass die Eingabemaske in einen davon
+schreibt, den die Auswertung nicht kennt. **Regel: Wer ein Eingabefeld baut, muss die
+Lesestelle benennen können.** Steht die Zahl danach nirgends, ist das aus Nutzersicht kein
+Anzeigefehler, sondern „geht nicht".
+
+Das Log läuft jetzt über `setPlantHarvest` **je Pflanze** — Patricks Wunsch, und zugleich der
+richtige Speicherort. Schon geerntete Pflanzen stehen mit Datum dabei (der Vergleich ist der
+Zweck), darunter Nass-/Trockensumme und Trocken-Anteil. Erreichbar bis zum Ende des Curings,
+weil das Trockengewicht erst nach 7–14 Tagen Trocknung feststeht (`ANBAU.md` 12.1).
+
+### Die Düngeplan-Warnung war zweimal falsch
+
+„Dieser Düngeplan ist für 49 Tage Blüte gemacht, dein Zyklus steht auf 85 … Für die paar
+Extra-Tage führt die App die Düngung einfach sinnvoll weiter." — 36 Tage sind keine paar,
+und es wird auch nichts angehängt: **Seit v1.5.51 verteilt `planWeekBounds` die Plan-Wochen
+über den echten Zyklus** (nachgemessen: 12 Wochen über 113 Tage, eine Plan-Woche rund
+9 Tage). Die Karte beschrieb einen Zustand, den es seit v1.5.51 nicht mehr gibt.
+
+**Der Knopf „auf 49 angleichen" war gefährlich:** `bloomDays = 49` verschiebt Patricks Ernte
+von Tag 116 auf Tag **80** — 36 Tage in die Vergangenheit, samt Spülgängen und IceFlush.
+Angeboten als harmlose Korrektur „nur falls die 85 ein Versehen waren".
+
+**Regel:** Ein Hinweis, der nach einem Umbau stehen bleibt, wird zur Falschaussage — und ein
+Knopf daneben macht sie gefährlich. Wer eine Automatik baut (hier: v1.5.51), muss die Texte
+suchen, die den alten Zustand erklären.
 
 ---
 
@@ -1265,9 +1327,9 @@ cat head.html app.js tail.html | cmp - index.html && echo "BYTE-IDENTISCH OK"
 **Byte-Identität mit `cmp` ist Pflicht, bevor irgendetwas geändert wird.** Danach wird
 `app.js` geändert, mit `build.sh` neu gebaut und erneut verglichen.
 
-42 Testdateien, alle grün in beiden Zeitzonen (Stand v1.5.127) — neu dazu
+43 Testdateien, alle grün in beiden Zeitzonen (Stand v1.5.132) — neu dazu
 `test_tageseintrag` (33), `test_navwege` (28), `test_leerzustand` (27),
-`test_outdoor` (29), `test_diagnose` (38) `test_lexikon` (49) und `test_kalender` (23):
+`test_outdoor` (29), `test_diagnose` (38) `test_lexikon` (49), `test_kalender` (23) und `test_ernte_iceflush` (35):
 
 **`test_leerzustand.js` ist die Ausnahme von der Sicherungs-Regel:** Es lädt Patricks
 Sicherung bewusst **nicht**, weil der leere Speicher der Prüfgegenstand ist. Wer den

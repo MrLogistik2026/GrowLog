@@ -4408,7 +4408,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.129';
+const APP_VERSION = 'v1.5.132';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -11943,6 +11943,35 @@ function getPlantHarvest(c, plantId) {
  * Speicherung). Wenn nach Update für Plant alle Felder leer → Plant-Eintrag
  * komplett entfernen.
  */
+/**
+ * (v1.5.131) Schreibt nur die Summenzeile des Ernte-Logs neu.
+ *
+ * `setPlantHarvest` speichert bloß — es zeichnet nichts neu. Ohne diesen Aufruf tippt man
+ * 250 g ein und darunter steht weiter die alte Summe; das sah aus, als käme die Eingabe
+ * nicht an. Ein voller `renderEntry()` wäre die einfachere Lösung, würde beim Tippen aber
+ * den Fokus aus dem Feld reißen — dieselbe Überlegung wie bei `_pickStrain`.
+ */
+function _ernteSummeAktualisieren(cId) {
+  const c = (S.cycles || []).find(x => x.id === cId);
+  const box = document.getElementById('ernte-summe-' + cId);
+  if (!c || !box) return;
+  const s = getTotalHarvest(c);
+  const n = (Array.isArray(c.plants) ? c.plants : []).length;
+  if (s.plantsWithData === 0) return;   // Der Einstiegstext bleibt stehen
+  const kachel = (titel, wert) => `<div style="flex:1;background:var(--surface);border-radius:8px;padding:8px;text-align:center">
+    <div style="font-size:9px;color:var(--text-hint)">${titel}</div>
+    <div style="font-size:14px;font-weight:600;color:var(--green)">${wert}</div></div>`;
+  box.innerHTML = `<div style="display:flex;gap:8px;margin-top:4px">
+      ${kachel('Nass gesamt', Math.round(s.totalWetG) + ' g')}
+      ${kachel('Trocken gesamt', Math.round(s.totalDryG) + ' g')}
+      ${(s.totalWetG > 0 && s.totalDryG > 0) ? kachel('Trocken-Anteil', Math.round(s.totalDryG / s.totalWetG * 100) + ' %') : ''}
+    </div>
+    <div style="font-size:10px;color:var(--text-hint);margin-top:6px;line-height:1.5">
+      ${s.plantsWithData} von ${n} Pflanzen erfasst. Das Trockengewicht kannst du später
+      nachtragen — die Karte bleibt bis zum Ende des Curings erreichbar.
+    </div>`;
+}
+
 function setPlantHarvest(cId, plantId, field, value) {
   if (!cId || !plantId) return false;
   const allowedFields = ['wetG', 'dryG', 'notes'];
@@ -12653,6 +12682,26 @@ function waterSuggestion(c, p, iso) {
   // entstehen in diesen Phasen ohnehin nicht, daher betrifft das keine echte
   // Gieß-Empfehlung — nur die latente Phantom-Zahl an der Quelle.
   if (p && (p.ph === 'harvest' || p.ph === 'dry' || p.ph === 'cure')) return 0;
+
+  // (v1.5.130) Die Eismenge folgt der AKTION, nicht der Phase.
+  //
+  // Patricks Meldung vom 08.09.2026: „Hier wird aus 1 L Eis, 11250 ml Wasser."
+  // Nachgerechnet und exakt reproduziert: 11 L Topf × 341 = 3750 ml (die SPÜL-Formel),
+  // × 3 Pflanzen = 11250. Die Zahl erschien auf der IceFlush-Karte, weil zwei Stellen
+  // verschiedene Quellen befragen: Die Karte prüft `getAction(iso) === 'ice'`, die Menge
+  // ging über `p.ph`. Solange beides zusammenfällt, merkt das niemand — bei einem
+  // vorgezogenen IceFlush fällt es auseinander: Aktion 'ice' an Tag 113, Phase noch 'flush'.
+  //
+  // Die Aktion ist hier die richtige Quelle: Sie beschreibt, was an diesem Tag getan wird.
+  // Wo Eis gelegt wird, gilt die Eismenge — unabhängig davon, wo das Raster gerade steht.
+  // Bewusst VOR der Personalisierung: Der IceFlush ist eine feste Anleitung (1 L Crushed
+  // Ice je Topf), kein Guss, der aus der Gieß-Historie gelernt wird.
+  if (iso && typeof getAction === 'function' && getAction(iso, c) === 'ice') {
+    const _potIce = (typeof getPotSize === 'function') ? getPotSize(c) : 11;
+    const _skalaIce = (_potIce || 11) / 11;
+    const _proTopf = Math.round(700 * _skalaIce / 50) * 50;
+    return _proTopf * getEffectivePlantCount(c, iso);
+  }
 
   // ANZUCHT-FESTMENGE (manuell): NUR in der Anzucht ist eine gesetzte Festmenge eine
   // harte Vorgabe (Sämling-Schutz, eigene Rampe). Die Blüte-Phasen nutzen stattdessen
@@ -16220,13 +16269,38 @@ function renderCal() {
     };
     let phaseMarkerColor = null;
     let phaseMarkerLabel = null;
+    // (v1.5.130) „IceFlush" und „Ernte" sind EREIGNISSE, keine Zeiträume — ihre
+    // Beschriftung gehört auf den Tag, an dem sie stattfinden, nicht auf den Tag, an dem
+    // das Phasenraster umspringt. Solange beides zusammenfällt, ist das dasselbe. Bei
+    // einem vorgezogenen IceFlush fällt es auseinander, und man sieht, was Patrick am
+    // 08.09.2026 gemeldet hat: An T113 stand das Symbol 🧊 ohne Wort, an T114 das Wort
+    // „IceFlush" ohne Symbol — zwei halbe Angaben auf zwei verschiedenen Tagen.
+    // Für Zeitraum-Phasen (Blüte, Spülen, Trocknen, Curing) bleibt alles wie bisher.
+    const _ereignisAktion = { ice: 'ice', harvest: 'ernte' };   // Phase → ihre Aktion
+    const _aktionPhase = { ice: 'ice', ernte: 'harvest' };      // Aktion → ihre Phase
     if (phaseDay && phaseDay.p) {
-      const yesterdayISO = isoPlus(iso, -1);
-      const yp = phase(yesterdayISO, phaseDay.c);
-      if (!yp || yp.ph !== phaseDay.p.ph) {
-        // Phase-Übergang heute (oder Start-Tag)
-        phaseMarkerColor = PHASE_MARKER_COLORS[phaseDay.p.ph];
-        phaseMarkerLabel = PN[phaseDay.p.ph] || '';
+      // 1. Trägt DIESER Tag eine Ereignis-Aktion, gehört die Beschriftung hierher —
+      //    unabhängig davon, in welcher Phase das Raster ihn gerade führt. Genau das
+      //    ist der vorgezogene IceFlush: Aktion an Tag 113, Phase dort noch 'flush'.
+      const _aktionHeute = getAction(iso, phaseDay.c);
+      const _ereignisPh = _aktionPhase[_aktionHeute];
+      if (_ereignisPh) {
+        phaseMarkerColor = PHASE_MARKER_COLORS[_ereignisPh];
+        phaseMarkerLabel = PN[_ereignisPh] || '';
+      } else {
+        // 2. Sonst wie bisher: beim Phasenübergang beschriften. Für Ereignis-Phasen
+        //    aber nur dann, wenn die Aktion nirgends sonst liegt — sonst stünde das
+        //    Wort ein zweites Mal auf einem Tag, an dem nichts passiert.
+        const yesterdayISO = isoPlus(iso, -1);
+        const yp = phase(yesterdayISO, phaseDay.c);
+        const _uebergang = !yp || yp.ph !== phaseDay.p.ph;
+        const _erwartet = _ereignisAktion[phaseDay.p.ph];
+        const _zeigen = _uebergang
+          && (!_erwartet || !_ereignisTagVorhanden(phaseDay.c, iso, _erwartet));
+        if (_zeigen) {
+          phaseMarkerColor = PHASE_MARKER_COLORS[phaseDay.p.ph];
+          phaseMarkerLabel = PN[phaseDay.p.ph] || '';
+        }
       }
     }
 
@@ -16476,6 +16550,22 @@ function lpS(iso, e) {
 }
 
 function lpE() { if (lpT) { clearTimeout(lpT); lpT = null; } }
+
+/**
+ * (v1.5.130) Liegt die Aktion einer Ereignis-Phase (IceFlush, Ernte) irgendwo in deren
+ * Fenster? Gebraucht wird das nur, um zu entscheiden, ob der Übergangstag als Rückfall
+ * beschriftet werden muss — nämlich dann, wenn kein Tag die Aktion mehr trägt.
+ *
+ * Gesucht wird in einem engen Fenster um den Übergang (5 Tage in jede Richtung); weiter
+ * lässt `moveGussDay` ohnehin nicht verschieben.
+ */
+function _ereignisTagVorhanden(c, uebergangISO, aktion) {
+  if (!c || !uebergangISO || !aktion || typeof getAction !== 'function') return false;
+  for (let d = -5; d <= 5; d++) {
+    if (getAction(isoPlus(uebergangISO, d), c) === aktion) return true;
+  }
+  return false;
+}
 
 /**
  * (v1.5.127) Das Tagesmenü per Rechtsklick — für alle Geräte ohne Touch.
@@ -20384,21 +20474,44 @@ function renderSet() {
                 ${plans.map(pl => `<option value="${pl.id}" ${d.fertPlanId === pl.id ? 'selected' : ''}>${pl.name} · ${(pl.products || []).length} Produkt${(pl.products || []).length === 1 ? '' : 'e'}</option>`).join('')}
               </select>
               ${(() => {
-                // BLOOM-DAYS-HINT: wenn der gewählte Plan ein bloomDaysHint hat
-                // (z.B. Cup-Sieger-Preset rechnet mit 49 Tagen statt App-Default 35)
-                // und der Cycle hat eine abweichende Zahl → Hinweis mit Quick-Fix.
-                const activePlan = plans.find(p => p.id === d.fertPlanId);
-                if (!activePlan || !activePlan.presetKey) return '';
-                const preset = (typeof FERT_PRESETS !== 'undefined') ? FERT_PRESETS[activePlan.presetKey] : null;
-                const hint = preset?.bloomDaysHint;
-                if (!hint) return '';
-                const currentBloom = parseInt(d.bloomDays) || 35;
-                if (currentBloom === hint) return '';
-                return `<div style="margin-top:6px;padding:11px 13px;background:rgba(90,171,240,0.06);border:0.5px solid rgba(90,171,240,0.25);border-radius:10px;line-height:1.5">
-                  <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:4px">💡 Blütedauer: Plan und Pflanze ${infoBtn('bloomdays', 13, 'var(--blue)')}</div>
-                  <div style="font-size:11px;color:var(--text-sub)">Dieser Düngeplan ist für <b>${hint} Tage Blüte</b> gemacht, dein Zyklus steht auf <b>${currentBloom}</b>. Das ist kein Fehler — wie lange deine Pflanze blüht, hängt von ihrer Sorte ab, nicht vom Plan. Für die paar Extra-Tage führt die App die Düngung einfach sinnvoll weiter.</div>
-                  <div style="font-size:10px;color:var(--text-hint);margin-top:8px;margin-bottom:4px">Nur falls die ${currentBloom} ein Versehen waren:</div>
-                  <button onclick="dd('bloomDays',${hint});renderSet();toast('Blüte-Tage auf ${hint} gesetzt')" style="background:transparent;border:0.5px solid var(--border);color:var(--text-sub);font-size:11px;padding:6px 11px;border-radius:8px;cursor:pointer;font-family:var(--font);font-weight:600">auf ${hint} angleichen</button>
+                // (v1.5.132) HIER STAND EINE WARNUNG, DIE ZWEIMAL FALSCH WAR.
+                //
+                // Patricks Meldung vom 08.09.2026: „Die Info verwirrt selbst mich, obwohl
+                // ich die App mit baue. Eigentlich muss sich der Düngeplan automatisch nach
+                // der Blütedauer richten, damit man überhaupt nichts mehr umstellen muss."
+                //
+                // Der alte Text sagte: „Dieser Düngeplan ist für 49 Tage Blüte gemacht, dein
+                // Zyklus steht auf 85 … Für die paar Extra-Tage führt die App die Düngung
+                // einfach sinnvoll weiter." Beides stimmt nicht:
+                //
+                //   1. Es sind keine „paar Extra-Tage" und es wird auch nichts angehängt.
+                //      Seit v1.5.51 verteilt `planWeekBounds` die Plan-Wochen über den
+                //      ECHTEN Zyklus. Nachgemessen an Patricks Grow: 12 Plan-Wochen über
+                //      113 Tage, eine Plan-Woche dauert bei ihm rund 10 Tage. Der Plan
+                //      richtet sich also längst automatisch — die Karte beschrieb einen
+                //      Zustand, den es seit v1.5.51 nicht mehr gibt.
+                //   2. Der Knopf „auf 49 angleichen" war gefährlich. `bloomDays = 49` bei
+                //      Patricks Zyklus verschiebt die Ernte von Tag 116 auf Tag 80 — 36 Tage
+                //      in die Vergangenheit, samt Spülgängen und IceFlush. Angeboten wurde
+                //      das als harmlose Korrektur „falls die 85 ein Versehen waren".
+                //      Die Blütedauer kommt aus Sorte und Samentüte; sie ist kein Versehen,
+                //      und der Plan-Hinweis ist kein Ziel, an das man sie angleicht.
+                //
+                // Stattdessen steht hier jetzt, was tatsächlich passiert — und nur dann,
+                // wenn es etwas zu erklären gibt.
+                // Gerechnet wird mit der ECHTEN Aufteilung aus `planWeekBounds` — also
+                // genau der Zuordnung, nach der die App die Dosen ausgibt. Eine daneben
+                // gerechnete Schätzung wäre wieder eine zweite Zahl für dieselbe Sache.
+                const _cyc = S.cycles.find(x => x.id === d.id) || d;
+                const _bounds = (typeof planWeekBounds === 'function') ? planWeekBounds(_cyc) : null;
+                if (!Array.isArray(_bounds) || _bounds.length < 2) return '';
+                const _wochen = _bounds.length + 1;
+                const _gesamt = _bounds[_bounds.length - 1];
+                const _tageProWoche = Math.round(_gesamt / _wochen);
+                if (_tageProWoche <= 7) return '';   // Plan und Zyklus passen ohnehin
+                const _bloom = parseInt(d.bloomDays) || 0;
+                return `<div style="margin-top:6px;padding:11px 13px;background:rgba(76,175,112,0.06);border:0.5px solid rgba(76,175,112,0.25);border-radius:10px;line-height:1.5">
+                  <div style="font-size:11px;color:var(--text-sub)">🧪 Der Düngeplan richtet sich <b>automatisch</b> nach deinem Zyklus: Seine ${_wochen} Wochen verteilt die App über deine ${_bloom ? _bloom + ' Blütetage' : 'Zyklusdauer'} — eine Plan-Woche dauert bei dir rund <b>${_tageProWoche} Tage</b> statt sieben. Du musst nichts umstellen.</div>
                 </div>`;
               })()}
               <div style="font-size:10px;color:var(--text-hint);line-height:1.4;padding:4px 4px 0">
@@ -25658,7 +25771,15 @@ function renderEntry(iso) {
       // damit Banner und Status nie Gegenteiliges sagen.
       const _hdCtx = contextFor(c, iso);
       const daysToIce = _hdCtx ? _hdCtx.daysUntilIce : null;
-      if (_hdCtx && _hdCtx.isHardDryback) {
+      // (v1.5.130) Ist HEUTE der IceFlush, hat der Hard-Dryback nichts mehr zu sagen.
+      // Patricks Tag 113 zeigte beides übereinander: „Hard-Dryback-Phase · IceFlush in
+      // 1 Tag" und direkt darunter „🧊 IceFlush!". Ursache ist dieselbe wie bei der Menge —
+      // das Dryback-Fenster kommt aus dem Phasenraster, die IceFlush-Karte aus der Aktion.
+      // Bei einem vorgezogenen IceFlush fällt beides auseinander, und der Nutzer liest zwei
+      // Anweisungen, die sich widersprechen: „ab jetzt nicht mehr gießen, Eis kommt morgen"
+      // neben „leg jetzt Eis". Die Aktion gewinnt.
+      const _istEisTag = (typeof getAction === 'function') && getAction(iso, c) === 'ice';
+      if (_hdCtx && _hdCtx.isHardDryback && !_istEisTag) {
         hardDrybackBanner = `<div style="background:linear-gradient(135deg,rgba(251,191,36,0.08),rgba(251,191,36,0.04));border:1px solid rgba(251,191,36,0.3);border-radius:10px;padding:10px 12px;margin-bottom:8px;display:flex;align-items:center;gap:10px">
           <span style="font-size:18px">🎯</span>
           <div style="flex:1">
@@ -25742,7 +25863,15 @@ function renderEntry(iso) {
               <div style="font-size:12px;font-weight:700;color:var(--yellow);margin-bottom:3px">🌱 Dein erster Guss in diesem Zyklus</div>
               <div style="font-size:11px;color:var(--text-sub)">Noch eine Schätzung: Die ~${waterSug} ml oben sind ein sicherer Startwert fürs erste Mal. Trag unten ein, wie viel du <b>wirklich</b> gießt — sobald du das tust, übernimmt die App deine echte Menge statt der Schätzung. Unsicher? Bleib beim Startwert und heb den Topf nach dem Gießen einmal an, dann bekommst du mit der Zeit ein Gefühl fürs Gewicht.</div>
             </div>` : ''}
-            ${a === 'ice' ? `<div style="font-size:11px;color:var(--text-muted);line-height:1.4;margin-top:2px">~1 L Crushed Ice pro Topf am RAND verteilen (nicht Mitte). Schmilzt zu ~${waterSug} ml. 4–6h schmelzen, dann Licht AUS.</div>` : ''}
+            ${/* (v1.5.130) Der Satz mischte Pro-Topf und Gesamtmenge: „~1 L Crushed Ice pro
+                 Topf … Schmilzt zu ~2100 ml" liest sich, als würde 1 Liter Eis zu 2100 ml
+                 schmelzen. Jetzt steht die Schmelzmenge je Topf dran, die Gesamtsumme nur
+                 zusätzlich und als solche benannt. */''}
+            ${a === 'ice' ? (() => {
+              const _n = getEffectivePlantCount(c, iso);
+              const _proTopf = _n > 0 ? Math.round(waterSug / _n / 10) * 10 : waterSug;
+              return `<div style="font-size:11px;color:var(--text-muted);line-height:1.4;margin-top:2px">~1 L Crushed Ice pro Topf am RAND verteilen (nicht Mitte) — schmilzt zu etwa <b>${_proTopf} ml je Topf</b>${_n > 1 ? `, zusammen ~${waterSug} ml für ${_n} Töpfe` : ''}. 4–6h schmelzen, dann Licht AUS.</div>`;
+            })() : ''}
             ${a === 'sprueh' ? `<div style="font-size:11px;color:var(--text-muted);line-height:1.4;margin-top:2px">3–5 Sprühstöße auf die Oberfläche, sobald obere 1–2 cm trocken wirken.</div>` : ''}
             ${a === 'saettigung' ? `<div style="font-size:11px;color:var(--text-muted);line-height:1.4;margin-top:2px">3 Etappen je ~250 ml mit 15 min Pause. CalMag + leichte Bio-Heaven, kein Bio-Grow.</div>` : ''}
             ${(a === 'giess' || a === 'giess_anz') ? `<div style="font-size:10px;color:${cl.hex};opacity:0.85;margin-top:3px">👆 Tippen: Guss eintragen oder Menge anpassen</div>` : ''}
@@ -27444,7 +27573,10 @@ function renderEntry(iso) {
       (p.ph === 'bloom' && p.week >= 7) || p.ph === 'flush' || p.ph === 'ice' || p.ph === 'harvest'
     );
     const trich = cd.trichomes || (_prevTrich ? { clear: _prevTrich.clear, milky: _prevTrich.milky, amber: _prevTrich.amber } : { clear: 70, milky: 25, amber: 5 });
-    const showErnte = p && (p.ph === 'harvest' || p.ph === 'dry');
+    // (v1.5.131) 'cure' ergänzt. Das Trockengewicht steht erst nach dem Trocknen fest —
+    // nach `ANBAU.md` 12.1 sind das 7–14 Tage. Bis v1.5.130 verschwand die Karte genau in
+    // dem Moment, in dem die zweite Zahl endlich bekannt war.
+    const showErnte = p && (p.ph === 'harvest' || p.ph === 'dry' || p.ph === 'cure');
     const ernte = cd.harvestLog || {};
     const tip = getSmartTip(c, p);
     const photos = cd.photos || [];
@@ -27651,17 +27783,76 @@ function renderEntry(iso) {
         })()}
       </div>` : '';
 
-    const ernteHTML = showErnte ? `
-      <div style="background:rgba(76,175,112,0.06);border:0.5px solid rgba(76,175,112,0.2);border-radius:12px;padding:12px;margin-top:8px">
-        <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px"><span style="font-size:14px">🏆</span><span style="font-size:12px;font-weight:600;color:var(--green)">Ernte-Log</span></div>
-        <div style="display:flex;gap:8px;margin-bottom:8px">
-          <div style="flex:1"><div style="font-size:10px;color:var(--text-hint);margin-bottom:2px">Nassgewicht (g)</div>
-            <input class="inp-field" type="number" step="1" value="${ernte.wetWeight || ''}" placeholder="–" style="font-size:14px;font-weight:600;font-family:var(--mono);text-align:center" oninput="uHarvest('${c.id}','wetWeight',this.value)"/></div>
-          <div style="flex:1"><div style="font-size:10px;color:var(--text-hint);margin-bottom:2px">Trockengewicht (g)</div>
-            <input class="inp-field" type="number" step="0.1" value="${ernte.dryWeight || ''}" placeholder="–" style="font-size:14px;font-weight:600;font-family:var(--mono);text-align:center" oninput="uHarvest('${c.id}','dryWeight',this.value)"/></div>
+    // (v1.5.131) DAS ERNTE-LOG SCHRIEB INS LEERE — und zwar je Zyklus statt je Pflanze.
+    //
+    // Patricks Meldung vom 08.09.2026: „Ich kann an dem heutigen Tag kein Gewicht der Ernte
+    // eintragen." Nachgesehen: Die Felder waren da und nahmen Eingaben an — sie schrieben
+    // nach `cd.harvestLog`, und diesen Ort liest AUSSER dieser Karte selbst niemand.
+    // `getTotalHarvest` kennt `plants[].yieldWet/yieldDry` und `c.plantHarvest`, nicht aber
+    // `harvestLog`. Was hier eingetippt wurde, tauchte in der Zyklus-Bilanz, in den
+    // Einstellungen und in jeder Auswertung nie auf. Das ist v1.5.99 noch einmal, mit einem
+    // dritten Speicherort — und aus Nutzersicht heißt „steht nirgends" eben „geht nicht".
+    //
+    // Dazu sein zweiter Punkt: „Eigentlich müsste ich auch jede Pflanze einzeln eingeben
+    // bei der Ernte. So kann man besser vergleichen." Genau dafür gibt es `setPlantHarvest`
+    // seit v1.5.54 — es schreibt an die Pflanze, also dorthin, wo gezählt wird. Die Karte
+    // benutzt jetzt diesen Weg, und schon geerntete Pflanzen stehen mit dabei: Der Vergleich
+    // über die Pflanzen hinweg ist ja der Zweck.
+    const ernteHTML = showErnte ? (() => {
+      const _pl = Array.isArray(c.plants) ? c.plants : [];
+      if (_pl.length === 0) return '';
+      const _zeilen = _pl.map((pl) => {
+        const _ph = getPlantHarvest(c, pl.id);
+        const _frueher = pl.harvestedAt && pl.harvestedAt < iso;
+        const _label = (pl.strain ? `${pl.label} · ${pl.strain}` : pl.label)
+          + (_frueher ? ` <span style="color:var(--text-hint)">· geerntet ${fmtDE(pl.harvestedAt)}</span>` : '');
+        return `<div style="margin-bottom:8px">
+          <div style="font-size:10px;color:var(--text-muted);margin-bottom:3px">${_label}</div>
+          <div style="display:flex;gap:8px">
+            <div style="flex:1"><input class="inp-field" type="number" step="1" min="0" value="${_ph.wetG || ''}" placeholder="nass (g)"
+              style="font-size:13px;font-weight:600;font-family:var(--mono);text-align:center"
+              oninput="setPlantHarvest('${c.id}','${pl.id}','wetG',this.value);_ernteSummeAktualisieren('${c.id}')"/></div>
+            <div style="flex:1"><input class="inp-field" type="number" step="1" min="0" value="${_ph.dryG || ''}" placeholder="trocken (g)"
+              style="font-size:13px;font-weight:600;font-family:var(--mono);text-align:center"
+              oninput="setPlantHarvest('${c.id}','${pl.id}','dryG',this.value);_ernteSummeAktualisieren('${c.id}')"/></div>
+          </div>
+        </div>`;
+      }).join('');
+
+      const _sum = getTotalHarvest(c);
+      const _summe = `<div id="ernte-summe-${c.id}">` + (_sum.plantsWithData > 0 ? `
+        <div style="display:flex;gap:8px;margin-top:4px">
+          <div style="flex:1;background:var(--surface);border-radius:8px;padding:8px;text-align:center">
+            <div style="font-size:9px;color:var(--text-hint)">Nass gesamt</div>
+            <div style="font-size:14px;font-weight:600;color:var(--green)">${Math.round(_sum.totalWetG)} g</div></div>
+          <div style="flex:1;background:var(--surface);border-radius:8px;padding:8px;text-align:center">
+            <div style="font-size:9px;color:var(--text-hint)">Trocken gesamt</div>
+            <div style="font-size:14px;font-weight:600;color:var(--green)">${Math.round(_sum.totalDryG)} g</div></div>
+          ${(_sum.totalWetG > 0 && _sum.totalDryG > 0) ? `<div style="flex:1;background:var(--surface);border-radius:8px;padding:8px;text-align:center">
+            <div style="font-size:9px;color:var(--text-hint)">Trocken-Anteil</div>
+            <div style="font-size:14px;font-weight:600;color:var(--green)">${Math.round(_sum.totalDryG / _sum.totalWetG * 100)} %</div></div>` : ''}
         </div>
-        ${(ernte.wetWeight && ernte.dryWeight) ? `<div style="display:flex;gap:8px"><div style="flex:1;background:var(--surface);border-radius:8px;padding:8px;text-align:center"><div style="font-size:9px;color:var(--text-hint)">Ratio</div><div style="font-size:14px;font-weight:600;color:var(--green)">${(ernte.dryWeight/ernte.wetWeight*100).toFixed(0)}%</div></div><div style="flex:1;background:var(--surface);border-radius:8px;padding:8px;text-align:center"><div style="font-size:9px;color:var(--text-hint)">Trocken</div><div style="font-size:14px;font-weight:600;color:var(--green)">${parseFloat(ernte.dryWeight).toFixed(1)}g</div></div></div>` : ''}
-      </div>` : '';
+        <div style="font-size:10px;color:var(--text-hint);margin-top:6px;line-height:1.5">
+          ${_sum.plantsWithData} von ${_pl.length} Pflanzen erfasst. Das Trockengewicht kannst du
+          später nachtragen — die Karte bleibt bis zum Ende des Curings erreichbar.
+        </div>` : `
+        <div style="font-size:10px;color:var(--text-hint);margin-top:2px;line-height:1.5">
+          Nassgewicht direkt nach dem Schnitt, Trockengewicht nach dem Trocknen nachtragen.
+          Je Pflanze getrennt — so siehst du beim nächsten Mal, welche sich gelohnt hat.
+        </div>`) + `</div>`;
+
+      // Ein früher hier eingetragener Wert darf nicht stillschweigend verschwinden.
+      const _alt = (ernte.wetWeight || ernte.dryWeight)
+        ? `<div style="font-size:10px;color:var(--yellow);background:rgba(240,208,80,0.06);border:0.5px solid rgba(240,208,80,0.25);border-radius:8px;padding:8px 10px;margin-bottom:10px;line-height:1.5">
+            📌 Früher an diesem Tag eingetragen: ${ernte.wetWeight ? `<b>${ernte.wetWeight} g</b> nass` : ''}${ernte.wetWeight && ernte.dryWeight ? ' · ' : ''}${ernte.dryWeight ? `<b>${ernte.dryWeight} g</b> trocken` : ''}.
+            Diese Zahl galt für den ganzen Zyklus und wurde nirgends mitgezählt — trag sie unten je Pflanze ein, dann fließt sie in die Bilanz.
+          </div>` : '';
+
+      return `<div style="background:rgba(76,175,112,0.06);border:0.5px solid rgba(76,175,112,0.2);border-radius:12px;padding:12px;margin-top:8px">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px"><span style="font-size:14px">🏆</span><span style="font-size:12px;font-weight:600;color:var(--green)">Ernte-Log · je Pflanze</span></div>
+        ${_alt}${_zeilen}${_summe}
+      </div>`;
+    })() : '';
 
     const hintHTML = '';
 
