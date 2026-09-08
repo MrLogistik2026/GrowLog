@@ -2,6 +2,34 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-08 — v1.5.129
+
+Patricks Entscheidung: „Wir bleiben bei der kleinen Variante" — also keine tausend
+Katalog-Einträge, sondern die 45 vorhandenen Sorten auffindbar machen und den Weg
+offenhalten, der nachweislich am genauesten rechnet: die Wochen-Angabe von der eigenen
+Samentüte.
+
+- **Die Sortensuche war unsichtbar.** Sie hing seit jeher am Feld **„Name des Zyklus"**
+  (Platzhalter „z.B. Zyklus 2"). Nichts sagte, dass man dort Sorten findet — wer seinem
+  Zelt einen Namen gab oder den Vorschlag stehen ließ, erfuhr nie, dass 45 Sorten
+  hinterlegt sind. Unter dem Feld steht jetzt: „Tippst du hier einen **Sortennamen**,
+  durchsucht die App alle 45 hinterlegten Sorten und übernimmt Reifezeit und Steckbrief.
+  Du kannst aber genauso gut deinem Zelt einen eigenen Namen geben — die Sorte ist
+  optional." Beides bleibt möglich, und beides steht jetzt dran.
+- **Nur sechs Sorten waren erreichbar.** „Beliebte Sorten" zeigte sechs Chips; die übrigen
+  39 gab es nur, wenn man den Namen erriet. Ein Aufklapper „▾ Alle 15 Automatics anzeigen"
+  bringt den Rest. Die Zahl nennt bewusst die **gefilterte** Menge und wonach gefiltert
+  wurde — sonst stünde darüber „45 Sorten" und darunter „Alle 15", ohne erkennbaren Grund.
+  Aufgeklappt wird per DOM statt über `_renderWiz()`: Ein Neuaufbau würde den Eingabefokus
+  im Namensfeld verlieren.
+- **Die eigene Wochen-Angabe sagt jetzt, dass sie gewinnt.** `_wizFinish` rechnet seit
+  v1.5.34 richtig — selbst eingetragene Wochen von der Tüte schlagen die Sorten-Vorlage,
+  weil sie zu genau diesen Samen gehören. Nur sagte es niemand: Wer erst 16–17 Wochen
+  eintrug und danach eine Sorte wählte, sah „91–104 d" aufblitzen und hielt das für seinen
+  Plan. Die Meldung lautet jetzt „✓ Northern Lights übernommen — geplant wird weiter mit
+  deiner Wochen-Angabe von der Tüte."
+- `test_sortendauer.js` um 17 Prüfungen erweitert (jetzt 62), beide Zeitzonen.
+
 ## 2026-09-07 — v1.5.128
 
 - **Die 14 Automatics planen nicht mehr mit der Züchterzahl.** Patricks Auftrag: „Über die

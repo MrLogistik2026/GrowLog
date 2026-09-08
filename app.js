@@ -3407,7 +3407,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.128';
+const APP_VERSION = 'v1.5.129';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -21716,6 +21716,26 @@ function _wizStepNameSummary(a) {
     ? STRAINS.filter(s => s.type === typeFilter).slice(0, 6)
     : [];
 
+  // (v1.5.129) Die vollständige Liste, nach der man suchen kann. Bisher gab es nur die
+  // sechs Chips oben — wer seine Sorte nicht darunter fand, erfuhr nie, dass noch
+  // 39 weitere hinterlegt sind. Aufgeklappt wird per DOM, nicht über `_renderWiz()`:
+  // Ein Neuaufbau würde den Eingabefokus im Namensfeld verlieren (siehe `_pickStrain`).
+  const alleSorten = typeFilter ? STRAINS.filter(s => s.type === typeFilter) : [];
+  const weitereSorten = alleSorten.slice(popularStrains.length);
+  const alleListe = weitereSorten.length > 0 ? `
+    <div id="wiz-alle-sorten" style="display:none;margin-top:8px;max-height:190px;overflow-y:auto;background:var(--card2);border:0.5px solid var(--border);border-radius:10px;padding:8px">
+      <div style="display:flex;flex-wrap:wrap;gap:6px">
+        ${weitereSorten.map(s => `
+          <button onclick="_pickStrain('${s.name.replace(/'/g, "\\'")}')" style="background:var(--card);border:0.5px solid var(--border);border-radius:20px;padding:6px 12px;font-size:11px;color:var(--text-sub);cursor:pointer;font-family:var(--font);white-space:nowrap">
+            ${s.name.replace(/ Auto$/, '')} <span style="color:var(--text-hint);font-size:10px">· ${(() => {
+              const d = strainDays(s);
+              return `${d.lo === d.hi ? '~' + d.hi : d.lo + '–' + d.hi} d ${d.was}`;
+            })()}</span>
+          </button>
+        `).join('')}
+      </div>
+    </div>` : '';
+
   const strainChips = popularStrains.length > 0 ? `
     <div style="margin-bottom:20px">
       <div style="font-size:10px;color:var(--text-muted);font-weight:600;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.05em">Beliebte Sorten (optional)</div>
@@ -21731,6 +21751,12 @@ function _wizStepNameSummary(a) {
           </button>
         `).join('')}
       </div>
+      ${weitereSorten.length > 0 ? `
+        ${/* Die Zahl nennt bewusst die GEFILTERTE Menge und sagt wonach gefiltert wurde —
+             sonst steht darüber „45 Sorten" und hier „Alle 15", und niemand versteht warum. */''}
+        <button onclick="var l=document.getElementById('wiz-alle-sorten');var auf=l.style.display==='none';l.style.display=auf?'block':'none';this.textContent=auf?'▴ Weniger anzeigen':'▾ Alle ${alleSorten.length} ${typeFilter === 'auto' ? 'Automatics' : 'Photoperiodischen'} anzeigen'"
+          style="background:none;border:none;color:var(--blue);font-size:11px;cursor:pointer;font-family:var(--font);padding:8px 2px 0">▾ Alle ${alleSorten.length} ${typeFilter === 'auto' ? 'Automatics' : 'Photoperiodischen'} anzeigen</button>` : ''}
+      ${alleListe}
     </div>
   ` : '';
 
@@ -21742,6 +21768,15 @@ function _wizStepNameSummary(a) {
       <div class="inp-label">Name des Zyklus</div>
       <input id="wiz-name" class="inp-field" type="text" value="${(a.name || '').replace(/"/g, '&quot;') || defaultName.replace(/"/g, '&quot;')}" placeholder="z.B. ${defaultName}" oninput="_wizAnswers.name=this.value;_renderStrainSuggestions(this.value)" autocomplete="off"/>
       <div id="wiz-strain-suggest" style="display:none;position:absolute;top:100%;left:0;right:0;z-index:10;background:var(--card);border:0.5px solid var(--border);border-radius:10px;margin-top:4px;max-height:200px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,0.4)"></div>
+    </div>
+    <!-- (v1.5.129) Die Sortensuche hing seit jeher an diesem Feld — aber nichts sagte es.
+         Beschriftung „Name des Zyklus", Platzhalter „z.B. Zyklus 2": Wer seinem Zelt einen
+         Namen gibt oder den Vorschlag stehen lässt, erfährt nie, dass 45 Sorten hinterlegt
+         sind. Der Hinweis steht direkt unter dem Feld, wo er gebraucht wird. -->
+    <div style="font-size:10px;color:var(--text-hint);line-height:1.5;margin:-2px 0 14px;padding-left:2px">
+      💡 Tippst du hier einen <b>Sortennamen</b>, durchsucht die App alle ${STRAINS.length} hinterlegten Sorten
+      und übernimmt Reifezeit und Steckbrief. Du kannst aber genauso gut deinem Zelt einen
+      eigenen Namen geben — die Sorte ist optional.
     </div>
 
     ${strainChips}
@@ -21882,7 +21917,14 @@ function _pickStrain(name) {
   if (info) info.innerHTML = _strainInfoHTML(s.name, _wizAnswers.growType);
   const short = s.name.split(' ').slice(0, 2).join(' ');
   const _td = strainDays(s);
-  toast(`✓ ${short} · ${_td.geprueft ? `${_td.lo}–${_td.hi}` : `~${_td.hi}`} d ${_td.was}`);
+  // (v1.5.129) Hat der Nutzer vorher die Wochen von seiner Samentüte eingetragen, gewinnen
+  // die — so rechnet `_wizFinish` seit v1.5.34, und das ist richtig: Sie gehören zu genau
+  // seinen Samen. Nur sagte es ihm niemand. Ohne diesen Hinweis wählt er eine Sorte, sieht
+  // eine andere Zahl aufblitzen und hält die für seinen Plan.
+  const _eigeneWochen = isFinite(parseFloat(_wizAnswers.seedWeeksLo)) && parseFloat(_wizAnswers.seedWeeksLo) > 0;
+  toast(_eigeneWochen
+    ? `✓ ${short} übernommen — geplant wird weiter mit deiner Wochen-Angabe von der Tüte.`
+    : `✓ ${short} · ${_td.lo === _td.hi ? `~${_td.hi}` : `${_td.lo}–${_td.hi}`} d ${_td.was}`);
 }
 
 /** Löst aus den Wizard-Antworten ein ISO-Startdatum ab. */

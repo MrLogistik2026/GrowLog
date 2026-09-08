@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.128** · index.html 2,12 MB · 631 Funktionen
+Stand: **v1.5.129** · index.html 2,12 MB · 631 Funktionen
 Zuletzt fortgeschrieben am 05.09.2026. Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
@@ -806,6 +806,30 @@ statt 8–11.
 Züchterzahl, auf der sie beruht. Der Rat, die Wochen-Angabe von der eigenen Samentüte
 einzutragen, bleibt — dieser Weg rechnet weiterhin am genauesten. Sobald jemand eine Sorte
 wirklich durchzählt, schlägt seine Spanne die Herleitung.
+
+### Keine große Sorten-Datenbank — entschieden am 07.09.2026
+
+Patricks Frage: „Wollen wir dann ganz viele Sorten hinterlegen, die man mit einer
+Suchfunktion wie im Lexikon findet? Bei Zamnesia gibt's ja wirklich unglaublich viele
+Sorten." Antwort nach Abwägung: **nein**, und Patrick hat zugestimmt („Wir bleiben bei der
+kleinen Variante"). Drei Gründe, damit die Frage nicht in einem halben Jahr neu aufgemacht
+wird:
+
+1. **Jeder Eintrag trüge die Züchterzahl** — genau die Daten, die sich gerade als
+   systematisch falsch erwiesen haben. Ein Katalog wäre v1.5.98 in tausendfacher Ausführung.
+2. **Die Katalogdaten gehören dem Shop.** Ein paar tausend Sortenbeschreibungen zu
+   übernehmen ist eine Lizenzfrage — bei einer App, deren Link Patrick weitergibt, keine
+   Nebensache.
+3. **Der Weg, der nachweislich richtig rechnet, braucht die Datenbank nicht.** Auf jeder
+   Samentüte steht eine Wochen-Angabe; sie gehört zu genau diesen Samen und ist damit
+   genauer als jeder Katalogmittelwert.
+
+**Stattdessen (v1.5.129):** die 45 vorhandenen Sorten auffindbar gemacht — Hinweis unter dem
+Namensfeld, Aufklapper für alle Sorten des jeweiligen Typs, und die Meldung sagt, dass die
+eigene Wochen-Angabe den Vorrang behält. Wer eine Sorte wirklich durchzählt, dessen Spanne
+wird zur gemessenen. **Nach ein paar Zyklen entsteht so eine Liste aus echten Durchläufen
+statt aus Verkaufstexten** — das ist der Weg, der langfristig besser ist als jeder
+abgeschriebene Katalog.
 
 ### Offen, mit allem Nötigen zum Weiterarbeiten
 

@@ -249,6 +249,111 @@ function pruef(name, bedingung, info) {
   }
 
   console.log('');
+  console.log('I - (v1.5.129) Die Sortensuche ist auffindbar (kleine Variante)');
+  {
+    // Patrick am 07.09.2026: "Wir bleiben bei der kleinen Variante."
+    // Statt tausender Katalog-Eintraege: die 45 vorhandenen Sorten sichtbar machen und
+    // den Weg offenhalten, der nachweislich am genauesten rechnet - die Wochen-Angabe
+    // von der eigenen Samentuete.
+    //
+    // Befund: Die Suche hing seit jeher am Feld "Name des Zyklus" (Platzhalter
+    // "z.B. Zyklus 2"). Nichts sagte, dass man dort Sorten findet. Wer seinem Zelt einen
+    // Namen gab, erfuhr nie von den 45 hinterlegten Sorten.
+    const wiz = E(`(function(){
+      openCycleWizard('dash');
+      _wizAnswers.seedType = 'auto';
+      for (var i = 0; i < 9; i++) {
+        if (document.getElementById('wiz-name')) break;
+        try { _wizNext(); } catch (e) { break; }
+      }
+      var el = document.getElementById('scr-wizard');
+      return el ? el.innerHTML : '';
+    })()`);
+    const wizText = E(`(function(){
+      var d = document.createElement('div'); d.innerHTML = document.getElementById('scr-wizard').innerHTML;
+      return d.textContent.replace(/\\s+/g, ' ').trim();
+    })()`);
+
+    pruef('Der Namensschritt ist erreichbar', /wiz-name/.test(wiz));
+    pruef('Ein Hinweis erklaert, dass man hier Sorten sucht',
+      /Tippst du hier einen/.test(wizText) && /Sortennamen/.test(wizText), wizText.slice(0, 200));
+    pruef('Er nennt die Gesamtzahl der hinterlegten Sorten',
+      new RegExp('alle ' + E('STRAINS.length') + ' hinterlegten Sorten').test(wizText), wizText.slice(0, 260));
+    pruef('Und sagt, dass die Sorte optional bleibt',
+      /Sorte ist optional/.test(wizText), wizText.slice(0, 300));
+
+    // Der Aufklapper mit den uebrigen Sorten.
+    const auf = JSON.parse(E(`(function(){
+      var el = document.getElementById('scr-wizard');
+      var knopf = [].slice.call(el.querySelectorAll('button'))
+        .filter(function(b){ return /Alle \\d+ (Automatics|Photoperiodischen) anzeigen/.test(b.textContent); })[0];
+      if (!knopf) return JSON.stringify({ knopf: false });
+      var liste = document.getElementById('wiz-alle-sorten');
+      var vorher = liste.style.display;
+      knopf.click();
+      var nachher = liste.style.display;
+      var n = liste.querySelectorAll('button').length;
+      var beschriftung = knopf.textContent.trim();
+      knopf.click();
+      return JSON.stringify({ knopf: true, vorher: vorher, nachher: nachher, weitere: n,
+        beschriftungOffen: beschriftung, wiederZu: liste.style.display });
+    })()`));
+    pruef('Es gibt einen Aufklapper fuer die uebrigen Sorten', auf.knopf === true, JSON.stringify(auf));
+    pruef('Er ist zugeklappt vorbelegt', auf.vorher === 'none', JSON.stringify(auf));
+    pruef('Ein Klick oeffnet ihn', auf.nachher === 'block', JSON.stringify(auf));
+    pruef('Darin stehen die uebrigen Sorten', auf.weitere > 5, 'anzahl=' + auf.weitere);
+    pruef('Und er laesst sich wieder schliessen', auf.wiederZu === 'none', JSON.stringify(auf));
+    // Die Zahl am Knopf muss die GEFILTERTE Menge nennen und sagen wonach gefiltert wurde -
+    // sonst steht darueber "45 Sorten" und hier "Alle 15", ohne erkennbaren Grund.
+    pruef('Der Knopf sagt, dass er nur die Automatics zeigt',
+      /Automatics/.test(auf.beschriftungOffen) || auf.beschriftungOffen === '▴ Weniger anzeigen',
+      auf.beschriftungOffen);
+
+    // Die Suche selbst.
+    const suche = JSON.parse(E(`(function(){
+      _renderStrainSuggestions('gorilla');
+      var sug = document.getElementById('wiz-strain-suggest');
+      var treffer = [].slice.call(sug.querySelectorAll('div[onclick]'))
+        .map(function(d){ return d.textContent.replace(/\\s+/g,' ').trim(); });
+      _renderStrainSuggestions('Zelt links');
+      var beiEigenemNamen = sug.style.display;
+      return JSON.stringify({ treffer: treffer, beiEigenemNamen: beiEigenemNamen });
+    })()`));
+    pruef('Ein Sortenname findet Treffer', suche.treffer.length >= 2, JSON.stringify(suche.treffer));
+    pruef('Die Treffer zeigen die Spanne mit', /\d+–\d+ d/.test(suche.treffer.join(' ')), JSON.stringify(suche.treffer));
+    pruef('Ein eigener Zeltname blendet die Liste aus (Feld bleibt frei nutzbar)',
+      suche.beiEigenemNamen === 'none', suche.beiEigenemNamen);
+  }
+
+  console.log('');
+  console.log('J - Die eigene Wochen-Angabe behaelt den Vorrang und sagt es auch');
+  {
+    const t = JSON.parse(E(`(function(){
+      var letzter = '', echt = window.toast;
+      window.toast = function(m){ letzter = m; };
+      try {
+        delete _wizAnswers.seedWeeksLo; delete _wizAnswers.seedWeeksHi;
+        _pickStrain('Northern Lights Auto');
+        var ohne = letzter;
+        _wizAnswers.seedWeeksLo = 16; _wizAnswers.seedWeeksHi = 17;
+        _pickStrain('Northern Lights Auto');
+        var mit = letzter;
+        return JSON.stringify({ ohne: ohne, mit: mit });
+      } finally { window.toast = echt; }
+    })()`));
+    pruef('Ohne eigene Wochen nennt die Meldung die Sorten-Spanne',
+      /91–104/.test(t.ohne), t.ohne);
+    pruef('Mit eigenen Wochen sagt sie, dass DIESE gelten',
+      /deiner Wochen-Angabe/.test(t.mit), t.mit);
+    pruef('Und behauptet dann keine Sorten-Spanne mehr',
+      !/91–104/.test(t.mit), t.mit);
+
+    // Gegenprobe in der Rechnung selbst: _wizFinish nimmt die Wochen, nicht den Hint.
+    pruef('Die Wochen-Angabe hat im Quelltext Vorrang vor dem Sorten-Hinweis',
+      E(`/if \\(isFinite\\(_wLo\\) && _wLo > 0\\)[\\s\\S]{0,600}else if \\(a\\.bloomDaysHint/.test(String(_wizFinish))`));
+  }
+
+  console.log('');
   console.log(`Ergebnis: ${ok} OK, ${fail} Fehler`);
   process.exit(fail ? 1 : 0);
 })();
