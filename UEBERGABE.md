@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.135** · index.html 2,24 MB · 633 Funktionen
+Stand: **v1.5.136** · index.html 2,24 MB · 633 Funktionen
 Zuletzt fortgeschrieben am 13.09.2026 (Rainbow-Plan, Abschnitt 0k). Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
@@ -195,6 +195,20 @@ Zahlen für dieselbe Frage wären der bekannte Fehler aus Abschnitt 1), die ml/T
 und „+200 ml bei Drain unter 15 %" (die Gießmenge kommt seit v1.5.112 aus dem gemessenen
 Ablauf), Verbrauchsliste und Aufstellung. Die Trainings-Zeitleiste steckt in den
 Wochen-Tipps.
+
+### Der Wochen-Tipp kam aus dem aufgeschlagenen Plan (v1.5.136)
+
+`_planStatusLine` und `_planWeekQuestion` lasen `weekFocus` über `S.presetKey`, also aus
+dem Plan, der im Düngeplan-Bildschirm offen ist. Mit Rainbow aufgeschlagen zeigte Patricks
+BioBizz-Zyklus „Bulk-Start · Ceiling-Test". Das ist v1.5.100 an einer dritten Stelle — und
+beim Nachsuchen kamen drei weitere dazu: `summarizeCycle`, `exportReportPDF` und
+`exportDiary` nannten für jeden Zyklus den aufgeschlagenen Plan. Alle behoben.
+**Für den nächsten, der sucht:** `grep -n "S.presetKey" app.js` — jede Stelle, die einen
+Zyklus kennt und trotzdem `S.presetKey` liest, ist verdächtig. **Meine erste Fassung dieses
+Absatzes behauptete, danach blieben nur unbedenkliche Stellen — nachgesehen hatte ich nicht.**
+Die Stichprobe fand die drei. Übrig sind jetzt der Düngeplan-Bildschirm und die Kopfkarte
+„Dünger & Wochenplan" in den Einstellungen (`renderSet`); beide beschreiben den
+aufgeschlagenen Plan, die Kopfkarte nennt dabei aber fest „12 Wochen" (siehe v1.5.138).
 
 ### Das Aufräumen war zu grob (v1.5.135)
 

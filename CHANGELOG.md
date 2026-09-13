@@ -2,6 +2,34 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-13 — v1.5.136
+
+- **Der Wochen-Tipp im Tageseintrag kam aus dem aufgeschlagenen Plan statt aus dem des
+  Zyklus.** Beim Einbau des Rainbow-Plans gefunden. `_planStatusLine` und
+  `_planWeekQuestion` lasen `weekFocus` aus `getPreset(S.presetKey)` — und `S.presetKey`
+  ist der Plan, der im Düngeplan-Bildschirm gerade offen ist. Dieselbe Fehlerklasse wie
+  v1.5.100, dort bei den Dosen. Nachgestellt mit Patricks Daten und einem Rainbow-Zyklus, in
+  beide Richtungen:
+
+  | aufgeschlagen | Zyklus | Statuszeile zeigte |
+  |---|---|---|
+  | BioBizz | Rainbow, Woche 4 | kein Etikett, und die Wochenfrage ohne den Tipp „Erste Pistillen notieren · Selektion · Alfa Boost nach Etikett" |
+  | Rainbow | Patricks BioBizz-Zyklus, Woche 8 | „Bulk-Start · Ceiling-Test" — aus einem Plan, mit dem er nie gedüngt hat |
+
+  Mit zwei Grows im Zelt — genau das, was Run 02 wird — hätte ein Blick in den Düngeplan
+  gereicht, um im Eintrag des anderen Grows den falschen Rat zu bekommen. Beide Stellen lesen
+  jetzt `getPlanForCycle(c).presetKey`. Der Düngeplan-Bildschirm selbst zeigt weiter den
+  aufgeschlagenen Plan; dort ist das richtig.
+- **Dieselbe Verwechslung an drei weiteren Stellen,** gefunden beim Nachsuchen nach
+  `S.presetKey`: Die Zyklus-Zusammenfassung (`summarizeCycle`), der PDF-Bericht eines Zyklus
+  (`exportReportPDF`) und der Tagebuch-Export (`exportDiary`) nannten für **jeden** Zyklus den
+  gerade aufgeschlagenen Plan. Im Tagebuch stand damit bei Run 01 „Rainbow", sobald Rainbow
+  offen war. Alle drei lesen jetzt den Plan des jeweiligen Zyklus; der Export nennt dessen
+  gespeicherten Namen.
+- Test: `test_wochentipp.js` (17 Prüfungen). Vor der Korrektur gegen v1.5.135: 10 Fehlschläge —
+  7 in Statuszeile und Wochenfrage, 3 in Abschnitt D (Patricks Zyklus hieß in Zusammenfassung und
+  Tagebuch „Rainbow Düngeplan", der PDF-Bericht las den aufgeschlagenen Plan).
+
 ## 2026-09-13 — v1.5.135
 
 - **Mein Aufräumen aus v1.5.133 hätte Patricks Dünge-Verlauf aus dem Juli namenlos gemacht.**

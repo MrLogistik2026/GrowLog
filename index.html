@@ -4414,7 +4414,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.135';
+const APP_VERSION = 'v1.5.136';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -4637,8 +4637,9 @@ function summarizeCycle(c) {
   // Strain-Details
   const strainDetails = c.strain ? getStrainDetails(c.strain) : null;
 
-  // Preset
-  const preset = S.presetKey ? getPreset(S.presetKey) : null;
+  // Preset — (v1.5.136) aus dem Plan DIESES Zyklus, nicht aus dem gerade aufgeschlagenen
+  const _planDesZyklus = getPlanForCycle(c);
+  const preset = _planDesZyklus && _planDesZyklus.presetKey ? getPreset(_planDesZyklus.presetKey) : null;
 
   return {
     id: c.id,
@@ -10358,7 +10359,9 @@ function _planStatusLine(c, iso, nurLesen) {
   const wk = p ? fertPlanWeek(c, iso, p) : null;
   if (!wk) return '';
   // weekFocus liefert ein Objekt { phase, tip } — nur die kurze Phasen-Bezeichnung nutzen.
-  const _f = (getPreset(S.presetKey)?.weekFocus || {})[wk];
+  // (v1.5.136) Der Tipp gehört zum Plan DES ZYKLUS. S.presetKey ist der Plan, der gerade im
+  // Düngeplan-Bildschirm aufgeschlagen ist — mit ihm fehlte der Tipp oder kam aus einem fremden Plan.
+  const _f = (getPreset(plan && plan.presetKey)?.weekFocus || {})[wk];
   const foc = (_f && typeof _f === 'object') ? _f.phase : (typeof _f === 'string' ? _f : null);
   // (v1.5.33) Erntefenster statt Erntetag — solange die Schätzung unscharf ist, wird das
   // auch so angezeigt. Ein einzelner Tag hier wäre eine Behauptung, die die App nicht halten kann.
@@ -10404,7 +10407,9 @@ function _planWeekQuestion(c, iso) {
   const tageInWoche = planTag - vorherGrenze;                // 1 = heute gewechselt
   if (!(tageInWoche >= 1 && tageInWoche <= 2)) return '';
 
-  const _f = (getPreset(S.presetKey)?.weekFocus || {})[wk];
+  // (v1.5.136) Der Tipp gehört zum Plan DES ZYKLUS. S.presetKey ist der Plan, der gerade im
+  // Düngeplan-Bildschirm aufgeschlagen ist — mit ihm fehlte der Tipp oder kam aus einem fremden Plan.
+  const _f = (getPreset(plan && plan.presetKey)?.weekFocus || {})[wk];
   const fokus = (_f && typeof _f === 'object') ? [_f.phase, _f.tip].filter(Boolean).join(' — ') : (typeof _f === 'string' ? _f : null);
   return `<div style="background:rgba(90,171,240,0.07);border:1px solid rgba(90,171,240,0.35);border-radius:10px;padding:12px;margin:8px 0">
     <div style="font-size:13px;font-weight:600;color:rgba(90,171,240,0.95)">🧪 Woche ${wk - 1} ist durch. Weiter zu Woche ${wk}?</div>
@@ -24454,8 +24459,9 @@ function exportReportPDF(cId) {
   const sweetSpotRate = weightMeasurements > 0 ? Math.round((sweetSpotCount / weightMeasurements) * 100) + '%' : '—';
   const totalDays = c.startDate ? isoDiff(today, c.startDate) : 0;
 
-  // Düngeplan: bevorzugt getPreset (unified access)
-  const preset = S.presetKey ? getPreset(S.presetKey) : null;
+  // Düngeplan: bevorzugt getPreset (unified access) — (v1.5.136) aus dem Plan dieses Zyklus
+  const _planDesZyklus = getPlanForCycle(c);
+  const preset = _planDesZyklus && _planDesZyklus.presetKey ? getPreset(_planDesZyklus.presetKey) : null;
   const presetName = preset?.name || '—';
 
   // Strain-Details (wenn in DB)
@@ -25168,7 +25174,9 @@ function exportDiary() {
     if (c.startDate) md += `- **Start:** ${fmtDE(c.startDate, { day:'2-digit', month:'long', year:'numeric' })}\n`;
     if (c.location) md += `- **Standort:** ${c.location}\n`;
     md += `- **Phasen:** Anzucht ${c.anzuchtDays||PHASE_DEFAULTS.anzuchtDays}d → Blüte ${c.bloomDays||PHASE_DEFAULTS.bloomDays}d → Spülen ${c.flushDays||PHASE_DEFAULTS.flushDays}d → Ice ${c.iceDays||PHASE_DEFAULTS.iceDays}d\n`;
-    if (S.presetKey) md += `- **Düngeplan:** ${getPreset(S.presetKey)?.name || S.presetKey}\n`;
+    // (v1.5.136) Jeder Zyklus mit seinem eigenen Plan — vorher stand bei allen der aufgeschlagene.
+    const _planExport = getPlanForCycle(c);
+    if (_planExport) md += `- **Düngeplan:** ${_planExport.name}\n`;
     else if ((S.products || []).length > 0) md += `- **Düngeplan:** ✨ Eigener Plan · ${S.products.length} Produkte\n`;
     md += `- **Topfgröße:** ${getPotSize(c)}L\n\n`;
 
