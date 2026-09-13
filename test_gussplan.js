@@ -61,6 +61,10 @@ async function load() {
     await new Promise((r) => { window.addEventListener('load', r, { once: true }); setTimeout(r, 5000); });
   }
   await new Promise((r) => setTimeout(r, 80));
+  // (13.09.2026) Datum festnageln: Der Test prueft Patricks Grow an einem bestimmten Tag (Tag 114, vor der Ernte).
+  // Mit der echten Uhr fiel er ab dem 09.09. um — nach der Ernte gibt es keine Endspurt-Karte
+  // und keinen Erntetag mehr. Das war kein App-Fehler, sondern ein Test, der mitalterte.
+  window.eval("setDebugDate('2026-09-06')");
   return { window, errors, E: (s) => window.eval(s) };
 }
 

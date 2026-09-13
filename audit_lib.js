@@ -6,7 +6,7 @@ async function boot(debugDate, extra) {
   window.addEventListener('error', e => runtime.push(String(e.message || e)));
   const ev = (src) => window.eval(src);
   ev(`S.cycles = []; S.entries = {}; S.fertPlans = []; S._activePlanId = null; setDebugDate(${JSON.stringify(debugDate)});`);
-  ev(`loadPreset('sensi_amnesia_auto');`);
+  ev(`loadPreset('rainbow_auto');`);
   await new Promise(r => setTimeout(r, 20));
   ev(`_modalResolve && _modalResolve(true);`);
   await new Promise(r => setTimeout(r, 40));

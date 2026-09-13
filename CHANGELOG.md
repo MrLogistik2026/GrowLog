@@ -2,6 +2,48 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-13 — v1.5.133
+
+- **Der Rainbow-Plan ersetzt die Sensi-Amnesia-Pläne.** Patrick: „Das ist unser neuer
+  Düngeplan für unseren nächsten Zyklus. Kannst du bitte meine alten Pläne, den Sensi Amnesia
+  XXL Auto bitte alle die so heißen, V6.0 und V3.4.7 — füge dafür den neuen Rainbowplan ein."
+  Die Vorlage `sensi_amnesia_auto` (V6.0) ist aus `FERT_PRESETS` entfernt, neu ist
+  `rainbow_auto` — übertragen aus seinem Plan-Blatt „Rainbow Düngeplan v1.0" (Rainbow Donut
+  Auto × Wham Boom Auto, Run 02), jede Dosis 1:1. V3.4.7 gab es nie als Vorlage im Code, nur
+  als gespeicherte Kopie in seinen Daten; sie wird beim Laden einmalig entfernt
+  (`S._sensiPlaeneAbgeloest`).
+- **Warum beim Aufräumen etwas stehen bleiben darf:** Hängt noch ein Zyklus an einem
+  Sensi-Plan — auch ein archivierter —, bleibt der Plan. Ohne ihn zeigte dieser Zyklus
+  rückwirkend die Dosen eines fremden Plans, genau das Muster aus v1.5.100. Der letzte
+  verbliebene Plan bleibt ebenfalls. Patricks laufender Zyklus rechnet mit „BioBizz Official"
+  und ist nicht betroffen.
+- **Drei Stellen nennt das Blatt ohne Zahl — die App erfindet keine:**
+
+  | Blatt | im Plan | Grund |
+  |---|---|---|
+  | Alfa Boost, Wo 4–7: „n. Label" | in keiner Woche; Hinweis am Produkt und im Wochen-Tipp | eine ausgedachte Menge ist schlimmer als eine fehlende |
+  | Bio-Bloom, Wo 10–12: „Ceiling" | 1,2 | der letzte Wert, den das Blatt selbst nennt („1,2 oder Ceiling" in Wo 9) — und niedriger als die weiteren Teststufen 1,35 / 1,5 (`ANBAU.md` 15) |
+  | Bio-Grow, Wo 12: „0,3 → 0 nur bei Trigger, pro Pflanze" | 0,3 | den Stopp lösen die Trichome aus; ein verfrühter N-Stopp ist der teurere Fehler (`ANBAU.md` 5) |
+
+  Für Woche 13 nennt das Blatt keinen EC-Korridor — dort steht deshalb auch keiner.
+- **Aus „Woche 13 · Finish" werden drei Plan-Wochen:** 13 = Rampe (Bio-Bloom 0,5 · CalMag 0,5 ·
+  Epsom 0,2), 14 = Spülen, 15 = IceFlush + Ernte. Das Blatt fasst das in einer Woche zusammen
+  und nennt „Puffer bis Wo 15"; die App braucht eigene Wochen, um am Spültag „nur Wasser" sagen
+  zu können. Die zehn Blüte-Wochen dehnen sich mit der echten Blütedauer (`planWeekBounds`):
+  Bei 91 statt 70 Blütetagen dauert eine Plan-Woche gut 9 Tage, Woche 4 beginnt trotzdem an
+  Tag 22.
+- Tests: neu `test_rainbowplan.js` (54 Prüfungen) hält jede Dosis gegen eine zweite, je
+  Produkt abgetippte Fassung des Blatts. Umgestellt auf Rainbow: Fingerabdruck in
+  `test_duengeplaene.js`, `test_dosisquelle.js`, `test_wochenfolgen.js`,
+  `test_planpause.js`, `test_startup.js` und `audit_lib.js`.
+- **Nebenbei, keine App-Änderung: drei Tests alterten mit der Uhr.** `test_ernte_iceflush.js`,
+  `test_fixes_0905.js` und `test_gussplan.js` prüfen Patricks Grow an einem bestimmten Tag, lasen aber
+  die echte Uhr. Seit dem 09.09. — nach seiner Ernte — gibt es keinen Erntetag und keine
+  Endspurt-Karte mehr, und 15 Prüfungen fielen um. Gegengeprüft am unveränderten Stand v1.5.132:
+  dort dieselben 15 Fehlschläge, also nicht durch den Rainbow-Plan verursacht. Die Tests setzen
+  das Datum jetzt fest (08.09., 05.09., 06.09.). Dabei auch den eigenen Rechenfehler gefangen:
+  Der Fingerabdruck hatte 88 Gaben, richtig sind 85.
+
 ## 2026-09-08 — v1.5.132
 
 - **Eine Warnung, die zweimal falsch war — und ein Knopf, der die Ernte 36 Tage zurückwarf.**

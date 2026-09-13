@@ -6,7 +6,7 @@ const { loadApp } = require('./harness');
   if (errors.length) fail.push('jsdom-Errors: ' + errors.join(' | '));
   const ver = ev('typeof APP_VERSION!=="undefined" ? APP_VERSION : null');
   const nProb = ev('typeof PROBLEMS!=="undefined" ? PROBLEMS.length : -1');
-  const nProd = ev('typeof FERT_PRESETS!=="undefined" ? (FERT_PRESETS.sensi_amnesia_auto.products||[]).length : -1');
+  const nProd = ev('typeof FERT_PRESETS!=="undefined" ? (FERT_PRESETS.rainbow_auto.products||[]).length : -1');
   for (const fn of ['fertPlanWeek','contextFor','_localISO','isoPlus','isoDiff','customConfirm','calcVPD','analyzeRunoff','planWeekBounds','_planWeekQuestion'])
     if (typeof window[fn] !== 'function') fail.push(fn + ' fehlt');
   if (!ver) fail.push('APP_VERSION nicht lesbar');

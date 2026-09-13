@@ -10,6 +10,10 @@
  * Plans. Bei Patricks Daten waeren das statt sechs BioBizz-Produkten neun Sensi-Produkte
  * gewesen, darunter POWHUMUS mit 10 ml/L, das in seinem laufenden Plan gar nicht vorkommt.
  * Bei unterschiedlichem doseMode kam zusaetzlich der Faktor 7/Intervall daneben.
+ *
+ * (v1.5.133) Der Sensi-Plan ist durch den Rainbow-Plan ersetzt und wird beim Laden aus
+ * Patricks Daten entfernt. Der zweite Plan wird deshalb hier aus der Rainbow-Vorlage
+ * angelegt — derselbe Gegensatz (per-watering mit POWHUMUS gegen weekly-split mit Top·Max).
  */
 const fs = require('fs');
 const path = require('path');
@@ -66,15 +70,24 @@ function pruef(name, bedingung, info) {
   else { fail++; console.log('  FEHL ' + name + (info ? '  -> ' + info : '')); }
 }
 
-// Legt einen zweiten Zyklus an, der auf den Sensi-Plan zeigt, und misst dessen
+// Legt einen Rainbow-Plan und einen zweiten Zyklus an, der darauf zeigt, und misst dessen
 // Wochendosen einmal mit dem einen und einmal mit dem anderen GLOBAL aktiven Plan.
 const AUFBAU = `(function(){
-  const sensi = S.fertPlans.find(p => p.presetKey === 'sensi_amnesia_auto');
-  const bio   = S.fertPlans.find(p => p.presetKey === 'biobizz_official');
-  if (!sensi || !bio) return JSON.stringify({ fehlt: true });
+  const pr  = FERT_PRESETS.rainbow_auto;
+  const bio = S.fertPlans.find(p => p.presetKey === 'biobizz_official');
+  if (!pr || !bio) return JSON.stringify({ fehlt: true });
+  const products = pr.products.map((p, i) => ({ id: 'rb_' + i, ...p }));
+  const schedule = {};
+  Object.entries(pr.schedule).forEach(([w, d]) => {
+    const m = {};
+    Object.entries(d).forEach(([n, v]) => { const pp = products.find(x => x.name === n); if (pp) m[pp.id] = v; });
+    schedule['w' + w] = m;
+  });
+  const rainbow = { id: 'fp_test_rainbow', name: pr.name, products, schedule, presetKey: 'rainbow_auto' };
+  S.fertPlans.push(rainbow);
   const zwei = JSON.parse(JSON.stringify(S.cycles[0]));
   zwei.id = 'testzyklus_2';
-  zwei.fertPlanId = sensi.id;
+  zwei.fertPlanId = rainbow.id;
   S.cycles.push(zwei);
   const namen = {};
   (S.fertPlans||[]).forEach(pl => (pl.products||[]).forEach(pr => { namen[pr.id] = pr.name; }));
@@ -84,12 +97,12 @@ const AUFBAU = `(function(){
     if (typeof syncActivePlanToGlobals === 'function') syncActivePlanToGlobals();
     return lesbar(getWeekDoses(cyc.id, 6, cyc));
   };
-  const zweiMitSensiGlobal = messen(sensi.id, zwei);
-  const zweiMitBioGlobal   = messen(bio.id, zwei);
-  const echtMitBioGlobal   = messen(bio.id, S.cycles[0]);
-  const echtMitSensiGlobal = messen(sensi.id, S.cycles[0]);
+  const zweiMitRainbowGlobal = messen(rainbow.id, zwei);
+  const zweiMitBioGlobal     = messen(bio.id, zwei);
+  const echtMitBioGlobal     = messen(bio.id, S.cycles[0]);
+  const echtMitRainbowGlobal = messen(rainbow.id, S.cycles[0]);
   S.cycles = S.cycles.filter(x => x.id !== 'testzyklus_2');
-  return JSON.stringify({ zweiMitSensiGlobal, zweiMitBioGlobal, echtMitBioGlobal, echtMitSensiGlobal });
+  return JSON.stringify({ zweiMitRainbowGlobal, zweiMitBioGlobal, echtMitBioGlobal, echtMitRainbowGlobal });
 })()`;
 
 (async () => {
@@ -99,8 +112,8 @@ const AUFBAU = `(function(){
   console.log('A - Ausgangslage: zwei Plaene mit unterschiedlichem doseMode');
   const { E, errors } = await load();
   pruef('Start ohne JS-Fehler', errors.length === 0, errors[0]);
-  pruef('Sensi-Plan ist per-watering',
-    E("getPreset('sensi_amnesia_auto').doseMode") === 'per-watering');
+  pruef('Rainbow-Plan ist per-watering',
+    E("getPreset('rainbow_auto').doseMode") === 'per-watering');
   pruef('BioBizz-Plan ist weekly-split',
     E("getPreset('biobizz_official').doseMode") === 'weekly-split');
   pruef('Patricks Zyklus zeigt auf BioBizz',
@@ -112,11 +125,11 @@ const AUFBAU = `(function(){
   console.log('');
   console.log('B - Der Zyklus behaelt seine Dosen, egal welcher Plan global aktiv ist');
   {
-    const a = JSON.stringify(r.zweiMitSensiGlobal);
+    const a = JSON.stringify(r.zweiMitRainbowGlobal);
     const b = JSON.stringify(r.zweiMitBioGlobal);
     pruef('Zweiter Zyklus liefert beide Male dasselbe', a === b,
-      'Sensi-global: ' + a.slice(0, 90) + ' | BioBizz-global: ' + b.slice(0, 90));
-    pruef('Es sind die Produkte SEINES Plans (POWHUMUS gehoert zu Sensi)',
+      'Rainbow-global: ' + a.slice(0, 90) + ' | BioBizz-global: ' + b.slice(0, 90));
+    pruef('Es sind die Produkte SEINES Plans (POWHUMUS gehoert zu Rainbow)',
       Object.prototype.hasOwnProperty.call(r.zweiMitBioGlobal, 'POWHUMUS'),
       Object.keys(r.zweiMitBioGlobal).join(', '));
     pruef('Kein Fremdprodukt aus dem BioBizz-Plan (Top·Max)',
@@ -128,13 +141,13 @@ const AUFBAU = `(function(){
   console.log('C - Der echte Zyklus bleibt bei seinem BioBizz-Plan');
   {
     const a = JSON.stringify(r.echtMitBioGlobal);
-    const b = JSON.stringify(r.echtMitSensiGlobal);
+    const b = JSON.stringify(r.echtMitRainbowGlobal);
     pruef('Echter Zyklus liefert beide Male dasselbe', a === b,
-      'BioBizz-global: ' + a.slice(0, 90) + ' | Sensi-global: ' + b.slice(0, 90));
+      'BioBizz-global: ' + a.slice(0, 90) + ' | Rainbow-global: ' + b.slice(0, 90));
     pruef('Es sind BioBizz-Produkte (Top·Max)',
       Object.prototype.hasOwnProperty.call(r.echtMitBioGlobal, 'Top·Max'),
       Object.keys(r.echtMitBioGlobal).join(', '));
-    pruef('Kein POWHUMUS aus dem Sensi-Plan',
+    pruef('Kein POWHUMUS aus dem Rainbow-Plan',
       !Object.prototype.hasOwnProperty.call(r.echtMitBioGlobal, 'POWHUMUS'),
       Object.keys(r.echtMitBioGlobal).join(', '));
   }

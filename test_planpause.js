@@ -37,8 +37,8 @@ const { boot } = require('./audit_lib');
 
     // 4) Auch mit Rückgrat unverändert
     const p2 = getPlanForCycle(cc);
-    p2.weekPhases = FERT_PRESETS.sensi_amnesia_auto.weekPhases.slice();
-    p2.phaseSkeleton = { ...FERT_PRESETS.sensi_amnesia_auto.phaseSkeleton };
+    p2.weekPhases = FERT_PRESETS.rainbow_auto.weekPhases.slice();
+    p2.phaseSkeleton = { ...FERT_PRESETS.rainbow_auto.phaseSkeleton };
     cc.bloomDays = 85; cc.planPause = { acc: 2, since: null, bloomBase: 85 }; saveS(); loadS();
     out.mitRueckgrat = S.cycles[0].bloomDays;
     if (S.cycles[0].bloomDays !== 85) fehler.push('mit Rückgrat verändert (' + S.cycles[0].bloomDays + ')');

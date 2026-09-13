@@ -43,7 +43,9 @@ const FINGERABDRUCK = {
   ghe_flora:           { medium: 'coco', produkte: 6,  wochen: 12, gaben: 44,  summe: 62.5 },
   hesi:                { medium: 'erde', produkte: 7,  wochen: 10, gaben: 23,  summe: 63 },
   plagron:             { medium: 'erde', produkte: 5,  wochen: 10, gaben: 22,  summe: 54 },
-  sensi_amnesia_auto:  { medium: 'erde', produkte: 10, wochen: 17, gaben: 105, summe: 109.25 },
+  // (v1.5.133) sensi_amnesia_auto (V6.0) entfernt — auf Patricks Wunsch durch den Rainbow-Plan
+  // ersetzt. Summe aus dem Plan-Blatt nachgerechnet: 87,65 ml/g ueber 85 Gaben (von Hand erst 88 verzaehlt — der Test hat es gefangen).
+  rainbow_auto:        { medium: 'erde', produkte: 9,  wochen: 15, gaben: 85,  summe: 87.65 },
 };
 
 (async () => {

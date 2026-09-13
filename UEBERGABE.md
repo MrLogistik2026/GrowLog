@@ -1,7 +1,7 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.132** · index.html 2,12 MB · 633 Funktionen
-Zuletzt fortgeschrieben am 05.09.2026. Fünf Fehler behoben: Der Widerspruch zwischen
+Stand: **v1.5.133** · index.html 2,24 MB · 633 Funktionen
+Zuletzt fortgeschrieben am 13.09.2026 (Rainbow-Plan, Abschnitt 0k). Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
 die Ernte-Kacheln widersprechen der Erntekarte nicht mehr (v1.5.99), und **die Düngermengen
@@ -161,6 +161,37 @@ Abgesichert durch `test_tageseintrag.js` (33 Prüfungen, beide Zeitzonen).
 **Noch offen am Tageseintrag:** Die 53 Knöpfe des Gießtags sind unangetastet, und der
 Einsteiger-Modus wirkt dort weiterhin kaum (26 gegen 29 Felder, Knöpfe gleichauf). Erst
 sehen, ob die Sprungmarken im Alltag reichen, bevor Blöcke verschoben werden.
+
+---
+
+## 0k · Neuer Düngeplan für Run 02: Rainbow (v1.5.133)
+
+Patrick am 13.09.2026: die Sensi-Amnesia-Pläne raus (V6.0 als Vorlage im Code, V3.4.7 als
+gespeicherte Kopie in seinen Daten), der Rainbow-Plan für den nächsten Zyklus rein.
+Übertragen aus seinem Plan-Blatt `Downloads/rainbow_duengeplan_v1_0.html` in die Vorlage
+`rainbow_auto`, jede Dosis 1:1 und gegen eine zweite Abschrift geprüft
+(`test_rainbowplan.js`). Die Einzelheiten stehen im `CHANGELOG.md`.
+
+### Offen — braucht Patricks Antwort
+
+- **Alfa Boost, Woche 4–7.** Das Blatt sagt „n. Label". Ohne die Etikett-Dosis steht Alfa
+  Boost in keiner Woche, nur als Hinweis am Produkt und im Wochen-Tipp. Sobald die Zahl
+  feststeht: `FERT_PRESETS.rainbow_auto.schedule` Woche 4–7 ergänzen **und** den
+  Fingerabdruck in `test_duengeplaene.js` sowie `BLATT` in `test_rainbowplan.js` mitziehen.
+  Einen schon auf dem Handy angelegten Plan ändert das nicht — dort im Wochenplan eintragen.
+- **Bio-Bloom, Woche 10–12** steht auf 1,2, bis sein Ceiling-Test ein Ergebnis hat.
+
+### Bewusst nicht übernommen
+
+Die Klima-Tabelle je Woche (die App hat eigene Phasen-Ziele in `getPhaseTargets` — zwei
+Zahlen für dieselbe Frage wären der bekannte Fehler aus Abschnitt 1), die ml/Topf je Woche
+und „+200 ml bei Drain unter 15 %" (die Gießmenge kommt seit v1.5.112 aus dem gemessenen
+Ablauf), Verbrauchsliste und Aufstellung. Die Trainings-Zeitleiste steckt in den
+Wochen-Tipps.
+
+**Daraus zu lernen:** Eine Vorlage zu entfernen heißt nicht nur, sie aus dem Code zu nehmen.
+Es gibt gespeicherte Kopien auf den Geräten, und an denen können Zyklen hängen — ein Plan,
+an dem ein Zyklus hängt, darf nie verschwinden.
 
 ---
 
@@ -832,7 +863,7 @@ ist — nur stimmt sie nicht. Nachgerechnet in der laufenden App:
 | Chip „Sensi Amnesia XXL · 75d" antippen | **76** |
 | „Samen bis Ernte 16–17 Wochen" eintippen | 119 |
 | Patricks laufender Grow | 116 |
-| Der App-eigene Düngeplan `sensi_amnesia_auto` (17 Wochen, `bloomDaysHint: 77`) | 116 |
+| Der damalige App-eigene Düngeplan `sensi_amnesia_auto` (17 Wochen; seit v1.5.133 entfernt) | 116 |
 
 `_wizFinish` rechnet dabei richtig (`75 − 21 − 8 − 3 = 43` Blütetage); falsch ist die
 Eingangszahl. Die Photoperioden-Sorten sind nicht betroffen, dort ist `flowering` die reine
@@ -1327,9 +1358,9 @@ cat head.html app.js tail.html | cmp - index.html && echo "BYTE-IDENTISCH OK"
 **Byte-Identität mit `cmp` ist Pflicht, bevor irgendetwas geändert wird.** Danach wird
 `app.js` geändert, mit `build.sh` neu gebaut und erneut verglichen.
 
-43 Testdateien, alle grün in beiden Zeitzonen (Stand v1.5.132) — neu dazu
+44 Testdateien, alle grün in beiden Zeitzonen (Stand v1.5.133) — neu dazu
 `test_tageseintrag` (33), `test_navwege` (28), `test_leerzustand` (27),
-`test_outdoor` (29), `test_diagnose` (38) `test_lexikon` (49), `test_kalender` (23) und `test_ernte_iceflush` (35):
+`test_outdoor` (29), `test_diagnose` (38), `test_lexikon` (49), `test_kalender` (23), `test_ernte_iceflush` (35) und `test_rainbowplan` (54):
 
 **`test_leerzustand.js` ist die Ausnahme von der Sicherungs-Regel:** Es lädt Patricks
 Sicherung bewusst **nicht**, weil der leere Speicher der Prüfgegenstand ist. Wer den
