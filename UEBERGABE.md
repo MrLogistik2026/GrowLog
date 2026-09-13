@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.137** · index.html 2,24 MB · 633 Funktionen
+Stand: **v1.5.138** · index.html 2,24 MB · 633 Funktionen
 Zuletzt fortgeschrieben am 13.09.2026 (Rainbow-Plan, Abschnitt 0k). Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
@@ -214,7 +214,8 @@ Zyklus kennt und trotzdem `S.presetKey` liest, ist verdächtig. **Meine erste Fa
 Absatzes behauptete, danach blieben nur unbedenkliche Stellen — nachgesehen hatte ich nicht.**
 Die Stichprobe fand die drei. Übrig sind jetzt der Düngeplan-Bildschirm und die Kopfkarte
 „Dünger & Wochenplan" in den Einstellungen (`renderSet`); beide beschreiben den
-aufgeschlagenen Plan, die Kopfkarte nennt dabei aber fest „12 Wochen" (siehe v1.5.138).
+aufgeschlagenen Plan. Die Kopfkarte nannte dabei fest „12 Wochen" und für die vorlagenlose
+V3.4.7-Kopie den Schlüssel „sensi_amnesia_auto" — behoben in v1.5.138.
 
 ### Das Aufräumen war zu grob (v1.5.135)
 

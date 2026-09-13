@@ -3413,7 +3413,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.137';
+const APP_VERSION = 'v1.5.138';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -19269,10 +19269,16 @@ function renderSet() {
       const hasPreset = !!S.presetKey;
       const hasCustomPlan = !hasPreset && prodCount > 0;
       const hasAnyPlan = hasPreset || hasCustomPlan;
+      // (v1.5.138) Wochenzahl und Name aus dem aufgeschlagenen Plan selbst. Fest stand hier
+      // „12 Wochen" — der Rainbow-Plan hat 15. Und ohne Vorlage (Patricks behaltene V3.4.7-Kopie,
+      // deren Vorlage seit v1.5.133 fehlt) stand der interne Schlüssel „sensi_amnesia_auto" da.
+      const _planOffen = getActivePlan() || {};
+      const _wochenZahl = Object.keys(_planOffen.schedule || {}).length;
+      const _wochenText = _wochenZahl ? ` · ${_wochenZahl} Wochen` : '';
       const planLabel = hasPreset
-        ? `<b style="color:var(--green)">${getPreset(S.presetKey)?.name || S.presetKey}</b> aktiv · ${prodCount} Produkte · 12 Wochen`
+        ? `<b style="color:var(--green)">${_planOffen.name || getPreset(S.presetKey)?.name || S.presetKey}</b> aktiv · ${prodCount} Produkte${_wochenText}`
         : hasCustomPlan
-        ? `<b style="color:var(--green)">✨ Eigener Plan</b> · ${prodCount} Produkte · 12 Wochen`
+        ? `<b style="color:var(--green)">✨ Eigener Plan</b> · ${prodCount} Produkte${_wochenText}`
         : '⚠ Noch kein Düngeplan — Tippen für Vorlage oder eigenen Plan';
       const accent = hasPreset ? 'var(--green)' : hasCustomPlan ? 'var(--green)' : 'var(--orange)';
       return `<div onclick="openDuenger()" style="background:linear-gradient(135deg, #0d1e0d, #0a1a0a);border:1px solid ${accent};border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer">

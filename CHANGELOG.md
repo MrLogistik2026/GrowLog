@@ -2,6 +2,18 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-13 — v1.5.138
+
+- **Die Kopfkarte „Dünger & Wochenplan" in den Einstellungen nannte fest „12 Wochen" — und
+  notfalls einen internen Schlüssel.** Gefunden beim Nachsuchen nach `S.presetKey` (v1.5.136).
+  Mit dem Rainbow-Plan stand dort „9 Produkte · 12 Wochen", der Plan hat 15. Und für Patricks
+  behaltene Kopie V3.4.7, deren Vorlage seit v1.5.133 fehlt, stand wörtlich
+  „**sensi_amnesia_auto** aktiv". Beides nachgestellt, bevor behoben.
+- Name und Wochenzahl kommen jetzt aus dem aufgeschlagenen Plan selbst. Die Karte beschreibt
+  weiterhin den aufgeschlagenen Plan — sie ist die Tür zum Düngeplan-Bildschirm, das ist dort
+  richtig.
+- Test: `test_kopfkarte.js` (12 Prüfungen). Vor der Korrektur gegen v1.5.137: 4 Fehlschläge.
+
 ## 2026-09-13 — v1.5.137
 
 - **Ein Plan aus dem Einrichtungs-Assistenten bekam sein Gerüst nicht mit.** Beim Einbau des
