@@ -2,6 +2,27 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-13 — v1.5.134
+
+- **„Vorlage laden" schrieb die Vergangenheit eines trocknenden Zyklus um.** Beim Einbau des
+  Rainbow-Plans gefunden und mit Patricks Daten nachgestellt: `_cycleAufPlanZeigen` (v1.5.95)
+  setzte beim Laden einer Vorlage **jeden** aktiven Zyklus auf den neuen Plan. Sein
+  Sensi-Zyklus trocknet (Tag 121, gedüngt mit „BioBizz Official"). Nach „Rainbow laden" zeigte
+  die zurückliegende Woche 6 seines Grows Silica Force, POWHUMUS und Advanced Amino statt
+  CalMag, Bio·Grow und Top·Max. Das wäre genau in dem Moment passiert, in dem er den Plan für
+  Run 02 anlegt — und niemand hätte es bemerkt, bis er einen alten Eintrag aufschlägt.
+- **Jetzt behält ein Zyklus ab dem Spülen seinen Plan.** Danach hat der Plan ihm nichts mehr
+  zu sagen; umhängen würde nur Vergangenes umschreiben, und beim Spülen stünde zusätzlich das
+  Drain-Ziel des fremden Plans da. Unverändert bleibt, was v1.5.95 wollte: Mitten im Grow hängt
+  „Vorlage laden" den Zyklus weiter um, und ein angelegter, noch nicht gestarteter Zyklus
+  bekommt den neuen Plan — für ihn lädt man ihn ja. Wer einen fertigen Zyklus bewusst
+  umstellen will, tut das in dessen Einstellungen.
+- Test: `test_planumhaengen.js` (17 Prüfungen). Vor der Korrektur gegen v1.5.133 gelaufen:
+  7 Fehlschläge (Trocknen, Spülen, nach dem Curing, und der trocknende Zyklus neben einem
+  neuen); Blüte und noch nicht gestarteter Zyklus waren schon richtig.
+  `test_planzuordnung.js` (v1.5.95) spielte an Tag 110 — mitten im Spülen, also genau im Fall,
+  der jetzt bewusst nicht mehr umhängt. Er prüft jetzt Tag 61 in der Blüte, wofür er gedacht war.
+
 ## 2026-09-13 — v1.5.133
 
 - **Der Rainbow-Plan ersetzt die Sensi-Amnesia-Pläne.** Patrick: „Das ist unser neuer

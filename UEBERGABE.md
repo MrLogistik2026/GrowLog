@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.133** · index.html 2,24 MB · 633 Funktionen
+Stand: **v1.5.134** · index.html 2,24 MB · 633 Funktionen
 Zuletzt fortgeschrieben am 13.09.2026 (Rainbow-Plan, Abschnitt 0k). Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
@@ -188,6 +188,14 @@ Zahlen für dieselbe Frage wären der bekannte Fehler aus Abschnitt 1), die ml/T
 und „+200 ml bei Drain unter 15 %" (die Gießmenge kommt seit v1.5.112 aus dem gemessenen
 Ablauf), Verbrauchsliste und Aufstellung. Die Trainings-Zeitleiste steckt in den
 Wochen-Tipps.
+
+### Beim Laden hing der trocknende Zyklus mit um (v1.5.134)
+
+Beim Einbau gefunden: „Vorlage laden" setzte **jeden** aktiven Zyklus auf den neuen Plan
+(`_cycleAufPlanZeigen`, v1.5.95). Hätte Patrick den Rainbow-Plan geladen, während Run 01
+trocknet, hätten dessen alte Einträge Rainbow-Dosen gezeigt. Jetzt behält ein Zyklus ab dem
+Spülen seinen Plan; mitten im Grow und vor dem Start wird weiter umgehängt.
+**Für Patrick heißt das:** Er kann den Rainbow-Plan jetzt laden — Run 01 bleibt bei BioBizz.
 
 **Daraus zu lernen:** Eine Vorlage zu entfernen heißt nicht nur, sie aus dem Code zu nehmen.
 Es gibt gespeicherte Kopien auf den Geräten, und an denen können Zyklen hängen — ein Plan,

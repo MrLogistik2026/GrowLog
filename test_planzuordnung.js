@@ -5,7 +5,10 @@ const { boot } = require('./audit_lib');
   const out = {}, fehler = [];
   ev(`(function(){
     const c = S.cycles[0];
-    c.startDate = isoPlus(todayISO(), -109); c.anzuchtDays = 21; c.bloomDays = 85; c.intBloom = 3;
+    // (v1.5.134) Tag 61 statt Tag 110: Mitten in der Blüte hängt „Vorlage laden" den Zyklus um —
+    // das prüft dieser Test. Ab dem Spülen behält ein Zyklus seinen Plan (test_planumhaengen.js);
+    // an Tag 110 lief dieser Test deshalb in genau die neue Regel.
+    c.startDate = isoPlus(todayISO(), -60); c.anzuchtDays = 21; c.bloomDays = 85; c.intBloom = 3;
     saveS(); loadPreset('biobizz_master');
   })()`);
   await new Promise(x => setTimeout(x, 40));

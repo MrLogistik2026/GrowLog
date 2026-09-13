@@ -3413,7 +3413,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.133';
+const APP_VERSION = 'v1.5.134';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -18621,10 +18621,22 @@ function assignActivePlanToCycle(cId) {
 function _cycleAufPlanZeigen(planId) {
   if (!planId) return 0;
   let n = 0;
+  const heute = todayISO();
   (S.cycles || []).forEach(c => {
     if (!c || c.archived) return;
     if (!c.active) return;
     if (c.fertPlanId === planId) return;
+    // (v1.5.134) Ein Zyklus, dessen Düngung vorbei ist, behält seinen Plan. Ab dem Spülen hat
+    // der Plan für ihn nichts mehr zu sagen — umhängen würde nur seine Vergangenheit
+    // umschreiben: Die zurückliegenden Tage zeigten die Dosen des neuen Plans, und am
+    // Spültag stünde dessen Drain-Ziel. Genau so lädt man aber den Plan für den nächsten
+    // Grow, während der alte noch trocknet. Wer einen solchen Zyklus bewusst umstellen will,
+    // tut das in seinen Einstellungen.
+    const _p = c.startDate ? phase(heute, c) : null;
+    const _duengungVorbei = _p
+      ? ['flush', 'ice', 'harvest', 'dry', 'cure'].includes(_p.ph)
+      : !!(c.startDate && heute > c.startDate);   // nach dem Curing liefert phase() nichts mehr
+    if (_duengungVorbei) return;
     c.fertPlanId = planId;
     n++;
   });
