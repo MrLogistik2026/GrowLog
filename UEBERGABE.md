@@ -1404,9 +1404,15 @@ cat head.html app.js tail.html | cmp - index.html && echo "BYTE-IDENTISCH OK"
 **Byte-Identität mit `cmp` ist Pflicht, bevor irgendetwas geändert wird.** Danach wird
 `app.js` geändert, mit `build.sh` neu gebaut und erneut verglichen.
 
-44 Testdateien, alle grün in beiden Zeitzonen (Stand v1.5.133) — neu dazu
+48 Testdateien, alle grün in beiden Zeitzonen (Stand v1.5.138) — neu dazu
 `test_tageseintrag` (33), `test_navwege` (28), `test_leerzustand` (27),
-`test_outdoor` (29), `test_diagnose` (38), `test_lexikon` (49), `test_kalender` (23), `test_ernte_iceflush` (35) und `test_rainbowplan` (54):
+`test_outdoor` (29), `test_diagnose` (38), `test_lexikon` (49), `test_kalender` (23), `test_ernte_iceflush` (35), `test_rainbowplan` (61), `test_planumhaengen` (17),
+`test_wochentipp` (17), `test_assistentplan` (33) und `test_kopfkarte` (12):
+
+**Tests mit Patricks Grow an einem bestimmten Tag setzen das Datum fest** (`setDebugDate`). Mit
+der echten Uhr fielen am 13.09.2026 15 Prüfungen in drei Dateien um — nicht wegen eines Fehlers,
+sondern weil sein Grow seit dem 09.09. geerntet ist. Neue Tests gegen seine Daten: Datum immer
+festlegen.
 
 **`test_leerzustand.js` ist die Ausnahme von der Sicherungs-Regel:** Es lädt Patricks
 Sicherung bewusst **nicht**, weil der leere Speicher der Prüfgegenstand ist. Wer den
