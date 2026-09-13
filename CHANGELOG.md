@@ -2,6 +2,25 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-13 — v1.5.139
+
+- **Die Karte „Dieser Plan ist deinem Grow noch nicht zugewiesen" bot einen trocknenden Zyklus
+  zur Übernahme an.** Gefunden bei der Vorführung im Browser: Patrick lädt den Rainbow-Plan,
+  während Run 01 trocknet. v1.5.134 lässt Run 01 dabei richtig an „BioBizz Official" — aber der
+  Düngeplan-Bildschirm zeigte sofort ganz oben eine orange Karte mit großem grünem Knopf
+  „‚Rainbow Düngeplan (v1.0)' für ‚Sensi Amnesia XXL Auto' übernehmen". Ein Tipp darauf hätte
+  genau das getan, was v1.5.134 verhindert: die alten Tage von Run 01 mit Rainbow-Dosen gezeigt.
+  Die Karte zählte jeden aktiven Zyklus als „laufend" — mit ihrer eigenen Kopie der Regel.
+- **Jetzt eine Regel an einer Stelle:** `_duengungVorbei(c, iso)` (ab dem Spülen, und nach dem
+  Curing). „Vorlage laden" und die Karte fragen beide sie. Mitten im Grow warnt die Karte weiter;
+  neben einem trocknenden Run 01 bietet sie nur noch den neuen, nicht gestarteten Run 02 an.
+  Wer einen fertigen Zyklus bewusst umstellen will, tut das weiter in dessen Einstellungen.
+- Test: `test_zuweisungskarte.js` (10 Prüfungen). Vor der Korrektur gegen v1.5.138: 3 Fehlschläge.
+- **Daraus zu lernen:** v1.5.134 hatte die Regel an der Stelle eingebaut, an der ich den Fehler
+  gefunden hatte — nicht an der, wo dieselbe Frage („läuft dieser Zyklus noch?") ein zweites Mal
+  gestellt wird. Gefunden hat es erst das Durchklicken, nicht der Test: Er prüfte, was „Vorlage
+  laden" tut, nicht, was der Bildschirm danach anbietet.
+
 ## 2026-09-13 — v1.5.138
 
 - **Die Kopfkarte „Dünger & Wochenplan" in den Einstellungen nannte fest „12 Wochen" — und

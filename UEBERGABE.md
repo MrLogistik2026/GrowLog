@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.138** · index.html 2,24 MB · 633 Funktionen
+Stand: **v1.5.139** · index.html 2,24 MB · 634 Funktionen
 Zuletzt fortgeschrieben am 13.09.2026 (Rainbow-Plan, Abschnitt 0k). Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
@@ -234,6 +234,10 @@ Beim Einbau gefunden: „Vorlage laden" setzte **jeden** aktiven Zyklus auf den 
 trocknet, hätten dessen alte Einträge Rainbow-Dosen gezeigt. Jetzt behält ein Zyklus ab dem
 Spülen seinen Plan; mitten im Grow und vor dem Start wird weiter umgehängt.
 **Für Patrick heißt das:** Er kann den Rainbow-Plan jetzt laden — Run 01 bleibt bei BioBizz.
+
+**Nachtrag v1.5.139:** Die orange Karte „noch nicht zugewiesen" im Düngeplan-Bildschirm bot
+Run 01 danach trotzdem per Knopf zur Übernahme an — sie hatte ihre eigene Kopie der Regel.
+Beide fragen jetzt `_duengungVorbei(c, iso)`. Gefunden erst beim Durchklicken im Browser.
 
 **Daraus zu lernen:** Eine Vorlage zu entfernen heißt nicht nur, sie aus dem Code zu nehmen.
 Es gibt gespeicherte Kopien auf den Geräten, und an denen können Zyklen hängen — ein Plan,
@@ -1404,10 +1408,10 @@ cat head.html app.js tail.html | cmp - index.html && echo "BYTE-IDENTISCH OK"
 **Byte-Identität mit `cmp` ist Pflicht, bevor irgendetwas geändert wird.** Danach wird
 `app.js` geändert, mit `build.sh` neu gebaut und erneut verglichen.
 
-48 Testdateien, alle grün in beiden Zeitzonen (Stand v1.5.138) — neu dazu
+49 Testdateien, alle grün in beiden Zeitzonen (Stand v1.5.139) — neu dazu
 `test_tageseintrag` (33), `test_navwege` (28), `test_leerzustand` (27),
 `test_outdoor` (29), `test_diagnose` (38), `test_lexikon` (49), `test_kalender` (23), `test_ernte_iceflush` (35), `test_rainbowplan` (61), `test_planumhaengen` (17),
-`test_wochentipp` (17), `test_assistentplan` (33) und `test_kopfkarte` (12):
+`test_wochentipp` (17), `test_assistentplan` (33), `test_kopfkarte` (12) und `test_zuweisungskarte` (10):
 
 **Tests mit Patricks Grow an einem bestimmten Tag setzen das Datum fest** (`setDebugDate`). Mit
 der echten Uhr fielen am 13.09.2026 15 Prüfungen in drei Dateien um — nicht wegen eines Fehlers,

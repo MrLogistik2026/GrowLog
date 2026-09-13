@@ -4414,7 +4414,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.138';
+const APP_VERSION = 'v1.5.139';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -19537,7 +19537,11 @@ function renderDuenger() {
   // Profi, der mehrere Grows bewusst auf verschiedenen Plänen laufen lässt.
   let assignBanner = '';
   if (activePlan) {
-    const _running = active();
+    // (v1.5.139) Nur Zyklen, die noch gedüngt werden. Vorher bot die Karte an, den gerade
+    // geladenen Plan einem trocknenden Zyklus zuzuweisen — ein Tipp auf den großen grünen Knopf
+    // hätte dessen Vergangenheit umgeschrieben, genau das, was v1.5.134 beim Laden verhindert.
+    const _heuteZuweisung = todayISO();
+    const _running = active().filter(c => !_duengungVorbei(c, _heuteZuweisung));
     const _off = _running.filter(c => c.fertPlanId !== activeId);
     if (_running.length >= 1 && _off.length === _running.length) {
       if (_off.length === 1) {
@@ -19637,6 +19641,18 @@ function assignActivePlanToCycle(cId) {
  * dem alten Plan rechnete. Zwei verschiedene Wahrheiten auf zwei Bildschirmen, und die
  * Dosierungen im Eintrag passten zu keiner sichtbaren Tabelle.
  */
+/**
+ * (v1.5.139) Ist die Düngung dieses Zyklus vorbei? Ab dem Spülen hat ein Plan dem Zyklus nichts
+ * mehr zu sagen. Nach dem Curing liefert phase() nichts mehr — dann zählt, dass der Start in der
+ * Vergangenheit liegt. Ein noch nicht gestarteter Zyklus ist nicht vorbei.
+ * Eine Quelle für „Vorlage laden" (v1.5.134) und den Zuweisungs-Hinweis im Düngeplan (v1.5.139).
+ */
+function _duengungVorbei(c, iso) {
+  if (!c || !c.startDate) return false;
+  const p = phase(iso, c);
+  return p ? ['flush', 'ice', 'harvest', 'dry', 'cure'].includes(p.ph) : iso > c.startDate;
+}
+
 function _cycleAufPlanZeigen(planId) {
   if (!planId) return 0;
   let n = 0;
@@ -19651,11 +19667,7 @@ function _cycleAufPlanZeigen(planId) {
     // Spültag stünde dessen Drain-Ziel. Genau so lädt man aber den Plan für den nächsten
     // Grow, während der alte noch trocknet. Wer einen solchen Zyklus bewusst umstellen will,
     // tut das in seinen Einstellungen.
-    const _p = c.startDate ? phase(heute, c) : null;
-    const _duengungVorbei = _p
-      ? ['flush', 'ice', 'harvest', 'dry', 'cure'].includes(_p.ph)
-      : !!(c.startDate && heute > c.startDate);   // nach dem Curing liefert phase() nichts mehr
-    if (_duengungVorbei) return;
+    if (_duengungVorbei(c, heute)) return;
     c.fertPlanId = planId;
     n++;
   });
