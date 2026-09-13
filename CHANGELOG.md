@@ -2,6 +2,33 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-13 — v1.5.135
+
+- **Mein Aufräumen aus v1.5.133 hätte Patricks Dünge-Verlauf aus dem Juli namenlos gemacht.**
+  Beim Weiterprüfen gefunden — v1.5.133 und v1.5.134 waren da schon hochgeladen. Das Aufräumen
+  entfernte eine Sensi-Kopie, sobald kein Zyklus mehr per `c.fertPlanId` auf sie zeigt.
+  Patricks Zyklus hängt aber erst seit dem 03.09. an „BioBizz Official"; gedüngt hat er vorher
+  mit V3.4.7, und genau dessen Produkt-IDs stehen in seinen Einträgen — in der Sicherung vom
+  04.09. als Dosen, Dosis-Bezüge und 149 Misch-Häkchen, etwa am 28.07. und 31.07. (POWHUMUS,
+  Bio-Bloom). Ohne den Plan lassen sich diese Zahlen keinem Produkt mehr zuordnen: Sie blieben
+  im Speicher, aber ohne Namen.
+- **Jetzt bleibt ein Plan auch dann, wenn ein gespeicherter Eintrag eines seiner Produkte
+  trägt.** Bei Patrick heißt das: V3.4.7 bleibt in seiner Plan-Liste — gegen seinen Wunsch, aber
+  sein Verlauf ist mehr wert als eine aufgeräumte Liste. Die Vorlage V6.0 bleibt entfernt, und
+  in der Vorlagen-Auswahl steht kein Sensi-Plan mehr.
+- **Wer v1.5.133 oder v1.5.134 schon geöffnet hat,** bei dem ist eine unbenutzt geglaubte Kopie
+  bereits gelöscht und das Aufräumen als erledigt vermerkt. Zurück kommt sie nur aus einer
+  Sicherung.
+- Test: `test_rainbowplan.js` Abschnitt C neu gefasst (61 Prüfungen). Gegen den hochgeladenen
+  Stand v1.5.134 gelaufen: 4 Fehlschläge, danach grün. „Wirklich unbenutzt" wird dort mit einer
+  Sicherung ohne diese Verweise nachgestellt; dazu die Probe, dass eine behaltene, gerade
+  aufgeschlagene Kopie ohne ihre Vorlage keinen Fehler und kein „undefined" erzeugt.
+- **Daraus zu lernen:** „Wird dieser Plan noch gebraucht?" hat mehr als eine Antwortstelle. Ich
+  habe die eine geprüft, die mir einfiel, statt im Zustand nachzusehen, wo die Produkt-IDs
+  überall liegen. Ein Durchlauf über die Sicherung nach genau diesen IDs hat die anderen Stellen
+  in Sekunden gefunden. **Vor jedem Löschen von Nutzerdaten: die Sicherung nach Verweisen auf
+  das zu Löschende durchsuchen — nicht nach den Verweisen, an die man denkt.**
+
 ## 2026-09-13 — v1.5.134
 
 - **„Vorlage laden" schrieb die Vergangenheit eines trocknenden Zyklus um.** Beim Einbau des

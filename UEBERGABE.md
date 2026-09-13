@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.134** · index.html 2,24 MB · 633 Funktionen
+Stand: **v1.5.135** · index.html 2,24 MB · 633 Funktionen
 Zuletzt fortgeschrieben am 13.09.2026 (Rainbow-Plan, Abschnitt 0k). Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
@@ -174,6 +174,13 @@ gespeicherte Kopie in seinen Daten), der Rainbow-Plan für den nächsten Zyklus 
 
 ### Offen — braucht Patricks Antwort
 
+- **V3.4.7 bleibt in seinen Daten (v1.5.135).** Seine Einträge aus dem Juli tragen die
+  Produkte dieses Plans; ohne ihn hätten sie keine Namen mehr. Ob die Kopie in der Plan-Liste
+  ausgeblendet statt gelöscht werden soll, entscheidet Patrick. **Auf dem Handy nachsehen:**
+  Steht „Sensi Amnesia XXL Auto (V3.4.7)" nach dem Update noch unter „Düngepläne"? Hatte er
+  v1.5.133/134 schon zweimal geöffnet, ist sie dort weg — dann lässt sie sich aus der Sicherung
+  vom 04.09. zurückholen (eine kleine Hilfsseite, die nur diesen Plan einspielt; nicht gebaut,
+  auf Zuruf).
 - **Alfa Boost, Woche 4–7.** Das Blatt sagt „n. Label". Ohne die Etikett-Dosis steht Alfa
   Boost in keiner Woche, nur als Hinweis am Produkt und im Wochen-Tipp. Sobald die Zahl
   feststeht: `FERT_PRESETS.rainbow_auto.schedule` Woche 4–7 ergänzen **und** den
@@ -188,6 +195,16 @@ Zahlen für dieselbe Frage wären der bekannte Fehler aus Abschnitt 1), die ml/T
 und „+200 ml bei Drain unter 15 %" (die Gießmenge kommt seit v1.5.112 aus dem gemessenen
 Ablauf), Verbrauchsliste und Aufstellung. Die Trainings-Zeitleiste steckt in den
 Wochen-Tipps.
+
+### Das Aufräumen war zu grob (v1.5.135)
+
+v1.5.133 entfernte eine Sensi-Kopie, sobald kein Zyklus mehr per `c.fertPlanId` auf sie
+zeigt. Gespeicherte Einträge legen Dosen, Dosis-Bezug und Misch-Häkchen aber nach Produkt-ID
+ab — und Patricks Zyklus war am 03.09. von V3.4.7 auf „BioBizz Official" umgehängt worden.
+Seine Juli-Einträge wären namenlos geworden. Jetzt zählt jeder Verweis. **Regel: Vor dem
+Löschen von Nutzerdaten die Sicherung nach den IDs des zu Löschenden durchsuchen** — ein
+kurzes Skript über `growsmart-sicherung-2026-09-04.txt` genügt und findet auch die Stellen,
+an die man nicht denkt.
 
 ### Beim Laden hing der trocknende Zyklus mit um (v1.5.134)
 

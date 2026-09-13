@@ -4414,7 +4414,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.134';
+const APP_VERSION = 'v1.5.135';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -5249,7 +5249,20 @@ function loadS() {
     if (!S._sensiPlaeneAbgeloest) {
       const _istSensi = pl => !!pl && (pl.presetKey === 'sensi_amnesia_auto' || /^Sensi Amnesia XXL Auto/.test(pl.name || ''));
       const _benutzt = new Set((S.cycles || []).map(c => c && c.fertPlanId).filter(Boolean));
-      const _weg = (S.fertPlans || []).filter(pl => _istSensi(pl) && !_benutzt.has(pl.id));
+      // (v1.5.135) Auch gespeicherte Einträge zeigen auf einen Plan: Dosen, Dosis-Bezug und
+      // Misch-Häkchen liegen nach Produkt-ID ab. Patricks Zyklus hängt seit dem 03.09. an
+      // „BioBizz Official", seine Einträge aus dem Juli tragen aber die Produkte von V3.4.7 —
+      // ohne den Plan ließen sie sich keinem Produkt mehr zuordnen. v1.5.133 sah nur auf
+      // c.fertPlanId und hätte V3.4.7 deshalb gelöscht.
+      const _gespeicherteIds = new Set();
+      Object.values(S.entries || {}).forEach(e => Object.values((e && e.cycleData) || {}).forEach(cd => {
+        if (!cd) return;
+        ['doses', 'doseRef', 'mixChecks'].forEach(f => {
+          if (cd[f] && typeof cd[f] === 'object') Object.keys(cd[f]).forEach(id => _gespeicherteIds.add(id));
+        });
+      }));
+      const _inEintraegen = pl => (pl.products || []).some(pr => pr && _gespeicherteIds.has(pr.id));
+      const _weg = (S.fertPlans || []).filter(pl => _istSensi(pl) && !_benutzt.has(pl.id) && !_inEintraegen(pl));
       if (_weg.length && _weg.length < (S.fertPlans || []).length) {
         const _wegIds = new Set(_weg.map(pl => pl.id));
         S.fertPlans = S.fertPlans.filter(pl => !_wegIds.has(pl.id));

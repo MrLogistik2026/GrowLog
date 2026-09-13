@@ -180,34 +180,62 @@ const ZYKLUS = (bluete) => `(function(){
   console.log('\nB - Die Sensi-Vorlage ist weg, Rainbow steht in der Auswahl');
   pruef('FERT_PRESETS kennt sensi_amnesia_auto nicht mehr', E("typeof FERT_PRESETS.sensi_amnesia_auto") === 'undefined');
   pruef('Keine Vorlage heißt mehr „Sensi Amnesia"', E("Object.values(FERT_PRESETS).filter(p => /Sensi Amnesia/.test(p.name)).length") === 0);
-  const bild = JSON.parse(E(`(function(){ renderDuenger(); const t = document.getElementById('scr-duenger').textContent;
-    return JSON.stringify({ rainbow: t.includes('Rainbow Düngeplan (v1.0)'), sensiPlan: /Sensi Amnesia XXL Auto \\(V/.test(t) }); })()`));
-  pruef('Düngeplan-Bildschirm bietet den Rainbow-Plan an', bild.rainbow);
-  pruef('Düngeplan-Bildschirm zeigt keinen Sensi-Plan mehr', !bild.sensiPlan);
+  // Geprüft wird die Vorlagen-Auswahl („Düngeplan wählen"), nicht der ganze Bildschirm: Patricks
+  // gespeicherte Kopie V3.4.7 bleibt seit v1.5.135 in seiner Plan-Liste stehen (siehe C).
+  const bild = JSON.parse(E(`(function(){ renderDuenger();
+    const vorlagen = Array.from(document.querySelectorAll('#scr-duenger button[onclick^="loadPreset("]')).map(b => b.textContent.replace(/\\s+/g, ' ').trim());
+    return JSON.stringify({ vorlagen, rainbow: vorlagen.some(v => v.includes('Rainbow Düngeplan (v1.0)')), sensi: vorlagen.filter(v => /Sensi/.test(v)) }); })()`));
+  pruef('Vorlagen-Auswahl bietet den Rainbow-Plan an', bild.rainbow, bild.vorlagen.length + ' Vorlagen');
+  pruef('Vorlagen-Auswahl enthält keinen Sensi-Plan mehr', bild.vorlagen.length > 0 && bild.sensi.length === 0, bild.sensi.join(' | '));
 
   // ------------------------------------------------------------------------------------
-  console.log('\nC - Patricks gespeicherte Sensi-Kopie (V3.4.7) wird beim Laden aufgeräumt');
+  console.log('\nC - Aufräumen der gespeicherten Sensi-Kopie (V3.4.7)');
+  // Entfernt aus einer Sicherung alles, was in Einträgen auf Produkte von V3.4.7 zeigt — so sieht
+  // ein Gerät aus, auf dem die Kopie wirklich unbenutzt ist.
+  const ohneVerweise = (st) => {
+    const ids = new Set(((st.fertPlans.find(p => p.id === V347_ID) || {}).products || []).map(p => p.id));
+    Object.values(st.entries || {}).forEach(e => Object.values((e && e.cycleData) || {}).forEach(cd => {
+      ['doses', 'doseRef', 'mixChecks'].forEach(f => { if (cd && cd[f]) Object.keys(cd[f]).forEach(k => { if (ids.has(k)) delete cd[f][k]; }); });
+    }));
+  };
   {
-    const r = JSON.parse(E(`JSON.stringify({ ids: S.fertPlans.map(p => p.id), namen: S.fertPlans.map(p => p.name),
-      aktiv: S._activePlanId, zyklus: S.cycles.find(c => c.active).fertPlanId, flag: S._sensiPlaeneAbgeloest,
-      presetKey: S.presetKey })`));
-    pruef('V3.4.7 ist entfernt', !r.ids.includes(V347_ID), r.namen.join(', '));
+    // (v1.5.135) Patricks echte Daten: Seine Einträge aus dem Juli tragen die Produkte von V3.4.7,
+    // obwohl der Zyklus inzwischen an BioBizz hängt. Dann bleibt der Plan — v1.5.133 hätte ihn gelöscht.
+    const r = JSON.parse(E(`(function(){
+      const v347 = S.fertPlans.find(p => p.id === '${V347_ID}');
+      const ids = new Set(((v347 || {}).products || []).map(p => p.id));
+      let verweise = 0;
+      Object.values(S.entries).forEach(e => Object.values(e.cycleData || {}).forEach(cd =>
+        ['doses', 'doseRef', 'mixChecks'].forEach(f => Object.keys((cd && cd[f]) || {}).forEach(k => { if (ids.has(k)) verweise++; }))));
+      return JSON.stringify({ ids: S.fertPlans.map(p => p.id), namen: S.fertPlans.map(p => p.name), verweise,
+        aktiv: S._activePlanId, zyklus: S.cycles.find(c => c.active).fertPlanId, flag: S._sensiPlaeneAbgeloest, presetKey: S.presetKey });
+    })()`));
+    pruef('Patricks Einträge tragen Produkte von V3.4.7', r.verweise > 0, r.verweise);
+    pruef('V3.4.7 bleibt deshalb stehen', r.ids.includes(V347_ID), r.namen.join(', '));
     pruef('BioBizz Official bleibt', r.ids.includes(BIO_ID));
     pruef('Sein Zyklus hängt weiter an BioBizz', r.zyklus === BIO_ID, r.zyklus);
     pruef('Der aktive Plan bleibt BioBizz', r.aktiv === BIO_ID && r.presetKey === 'biobizz_official', r.aktiv + ' / ' + r.presetKey);
     pruef('Aufräumen ist als erledigt vermerkt', r.flag === true);
-    const nachLaden = JSON.parse(E(`(function(){ saveS(); loadS(); return JSON.stringify({ n: S.fertPlans.length, ids: S.fertPlans.map(p => p.id) }); })()`));
-    pruef('Nach Speichern und Neuladen unverändert', nachLaden.n === r.ids.length && !nachLaden.ids.includes(V347_ID));
+    const nachLaden = JSON.parse(E(`(function(){ saveS(); loadS(); return JSON.stringify({ ids: S.fertPlans.map(p => p.id) }); })()`));
+    pruef('Nach Speichern und Neuladen unverändert', nachLaden.ids.length === r.ids.length && nachLaden.ids.includes(V347_ID));
+  }
+  {
+    // Dieselben Daten ohne diese Verweise: Dann ist die Kopie wirklich unbenutzt und geht.
+    const { E: E1, errors: err1 } = await load(ohneVerweise);
+    pruef('Ohne Verweise: Start ohne JS-Fehler', err1.length === 0, err1[0]);
+    pruef('Ohne Verweise: V3.4.7 ist entfernt', E1(`S.fertPlans.some(p => p.id === '${V347_ID}')`) === false);
+    pruef('Ohne Verweise: BioBizz bleibt aktiv', E1('S._activePlanId') === BIO_ID);
   }
   {
     // Ein Sensi-Plan, an dem noch ein Zyklus hängt, darf nicht verschwinden.
-    const { E: E2 } = await load((st) => { st.cycles[0].fertPlanId = V347_ID; });
+    const { E: E2 } = await load((st) => { ohneVerweise(st); st.cycles[0].fertPlanId = V347_ID; });
     pruef('Benutzter Sensi-Plan bleibt stehen', E2(`S.fertPlans.some(p => p.id === '${V347_ID}')`) === true);
     pruef('… und der Zyklus rechnet weiter mit ihm', E2(`(getPlanForCycle(S.cycles[0]) || {}).id`) === V347_ID);
   }
   {
     // Ein archivierter Zyklus zählt genauso.
     const { E: E3 } = await load((st) => {
+      ohneVerweise(st);
       const alt = JSON.parse(JSON.stringify(st.cycles[0]));
       alt.id = 'alter_zyklus'; alt.active = false; alt.archived = true; alt.fertPlanId = V347_ID;
       st.cycles.push(alt);
@@ -216,10 +244,24 @@ const ZYKLUS = (bluete) => `(function(){
   }
   {
     // War der Sensi-Plan gerade im Düngeplan-Bildschirm aufgeschlagen, springt die Auswahl auf den Plan des Zyklus.
-    const { E: E4, errors: err4 } = await load((st) => { st._activePlanId = V347_ID; st.presetKey = 'sensi_amnesia_auto'; });
+    const { E: E4, errors: err4 } = await load((st) => { ohneVerweise(st); st._activePlanId = V347_ID; st.presetKey = 'sensi_amnesia_auto'; });
     pruef('Start ohne JS-Fehler, obwohl die Sensi-Kopie aufgeschlagen war', err4.length === 0, err4[0]);
     pruef('Aufgeschlagener Sensi-Plan: Auswahl springt auf BioBizz', E4('S._activePlanId') === BIO_ID, E4('S._activePlanId'));
     pruef('… und S.presetKey zeigt nicht mehr auf die gelöschte Vorlage', E4('S.presetKey') === 'biobizz_official', E4('S.presetKey'));
+  }
+  {
+    // Bleibt die Kopie stehen und ist sie aufgeschlagen, zeigt S.presetKey auf eine Vorlage, die es
+    // nicht mehr gibt. Düngeplan-Bildschirm und Tageseintrag müssen das aushalten.
+    const { E: E7, errors: err7 } = await load((st) => { st._activePlanId = V347_ID; st.presetKey = 'sensi_amnesia_auto'; });
+    const t = JSON.parse(E7(`(function(){
+      renderDuenger(); openEntry(todayISO());
+      const d = document.getElementById('scr-duenger').textContent;
+      return JSON.stringify({ aktiv: S._activePlanId, name: (getActivePlan() || {}).name, undef: /undefined|NaN/.test(d),
+        produkte: (getActivePlan() || {}).products ? getActivePlan().products.length : 0 });
+    })()`));
+    pruef('Behaltene Kopie aufgeschlagen: kein JS-Fehler', err7.length === 0, err7[0]);
+    pruef('… sie bleibt aufgeschlagen, mit ihren Produkten', t.aktiv === V347_ID && t.produkte > 0, t.name + ' / ' + t.produkte);
+    pruef('… und der Düngeplan-Bildschirm zeigt kein „undefined" oder „NaN"', !t.undef);
   }
   {
     // Der letzte Plan bleibt immer.
