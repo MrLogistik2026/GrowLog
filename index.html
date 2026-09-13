@@ -4414,7 +4414,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.136';
+const APP_VERSION = 'v1.5.137';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -23222,7 +23222,7 @@ function _wizFinish() {
         });
         schedule['w' + w] = mapped;
       });
-      S.fertPlans.push({
+      const neuerPlan = {
         id: newId,
         name: pr.name,
         products, schedule,
@@ -23231,7 +23231,14 @@ function _wizFinish() {
         drainInfo: pr.drainInfo || null,
         presetKey: key,
         createdAt: Date.now(),
-      });
+      };
+      // (v1.5.137) Dasselbe Gerüst wie über „Vorlage laden": Rückgrat, Skelett, Tagesgrenzen,
+      // EC-Ziele und der Dünger/Wasser-Rhythmus. Dieser Weg hatte seine eigene, ältere Kopie
+      // des Anlege-Codes und bekam nichts davon mit — das Rückgrat kam erst beim nächsten Start
+      // über die Migration nach, der Rhythmus nie: Ein Plan mit Wasser-Tagen düngte bei jedem Guss.
+      _planRueckgratAuffrischen(neuerPlan, pr);
+      if (pr.feedWaterRhythm) neuerPlan.feedWaterRhythm = { ...pr.feedWaterRhythm };
+      S.fertPlans.push(neuerPlan);
       S._activePlanId = newId;
       syncActivePlanToGlobals();
       resolvedPlanId = newId;

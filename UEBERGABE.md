@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.136** · index.html 2,24 MB · 633 Funktionen
+Stand: **v1.5.137** · index.html 2,24 MB · 633 Funktionen
 Zuletzt fortgeschrieben am 13.09.2026 (Rainbow-Plan, Abschnitt 0k). Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
@@ -174,6 +174,12 @@ gespeicherte Kopie in seinen Daten), der Rainbow-Plan für den nächsten Zyklus 
 
 ### Offen — braucht Patricks Antwort
 
+- **Pläne, die früher über den Assistenten entstanden sind (v1.5.137).** Sie haben keinen
+  Dünger/Wasser-Rhythmus, obwohl ihre Vorlage einen kennt (betrifft 7 Vorlagen, u. a. BioBizz
+  Light). Der Assistent legt neue Pläne jetzt richtig an; **bestehende sind bewusst nicht
+  nachgezogen**, weil ein laufender Grow sonst mitten im Zyklus Wasser-Tage bekäme. Möglich wäre
+  eine Migration nur für Pläne, an denen kein laufender Zyklus hängt — oder ein Hinweis mit
+  Knopf „Rhythmus der Vorlage übernehmen". Nicht gebaut; Patricks eigene Daten sind nicht betroffen.
 - **V3.4.7 bleibt in seinen Daten (v1.5.135).** Seine Einträge aus dem Juli tragen die
   Produkte dieses Plans; ohne ihn hätten sie keine Namen mehr. Ob die Kopie in der Plan-Liste
   ausgeblendet statt gelöscht werden soll, entscheidet Patrick. **Auf dem Handy nachsehen:**

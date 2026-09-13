@@ -2,6 +2,27 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-13 — v1.5.137
+
+- **Ein Plan aus dem Einrichtungs-Assistenten bekam sein Gerüst nicht mit.** Beim Einbau des
+  Rainbow-Plans gefunden. `_wizFinish` hatte eine eigene, ältere Kopie des Anlege-Codes und
+  kopierte aus der Vorlage nur Produkte, Dosen und Mischreihenfolge. `loadPreset` übernimmt seit
+  v1.5.50/51/94 zusätzlich Rückgrat (`weekPhases`), Skelett, Tagesgrenzen, EC-Ziele und den
+  Dünger/Wasser-Rhythmus — der Assistent bekam keine dieser Verbesserungen mit.
+- **Was das hieß:** Direkt nach dem Assistenten fehlte bei allen 12 Vorlagen das Rückgrat; die
+  Plan-Wochen liefen dann starr nach Kalendertagen, bis beim nächsten App-Start die Migration
+  aus v1.5.94 es nachtrug. Der **Dünger/Wasser-Rhythmus kam nie nach** — bei 7 Vorlagen, darunter
+  „BioBizz Light" (die Empfehlung des Assistenten für Einsteiger) und „BioBizz Official". Wer so
+  angefangen hat, bekam an jedem Guss Dünger, auch an den Tagen, die der Hersteller als reine
+  Wasser-Tage vorsieht. Nach `ANBAU.md` 13.2 ist das die Richtung, die Pflanzen schadet.
+- Jetzt ruft der Assistent dieselbe Hilfe wie „Vorlage laden" (`_planRueckgratAuffrischen`) und
+  kopiert den Rhythmus mit. **Bestehende Pläne werden bewusst nicht nachgezogen:** Ein laufender
+  Grow bekäme sonst mitten im Zyklus plötzlich Wasser-Tage, die es vorher nicht gab. Das zu
+  entscheiden ist Patricks Sache (siehe `UEBERGABE.md`). Patricks eigener „BioBizz Official"-Plan
+  ist nicht betroffen — er trägt den Rhythmus, weil er über den Düngeplan-Bildschirm entstand.
+- Test: `test_assistentplan.js` (33 Prüfungen: jede Vorlage einmal durch den Assistenten, dann
+  Neustart). Vor der Korrektur gegen v1.5.136: 19 Fehlschläge.
+
 ## 2026-09-13 — v1.5.136
 
 - **Der Wochen-Tipp im Tageseintrag kam aus dem aufgeschlagenen Plan statt aus dem des
