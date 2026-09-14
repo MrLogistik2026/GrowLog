@@ -2,6 +2,28 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-14 — v1.5.157
+
+- **pH-Zahlen in Texten widersprachen dem Ziel des pH-Feldes.** Befund der Prüf-Agenten, gegengeprüft:
+  Freitexte trugen eigene, ältere Spannen. Ablauf-Auswertung in Erde „Weiter bei pH 6.2–6.8 gießen"
+  (bei 17 von Patricks 24 Ablaufmessungen), während das Feld selbst ab 6,5 warnt; bei zu niedrigem
+  Ablauf „Input-pH leicht anheben (6.5–6.8)", in Coco „6.0–6.3", in Hydro „5.8–6.2" — `phTargetFor` sagt
+  6.2–6.4 / 5.8–6.2 / 5.5–6.0. Der Tipp beim Spülen nannte fest „pH 6.4" auch für Coco, das pH-Diagramm
+  zeigte für jedes Substrat 6,2–6,4 als grünen Bereich, und die Spül-Anleitung im Lexikon 5,5–6,5 für Hydro.
+- **Beim Nachsuchen dazu:** Der Diagnose-Ablauf im Lexikon nannte als normalen Drain-pH in Erde 6,0–6,5.
+  Nach `ANBAU.md` 4.1 sind 6,8–7,2 in gekalkter Erde das erwartete Gleichgewicht (Kalkpuffer) — wer der
+  alten Zahl folgt, senkt den Zulauf gegen den Puffer. Und zwei Texte sagten bei pH knapp über dem Ziel
+  „Eisen/Mangan/Phosphor werden blockiert"; nach `ANBAU.md` 4 wird die Verfügbarkeit mit steigendem pH
+  schlechter, deutlich ab etwa 6,8 — die Warnung bleibt, die Aussage ist jetzt der Mechanismus.
+- **Warum das zählt:** Zwei Zahlen für dieselbe Frage im selben Eintrag — beim Überfliegen gewinnt die
+  breitere. Im Coco schlägt ein Spül-pH von 6,4 ohne Puffer direkt in die Verfügbarkeit durch
+  (`ANBAU.md` 7.1).
+- **Jetzt:** Ablauf-Texte, Spül-Tipp, Tipp-Liste, Lexikon-Anleitung und pH-Diagramm lesen `phTargetFor`
+  des Substrats (wie seit v1.5.109 die Dünge-Regeln). Die Frage Coco 5,8–6,2 gegen `ANBAU.md` 5,5–6,0
+  (Übergabe 0f) bleibt offen und unberührt.
+- `test_phtexte.js` (21 Prüfungen, beide Zeitzonen): Ablauf-Auswertung je Substrat in beide Richtungen,
+  Spül-Tipp für Erde und Coco, keine der alten Spannen im Quelltext. Gegen den alten Stand: 17 Fehler.
+
 ## 2026-09-14 — v1.5.156
 
 - **Sorten-Chip und Wochen-Eingabe legten verschiedene Erntetage an.** Befund der Prüf-Agenten,

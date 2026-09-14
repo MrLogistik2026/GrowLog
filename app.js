@@ -363,13 +363,13 @@ const T = {
     // der richtige Hebel. Ohne bekanntes Medium → Erde-Variante (sicherer, drängt nicht zu Säure).
     phWarningHigh: ({ inputPh, runoffPh, medium }) =>
       (medium === 'coco' || medium === 'hydro')
-        ? `Runoff-pH ${runoffPh.toFixed(1)} ist deutlich höher als Input ${inputPh.toFixed(1)} — im inerten Medium (kein Puffer) driftet die Wurzelzone basisch, Kalium-Lockout droht. Input-pH senken (${medium === 'hydro' ? 'Hydro 5.5–6.0' : 'Coco 5.8–6.2'}).`
-        : `Runoff-pH ${runoffPh.toFixed(1)} liegt über Input ${inputPh.toFixed(1)}. In Erde ist das meist der Kalk-Puffer — <b>kein</b> Grund, den Input-pH zu senken. Weiter bei pH 6.2–6.8 gießen; nicht dauerhaft unter 6.0, um den Drain zu drücken (das bekämpft den Puffer und riskiert erst recht einen Lockout). Nur bei echten Mangel-Symptomen + über mehrere Güsse steigendem Drain-pH: 1× leichter Flush mit pH 6.5.`,
+        ? `Runoff-pH ${runoffPh.toFixed(1)} ist deutlich höher als Input ${inputPh.toFixed(1)} — im inerten Medium (kein Puffer) driftet die Wurzelzone basisch, Kalium-Lockout droht. Input-pH senken (${medium === 'hydro' ? 'Hydro' : 'Coco'} ${phTargetFor(medium).label}).`
+        : `Runoff-pH ${runoffPh.toFixed(1)} liegt über Input ${inputPh.toFixed(1)}. In Erde ist das meist der Kalk-Puffer — <b>kein</b> Grund, den Input-pH zu senken. Weiter mit dem Zulauf im Ziel gießen (pH ${phTargetFor(medium).label}); nicht dauerhaft unter 6.0, um den Drain zu drücken (das bekämpft den Puffer und riskiert erst recht einen Lockout). Nur bei echten Mangel-Symptomen + über mehrere Güsse steigendem Drain-pH: 1× leichter Flush mit pH 6.5.`,
 
     phWarningLow: ({ inputPh, runoffPh, medium }) =>
       (medium === 'coco' || medium === 'hydro')
-        ? `Runoff-pH ${runoffPh.toFixed(1)} ist deutlich niedriger als Input ${inputPh.toFixed(1)} — im inerten Medium driftet die Wurzelzone sauer, Calcium/Magnesium-Lockout droht. Input-pH erhöhen (${medium === 'hydro' ? 'Hydro 5.8–6.2' : 'Coco 6.0–6.3'}).`
-        : `Runoff-pH ${runoffPh.toFixed(1)} liegt unter Input ${inputPh.toFixed(1)}. Etwas niedriger ist in Erde oft normal. Erst bei Calcium/Magnesium-Mangel-Symptomen gegensteuern — dann Input-pH leicht anheben (6.5–6.8). Nicht überkorrigieren.`,
+        ? `Runoff-pH ${runoffPh.toFixed(1)} ist deutlich niedriger als Input ${inputPh.toFixed(1)} — im inerten Medium driftet die Wurzelzone sauer, Calcium/Magnesium-Lockout droht. Input-pH ans obere Ende des Ziels anheben (${medium === 'hydro' ? 'Hydro' : 'Coco'} ${phTargetFor(medium).label}, also etwa ${phTargetFor(medium).hi.toFixed(1)}).`
+        : `Runoff-pH ${runoffPh.toFixed(1)} liegt unter Input ${inputPh.toFixed(1)}. Etwas niedriger ist in Erde oft normal. Erst bei Calcium/Magnesium-Mangel-Symptomen gegensteuern — dann den Zulauf ans obere Ende des Ziels setzen (pH ${phTargetFor(medium).hi.toFixed(1)}). Nicht überkorrigieren.`,
   },
 
   dataHonesty: {
@@ -3440,7 +3440,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.156';
+const APP_VERSION = 'v1.5.157';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -13614,7 +13614,7 @@ function getEntryWarnings(cd, p, e, c, iso) {
     } else if (phVal > warnHi) {
       const text = S.beginnerMode
         ? `pH ${phVal.toFixed(1)} etwas zu basisch — pH-Down nutzen. Ziel: ${pht.labelComma}.`
-        : `⚠ pH ${phVal.toFixed(1)} über ${warnHi.toFixed(1)} — Eisen/Mangan/Phosphor werden blockiert. pH-Down nutzen. Ziel: ${pht.label}.`;
+        : `⚠ pH ${phVal.toFixed(1)} über ${warnHi.toFixed(1)} — über dem Ziel; je höher, desto schlechter sind Eisen und Mangan verfügbar. pH-Down nutzen. Ziel: ${pht.label}.`;
       out.push({ type: 'warn', text });
     }
   }
@@ -14161,7 +14161,7 @@ function getSmartTip(c, p) {
     'bloom_5':   { text: 'Peak-Blüte. Rhythmus halten!', lex: 'Restgewicht (Dryback · Trocken-Nass-Zyklus)' },
     'bloom_7':   { text: 'Trichome kontrollieren – Lupe!', lex: 'Trichom-Analyse (Ernte-Trigger)' },
     'bloom_9':   { text: 'Letzte Woche vor Spülung.', lex: 'Spülung (Final-Flush)' },
-    'flush':     { text: 'Nur klares Wasser. pH 6.4.', lex: 'Spülung (Final-Flush)' },
+    'flush':     { text: 'Nur klares Wasser. pH ' + phTargetFor(c && c.medium).label + '.', lex: 'Spülung (Final-Flush)' },
     'ice':       { text: 'Eiswasser (<10°C). Beliebte Technik, Wirkung unbelegt.', lex: 'IceFlush' },
     'harvest':   { text: 'Ernten! Dunkel stellen, schneiden.', lex: 'Trichom-Analyse (Ernte-Trigger)' },
     'dry':       { text: TROCKNEN_TEXT + '. Nicht zu schnell!', lex: 'Trocknung' },
@@ -17220,7 +17220,7 @@ function renderTips() {
   });
 
   const gen = [
-    { icon: '💧', text: 'pH immer 6.2–6.4 (Erde), Ziel: 6.4. Hydro: 5.5–6.0.', cat: 'Grundlagen', lex: 'pH-Wert' },
+    { icon: '💧', text: 'pH im Zulauf: Erde ' + phTargetFor('erde').label + ', Coco ' + phTargetFor('coco').label + ', Hydro ' + phTargetFor('hydro').label + '.', cat: 'Grundlagen', lex: 'pH-Wert' },
     { icon: '🌡️', text: 'Tag: 22–28°C, Nacht: 18–22°C. Max 30°C!', cat: 'Grundlagen', lex: 'VPD (Vapour Pressure Deficit)' },
     { icon: '💨', text: 'Gute Luftzirkulation = kein Schimmel.', cat: 'Grundlagen', lex: 'Schimmel (Botrytis)' },
     { icon: '🔬', text: 'Trichome: klar=früh, milchig=perfekt, bernstein=couchlock.', cat: 'Ernte', lex: 'Trichom-Analyse (Ernte-Trigger)' },
@@ -31737,7 +31737,7 @@ const LEXIKON = [
       practice: '<b>Diagnose-Algorithmus (in dieser Reihenfolge):</b><br>' +
         '<table style="width:100%;border-collapse:collapse;font-size:13px;margin-top:6px">' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)" width="20%"><b>Schritt</b></td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Aktion</b></td></tr>' +
-        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">1</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Drain-pH messen — sollte 6.0–6.5 sein (Erde) oder 5.8–6.2 (Coco)</td></tr>' +
+        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">1</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Drain-pH messen — in gekalkter Erde sind 6.8–7.2 normal (Kalkpuffer, kein Befund), in Coco liegt er nahe am Zulauf (' + phTargetFor('coco').label + ')</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">2</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Drain-EC messen — sollte ähnlich Input-EC sein, max 1.5× höher</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">3</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Substrat anfassen: schwer und nass seit Tagen? → Sauerstoffmangel</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">4</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Symptom mit pH-Fenster-Tabelle abgleichen — was wäre bei aktuellem pH gelockt?</td></tr>' +
@@ -32341,7 +32341,7 @@ const LEXIKON = [
         '<br>' +
         '<b>Durchführung:</b><br>' +
         '1. <b>Düngung sofort stoppen</b> ab dem Spül-Start — auch keine Bio-Booster oder PK-Mittel<br>' +
-        '2. <b>Klares Wasser, pH-eingestellt:</b> 6.2–6.4 für Erde, 5.8–6.2 für Coco, 5.5–6.5 für Hydro<br>' +
+        '2. <b>Klares Wasser, pH-eingestellt:</b> ' + phTargetFor('erde').label + ' für Erde, ' + phTargetFor('coco').label + ' für Coco, ' + phTargetFor('hydro').label + ' für Hydro<br>' +
         '3. <b>Erste 2–3 Güsse:</b> normale Wassermenge — kein extra Spül-Volumen, das spült nur die obere Substrat-Schicht durch<br>' +
         '4. <b>Mittlere Phase (Tag 4–8):</b> 1× größerer Durchspülgang — etwa 2× Topfvolumen Wasser durchlaufen lassen, Drain auffangen<br>' +
         '5. <b>Drain-EC messen</b> nach diesem großen Spülgang. Werte interpretieren:<br>' +
@@ -33669,7 +33669,7 @@ function lexCycleNote(itemTitle) {
   }
   if (itemTitle === 'pH-Wert') {
     const pht = phTargetFor(c.medium);
-    return wrap(`Dein Substrat (${c.medium || 'erde'}): Ziel <b>pH ${pht.label}</b>.${dev(_lastCycVal(c, 'ph'), pht.lo, pht.hi, '', 'zu niedrig — Calcium/Magnesium werden blockiert.', 'zu hoch — Eisen/Mangan/Phosphor werden blockiert.')}`);
+    return wrap(`Dein Substrat (${c.medium || 'erde'}): Ziel <b>pH ${pht.label}</b>.${dev(_lastCycVal(c, 'ph'), pht.lo, pht.hi, '', 'zu niedrig — Calcium und Magnesium werden schlechter verfügbar.', 'zu hoch — je höher, desto schlechter sind Eisen und Mangan verfügbar.')}`);
   }
 
   // --- Stufe 2: Phasen-Standort ---
@@ -34551,7 +34551,8 @@ function buildChartsSection(cycleId) {
   // Chart configs
   const phChart = buildChart(phData, dr, {
     title: 'pH-Verlauf', unit: 'pH', min: 5.0, max: 7.5, decimals: 1,
-    zones: [{ from: 6.2, to: 6.4, color: '#4CAF70' }],
+    // (v1.5.157) Zielbereich aus phTargetFor(Substrat) — vorher für jedes Substrat fest 6,2–6,4.
+    zones: [{ from: phTargetFor(cyc.medium).lo, to: phTargetFor(cyc.medium).hi, color: '#4CAF70' }],
     type: 'line', chartId: 'ph-' + cycleId,
   });
   const _ecDec = ecUnitDef().dec;
@@ -34588,7 +34589,7 @@ function buildChartsSection(cycleId) {
   // Layout — each chart is independently collapsible, all start collapsed
   return `
     <div class="sect-head" style="margin-top:4px">📈 Verlauf & Charts</div>
-    ${_chartBlock('📊 pH-Verlauf', phData.length, 'Grüner Bereich: 6.2–6.4 (Erde, ideal) · tipp auf Punkt für Details', phChart, true)}
+    ${_chartBlock('📊 pH-Verlauf', phData.length, `Grüner Bereich: ${phTargetFor(cyc.medium).label} (Ziel für ${cyc.medium === 'coco' ? 'Coco' : (cyc.medium === 'hydro' ? 'Hydro' : 'Erde')}) · tipp auf Punkt für Details`, phChart, true)}
     ${_chartBlock('📊 EC-Verlauf', ecData.length, `Grüner Bereich: ${ecFmt(1.2)}–${ecFmt(2.2)} ${ecUnitLabel()} (typisch Vegi→Blüte)`, ecChart)}
     ${drainEcData.length >= minPoints ? _chartBlock('🌊 Drain-EC-Verlauf', drainEcData.length, `Drain ÷ Zulauf bis 1,3 = Gleichgewicht · 1,3–1,6 = in der Vollversorgung normal · über 1,6 = Anreicherung. In Erde kann ein Anstieg ab der Blütemitte auch Nachlieferung aus der Erde sein. Aussagekräftig erst ab etwa 15 % Ablauf. Grüner Bereich: ${ecFmt(0.8)}–${ecFmt(2.0)} ${ecUnitLabel()} typisch.`, drainEcChart) : ''}
     ${restPctData.length >= minPoints ? _chartBlock('⚖️ Restgewicht-Verlauf', restPctData.length, 'Sweet-Spot 30–50% (gewollter Dryback). Über 80% = noch nass, unter 25% = zu trocken (Stress).', restPctChart) : ''}
