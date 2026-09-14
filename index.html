@@ -4441,7 +4441,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.162';
+const APP_VERSION = 'v1.5.163';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -10127,7 +10127,16 @@ function isGiessTag(iso, c) {
  */
 function weekGussCounts(c, w) {
   let feed = 0, total = 0;
-  for (let d = (w - 1) * 7; d < w * 7; d++) {
+  // (v1.5.163) Die Tage der PLAN-Woche zählen, nicht die der Kalenderwoche: feedDayCompFactor bekommt die
+  // gedehnte Plan-Woche. Bei 105 Blütetagen war Kalenderwoche 3 noch Anzucht, Plan-Woche 3 schon Blüte —
+  // der Ausgleich kam aus den Güssen einer anderen Woche und lag bis zu 38 % daneben.
+  let von = (w - 1) * 7, bis = w * 7;
+  const _b = (typeof planWeekBounds === 'function') ? planWeekBounds(c) : null;
+  if (Array.isArray(_b) && _b.length) {
+    von = w >= 2 ? (_b[w - 2] || 0) : 0;
+    bis = (w - 1 < _b.length) ? _b[w - 1] : von + 7;
+  }
+  for (let d = von; d < bis; d++) {
     const iso = isoPlus(c.startDate, d);
     const a = getAction(iso, c);
     if (a !== 'giess' && a !== 'giess_anz') continue;   // nur normale Düngergüsse zählen
@@ -10694,8 +10703,11 @@ function getWeekDoses(cId, w, c) {
   if (mode !== 'weekly-split' || !c) {
     out = { ...raw };
   } else {
-    // Pick phase-appropriate watering interval: anzucht weeks 1-2, bloom weeks 3+
-    const iv = (w <= 2) ? (c.intAnzucht || RI.anzucht) : (c.intBloom || RI.bloom);
+    // (v1.5.163) Welches Gießintervall gilt, sagt die Phase der Plan-Woche (plan.weekPhases). Die feste
+    // Grenze „Woche 1–2 Anzucht“ passte nur zufällig zu BioBizz Official; BioBizz Outdoor führt drei
+    // Anzucht-Wochen, und dessen Woche 3 wurde durch das Blüte-Intervall geteilt.
+    const _phW = (plan && Array.isArray(plan.weekPhases)) ? plan.weekPhases[w - 1] : null;
+    const iv = (_phW ? _phW === 'anzucht' : w <= 2) ? (c.intAnzucht || RI.anzucht) : (c.intBloom || RI.bloom);
     const wateringsPerWeek = 7 / iv;
     if (wateringsPerWeek <= 0) {
       out = { ...raw };

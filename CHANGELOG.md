@@ -2,6 +2,29 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-14 — v1.5.163
+
+- **Wochendosis-Pläne rechneten mit der Kalenderwoche statt mit der Plan-Woche.** Zwei Befunde der
+  Prüf-Agenten, gegengeprüft:
+  - `weekGussCounts` zählte die Tage (w−1)·7 bis w·7, `feedDayCompFactor` bekam aber die gedehnte
+    Plan-Woche. Nachgemessen mit BioBizz Official: Bei 105 Blütetagen zählte Woche 5 zwei Güsse statt
+    fünf, Woche 7 zwei statt fünf; bei 42 Blütetagen Woche 3 drei statt einem. Der Ausgleich für
+    Wasser-Tage kam damit aus den Güssen einer anderen Woche — der Gegenprüfer maß bis 38 % daneben, in
+    beide Richtungen.
+  - `getWeekDoses` wählte das Gießintervall mit „Woche 1–2 Anzucht, danach Blüte". BioBizz Outdoor führt
+    drei Anzucht-Wochen; seine Woche 3 wurde durch das Blüte-Intervall geteilt. Bei Anzucht 2 / Blüte 3
+    Tagen: Fish·Mix 1,71 statt 1,14 ml/L je Guss, und die Dosis änderte sich, wenn man das
+    Blüte-Intervall verstellte.
+- **Warum das zählt:** Der Plan kennt die Phase jeder Woche (`weekPhases`) und ihre Tage
+  (`planWeekBounds`); zwei Stellen hatten eigene, feste Grenzen. Das Muster aus v1.5.123 — eine Regel,
+  die an einer Stelle nachgezogen wird und an einer anderen nicht.
+- **Jetzt:** `weekGussCounts` zählt die Tage der Plan-Woche aus `planWeekBounds`, `getWeekDoses` nimmt das
+  Intervall der Phase aus `plan.weekPhases`.
+- **Bewusst nicht geändert:** dass die Konzentration je Guss grundsätzlich vom Gießintervall abhängt. Das
+  ist die Bauart von weekly-split („Wochen-Gesamtdosis"), und die Übergabe führt sie als Entscheidung.
+- `test_weeklysplit.js` (9 Prüfungen, beide Zeitzonen): Güsse je Plan-Woche bei 42/85/105 Blütetagen,
+  BioBizz Outdoor Woche 3 gegen beide Intervalle, Gegenprobe Blüte-Woche. Gegen den alten Stand: 6 Fehler.
+
 ## 2026-09-14 — v1.5.162
 
 - **Der Demo-Zyklus widersprach seinen eigenen Tagen.** Befund der Prüf-Agenten, gegengeprüft: Der
