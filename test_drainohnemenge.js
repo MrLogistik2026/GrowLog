@@ -125,6 +125,25 @@ const TAG = '2026-07-19';
     pruef('Nicht beurteilbar: „EC +0.6 · nicht bewertet"', ungueltig === 'EC +0.6 · nicht bewertet', ungueltig);
   }
 
+  console.log('\nC2 - Beim Spülen kein ⚠ am Verhältnis (v1.5.166)');
+  {
+    const l = E(`T.runoff.ecLabel({ delta: 0.3, verhaeltnis: 2.0, gueltig: true, spuelen: true })`);
+    console.log('    Spülen, 2,00× Zulauf: „' + l + '"');
+    pruef('Spülen, 2,00× Zulauf: ohne ⚠, mit Einordnung', !/⚠/.test(l) && /beim Spülen/.test(l), l);
+    const r = JSON.parse(E(`(function(){
+      const c = S.cycles[0]; const iso = '2026-08-30';
+      if (!S.entries[iso]) S.entries[iso] = { temp: '', humidity: '', cycleData: {} };
+      if (!S.entries[iso].cycleData[c.id]) S.entries[iso].cycleData[c.id] = { doses: {} };
+      const cd = S.entries[iso].cycleData[c.id];
+      const alt = JSON.stringify(cd);
+      Object.assign(cd, { water: '3000', ec: '0.3', runoffEc: '0.6', drainMl: '600' });
+      const ra = analyzeRunoff(cd, c.medium, _ecTargetFor(c, iso), { c, iso });
+      S.entries[iso].cycleData[c.id] = JSON.parse(alt);
+      return JSON.stringify({ ph: phase(iso, c).ph, label: ra.ecLabel });
+    })()`));
+    pruef('Patricks Spültag 30.08. mit gültigem Ablauf: Etikett ohne ⚠', r.ph === 'flush' && !/⚠/.test(r.label), JSON.stringify(r));
+  }
+
   console.log(`\nD - Sichtbar im Eintrag vom ${TAG} (Profi, Originaldaten ohne Menge)`);
   {
     const { E: E2 } = await load();

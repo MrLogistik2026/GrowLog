@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.165** · index.html 2,27 MB · 638 Funktionen
+Stand: **v1.5.166** · index.html 2,28 MB · 638 Funktionen
 Zuletzt fortgeschrieben am 14.09.2026 (Prüf-Agenten, Abschnitt 0l). Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
@@ -181,7 +181,7 @@ Plan des Zyklus (v1.5.145, `_planAnsicht`). · Gedrückthalten der ±-Knöpfe in
 wieder und stoppt beim Loslassen auch mit dem Finger (v1.5.146). · Ein nicht eingetragener Guss
 erzeugt keinen Wasserstress-Alarm mehr, sondern eine Rückfrage mit Knopf zum Nachtragen (v1.5.147,
 `_gussLueckeStatus`). · Plan-Blatt markiert die Woche des Zyklus, der den Plan nutzt (v1.5.148,
-`_zyklusFuerPlan`). · Schimmel-Alarm ab 60 % RLF auch beim Spülen und am IceFlush (v1.5.149). · Drain-EC ohne Ablaufmenge wird nicht bewertet, das Etikett beschreibt statt zu deuten (v1.5.150). · Ernte-Hinweis ohne „bernsteinfarben = Peak" (v1.5.151). · Trocknungsklima aus einer Quelle, beim Trocknen kein VPD-Rat „RLF runter" mehr (v1.5.152, `TROCKNEN_KLIMA`). · Startseite kennt die Wasser-Tage des Plans, alle Ablaufziele aus `DRAIN_ZIEL` (v1.5.153). · Nachholen und „Erledigt" kennen den Sättigungsguss (v1.5.154). · Diagnose-Kontext „Luftfeuchte hoch" ab derselben Grenze wie der Schimmel-Alarm (v1.5.155). · Sorten-Chip im Assistenten rechnet wie die Wochen-Eingabe (v1.5.156). · pH-Zahlen in Texten und im Diagramm aus `phTargetFor` (v1.5.157). · Vierte Stelle der Drain-Faustregel 1,5 im Lexikon (v1.5.158). · Anzucht-Dünger: Startseite und Sämlings-Pflege nennen, was der Plan sagt (v1.5.159). · pH-Zeile der Sämlings-Pflege aus `phTargetFor` (v1.5.160). · Tag 1: Menge, pH, Mittel und Referenz-Schritt aus dem Zustand (v1.5.161). · Demo-Zyklus: Toast, Spül-Notiz und Ablaufmengen passen zu seinen Tagen (v1.5.162). · Wochendosis-Pläne zählen Plan-Wochen und nehmen das Intervall der Plan-Phase (v1.5.163). · Demo-Zyklus ohne eigene EC-Warnung an Spültagen (v1.5.164). · EC-Spanne im Eintrag aus dem Plan-Ziel statt fest 0,8–2,0 (v1.5.165).
+`_zyklusFuerPlan`). · Schimmel-Alarm ab 60 % RLF auch beim Spülen und am IceFlush (v1.5.149). · Drain-EC ohne Ablaufmenge wird nicht bewertet, das Etikett beschreibt statt zu deuten (v1.5.150). · Ernte-Hinweis ohne „bernsteinfarben = Peak" (v1.5.151). · Trocknungsklima aus einer Quelle, beim Trocknen kein VPD-Rat „RLF runter" mehr (v1.5.152, `TROCKNEN_KLIMA`). · Startseite kennt die Wasser-Tage des Plans, alle Ablaufziele aus `DRAIN_ZIEL` (v1.5.153). · Nachholen und „Erledigt" kennen den Sättigungsguss (v1.5.154). · Diagnose-Kontext „Luftfeuchte hoch" ab derselben Grenze wie der Schimmel-Alarm (v1.5.155). · Sorten-Chip im Assistenten rechnet wie die Wochen-Eingabe (v1.5.156). · pH-Zahlen in Texten und im Diagramm aus `phTargetFor` (v1.5.157). · Vierte Stelle der Drain-Faustregel 1,5 im Lexikon (v1.5.158). · Anzucht-Dünger: Startseite und Sämlings-Pflege nennen, was der Plan sagt (v1.5.159). · pH-Zeile der Sämlings-Pflege aus `phTargetFor` (v1.5.160). · Tag 1: Menge, pH, Mittel und Referenz-Schritt aus dem Zustand (v1.5.161). · Demo-Zyklus: Toast, Spül-Notiz und Ablaufmengen passen zu seinen Tagen (v1.5.162). · Wochendosis-Pläne zählen Plan-Wochen und nehmen das Intervall der Plan-Phase (v1.5.163). · Demo-Zyklus ohne eigene EC-Warnung an Spültagen (v1.5.164). · EC-Spanne im Eintrag aus dem Plan-Ziel statt fest 0,8–2,0 (v1.5.165). · Ablauf-Etikett beim Spülen ohne ⚠ (v1.5.166, Patricks Entscheidung).
 
 **Daraus zu lernen (v1.5.146):** Wer am document auf das Loslassen wartet, muss wissen, wohin das
 Ereignis geht, wenn das Element dazwischen neu gebaut wird. Maus-Ereignisse gehen an das, was jetzt
@@ -211,8 +211,6 @@ das erst das Nachmessen im Browser; der jsdom-Test prüft es seitdem mit.
 **Braucht Patricks Entscheidung** (Umbauten): VPD-Band gegen RLF-Fenster je Phase · Ablauf unter
 5 % in der Gießmengen-Regelung · welche Erntezahl vorne steht (Kopfzeile und Startseite rechnen das Erntefenster nur aus dem Bernstein-Tempo: bei Patrick am 03.09. „Ernte Tag 118–158“ aus Bernstein 4,1 → 4,0 %, während die Trichom-Karte „erntereif um Tag 113“ sagt; `harvestWindow` gegen `_ripeWindow` — soll das Reifefenster vorne stehen und ein Bernstein-Fenster über 20 Tage gar nicht als Erntetag erscheinen?) · Pflanzenzahl im Assistenten ·
 Bedeutung von „Tag 1" · Wochenfrage in der Anzucht · weekly-split-Konzentration je Intervall.
-
-**Beim Abarbeiten gesehen, nicht angefasst:** Beim Spülen zeigt das Ablauf-Etikett „⚠ EC +0.3 (Drain 2,00× Zulauf)“ — die Tabelle aus `ANBAU.md` 5.1 gilt für die Düngung; beim Spülen mit klarem Wasser liegt der Ablauf fast zwangsläufig über dem Zulauf. Ob das ⚠ dort wegfällt, ist eine fachliche Frage, keine Rechenfrage.
 
 **Verworfen von den Skeptikern:** „Gießmenge folgt dem Intervall nicht" (die angezeigte Größe
 gibt es so nicht) und „Plan-Wochen springen bei später Korrektur" (gewollte Dehnung aus v1.5.51;
@@ -1464,10 +1462,10 @@ cat head.html app.js tail.html | cmp - index.html && echo "BYTE-IDENTISCH OK"
 **Byte-Identität mit `cmp` ist Pflicht, bevor irgendetwas geändert wird.** Danach wird
 `app.js` geändert, mit `build.sh` neu gebaut und erneut verglichen.
 
-70 Testdateien (Gesamtlauf auf v1.5.165 grün, beide Zeitzonen) — neu dazu
+70 Testdateien (Gesamtlauf auf v1.5.165 grün, beide Zeitzonen; seit v1.5.166 die betroffenen) — neu dazu
 `test_tageseintrag` (33), `test_navwege` (28), `test_leerzustand` (27),
 `test_outdoor` (29), `test_diagnose` (38), `test_lexikon` (52), `test_kalender` (23), `test_ernte_iceflush` (35), `test_rainbowplan` (61), `test_planumhaengen` (17),
-`test_wochentipp` (17), `test_assistentplan` (33), `test_kopfkarte` (12), `test_zuweisungskarte` (10), `test_ecziel` (20), `test_bluetestufen` (14), `test_einsteigersatz` (11), `test_iceflushtexte` (13), `test_zweiplaene` (11), `test_dauerdruecken` (10), `test_giessluecke` (19), `test_planblattwoche` (12), `test_schimmelspuelen` (14), `test_drainohnemenge` (24), `test_trocknungsklima` (29), `test_wassertagstart` (20), `test_saettigungnachholen` (10), `test_rlfdiagnose` (10), `test_sortenchip` (9), `test_phtexte` (22), `test_anzuchtduenger` (15), `test_tag1` (22), `test_demozyklus` (11), `test_weeklysplit` (9) und `test_ecspanne` (12):
+`test_wochentipp` (17), `test_assistentplan` (33), `test_kopfkarte` (12), `test_zuweisungskarte` (10), `test_ecziel` (20), `test_bluetestufen` (14), `test_einsteigersatz` (11), `test_iceflushtexte` (13), `test_zweiplaene` (11), `test_dauerdruecken` (10), `test_giessluecke` (19), `test_planblattwoche` (12), `test_schimmelspuelen` (14), `test_drainohnemenge` (26), `test_trocknungsklima` (29), `test_wassertagstart` (20), `test_saettigungnachholen` (10), `test_rlfdiagnose` (10), `test_sortenchip` (9), `test_phtexte` (22), `test_anzuchtduenger` (15), `test_tag1` (22), `test_demozyklus` (11), `test_weeklysplit` (9) und `test_ecspanne` (12):
 
 **Tests mit Patricks Grow an einem bestimmten Tag setzen das Datum fest** (`setDebugDate`). Mit
 der echten Uhr fielen am 13.09.2026 15 Prüfungen in drei Dateien um — nicht wegen eines Fehlers,

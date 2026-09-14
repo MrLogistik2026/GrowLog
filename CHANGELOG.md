@@ -2,6 +2,18 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-14 — v1.5.166
+
+- **Beim Spülen stand am Ablauf-Etikett ein ⚠.** Offene Frage aus v1.5.165, von Patrick am 14.09.2026
+  entschieden: „Ja, beim Flush kann das weg." Das Etikett ordnet seit v1.5.150 nach dem Verhältnis Ablauf
+  ÷ Zulauf (`ANBAU.md` 5.1, ⚠ über 1,6). Diese Tabelle beschreibt die Düngung. Beim Spülen kommt klares
+  Wasser in den Topf und Salze kommen mit dem Ablauf heraus — der Ablauf liegt dann fast zwangsläufig über
+  dem Zulauf. Nachgestellt an Patricks Spültag 30.08. mit gültigem Ablauf: „⚠ EC +0.3 (Drain 2,00× Zulauf)".
+- **Jetzt:** In Spülen und IceFlush steht „EC +0.3 (Drain 2,00× Zulauf) · beim Spülen normal", ohne ⚠.
+  Die übrige Bewertung (Durchfluss-Prüfung, EC-Warnung am Zulauf) bleibt unverändert.
+- `test_drainohnemenge.js` (26 Prüfungen, beide Zeitzonen) prüft das Etikett beim Spülen. Gegen den alten
+  Stand: 2 Fehler.
+
 ## 2026-09-14 — v1.5.165
 
 - **Die Zielzeile im Eintrag nannte immer EC 0,8–2,0.** Bei der Browser-Prüfung von v1.5.163 aufgefallen:
