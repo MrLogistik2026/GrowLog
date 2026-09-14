@@ -1460,7 +1460,7 @@ cat head.html app.js tail.html | cmp - index.html && echo "BYTE-IDENTISCH OK"
 **Byte-Identität mit `cmp` ist Pflicht, bevor irgendetwas geändert wird.** Danach wird
 `app.js` geändert, mit `build.sh` neu gebaut und erneut verglichen.
 
-53 Testdateien (Stand v1.5.144; Gesamtlauf zuletzt auf v1.5.138 grün, seitdem die betroffenen) — neu dazu
+53 Testdateien, alle grün in beiden Zeitzonen (Gesamtlauf auf v1.5.144, 14.09.2026) — neu dazu
 `test_tageseintrag` (33), `test_navwege` (28), `test_leerzustand` (27),
 `test_outdoor` (29), `test_diagnose` (38), `test_lexikon` (51), `test_kalender` (23), `test_ernte_iceflush` (35), `test_rainbowplan` (61), `test_planumhaengen` (17),
 `test_wochentipp` (17), `test_assistentplan` (33), `test_kopfkarte` (12), `test_zuweisungskarte` (10), `test_ecziel` (20), `test_bluetestufen` (14), `test_einsteigersatz` (11) und `test_iceflushtexte` (13):
