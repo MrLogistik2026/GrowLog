@@ -4415,7 +4415,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.145';
+const APP_VERSION = 'v1.5.146';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -36245,10 +36245,27 @@ if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol) && windo
   function isStepperBtn(el) {
     if (!el || !el.onclick) return false;
     if (el.classList && el.classList.contains('stepper-btn')) return true;
+    // (v1.5.146) Die ±-Knöpfe der Mischliste rufen seit v1.4.78 stepMixDoseLive(this) auf — die
+    // Prüfung unten suchte weiter nach 'stepMixDose(' und fand sie nie. Gedrückthalten tat nichts.
+    if (el.classList && el.classList.contains('mix-step-btn')) return true;
     // Mix-dose stepper buttons have inline style but onclick contains stepMixDose
     const oc = el.getAttribute && el.getAttribute('onclick');
     if (oc && oc.indexOf('stepMixDose(') !== -1) return true;
     return false;
+  }
+
+  // (v1.5.146) Jeder Schritt baut den Tageseintrag neu auf — der gehaltene Knopf ist danach nicht
+  // mehr im Dokument. Ohne Nachsuchen würde stepMixDoseLive am alten Knopf keine Zeile finden und
+  // von 0 aus rechnen. Gesucht wird derselbe Zyklus, dasselbe Produkt, dieselbe Richtung; die
+  // Schrittweite selbst wächst mit der Menge und taugt nicht als Merkmal.
+  function _aktuellerKnopf(el) {
+    if (!el) return null;
+    if (document.body.contains(el)) return el;
+    if (!(el.classList && el.classList.contains('mix-step-btn'))) return el;
+    const d = el.dataset || {};
+    const vorzeichen = Math.sign(parseFloat(d.step) || 0);
+    return Array.from(document.querySelectorAll('.mix-step-btn')).find(b =>
+      b.dataset.cycle === d.cycle && b.dataset.prod === d.prod && Math.sign(parseFloat(b.dataset.step) || 0) === vorzeichen) || null;
   }
 
   function fireClick(el) {
@@ -36264,6 +36281,14 @@ if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol) && windo
     heldBtn = null;
   }
 
+  // (v1.5.146) Ein Fingerdruck bleibt bei dem Element, auf dem er begann — auch wenn der Neuaufbau
+  // es längst aus dem Dokument genommen hat. touchend geht dann nur an dieses Element und kommt am
+  // document nie an: Nachgemessen lief die Wiederholung nach dem Loslassen weiter (17,5 → 26 ml).
+  function _loslassenAm(el) {
+    el.addEventListener('touchend', stopHold, { once: true });
+    el.addEventListener('touchcancel', stopHold, { once: true });
+  }
+
   function startHold(el) {
     stopHold();
     heldBtn = el;
@@ -36272,13 +36297,15 @@ if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol) && windo
     startTimer = setTimeout(() => {
       if (!heldBtn) return;
       repeatTimer = setInterval(() => {
-        if (!heldBtn) { clearInterval(repeatTimer); return; }
+        heldBtn = _aktuellerKnopf(heldBtn);
+        if (!heldBtn) { stopHold(); return; }
         fireClick(heldBtn);
         // Accelerate: after 1.5s of holding, switch to faster interval
         if (Date.now() - startTime > 1900 && repeatTimer) {
           clearInterval(repeatTimer);
           repeatTimer = setInterval(() => {
-            if (!heldBtn) { clearInterval(repeatTimer); return; }
+            heldBtn = _aktuellerKnopf(heldBtn);
+            if (!heldBtn) { stopHold(); return; }
             fireClick(heldBtn);
           }, 50);
         }
@@ -36292,10 +36319,10 @@ if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol) && windo
   }, true);
   document.addEventListener('touchstart', e => {
     const el = e.target.closest('button');
-    if (isStepperBtn(el)) startHold(el);
+    if (isStepperBtn(el)) { startHold(el); _loslassenAm(el); }
   }, { passive: true, capture: true });
 
-  ['mouseup', 'mouseleave', 'touchend', 'touchcancel', 'blur'].forEach(ev => {
+  ['mouseup', 'pointerup', 'mouseleave', 'touchend', 'touchcancel', 'blur'].forEach(ev => {
     document.addEventListener(ev, stopHold, true);
   });
   // Also stop if we scroll — Android often fires touchstart on scroll start

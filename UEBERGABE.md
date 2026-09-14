@@ -1,7 +1,7 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.145** · index.html 2,24 MB · 638 Funktionen
-Zuletzt fortgeschrieben am 13.09.2026 (Rainbow-Plan, Abschnitt 0k). Fünf Fehler behoben: Der Widerspruch zwischen
+Stand: **v1.5.146** · index.html 2,26 MB · 638 Funktionen
+Zuletzt fortgeschrieben am 14.09.2026 (Prüf-Agenten, Abschnitt 0l). Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
 die Ernte-Kacheln widersprechen der Erntekarte nicht mehr (v1.5.99), und **die Düngermengen
@@ -177,7 +177,15 @@ und Trichom-Hinweise folgen dem Anteil an der Blüte (v1.5.141, `bluetestufe`). 
 Menge je Pflanze (v1.5.142). · IceFlush-Tag: Startseite, Tageskarte und Anleitung sagen „Eis
 anlegen, kein Wasser dazu" ohne Trichom-Versprechen (v1.5.143). · Finisher-Hinweis ohne
 Harz-Zusage (v1.5.144). · Eintrag, Empfehlung, Nachholen und Export lesen Produkte aus dem
-Plan des Zyklus (v1.5.145, `_planAnsicht`).
+Plan des Zyklus (v1.5.145, `_planAnsicht`). · Gedrückthalten der ±-Knöpfe in der Mischliste wiederholt
+wieder und stoppt beim Loslassen auch mit dem Finger (v1.5.146).
+
+**Daraus zu lernen (v1.5.146):** Wer am document auf das Loslassen wartet, muss wissen, wohin das
+Ereignis geht, wenn das Element dazwischen neu gebaut wird. Maus-Ereignisse gehen an das, was jetzt
+unter dem Zeiger liegt; ein Fingerdruck bleibt bei dem Element, auf dem er begann — auch wenn es
+nicht mehr im Dokument ist, und dann kommt `touchend` am document nie an. Der erste Fix hätte die
+Wiederholung repariert und dafür auf dem Handy eine Düngermenge weiterlaufen lassen. Gefunden hat
+das erst das Nachmessen im Browser; der jsdom-Test prüft es seitdem mit.
 
 **Als Nächstes, in dieser Reihenfolge** (Fehler, ohne Rückfrage):
 1. **Gießmengen folgen der Blütedauer — wartet auf Patricks Antwort.** `waterPhaseKey` hängt noch an
@@ -196,14 +204,9 @@ Plan des Zyklus (v1.5.145, `_planAnsicht`).
    sie als Verbrauch zwischen zwei Güssen. Worauf beziehen sich die 30 % im Cup-Plan — Anteil des
    Wassers, das noch im Topf ist, oder Anteil des Topfgewichts? Davon hängt ab, wie groß die
    Nachfüllmenge richtig ist. Nicht ohne Antwort ändern (`ANBAU.md` 13.1).
-2. **Dauerdrücken der ±-Knöpfe in der Mischliste wiederholt vermutlich nicht mehr.**
-   `isStepperBtn` (Zeile ~35220) erkennt die Knöpfe an `'stepMixDose('` im onclick; seit v1.4.78
-   rufen sie `stepMixDoseLive(this)` auf. Erst im Browser nachstellen. Daneben sind `stepMixDose`
-   und `_setWaterDayDose` seitdem ohne Aufrufer — beim nächsten Aufräumen entfernen, nicht in
-   einem Fehlerfix.
-4. „Wasserstress, sofort gießen" aus einer Schätzung ohne Messung (`renderEntry` Hebe-Test).
-5. Plan-Blatt markiert die Woche des ersten aktiven Zyklus (`renderDuenger`).
-6. Spülen/IceFlush ohne Schimmel-Alarm; Drain-EC ohne Ablaufmenge bewertet; Trocknungs-VPD rät
+2. „Wasserstress, sofort gießen" aus einer Schätzung ohne Messung (`renderEntry` Hebe-Test).
+3. Plan-Blatt markiert die Woche des ersten aktiven Zyklus (`renderDuenger`).
+4. Spülen/IceFlush ohne Schimmel-Alarm; Drain-EC ohne Ablaufmenge bewertet; Trocknungs-VPD rät
    „RLF runter"; „bernsteinfarben = Peak"; Erntefenster aus stagnierendem Bernstein;
    Startseite übergeht Wasser-Tage; Anzucht-Dünger-Etiketten; Tag 1 fest verdrahtet; feste
    pH-Zahlen; weekly-split zählt Kalenderwochen; Sättigungsguss beim Nachholen; Diagnose-Kontext
@@ -1463,10 +1466,10 @@ cat head.html app.js tail.html | cmp - index.html && echo "BYTE-IDENTISCH OK"
 **Byte-Identität mit `cmp` ist Pflicht, bevor irgendetwas geändert wird.** Danach wird
 `app.js` geändert, mit `build.sh` neu gebaut und erneut verglichen.
 
-54 Testdateien (Gesamtlauf auf v1.5.144 grün; seit v1.5.145 die betroffenen) — neu dazu
+55 Testdateien (Gesamtlauf auf v1.5.144 grün; seit v1.5.145 die betroffenen) — neu dazu
 `test_tageseintrag` (33), `test_navwege` (28), `test_leerzustand` (27),
 `test_outdoor` (29), `test_diagnose` (38), `test_lexikon` (51), `test_kalender` (23), `test_ernte_iceflush` (35), `test_rainbowplan` (61), `test_planumhaengen` (17),
-`test_wochentipp` (17), `test_assistentplan` (33), `test_kopfkarte` (12), `test_zuweisungskarte` (10), `test_ecziel` (20), `test_bluetestufen` (14), `test_einsteigersatz` (11), `test_iceflushtexte` (13) und `test_zweiplaene` (11):
+`test_wochentipp` (17), `test_assistentplan` (33), `test_kopfkarte` (12), `test_zuweisungskarte` (10), `test_ecziel` (20), `test_bluetestufen` (14), `test_einsteigersatz` (11), `test_iceflushtexte` (13), `test_zweiplaene` (11) und `test_dauerdruecken` (10):
 
 **Tests mit Patricks Grow an einem bestimmten Tag setzen das Datum fest** (`setDebugDate`). Mit
 der echten Uhr fielen am 13.09.2026 15 Prüfungen in drei Dateien um — nicht wegen eines Fehlers,
@@ -1523,6 +1526,8 @@ mit echtem Zustand sichtbar.
 - „Erledigt"-Karte erscheint an Tagen ohne Aufgabe (von Patrick zurückgestellt)
 - Getrennte Trichom-Verläufe je Pflanze — bewusst nicht gebaut, stattdessen `ripeOffset`
 - Ertragserfassung existiert je Pflanze, aber keine Auswertung über Zyklen hinweg
+- `stepMixDose` und `_setWaterDayDose` sind seit v1.4.78 ohne Aufrufer (die Mischliste ruft
+  `stepMixDoseLive`) — beim nächsten Aufräumen entfernen, nicht in einem Fehlerfix.
 
 **Am 05.09.2026 abgeschlossen und deshalb hier gestrichen:**
 

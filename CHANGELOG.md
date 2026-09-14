@@ -2,6 +2,33 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-14 — v1.5.146
+
+- **Gedrückthalten der ±-Knöpfe in der Mischliste tat nichts.** Befund aus der Agenten-Runde
+  (Übergabe 0l), im Browser nachgestellt: 1,5 Sekunden auf „+" bei 8,6 ml ergaben 8,6 ml. Der
+  Wiederholungs-Mechanismus (`isStepperBtn`) erkannte die Knöpfe an `'stepMixDose('` im
+  onclick; seit v1.4.78 rufen sie `stepMixDoseLive(this)` auf. Jetzt zählt die Klasse
+  `mix-step-btn`.
+- **Nur wiedererkennen hätte falsch gerechnet.** Jeder Schritt baut den Tageseintrag neu auf, der
+  gehaltene Knopf ist danach nicht mehr im Dokument. `stepMixDoseLive` fände an ihm keine Zeile
+  und rechnete von 0 aus. `_aktuellerKnopf` holt vor jedem Schritt den neuen Knopf mit demselben
+  Zyklus, demselben Produkt und derselben Richtung — die Schrittweite wächst mit der Menge und
+  taugt nicht als Merkmal.
+- **Mit dem Finger lief es nach dem Loslassen weiter.** Erst beim Nachmessen im Browser gefunden:
+  Ein Fingerdruck bleibt bei dem Element, auf dem er begann. Ist das neu gebaut, geht `touchend`
+  nur an den alten Knopf und erreicht das document nie — nachgemessen stieg die Menge nach dem
+  Loslassen in 0,8 s von 17,5 auf 26 ml. `_loslassenAm(el)` hört direkt am berührten Knopf,
+  `pointerup` am document ist der zweite Weg. Die Maus war nicht betroffen, `mouseup` geht an
+  den Knopf unter dem Zeiger.
+- **Warum das zählt:** Die Zahl landet als Tageswert im Eintrag, und nach ihr wird gemischt. Eine
+  Düngermenge, die nach dem Loslassen weiterläuft, ist eine Überdosis, die niemand eingegeben hat.
+- `test_dauerdruecken.js` (10 Prüfungen, beide Zeitzonen): Halten auf „+" und „−" mit stetigem
+  Verlauf ohne Rücksprung auf 0, gespeicherter gleich angezeigter Wert, Loslassen mit dem Finger
+  am neu gebauten Knopf. Gegen den alten Build: 3 Fehler (Halten wirkungslos), gegen den ersten
+  Fix ohne Finger-Teil: 1 Fehler (läuft weiter).
+- **Nicht angefasst:** `stepMixDose` und `_setWaterDayDose` haben seit v1.4.78 keinen Aufrufer.
+  Aufräumen gehört nicht in einen Fehlerfix.
+
 ## 2026-09-14 — v1.5.145
 
 - **Zwei Grows, zwei Pläne: Der Eintrag zeigte die Produkte des aufgeschlagenen Plans.** Befund
