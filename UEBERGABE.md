@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.147** · index.html 2,26 MB · 638 Funktionen
+Stand: **v1.5.148** · index.html 2,26 MB · 638 Funktionen
 Zuletzt fortgeschrieben am 14.09.2026 (Prüf-Agenten, Abschnitt 0l). Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
@@ -180,7 +180,8 @@ Harz-Zusage (v1.5.144). · Eintrag, Empfehlung, Nachholen und Export lesen Produ
 Plan des Zyklus (v1.5.145, `_planAnsicht`). · Gedrückthalten der ±-Knöpfe in der Mischliste wiederholt
 wieder und stoppt beim Loslassen auch mit dem Finger (v1.5.146). · Ein nicht eingetragener Guss
 erzeugt keinen Wasserstress-Alarm mehr, sondern eine Rückfrage mit Knopf zum Nachtragen (v1.5.147,
-`_gussLueckeStatus`).
+`_gussLueckeStatus`). · Plan-Blatt markiert die Woche des Zyklus, der den Plan nutzt (v1.5.148,
+`_zyklusFuerPlan`).
 
 **Daraus zu lernen (v1.5.146):** Wer am document auf das Loslassen wartet, muss wissen, wohin das
 Ereignis geht, wenn das Element dazwischen neu gebaut wird. Maus-Ereignisse gehen an das, was jetzt
@@ -206,8 +207,7 @@ das erst das Nachmessen im Browser; der jsdom-Test prüft es seitdem mit.
    sie als Verbrauch zwischen zwei Güssen. Worauf beziehen sich die 30 % im Cup-Plan — Anteil des
    Wassers, das noch im Topf ist, oder Anteil des Topfgewichts? Davon hängt ab, wie groß die
    Nachfüllmenge richtig ist. Nicht ohne Antwort ändern (`ANBAU.md` 13.1).
-2. Plan-Blatt markiert die Woche des ersten aktiven Zyklus (`renderDuenger`).
-3. Spülen/IceFlush ohne Schimmel-Alarm; Drain-EC ohne Ablaufmenge bewertet; Trocknungs-VPD rät
+2. Spülen/IceFlush ohne Schimmel-Alarm; Drain-EC ohne Ablaufmenge bewertet; Trocknungs-VPD rät
    „RLF runter"; „bernsteinfarben = Peak"; Erntefenster aus stagnierendem Bernstein;
    Startseite übergeht Wasser-Tage; Anzucht-Dünger-Etiketten; Tag 1 fest verdrahtet; feste
    pH-Zahlen; weekly-split zählt Kalenderwochen; Sättigungsguss beim Nachholen; Diagnose-Kontext
@@ -1467,10 +1467,10 @@ cat head.html app.js tail.html | cmp - index.html && echo "BYTE-IDENTISCH OK"
 **Byte-Identität mit `cmp` ist Pflicht, bevor irgendetwas geändert wird.** Danach wird
 `app.js` geändert, mit `build.sh` neu gebaut und erneut verglichen.
 
-56 Testdateien (Gesamtlauf auf v1.5.147 grün) — neu dazu
+57 Testdateien (Gesamtlauf auf v1.5.147 grün; seit v1.5.148 die betroffenen) — neu dazu
 `test_tageseintrag` (33), `test_navwege` (28), `test_leerzustand` (27),
 `test_outdoor` (29), `test_diagnose` (38), `test_lexikon` (51), `test_kalender` (23), `test_ernte_iceflush` (35), `test_rainbowplan` (61), `test_planumhaengen` (17),
-`test_wochentipp` (17), `test_assistentplan` (33), `test_kopfkarte` (12), `test_zuweisungskarte` (10), `test_ecziel` (20), `test_bluetestufen` (14), `test_einsteigersatz` (11), `test_iceflushtexte` (13), `test_zweiplaene` (11), `test_dauerdruecken` (10) und `test_giessluecke` (19):
+`test_wochentipp` (17), `test_assistentplan` (33), `test_kopfkarte` (12), `test_zuweisungskarte` (10), `test_ecziel` (20), `test_bluetestufen` (14), `test_einsteigersatz` (11), `test_iceflushtexte` (13), `test_zweiplaene` (11), `test_dauerdruecken` (10), `test_giessluecke` (19) und `test_planblattwoche` (12):
 
 **Tests mit Patricks Grow an einem bestimmten Tag setzen das Datum fest** (`setDebugDate`). Mit
 der echten Uhr fielen am 13.09.2026 15 Prüfungen in drei Dateien um — nicht wegen eines Fehlers,
@@ -1529,6 +1529,9 @@ mit echtem Zustand sichtbar.
 - Ertragserfassung existiert je Pflanze, aber keine Auswertung über Zyklen hinweg
 - `stepMixDose` und `_setWaterDayDose` sind seit v1.4.78 ohne Aufrufer (die Mischliste ruft
   `stepMixDoseLive`) — beim nächsten Aufräumen entfernen, nicht in einem Fehlerfix.
+- `weekPlan` in `renderDuenger` (der alte Wochen-Akkordeon-Editor samt `currentWeek`) wird noch
+  zusammengebaut, aber seit dem Plan-Blatt (v1.5.52) nirgends mehr ausgegeben — beim nächsten
+  Aufräumen entfernen.
 
 **Am 05.09.2026 abgeschlossen und deshalb hier gestrichen:**
 

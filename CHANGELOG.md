@@ -2,6 +2,26 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-14 — v1.5.148
+
+- **Das Plan-Blatt markierte die Woche eines fremden Zyklus.** Befund der Prüf-Agenten,
+  gegengeprüft und mit Patricks Daten nachgestellt. `renderDuenger` nahm für die „laufende Woche"
+  den ersten aktiven Zyklus (`active()[0]`), egal auf welchem Plan er läuft. Mit Rainbow
+  aufgeschlagen am 20.08.: Run 01 (BioBizz, Woche 10) steht vorn, Run 02 (Rainbow, Woche 3)
+  dahinter — das Blatt zeigte „Wo 10 ●" und „Wo 11", im Einsteiger-Modus nur diese beiden Zeilen,
+  und der Wochen-Tipp kam aus Woche 10.
+- **Patricks nächster Grow war genau betroffen:** Am 18.09. (Run 01 im Curing, Run 02 seit 15.09.
+  auf Rainbow) stand „Wo 12 ●" — über die ganze Anzucht hätte das Blatt Wochen vom Ende des Plans
+  gezeigt statt Woche 1 und 2. Der Tageseintrag rechnete die Mengen dabei richtig
+  (`getWeekDoses`); falsch war die Nachschlage-Ansicht, nach der man mischt.
+- **Jetzt:** `_zyklusFuerPlan(planId, iso)` — der erste aktive Zyklus, der diesen Plan nutzt und noch
+  gedüngt wird. Das ist dieselbe Frage, die die Zuweisungskarte seit v1.5.139 stellt, mit denselben
+  Bausteinen (`c.fertPlanId`, `_duengungVorbei`). Nutzt kein laufender Zyklus den Plan, gibt es keine
+  laufende Woche: keine Markierung, alle Wochen sichtbar.
+- `test_planblattwoche.js` (12 Prüfungen, beide Zeitzonen): 20.08. mit Rainbow und mit BioBizz
+  aufgeschlagen, Einsteiger und Profi; 18.09. Patricks Lage mit Run 02 in Woche 1 und BioBizz ohne
+  laufenden Zyklus. Gegen den alten Build: 7 Fehler.
+
 ## 2026-09-14 — v1.5.147
 
 - **Ein nicht eingetragener Guss erzeugte „Wasserstress. Sofort gießen."** Befund der Prüf-Agenten

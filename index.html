@@ -4415,7 +4415,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.147';
+const APP_VERSION = 'v1.5.148';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -19485,13 +19485,14 @@ function renderDuenger() {
   </div>` : '');
 
   // Week schedule editor (12 weeks) — klappbare Wochen-Accordions.
-  // Standardmäßig ist die aktuelle Woche (basierend auf erstem aktiven Zyklus) aufgeklappt,
+  // Standardmäßig ist die aktuelle Woche (des Zyklus, der diesen Plan nutzt) aufgeklappt,
   // alle anderen zugeklappt — so ist die 100+ Zeilen-Wand sofort übersichtlich.
   const weekNames = {1:'Keimling',2:'Frühes Wachstum',3:'Haupt-Vegetation',4:'Vorblüte & Stretch',5:'Blüte-Übergang',6:'Blüte-Stacking',7:'Bud-Entwicklung',8:'Peak Bloom',9:'Finale Reife',10:'Herbst-Einleitung',11:'Spülen / Flush',12:'Ernte-Vorbereitung'};
   const activeFocus = S.presetKey && getPreset(S.presetKey)?.weekFocus || null;
   // Aktuelle Woche aus Zyklus bestimmen (falls vorhanden) — die wird standardmäßig aufgeklappt.
   let currentWeek = null;
-  const fc = (active() || [])[0];
+  // (v1.5.148) Der Zyklus des aufgeschlagenen Plans, nicht der erste aktive (_zyklusFuerPlan).
+  const fc = _zyklusFuerPlan((getActivePlan() || {}).id, todayISO());
   if (fc && fc.startDate) {
     const p = phase(todayISO(), fc);
     // Durchlaufende Plan-Woche (wie Home-Screen + Eintrag) — NICHT p.week, die in der
@@ -19743,6 +19744,18 @@ function _duengungVorbei(c, iso) {
   if (!c || !c.startDate) return false;
   const p = phase(iso, c);
   return p ? ['flush', 'ice', 'harvest', 'dry', 'cure'].includes(p.ph) : iso > c.startDate;
+}
+
+/**
+ * (v1.5.148) Welcher Zyklus gehört zu diesem Plan? Der erste aktive, der ihn nutzt und noch gedüngt
+ * wird — dieselbe Frage, die die Zuweisungskarte seit v1.5.139 stellt. Das Plan-Blatt nahm vorher
+ * einfach den ersten aktiven Zyklus: Mit Rainbow aufgeschlagen markierte es die Woche von Run 01
+ * auf BioBizz, blendete im Einsteiger-Modus die übrigen Wochen aus und zeigte den Wochen-Tipp dazu.
+ * Ohne Treffer gibt es keine laufende Woche, und das Blatt zeigt alle.
+ */
+function _zyklusFuerPlan(planId, iso) {
+  if (!planId) return null;
+  return active().find(c => c.fertPlanId === planId && !_duengungVorbei(c, iso)) || null;
 }
 
 function _cycleAufPlanZeigen(planId) {
