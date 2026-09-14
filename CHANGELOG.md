@@ -2,6 +2,37 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-14 — v1.5.150
+
+- **Ein Drain-EC ohne Ablaufmenge wurde bewertet.** Befund der Prüf-Agenten, gegengeprüft und mit
+  Patricks Daten nachgestellt: `analyzeRunoff` hielt eine Messung ohne Ablaufmenge für gültig — die
+  Prüfung `flow && !flow.gueltig` ist bei fehlender Menge (`flow = null`) nie wahr. Alle 24
+  Ablaufmessungen in Patricks Daten haben keine Menge (das Feld gibt es erst seit v1.5.104), und alle
+  24 wurden bewertet. Im Eintrag vom 19.07. stand im selben Block „Ohne Ablaufmenge lässt sich nicht
+  sagen, ob die Messung etwas taugt", darüber „⚠ EC steigt um +0.6 — Salz-Akkumulation" und darunter
+  eine ausführliche Bewertung.
+- **Warum das zählt:** Nach `ANBAU.md` 15 ist ein Drain-EC ohne Durchflussangabe ein Anlass für eine
+  Rückfrage, nicht für eine Bewertung. Wer „Salz-Akkumulation" liest, spült — und in der Blüte kostet
+  ein Flush Ertrag (v1.5.09).
+- **Jetzt:** Fehlt die Menge, gilt die Ablaufmessung wie bei zu wenig Durchfluss als nicht
+  beurteilbar: keine Bewertung, keine orange Box, das Etikett sagt „EC +0.6 · nicht bewertet", und die
+  vorhandene Zeile fragt nach der Menge. Das gilt auch für den Drain-pH (`ANBAU.md` 4.1 nennt
+  fehlenden Drain ausdrücklich) und für den Diagnose-Kontext, der solche Messungen bisher als Befund
+  mitzählte — auch bei zu wenig Durchfluss.
+- **Das Etikett beschreibt statt zu deuten.** „Salz-Akkumulation" nannte eine Ursache für ein Bild mit
+  zweien (`ANBAU.md` 5.1, Regel 3), und das ⚠ stand auch dort, wo die Bewertung darunter „kein
+  Handlungsbedarf" sagte. Jetzt steht das Verhältnis da, nach dem `ANBAU.md` 5.1 einordnet —
+  „EC +0.5 (Drain 1,45× Zulauf)" —, mit ⚠ erst über 1,6.
+- **Dieselbe Faustregel an drei Stellen:** Der Diagramm-Untertitel „Drain-EC > Input × 1.5 =
+  Salz-Akkumulation, Spülung nötig", der Rat bei hohem EC und die Lexikon-Tabelle zum Stickstoff
+  nannten 1,5. Nach `ANBAU.md` 5.1 ist 1,3–1,6 in der Vollversorgung normal, erst darüber
+  Anreicherung. Der Untertitel nennt jetzt die Tabelle, die Ausnahme für Erde ab der Blütemitte und
+  die 15-%-Bedingung.
+- `test_drainohnemenge.js` (23 Prüfungen, beide Zeitzonen): alle 24 Messungen Patricks ohne
+  Bewertung; ein zu hoher Wert erst ohne, dann mit 20 % Ablauf (Bewertung und Diagnose-Kontext kommen
+  zurück); das Etikett gegen die Tabelle; sichtbar im Eintrag; die Faustregel im Quelltext. Gegen den
+  alten Build: 13 Fehler.
+
 ## 2026-09-14 — v1.5.149
 
 - **Beim Spülen und am IceFlush gab es keinen Schimmel-Alarm.** Befund der Prüf-Agenten, vom

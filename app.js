@@ -281,11 +281,18 @@ const T = {
     explain: 'Runoff = das Wasser das unten aus dem Topf rausläuft. pH und EC messen dir was in der Erde passiert. Abweichung vom Input = Warnsignal.',
 
     // Runoff-EC-Analyse
-    ecLabel: ({ delta }) => {
+    // (v1.5.150) Beschreiben statt deuten. „Salz-Akkumulation“ nannte eine Ursache für ein Bild mit
+    // zweien (ANBAU.md 5.1, Regel 3), und das ⚠ stand auch dort, wo die Bewertung darunter „kein
+    // Handlungsbedarf“ sagte. ANBAU.md 5.1 ordnet nach Drain ÷ Zulauf: bis 1,3 Gleichgewicht, 1,3–1,6
+    // normal in der Vollversorgung, darüber Anreicherung. Ohne gültige Messung keine Deutung.
+    ecLabel: ({ delta, verhaeltnis, gueltig }) => {
       if (delta === null || delta === undefined) return 'EC-Differenz unbekannt';
+      if (gueltig === false) return `EC ${delta > 0 ? '+' : ''}${delta.toFixed(1)} · nicht bewertet`;
       if (Math.abs(delta) < 0.2) return '✓ EC stabil';
-      if (delta > 0.5) return `⚠ EC steigt um +${delta.toFixed(1)} — Salz-Akkumulation`;
-      if (delta > 0.2) return `EC leicht höher (+${delta.toFixed(1)})`;
+      if (delta > 0.2) {
+        const _v = (verhaeltnis && isFinite(verhaeltnis)) ? ` (Drain ${verhaeltnis.toFixed(2).replace('.', ',')}× Zulauf)` : '';
+        return `${verhaeltnis > 1.6 ? '⚠ ' : ''}EC +${delta.toFixed(1)}${_v}`;
+      }
       if (delta < -0.5) return `⚠ EC sinkt um ${delta.toFixed(1)} — Pflanze frisst stark, nachdüngen?`;
       return `EC leicht niedriger (${delta.toFixed(1)})`;
     },
@@ -1716,10 +1723,11 @@ function buildDiagnosticContext(c, iso = null) {
   // Runoff-Analyse aus letztem Entry
   if (latestEntry) {
     const ra = analyzeRunoff(latestEntry.cd, c.medium, _ecTargetFor(c, latestEntry.iso || iso), { c, iso: latestEntry.iso || iso });
-    if (ra.ecStatus === 'warning-high') result.ecDeltaPos = true;
-    if (ra.ecStatus === 'warning-low') result.ecDeltaNeg = true;
-    if (ra.phStatus === 'warning-high') result.runoffDriftHigh = true;
-    if (ra.phStatus === 'warning-low') result.runoffDriftLow = true;
+    // (v1.5.150) Eine nicht beurteilbare Ablaufmessung ist auch für die Diagnose kein Befund.
+    if (ra.ecGueltig !== false && ra.ecStatus === 'warning-high') result.ecDeltaPos = true;
+    if (ra.ecGueltig !== false && ra.ecStatus === 'warning-low') result.ecDeltaNeg = true;
+    if (ra.phGueltig !== false && ra.phStatus === 'warning-high') result.runoffDriftHigh = true;
+    if (ra.phGueltig !== false && ra.phStatus === 'warning-low') result.runoffDriftLow = true;
   }
 
   return result;
@@ -3414,7 +3422,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.149';
+const APP_VERSION = 'v1.5.150';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -7932,13 +7940,18 @@ function analyzeRunoff(cd, medium, ecTarget, ctx) {
   // Wurzelzone. Dann wird der Wert nicht interpretiert, sondern eingeordnet — die richtige
   // Ausgabe ist ein Hinweis, keine Warnung (`ANBAU.md` 5.1).
   const flow = drainFlow(cd);
-  const _ecUngueltig = !!(flow && !flow.gueltig && hasRunoffEc);
+  // (v1.5.150) Fehlt die Ablaufmenge, ist die Messung genauso wenig beurteilbar wie bei zu wenig
+  // Durchfluss — ANBAU.md 15: „Drain-EC ohne Durchflussangabe … die richtige Ausgabe ist eine
+  // Rückfrage, keine Bewertung.“ Bis hier galt „keine Menge“ als gültig: Alle 24 Ablaufmessungen in
+  // Patricks Daten wurden bewertet, während die Zeile darunter sagte, das lasse sich nicht sagen.
+  const _ecUngueltig = !!(hasRunoffEc && (!flow || !flow.gueltig));
   const _organisch = !!(ctx && _organischSpaetbluete(ctx.c, ctx.iso));
 
   // Warnungen sammeln (nur die wichtigen)
   const warnings = [];
   if (_ecUngueltig) {
-    warnings.push(T.runoff.flowTooLow({ pct: flow.pct, ml: flow.ml, gegossen: flow.gegossen, schwach: flow.guete === 'schwach' }));
+    // Ohne Menge steht die Rückfrage schon in der Durchfluss-Zeile (_runoffFlowLine) — nicht doppelt.
+    if (flow) warnings.push(T.runoff.flowTooLow({ pct: flow.pct, ml: flow.ml, gegossen: flow.gegossen, schwach: flow.guete === 'schwach' }));
   } else if (ecStatus === 'warning-high') {
     // Im organischen Substrat der Spätblüte hat derselbe Messwert zwei mögliche Ursachen.
     // Beide nennen, mit dem Kriterium zur Unterscheidung — statt auf eine zu schließen.
@@ -7958,7 +7971,7 @@ function analyzeRunoff(cd, medium, ecTarget, ctx) {
   // (v1.5.104) Auch der Drain-pH braucht Durchfluss. `ANBAU.md` 4.1 nennt „fehlender oder
   // minimaler Drain" ausdrücklich als Grund, warum ein abweichender Wert kein Befund ist —
   // gemessen wird dann eine Randfraktion, nicht das Gleichgewicht der Wurzelzone.
-  const _phUngueltig = !!(flow && !flow.gueltig && hasRunoffPh);
+  const _phUngueltig = !!(hasRunoffPh && (!flow || !flow.gueltig));   // (v1.5.150) auch ohne Menge
   if (!_phUngueltig && phStatus === 'warning-high') {
     warnings.push(T.runoff.phWarningHigh({ inputPh, runoffPh, medium }));
   }
@@ -7966,7 +7979,7 @@ function analyzeRunoff(cd, medium, ecTarget, ctx) {
     warnings.push(T.runoff.phWarningLow({ inputPh, runoffPh, medium }));
   }
   // Der Validitätshinweis steht nur einmal, auch wenn beide Werte betroffen sind.
-  if (_phUngueltig && !_ecUngueltig) {
+  if (_phUngueltig && !_ecUngueltig && flow) {
     warnings.push(T.runoff.flowTooLow({ pct: flow.pct, ml: flow.ml, gegossen: flow.gegossen, schwach: flow.guete === 'schwach' }));
   }
 
@@ -7985,7 +7998,7 @@ function analyzeRunoff(cd, medium, ecTarget, ctx) {
     : (ecStatus === 'warning-high' || ecStatus === 'warning-low') ? 'warning'
     : null;
   const boxSeverity = (ecSeverity === 'warning' || phSeverity === 'warning') ? 'warning'
-    : ((warnings.length > 0 || phSeverity === 'info') ? 'info' : 'ok');
+    : ((warnings.length > 0 || phSeverity === 'info' || ecSeverity === 'info') ? 'info' : 'ok');
 
   return {
     hasRunoff,
@@ -7996,11 +8009,12 @@ function analyzeRunoff(cd, medium, ecTarget, ctx) {
     phSeverity,
     ecSeverity,
     boxSeverity,
-    ecLabel: T.runoff.ecLabel({ delta: ecDelta }),
+    ecLabel: T.runoff.ecLabel({ delta: ecDelta, verhaeltnis: (hasRunoffEc && isFinite(inputEc) && inputEc > 0) ? runoffEc / inputEc : null, gueltig: !_ecUngueltig }),
     phLabel: T.runoff.phLabel({ delta: phDelta, medium }),
     warnings,
     flow,
     ecGueltig: !_ecUngueltig,
+    phGueltig: !_phUngueltig,
   };
 }
 
@@ -13316,7 +13330,7 @@ function getCriticalWarning(category, value, p, c) {
         level: 'high',
         icon: '⚠️',
         title: `EC ${ecFmt(value)} ${_u} ist hoch`,
-        action: 'Im Drain prüfen ob es ein Salzaufbau ist (Drain-EC > Input × 1.5). Bei wiederholt hohen Werten: Dünger-Dosis halbieren oder zwischendrin spülen.',
+        action: 'Im Ablauf prüfen, ob sich Salz anreichert: Drain-EC über dem 1,6-Fachen des Zulaufs, gemessen bei mindestens 15 % Ablauf. Bei wiederholt hohen Werten: Dünger-Dosis halbieren oder zwischendrin spülen.',
       };
     }
     // Spülung sollte niedrigen EC haben
@@ -32999,7 +33013,7 @@ const LEXIKON = [
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Gelb gleichmäßig über das ganze Blatt</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Blätter rollen sich nach unten ein („Taco")</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Blätter fallen später ganz ab</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Verbrannte Blattspitzen und Ränder</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Wachstum verlangsamt</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Stiele dunkelgrün-rot, sehr fest</td></tr>' +
-        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">EC Drain < EC Input</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">EC Drain > EC Input × 1.5</td></tr>' +
+        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">EC Drain < EC Input</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">EC Drain > EC Input × 1,6</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Pflanze wirkt „blass" und „schwach"</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Pflanze wirkt „aggressiv grün" und „prall"</td></tr>' +
         '</table>' +
         '<br>' +
@@ -34526,7 +34540,7 @@ function buildChartsSection(cycleId) {
     <div class="sect-head" style="margin-top:4px">📈 Verlauf & Charts</div>
     ${_chartBlock('📊 pH-Verlauf', phData.length, 'Grüner Bereich: 6.2–6.4 (Erde, ideal) · tipp auf Punkt für Details', phChart, true)}
     ${_chartBlock('📊 EC-Verlauf', ecData.length, `Grüner Bereich: ${ecFmt(1.2)}–${ecFmt(2.2)} ${ecUnitLabel()} (typisch Vegi→Blüte)`, ecChart)}
-    ${drainEcData.length >= minPoints ? _chartBlock('🌊 Drain-EC-Verlauf', drainEcData.length, `Drain-EC > Input × 1.5 = Salz-Akkumulation, Spülung nötig. Grüner Bereich: ${ecFmt(0.8)}–${ecFmt(2.0)} ${ecUnitLabel()} typisch.`, drainEcChart) : ''}
+    ${drainEcData.length >= minPoints ? _chartBlock('🌊 Drain-EC-Verlauf', drainEcData.length, `Drain ÷ Zulauf bis 1,3 = Gleichgewicht · 1,3–1,6 = in der Vollversorgung normal · über 1,6 = Anreicherung. In Erde kann ein Anstieg ab der Blütemitte auch Nachlieferung aus der Erde sein. Aussagekräftig erst ab etwa 15 % Ablauf. Grüner Bereich: ${ecFmt(0.8)}–${ecFmt(2.0)} ${ecUnitLabel()} typisch.`, drainEcChart) : ''}
     ${restPctData.length >= minPoints ? _chartBlock('⚖️ Restgewicht-Verlauf', restPctData.length, 'Sweet-Spot 30–50% (gewollter Dryback). Über 80% = noch nass, unter 25% = zu trocken (Stress).', restPctChart) : ''}
     ${_chartBlock('📊 VPD-Verlauf', vpdData.length, 'Grüner Bereich: 0.8–1.2 kPa (Blüte optimal) · Spätblüte: gezielt 1.4–1.6 gegen Schimmel in dichten Buds · aus Temp + Luftfeuchte berechnet', vpdChart)}
     ${_chartBlock('📊 Wassermenge', waterData.length, 'Bar = Liter pro Gießtag', waterChart)}
