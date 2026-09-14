@@ -4441,7 +4441,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.164';
+const APP_VERSION = 'v1.5.165';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -25978,7 +25978,9 @@ function renderEntry(iso) {
     // Platzhalter und Spanne-Anzeige beim EC-Feld — statt des alten fixen "1.4".
     const ecT = (typeof getEcTarget === 'function') ? getEcTarget(c, p, iso) : null;
     const ecPh = ecT ? String(ecT.def) : '';
-    const ecRange = ecT ? (ecT.waterOnly ? 'nur Wasser' : `${ecFmt(ecT.min)}–${ecFmt(ecT.max)}`) : `${ecFmt(0.8)}–${ecFmt(2.0)}`;
+    // (v1.5.165) Ohne EC-Ziel keine erfundene Spanne. Vorher stand dann fest 0,8–2,0 — und in der Nährstoff-
+    // Box sogar immer, auch in der Anzucht direkt neben dem Feld mit „Ziel 700–1000“.
+    const ecRange = ecT ? (ecT.waterOnly ? 'nur Wasser' : `${ecFmt(ecT.min)}–${ecFmt(ecT.max)}`) : '';
     const pht = phTargetFor(c && c.medium);
     // Düngeplan-Woche: zentral über fertPlanWeek bestimmen — die EINE Quelle für die
     // Dünge-Woche. Sie achtet auf plan-eigene Tag-Spannen (weekDayBounds, z. B. Peak
@@ -26995,7 +26997,7 @@ function renderEntry(iso) {
             </div>
           </div>
           <div style="flex:1;text-align:right;font-size:10px;color:var(--text-hint);line-height:1.5">
-            ${S.beginnerMode ? `pH ${pht.label} ist optimal` : `Ziel: pH ${pht.mid.toFixed(1)} · EC ${ecT && !ecT.waterOnly ? ecRange : (ecT && ecT.waterOnly ? `${ecFmt(0.3)}–${ecFmt(0.4)} (Wasser-Tag)` : `${ecFmt(0.8)}–${ecFmt(2.0)}`)} ${ecUnitLabel()}<br>Drain entsorgen!`}
+            ${S.beginnerMode ? `pH ${pht.label} ist optimal` : `Ziel: pH ${pht.mid.toFixed(1)}${ecT ? ` · EC ${!ecT.waterOnly ? ecRange : `${ecFmt(0.3)}–${ecFmt(0.4)} (Wasser-Tag)`} ${ecUnitLabel()}` : ''}<br>Drain entsorgen!`}
           </div>
         </div>
         ${phEcCritWarnHTML}
@@ -27307,7 +27309,7 @@ function renderEntry(iso) {
             ${prodRows || `<div style="padding:10px 12px;font-size:12px;color:var(--text-muted)">Keine Dünger konfiguriert. <span style="color:var(--blue);cursor:pointer" onclick="openDuenger()">Dünger einrichten →</span></div>`}
           </div>
           ${mixSteps}
-          ${S.beginnerMode ? '' : `<div class="ph-hint">🎯 pH: ${pht.mid.toFixed(1)} · EC: ${ecFmt(0.8)}–${ecFmt(2.0)} ${ecUnitLabel()} · Drain: 15–20%</div>`}
+          ${S.beginnerMode ? '' : `<div class="ph-hint">🎯 pH: ${pht.mid.toFixed(1)}${ecT && !ecT.waterOnly ? ` · EC: ${ecRange} ${ecUnitLabel()}` : ''} · Drain: ${DRAIN_ZIEL.min}–${DRAIN_ZIEL.max} %</div>`}
           ${c.medium === 'hydro' ? hydroResBlock : `<div style="background:var(--card);border:0.5px solid var(--border);border-radius:10px;overflow:hidden;margin-top:6px">
             <div onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none';this.querySelector('.gtgl').textContent=this.nextElementSibling.style.display==='none'?'▸':'▾'" style="padding:8px 12px;cursor:pointer;display:flex;align-items:center;gap:6px">
               <span style="font-size:13px">🚰</span>

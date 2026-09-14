@@ -2,6 +2,21 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-14 — v1.5.165
+
+- **Die Zielzeile im Eintrag nannte immer EC 0,8–2,0.** Bei der Browser-Prüfung von v1.5.163 aufgefallen:
+  Unter der Nährstoff-Tabelle stand an jedem Feed-Tag „🎯 pH: 6.4 · EC: 0.8–2.0 · Drain: 15–20%" — mit
+  BioBizz Official in Plan-Woche 3 zwei Zeilen unter dem EC-Feld, das „Ziel 1.0–1.4" sagt. Und wo ein Plan
+  für eine Woche bewusst kein EC-Ziel führt (Rainbow Woche 13, seit v1.5.140), stand auch in der rechten
+  Zielzeile die erfundene Spanne 0,8–2,0.
+- **Warum das zählt:** Nach `ANBAU.md` 5 ist der EC-Verlauf phasengebunden, von 0,4 im Sämling bis 1,9 im
+  Blütenaufbau. Eine feste Spanne über alle Phasen ist keine Aussage — und neben dem richtigen Ziel eine
+  zweite Zahl für dieselbe Frage (Übergabe, Abschnitt 1).
+- **Jetzt:** Beide Zeilen nennen die Spanne aus `getEcTarget`; ohne Ziel steht keine. Das Ablaufziel kommt
+  aus `DRAIN_ZIEL`.
+- `test_ecspanne.js` (12 Prüfungen, beide Zeitzonen): BioBizz Official Plan-Woche 3, Rainbow Woche 13 ohne
+  Ziel, die feste Spanne im Quelltext. Gegen den alten Stand: 8 Fehler.
+
 ## 2026-09-14 — v1.5.164
 
 - **Der Demo-Zyklus löste an seinem ersten Spültag die eigene Warnung aus.** Bei der Browser-Prüfung von
