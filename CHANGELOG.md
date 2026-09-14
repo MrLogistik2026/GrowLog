@@ -2,6 +2,32 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-14 — v1.5.152
+
+- **Beim Trocknen riet die App zum schnelleren Trocknen.** Befund der Prüf-Agenten, gegengeprüft und
+  nachgestellt am 13.09. (Patricks Run 01, Tag 121, Trocknen): Bei 18,5 °C und 60 % — mitten im
+  eigenen Ziel — stand unter dem VPD-Wert „Etwas niedrig", im Einsteiger-Modus „Für Vegi/Blüte etwas
+  zu niedrig — RLF kann etwas runter oder Temp etwas hoch". `vpdZone` kannte keine Trocknungsphase und
+  bewertete mit dem Blatt-Modell, dessen Abzug für die Blatttemperatur ein lebendes, verdunstendes
+  Blatt voraussetzt (`ANBAU.md` 2.1).
+- **Fünf Trocknungsklimas in einer App:** Zielzeile 18–20 °C/55–62 %; Tipps, Startseiten-Karte,
+  Anleitung und Anfänger-Fragen 18–21 °C/55–65 % („50 % ist schon zu trocken"); IceFlush-Checkliste,
+  Zeitleiste und Ernte-Notiz unter 18 °C/50 %; Lexikon „Trocknung" 15–18 °C/50 % als „Sweet Spot";
+  Trocken-Notiz 18 °C/60 %. Wer das Zelt nach der IceFlush-Karte vorbereitete, stand am nächsten Tag
+  unter einer Zielzeile, die etwas anderes verlangte.
+- **Warum das zählt:** Nach `ANBAU.md` 12.1 kostet zu schnelles Trocknen Terpene und lässt Chlorophyll
+  zurück. 50–54 % sind dort ein bewusster Tausch — kürzeres Zeitfenster für Schimmel gegen mehr
+  Terpenverlust, nur mit minimaler Luftbewegung und mindestens 8 Tagen —, kein besserer Wert.
+- **Jetzt:** `TROCKNEN_KLIMA` und `TROCKNEN_TEXT` sind die eine Quelle; Zielzeile, Tipps, Karten,
+  Notizen, IceFlush-Karte, Lexikon, Anleitung und Fragen lesen daraus (18–20 °C, 55–62 % RLF). Beim
+  Trocknen und im Curing zeigt die VPD-Pille „Trocknen" bzw. „Curing" mit dem Hinweis, dass Temperatur
+  und Luftfeuchte zählen. Das Lexikon nennt 50–54 % ausdrücklich als Tausch.
+- **Korrektur an der Übergabe:** Abschnitt 0h führte das Trocknen als „geprüft und in Ordnung".
+  `test_lexikon.js` hatte aber nur den Eintrag „VPD" durchsucht, nicht „Trocknung".
+- `test_trocknungsklima.js` (29 Prüfungen, beide Zeitzonen): VPD-Pille in Trocknen und Curing mit
+  Gegenprobe Anzucht, die Texte, der Eintrag vom 13.09. in beiden Modi, die IceFlush-Karte vom 06.09.
+  und keine der alten Klima-Angaben im Quelltext. Gegen den alten Stand: 24 Fehler.
+
 ## 2026-09-14 — v1.5.151
 
 - **Der Ernte-Hinweis nannte Bernstein den Höhepunkt.** Befund der Prüf-Agenten, gegengeprüft: Drei

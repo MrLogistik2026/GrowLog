@@ -41,6 +41,13 @@ const PROD_COLORS = ['#4caf70','#5aabf0','#e8884a','#b06ac8','#f0d050','#e06060'
 //  ins Register migriert. Neue Features ab sofort nur über T.* .
 //  Bereich für Bereich wird umgezogen, nicht alles auf einmal.
 // =====================================================================
+// (v1.5.152) Das Trocknungsklima an EINER Stelle. Vorher nannte die App fünf verschiedene Werte:
+// 18–20 °C/55–62 % (getPhaseTargets), 18–21 °C/55–65 % (Tipps, Startseite, Anleitung), unter 18 °C/50 %
+// (IceFlush-Karte, Notiz), 15–18 °C/50 % als „Sweet Spot“ (Lexikon) und 18 °C/60 % (Notiz). Richtwert
+// nach ANBAU.md 12.1; 50–54 % sind dort ein bewusster Tausch, kein besserer Wert.
+const TROCKNEN_KLIMA = { tMin: 18, tMax: 20, rhMin: 55, rhMax: 62 };
+const TROCKNEN_TEXT = `${TROCKNEN_KLIMA.tMin}–${TROCKNEN_KLIMA.tMax} °C, ${TROCKNEN_KLIMA.rhMin}–${TROCKNEN_KLIMA.rhMax} % RLF`;
+
 const T = {
   // ---------------------------------------------------------------------
   // PHASES — Anzeige-Namen der Pflanzen-Phasen
@@ -180,7 +187,7 @@ const T = {
     },
 
     toDrySoon: ({ daysUntil }) =>
-      `In ${daysUntil} Tagen: <b>Trocknung</b>. Ziel: 18–21 °C, 55–65% RLF für 7–14 Tage. Aufhängen an einer Schnur, dunkel.`,
+      `In ${daysUntil} Tagen: <b>Trocknung</b>. Ziel: ${TROCKNEN_TEXT} für 7–14 Tage. Aufhängen an einer Schnur, dunkel.`,
   },
 
   // ---------------------------------------------------------------------
@@ -3424,7 +3431,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.151';
+const APP_VERSION = 'v1.5.152';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -6440,7 +6447,7 @@ const FAQ = [
     q: 'Wie trockne ich richtig?',
     icon: '🍂',
     category: 'Ernte',
-    a: '<b>18-21°C, 55-65% RLF, dunkel, leichte Luftzirkulation.</b> 7-14 Tage hängen lassen. Fertig wenn Stiele knacken statt biegen. Zu schnell trocken = Heu-Geschmack. Danach: Curing in Gläsern für 2+ Wochen.',
+    a: '<b>' + TROCKNEN_TEXT + ', dunkel, leichte Luftzirkulation.</b> 7-14 Tage hängen lassen. Fertig wenn Stiele knacken statt biegen. Zu schnell trocken = Heu-Geschmack. Danach: Curing in Gläsern für 2+ Wochen.',
     lex: 'Trocknung',
   },
   {
@@ -6700,7 +6707,7 @@ const FIRST_GROW_STEPS = [
     content: `
       <p><b>Trocknen (7–14 Tage):</b></p>
       <ul>
-        <li><b>18–21°C, 55–65% Luftfeuchte</b>, dunkel, sanfte Luft</li>
+        <li><b>${TROCKNEN_TEXT}</b>, dunkel, sanfte Luft</li>
         <li>Keller oder dunkler Schrank ideal</li>
         <li>Zweige kopfüber aufhängen</li>
         <li><b>Fertig:</b> Wenn Stiele knacken statt biegen</li>
@@ -13199,7 +13206,7 @@ function getPhaseTargets(p) {
     return { tempMin: 18, tempMax: 22, rhMin: 40, rhMax: 50, vpdMin: 1.4, vpdMax: 1.6, label: ph === 'ice' ? 'IceFlush' : 'Ernte', icon: ph === 'ice' ? '🧊' : '✂️' };
   }
   if (ph === 'dry') {
-    return { tempMin: 18, tempMax: 20, rhMin: 55, rhMax: 62, vpdMin: null, vpdMax: null, label: 'Trocknen', icon: '🍂' };
+    return { tempMin: TROCKNEN_KLIMA.tMin, tempMax: TROCKNEN_KLIMA.tMax, rhMin: TROCKNEN_KLIMA.rhMin, rhMax: TROCKNEN_KLIMA.rhMax, vpdMin: null, vpdMax: null, label: 'Trocknen', icon: '🍂' };
   }
   return null;
 }
@@ -13472,6 +13479,20 @@ function vpdZone(v, phaseInfo, growType) {
   const isVegi = (ph === 'anzucht' || ph === 'vorzucht' || ph === 'vegi_out' || ph === 'abhärten') && !isSeedling;
   const isBloom = ph === 'bloom' || ph === 'flush' || ph === 'ice' || ph === 'harvest';
   const outdoor = growType === 'outdoor';
+
+  // (v1.5.152) Beim Trocknen gilt das Blatt-Modell nicht: Der Abzug für die Blatttemperatur setzt ein
+  // lebendes, verdunstendes Blatt voraus (ANBAU.md 2.1). Vorher stand beim richtigen Trocknungsklima
+  // (18,5 °C, 60 %) „Etwas niedrig — RLF kann etwas runter oder Temp etwas hoch“; wer dem folgt,
+  // trocknet zu schnell (ANBAU.md 12.1). Maßgeblich sind hier Temperatur und Luftfeuchte.
+  if (ph === 'dry' || ph === 'cure') {
+    return {
+      label: ph === 'dry' ? 'Trocknen' : 'Curing', color: '#9aa7b0', bg: '#1a2024',
+      hint: ph === 'dry'
+        ? `Beim Trocknen zählen Temperatur und Luftfeuchte, nicht der VPD-Wert: ${TROCKNEN_TEXT}, dunkel, wenig Luftbewegung.`
+        : 'Im Curing zählt die Feuchte im Glas, nicht der VPD-Wert im Raum.',
+      pct: Math.max(0, Math.min(95, v / 1.8 * 95)),
+    };
+  }
 
   // PHASE-AWARE LABEL:
   // Die VPD-Skala ist universal, aber der Status ✓/⚠ hängt von der Phase ab.
@@ -14116,7 +14137,7 @@ function getSmartTip(c, p) {
       'bloom_7': { text: 'Trichome kontrollieren – Lupe!', lex: 'Trichom-Analyse (Ernte-Trigger)' },
       'flush':   { text: 'Tank auf klares pH-Wasser (5.5–6.0) wechseln.', lex: 'Spülung (Final-Flush)' },
       'harvest': { text: 'Ernten! Dunkel stellen, schneiden.', lex: 'Trichom-Analyse (Ernte-Trigger)' },
-      'dry':     { text: '18-21°C, 55-65% RLF. Nicht zu schnell!', lex: 'Trocknung' },
+      'dry':     { text: TROCKNEN_TEXT + '. Nicht zu schnell!', lex: 'Trocknung' },
       'cure':    { text: 'In Gläsern reifen, täglich burpen, Glas-RLF 58–62%.', lex: 'Curing (Veredelung)' },
     };
     return ht[p.week ? `${p.ph}_${p.week}` : p.ph]
@@ -14134,7 +14155,7 @@ function getSmartTip(c, p) {
     'flush':     { text: 'Nur klares Wasser. pH 6.4.', lex: 'Spülung (Final-Flush)' },
     'ice':       { text: 'Eiswasser (<10°C). Beliebte Technik, Wirkung unbelegt.', lex: 'IceFlush' },
     'harvest':   { text: 'Ernten! Dunkel stellen, schneiden.', lex: 'Trichom-Analyse (Ernte-Trigger)' },
-    'dry':       { text: '18-21°C, 55-65% RLF. Nicht zu schnell!', lex: 'Trocknung' },
+    'dry':       { text: TROCKNEN_TEXT + '. Nicht zu schnell!', lex: 'Trocknung' },
     'cure':      { text: 'In Gläsern reifen. Erste 2 Wochen täglich kurz öffnen (burpen), Glas-RLF 58–62%. Je länger, desto besser.', lex: 'Curing (Veredelung)' },
   };
   const normal = tips[p.week ? `${p.ph}_${p.week}` : p.ph] || null;
@@ -14227,7 +14248,7 @@ function plainSentence(action, c, p, waterMl) {
     return `Heute ist Erntetag! Schneide die Pflanze ab und häng sie kopfüber zum Trocknen auf.`;
   }
   if (action === 'trocknen') {
-    return `Deine Pflanze trocknet gerade. Einfach täglich kurz prüfen — 18–21°C, nicht zu trocken, nicht zu feucht.`;
+    return `Deine Pflanze trocknet gerade. Einfach täglich kurz prüfen: ${TROCKNEN_TEXT} (RLF heißt Luftfeuchte), dunkel und ohne Luftstrom auf den Blüten.`;
   }
   return null;
 }
@@ -14468,7 +14489,7 @@ function getTodayAction(c, p, a, iso) {
       steps: [
         'Trichome final checken (90% milchig + max 10% bernstein)',
         'Früh am Morgen ernten (maximaler Terpengehalt)',
-        'Dunkel hängen lassen: 18–21°C, 55–65% RLF',
+        'Dunkel hängen lassen: ' + TROCKNEN_TEXT,
       ],
       hint: '7–14 Tage Trocknung, dann Curing in Gläsern',
     };
@@ -14481,7 +14502,7 @@ function getTodayAction(c, p, a, iso) {
       steps: [
         'Täglich prüfen: Geruch, Feuchtigkeit',
         'Stiele sollten bald knacken beim Biegen',
-        '18–21°C, 55–65% RLF halten',
+        TROCKNEN_TEXT + ' halten',
       ],
       hint: 'Zu schnell trocken = Heu-Geschmack. Geduld!',
     };
@@ -17185,7 +17206,7 @@ function renderTips() {
     { icon: '💨', text: 'Gute Luftzirkulation = kein Schimmel.', cat: 'Grundlagen', lex: 'Schimmel (Botrytis)' },
     { icon: '🔬', text: 'Trichome: klar=früh, milchig=perfekt, bernstein=couchlock.', cat: 'Ernte', lex: 'Trichom-Analyse (Ernte-Trigger)' },
     { icon: '✂️', text: 'Wet Trim oder Dry Trim – beide Methoden haben Vorteile.', cat: 'Ernte', lex: 'Trocknung' },
-    { icon: '🍂', text: 'Trocknung: 7-14 Tage, 18-21°C, 55-65% RLF.', cat: 'Ernte', lex: 'Trocknung' },
+    { icon: '🍂', text: 'Trocknung: 7–14 Tage, ' + TROCKNEN_TEXT + '.', cat: 'Ernte', lex: 'Trocknung' },
     { icon: '🫙', text: 'Curing: 2+ Wochen in Gläsern, täglich öffnen.', cat: 'Nach Ernte', lex: 'Curing (Veredelung)' },
     { icon: '🧪', text: 'Immer mit halber Dosis starten!', cat: 'Nährstoffe', lex: 'NPK' },
     { icon: '☘️', text: 'Gelbe untere Blätter in Blüte = normal.', cat: 'Nährstoffe', lex: 'Nährstoffmangel' },
@@ -27891,7 +27912,7 @@ function _renderIceFlushPanel(c, iso) {
     { id: 'dryback',   label: 'Hard Dryback erreicht: ~35% Restgewicht (Hebe-Test bestätigt)' },
     { id: 'ice_ready', label: `Crushed Ice bereit: ${icePerPot} ml/Topf · ${icePerPot * plants} ml gesamt für ${plants} Pflanze${plants === 1 ? '' : 'n'}` },
     { id: 'tent_dark', label: 'Zelt auf Pitch-Black geprüft — alle Lichtquellen abgeklebt' },
-    { id: 'dry_tent',  label: 'Trockenzelt vorbereitet: <18°C · 50% RLF · kein direkter Luftstrom' },
+    { id: 'dry_tent',  label: `Trockenzelt vorbereitet: ${TROCKNEN_TEXT} · kein direkter Luftstrom` },
     { id: 'scissor',   label: 'Erntewerkzeug steril (Schere mit Isopropanol desinfiziert)' },
     { id: 'morning',   label: 'Ernte geplant: früh morgens beim Lichtangang' },
   ];
@@ -27930,7 +27951,7 @@ function _renderIceFlushPanel(c, iso) {
     { time: 'Heute · 18 Uhr',  dot: '#a5f3fc', text: `IceFlush — ${icePerPot} ml Crushed Ice pro Topf am Rand verteilen` },
     { time: 'Heute · 22–24 Uhr', dot: '#a5f3fc', text: 'Eis geschmolzen · Drain EC messen · Licht AUS' },
     { time: 'Folgetag · Früh', dot: '#f87171', text: '✂️ ERNTE — beim Lichtangang sofort starten' },
-    { time: 'Tag 2–12',        dot: '#4ade80', text: 'Trocknung <18°C · 50% RLF · Pitch-Black · Snap-Test ab Tag 8' },
+    { time: 'Tag 2–12',        dot: '#4ade80', text: `Trocknung ${TROCKNEN_TEXT} · Pitch-Black · Snap-Test ab Tag 8` },
     { time: 'Tag 10–14',       dot: '#2dd4bf', text: 'Snap-Test bestanden → Curing in Glas mit Integra Boost 62%' },
   ];
   const timelineHtml = timeline.map(r => `
@@ -29349,14 +29370,14 @@ function getAutoFillTemplate(c, p, a, iso) {
     // Kein water='0' (würde als Eintrag gespeichert) — Feld leer lassen
     tpl.doses = {};
     tpl._allDosesZero = true;
-    tpl.notePlaceholder = 'Ernte beim Lichtangang — sofort starten, nicht warten. Schere desinfiziert, Handschuhe an. Direkt ins Trockenzelt: <18°C, 50% RLF, Pitch-Black.';
+    tpl.notePlaceholder = 'Ernte beim Lichtangang — sofort starten, nicht warten. Schere desinfiziert, Handschuhe an. Direkt ins Trockenzelt: ' + TROCKNEN_TEXT + ', Pitch-Black.';
     tpl._actionType = 'harvest';
     return tpl;
   }
 
   // TROCKEN-TAG
   if (a === 'trocknen' || ph === 'dry') {
-    tpl.notePlaceholder = 'Hängend trocknen, dunkel, 18°C, 60% RLF, 7–14 Tage. Geduld!';
+    tpl.notePlaceholder = 'Hängend trocknen, dunkel, ' + TROCKNEN_TEXT + ', 7–14 Tage. Geduld!';
     tpl._actionType = 'dry';
     return tpl;
   }
@@ -31232,7 +31253,7 @@ const LEXIKON = [
       brief: 'Die flüchtigen Duftstoffe. Bestimmen Geruch, Geschmack UND Wirkungs-Richtung (Entourage-Effekt).',
       mechanism: 'Terpene sind <b>leicht flüchtige Kohlenwasserstoffe</b> die in den Trichom-Drüsen produziert werden. Sie allein haben keine psychoaktive Wirkung, modulieren aber das Wirkspektrum der Cannabinoide — der sogenannte <b>Entourage-Effekt</b>.',
       practice: '<b>Die 5 wichtigsten:</b><br>• <b>Myrcen</b> (erdig, moschusartig): Indica-typisch, couch-lock, sedierend<br>• <b>Limonen</b> (zitrus): Sativa-typisch, stimmungsaufhellend<br>• <b>Pinen</b> (Kiefernnadeln): Fokus, öffnet Bronchien, kontert Kurzzeitgedächtnis-Effekt von THC<br>• <b>Caryophyllen</b> (pfeffrig): dockt direkt an CB2-Rezeptoren an, Stress-Linderung<br>• <b>Linalool</b> (Lavendel): Beruhigend, angstlösend<br><br><b>Terpen-Schutz:</b> Kühl + dunkel lagern. Hitze (über 25°C) und UV zerstören Terpene schnell.',
-      pitfall: 'Im Spülen nicht übertreiben — Terpen-Synthese läuft bis zuletzt. Ernte bei milchig (Terpen-Peak), nicht warten bis alles amber (dann sind viele Terpene schon verflogen). Trocknung bei 18-21 °C kritisch: darüber verdampfen Terpene spürbar.' },
+      pitfall: 'Im Spülen nicht übertreiben — Terpen-Synthese läuft bis zuletzt. Ernte bei milchig (Terpen-Peak), nicht warten bis alles amber (dann sind viele Terpene schon verflogen). Trocknung über ' + TROCKNEN_KLIMA.tMax + ' °C kostet spürbar Terpene.' },
     { t: 'Phytochrom (Licht-Sensor)',
       brief: 'Das Molekül das in Feminisierten die Blüte auslöst. Warum absolute Dunkelheit in der Nacht kritisch ist.',
       mechanism: 'Cannabis hat in den Blättern das Photorezeptor-Protein <b>Phytochrom</b> in zwei Formen:<br>• <b>Pr</b>: inaktiv, absorbiert Rotlicht (~660 nm)<br>• <b>Pfr</b>: aktiv, absorbiert Fernrot (~730 nm)<br><br>Tagsüber wird Pr → Pfr umgewandelt. In der Dunkelheit zerfällt Pfr langsam zurück zu Pr. Fällt das Pfr-Level nachts unter eine Schwelle (entspricht >10h Dunkelheit), <b>aktiviert die Pflanze den Blüte-Signalweg</b>.',
@@ -32226,8 +32247,8 @@ const LEXIKON = [
       practice: '<b>Entscheidungs-Matrix:</b><br>' +
         '<table style="width:100%;border-collapse:collapse;font-size:13px;margin-top:6px">' +
         '<tr style="background:rgba(255,255,255,0.04)"><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Bedingung</b></td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Empfehlung</b></td></tr>' +
-        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">RLF im Trockenraum 50–60%, Temp 15–18°C</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Dry Trim</b> — ideale Bedingungen</td></tr>' +
-        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">RLF 60–65%, Temp 18–22°C</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Halb-Trim</b> (siehe unten)</td></tr>' +
+        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">RLF im Trockenraum ' + TROCKNEN_KLIMA.rhMin + '–' + TROCKNEN_KLIMA.rhMax + ' %, Temp ' + TROCKNEN_KLIMA.tMin + '–' + TROCKNEN_KLIMA.tMax + ' °C</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Dry Trim</b> — ideale Bedingungen</td></tr>' +
+        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">RLF ' + TROCKNEN_KLIMA.rhMax + '–65 %, Temp ' + TROCKNEN_KLIMA.tMax + '–22 °C</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Halb-Trim</b> (siehe unten)</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">RLF >65%, dichte Buds, viel Blattmasse</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Wet Trim</b> — Schimmelrisiko zu hoch</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Wenig Hängeplatz</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Wet Trim</b> auf Trockennetzen</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Anfänger-Setup ohne Klima-Kontrolle</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Wet Trim</b> sicherer (geringeres Schimmelrisiko)</td></tr>' +
@@ -32251,7 +32272,7 @@ const LEXIKON = [
         '1. Pflanze schneiden, große Fan Leaves abzupfen<br>' +
         '2. Sugar Leaves komplett dranlassen<br>' +
         '3. Ganze Äste am Stumpf aufhängen, mindestens 5 cm Abstand<br>' +
-        '4. Trockenzelt: 15–18°C, 50% RLF, dunkel<br>' +
+        '4. Trockenzelt: ' + TROCKNEN_TEXT + ', dunkel<br>' +
         '5. Ab Tag 7: täglich Snap-Test<br>' +
         '6. Bei bestandenem Snap-Test: Äste runter, in kühlem Raum (<20°C) trimmen<br>' +
         '7. Buds vom Ast schneiden, Sugar Leaves eng am Bud abtrennen<br>' +
@@ -32399,7 +32420,7 @@ const LEXIKON = [
         '• Schere mit <b>Isopropanol</b> desinfizieren, trocken wischen, eine Reserve-Schere bereitlegen<br>' +
         '• Nitril-Handschuhe bereit (Trichome kleben sonst an Haut)<br>' +
         '• Tablett oder saubere Unterlage für die geschnittenen Äste<br>' +
-        '• Trockenzelt vorbereitet: 15–18°C, 50% RLF, dunkel, Aufhängehaken montiert<br>' +
+        '• Trockenzelt vorbereitet: ' + TROCKNEN_TEXT + ', dunkel, Aufhängehaken montiert<br>' +
         '• Isopropanol + Tücher bereit für Zwischen-Reinigung der Schere<br><br>' +
         '<b>Am Erntemorgen:</b><br>' +
         '1. Lampe anschalten oder mit dem natürlichen Sonnenaufgang starten<br>' +
@@ -32432,10 +32453,10 @@ const LEXIKON = [
       mechanism: 'Während der Trocknung passieren <b>zwei kritische Prozesse parallel</b>:<br><br>' +
         '<b>1. Wasser verdunstet</b> aus den Buds. Zu schnell (>22°C, <40% RLF) → Außen knochentrocken, innen feucht eingeschlossen → Schimmel-Falle und ungleichmäßiger Trocknungsgrad. Zu langsam (>65% RLF) → Botrytis-Risiko, Aroma kippt.<br><br>' +
         '<b>2. Chlorophyll baut sich ab.</b> Das ist der Prozess der den „grünen Heu-Geschmack" eliminiert. Enzyme arbeiten in einem schmalen Temperatur- und Feuchtefenster. Zu warm/zu trocken → Enzyme stoppen → Chlorophyll bleibt → Heu-Geschmack der sich auch durch Curing nicht mehr wegmacht.<br><br>' +
-        'Der Sweet Spot ist <b>15–18°C bei 50% RLF</b>. Sugar-Leaves an den Buds wirken als Feuchtigkeits-Buffer und verlangsamen die Außen-Trocknung — daher hängt man Pflanzen meist <b>komplett mit Blättern</b> auf (Dry Trim).',
+        'Der Richtwert ist <b>' + TROCKNEN_TEXT + '</b>. Trockener, bei 50–54 %, ist ein <b>bewusster Tausch</b> und keine bessere Einstellung: Das Zeitfenster für Schimmel wird kürzer, dafür gehen mehr Terpene verloren — dann nur mit minimaler Luftbewegung und mindestens 8 Tage lang. Sugar-Leaves an den Buds wirken als Feuchtigkeits-Buffer und verlangsamen die Außen-Trocknung — daher hängt man Pflanzen meist <b>komplett mit Blättern</b> auf (Dry Trim).',
       practice: '<b>Setup-Werte:</b><br>' +
-        '• Temperatur: <b>15–18°C</b>, optimal 17°C<br>' +
-        '• Luftfeuchte: <b>50% RLF</b>, max 60%<br>' +
+        '• Temperatur: <b>' + TROCKNEN_KLIMA.tMin + '–' + TROCKNEN_KLIMA.tMax + ' °C</b><br>' +
+        '• Luftfeuchte: <b>' + TROCKNEN_KLIMA.rhMin + '–' + TROCKNEN_KLIMA.rhMax + ' % RLF</b> — bewusst trockener (50–54 %) nur mit minimaler Luftbewegung und mindestens 8 Tagen<br>' +
         '• Licht: <b>Pitch-Black</b>, absolute Dunkelheit (UV baut Cannabinoide ab)<br>' +
         '• Luftstrom: <b>kein direkter Strahl auf Buds</b> — passive Daisy-Chain (Lüfter saugt Luft aus dem Raum, kein Ventilator direkt im Trockenraum)<br>' +
         '• Abstand zwischen Ästen: <b>mindestens 5 cm</b><br>' +
@@ -34149,13 +34170,13 @@ const HOWTO = [
       txt: 'Früh am Morgen ernten, bevor die Lampen angehen (maximaler Terpengehalt). Äste abschneiden, grob entblättern, dann kopfüber aufhängen. Die App wechselt automatisch in die Trocknungs-Phase.' },
     { t: 'Trocknen',
       brief: 'Die wichtigste Phase für Aroma und Wirkung. Falsch trocknen ruiniert in 7 Tagen die ganze Arbeit der vorherigen Monate.',
-      mechanism: '<b>Was beim Trocknen passiert:</b><br>• <b>Wasserentzug</b> aus den Buds (frisch ~80% Wasser, fertig ~10–15%)<br>• <b>Chlorophyll-Abbau</b> — das grüne Pigment macht den „Heu/Gras"-Geschmack. Es zerfällt langsam bei Dunkelheit + 18–21°C in 7–14 Tagen<br>• <b>Stärke wandelt sich zu Zucker</b> — der typische süße Geschmack entsteht erst beim Trocknen<br>• <b>Terpene</b> (Aroma-Stoffe) sind flüchtig — bei &gt;25°C verdunsten sie weg, bei zu trockener Luft auch<br>• <b>THC ist zunächst inaktiv</b> als THCA — wird erst beim Erhitzen oder durch Zeit/UV zu THC<br><br>Zu schnell getrocknet (z.B. Heizung, Sonne, Lüfter direkt drauf) → Chlorophyll bleibt → kratzt im Hals, schmeckt nach Heu, brennt schwarz. Zu feucht → Schimmel, Pflanze ist Müll.',
+      mechanism: '<b>Was beim Trocknen passiert:</b><br>• <b>Wasserentzug</b> aus den Buds (frisch ~80% Wasser, fertig ~10–15%)<br>• <b>Chlorophyll-Abbau</b> — das grüne Pigment macht den „Heu/Gras"-Geschmack. Es zerfällt langsam bei Dunkelheit und ' + TROCKNEN_KLIMA.tMin + '–' + TROCKNEN_KLIMA.tMax + ' °C in 7–14 Tagen<br>• <b>Stärke wandelt sich zu Zucker</b> — der typische süße Geschmack entsteht erst beim Trocknen<br>• <b>Terpene</b> (Aroma-Stoffe) sind flüchtig — bei &gt;25°C verdunsten sie weg, bei zu trockener Luft auch<br>• <b>THC ist zunächst inaktiv</b> als THCA — wird erst beim Erhitzen oder durch Zeit/UV zu THC<br><br>Zu schnell getrocknet (z.B. Heizung, Sonne, Lüfter direkt drauf) → Chlorophyll bleibt → kratzt im Hals, schmeckt nach Heu, brennt schwarz. Zu feucht → Schimmel, Pflanze ist Müll.',
       practice: '<b>📋 KOMPLETTER ABLAUF</b><br><br>' +
         '<b>1. Vor dem Trocknen — Schnitt-Entscheidung:</b><br>' +
         '<u>Wet Trim (sofort schneiden):</u> Ganze Pflanze ernten, Buds direkt von Zweigen + Zuckerblättern befreien. Schneller, mehr Platz nötig (Trockennetz). Trocknet schneller (5–8 Tage). Buds sind danach optisch sauberer.<br><br>' +
         '<u>Dry Trim (mit Blättern trocknen):</u> Pflanze kopfüber in ganze Zweige schneiden + aufhängen. Zuckerblätter bleiben dran. Trocknet langsamer (8–14 Tage). Trichome bleiben besser geschützt. Aroma intensiver. Trimmen erst NACH dem Trocknen.<br><br>' +
         '<b>👉 Empfehlung Anfänger: Dry Trim.</b> Mehr Aroma, schwerer zu versauen, mehr Puffer wenn Klima nicht perfekt ist.<br><br>' +
-        '<b>2. Klima beim Trocknen:</b><br>• Temperatur: <b>18–21°C</b> (kühler = besser, nie über 23°C)<br>• Luftfeuchte: <b>55–65% RLF</b> (wichtig! 50% ist schon zu trocken)<br>• <b>Dunkelheit</b> (Licht zerstört Trichome und THC)<br>• <b>Leichte Luftbewegung</b> — kleiner Lüfter im Raum, NICHT direkt auf die Buds<br>• Geruch: Plant-Schrank, Zelt, kühler Kellerraum<br><br>' +
+        '<b>2. Klima beim Trocknen:</b><br>• Temperatur: <b>' + TROCKNEN_KLIMA.tMin + '–' + TROCKNEN_KLIMA.tMax + ' °C</b> (nie über 23 °C)<br>• Luftfeuchte: <b>' + TROCKNEN_KLIMA.rhMin + '–' + TROCKNEN_KLIMA.rhMax + ' % RLF</b> (trockener geht schneller, kostet aber Terpene; über 65 % droht Schimmel)<br>• <b>Dunkelheit</b> (Licht zerstört Trichome und THC)<br>• <b>Leichte Luftbewegung</b> — kleiner Lüfter im Raum, NICHT direkt auf die Buds<br>• Geruch: Plant-Schrank, Zelt, kühler Kellerraum<br><br>' +
         '<b>3. Aufhängen:</b><br>• Zweige kopfüber an Schnur/Drahtgitter — Buds zeigen nach unten<br>• Pro Zweig 5–10 cm Abstand<br>• Wenn Trockennetz: Buds einzeln liegend, alle 24h wenden<br><br>' +
         '<b>4. Wie erkenne ich „fertig"? — Der Knack-Test:</b><br>Nach 5–7 Tagen täglich testen. Nimm einen kleineren Seitenzweig, biege ihn:<br>• <b>Knackt deutlich + bricht durch</b> = fertig getrocknet ✅<br>• <b>Biegt sich nur</b> = noch zu feucht, weiter trocknen<br>• <b>Bröselig + zerfällt</b> = zu trocken (Curing rettet aber noch was)<br><br>Bei dicken Buds testet der Knack-Test des Hauptstiels — die Innenfeuchte zählt, nicht die Oberfläche.<br><br>' +
         '<b>Alternative: das Bud selbst:</b> Außen sollte sich der Bud trocken anfühlen, beim leichten Quetschen aber innen noch minimal nachgeben (nicht hart wie ein Stein, nicht weich wie ein Schwamm). „Sponge-with-resistance".<br><br>' +
