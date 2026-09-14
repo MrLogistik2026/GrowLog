@@ -2,6 +2,32 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-14 — v1.5.145
+
+- **Zwei Grows, zwei Pläne: Der Eintrag zeigte die Produkte des aufgeschlagenen Plans.** Befund
+  der Prüf-Agenten (Blickwinkel doppelte Regeln), gegengeprüft — und genau die Lage von Run 02
+  neben Run 01. Die Dosen kommen seit v1.5.100 aus dem Plan des Zyklus; Produkte, Einheiten und
+  Mischreihenfolge lasen acht Stellen aber aus `S.products` / `S.mixOrder`, den Spiegeln des
+  Plans, der im Düngeplan-Bildschirm aufgeschlagen ist. Nachgestellt mit Run 02 auf Rainbow,
+  BioBizz aufgeschlagen:
+
+  | Stelle | vorher |
+  |---|---|
+  | Nährstofftabelle im Eintrag | 7 BioBizz-Zeilen (Root·Juice, Top·Max, Acti·Vera …) ohne Dosis — die 7 Rainbow-Dosen unsichtbar |
+  | „Empfehlung übernehmen" | Silica Force 0,5 statt 1,0 ml, CalMag 0,8 statt 1,6 ml — Einheit im falschen Plan gesucht |
+  | Nachholen vergangener Tage | Silica Force 0,5 statt 0,9 ml, Epsom 0,3 statt 0,5 g |
+  | Tagebuch-Export | Juli-Dosen von V3.4.7 nur als interne Produkt-Nummer |
+
+  Produkt-IDs sind je Plan eindeutig; wer im falschen Plan sucht, findet nichts — und rechnet dann
+  mit einer Festmenge statt ml/L.
+- **Eine Quelle:** `_planAnsicht(c)` liefert Produkte und Mischreihenfolge des Plans dieses
+  Zyklus, mit derselben Ausnahme wie `getWeekDoses` (ist der Plan zugleich aufgeschlagen, gelten
+  die Spiegel mit den ungesicherten Bearbeitungen). `orderedProductsFor(c)` ordnet danach,
+  `_produktFuer(c, id)` sucht erst im Plan des Zyklus, dann in allen Plänen — alte Einträge tragen
+  IDs früherer Pläne. Umgestellt: Nährstofftabelle, Mischliste, Zusatzzeilen, Wasser-Tag-Dosen,
+  Vorlagen-Ausfüller, „Empfehlung übernehmen", Nachholen, Export.
+- Test: `test_zweiplaene.js` (11 Prüfungen). Vor der Korrektur gegen v1.5.144: 6 Fehlschläge.
+
 ## 2026-09-14 — v1.5.144
 
 - **Eine Trockenstress-Zusage hatte v1.5.126 übersehen.** Beim Abarbeiten der IceFlush-Texte
