@@ -288,6 +288,8 @@ function pruef(name, bedingung, info) {
       // (v1.5.143) Die IceFlush-Karte auf der Startseite und die Anleitung versprachen noch
       // „Kältestress fördert Trichom-Produktion" bzw. „soll die Trichom-Produktion pushen".
       [/Kältestress\s+(soll|fördert|pusht|steigert)[^\n.]{0,60}Trichom/i, '"Kältestress fördert/pusht Trichome"'],
+      // (v1.5.144) Übersehen in v1.5.126: der Finisher-Hinweis „bewusster Stress für Harzproduktion".
+      [/(Stress\s+(für|triggert|fördert)\s+(die\s+)?Harz|triggert\s+Harz)/i, '"Stress für/triggert Harzproduktion"'],
     ];
     // Eine Zeile, die die Zahl ZITIERT und im selben Zug entkraeftet, ist kein Verstoss —
     // im Gegenteil, sie ist das gewuenschte Ergebnis. (Diese Unterscheidung hat mir der

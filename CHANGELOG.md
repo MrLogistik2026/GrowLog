@@ -2,6 +2,21 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-14 — v1.5.144
+
+- **Eine Trockenstress-Zusage hatte v1.5.126 übersehen.** Beim Abarbeiten der IceFlush-Texte
+  (v1.5.143) gefunden. Der Hebe-Test zeigt im Finisher-Modus bei 30–40 % Restgewicht:
+  „Finisher-Modus: 30–35% Restgewicht ideal — **bewusster Stress für Harzproduktion**." Patrick
+  hatte am 07.09. entschieden, genau diese Aussage abzuschwächen; v1.5.126 hat sie an neun Stellen
+  geändert, diese stand in den Texten `T.water` und fiel dem Suchlauf nicht auf.
+- Jetzt: „30–35 % Restgewicht sind vor der Ernte gewollt (Hard Dryback). Ein Harz-Plus durch den
+  Trockenstress ist oft berichtet, aber nicht belastbar belegt." Die Empfehlung selbst bleibt
+  unverändert, nur ihre Begründung — wie in v1.5.126. Zwei Code-Kommentare mit derselben
+  Behauptung sind mitkorrigiert.
+- Test: Die Verbotsliste in `test_lexikon.js` kennt jetzt „Stress für / triggert
+  Harzproduktion" (51 Prüfungen). Vor der Korrektur gegen den alten Quelltext: 1 Fehlschlag,
+  genau diese Zeile.
+
 ## 2026-09-14 — v1.5.143
 
 - **Am IceFlush-Tag widersprachen drei Texte der Eintragskarte — und zwei versprachen einen

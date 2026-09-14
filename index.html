@@ -1118,7 +1118,8 @@ const T = {
     cocoStress: ({ restPct }) => `⚠ ${restPct}% Restgewicht — Coco zu trocken. Sofort gründlich gießen und künftig häufiger.`,
 
     // Finisher-Modus (letzte 2 Wochen vor Ernte)
-    finisherReady: () => '🟢 Finisher-Modus: 30–35% Restgewicht ideal — bewusster Stress für Harzproduktion.',
+    // (v1.5.144) Übersehen in v1.5.126: Ein Harz-Plus durch Trockenstress ist oft berichtet, aber nicht belastbar belegt.
+    finisherReady: () => '🟢 Finisher-Modus: 30–35% Restgewicht sind vor der Ernte gewollt (Hard Dryback). Ein Harz-Plus durch den Trockenstress ist oft berichtet, aber nicht belastbar belegt.',
     finisherWait: ({ restPct }) => `Finisher läuft — noch ${restPct}% Restgewicht. Warten bis spürbar federleicht.`,
 
     // Tag 1 Anzucht — Samen-Schutz
@@ -4414,7 +4415,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.143';
+const APP_VERSION = 'v1.5.144';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -8393,7 +8394,7 @@ function contextFor(c, iso) {
   const isDry = p.ph === 'dry';
 
   // FINISHER-MODUS: Letzte 2 Wochen vor Ernte — 30-35% Restgewicht als
-  // bewusstes Stress-Tool erlaubt (triggert Harzproduktion).
+  // bewusst trockener Topf erlaubt (Hard Dryback; ein Harz-Plus ist nicht belastbar belegt, v1.5.144).
   // Greift in Blüte-Ende (letzte 14 Tage), Flush, Ice, Harvest.
   const totalDays = (c.anzuchtDays || PHASE_DEFAULTS.anzuchtDays) +
                     (c.bloomDays || PHASE_DEFAULTS.bloomDays) +
@@ -8532,8 +8533,8 @@ function calcRestPct(currentG, saturatedG, dryG) {
  * eine Entscheidungs-Empfehlung.
  *
  * Im Finisher-Modus (letzte 2 Wochen vor Ernte) verschiebt sich der Sweet-Spot
- * nach unten — 30-35% werden zum Ziel, weil bewusster Stress die Harzproduktion
- * triggert.
+ * nach unten — 30-35% werden zum Ziel (Hard Dryback vor der Ernte). Ein Harz-Plus durch den
+ * Trockenstress ist oft berichtet, aber nicht belastbar belegt (v1.5.144).
  *
  * @param {number} restPct  Restgewicht in %
  * @param {boolean} isFinisher  true wenn in letzten 2 Wochen vor Ernte
