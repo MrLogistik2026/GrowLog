@@ -94,7 +94,7 @@ function pruef(name, bedingung, info) {
       .map((z, i) => ({ nr: i + 1, z })).filter(x => !/^\s*(\/\/|\*|\/\*)/.test(x.z));
     ['pH 6.2–6.8', '(6.5–6.8)', 'Coco 6.0–6.3', "'Hydro 5.8–6.2'", '5.5–6.5 für Hydro', "'Nur klares Wasser. pH 6.4.'",
      'sollte 6.0–6.5 sein (Erde)', 'Grüner Bereich: 6.2–6.4 (Erde, ideal)', 'zones: [{ from: 6.2, to: 6.4',
-     'Eisen/Mangan/Phosphor werden blockiert', 'pH immer 6.2–6.4 (Erde), Ziel: 6.4'].forEach(alt => {
+     'Eisen/Mangan/Phosphor werden blockiert', 'pH immer 6.2–6.4 (Erde), Ziel: 6.4', '6.0–6.5 (Erde) / 5.5–6.0 (Coco/Hydro)'].forEach(alt => {
       const treffer = quelle.filter(x => x.z.includes(alt)).map(x => 'Zeile ' + x.nr);
       pruef('Nirgends: „' + alt + '"', treffer.length === 0, treffer.join(', '));
     });

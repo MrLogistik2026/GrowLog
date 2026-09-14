@@ -4441,7 +4441,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.159';
+const APP_VERSION = 'v1.5.160';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -27886,7 +27886,7 @@ function renderEntry(iso) {
           • <b>Wasser:</b> Erste Tage (Keimung) mit Sprühflasche befeuchten. Sobald der Sämling steht: feine Gießkanne, dünner Strahl im Ring (~50–150 ml, steigt mit jedem Guss). Erde feucht halten, NICHT nass.<br>
           • <b>Dünger:</b> ${_saemDuenger}<br>
           • <b>Licht:</b> 30–50cm Abstand, 50–70% Power. Sämling streckt sich → zu wenig Licht.<br>
-          • <b>pH:</b> 6.0–6.5 (Erde) / 5.5–6.0 (Coco/Hydro)
+          • <b>pH:</b> ${phTargetFor(c.medium).label} — das Ziel für ${c.medium === 'coco' ? 'Coco' : (c.medium === 'hydro' ? 'Hydro' : 'Erde')}
         </div>
         <div style="margin-top:8px;font-size:11px;color:var(--text-hint);line-height:1.5">
           📖 Mehr im Lexikon: <span style="color:var(--green);text-decoration:underline;cursor:pointer" onclick="openLexikonEntry('Sämlingsphase')">Sämlingsphase</span> · <span style="color:var(--green);text-decoration:underline;cursor:pointer" onclick="openLexikonEntry('VPD (Vapour Pressure Deficit)')">VPD</span>

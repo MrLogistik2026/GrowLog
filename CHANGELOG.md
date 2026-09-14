@@ -2,6 +2,17 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-14 — v1.5.160
+
+- **Die Sämlings-Pflege nannte noch einen festen pH für Coco.** Beim Umbau der Dünger-Zeile für v1.5.159
+  mitgefunden, direkt darunter im selben Kasten: „pH: 6.0–6.5 (Erde) / 5.5–6.0 (Coco/Hydro)". `phTargetFor`
+  führt Coco mit 5,8–6,2 und Erde mit 6,2–6,4; v1.5.157 hatte die pH-Zahlen in Texten vereinheitlicht
+  und diese Zeile nicht erfasst, weil der Suchlauf nach den Spannen aus dem Befund suchte.
+- **Jetzt:** Die Zeile nennt das Ziel des Substrats dieses Zyklus aus `phTargetFor` („pH: 5.8–6.2 — das
+  Ziel für Coco").
+- `test_phtexte.js` (22 Prüfungen, beide Zeitzonen) sucht die alte Zeile im Quelltext. Gegen den alten
+  Stand: 1 Fehler.
+
 ## 2026-09-14 — v1.5.159
 
 - **In der Anzucht sagten Startseite, Sämlings-Pflege und Plan drei verschiedene Dinge über Dünger.**
