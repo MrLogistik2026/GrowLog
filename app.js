@@ -3413,7 +3413,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.142';
+const APP_VERSION = 'v1.5.143';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -14171,7 +14171,11 @@ function plainSentence(action, c, p, waterMl) {
     return `Heute nur klares Wasser ohne Dünger — davon ${_jeTopfWort}ungefähr <b>${_jeTopf(waterMl)} ml</b>${_zusammen(waterMl)}. Das spült die letzten Nährsalze aus der Erde.`;
   }
   if (action === 'ice') {
-    return `Heute gießt du mit Eiswasser — eine beliebte Abschluss-Technik (die Wirkung auf das Harz ist nicht belegt). Langsam, ${_jeTopfWort}etwa <b>${_jeTopf(waterMl)} ml</b>${_zusammen(waterMl)}.`;
+    // (v1.5.143) Am IceFlush wird Eis gelegt, nicht gegossen — so sagt es die Karte im Tageseintrag
+    // seit v1.5.111. Dieser Satz empfahl Eiswasser zu gießen; zusätzliches Wasser macht den
+    // Hard-Dryback der Tage davor zunichte.
+    const _eisJeTopf = Math.round(getPotSize(c) / 11 * 1000);   // 1 L Crushed Ice je 11-L-Topf
+    return `Heute ist IceFlush: Leg ${_jeTopfWort}etwa <b>${_eisJeTopf} ml Crushed Ice</b> an den Topfrand, nicht auf den Stamm${_n > 1 ? ` (zusammen ${_eisJeTopf * _n} ml für ${_n} Pflanzen)` : ''}. Daraus werden rund ${_jeTopf(waterMl)} ml Schmelzwasser${_n > 1 ? ' je Topf' : ''} — <b>Wasser gießt du keines dazu</b>. Eine beliebte Abschluss-Technik; ein Trichom-Plus ist nicht belegt.`;
   }
   if (action === 'ernte') {
     return `Heute ist Erntetag! Schneide die Pflanze ab und häng sie kopfüber zum Trocknen auf.`;
@@ -14400,12 +14404,14 @@ function getTodayAction(c, p, a, iso) {
       title: '🧊 Heute: IceFlush',
       icon: '🧊',
       color: cl.hex,
+      // (v1.5.143) Eis anlegen statt Eiswasser gießen — wie die Karte im Tageseintrag (v1.5.111) —
+      // und kein Trichom-Versprechen (ANBAU.md 14: kein belegter Trichom- oder Potenzeffekt).
       steps: [
-        `Eiskaltes Wasser (<10°C), ca. <b>${waterMl} ml</b>`,
-        'Kältestress fördert Trichom-Produktion',
-        'Nur in den letzten Tagen vor Ernte',
+        `<b>${Math.round(pot / 11 * 1000)} ml Crushed Ice</b> je Topf an den Rand legen, nicht auf den Stamm`,
+        `Daraus werden ~${waterMl} ml Schmelzwasser${getEffectivePlantCount(c, iso) > 1 ? ' für alle Töpfe' : ''} — kein zusätzliches Wasser gießen`,
+        'Beliebte Abschluss-Technik — ein Trichom-Plus ist nicht belegt',
       ],
-      hint: 'Eiswürfel direkt auf die Erde legen geht auch',
+      hint: 'Wer heute zusätzlich gießt, macht den Hard-Dryback der Tage davor zunichte',
     };
   }
   if (a === 'ernte') {
@@ -34045,7 +34051,7 @@ const HOWTO = [
     { t: 'Spülen (Wo 9-10 im Master-Plan)',
       txt: 'Nur klares Wasser, kein Dünger mehr. Ziel: die Pflanze soll Nährstoffreste aus dem Substrat verbrauchen. Im Eintrag siehst du den "Spülen"-Hinweis. Gieße reichlich bis viel Ablaufwasser (Drain) unten durchläuft. Bei einem 11L-Topf sollten mindestens 1L Drain erzeugt werden. Drain sofort entsorgen, nie zurückgießen.' },
     { t: 'IceFlush',
-      txt: 'Eiskaltes Wasser (<10°C) in den letzten 1-2 Tagen vor der Ernte. Der Kältestress soll die Trichom-Produktion nochmal pushen und kann lila Verfärbungen auslösen. Praktisch: Eiswürfel direkt auf die Erde legen.' },
+      txt: 'Crushed Ice am Topfrand verteilen (etwa 1 L je 11-L-Topf), 1–2 Tage vor der Ernte, nicht auf den Stamm. Wasser gießt du dazu keines — das Schmelzwasser zieht langsam ein, und der Topf bleibt so trocken wie nach dem Hard-Dryback. Beliebte Grower-Technik; bei Genetiken mit Anthocyan-Anlage können lila Farben entstehen. Ein Trichom-Plus ist wissenschaftlich nicht belegt.' },
     { t: 'Trichom-Check',
       txt: 'Ab Blüte-Woche 6-7 mit einer Lupe (60x oder mehr) die Trichome an den Blüten anschauen. <b>Klar</b> = zu früh. <b>Milchig</b> = THC-Peak (euphorische Wirkung). <b>Bernstein</b> = abgebaut zu CBN (sedierend). Ideal zur Ernte: 90% milchig + max 10% bernstein. Mehr Amber = Potenz-Verlust. Im Eintrag gibt es ein Trichom-Widget mit Prozent-Schiebern um deine Beobachtung festzuhalten.' },
     { t: 'Ernte',

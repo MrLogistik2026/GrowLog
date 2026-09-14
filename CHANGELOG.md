@@ -2,6 +2,30 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-14 — v1.5.143
+
+- **Am IceFlush-Tag widersprachen drei Texte der Eintragskarte — und zwei versprachen einen
+  Trichom-Effekt.** Beim Umbau des Einsteiger-Satzes (v1.5.142) gefunden. Seit v1.5.111 sagt die
+  Karte im Tageseintrag: 1 L Crushed Ice je 11-L-Topf an den Rand, „Wasser gießt du keines dazu".
+  Dagegen standen:
+
+  | Stelle | Text vorher |
+  |---|---|
+  | Einsteiger-Satz (Startseite) | „Heute gießt du mit Eiswasser … Langsam, etwa 700 ml." |
+  | Tageskarte (Startseite, beide Modi) | „Eiskaltes Wasser (<10°C), ca. 2100 ml" · „Kältestress fördert Trichom-Produktion" · „Eiswürfel direkt auf die Erde legen geht auch" |
+  | Anleitung | „Der Kältestress soll die Trichom-Produktion nochmal pushen … Eiswürfel direkt auf die Erde legen." |
+
+  Wer an diesem Tag zusätzlich gießt, macht den Hard-Dryback der Tage davor zunichte (Begründung
+  aus v1.5.111). Und nach `ANBAU.md` 14 hat IceFlush keinen belegten Trichom- oder Potenzeffekt —
+  in v1.5.125/126 an elf Stellen korrigiert, diese drei waren durchgerutscht, weil die Verbotsliste
+  in `test_lexikon.js` die Formulierung „Kältestress fördert" nicht kannte.
+- Jetzt sagen Startseite, Tageskarte und Anleitung dasselbe wie die Eintragskarte: Eismenge je
+  Topf an den Rand, daraus werden rund X ml Schmelzwasser, kein zusätzliches Wasser; eine
+  beliebte Technik, ein Trichom-Plus ist nicht belegt. Die Verbotsliste kennt die Formulierung
+  jetzt. Der Lexikon-Eintrag IceFlush war bereits ehrlich und bleibt.
+- Test: `test_iceflushtexte.js` (13 Prüfungen). Vor der Korrektur gegen v1.5.142: 6 Fehlschläge in
+  den Anzeigen (die Quelltext-Prüfung liest `app.js` und war deshalb schon grün).
+
 ## 2026-09-14 — v1.5.142
 
 - **Der Einsteiger-Satz auf der Startseite nannte die Summe aller Töpfe als Menge „für deine

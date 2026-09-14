@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.142** · index.html 2,24 MB · 635 Funktionen
+Stand: **v1.5.143** · index.html 2,24 MB · 635 Funktionen
 Zuletzt fortgeschrieben am 13.09.2026 (Rainbow-Plan, Abschnitt 0k). Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
@@ -174,7 +174,8 @@ Code; umgesetzt wird einzeln, mit eigener Version, Test und Vorführung. Rohdate
 
 **Erledigt:** EC-Ziel folgt der Plan-Woche (v1.5.140) · Klimaziel, Schimmel-Alarm, VPD, Kälte-Warnung
 und Trichom-Hinweise folgen dem Anteil an der Blüte (v1.5.141, `bluetestufe`). · Einsteiger-Satz nennt die
-Menge je Pflanze (v1.5.142).
+Menge je Pflanze (v1.5.142). · IceFlush-Tag: Startseite, Tageskarte und Anleitung sagen „Eis
+anlegen, kein Wasser dazu" ohne Trichom-Versprechen (v1.5.143).
 
 **Als Nächstes, in dieser Reihenfolge** (Fehler, ohne Rückfrage):
 1. **Gießmengen folgen der Blütedauer — wartet auf Patricks Antwort.** `waterPhaseKey` hängt noch an
@@ -193,8 +194,11 @@ Menge je Pflanze (v1.5.142).
    sie als Verbrauch zwischen zwei Güssen. Worauf beziehen sich die 30 % im Cup-Plan — Anteil des
    Wassers, das noch im Topf ist, oder Anteil des Topfgewichts? Davon hängt ab, wie groß die
    Nachfüllmenge richtig ist. Nicht ohne Antwort ändern (`ANBAU.md` 13.1).
-7. **Einsteiger-Satz am IceFlush-Tag** sagt „Heute gießt du mit Eiswasser … etwa X ml", die Karte
-   darunter seit v1.5.111 „Wasser gießt du keines dazu" (`plainSentence`, Zweig `ice`).
+7. **Trockenstress als Harz-Versprechen, übersehen in v1.5.126:** `T.finisherReady` (Zeile ~120)
+   „bewusster Stress für Harzproduktion", dazu die Kommentare an `contextFor` (Finisher-Modus) und
+   `classifyRestPct`. Patrick hat am 07.09. entschieden: abschwächen, der belegte Grund ist
+   Schimmelschutz (`ANBAU.md` 13.5). Die Verbotsliste in `test_lexikon.js` um „Stress für
+   Harzproduktion" ergänzen.
 2. Tageseintrag, Nachholen, „Empfehlung übernehmen" lesen Produkte/Einheiten aus dem
    aufgeschlagenen Plan (`orderedProducts`, `stepMixDose`, `applyRecommended`, `backfillPast`)
    — trifft Run 02 neben Run 01.
@@ -1461,10 +1465,10 @@ cat head.html app.js tail.html | cmp - index.html && echo "BYTE-IDENTISCH OK"
 **Byte-Identität mit `cmp` ist Pflicht, bevor irgendetwas geändert wird.** Danach wird
 `app.js` geändert, mit `build.sh` neu gebaut und erneut verglichen.
 
-52 Testdateien (Stand v1.5.142; Gesamtlauf zuletzt auf v1.5.138 grün, seitdem die betroffenen) — neu dazu
+53 Testdateien (Stand v1.5.143; Gesamtlauf zuletzt auf v1.5.138 grün, seitdem die betroffenen) — neu dazu
 `test_tageseintrag` (33), `test_navwege` (28), `test_leerzustand` (27),
 `test_outdoor` (29), `test_diagnose` (38), `test_lexikon` (49), `test_kalender` (23), `test_ernte_iceflush` (35), `test_rainbowplan` (61), `test_planumhaengen` (17),
-`test_wochentipp` (17), `test_assistentplan` (33), `test_kopfkarte` (12), `test_zuweisungskarte` (10), `test_ecziel` (20), `test_bluetestufen` (14) und `test_einsteigersatz` (11):
+`test_wochentipp` (17), `test_assistentplan` (33), `test_kopfkarte` (12), `test_zuweisungskarte` (10), `test_ecziel` (20), `test_bluetestufen` (14), `test_einsteigersatz` (11) und `test_iceflushtexte` (13):
 
 **Tests mit Patricks Grow an einem bestimmten Tag setzen das Datum fest** (`setDebugDate`). Mit
 der echten Uhr fielen am 13.09.2026 15 Prüfungen in drei Dateien um — nicht wegen eines Fehlers,

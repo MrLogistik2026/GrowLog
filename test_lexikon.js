@@ -285,6 +285,9 @@ function pruef(name, bedingung, info) {
       [/Trichom-?(Boost|Überproduktion|Booster)/i, '"Trichom-Boost/-Überproduktion"'],
       [/=\s*mehr Trichome/i, '"= mehr Trichome"'],
       [/\d\s?%\s?mehr (THC|Trichom|Cannabinoide)/i, '"<Zahl> % mehr THC/Trichome"'],
+      // (v1.5.143) Die IceFlush-Karte auf der Startseite und die Anleitung versprachen noch
+      // „Kältestress fördert Trichom-Produktion" bzw. „soll die Trichom-Produktion pushen".
+      [/Kältestress\s+(soll|fördert|pusht|steigert)[^\n.]{0,60}Trichom/i, '"Kältestress fördert/pusht Trichome"'],
     ];
     // Eine Zeile, die die Zahl ZITIERT und im selben Zug entkraeftet, ist kein Verstoss —
     // im Gegenteil, sie ist das gewuenschte Ergebnis. (Diese Unterscheidung hat mir der
