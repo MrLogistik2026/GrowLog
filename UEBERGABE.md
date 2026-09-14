@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.140** · index.html 2,24 MB · 634 Funktionen
+Stand: **v1.5.141** · index.html 2,24 MB · 635 Funktionen
 Zuletzt fortgeschrieben am 13.09.2026 (Rainbow-Plan, Abschnitt 0k). Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
@@ -172,13 +172,16 @@ Skeptiker, eine Synthese. **24 Befunde, 22 gegengeprüft bestätigt.** Die Agent
 Code; umgesetzt wird einzeln, mit eigener Version, Test und Vorführung. Rohdaten:
 `subagents/workflows/wf_35e0ed6e-4f3/journal.jsonl` im Sitzungsordner.
 
-**Erledigt:** EC-Ziel folgt der Plan-Woche (v1.5.140).
+**Erledigt:** EC-Ziel folgt der Plan-Woche (v1.5.140) · Klimaziel, Schimmel-Alarm, VPD, Kälte-Warnung
+und Trichom-Hinweise folgen dem Anteil an der Blüte (v1.5.141, `bluetestufe`).
 
 **Als Nächstes, in dieser Reihenfolge** (Fehler, ohne Rückfrage):
-1. Blütestufen nach Anteil an der Blütedauer statt fester Blütewochen — Gießphase, Klimaziel,
-   Schimmel-Alarm, „Trichome checken" (`waterPhaseKey`, `getPhaseTargets`, `getCriticalWarning`).
-   Patricks Wunsch, dass sich alles an die Dauer anpasst. Dazu die vertauschten Mengen-Korridore
-   (Vollblüte 1250–1750 unter Frühe Blüte 1450–2150 ml je Pflanze, `_naturalPhaseRange`).
+1. **Gießmengen folgen der Blütedauer (v1.5.142, in Arbeit).** `waterPhaseKey` hängt noch an
+   festen Blütewochen, die Mengen-Leiter in `_waterSuggestionRawUncapped` an festen Tagen ab Samen
+   (Tag 29–35 Stretch, 36–56 Vollblüte, 57–70 Reife). Dazu die vertauschten Obergrenzen:
+   `_REST_REFILL_FRAC` erlaubt im Stretch 0,35, in der Vollblüte 0,30 — daher Vollblüte
+   1250–1750 unter Frühe Blüte 1450–2150 ml je Pflanze (11 L). Vor dem Umbau die ganze Kennlinie
+   über 42/60/85/105 Blütetage messen (Monotonie, Regelkreis v1.5.112 unverändert).
 2. Tageseintrag, Nachholen, „Empfehlung übernehmen" lesen Produkte/Einheiten aus dem
    aufgeschlagenen Plan (`orderedProducts`, `stepMixDose`, `applyRecommended`, `backfillPast`)
    — trifft Run 02 neben Run 01.
@@ -1445,10 +1448,10 @@ cat head.html app.js tail.html | cmp - index.html && echo "BYTE-IDENTISCH OK"
 **Byte-Identität mit `cmp` ist Pflicht, bevor irgendetwas geändert wird.** Danach wird
 `app.js` geändert, mit `build.sh` neu gebaut und erneut verglichen.
 
-50 Testdateien (Stand v1.5.140; Gesamtlauf zuletzt auf v1.5.138 grün, seitdem die betroffenen) — neu dazu
+51 Testdateien (Stand v1.5.141; Gesamtlauf zuletzt auf v1.5.138 grün, seitdem die betroffenen) — neu dazu
 `test_tageseintrag` (33), `test_navwege` (28), `test_leerzustand` (27),
 `test_outdoor` (29), `test_diagnose` (38), `test_lexikon` (49), `test_kalender` (23), `test_ernte_iceflush` (35), `test_rainbowplan` (61), `test_planumhaengen` (17),
-`test_wochentipp` (17), `test_assistentplan` (33), `test_kopfkarte` (12), `test_zuweisungskarte` (10) und `test_ecziel` (20):
+`test_wochentipp` (17), `test_assistentplan` (33), `test_kopfkarte` (12), `test_zuweisungskarte` (10), `test_ecziel` (20) und `test_bluetestufen` (14):
 
 **Tests mit Patricks Grow an einem bestimmten Tag setzen das Datum fest** (`setDebugDate`). Mit
 der echten Uhr fielen am 13.09.2026 15 Prüfungen in drei Dateien um — nicht wegen eines Fehlers,

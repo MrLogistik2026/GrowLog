@@ -3413,7 +3413,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.140';
+const APP_VERSION = 'v1.5.141';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -7051,7 +7051,7 @@ function _datebasedPhase(iso, c) {
   }
   if (d < flushStart) {
     const bloomDayIdx = Math.round((d - bs) / msPerDay);
-    return { ph: 'bloom', day: diffDays + 1, week: Math.floor(bloomDayIdx / 7) + 1, total: totalDays, pct };
+    return { ph: 'bloom', day: diffDays + 1, week: Math.floor(bloomDayIdx / 7) + 1, bloomDay: bloomDayIdx + 1, bloomLen, total: totalDays, pct };
   }
   if (d < iceStart) {
     return { ph: 'flush', day: diffDays + 1, week: null, total: totalDays, pct };
@@ -7109,7 +7109,7 @@ function phase(iso, c) {
   const cu = dr + (c.cureDays || PHASE_DEFAULTS.cureDays);
 
   if (diff < a)  return { ph: 'anzucht', day: diff + 1, week: Math.floor(diff / 7) + 1, total: dr, pct: Math.round(diff / dr * 100) };
-  if (diff < b)  return { ph: 'bloom',   day: diff + 1, week: Math.floor((diff - a) / 7) + 1, total: dr, pct: Math.round(diff / dr * 100) };
+  if (diff < b)  return { ph: 'bloom',   day: diff + 1, week: Math.floor((diff - a) / 7) + 1, bloomDay: diff - a + 1, bloomLen: b - a, total: dr, pct: Math.round(diff / dr * 100) };
   if (diff < f)  return { ph: 'flush',   day: diff + 1, week: null, total: dr, pct: Math.round(diff / dr * 100) };
   if (diff < ic) return { ph: 'ice',     day: diff + 1, week: null, total: dr, pct: Math.round(diff / dr * 100) };
   if (diff < h)  return { ph: 'harvest', day: diff + 1, week: null, total: dr, pct: Math.round(diff / dr * 100) };
@@ -11102,6 +11102,29 @@ function getTotalHarvest(c) {
   return { totalWetG: 0, totalDryG: 0, hasPlantData: false, plantsWithData: 0 };
 }
 
+/**
+ * (v1.5.141) BLÜTESTUFE NACH ANTEIL AN DER BLÜTE — eine Quelle für Klimaziel, Schimmel-Alarm,
+ * VPD-Einstufung, Kälte-Warnung, Trichom-Hinweise und Notiz-Vorschläge.
+ *
+ * Vorher fragten diese Stellen feste Blütewochen ab (≤ 3 früh, ≤ 6 mittel, ≥ 7 spät). Eine Auto
+ * mit 42 Blütetagen erreichte nie die „späte Blüte" — und damit nie den Schimmel-Alarm ab 60 %
+ * RLF und nie den Hinweis „Trichome checken"; bei Patricks 85 Blütetagen galt schon ab Blütetag
+ * 43 (51 %) Spätblüte-Klima. Gefunden von den Prüf-Agenten (Dauer-Automatik), gegengeprüft.
+ * Die Grenzen sind so gesetzt, dass die Standard-Blüte (60 Tage) exakt dieselben Tage behält;
+ * die Aufteilung selbst bleibt eine Konvention (ANBAU.md 2.2), gilt jetzt aber für jede Dauer.
+ * Die Topping-Fenster bleiben absolut — sie hängen am Alter der Pflanze, nicht an der Blüte.
+ * Ohne Blütetag (alte Phasenobjekte) gilt die bisherige Wochenregel.
+ * @returns {null|'frueh'|'mittel'|'spaet'}
+ */
+function bluetestufe(p) {
+  if (!p || p.ph !== 'bloom') return null;
+  const tag = p.bloomDay, len = p.bloomLen;
+  if (!(tag > 0 && len > 0)) { const w = p.week || 1; return w <= 3 ? 'frueh' : (w <= 6 ? 'mittel' : 'spaet'); }
+  if (tag * 60 <= 21 * len) return 'frueh';
+  if (tag * 60 <= 42 * len) return 'mittel';
+  return 'spaet';
+}
+
 // Ordnet einen Tag einer der einstellbaren Gieß-Phasen zu (für eigene Wassermengen,
 // v1.1.129). Sämling bewusst NICHT überstimmbar — die junge Pflanze braucht die
 // konservativ-kleinen Auto-Mengen (Überwässerung killt Sämlinge). Ice/Ernte/Trocknen:
@@ -12506,7 +12529,7 @@ function getAlerts(c) {
   if (p.ph === 'bloom') {
     const rem = (c.bloomDays || PHASE_DEFAULTS.bloomDays) - (p.day - (c.anzuchtDays || PHASE_DEFAULTS.anzuchtDays));
     if (rem > 0 && rem <= 7) out.push({ icon: '🚿', text: `Spülung in ${rem} Tagen`, type: 'info' });
-    if (p.week >= 7) out.push({ icon: '🔬', text: `Blütewoche ${p.week} – Trichome checken!`, type: 'tip', action: 'trichome', cId: c.id });
+    if (bluetestufe(p) === 'spaet') out.push({ icon: '🔬', text: `Blütewoche ${p.week} – Trichome checken!`, type: 'tip', action: 'trichome', cId: c.id });
   }
   if (p.ph === 'ice' || p.ph === 'harvest') {
     out.push({ icon: '✂️', text: 'Ernte naht!', type: 'success' });
@@ -12561,7 +12584,7 @@ function getAlerts(c) {
     }
 
     // Kühle Nächte in Blüte = Feature. Nur anzeigen wenn's heute tatsächlich kühl wird.
-    if (p.ph === 'bloom' && p.week >= 4) {
+    if (bluetestufe(p) === 'mittel' || bluetestufe(p) === 'spaet') {   // (v1.5.141) nach Anteil an der Blüte
       const wTMin = S.weather?.data?.forecast?.find(f => f.date === today)?.tmin;
       if (!isNaN(wTMin) && wTMin <= 13 && wTMin >= 5) {
         out.push({
@@ -13119,10 +13142,11 @@ function getPhaseTargets(p) {
     return { tempMin: 18, tempMax: 28, rhMin: 50, rhMax: 70, vpdMin: 0.8, vpdMax: 1.4, label: 'Vegi draußen', icon: '🌿' };
   }
   if (ph === 'bloom') {
-    if (week <= 3) {
+    const _stufe = bluetestufe(p);   // (v1.5.141) nach Anteil an der Blüte
+    if (_stufe === 'frueh') {
       return { tempMin: 23, tempMax: 27, rhMin: 50, rhMax: 60, vpdMin: 1.0, vpdMax: 1.3, label: 'Frühe Blüte', icon: '🌸' };
     }
-    if (week <= 6) {
+    if (_stufe === 'mittel') {
       return { tempMin: 22, tempMax: 26, rhMin: 45, rhMax: 55, vpdMin: 1.2, vpdMax: 1.5, label: 'Mittlere Blüte', icon: '🌺' };
     }
     return { tempMin: 18, tempMax: 24, rhMin: 40, rhMax: 50, vpdMin: 1.4, vpdMax: 1.6, label: 'Späte Blüte', icon: '🍯' };
@@ -13188,8 +13212,10 @@ function getCriticalWarning(category, value, p, c) {
   const week = p?.week || 1;
   const isOutdoor = c?.growType === 'outdoor';
   const isSeedling = (ph === 'anzucht' || ph === 'vorzucht') && day <= 14;
-  const isLateBloom = ph === 'bloom' && week >= 7;
-  const isMidBloom = ph === 'bloom' && week >= 4;
+  // (v1.5.141) Blütestufe nach Anteil an der Blüte, siehe bluetestufe
+  const _stufe = bluetestufe(p);
+  const isLateBloom = _stufe === 'spaet';
+  const isMidBloom = _stufe === 'mittel' || _stufe === 'spaet';
   const isFlushOrIce = ph === 'flush' || ph === 'ice';
   // Weiche EC-Decke aus zentralem Helfer (v1.2.63) — gleiche Quelle wie
   // Dashboard-Alert und Eintrag-Warnung.
@@ -13340,7 +13366,7 @@ function getCriticalWarning(category, value, p, c) {
         action: 'Unter 12°C friert die Pflanze biologisch ein. Wurzeltätigkeit stoppt, P-Lockout, Pythium-Risiko durch kalte Nährlösung. Heizung dazu, isolieren.',
       };
     }
-    if (value < 16 && (ph === 'anzucht' || ph === 'bloom') && week <= 6) {
+    if (value < 16 && ((ph === 'anzucht' && week <= 6) || (ph === 'bloom' && !isLateBloom))) {
       return {
         level: 'high',
         icon: '⚠️',
@@ -13395,7 +13421,7 @@ function vpdZone(v, phaseInfo, growType) {
   if (v === null) return null;
   const ph = phaseInfo?.ph;
   const day = phaseInfo?.day || 0;
-  const isLateBloom = ph === 'bloom' && (phaseInfo.week || 0) >= 7;
+  const isLateBloom = bluetestufe(phaseInfo) === 'spaet';   // (v1.5.141) nach Anteil an der Blüte
   const isSeedling = (ph === 'anzucht' || ph === 'vorzucht') && day <= 10;
   const isVegi = (ph === 'anzucht' || ph === 'vorzucht' || ph === 'vegi_out' || ph === 'abhärten') && !isSeedling;
   const isBloom = ph === 'bloom' || ph === 'flush' || ph === 'ice' || ph === 'harvest';
@@ -13563,7 +13589,7 @@ function getEntryWarnings(cd, p, e, c, iso) {
   if (!isNaN(rhVal) && rhVal > 0) {
     if (isOutdoor) {
       // Outdoor: Nur echte Schimmelwarnung in der Blüte, sonst keine Warnung
-      if (rhVal > 85 && p && p.ph === 'bloom' && p.week >= 4) {
+      if (rhVal > 85 && (bluetestufe(p) === 'mittel' || bluetestufe(p) === 'spaet')) {   // (v1.5.141)
         out.push({ type: 'warn', text: `💨 ${rhVal}% RLF sehr hoch in späterer Blüte — Schimmelrisiko! Bei anhaltender Nässe Netz/Dach nutzen.` });
       }
     } else {
@@ -14546,7 +14572,7 @@ function weatherWidget() {
     // 4. Nachtkühle-Info für aktive Blüte-Zyklen
     const inLateBloom = act.some(c => {
       const p = phase(todayISO(), c);
-      return p && p.ph === 'bloom' && p.week >= 4 && c.growType === 'outdoor';
+      return (bluetestufe(p) === 'mittel' || bluetestufe(p) === 'spaet') && c.growType === 'outdoor';   // (v1.5.141)
     });
     if (inLateBloom) {
       const minTemps = fc.slice(0, 3).map(d => d.tmin).filter(t => !isNaN(t));
@@ -26680,7 +26706,7 @@ function renderEntry(iso) {
     // Reife über den Erntezeitpunkt entscheidet und der Trigger „milchig dominant + 2–5 %
     // Bernstein" scharf geprüft werden muss. Nach dem Schnitt entfällt er wieder.
     const showTrich = p && (
-      (p.ph === 'bloom' && p.week >= 7) || p.ph === 'flush' || p.ph === 'ice' || p.ph === 'harvest'
+      bluetestufe(p) === 'spaet' || p.ph === 'flush' || p.ph === 'ice' || p.ph === 'harvest'
     );
     const trich = cd.trichomes || (_prevTrich ? { clear: _prevTrich.clear, milky: _prevTrich.milky, amber: _prevTrich.amber } : { clear: 70, milky: 25, amber: 5 });
     // (v1.5.131) 'cure' ergänzt. Das Trockengewicht steht erst nach dem Trocknen fest —
@@ -29139,7 +29165,7 @@ function getAutoFillTemplate(c, p, a, iso) {
       tpl.notePlaceholder = 'Mit Sprühflasche oder dünnem Strahl — Erde feucht halten, NICHT nass.';
     } else if (ph === 'anzucht') {
       tpl.notePlaceholder = 'Gleichmäßig durchgießen, 15–20% Drain auffangen.';
-    } else if (ph === 'bloom' && week <= 3) {
+    } else if (bluetestufe(p) === 'frueh') {
       tpl.notePlaceholder = _pickNote([
       'Stretch-Phase. RLF Richtung 50% halten, Schimmel vorbeugen.',
       'Stretch: Höhe im Blick — schießen die Spitzen hoch?',
@@ -29147,7 +29173,7 @@ function getAutoFillTemplate(c, p, a, iso) {
       'Stretch: erste Blütenansätze? Klima 22–26°C, RLF ~50%.',
       'Stretch zehrt am Stickstoff — Blattfarbe noch sattgrün?'
     ], 'gen|' + iso);
-    } else if (ph === 'bloom' && week >= 7) {
+    } else if (bluetestufe(p) === 'spaet') {
       tpl.notePlaceholder = _pickNote([
       'Späte Blüte — Trichome täglich mit Lupe checken (klar/milchig/amber).',
       'Reife: Pistillen färben sich braun? Trichome entscheiden über Ernte.',

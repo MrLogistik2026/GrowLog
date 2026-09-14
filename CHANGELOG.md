@@ -2,6 +2,34 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-14 — v1.5.141
+
+- **Die Blütestufen hingen an festen Blütewochen statt an der Blütedauer.** Gefunden von den
+  Prüf-Agenten (Dauer-Automatik), gegengeprüft; Patricks Wunsch vom 13.09.: „Das sollte sich
+  irgendwie automatisch anpassen." Klimaziel, Schimmel-Alarm, VPD-Einstufung, Kälte-Warnung,
+  „Trichome checken", die Trichom-Karte im Eintrag, Notiz-Vorschläge und drei Outdoor-Hinweise
+  fragten ab: Blütewoche ≤ 3 früh, ≤ 6 mittel, ≥ 7 spät.
+
+  | Blütedauer | späte Blüte begann | Folge |
+  |---|---|---|
+  | 42 Tage (kurze Auto) | nie (höchstens Woche 6) | kein Schimmel-Alarm ab 60 % RLF, kein „Trichome checken" |
+  | 60 Tage (Standard) | Blütetag 43 (72 %) | richtig |
+  | 85 Tage (Patrick) | Blütetag 43 (51 %) | Spätblüte-Klima mitten im Blütenaufbau |
+  | 105 Tage (Sativa) | Blütetag 43 (41 %) | neun Wochen Spätblüte-VPD auf weichem Gewebe |
+
+  Nach `ANBAU.md` 13.5 beginnt die Botrytis-Gefahr in **dichten** Blüten — die hat eine kurze
+  Auto nach 4–6 Wochen, eine Sativa viel später. Nach 2.2 schadet zu hohes VPD auf noch weichem
+  Gewebe (Stomata zu, Ca-Transport bricht ab).
+- **Die Regel:** `bluetestufe(p)` teilt nach Anteil an der Blüte (35 % / 70 %), so gesetzt,
+  dass 60 Blütetage exakt dieselben Tage behalten wie vorher. `phase()` und die datumsbasierte
+  Phase führen dafür Blütetag und Blütedauer mit. **Die Topping-Fenster bleiben absolut** — sie
+  hängen am Alter der Pflanze, nicht an der Länge der Blüte. **Die Gießphase bleibt vorerst bei
+  festen Wochen**: An ihr hängen Mengenkurve, Obergrenzen und der Regelkreis aus v1.5.112; sie
+  folgt in v1.5.142 mit eigener Messreihe.
+- Test: `test_bluetestufen.js` (14 Prüfungen: 60 Tage Tag für Tag unverändert, 42/85/105 an den
+  Anteilen, kurze Auto mit Alarm und Trichom-Hinweis, Rückfall für alte Phasenobjekte). Vor der
+  Korrektur gegen v1.5.140: 11 Fehlschläge.
+
 ## 2026-09-14 — v1.5.140
 
 - **Das EC-Ziel lief nach Kalenderwochen, die Dosen nach Plan-Wochen.** Gefunden von den
