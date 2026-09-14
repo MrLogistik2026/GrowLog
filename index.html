@@ -4415,7 +4415,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.146';
+const APP_VERSION = 'v1.5.147';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -26370,6 +26370,8 @@ function renderEntry(iso) {
           }
           restVal = savedRest !== null ? savedRest : smartDefault;
           clf = classifyRestPct(restVal, isFinisher, isCoco, ctx && ctx.noWaterPhase);
+          // (v1.5.147) Nur wegen eines nicht eingetragenen Gusses „trocken“ — Rückfrage statt Einstufung.
+          if (savedRest === null && defaultSource === 'interval' && !(ctx && ctx.noWaterPhase)) clf = _gussLueckeStatus(c, intervalDryDefault(c, iso)) || clf;
           savedForDisplay = savedRest;
           // Default-Source für UI-Hint (in unsavedHint angezeigt)
           var _defaultSource1 = (savedRest === null) ? defaultSource : null;
@@ -27344,6 +27346,8 @@ function renderEntry(iso) {
           }
           restVal = savedRest !== null ? savedRest : smartDefault;
           clf = classifyRestPct(restVal, isFinisher, isCoco, ctx && ctx.noWaterPhase);
+          // (v1.5.147) wie Stelle 1: ohne Messung keine Einstufung aus einem fehlenden Eintrag
+          if (savedRest === null && defaultSource === 'interval' && !(ctx && ctx.noWaterPhase)) clf = _gussLueckeStatus(c, intervalDryDefault(c, iso)) || clf;
           savedForDisplay = savedRest;
           var _defaultSource2 = (savedRest === null) ? defaultSource : null;
         }
@@ -29829,7 +29833,7 @@ function intervalDryDefault(c, iso) {
   if (targetGussIso && iso > targetGussIso) {
     const overdue = isoDiff(iso, targetGussIso);
     const droppedPct = Math.max(20, targetPct - overdue * 5);
-    return { pct: droppedPct, source: 'overdue', lastWaterIso, intervalDays: intDays, dayInCycle: daysSinceWater, intSource, targetPct };
+    return { pct: droppedPct, source: 'overdue', lastWaterIso, targetGussIso, intervalDays: intDays, dayInCycle: daysSinceWater, intSource, targetPct };
   }
 
   // Sonst (heute liegt VOR dem Ziel-Gieß-Tag): LINEARE Interpolation von
@@ -29852,6 +29856,33 @@ function intervalDryDefault(c, iso) {
     dayInCycle: daysSinceWater,
     intSource,
     targetPct,
+  };
+}
+
+/**
+ * (v1.5.147) Rückfrage statt Alarm, wenn der Topf nur auf dem Papier ausgetrocknet ist.
+ *
+ * intervalDryDefault lässt den Topf nach einem geplanten, aber nicht eingetragenen Guss
+ * rechnerisch weiter trocknen ('overdue', v1.1.14) — für den vorgewählten Knopf die sichere
+ * Seite. Als Einstufung wurde daraus aber rot „Wasserstress. Sofort gießen.“, auch wenn der Guss
+ * nur nicht eingetragen war. Gefunden von den Prüf-Agenten: ein Zyklus ohne Einträge meldete das
+ * an Nicht-Gießtagen, bei einem Sämling zwei Tage nach dem Guss. Gießen auf nasse Erde nimmt den
+ * Wurzeln die Luft (ANBAU.md 1 und 13.1); ohne Messung ist die richtige Ausgabe eine Rückfrage,
+ * keine Bewertung (ANBAU.md 15). Was gemessen ist — ein getippter Knopf, die Waage, ein Trend aus
+ * Messpunkten —, wird weiter normal eingestuft.
+ */
+function _gussLueckeStatus(c, inter) {
+  if (!c || !inter || inter.source !== 'overdue' || !inter.targetGussIso) return null;
+  const ziel = inter.targetGussIso;
+  const zp = (typeof phase === 'function') ? phase(ziel, c) : null;
+  const tag = (zp && zp.day) || (isoDiff(ziel, c.startDate) + 1);
+  const datum = fmtDE(ziel, { day: '2-digit', month: '2-digit' });
+  return {
+    status: 'ungemessen',
+    color: 'var(--yellow)',
+    label: 'Nicht gemessen — ein Guss fehlt im Eintrag',
+    text: `Am ${datum} (Tag ${tag}) war ein Guss geplant, eingetragen ist seitdem keiner. Die ~${Math.round(inter.pct)}% sind deshalb nur gerechnet, nicht gemessen. <b>Hast du gegossen?</b> Dann trag den Guss dort nach, danach rechnet die App richtig weiter. <b>Nicht gegossen?</b> Dann prüf den Topf und tipp oben, was du fühlst — gegossen wird erst, wenn er wirklich abgetrocknet ist. Auf nasse Erde gegossen, fehlt den Wurzeln die Luft.`
+      + `<div style="margin-top:6px"><button onclick="event.stopPropagation();openEntry('${ziel}')" style="background:var(--card);border:0.5px solid var(--border);border-radius:6px;padding:5px 10px;font-size:11px;color:var(--yellow);cursor:pointer;font-family:var(--font)">Tag ${tag} nachtragen</button></div>`,
   };
 }
 

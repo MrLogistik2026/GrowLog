@@ -2,6 +2,33 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-14 — v1.5.147
+
+- **Ein nicht eingetragener Guss erzeugte „Wasserstress. Sofort gießen."** Befund der Prüf-Agenten
+  (Anfänger-Blick), gegengeprüft und nachgestellt: Ein frischer Zyklus ohne Einträge meldete an
+  Tag 13 — ein Sämling, kein Gießtag — rot „⚠ Nur noch 20% Restgewicht — Pflanze hat Wasserstress.
+  Sofort gießen." Gemessen hatte niemand. `intervalDryDefault` lässt den Topf nach einem geplanten,
+  aber nicht eingetragenen Guss rechnerisch weiter austrocknen (seit v1.1.14 bewusst, für den
+  vorgewählten Knopf die sichere Seite), und `classifyRestPct` stufte diese Rechnung ein wie eine
+  Messung.
+- **Warum das gefährlich ist:** Wer gegossen und nur nicht eingetragen hat, gießt nach dieser
+  Meldung auf nasse Erde. Das nimmt den Wurzeln die Luft — nach `ANBAU.md` 13.1 der häufigste
+  Anfängertod, bei Sämlingen besonders. Nach `ANBAU.md` 15 kommt vor der Bewertung die Gültigkeit;
+  ohne Messung ist die richtige Ausgabe eine Rückfrage.
+- **Jetzt:** `_gussLueckeStatus(c, inter)` ersetzt an beiden Hebe-Test-Stellen des Eintrags die
+  Einstufung, solange nichts gemessen ist und die Trockenheit nur aus dem fehlenden Eintrag kommt:
+  „Nicht gemessen — ein Guss fehlt im Eintrag. Am 10.09. (Tag 9) war ein Guss geplant, eingetragen
+  ist seitdem keiner …", mit einem Knopf „Tag 9 nachtragen", der genau diesen Tag öffnet. Wer nicht
+  gegossen hat, prüft den Topf und entscheidet danach. `intervalDryDefault` nennt dafür den
+  übersprungenen Tag mit (`targetGussIso`).
+- **Unverändert, mit Absicht:** Ein getippter Knopf, die Waage und ein Trend aus Messpunkten werden
+  weiter normal eingestuft — gemessene 20 % bleiben Wasserstress. Am geplanten Gießtag bleibt
+  „Heute gießen". Der vorgewählte Knopf bleibt auf dem gerechneten Wert (v1.1.14), und die Tage
+  ohne Guss vor dem IceFlush behalten ihre eigenen Texte.
+- `test_giessluecke.js` (19 Prüfungen, beide Zeitzonen): Rückfrage mit Datum, Tag und Knopf in
+  beiden Modi, der Knopf öffnet den Tag; Gegenproben „gemessen", „alle Güsse eingetragen" und
+  „geplanter Gießtag". Gegen den alten Build: 6 Fehler.
+
 ## 2026-09-14 — v1.5.146
 
 - **Gedrückthalten der ±-Knöpfe in der Mischliste tat nichts.** Befund aus der Agenten-Runde
