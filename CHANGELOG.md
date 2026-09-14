@@ -2,6 +2,21 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-14 — v1.5.154
+
+- **Der Sättigungsguss an Tag 1 fehlte beim Nachholen und bei „Erledigt".** Befund der Prüf-Agenten,
+  gegengeprüft und nachgestellt (Start 01.06., Stand 20.06.): `countMissingPastWateringDays`,
+  `backfillPast` und `markTodayDone` führten eine eigene Gießtag-Liste ohne `'saettigung'`. Der Zähler
+  meldete 4 fehlende Güsse statt 5, der Nachhol-Assistent ließ Tag 1 leer und bot ihn danach nie wieder
+  an, und „Erledigt" an Tag 1 setzte nur den Haken, obwohl die App dort 700 ml aufgetragen hatte.
+- **Warum das zählt:** Es fehlte ausgerechnet der größte Wassereintrag in den Sämlingstopf —
+  Gesamtwasser und Mengen-Verlauf des Zyklus begannen einen Guss zu spät. Das ist das Muster aus
+  v1.5.119: dieselbe Gießtag-Regel an vier Stellen von Hand, und nur eine kannte den Sättigungsguss.
+- **Jetzt:** Alle drei fragen `isGiessTag`. Der Dünger bleibt beim Nachholen weiter auf die normalen
+  Gießtage beschränkt; Tag 1 bekommt die Wassermenge als Vorschlag gekennzeichnet, ohne Dosen.
+- `test_saettigungnachholen.js` (10 Prüfungen, beide Zeitzonen): Zähler, Nachhol-Assistent,
+  „Erledigt" am Sättigungstag, Gegenprobe an einem Sprüh-Tag. Gegen den alten Stand: 5 Fehler.
+
 ## 2026-09-14 — v1.5.153
 
 - **Die Startseite nannte an Wasser-Tagen Dünger.** Befund der Prüf-Agenten, gegengeprüft und

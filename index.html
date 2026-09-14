@@ -4435,7 +4435,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.153';
+const APP_VERSION = 'v1.5.154';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -23833,7 +23833,8 @@ function countMissingPastWateringDays(c) {
   // Safety limit: don't iterate more than 200 days (covers longest possible grow + buffer)
   for (let i = 0; i < 200 && iter < today; i++) {
     const a = getAction(iter, c);
-    if (['giess','giess_anz','spuelen','ice'].includes(a)) {
+    // (v1.5.154) isGiessTag statt eigener Liste — die kannte den Sättigungsguss an Tag 1 nicht.
+    if (isGiessTag(iter, c)) {
       const existing = S.entries[iter]?.cycleData?.[c.id];
       const hasData = existing && (existing.water || existing.ph || (existing.doses && Object.values(existing.doses).some(v => v > 0)));
       if (!hasData) count++;
@@ -23864,7 +23865,8 @@ async function backfillPast(id) {
   let iter = c.startDate;
   for (let i = 0; i < 200 && iter < today; i++) {
     const a = getAction(iter, c);
-    if (['giess','giess_anz','spuelen','ice'].includes(a)) {
+    // (v1.5.154) isGiessTag statt eigener Liste — die kannte den Sättigungsguss an Tag 1 nicht.
+    if (isGiessTag(iter, c)) {
       const existing = S.entries[iter]?.cycleData?.[c.id];
       const hasData = existing && (existing.water || existing.ph || (existing.doses && Object.values(existing.doses).some(v => v > 0)));
       if (!hasData) {
@@ -24077,7 +24079,9 @@ function markTodayDone(cId, iso) {
   if (c) {
     const p = phase(iso, c);
     const a = getAction(iso, c);
-    const isWaterDay = a === 'giess' || a === 'giess_anz' || a === 'spuelen' || a === 'ice';
+    // (v1.5.154) Auch der Sättigungsguss an Tag 1 ist ein Guss (isGiessTag). Vorher setzte „Erledigt“
+    // dort nur den Haken, und der größte Wassereintrag in den Sämlingstopf fehlte im Verlauf.
+    const isWaterDay = isGiessTag(iso, c);
     if (isWaterDay && p && !cd.water) {
       cd.water = String(waterSuggestion(c, p, iso));
       // (v1.2.57) Der Wert ist ein App-Vorschlag, keine Messung: als 'vorgeschlagen'
