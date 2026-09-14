@@ -2,6 +2,27 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-14 — v1.5.153
+
+- **Die Startseite nannte an Wasser-Tagen Dünger.** Befund der Prüf-Agenten, gegengeprüft und
+  nachgestellt mit BioBizz Official und BioBizz Light: An den Wasser-Tagen des Plan-Rhythmus (Official
+  Tag 30, 39, 45, 54, 63; Light Tag 30, 45, 54, 63) stand auf der Startseite „Nährstoffe Wo. 4:
+  6 Produkte (siehe Eintrag)", während Gieß-Fahrplan und Eintrag „nur Wasser" sagten.
+  `getTodayAction` las die Dosen der Woche, ohne `getFeedWaterEffective` zu fragen. Die Wasser-Tage im
+  Herstellerrhythmus sind der Puffer gegen Überdüngung (`ANBAU.md` 13.2) — und die Startseite ist die
+  erste Seite, die ein Anfänger sieht.
+- **Auf derselben Karte zwei Ablaufziele:** Der Schritt sagte „Ca. 1800 ml Wasser bis ~10% Drain",
+  der Hinweis darunter „15–20% Drain erzeugen". Seit v1.5.112 gilt 15–20 % (`ANBAU.md` 5.1: unter 10 %
+  ist eine Ablaufmessung keine), und genau darauf regelt `drainAdjust`. Zwei weitere Stellen nannten
+  noch ~10 %: das Symptom „Erde trocken, Pflanze welk" und die Waagen-Einrichtung.
+- **Jetzt:** An Wasser-Tagen steht „Wasser-Tag laut Plan: kein Dünger, nur 2 Erhaltungs-Produkte
+  (siehe Eintrag)" bzw. „nur Wasser, kein Dünger", ohne EC-Ziel. An Feed-Tagen kommt das EC-Ziel aus
+  dem Plan (`_ecTargetFor`) statt fest 0,8–2,0. Alle Ablaufziele lesen `DRAIN_ZIEL`; die Konstante steht
+  jetzt oben bei `TROCKNEN_KLIMA`, weil die Symptom-Liste schon beim Laden gebaut wird.
+- `test_wassertagstart.js` (20 Prüfungen, beide Zeitzonen): beide Pläne über alle Gießtage von Tag 22
+  bis 70, Feed-Tage als Gegenprobe, sichtbar auf der Startseite, die übrigen 10-%-Stellen im Quelltext.
+  Gegen den alten Stand: 13 Fehler.
+
 ## 2026-09-14 — v1.5.152
 
 - **Beim Trocknen riet die App zum schnelleren Trocknen.** Befund der Prüf-Agenten, gegengeprüft und
