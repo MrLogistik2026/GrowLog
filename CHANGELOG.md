@@ -2,6 +2,27 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-14 — v1.5.161
+
+- **Tag 1 war fest verdrahtet: Menge, pH, Produkte und das Wiegen.** Befund der Prüf-Agenten,
+  gegengeprüft und nachgestellt: Startseite und „Automatisch ausfüllen" setzten für den Sättigungsguss
+  fest 700 ml je Topf. `waterSuggestion` und der Gieß-Fahrplan rechnen die Menge aus Topf und Substrat —
+  7 L Erde 450 ml, 11 L Coco 350 ml. Der Einsteiger-Satz nannte „pH 6.3–6.5 … trockenen Torf" auch für
+  Coco (Ziel dort 5,8–6,2), alle Tag-1-Texte „CalMag + leichte Bio-Heaven, kein Bio-Grow" auch mit
+  CANNA oder ohne Plan, und „Nach 1–2 h den Topf wiegen" auch ohne Waage und ohne Hebe-Test.
+- **Warum das zählt:** Am ersten Tag stehen damit zwei Mengen, zwei pH-Werte und fremde Produktnamen
+  nebeneinander. 700 ml in einen 7-L-Topf ist beim Sättigungsguss nicht tödlich (der Überschuss läuft
+  ab), aber es ist nicht die Zahl, die dieselbe App eine Karte weiter nennt (`ANBAU.md` 7.4: das
+  Volumen ist eine Eingangsgröße).
+- **Jetzt:** Die Menge kommt überall aus `waterSuggestion`, der pH aus `phTargetFor`, die Mittel aus den
+  Plandosen des Tages (`_tag1MittelText`), der Referenz-Schritt aus der Gewichts-Methode des Zyklus
+  (`_tag1Referenz`: Waage wiegen, Hebe-Test anheben, Fingertest fühlen, sonst kein Schritt). Die Kopfzeile
+  im Eintrag rechnet die Etappe aus der Menge statt fest „je ~250 ml".
+- **Unverändert, mit Absicht:** Was „Tag 1" bedeutet (Keimung oder Einpflanzen) und die Keimungskarte —
+  das steht als Entscheidung in der Übergabe.
+- `test_tag1.js` (22 Prüfungen, beide Zeitzonen): Erde 11 L mit Hebe-Test, Erde 7 L mit Waage, Coco
+  mit CANNA ohne Gewichts-Methode, dazu die festen Angaben im Quelltext. Gegen den alten Stand: 17 Fehler.
+
 ## 2026-09-14 — v1.5.160
 
 - **Die Sämlings-Pflege nannte noch einen festen pH für Coco.** Beim Umbau der Dünger-Zeile für v1.5.159

@@ -4441,7 +4441,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.160';
+const APP_VERSION = 'v1.5.161';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -15197,6 +15197,28 @@ function getSmartTip(c, p) {
  * Ein einziger, verständlicher Satz in Alltagssprache. Wird über der
  * Schritt-Liste eingeblendet. Fachbegriffe bewusst vermieden.
  */
+/**
+ * (v1.5.161) Tag 1 aus dem Zustand statt fest verdrahtet. Die Sättigungsguss-Texte nannten überall
+ * „CalMag + leichte Bio-Heaven, kein Bio-Grow“ — auch bei CANNA oder ohne Plan —, „pH 6.3–6.5“ auch für
+ * Coco und „Topf wiegen“ auch ohne Waage. Startseite und Autofill füllten fest 700 ml je Topf, während
+ * waterSuggestion die Menge aus Topf und Substrat rechnet (7 L Erde: 450 ml).
+ */
+function _tag1MittelText(c, iso) {
+  const p = (c && typeof phase === 'function') ? phase(iso, c) : null;
+  if (!p) return 'laut Plan ohne Dünger';
+  const d = getWeekDoses(c.id, fertPlanWeek(c, iso, p), c) || {};
+  const namen = Object.keys(d).filter(k => d[k] > 0).map(k => (_produktFuer(c, k) || {}).name).filter(Boolean);
+  return namen.length ? `laut Plan: ${namen.join(', ')}` : 'laut Plan ohne Dünger';
+}
+
+function _tag1Referenz(c) {
+  const m = c && c.weightMode;
+  if (m === 'scale') return 'Nach 1–2 h den Topf wiegen: das ist dein <b>100%-Referenzgewicht</b> für die Waage';
+  if (m === 'lift') return 'Nach 1–2 h den Topf einmal anheben und dir das Gewicht merken: So fühlt sich <b>voll</b> an — die Grundlage für den Hebe-Test';
+  if (m === 'finger') return 'Nach 1–2 h mit dem Finger fühlen, wie feucht <b>voll</b> ist — dein Vergleich für den Fingertest';
+  return '';
+}
+
 function plainSentence(action, c, p, waterMl) {
   const isOutdoor = c.growType === 'outdoor';
   // (v1.5.142) Die Menge JE PFLANZE nennen. Der Aufrufer übergibt waterSuggestion(c, p), die
@@ -15221,8 +15243,9 @@ function plainSentence(action, c, p, waterMl) {
   }
   // SÄTTIGUNGSGUSS (Tag 1): klare Anleitung mit 3-Etappen-Methode
   if (action === 'saettigung') {
-    return `<b>Tag 1 — Sättigungsguss.</b> Misch dein Gießwasser an (CalMag + leichte Bio-Heaven, kein Bio-Grow!), pH 6.3–6.5, EC ~0.6.<br>
-<b>3 Etappen je ~${waterMl > 0 ? Math.max(50, Math.round(_jeTopf(waterMl) / 3 / 50) * 50) : 250} ml${_n > 1 ? ' je Topf' : ''} mit 15 min Pause</b> — verhindert, dass das Wasser nur Kanäle in den trockenen Torf gräbt (Channeling). Kreisförmig von außen nach innen, nie auf den Samen. Nach 1–2 h Topf wiegen → das ist dein <b>100%-Referenzgewicht</b> für den Hebe-Test.`;
+    const _ref = _tag1Referenz(c);
+    return `<b>Tag 1 — Sättigungsguss.</b> Misch dein Gießwasser an (${_tag1MittelText(c, todayISO())}), pH ${phTargetFor(c.medium).label}, EC ~0.6.<br>
+<b>3 Etappen je ~${waterMl > 0 ? Math.max(50, Math.round(_jeTopf(waterMl) / 3 / 50) * 50) : 250} ml${_n > 1 ? ' je Topf' : ''} mit 15 min Pause</b> — verhindert, dass das Wasser nur Kanäle in das trockene Substrat gräbt (Channeling). Kreisförmig von außen nach innen, nie auf den Samen.${_ref ? ' ' + _ref + '.' : ''}`;
   }
   // SPRÜH-PHASE (Tag 2–8): NICHT gießen!
   if (action === 'sprueh') {
@@ -15374,8 +15397,8 @@ function getTodayAction(c, p, a, iso) {
   // Die Mengen folgen derselben Rechnung wie getAutoFillTemplate, damit
   // Startseite und Tageseintrag nicht zwei verschiedene Zahlen nennen.
   if (a === 'saettigung') {
-    const plants = (typeof getEffectivePlantCount === 'function') ? getEffectivePlantCount(c, iso) : 1;
-    const satMl = _savedWater > 0 ? _savedWater : 700 * plants;   // 600–800 ml pro Topf, Mitte 700
+    // (v1.5.161) Menge aus waterSuggestion (Topf, Substrat) statt fest 700 ml je Topf — waterMl steht oben.
+    const satMl = waterMl;
     // Auf 50 runden, damit die Zahl zur Formulierung "je ~250 ml" passt, die
     // plainSentence im Erklaertext direkt darueber nennt. Zwei verschiedene
     // Zahlen auf derselben Karte verunsichern mehr, als die Praezision nuetzt.
@@ -15385,11 +15408,11 @@ function getTodayAction(c, p, a, iso) {
       icon: '💦',
       color: cl.hex,
       steps: [
-        `Wasser anmischen: pH ${pht.mid.toFixed(1)}, EC ~0.6 — CalMag und etwas Bio-Heaven, <b>kein Bio-Grow</b>`,
+        `Wasser anmischen: pH ${pht.mid.toFixed(1)}, EC ~0.6 — ${_tag1MittelText(c, iso)}`,
         `<b>${satMl} ml in 3 Etappen</b> zu je ~${etappe} ml, dazwischen jeweils 15 min Pause`,
         'Kreisförmig von außen nach innen gießen — nie direkt auf den Samen',
-        'Nach 1–2 h den Topf wiegen: das ist dein <b>100%-Referenzgewicht</b> für den Hebe-Test',
-      ],
+        _tag1Referenz(c),
+      ].filter(Boolean),
       hint: 'Ab morgen bis Tag 8 wird nicht mehr gegossen, nur gesprüht — das ist Absicht. Der Sämling hat noch kaum Wurzeln.',
     };
   }
@@ -26133,7 +26156,7 @@ function renderEntry(iso) {
               return `<div style="font-size:11px;color:var(--text-muted);line-height:1.4;margin-top:2px">~1 L Crushed Ice pro Topf am RAND verteilen (nicht Mitte) — schmilzt zu etwa <b>${_proTopf} ml je Topf</b>${_n > 1 ? `, zusammen ~${waterSug} ml für ${_n} Töpfe` : ''}. 4–6h schmelzen, dann Licht AUS.</div>`;
             })() : ''}
             ${a === 'sprueh' ? `<div style="font-size:11px;color:var(--text-muted);line-height:1.4;margin-top:2px">3–5 Sprühstöße auf die Oberfläche, sobald obere 1–2 cm trocken wirken.</div>` : ''}
-            ${a === 'saettigung' ? `<div style="font-size:11px;color:var(--text-muted);line-height:1.4;margin-top:2px">3 Etappen je ~250 ml mit 15 min Pause. CalMag + leichte Bio-Heaven, kein Bio-Grow.</div>` : ''}
+            ${a === 'saettigung' ? `<div style="font-size:11px;color:var(--text-muted);line-height:1.4;margin-top:2px">3 Etappen je ~${Math.max(50, Math.round(waterSug / Math.max(1, getEffectivePlantCount(c, iso)) / 3 / 50) * 50)} ml${getEffectivePlantCount(c, iso) > 1 ? ' je Topf' : ''} mit 15 min Pause — ${_tag1MittelText(c, iso)}.</div>` : ''}
             ${(a === 'giess' || a === 'giess_anz') ? `<div style="font-size:10px;color:${cl.hex};opacity:0.85;margin-top:3px">👆 Tippen: Guss eintragen oder Menge anpassen</div>` : ''}
           </div>
         </div>
@@ -30203,23 +30226,22 @@ function getAutoFillTemplate(c, p, a, iso) {
   }
 
   // SÄTTIGUNGSGUSS (Tag 1 — Einpflanztag): biophysikalisch besonderer Tag.
-  // 3 Etappen je 200–250ml mit 15min Pause (anti-Channeling im Torf), CalMag +
-  // Bio-Heaven/Acti-Vera, KEIN Bio-Grow (Stickstoff stresst frische Wurzeln),
-  // pH 6.3–6.5 (App-Standard 6.4), nach 1–2h Topf wiegen für 100%-Referenz.
+  // 3 Etappen mit 15 min Pause (gegen Channeling). Menge, pH, Mittel und Referenz-Schritt kommen
+  // seit v1.5.161 aus Topf, Substrat, Plan und Gewichts-Methode des Zyklus.
   if (a === 'saettigung') {
     const plants = (typeof getEffectivePlantCount === 'function') ? getEffectivePlantCount(c, iso) : 1;
-    // 600–800ml pro Topf, Mitte 700
-    const waterMl = 700 * plants;
+    // (v1.5.161) Menge aus waterSuggestion wie Startseite und Fahrplan — vorher fest 700 ml je Topf.
+    const waterMl = waterSuggestion(c, p, iso);
     tpl.water = String(waterMl);
     tpl.ph = pht.mid.toFixed(1);
-    tpl.ec = '0.6';   // CalMag + leichte Bio-Heaven/Acti = ~0.5–0.7
+    tpl.ec = '0.6';   // oberes Ende des Sämlings-Bereichs nach ANBAU.md 5 (0,4–0,6)
     // Restgewicht nach Sättigung = 100% (das ist genau der Punkt für die Referenz)
     tpl.liftAfterPct = 100;
     // Dosen: aus dem Plan, aber vorsichtig
     if (typeof getWeekDoses === 'function') {
       tpl.doses = getWeekDoses(c.id, planWeek, c) || {};
     }
-    tpl.notePlaceholder = 'Sättigungsguss in 3 Etappen je ~250ml mit 15min Pause. Topf-Gewicht nach 1–2h notieren = 100%-Referenz für Hebe-Test.';
+    tpl.notePlaceholder = `Sättigungsguss in 3 Etappen je ~${Math.max(50, Math.round(waterMl / Math.max(1, plants) / 3 / 50) * 50)} ml${plants > 1 ? ' je Topf' : ''} mit 15 min Pause.${_tag1Referenz(c) ? ' ' + _tag1Referenz(c).replace(/<[^>]+>/g, '') + '.' : ''}`;
     tpl._actionType = 'saturation';
     return tpl;
   }
