@@ -290,6 +290,9 @@ function pruef(name, bedingung, info) {
       [/Kältestress\s+(soll|fördert|pusht|steigert)[^\n.]{0,60}Trichom/i, '"Kältestress fördert/pusht Trichome"'],
       // (v1.5.144) Übersehen in v1.5.126: der Finisher-Hinweis „bewusster Stress für Harzproduktion".
       [/(Stress\s+(für|triggert|fördert)\s+(die\s+)?Harz|triggert\s+Harz)/i, '"Stress für/triggert Harzproduktion"'],
+      // (v1.5.151) Der Ernte-Hinweis drei Tage vorher: „milchig = bereit, bernsteinfarben = Peak". Nach
+      // ANBAU.md 11 ist Bernstein Abbau (THCA → CBNA), nicht der Höhepunkt — wer darauf wartet, verliert Terpene.
+      [/bernstein(farben|farbig)?\s*=\s*Peak/i, '"bernsteinfarben = Peak"'],
     ];
     // Eine Zeile, die die Zahl ZITIERT und im selben Zug entkraeftet, ist kein Verstoss —
     // im Gegenteil, sie ist das gewuenschte Ergebnis. (Diese Unterscheidung hat mir der

@@ -2,6 +2,23 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-14 — v1.5.151
+
+- **Der Ernte-Hinweis nannte Bernstein den Höhepunkt.** Befund der Prüf-Agenten, gegengeprüft: Drei
+  Tage vor dem Plan-Erntetag stand auf der Startseite „Ab jetzt täglich Trichome mit Lupe prüfen —
+  milchig = bereit, bernsteinfarben = Peak" (`T.phaseTransition.toHarvestSoon`). Die Kachel darunter
+  sagte zugleich „milchig bedeutet Peak".
+- **Warum das zählt:** Nach `ANBAU.md` 11 ist milchig der höchste THCA-Gehalt; bernsteinfarben heißt,
+  dass THCA zu CBNA oxidiert — „weiter im Abbau", nicht reifer im Sinne von besser. Wer auf den „Peak"
+  wartet, schneidet nach dem oberen Rand seines Zielfensters und verliert Terpene schneller, als er
+  Wirkung gewinnt. Wie viel Bernstein, ist die Zielentscheidung des Growers.
+- **Jetzt:** „milchig = höchster Wirkstoffgehalt, bernsteinfarben = beginnender Abbau. Wie viel
+  Bernstein, entscheidest du." Die erste Fassung war länger; `test_ernteabgleich.js` hält den
+  Hinweis ohne Mess-Widerspruch unter 250 Zeichen, damit er kurz bleibt — gekürzt statt die Grenze
+  aufzuweichen.
+- `test_lexikon.js` (52 Prüfungen, beide Zeitzonen) führt „bernsteinfarben = Peak" in der Liste der
+  Aussagen, die im ganzen Quelltext nicht als Tatsache stehen dürfen. Gegen den alten Stand: 1 Fehler.
+
 ## 2026-09-14 — v1.5.150
 
 - **Ein Drain-EC ohne Ablaufmenge wurde bewertet.** Befund der Prüf-Agenten, gegengeprüft und mit

@@ -162,7 +162,9 @@ const T = {
     toHarvestSoon: ({ daysUntil, vsPlan }) => {
       const kopf = `In ${daysUntil} Tagen: <b>Erntetag</b> — so steht es in deinem Plan.`;
       if (!vsPlan) {
-        return `${kopf} Ab jetzt täglich Trichome mit Lupe prüfen — milchig = bereit, bernsteinfarben = Peak. Schere und Handschuhe bereitlegen.`;
+        // (v1.5.151) Vorher „milchig = bereit, bernsteinfarben = Peak". Bernstein ist nach ANBAU.md 11 Abbau
+        // (THCA oxidiert zu CBNA), nicht der Höhepunkt; wie viel davon, ist die Entscheidung des Growers.
+        return `${kopf} Ab jetzt täglich Trichome mit Lupe prüfen — milchig = höchster Wirkstoffgehalt, bernsteinfarben = beginnender Abbau. Wie viel Bernstein, entscheidest du. Schere und Handschuhe bereitlegen.`;
       }
       const stand = vsPlan.letzte
         ? ` Zuletzt gemessen: <b>${vsPlan.letzte.amber} % bernsteinfarben</b>${vsPlan.ziel ? `, dein Ziel sind ${vsPlan.ziel} %` : ''}.`
@@ -3422,7 +3424,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.150';
+const APP_VERSION = 'v1.5.151';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
