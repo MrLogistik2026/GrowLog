@@ -2,6 +2,23 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-14 — v1.5.155
+
+- **Der Symptom-Checker kannte „Luftfeuchte hoch" erst ab 70 %.** Befund der Prüf-Agenten,
+  gegengeprüft und mit Patricks Run 01 nachgestellt: `buildDiagnosticContext` setzte `humidityHigh` ab
+  70 % RLF, `getCriticalWarning` meldet in der Spätblüte, beim Spülen und am IceFlush schon über 60 %
+  „Schimmelgefahr (Botrytis)" und in der mittleren Blüte über 65 % „Schimmelrisiko". Bei 62–69 % stand
+  im Eintrag rot „Schimmelgefahr", und die Diagnose nannte die Luftfeuchte nicht als Grund.
+- **Warum das zählt:** Nach `ANBAU.md` 13.5 beginnt Botrytis in dichten Blüten bei etwa 60–65 %. Zwei
+  Bildschirme, die dieselbe Frage verschieden beantworten, schwächen ausgerechnet die Begründung, auf
+  die es beim Schimmel ankommt; bei Gleichstand entscheidet seit v1.5.124 zuerst der Kontext.
+- **Jetzt:** Der Diagnose-Kontext fragt `getCriticalWarning` — eine Grenze, eine Quelle. Die 70 % bleiben
+  als allgemeine Grenze außerhalb der Blüte stehen: Sie trägt dort auch Calcium-Mangel und Mehltau
+  (`ANBAU.md` 1). Der Gegenprüfer hatte vor dem ursprünglichen Vorschlag gewarnt, außerhalb der Blüte
+  gar keine Grenze mehr zu führen.
+- `test_rlfdiagnose.js` (10 Prüfungen, beide Zeitzonen): Spätblüte 59/62 %, mittlere Blüte 62/66 %,
+  Spülen 62 %, Gegenprobe Anzucht 66/72 %. Gegen den alten Stand: 3 Fehler.
+
 ## 2026-09-14 — v1.5.154
 
 - **Der Sättigungsguss an Tag 1 fehlte beim Nachholen und bei „Erledigt".** Befund der Prüf-Agenten,

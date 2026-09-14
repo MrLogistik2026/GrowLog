@@ -1715,7 +1715,13 @@ function buildDiagnosticContext(c, iso = null) {
   }
   if (latestEntry && latestEntry.e.humidity) {
     const h = parseFloat(latestEntry.e.humidity);
-    if (isFinite(h) && h >= 70) result.humidityHigh = true;
+    // (v1.5.155) In der Blüte und kurz vor der Ernte gilt die Schimmel-Grenze aus getCriticalWarning
+    // (Spätblüte, Spülen und IceFlush über 60 %, mittlere Blüte über 65 %). Vorher kannte die Diagnose
+    // „Luftfeuchte hoch“ erst ab 70 %, während der Eintrag bei 62 % schon „Schimmelgefahr“ meldete —
+    // zwei Bildschirme, zwei Antworten (ANBAU.md 13.5). Die 70 bleibt als allgemeine Grenze: Sie trägt
+    // auch Calcium-Mangel und Mehltau, außerhalb der Blüte (ANBAU.md 1).
+    const _rlfWarn = (isFinite(h) && h > 60) ? getCriticalWarning('rlf', h, phase(latestEntry.iso, c), c) : null;
+    if (isFinite(h) && (h >= 70 || (_rlfWarn && (_rlfWarn.level === 'critical' || _rlfWarn.level === 'high')))) result.humidityHigh = true;
   }
 
   // Restgewicht (Hebe oder Waage)
@@ -3434,7 +3440,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.154';
+const APP_VERSION = 'v1.5.155';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
