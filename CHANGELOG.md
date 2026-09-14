@@ -2,6 +2,24 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-14 — v1.5.162
+
+- **Der Demo-Zyklus widersprach seinen eigenen Tagen.** Befund der Prüf-Agenten, gegengeprüft: Der
+  Toast sagte „Demo-Zyklus angelegt — Tag 60 von 68". Laut `endspurtState` steht die Demo heute auf
+  Tag 61, erntet an Tag 64 und trocknet bis Tag 71 — eine 68 gab es in ihr nicht. Die Notiz „Flush-Woche
+  gestartet. Nur noch Wasser." stand fest an Tag 55; dort ist laut `getAction` noch ein Blüte-Guss, der
+  erste Spülgang kommt an Tag 57.
+- **Und die erste Messung taugte nichts:** Die Demo schrieb Ablauf-pH und -EC ohne Ablaufmenge. Seit
+  v1.5.150 zeigt die App dazu „nicht bewertet" und „Ohne Ablaufmenge lässt sich nicht sagen, ob die
+  Messung etwas taugt" — genau das sah ein Neuling, der die Demo zum Lernen öffnet (`ANBAU.md` 5.1,
+  Regel 2).
+- **Jetzt:** Der Toast nennt Tag und Erntetag aus `endspurtState`, die Spül-Notiz steht am ersten Tag,
+  an dem `getAction` „spuelen" sagt, und jede Demo-Ablaufmessung hat eine Ablaufmenge von 18 % der
+  Gießmenge — im gültigen Fenster, sodass die Demo die Durchfluss-Prüfung vorführt statt sie auszulösen.
+- `test_demozyklus.js` (9 Prüfungen, beide Zeitzonen): Toast, Spül-Notiz gegen `getAction`, alle
+  Ablaufmessungen mit Menge und gültigem Durchfluss, kein Hinweis „Ohne Ablaufmenge" im Eintrag. Gegen
+  den alten Stand: 5 Fehler.
+
 ## 2026-09-14 — v1.5.161
 
 - **Tag 1 war fest verdrahtet: Menge, pH, Produkte und das Wiegen.** Befund der Prüf-Agenten,

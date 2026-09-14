@@ -3440,7 +3440,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.161';
+const APP_VERSION = 'v1.5.162';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -21500,6 +21500,9 @@ function welcomeStartDemo() {
       const ecDrift = ((dayNum * 7) % 4 - 1) * 0.1;
       cd.runoffEc = Math.max(0.1, inputEc + ecDrift + 0.1).toFixed(1);
     }
+    // (v1.5.162) Ablaufmenge dazu, 18 % der Gießmenge. Ohne Menge ist eine Ablaufmessung seit v1.5.150
+    // „nicht bewertet“ — die Demo zeigte dem Neuling als erste Messung überhaupt eine, die nichts taugt.
+    if ((cd.runoffPh || cd.runoffEc) && parseFloat(cd.water) > 0) cd.drainMl = String(Math.round(parseFloat(cd.water) * 0.18));
   }
 
   // === MEILENSTEIN-NOTIZEN ===
@@ -21524,9 +21527,15 @@ function welcomeStartDemo() {
     37: 'Stretch vorbei, Pflanze steht in voller Höhe. Bloom-Dünger rauf, N-Anteil halbiert.',
     43: 'Buds stacken sichtbar, Harz-Produktion läuft. Zimmer riecht intensiv.',
     52: 'Reife-Phase! Erste Amber-Trichome unter der Lupe sichtbar. Top·Max auf Max.',
-    55: 'Flush-Woche gestartet. Nur noch Wasser. Blätter werden langsam gelb (gewollt).',
     58: 'Fast erntereif — Trichome überwiegend milchig, Bernstein nimmt zu. Jetzt täglich prüfen; bei ~10–15% Bernstein ernten (ausgewogene Wirkung, kopflastiger etwas früher).',
   };
+  // (v1.5.162) Die Spül-Notiz steht am ersten echten Spültag. Vorher fest an Tag 55 — dort ist in der
+  // Demo noch ein Blüte-Guss, der erste Spülgang kommt zwei Tage später.
+  if (cycRef) {
+    for (let d = 40; d <= 80; d++) {
+      if (getAction(isoPlus(cycRef.startDate, d - 1), cycRef) === 'spuelen') { notes[d] = 'Spülen gestartet. Nur noch Wasser. Blätter werden langsam gelb (gewollt).'; break; }
+    }
+  }
   Object.entries(notes).forEach(([dayNum, note]) => {
     const d = new Date(demoStart);
     d.setDate(d.getDate() + parseInt(dayNum) - 1);
@@ -21541,7 +21550,10 @@ function welcomeStartDemo() {
 
   saveS();
   goTo('dash');
-  toast('🎓 Demo-Zyklus angelegt — Tag 60 von 68');
+  // (v1.5.162) Tag und Erntetag aus endspurtState statt fest „Tag 60 von 68“ — die Demo steht auf
+  // Ernte an Tag 64 und trocknet bis Tag 71; eine 68 gab es in ihr nicht.
+  const _demoSt = cycRef ? endspurtState(cycRef, todayISO()) : null;
+  toast(_demoSt ? `🎓 Demo-Zyklus angelegt — heute Tag ${_demoSt.heuteTag}, Ernte an Tag ${_demoSt.ernteTag}` : '🎓 Demo-Zyklus angelegt');
   // Zweiter Toast nach 1.5s mit Orientierung — was sich der User anschauen kann
   setTimeout(() => {
     toast('💡 Schau dir Kalender, Statistik und Lexikon an');
