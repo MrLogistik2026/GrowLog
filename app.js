@@ -3440,7 +3440,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.163';
+const APP_VERSION = 'v1.5.164';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -21475,7 +21475,9 @@ function welcomeStartDemo() {
     const w = waterForAction(action, dayNum, null);
     cd.water = String(w < 200 ? w : Math.round(w / 50) * 50);
     cd.ph = String(phForDay(dayNum));
-    cd.ec = ecForDay(dayNum);
+    // (v1.5.164) An Spül- und IceFlush-Tagen nur Wasser. Die Kurve darunter ging an den ersten Spültagen
+    // noch bis 1,0 hinab — und die Demo zeigte ihre eigene Warnung „EC 1000 µS/cm ist zu hoch für Spülung“.
+    cd.ec = (action === 'spuelen' || action === 'ice') ? '0.3' : ecForDay(dayNum);
 
     // Temp/RLF entwickelt sich phasen-passend:
     // - Anzucht: 24-25°C, 60-65% (höher für Sämlinge)

@@ -79,7 +79,9 @@ function pruef(name, bedingung, info) {
     });
     let eintragText = '';
     if (ablauf[0]) { S.beginnerMode = false; openEntry(ablauf[ablauf.length - 1].iso); eintragText = document.getElementById('scr-entry').textContent.replace(/\\s+/g, ' '); }
-    return JSON.stringify({ toasts: window.__toasts, heute: st.heuteTag, ernte: st.ernteTag, trockenBis: st.trockenBis, erstesSpuelen: st.spuelGaenge[0], spuelNotiz, ablauf, ohneMengeHinweis: /Ohne Ablaufmenge/.test(eintragText) });
+    // (v1.5.164) Die Demo darf an ihren Spül- und IceFlush-Tagen keine eigene EC-Warnung auslösen.
+    const ecWarnungen = eintraege.filter(x => ['spuelen', 'ice'].includes(getAction(x.iso, c)) && x.cd.ec).map(x => ({ tag: isoDiff(x.iso, c.startDate) + 1, ec: x.cd.ec, w: (getCriticalWarning('ec', parseFloat(x.cd.ec), phase(x.iso, c), c) || {}).title || null }));
+    return JSON.stringify({ toasts: window.__toasts, heute: st.heuteTag, ernte: st.ernteTag, trockenBis: st.trockenBis, erstesSpuelen: st.spuelGaenge[0], spuelNotiz, ablauf, ohneMengeHinweis: /Ohne Ablaufmenge/.test(eintragText), ecWarnungen });
   })()`));
 
   console.log(`    Demo: heute Tag ${r.heute}, erster Spülgang Tag ${r.erstesSpuelen}, Ernte Tag ${r.ernte}, trocken bis Tag ${r.trockenBis}`);
@@ -100,6 +102,11 @@ function pruef(name, bedingung, info) {
   pruef('Prüflage: die Demo hat Ablaufmessungen', r.ablauf.length > 5, r.ablauf.length);
   pruef('Jede mit Ablaufmenge und gültigem Durchfluss', r.ablauf.every(a => a.menge && a.ecGueltig !== false && (a.flow === 'gut' || a.flow === 'auswaschend')), JSON.stringify(r.ablauf.filter(a => !a.menge || a.ecGueltig === false).slice(0, 3)));
   pruef('Im Eintrag steht kein „Ohne Ablaufmenge"', r.ohneMengeHinweis === false);
+
+  console.log('\nD - Die Spültage der Demo lösen keine eigene EC-Warnung aus');
+  console.log('    ' + JSON.stringify(r.ecWarnungen));
+  pruef('Prüflage: die Demo hat Spültage mit EC-Wert', r.ecWarnungen.length > 0, r.ecWarnungen.length);
+  pruef('Keiner davon mit „zu hoch für Spülung"', r.ecWarnungen.every(x => !x.w), JSON.stringify(r.ecWarnungen.filter(x => x.w)));
 
   pruef('Keine JS-Fehler', errors.length === 0, errors[0]);
   console.log(`\nErgebnis: ${ok} OK, ${fail} Fehler`);

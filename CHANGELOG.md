@@ -2,6 +2,19 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-14 — v1.5.164
+
+- **Der Demo-Zyklus löste an seinem ersten Spültag die eigene Warnung aus.** Bei der Browser-Prüfung von
+  v1.5.162 aufgefallen: Am Tag 57 der Demo (erster Spülgang) stand im Eintrag orange „EC 1000 µS/cm ist
+  zu hoch für Spülung". Die Demo-EC-Kurve lief nach festen Tagen „Flush: 2.0→0.8" von Tag 53 bis 58 — die
+  Spülphase der Demo beginnt aber erst an Tag 57, und dort stand noch EC 1,0.
+- **Warum das zählt:** Die Demo ist zum Lernen da. Ein Neuling, der sie öffnet, sieht an genau dem Tag,
+  an dem die App „nur noch Wasser" erklärt, eine Warnung über die Werte, die die App selbst eingetragen hat.
+- **Jetzt:** An Tagen, an denen `getAction` „spuelen" oder „ice" sagt, trägt die Demo EC 0,3 ein
+  (klares Wasser, `ANBAU.md` 5: Spülen 0,2–0,4).
+- `test_demozyklus.js` (11 Prüfungen, beide Zeitzonen) prüft alle Spül- und IceFlush-Tage der Demo gegen
+  `getCriticalWarning`. Gegen den alten Stand: 1 Fehler.
+
 ## 2026-09-14 — v1.5.163
 
 - **Wochendosis-Pläne rechneten mit der Kalenderwoche statt mit der Plan-Woche.** Zwei Befunde der
