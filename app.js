@@ -50,6 +50,8 @@ const TROCKNEN_TEXT = `${TROCKNEN_KLIMA.tMin}–${TROCKNEN_KLIMA.tMax} °C, ${TR
 // Wie viel Prozent der Gießmenge unten ankommen sollen — Begründung bei drainAdjust (v1.5.112, ANBAU.md 5.1).
 // (v1.5.153) Hier oben, weil auch die Symptom-Liste beim Laden die Zahl braucht; drei Texte nannten noch ~10 %.
 const DRAIN_ZIEL = { min: 15, mid: 17.5, max: 20, obergrenze: 25 };
+// (v1.5.167) Ab diesem Tag zieht ein Guss den ganzen Topf durch — Begründung bei _drainMoeglich.
+const DRAIN_AB_TAG = 25;
 
 const T = {
   // ---------------------------------------------------------------------
@@ -3444,7 +3446,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.166';
+const APP_VERSION = 'v1.5.167';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -7895,6 +7897,18 @@ function drainFlow(cd) {
 }
 
 /**
+ * (v1.5.167) Kann an diesem Tag überhaupt Ablauf entstehen?
+ *
+ * Vor der Vollsättigung nicht: Der Sämling bekommt Wasser im Ring um den Stamm, danach den ganzen Topf
+ * ohne Ablauf (Volumen-Matrix über der Mengen-Leiter). Ein fehlender Ablauf ist dort kein Befund, und das
+ * Feld „Ablauf (ml)“ steht erst ab diesem Tag im Eintrag. Beim Spülen und am IceFlush immer.
+ * Die Grenze stand vorher dreimal von Hand im Code; die Gießmengen-Nachführung wäre die vierte Kopie gewesen.
+ */
+function _drainMoeglich(p) {
+  return !!p && (p.day >= DRAIN_AB_TAG || p.ph === 'flush' || p.ph === 'ice');
+}
+
+/**
  * (v1.5.104) Steht die Pflanze in einem organischen Substrat in der zweiten Blütehälfte?
  *
  * Dort hat ein steigender Drain-EC zwei mögliche Ursachen, die sich nicht am Messwert
@@ -12073,9 +12087,17 @@ function drainAdjust(c, iso) {
     const f = (typeof drainFlow === 'function') ? drainFlow(cd) : null;
     if (!f) continue;
     // Spülen und IceFlush haben absichtlich einen ganz anderen Durchfluss.
-    const ph = (phase(k, c) || {}).ph;
-    if (ph === 'flush' || ph === 'ice') continue;
-    if (f.pct < 5) continue;              // unter 5 % ist es keine Messung, sondern ein Tropfen
+    const pk = phase(k, c) || {};
+    if (pk.ph === 'flush' || pk.ph === 'ice') continue;
+    // (v1.5.167) Vor der Vollsättigung kann unten nichts ankommen — dort sagt eine 0 nichts über die Menge.
+    if (!_drainMoeglich(pk)) continue;
+    // (v1.5.167) Bis hierher fiel alles unter 5 % heraus („keine Messung, sondern ein Tropfen“). Das gilt für den
+    // Drain-EC (ANBAU.md 5.1, geprüft in analyzeRunoff), nicht für die Menge: „unten kam fast nichts an“ ist genau
+    // der Befund, dass der Guss den Ballen nicht durchzogen hat. Die Kennlinie hatte dort einen Bruch — 4,9 % Ablauf
+    // ließ die Menge stehen, 5 % hob sie um 15 %. Patrick am 14.09.2026: „Wenn der Drain zu gering ist, dann sollte
+    // die Gießmenge erhöht werden. Aber beachte die ersten Wochen.“
+    // Bei 0 % ist die Bilanz eine Untergrenze: Wie weit der Topf von der Sättigung entfernt war, sagt sie nicht.
+    // Die nächste Messung zieht weiter nach, bis unten etwas ankommt.
     werte.push(f.pct);
   }
   if (!werte.length) return null;
@@ -14503,13 +14525,13 @@ function getTodayAction(c, p, a, iso) {
         `Falls gießen: ca. <b>${waterMl} ml</b> Wasser · pH auf <b>${pht.mid.toFixed(1)}</b>`,
         _duengerZeile,
       ] : [
-        `Ca. <b>${waterMl} ml</b> Wasser${p.day >= 25 ? `, bis ${DRAIN_ZIEL.min}–${DRAIN_ZIEL.max} % unten ablaufen` : ''}`,
+        `Ca. <b>${waterMl} ml</b> Wasser${_drainMoeglich(p) ? `, bis ${DRAIN_ZIEL.min}–${DRAIN_ZIEL.max} % unten ablaufen` : ''}`,
         `pH auf <b>${pht.mid.toFixed(1)}</b> einstellen${_ecZ ? ` · EC im Ziel ${ecFmt(_ecZ.min)}–${ecFmt(_ecZ.max)} ${ecUnitLabel()}` : ''}`,
         _duengerZeile,
       ],
       hint: isOutdoor
         ? 'Outdoor-Regel: nach Regentag 1–2 Tage nicht gießen. Den Regen-Button nutzen!'
-        : (p.day >= 25 ? `${DRAIN_ZIEL.min}–${DRAIN_ZIEL.max} % Drain erzeugen, Drain sofort entsorgen` : 'Noch kein Drain nötig (Topf nicht vollgesättigt)'),
+        : (_drainMoeglich(p) ? `${DRAIN_ZIEL.min}–${DRAIN_ZIEL.max} % Drain erzeugen, Drain sofort entsorgen` : 'Noch kein Drain nötig (Topf nicht vollgesättigt)'),
     };
   }
   if (a === 'spuelen') {
@@ -25379,7 +25401,7 @@ function renderEntry(iso) {
       const pot = getPotSize(c);
       const iv = getInt(c, p?.ph || 'bloom');
       const growDay = p?.day || 1;
-      const showDrain = growDay >= 25 || p?.ph === 'flush' || p?.ph === 'ice'; // Drain erst ab Vollsättigung
+      const showDrain = _drainMoeglich(p); // Drain erst ab Vollsättigung — Grenze in DRAIN_AB_TAG (v1.5.167)
 
       // RESTGEWICHT UI (Hebe-Test oder Waage).
       // Lift-Mode: Slider 0-100%, direkt klassifiziert.
@@ -25921,7 +25943,7 @@ function renderEntry(iso) {
           line += _dj.richtung === 'passt'
             ? ` <span style="color:var(--green)">Ablauf bei ${_p} % — im Ziel (${DRAIN_ZIEL.min}–${DRAIN_ZIEL.max} %), die Menge stimmt.</span>`
             : _dj.richtung === 'mehr'
-              ? ` <span style="color:var(--yellow)">Bei ${_n} kamen nur ${_p} % unten an — zu wenig, um den Wurzelballen zu durchziehen. Ich gehe deshalb mit der Menge nach oben, bis ${DRAIN_ZIEL.min}–${DRAIN_ZIEL.max} % ablaufen.</span>`
+              ? ` <span style="color:var(--yellow)">Bei ${_n} ${_dj.istPct === 0 ? 'kam unten nichts an' : `kamen nur ${_p} % unten an`} — zu wenig, um den Wurzelballen zu durchziehen. Ich gehe deshalb mit der Menge nach oben, bis ${DRAIN_ZIEL.min}–${DRAIN_ZIEL.max} % ablaufen.</span>`
               : ` <span style="color:var(--yellow)">Bei ${_n} liefen ${_p} % ab — mehr als nötig, das wäscht Nährstoffe aus. Ich nehme die Menge etwas zurück.</span>`;
         }
         const _lernCol = !!(S._setUI && S._setUI.entryLern);

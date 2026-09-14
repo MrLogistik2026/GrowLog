@@ -2,6 +2,26 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-14 — v1.5.167
+
+- **Kam unter 5 % Ablauf unten an, blieb die Gießmenge stehen.** `drainAdjust` warf jede Messung unter 5 %
+  weg („keine Messung, sondern ein Tropfen"). Für den Drain-EC stimmt das (`ANBAU.md` 5.1, geprüft in
+  `analyzeRunoff`), für die Menge nicht: „unten kam fast nichts an" ist genau der Befund, dass der Guss den
+  Wurzelballen nicht durchzogen hat. Nachgemessen an Patricks Tag 104 (9000 ml gegossen): 0 %, 1 %, 2,2 % und
+  4,9 % Ablauf ließen den Vorschlag bei 7900 ml, 5 % hob ihn auf 10350 ml — ein Bruch in der Kennlinie, bei
+  weniger Ablauf kam weniger Wasser heraus. Patrick am 14.09.2026: „Wenn der Drain zu gering ist, dann sollte
+  die Gießmenge erhöht werden. Aber beachte die ersten Wochen. Dort kann man keinen Drain erzeugen."
+- **Jetzt:** Jede Ablaufmenge ab 0 ml zählt, mit derselben Mengenbilanz wie bisher (0 % → Faktor 1,21). Bei
+  0 % ist die Bilanz eine Untergrenze; die nächste Messung zieht weiter nach, bis unten etwas ankommt. Der
+  Lern-Hinweis sagt dann „kam unten nichts an" statt „kamen nur 0 % unten an".
+- **Die ersten Wochen:** Vor Tag 25 zählt ein fehlender Ablauf nicht. Bis dahin bekommt der Sämling Wasser im
+  Ring um den Stamm und danach den ganzen Topf ohne Ablauf — der Topf ist noch nicht vollgesättigt. Diese
+  Grenze stand dreimal von Hand im Code (Ablauf-Feld im Eintrag, Gießtag-Karte zweimal); die Nachführung wäre
+  die vierte Kopie gewesen. Jetzt gibt es `DRAIN_AB_TAG` und `_drainMoeglich(p)`, alle vier fragen dort.
+- `test_drainregelkreis.js` (35 Prüfungen, beide Zeitzonen): die ganze Kennlinie von 0 bis 40 % auf Monotonie,
+  Tag 24 gegen Tag 27, das Ablauf-Feld an denselben Tagen, der Lern-Hinweis, keine Kopie der Grenze im Quelltext.
+  Gegen den alten Stand: 9 Fehler.
+
 ## 2026-09-14 — v1.5.166
 
 - **Beim Spülen stand am Ablauf-Etikett ein ⚠.** Offene Frage aus v1.5.165, von Patrick am 14.09.2026
