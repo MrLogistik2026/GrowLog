@@ -2,6 +2,24 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-14 — v1.5.156
+
+- **Sorten-Chip und Wochen-Eingabe legten verschiedene Erntetage an.** Befund der Prüf-Agenten,
+  gegengeprüft und nachgestellt mit Sensi Amnesia XXL Auto (geplant 120 Tage): Über den Chip im
+  Assistenten entstand drinnen Ernte Tag 121, draußen Tag 118; über „Samen bis Ernte" mit derselben
+  Dauer beide Male Tag 120. `_wizFinish` zog beim Chip eine eigene Summe ab — ohne den Tag 1 und ohne
+  `iceLenFor`, das draußen seit v1.5.123 keine IceFlush-Tage kennt. Die dreizehnte Kopie der Regel,
+  die v1.5.123 an zwölf Stellen vereinheitlicht hatte.
+- **Warum das zählt:** Draußen lag die Ernte vor der Planzahl der Sorte. Nach `ANBAU.md` 11 ist zu
+  frühes Ernten der teuerste Fehler, deshalb plant die App mit dem oberen Ende; nach `ANBAU.md` 9 gehört
+  der Puffer nach hinten zum Plan. Zwei Tage sind wenig — dass dieselbe Zahl je nach Eingabeweg einen
+  anderen Kalender ergibt, ist aber nicht nachvollziehbar.
+- **Jetzt:** Der Chip ruft `bloomDaysFromSeedWeeks` auf wie die Wochen-Eingabe. Für 120 Tage: drinnen
+  und draußen Ernte Tag 120, auf beiden Wegen. Der veraltete Rechenkommentar („75 − 21 − 8 − 3 = 43")
+  ist ersetzt.
+- `test_sortenchip.js` (9 Prüfungen, beide Zeitzonen): drinnen und draußen, Chip gegen Wochen-Eingabe,
+  Erntetag gegen Planzahl, Endspurt gegen Kalender. Gegen den alten Stand: 4 Fehler.
+
 ## 2026-09-14 — v1.5.155
 
 - **Der Symptom-Checker kannte „Luftfeuchte hoch" erst ab 70 %.** Befund der Prüf-Agenten,

@@ -3440,7 +3440,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.155';
+const APP_VERSION = 'v1.5.156';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -22445,8 +22445,8 @@ function _wizFinish() {
   // Bei AUTOMATICS ist die in den Sorten hinterlegte Zahl die Samen-bis-Ernte-
   // GESAMTZEIT (so geben Züchter Autos an), nicht die reine Blütephase. Wir rechnen
   // daher Anzucht + Flush + Ice heraus, damit die App-Gesamtzeit ungefähr der
-  // Züchter-Angabe entspricht. Beispiel Amnesia XXL (75): 75 − 21 − 8 − 3 = 43 Tage
-  // Blüte → Ernte ≈ Tag 75. Photoperioden: die Zahl IST die Blütephase → unverändert.
+  // Züchter-Angabe entspricht; gerechnet wird seit v1.5.156 wie bei der Wochen-Eingabe
+  // (bloomDaysFromSeedWeeks). Photoperioden: die Zahl IST die Blütephase → unverändert.
   // (v1.5.34) Selbst eingetragene Wochen von der Tüte gehen vor: sie stammen aus der Hand
   // des Users und beziehen sich auf genau seine Samen, nicht auf einen Datenbank-Mittelwert.
   const _wLo = parseFloat(a.seedWeeksLo), _wHi = parseFloat(a.seedWeeksHi);
@@ -22459,8 +22459,12 @@ function _wizFinish() {
     if (_t) overrides.bloomDays = _t;
   } else if (a.bloomDaysHint && a.bloomDaysHint > 0) {
     if (seedType === 'auto') {
-      const autoOverhead = PHASE_DEFAULTS.anzuchtDays + PHASE_DEFAULTS.flushDays + PHASE_DEFAULTS.iceDays;
-      overrides.bloomDays = Math.max(21, a.bloomDaysHint - autoOverhead);
+      // (v1.5.156) Dieselbe Umrechnung wie die Wochen-Eingabe darüber: Tag 1 zählt mit, IceFlush-Tage
+      // nur drinnen (iceLenFor). Die eigene Kopie hier kannte beides nicht — für dieselben 120 Tage legte
+      // der Sorten-Chip drinnen Tag 121, draußen Tag 118 als Ernte an, die Wochen-Eingabe beide Male
+      // Tag 120. Draußen also früher als die Planzahl der Sorte (ANBAU.md 11: zu früh ist der teure Fehler).
+      const _t = bloomDaysFromSeedWeeks(Object.assign({ seedType }, overrides, { seedWeeksKind: 'total' }), a.bloomDaysHint / 7);
+      overrides.bloomDays = Math.max(21, _t || 0);
     } else {
       overrides.bloomDays = a.bloomDaysHint;
     }
