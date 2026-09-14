@@ -4414,7 +4414,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.141';
+const APP_VERSION = 'v1.5.142';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -15123,6 +15123,16 @@ function getSmartTip(c, p) {
  */
 function plainSentence(action, c, p, waterMl) {
   const isOutdoor = c.growType === 'outdoor';
+  // (v1.5.142) Die Menge JE PFLANZE nennen. Der Aufrufer übergibt waterSuggestion(c, p), die
+  // Summe für alle Töpfe — der Satz sprach aber „deiner Pflanze". Bei 3 Pflanzen stand an Tag 12
+  // „Gib deiner Pflanze … etwa 750 ml", gemeint waren 250 ml je Sämling; wer dem Wortlaut folgt,
+  // gießt jeden Topf mit der dreifachen Anzuchtmenge (ANBAU.md 13.1). Befund der Prüf-Agenten,
+  // gegengeprüft. Aufteilung wie _mlFor im Gieß-Fahrplan.
+  const _n = (typeof getEffectivePlantCount === 'function') ? getEffectivePlantCount(c, todayISO()) : 1;
+  const _jeTopf = (ml) => (_n > 1 && ml > 0) ? Math.round(ml / _n) : ml;
+  const _zusammen = (ml) => (_n > 1 && ml > 0) ? ` (zusammen ${Math.round(ml)} ml für ${_n} Pflanzen)` : '';
+  const _wem = _n > 1 ? 'jeder Pflanze' : 'deiner Pflanze';
+  const _jeTopfWort = _n > 1 ? 'je Topf ' : '';
   const isVorzucht = p && p.ph === 'vorzucht';
   const isVegiOut = p && p.ph === 'vegi_out';
   // Outdoor-Manueller-Modus: Wenn die Pflanze draußen wächst (vegi_out, bloom) und
@@ -15136,7 +15146,7 @@ function plainSentence(action, c, p, waterMl) {
   // SÄTTIGUNGSGUSS (Tag 1): klare Anleitung mit 3-Etappen-Methode
   if (action === 'saettigung') {
     return `<b>Tag 1 — Sättigungsguss.</b> Misch dein Gießwasser an (CalMag + leichte Bio-Heaven, kein Bio-Grow!), pH 6.3–6.5, EC ~0.6.<br>
-<b>3 Etappen je ~250 ml mit 15 min Pause</b> — verhindert, dass das Wasser nur Kanäle in den trockenen Torf gräbt (Channeling). Kreisförmig von außen nach innen, nie auf den Samen. Nach 1–2 h Topf wiegen → das ist dein <b>100%-Referenzgewicht</b> für den Hebe-Test.`;
+<b>3 Etappen je ~${waterMl > 0 ? Math.max(50, Math.round(_jeTopf(waterMl) / 3 / 50) * 50) : 250} ml${_n > 1 ? ' je Topf' : ''} mit 15 min Pause</b> — verhindert, dass das Wasser nur Kanäle in den trockenen Torf gräbt (Channeling). Kreisförmig von außen nach innen, nie auf den Samen. Nach 1–2 h Topf wiegen → das ist dein <b>100%-Referenzgewicht</b> für den Hebe-Test.`;
   }
   // SPRÜH-PHASE (Tag 2–8): NICHT gießen!
   if (action === 'sprueh') {
@@ -15144,25 +15154,25 @@ function plainSentence(action, c, p, waterMl) {
   }
   if (action === 'giess_anz') {
     if (isVorzucht) {
-      return `Gib deiner vorgezogenen Pflanze heute etwa <b>${waterMl} ml</b> lauwarmes Wasser — sie ist noch drinnen, du musst nicht aufs Wetter achten.`;
+      return `Gib ${_n > 1 ? 'jeder vorgezogenen Pflanze' : 'deiner vorgezogenen Pflanze'} heute etwa <b>${_jeTopf(waterMl)} ml</b> lauwarmes Wasser${_zusammen(waterMl)} — sie ist noch drinnen, du musst nicht aufs Wetter achten.`;
     }
     return isOutdoor
-      ? `Prüf kurz den Topf — ist er leicht, gib etwa <b>${waterMl} ml</b> lauwarmes Wasser in einem Ring um die Pflanze.`
-      : `Gib deiner Pflanze heute ganz vorsichtig etwa <b>${waterMl} ml</b> lauwarmes Wasser — nicht direkt auf den Stängel, sondern drumherum.`;
+      ? `Prüf kurz den Topf — ist er leicht, gib ${_jeTopfWort}etwa <b>${_jeTopf(waterMl)} ml</b> lauwarmes Wasser${_zusammen(waterMl)} in einem Ring um die Pflanze.`
+      : `Gib ${_wem} heute ganz vorsichtig etwa <b>${_jeTopf(waterMl)} ml</b> lauwarmes Wasser${_zusammen(waterMl)} — nicht direkt auf den Stängel, sondern drumherum.`;
   }
   if (action === 'giess') {
     if (isVegiOut) {
-      return `Deine Pflanze steht draußen im Wachstum. Prüf den Topf — wenn leicht, gieß etwa <b>${waterMl} ml</b>. Nach Regentagen kannst du auch einfach einen Gießtag auslassen. <b>Bei Hitze (über 28°C):</b> ggf. morgens UND abends gießen, die Pflanze verdunstet dann deutlich mehr.`;
+      return `Deine Pflanze steht draußen im Wachstum. Prüf den Topf — wenn leicht, gieß ${_jeTopfWort}etwa <b>${_jeTopf(waterMl)} ml</b>${_zusammen(waterMl)}. Nach Regentagen kannst du auch einfach einen Gießtag auslassen. <b>Bei Hitze (über 28°C):</b> ggf. morgens UND abends gießen, die Pflanze verdunstet dann deutlich mehr.`;
     }
     return isOutdoor
-      ? `Prüf ob der Topf sich leicht anfühlt. Wenn ja, gieß etwa <b>${waterMl} ml</b> lauwarmes Wasser. Wenn er schwer ist, warte bis morgen. <b>Bei Hitze:</b> Pflanze kann täglich (oder sogar 2×) Wasser brauchen.`
-      : `Gib deiner Pflanze heute etwa <b>${waterMl} ml</b> lauwarmes Wasser. Langsam gießen bis unten ein bisschen Wasser rausläuft (das ist richtig so).`;
+      ? `Prüf ob der Topf sich leicht anfühlt. Wenn ja, gieß ${_jeTopfWort}etwa <b>${_jeTopf(waterMl)} ml</b> lauwarmes Wasser${_zusammen(waterMl)}. Wenn er schwer ist, warte bis morgen. <b>Bei Hitze:</b> Pflanze kann täglich (oder sogar 2×) Wasser brauchen.`
+      : `Gib ${_wem} heute etwa <b>${_jeTopf(waterMl)} ml</b> lauwarmes Wasser${_zusammen(waterMl)}. Langsam gießen bis unten ein bisschen Wasser rausläuft (das ist richtig so).`;
   }
   if (action === 'spuelen') {
-    return `Heute nur klares Wasser ohne Dünger — davon ungefähr <b>${waterMl} ml</b>. Das spült die letzten Nährsalze aus der Erde.`;
+    return `Heute nur klares Wasser ohne Dünger — davon ${_jeTopfWort}ungefähr <b>${_jeTopf(waterMl)} ml</b>${_zusammen(waterMl)}. Das spült die letzten Nährsalze aus der Erde.`;
   }
   if (action === 'ice') {
-    return `Heute gießt du mit Eiswasser — eine beliebte Abschluss-Technik (die Wirkung auf das Harz ist nicht belegt). Langsam, etwa <b>${waterMl} ml</b>.`;
+    return `Heute gießt du mit Eiswasser — eine beliebte Abschluss-Technik (die Wirkung auf das Harz ist nicht belegt). Langsam, ${_jeTopfWort}etwa <b>${_jeTopf(waterMl)} ml</b>${_zusammen(waterMl)}.`;
   }
   if (action === 'ernte') {
     return `Heute ist Erntetag! Schneide die Pflanze ab und häng sie kopfüber zum Trocknen auf.`;

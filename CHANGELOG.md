@@ -2,6 +2,26 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-14 — v1.5.142
+
+- **Der Einsteiger-Satz auf der Startseite nannte die Summe aller Töpfe als Menge „für deine
+  Pflanze".** Gefunden von den Prüf-Agenten (Blickwinkel Anfänger), gegengeprüft. `renderDash`
+  übergibt `waterSuggestion(c, p)` — die Menge für alle Pflanzen zusammen — an `plainSentence`,
+  und der Satz lautete „Gib deiner Pflanze heute … etwa X ml". Nachgestellt mit 3 Pflanzen, 11 L:
+
+  | Tag | Satz vorher | gemeint |
+  |---|---|---|
+  | 9 (Anzucht) | „Gib deiner Pflanze heute ganz vorsichtig etwa **450 ml**" | 150 ml je Sämling |
+  | 24 (Blüte) | „Gib deiner Pflanze heute etwa **4350 ml**" | 1450 ml je Topf |
+  | 1 (Sättigung) | „3 Etappen je ~250 ml" fest | aus der Menge je Topf |
+
+  Wer dem Wortlaut folgt, gießt jeden Sämling mit der dreifachen Anzuchtmenge — nach `ANBAU.md`
+  13.1 der häufigste Anfängertod. Bei Patricks 6 Töpfen in Run 02 wäre es das Sechsfache.
+- Jetzt heißt es bei mehreren Pflanzen „Gib jeder Pflanze heute etwa 150 ml … (zusammen 450 ml
+  für 3 Pflanzen)", dieselbe Aufteilung wie `_mlFor` im Gieß-Fahrplan. Die Etappen am Tag 1
+  kommen aus der Menge je Topf. Mit einer Pflanze bleibt der Satz wie vorher.
+- Test: `test_einsteigersatz.js` (11 Prüfungen). Vor der Korrektur gegen v1.5.141: 6 Fehlschläge.
+
 ## 2026-09-14 — v1.5.141
 
 - **Die Blütestufen hingen an festen Blütewochen statt an der Blütedauer.** Gefunden von den
@@ -25,7 +45,7 @@ Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
   Phase führen dafür Blütetag und Blütedauer mit. **Die Topping-Fenster bleiben absolut** — sie
   hängen am Alter der Pflanze, nicht an der Länge der Blüte. **Die Gießphase bleibt vorerst bei
   festen Wochen**: An ihr hängen Mengenkurve, Obergrenzen und der Regelkreis aus v1.5.112; sie
-  folgt in v1.5.142 mit eigener Messreihe.
+  folgt in einer eigenen Version mit eigener Messreihe.
 - Test: `test_bluetestufen.js` (14 Prüfungen: 60 Tage Tag für Tag unverändert, 42/85/105 an den
   Anteilen, kurze Auto mit Alarm und Trichom-Hinweis, Rückfall für alte Phasenobjekte). Vor der
   Korrektur gegen v1.5.140: 11 Fehlschläge.
