@@ -3440,7 +3440,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.157';
+const APP_VERSION = 'v1.5.158';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -31738,7 +31738,7 @@ const LEXIKON = [
         '<table style="width:100%;border-collapse:collapse;font-size:13px;margin-top:6px">' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)" width="20%"><b>Schritt</b></td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Aktion</b></td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">1</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Drain-pH messen — in gekalkter Erde sind 6.8–7.2 normal (Kalkpuffer, kein Befund), in Coco liegt er nahe am Zulauf (' + phTargetFor('coco').label + ')</td></tr>' +
-        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">2</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Drain-EC messen — sollte ähnlich Input-EC sein, max 1.5× höher</td></tr>' +
+        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">2</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Drain-EC messen — bis etwa 1,3× Zulauf ist Gleichgewicht, bis 1,6× in der Vollversorgung normal, darüber Anreicherung; aussagekräftig erst ab etwa 15 % Ablauf</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">3</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Substrat anfassen: schwer und nass seit Tagen? → Sauerstoffmangel</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">4</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Symptom mit pH-Fenster-Tabelle abgleichen — was wäre bei aktuellem pH gelockt?</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">5</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Erst dann gezielt behandeln</td></tr>' +

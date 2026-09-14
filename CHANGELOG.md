@@ -2,6 +2,22 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-14 — v1.5.158
+
+- **Eine vierte Stelle mit der Faustregel „Drain-EC höchstens 1,5× Zulauf".** Beim Nachsuchen für
+  v1.5.157 gefunden: Der Diagnose-Ablauf im Lexikon (Schritt 2) sagte „Drain-EC messen — sollte ähnlich
+  Input-EC sein, max 1.5× höher". v1.5.150 hatte dieselbe Regel an drei Stellen korrigiert und diese
+  übersehen, weil sie anders formuliert war („1.5× höher" statt „× 1.5").
+- **Warum das zählt:** Nach `ANBAU.md` 5.1 ist ein Verhältnis von 1,3–1,6 in der Vollversorgung normal,
+  erst darüber Anreicherung — und die Messung sagt nur bei mindestens 15 % Ablauf etwas. Die alte Zahl
+  hätte normale Werte als Überschuss eingeordnet.
+- **Jetzt:** „bis etwa 1,3× Zulauf ist Gleichgewicht, bis 1,6× in der Vollversorgung normal, darüber
+  Anreicherung; aussagekräftig erst ab etwa 15 % Ablauf".
+- `test_drainohnemenge.js` (24 Prüfungen, beide Zeitzonen) sucht die Faustregel jetzt auch in dieser
+  Schreibweise. Gegen den alten Stand: 1 Fehler.
+- **Daraus zu lernen:** Ein Grep nach dem Ausdruck findet nur die Schreibweise, nach der man sucht. Wer
+  eine Zahl an mehreren Stellen korrigiert, sucht nach der Zahl selbst (`1.5×`, `× 1.5`, `1,5-fach`).
+
 ## 2026-09-14 — v1.5.157
 
 - **pH-Zahlen in Texten widersprachen dem Ziel des pH-Feldes.** Befund der Prüf-Agenten, gegengeprüft:

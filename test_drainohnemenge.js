@@ -145,7 +145,7 @@ const TAG = '2026-07-19';
   {
     const quelle = fs.readFileSync(path.join(__dirname, 'app.js'), 'utf8').split('\n')
       .map((z, i) => ({ nr: i + 1, z })).filter(x => !/^\s*(\/\/|\*|\/\*)/.test(x.z));
-    [/Input × 1\.5/, /Salz-Akkumulation, Spülung nötig/, /— Salz-Akkumulation/].forEach(re => {
+    [/Input × 1\.5/, /Salz-Akkumulation, Spülung nötig/, /— Salz-Akkumulation/, /max 1\.5× höher/].forEach(re => {
       const treffer = quelle.filter(x => re.test(x.z)).map(x => 'Zeile ' + x.nr);
       pruef('Nirgends: ' + re.source, treffer.length === 0, treffer.join(', '));
     });
