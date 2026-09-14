@@ -2,6 +2,27 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-14 — v1.5.149
+
+- **Beim Spülen und am IceFlush gab es keinen Schimmel-Alarm.** Befund der Prüf-Agenten, vom
+  Gegenprüfer verschärft und mit Patricks Run 01 nachgestellt: `getCriticalWarning` meldete
+  „Schimmelgefahr (Botrytis)" ab 60 % RLF nur in der Spätblüte. Spülen und IceFlush sind eigene
+  Phasen — am 30.08. (erster Spültag) und am 06.09. (IceFlush) kam bei 62, 70 und 79 % RLF gar
+  nichts, erst über 80 % die allgemeine Pilz-Warnung. Dabei nennt `getPhaseTargets` für beide
+  Phasen 40–50 %, und es sind die letzten Tage vor der Ernte mit den dichtesten Blüten.
+- **Warum das zählt:** Nach `ANBAU.md` 13.5 beginnt Botrytis in dichten Blüten bei etwa 60–65 %
+  Raumfeuchte und vernichtet in dieser Lage die Ernte binnen Tagen. Die App schwieg genau dort, wo
+  der Schaden am größten und nicht mehr aufzuholen ist.
+- **Jetzt:** Spülen und IceFlush lösen denselben kritischen Alarm aus wie die Spätblüte, mit einem
+  Rat für die Tage vor der Ernte (ohne „ggf. Defoliation"). Spätblüte, mittlere Blüte, Anzucht und
+  Trocknen sind unverändert.
+- **Offen bleibt** der Diagnose-Kontext, der „Luftfeuchte hoch" erst ab 70 % kennt
+  (`buildDiagnosticContext`) — ein eigener Befund; der Gegenprüfer hat dort vor einer pauschalen
+  Absenkung gewarnt, weil dieselbe Grenze auch Calcium und Mehltau trägt.
+- `test_schimmelspuelen.js` (14 Prüfungen, beide Zeitzonen): Spülen und IceFlush bei 59/62/70/79 %,
+  Gegenproben in den übrigen Phasen, und sichtbar im Tageseintrag „RLF 66% — Schimmelgefahr
+  (Botrytis)" am Spültag. Gegen den alten Build: 5 Fehler.
+
 ## 2026-09-14 — v1.5.148
 
 - **Das Plan-Blatt markierte die Woche eines fremden Zyklus.** Befund der Prüf-Agenten,

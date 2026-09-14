@@ -3414,7 +3414,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.148';
+const APP_VERSION = 'v1.5.149';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -13331,13 +13331,18 @@ function getCriticalWarning(category, value, p, c) {
   }
 
   if (category === 'rlf') {
-    // SCHIMMELGEFAHR in Spätblüte — der wichtigste Eintrag
-    if (isLateBloom && value > 60) {
+    // SCHIMMELGEFAHR in Spätblüte — der wichtigste Eintrag.
+    // (v1.5.149) Spülen und IceFlush gehören dazu: die letzten Tage vor der Ernte, mit den dichtesten
+    // Blüten, und getPhaseTargets nennt dort wie in der Spätblüte 40–50 %. Vorher zählte nur die Blüte
+    // selbst — zwischen 60 und 80 % RLF schwieg die App genau in diesen Tagen (ANBAU.md 13.5).
+    if ((isLateBloom || isFlushOrIce) && value > 60) {
       return {
         level: 'critical',
         icon: '🚨',
         title: `RLF ${Math.round(value)}% — Schimmelgefahr (Botrytis)`,
-        action: 'In Spätblüte ist Botrytis bei RLF >60% innerhalb 48h möglich und vernichtet die Ernte. SOFORT RLF unter 50% senken: Lüfter hochdrehen, Entfeuchter an, ggf. Defoliation.',
+        action: isFlushOrIce
+          ? 'Vor der Ernte sind die Blüten am dichtesten. Botrytis ist bei RLF über 60% innerhalb von 48 Stunden möglich und vernichtet die Ernte. SOFORT RLF unter 50% senken: Lüfter hochdrehen, Entfeuchter an.'
+          : 'In Spätblüte ist Botrytis bei RLF >60% innerhalb 48h möglich und vernichtet die Ernte. SOFORT RLF unter 50% senken: Lüfter hochdrehen, Entfeuchter an, ggf. Defoliation.',
       };
     }
     if (isMidBloom && value > 65) {
