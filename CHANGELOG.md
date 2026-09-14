@@ -2,6 +2,28 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-14 — v1.5.159
+
+- **In der Anzucht sagten Startseite, Sämlings-Pflege und Plan drei verschiedene Dinge über Dünger.**
+  Befund der Prüf-Agenten, gegengeprüft, nachgestellt mit BioBizz Light: An den Anzucht-Gießtagen stand
+  auf der Startseite „Dünger (½ Dosis): 6 Produkte" — halbiert wurde nichts, Plan, Mischliste und Eintrag
+  nannten die volle Plandosis; das Etikett war reiner Text. Bei Start „Direkt einpflanzen" stand an
+  Tag 1, 4 und 7 „Dünger (noch keiner nötig): 4 Produkte", während der Eintrag am selben Tag Dosen zeigte.
+  Die Sämlings-Pflege im Eintrag sagte fest „Frühestens Tag 10–14, dann nur 25% Dosis" und an Tag 1
+  „Vermeiden: Düngen" — auch an Tagen, an denen der Plan Dosen vorsah.
+- **Warum das zählt:** Nach `ANBAU.md` 13.2 ist Überdüngung bei Sämlingen besonders schnell tödlich, und
+  gerade hier braucht ein Anfänger eine einzige Zahl statt drei Aussagen. „½ Dosis" klingt nach einer
+  zusätzlichen Halbierung, die nicht stattfindet.
+- **Jetzt:** Die Startseite schreibt „Dünger laut Plan (Woche 2): 6 Produkte — Mengen im Eintrag" bzw.
+  „Laut Plan diese Woche kein Dünger". Die Sämlings-Pflege nennt die Zahl der Plan-Produkte dieser Woche
+  und dazu, dass Light-Mix-Erde vorgedüngt ist und ein Sämling nicht mehr braucht, als der Plan vorsieht.
+  Die „Vermeiden"-Sätze warnen vor mehr Dünger als geplant statt vor Dünger überhaupt.
+- **Unverändert, mit Absicht:** die Dosen selbst (Patricks Entscheidung) und die Wochenfrage in der
+  Anzucht, die in der Übergabe als Entscheidung geführt ist.
+- `test_anzuchtduenger.js` (15 Prüfungen, beide Zeitzonen): beide Startarten über alle Anzucht-Gießtage,
+  Karte und Sämlings-Pflege gegen die Plandosen, die alten Sätze im Quelltext. Gegen den alten Stand:
+  11 Fehler.
+
 ## 2026-09-14 — v1.5.158
 
 - **Eine vierte Stelle mit der Faustregel „Drain-EC höchstens 1,5× Zulauf".** Beim Nachsuchen für
