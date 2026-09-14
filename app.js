@@ -3413,7 +3413,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.139';
+const APP_VERSION = 'v1.5.140';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -13057,6 +13057,10 @@ function getEcTarget(c, p, iso) {
     const _w = fertPlanWeek(c, iso, p);
     const _e = _pt.ecTargets[_w] || _pt.ecTargets[String(_w)];
     if (_e) return { ..._e, week: _w };
+    // (v1.5.140) Ein Plan mit eigenen Zielbereichen, der für diese Woche keinen nennt, meint
+    // das so (Rainbow Woche 13: das Plan-Blatt nennt keinen Korridor). Kein Rückfall auf die
+    // allgemeine Tabelle — deren Zahl wäre für diesen Plan erfunden.
+    if (p.ph !== 'flush' && p.ph !== 'ice') return null;
   }
 
   if (p.ph === 'flush') return { ...EC_TARGETS[11], week: 11 };
@@ -13064,6 +13068,27 @@ function getEcTarget(c, p, iso) {
 
   let wk;
   const _ecPlan = (typeof getPlanForCycle === 'function') ? getPlanForCycle(c) : null;
+  // (v1.5.140) DAS EC-ZIEL FOLGT DER PLAN-WOCHE — über ihre Phase, nicht über ihre Nummer.
+  // Bisher schaltete nur ein Plan mit festen Tag-Spannen (weekDayBounds) auf die Plan-Woche um.
+  // Pläne mit Rückgrat (weekPhases, seit v1.5.51) liefen nach Kalenderwochen ab dem Samentag,
+  // gedeckelt auf Woche 10: Bei Patricks 85 Blütetagen stand ab Tag 64 „Spät-Reifung 0,8–1,2",
+  // während der Plan in Woche 7 dosierte — seine Ablaufwerte vom 19., 25. und 31.07. galten
+  // dadurch als zu hoch. EC_TARGETS ist selbst ein Gerüst aus 3 Anzucht- und 7 Blütewochen;
+  // jede Plan-Woche landet an derselben relativen Stelle ihrer Phase. Erste Blütewoche =
+  // Stretch, letzte = Spät-Reifung, egal ob die Blüte 42 oder 105 Tage dauert (ANBAU.md 5).
+  if (_ecPlan && typeof planHasSkeleton === 'function' && planHasSkeleton(c)) {
+    const _w = fertPlanWeek(c, iso, p);
+    const _wp = _ecPlan.weekPhases;
+    const _ph = _wp[_w - 1];
+    const _gruppe = { anzucht: [1, 3], bloom: [4, 7] }[_ph];   // [erste Tabellenwoche, Anzahl]
+    if (_gruppe) {
+      const _stelle = _wp.slice(0, _w - 1).filter(x => x === _ph).length;
+      const _anzahl = _wp.filter(x => x === _ph).length;
+      const _ecW = _gruppe[0] + Math.min(_gruppe[1] - 1, Math.floor((_stelle + 0.5) * _gruppe[1] / _anzahl));
+      const _t = EC_TARGETS[_ecW];
+      if (_t) return { ..._t, week: _w };
+    }
+  }
   const _ecBounds = _ecPlan && _ecPlan.weekDayBounds;
   if (Array.isArray(_ecBounds) && _ecBounds.length) {
     wk = fertPlanWeek(c, iso, p);

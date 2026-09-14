@@ -2,6 +2,34 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-14 — v1.5.140
+
+- **Das EC-Ziel lief nach Kalenderwochen, die Dosen nach Plan-Wochen.** Gefunden von den
+  Prüf-Agenten (Blickwinkel Profi und Dauer-Automatik, beide unabhängig), gegengeprüft.
+  `getEcTarget` schaltete nur bei Plänen mit festen Tag-Spannen (`weekDayBounds`) auf die
+  Plan-Woche um. Alle Pläne mit Rückgrat (`weekPhases`, seit v1.5.51) rechneten
+  `floor(Tag/7)+1`, gedeckelt auf Woche 10 — bei 11 von 12 Vorlagen. Mit Patricks Zyklus
+  (BioBizz Official, 85 Blütetage) nachgestellt:
+
+  | Tag | Plan-Woche der Dosen | EC-Ziel vorher | Ablauf-Bewertung vorher |
+  |---|---|---|---|
+  | 65 (19.07.) | 7 | Spät-Reifung 0,8–1,2 | zu hoch |
+  | 71 (25.07.) | 7 | Spät-Reifung 0,8–1,2 | zu hoch |
+  | 77 (31.07.) | 8 | Spät-Reifung 0,8–1,2 | zu hoch |
+
+  Mitten im Blütenaufbau (`ANBAU.md` 5: 1,4–1,9) nannte die App die Werte der späten Reifung —
+  und wer ihr folgt, fährt den Dünger zu früh herunter, nach `ANBAU.md` 5 der teurere Fehler.
+- **Die Regel:** `EC_TARGETS` ist selbst ein Gerüst aus 3 Anzucht- und 7 Blütewochen. Jede
+  Plan-Woche wird über ihre Phase und ihre Stelle innerhalb dieser Phase darauf abgebildet. Die
+  erste Blütewoche ist immer „Stretch", die letzte immer „Spät-Reifung" — egal ob die Blüte 42
+  oder 105 Tage dauert. Das ist Patricks Frage „das sollte sich automatisch anpassen" für das
+  EC-Ziel. Pläne mit eigenen Zielen (Rainbow) bleiben unberührt; nennt ein solcher Plan für eine
+  Woche keinen Korridor, fällt die App bewusst nicht auf die allgemeine Tabelle zurück.
+  Pläne ohne Rückgrat verhalten sich wie vorher.
+- Test: `test_ecziel.js` (20 Prüfungen: alle 11 Vorlagen × 42/63/85/105 Blütetage Tag für Tag,
+  Patricks drei Ablaufwerte, Rainbow, Plan ohne Rückgrat). Vor der Korrektur gegen v1.5.139:
+  14 Fehlschläge.
+
 ## 2026-09-13 — v1.5.139
 
 - **Die Karte „Dieser Plan ist deinem Grow noch nicht zugewiesen" bot einen trocknenden Zyklus
