@@ -4447,7 +4447,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.173';
+const APP_VERSION = 'v1.5.174';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -11453,7 +11453,7 @@ function waterStats(c) {
  * Phase 1 - Sämling (Tag 1-10):    50 → 250 ml (Ring um Sämling)
  * Phase 2 - Etablierung (Tag 11-17): 500 → 1500 ml (Radius vergrößern)
  * Phase 3 - Topping-Zone (Tag 18-24): 2000 → 2500 ml (ganzer Topf, kein Drain)
- * Phase 4 - Blüte-Stretch (Tag 25+): 3000 → 3500 ml (Vollsättigung, 10-15% Drain)
+ * Phase 4 - Blüte-Stretch (Tag 25+): 3000 → 3500 ml (Vollsättigung, Ablauf nach DRAIN_ZIEL)
  * Spülen/IceFlush: 3500 → 4000 ml (extra Durchspülung)
  *
  * Skaliert proportional zur Topfgröße (Basis: 11L).
@@ -18385,7 +18385,7 @@ function renderTips() {
       <div style="display:flex;flex-direction:column;gap:10px">
         <div style="background:var(--card);border:0.5px solid var(--border);border-radius:10px;padding:10px 12px">
           <div style="font-size:11px;font-weight:600;color:var(--blue);margin-bottom:4px">① Vollsättigung (100% Referenz)</div>
-          <div style="font-size:11px;color:var(--text-sub);line-height:1.6">Langsam gießen bis 10–15% Drain unten austritt. Bei 11L Topf = ca. 3,0–3,5 Liter. <b>Topf anheben und Gewicht merken!</b></div>
+          <div style="font-size:11px;color:var(--text-sub);line-height:1.6">Langsam gießen, bis ${DRAIN_ZIEL.min}–${DRAIN_ZIEL.max} % unten ablaufen. Bei 11L Topf = ca. 3,0–3,5 Liter. <b>Topf anheben und Gewicht merken!</b></div>
         </div>
 
         <div style="background:var(--card);border:0.5px solid var(--border);border-radius:10px;padding:10px 12px">
@@ -27417,7 +27417,7 @@ function renderEntry(iso) {
             <div style="display:none;padding:0 12px 10px">
               <div style="display:flex;flex-direction:column;gap:6px;font-size:10px;color:var(--text-sub);line-height:1.5">
                 <div style="background:rgba(224,96,96,0.06);border-radius:6px;padding:6px 8px;color:var(--red)">⚠️ <b>Regel Nr. 1:</b> Nach Topfgewicht gießen, nicht nach Kalender!</div>
-                <div><b style="color:var(--blue)">① Vollsättigung:</b> Langsam gießen bis 10–15% Drain unten austritt (~${waterSug} ml). Topfgewicht merken = 100% Referenz.</div>
+                <div><b style="color:var(--blue)">① Vollsättigung:</b> Langsam gießen, bis ${DRAIN_ZIEL.min}–${DRAIN_ZIEL.max} % unten ablaufen (~${waterSug} ml). Topfgewicht merken = 100% Referenz.</div>
                 <div>${c.medium === 'coco' ? '<b style="color:var(--teal)">② Feucht halten:</b> Coco nie ganz austrocknen lassen — nur leicht abtrocknen, dann wieder gießen. Die Wurzeln mögen es gleichmäßig feucht.' : '<b style="color:var(--teal)">② Rücktrocknung:</b> Finger weg! Trocknung zieht O₂ in die Wurzelzone = Motor für Wachstum.'}</div>
                 <div>${c.medium === 'coco' ? `<b style="color:var(--green)">③ Gießpunkt:</b> Gießen sobald der Topf merklich leichter wird (~60–70% Restgewicht) — jedes Mal mit Nährlösung. (${getInt(c, p?.ph || 'bloom') <= 1 ? 'meist täglich' : '~alle ' + getInt(c, p?.ph || 'bloom') + ' Tage'})` : `<b style="color:var(--green)">③ Sweetspot:</b> Erst gießen bei ~40% Restgewicht. Obere 3–5cm knochentrocken. (~alle ${getInt(c, p?.ph || 'bloom')} Tage)`}</div>
                 <div style="background:rgba(240,208,80,0.06);border-radius:6px;padding:6px 8px;color:var(--yellow)">${c.medium === 'coco' ? '💡 <b>Tipp:</b> In Coco lieber etwas früher gießen als zu spät — Coco verzeiht Austrocknen schlecht. Staunässe trotzdem vermeiden, aber nie knochentrocken werden lassen.' : '💡 <b>Unsicher?</b> Lieber 1 Tag länger warten. Hängende Blätter = 2h Erholung. Staunässe-Wurzelfäule = irreversibel.'}</div>

@@ -2,6 +2,20 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-15 — v1.5.174
+
+- **Zwei Gießanleitungen nannten noch „bis 10–15 % Drain".** Befund der Prüf-Agentin zur Gießmenge. Seit
+  v1.5.112 ist das Ablaufziel 15–20 % (`ANBAU.md` 5.1: erst ab 15 % ist eine Ablaufmessung aussagekräftig),
+  seit v1.5.153 steht es an einer Stelle (`DRAIN_ZIEL`). Der Gieß-Leitfaden in den Tipps und die aufklappbare
+  Gießanleitung im Eintrag sagten weiter „Langsam gießen bis 10–15% Drain unten austritt" — die im Eintrag zwei
+  Zeilen über ihrer eigenen Zeile „15–20% Drain bei jedem Guss".
+- **Warum das zählt:** Wer nach der Anleitung bei 10 % aufhört, liefert dem Regelkreis aus v1.5.112 eine Messung
+  unter dem Ziel — die App erhöht daraufhin die Menge, während die Anleitung weiter „genug" sagt.
+- **Jetzt:** Beide Stellen nennen `DRAIN_ZIEL` („bis 15–20 % unten ablaufen"), dazu der Kommentar der
+  Mengen-Leiter.
+- `test_drainzieltexte.js` (4 Prüfungen, beide Zeitzonen): Quelltext, Tipps und Eintrag gerendert. Gegen den
+  alten Stand: 3 Fehler.
+
 ## 2026-09-15 — v1.5.173
 
 - **Die Trichom-Karte zeigte „✅ Erntereif!" nach einer festen Zahl, die weder zur eigenen Reife-Regel noch zum
