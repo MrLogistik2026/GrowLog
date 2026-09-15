@@ -131,7 +131,7 @@ const kurz = (s) => String(s || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' '
 
   await abschnitt('C - Vorhersage, Gießanleitung, Lexikon, Quelltext', async () => {
     const f = JSON.parse(E(`(function(){ _waterConsumptionInfo = function () { return { ratePctPerDay: 10, rateSamples: 3 }; };
-      _vpdFactorForDay = function () { return 1; };
+      _klimaTagFaktor = function () { return 1; };
       const c = S.cycles[0]; const d = '${T.giess}'; const cd = S.entries[d].cycleData[c.id]; delete cd.liftAfterPct; cd.restPct = '95';
       return JSON.stringify(drybackForecast(c, phase(d, c), d)); })()`));
     pruef('Coco: Dryback-Vorhersage zielt auf 70 („Mittel") statt 60', !!f && f.targetPct === 70, JSON.stringify(f));

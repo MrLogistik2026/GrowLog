@@ -234,21 +234,19 @@ const HELFER = `
     pruef('Tipps-Zone und Eintrag-Befund stimmen überein', r.zone.length === 0, r.zone.slice(0, 3).join(' | '));
   });
 
-  await abschnitt('J - Die Gießmenge ändert sich nicht (Klimafaktor eingefroren)', async () => {
+  // (v1.5.207) Der Klimafaktor eines Tages kommt aus klimaTranspiration (Oren et al. 1999) statt aus Stufen gegen das eingefrorene
+  // alte Band — dieselbe Rechnung wie bei der Gießmenge aus dem Topf.
+  await abschnitt('J - Klimafaktor aus klimaTranspiration, Gießmenge wie festgelegt', async () => {
     const r = JSON.parse(E(`(function(){ const c = S.cycles[0];
-      const altBand = (p) => { if (!p) return null; if (p.ph === 'anzucht' || p.ph === 'vorzucht') return (p.day || 1) <= 10 ? [0.4, 0.8] : [0.8, 1.2];
-        if (p.ph === 'abhärten' || p.ph === 'vegi_out') return [0.8, 1.4];
-        if (p.ph === 'bloom') { const s = bluetestufe(p); return s === 'frueh' ? [1.0, 1.3] : s === 'mittel' ? [1.2, 1.5] : [1.4, 1.6]; }
-        if (['flush', 'ice', 'harvest'].includes(p.ph)) return [1.4, 1.6]; return null; };
       let n = 0; const falsch = [];
       Object.keys(S.entries).sort().forEach(d => { const e = S.entries[d]; if (!e || !e.temp || !e.humidity) return; n++;
-        const b = altBand(phase(d, c)); let soll = 1.0;
-        if (b) { const v = calcVPD(parseFloat(e.temp), parseFloat(e.humidity)); soll = v < b[0] * 0.85 ? 0.85 : v < b[0] ? 0.95 : v > b[1] * 1.25 ? 1.25 : v > b[1] ? 1.15 : 1.0; }
-        const ist = _vpdFactorForDay(c, d); if (ist !== soll) falsch.push(d + ' soll ' + soll + ' ist ' + ist); });
+        const t = _gussZahl(e.temp), rh = _gussZahl(e.humidity);
+        const soll = (t == null || rh == null || KLIMA_VORLAGEN[t + '/' + rh]) ? 1 : klimaTranspiration(calcVPD(t, rh));
+        const ist = _klimaTagFaktor(d); if (Math.abs(ist - soll) > 1e-9) falsch.push(d + ' soll ' + soll + ' ist ' + ist); });
       const giess = ['2026-06-10', '2026-06-25', '2026-07-05', '2026-07-15', '2026-07-25', '2026-08-05', '2026-08-15', '2026-08-25', '2026-08-28']
         .map(d => { setDebugDate(d); return waterSuggestion(c, phase(d, c), d); });
       return JSON.stringify({ n, falsch, giess }); })()`));
-    pruef(`Klimafaktor an allen ${r.n} Klimatagen wie vor dem Umbau`, r.n > 80 && r.falsch.length === 0, r.falsch.slice(0, 3).join(' | '));
+    pruef(`Klimafaktor an allen ${r.n} Klimatagen aus klimaTranspiration`, r.n > 80 && r.falsch.length === 0, r.falsch.slice(0, 3).join(' | '));
     // (v1.5.205) Neu festgelegt: Die Gießmenge kommt aus dem Topf (Patricks Güsse im Mittel 7,6 % statt 15,6 % daneben).
     pruef('Gießvorschläge an neun Tagen der Blüte wie festgelegt', JSON.stringify(r.giess) === JSON.stringify([3750, 6500, 10500, 11500, 12250, 14750, 15000, 12600, 9000]), JSON.stringify(r.giess));
   });

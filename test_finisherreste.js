@@ -83,7 +83,7 @@ async function abschnitt(titel, fn) {
     pruef('Prüflage: Finisher-Blütetag, normaler Blütetag und IceFlush-Tag gefunden', !!T.fin && !!T.normal && !!T.ice, JSON.stringify(T));
     // Trocknungsrate und Klima festhalten, damit nur das Ziel zählt: 10 Prozentpunkte je Tag, Anker 55 %.
     const r = JSON.parse(E(`(function(){ _waterConsumptionInfo = function () { return { ratePctPerDay: 10, rateSamples: 3 }; };
-      _vpdFactorForDay = function () { return 1; };
+      _klimaTagFaktor = function () { return 1; };
       const c = S.cycles[0]; const aus = {};
       ['${T.fin}', '${T.normal}'].forEach(function (d) {
         if (!S.entries[d]) S.entries[d] = { cycleData: {} }; if (!S.entries[d].cycleData) S.entries[d].cycleData = {};

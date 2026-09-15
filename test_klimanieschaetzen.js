@@ -112,7 +112,7 @@ const T107 = '2026-08-30';   // Tag 107: erster Spülgang
         if (t === null) { delete e.temp; delete e.humidity; } else { e.temp = String(t); e.humidity = String(rh); }
         const p = phase('${T104}', c);
         const tpl = getAutoFillTemplate(c, p, getAction('${T104}', c), '${T104}') || {};
-        const f = _vpdFactorForDay(c, '${T104}', p);
+        const g = gussMengeJePflanze(c, p, '${T104}'); const f = g ? g.klima : 1;   // (v1.5.207) Klima-Verhältnis der Gießmenge aus dem Topf
         out.push({ klima: t === null ? 'ohne' : t + '/' + rh, faktor: f, flag: !!tpl._vpdAdjusted });
       }
       return JSON.stringify(out); })()`));

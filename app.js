@@ -3441,7 +3441,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.206';
+const APP_VERSION = 'v1.5.207';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -11360,23 +11360,16 @@ function getPhaseRange(c, key) {
 }
 
 /**
- * VPD-Faktor eines einzelnen Tages — identische Stufen wie der Kaltstart-Pfad
- * in waterSuggestion (0.85/0.95/1.0/1.15/1.25), 1.0 ohne Klima-Daten.
- * EINE Quelle für Verbrauchsmodell und Anker-Klima-Verhältnis.
+ * (v1.5.207) Klima eines Tages als Transpiration relativ zu 1 kPa — klimaTranspiration (Oren et al. 1999) aus dem Blatt-VPD der
+ * Messung. 1,0 ohne Messung oder bei einem Wertepaar der alten Autofill-Tabelle. Nur als Verhältnis benutzen: Das
+ * Verbrauchsmodell normiert damit seine Trocknungsrate. Ersetzt _vpdFactorForDay, das in Stufen (0,85/0,95/1,0/1,15/1,25) gegen
+ * ein eingefrorenes altes VPD-Band rechnete — gleiches Klima ergab je nach Blütestufe verschiedene Faktoren.
  */
-function _vpdFactorForDay(c, dIso, pFallback) {
-  const e = S.entries?.[dIso];
-  const pd = phase(dIso, c) || pFallback;
-  const band = pd ? _vpdFaktorBand(pd) : null;   // (v1.5.187) eingefroren, siehe _vpdFaktorBand
-  if (!e || !e.temp || !e.humidity || !band) return 1.0;
-  const t = parseFloat(e.temp), r = parseFloat(e.humidity);
-  if (!isFinite(t) || !isFinite(r) || r <= 0 || r > 100) return 1.0;
-  const vpd = calcVPD(t, r);
-  if (vpd < band[0] * 0.85) return 0.85;
-  if (vpd < band[0]) return 0.95;
-  if (vpd > band[1] * 1.25) return 1.25;
-  if (vpd > band[1]) return 1.15;
-  return 1.0;
+function _klimaTagFaktor(dIso) {
+  const e = S.entries && S.entries[dIso];
+  const t = e ? _gussZahl(e.temp) : null, r = e ? _gussZahl(e.humidity) : null;
+  if (t == null || r == null || r <= 0 || r > 100 || KLIMA_VORLAGEN[t + '/' + r]) return 1.0;
+  return klimaTranspiration(calcVPD(t, r));
 }
 
 /**
@@ -11480,13 +11473,11 @@ function _waterAnchorInfo(c, p, iso) {
   const baseGap = out.prevGapDays || ((typeof getInt === 'function' && p.ph) ? getInt(c, p.ph) : null) || out.daysSince;
   out.gapRatio = Math.max(0.85, Math.min(1.6, out.daysSince / Math.max(1, baseGap)));
 
-  let nowSum = 0, nowN = 0;
-  for (let d = 1; d <= out.daysSince; d++) { nowSum += _vpdFactorForDay(c, isoPlus(a0.iso, d), p); nowN++; }
+  // (v1.5.207) Klima als Verhältnis aus klimaTranspiration, nur gemessene Tage — wie bei der Gießmenge aus dem Topf.
   const prevSpan = out.prevGapDays || out.daysSince;
-  let prevSum = 0, prevN = 0;
-  for (let d = 0; d < prevSpan; d++) { prevSum += _vpdFactorForDay(c, isoPlus(a0.iso, -d), p); prevN++; }
-  const nowM = nowN ? nowSum / nowN : 1.0, prevM = prevN ? prevSum / prevN : 1.0;
-  out.climateRatio = Math.max(0.8, Math.min(1.3, prevM > 0 ? nowM / prevM : 1.0));
+  const nowM = klimaMittelGemessen(c, a0.iso, isoPlus(a0.iso, out.daysSince));
+  const prevM = klimaMittelGemessen(c, isoPlus(a0.iso, -prevSpan), a0.iso);
+  out.climateRatio = (nowM != null && prevM != null && prevM > 0) ? Math.max(0.8, Math.min(1.3, nowM / prevM)) : 1.0;
 
   let per = out.anchorMlPerPlant * out.formRatio * out.gapRatio * out.climateRatio;
   per = Math.max(out.anchorMlPerPlant * 0.5, Math.min(out.anchorMlPerPlant * 1.6, per));
@@ -11529,21 +11520,8 @@ function _waterConsumptionInfo(c, p, iso) {
   const today = iso || todayISO();
   const pot = getPotSize(c);
 
-  // VPD-Faktor eines Tages — identische Stufen wie waterSuggestion, 1.0 ohne Klima.
-  const vpdF = (dIso) => {
-    const e = S.entries?.[dIso];
-    const pd = phase(dIso, c) || p;
-    const band = pd ? _vpdFaktorBand(pd) : null;   // (v1.5.187) eingefroren, siehe _vpdFaktorBand
-    if (!e || !e.temp || !e.humidity || !band) return 1.0;
-    const t = parseFloat(e.temp), r = parseFloat(e.humidity);
-    if (!isFinite(t) || !isFinite(r) || r <= 0 || r > 100) return 1.0;
-    const vpd = calcVPD(t, r);
-    if (vpd < band[0] * 0.85) return 0.85;
-    if (vpd < band[0]) return 0.95;
-    if (vpd > band[1] * 1.25) return 1.25;
-    if (vpd > band[1]) return 1.15;
-    return 1.0;
-  };
+  // (v1.5.207) Klima eines Tages aus klimaTranspiration — normiert die Trocknungsrate und rechnet sie am Tag zurück.
+  const vpdF = (dIso) => _klimaTagFaktor(dIso);
 
   // 1) Füllstands-Punkte + Gieß-Ereignisse chronologisch sammeln.
   //    Punkt-Typen: 'after' = liftAfterPct nach dem Guss (Anker, Tag+0.5),
@@ -11816,7 +11794,7 @@ function drybackForecast(c, p, iso) {
 
   // Tagesrate mit heutigem VPD (trockene Luft heute → schneller). Annahme: die nächsten
   // Tage verlaufen klimatisch wie heute — deshalb "voraussichtlich", nicht "am".
-  const vpdToday = (typeof _vpdFactorForDay === 'function') ? _vpdFactorForDay(c, today, p) : 1.0;
+  const vpdToday = _klimaTagFaktor(today);   // (v1.5.207) derselbe Maßstab wie die normierte Rate
   const dailyDrop = ci.ratePctPerDay * (vpdToday || 1.0);
   if (dailyDrop <= 0) return null;
 
@@ -12254,14 +12232,11 @@ function waterSuggestion(c, p, iso) {
     return finalA < 100 ? Math.round(finalA / 5) * 5 : Math.round(finalA / 50) * 50;
   }
 
-  // VPD-FAKTOR (nur noch Kaltstart-Pfad #6 und Verbrauchsmodell #4): Wenn der
-  // Eintrag des Tages Temp + RLF hat, skaliert der Tages-VPD die Empfehlung.
-  // Der Anker-Pfad (#5) nutzt stattdessen das Zeitraum-Verhältnis (climateRatio).
+  // (v1.5.207) Kein Tages-Klimafaktor mehr auf dem alten Weg (Sämling, Spülen, Outdoor, Hydro): Die Stufen rechneten gegen ein
+  // eingefrorenes altes VPD-Band, und ohne eigenen Guss als Bezug gibt es kein Verhältnis. Klima wirkt nur noch als Verhältnis
+  // seit dem letzten Guss (gussMengeJePflanze, _waterAnchorInfo), aus klimaTranspiration.
   const isoForVpd = iso || todayISO();
-  let vpdFactor = 1.0;
-  if (p) {
-    vpdFactor = _vpdFactorForDay(c, isoForVpd, p);
-  }
+  const vpdFactor = 1.0;
 
   // PFLANZEN-MULTIPLIKATOR: getEffectivePlantCount liefert 1 wenn scaleByPlants aus.
   const plants = getEffectivePlantCount(c, isoForVpd);
@@ -13628,22 +13603,6 @@ function _klimaLexVpd() {
     `<b>🍂 Trocknen:</b> ${TROCKNEN_KLIMA.tMin}–${TROCKNEN_KLIMA.tMax} °C · ${TROCKNEN_KLIMA.rhMin}–${TROCKNEN_KLIMA.rhMax} % RLF<br>` +
     `<i>Das VPD-Konzept gilt nicht mehr — die Pflanze ist geschnitten. Langsam und gleichmäßig trocknen erhält das Aroma.</i><br><br>` +
     `Die Luftfeuchte steht „bei 24 °C", weil sie aus VPD und Temperatur folgt. Der Tageseintrag rechnet mit deiner gemessenen Temperatur und deinem Blattabzug (Einstellungen › App-Einstellungen › VPD-Berechnung).`;
-}
-
-/**
- * (v1.5.187) Die VPD-Bänder, gegen die der Klimafaktor der Gießmenge bis v1.5.186 rechnete — bewusst eingefroren. Mit
- * KLIMA_ZIEL (Option B) wäre die Gießmenge in Spätblüte, Spülen und IceFlush nebenbei um bis zu 12 % gesprungen. Der Faktor
- * selbst ist physikalisch fragwürdig — gleiches Klima ergibt je nach Stufe 0,85, 0,95 oder 1,0 — und wird mit dem
- * Gießmengen-Umbau durch die Transpirationskurve nach Oren et al. (1999) ersetzt. Bis dahin ändert sich keine Gießmenge.
- */
-function _vpdFaktorBand(p) {
-  if (!p) return null;
-  const ph = p.ph;
-  if (ph === 'anzucht' || ph === 'vorzucht') return (p.day || 1) <= 10 ? [0.4, 0.8] : [0.8, 1.2];
-  if (ph === 'abhärten' || ph === 'vegi_out') return [0.8, 1.4];
-  if (ph === 'bloom') { const s = bluetestufe(p); return s === 'frueh' ? [1.0, 1.3] : (s === 'mittel' ? [1.2, 1.5] : [1.4, 1.6]); }
-  if (ph === 'flush' || ph === 'ice' || ph === 'harvest') return [1.4, 1.6];
-  return null;
 }
 
 /**
@@ -30011,7 +29970,7 @@ function getAutoFillTemplate(c, p, a, iso) {
       const rawNoFactor = Math.round(_waterSuggestionRaw(c, p) * plants / 50) * 50;
       // (v1.5.186) „Klima-justiert" genau dann, wenn der Klimafaktor der Gießmenge wirkt — aus derselben Funktion.
       // Vorher eine eigene Rechnung mit Luft-VPD gegen das Band: an Patricks Tagen 71-mal anders als der Faktor.
-      if (Math.abs(_vpdFactorForDay(c, iso, p) - 1) >= 0.02) tpl._vpdAdjusted = true;
+      { const _gK = gussMengeJePflanze(c, p, iso); if (_gK && Math.abs((_gK.klima || 1) - 1) >= 0.02) tpl._vpdAdjusted = true; }   // (v1.5.207)
       if (ph === 'bloom' && (p.week || 1) <= 3) tpl._stretchBonus = true;
     }
 

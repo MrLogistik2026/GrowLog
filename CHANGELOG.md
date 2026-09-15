@@ -2,6 +2,23 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-15 — v1.5.207
+
+- **Eine Klimafunktion für die Gießmenge.** Befund der Gießmengen-Prüfung (Runde 3, Schritt 10): Neben `klimaTranspiration`
+  (Oren et al. 1999, seit v1.5.205 in der Gießmenge aus dem Topf) rechnete `_vpdFactorForDay` weiter in Stufen 0,85 / 0,95 /
+  1,0 / 1,15 / 1,25 gegen das seit v1.5.187 eingefrorene alte VPD-Band — im Anker-Weg, im Verbrauchsmodell, in der
+  Dryback-Vorhersage, auf dem alten Weg (Sämling, Spülen, Outdoor, Hydro) und für „Klima-justiert". Gleiches Klima ergab je
+  nach Phase einen anderen Faktor, und das alte Band gibt es seit Option B nicht mehr. Gemessen an Patricks erstem Spülgang
+  (Tag 107): 11250 ml ohne Klima, 12000 ml bei 30 °C / 30 %, 9550 ml bei 20 °C / 80 % — je nach Klima dieses einen Tages.
+- **Jetzt:** `_klimaTagFaktor` rechnet die Transpiration eines Tages aus dem Blatt-VPD der Messung, 1,0 ohne Messung oder bei
+  einem Wertepaar der alten Autofill-Tabelle. Verbrauchsmodell und Vorhersage benutzen denselben Maßstab, der Anker-Weg das
+  Verhältnis nur gemessener Tage (`klimaMittelGemessen`), wie die Gießmenge aus dem Topf. Auf dem alten Weg gibt es keinen
+  Tages-Klimafaktor mehr: Ohne eigenen Guss als Bezug fehlt das Verhältnis, und die Spülmenge folgt dem Topf, nicht dem Klima
+  eines Tages. „Klima-justiert" steht genau dann, wenn das Klima-Verhältnis der Gießmenge mindestens 2 % ausmacht.
+- **Tests bewusst nachgezogen:** `test_klimaziel` (J) prüfte den Faktor „wie vor dem Umbau", `test_klimanieschaetzen` (C)
+  verglich „Klima-justiert" mit dem alten Faktor, `test_cocogiesspunkt` und `test_finisherreste` hielten ihn per Stub fest.
+  Neu: `test_klimafunktion.js` (6 Prüfungen, beide Zeitzonen).
+
 ## 2026-09-15 — v1.5.206
 
 - **Heute gießen, wenn der Topf bis morgen unter den Gießpunkt fällt.** Befund der Gießmengen-Prüfung (Runde 3, Schritt 9):
