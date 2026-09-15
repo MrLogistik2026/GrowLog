@@ -2,6 +2,32 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-15 — v1.5.198
+
+- **Die IceFlush-Anleitung sagte noch „Hard Dryback auf 35 %" — v1.5.196 hatte sieben Stellen übersehen.** Am IceFlush-Tag
+  stand in „Schritt für Schritt" und in der Timeline: „Hard Dryback auf 35% — letzter Guss mit CalMag 0.2 ml/L", „Töpfe
+  auf Drain-Schalen kontrollieren (Schmelzwasser läuft ab)", „Drain EC messen (sollte ≤ 0.4 mS/cm)" und „Topf bleibt
+  knochentrocken bis zur Ernte!". Die Hebe-Test-Vorgabe rechnete am IceFlush-Tag mit 20 % („knochentrocken") und an
+  Spültagen mit 35 %. Bei Patrick stand am IceFlush-Tag ohne eigene Messung deshalb „IceFlush bereit — Hard Dryback
+  erreicht" und „~20 % Restgewicht — perfekt für IceFlush". Dazu die Bewertung in der IceFlush-Phase („er nimmt das
+  Schmelzwasser langsam auf"), der Plan „BioBizz Master" in Woche 12 („Topf nach dem Flush knochentrocken werden lassen")
+  und der Notiz-Vorschlag am IceFlush-Tag („dann Drain EC messen (≤0.4 erwartet)").
+- **Warum das zählt:** 20 % liegt unter dem Gießpunkt. Dort meldet dieselbe App sonst Wasserstress, und hier stand
+  „perfekt", einen Tag vor der Ernte. Der einzige belegte Zweck des Hard-Drybacks ist, dass das Schmelzwasser im Topf
+  bleibt (`ANBAU.md` 14). Dann läuft kein Drain, dessen EC man messen könnte, und der Topf ist nach dem Eis nicht
+  knochentrocken.
+- **Jetzt:** Die Vorgabe ist in jeder Phase der Knopf „Knapp" (30 %). Am IceFlush-Tag heißt es „IceFlush bereit —
+  Gießpunkt erreicht", unter 25 % „Topf trockener als der Gießpunkt" mit dem Rat, bei hängenden Blättern erst einen kleinen
+  Guss klares Wasser zu geben. Anleitung und Timeline: Untersetzer unter die Töpfe, Hard-Dryback bis zum Gießpunkt, nach
+  dem IceFlush bis zur Ernte nicht mehr gießen, außer die Blätter hängen. „Drain EC messen" entfällt in der Anleitung, in
+  der Timeline und im Notiz-Vorschlag. Den Punkt „Drain EC nach letztem Spülen ≤ 0.4" in der Checkliste prüft ein eigener
+  Schritt (Spülende ohne feste Drain-EC).
+- **Daraus zu lernen:** Die Quelltext-Suche in `test_harddryback.js` suchte „~35%"; „Hard Dryback auf 35%" ohne Tilde
+  fiel durch. Gefunden hat es erst das Durchklicken am IceFlush-Tag in der Vorschau.
+- `test_iceflushreste.js` (12 Prüfungen, beide Zeitzonen): IceFlush-Anleitung, Hebe-Test-Vorgabe am Spül- und
+  IceFlush-Tag, IceFlush-Status ohne Messung und bei 20 %, Bewertung in der IceFlush-Phase, Plan-Tipp, Quelltext
+  (auch der Notiz-Vorschlag). Gegen den alten Stand: 9 Fehler.
+
 ## 2026-09-15 — v1.5.197
 
 - **Die Frage „wann gießen?" hatte bis zu sieben Zahlen.** Infotext „Restgewicht": „auf etwa 40 %"; Lexikon

@@ -3341,7 +3341,7 @@ const FERT_PRESETS = {
       9:  { phase: 'Ripening I',  tip: 'Trichom-Push. Nur noch reines P/K und Zucker (Top·Max) für steinhart dichte Blüten.' },
       10: { phase: 'Ripening II', tip: 'Herbst. Bloom stark reduzieren. Die Pflanze muss die Nährstoffe aus den Sonnensegeln leersaugen.' },
       11: { phase: 'Flush',       tip: 'Reinigung. Nur noch Wasser + leicht CalMag-Puffer. Mit ordentlich Drain gießen!' },
-      12: { phase: 'Ernte',       tip: 'Ice Flush & Dryback. Topf nach dem Flush knochentrocken werden lassen, dann ernten.' },
+      12: { phase: 'Ernte',       tip: 'IceFlush & Hard-Dryback. Nach dem letzten Spülgang nicht mehr gießen, bis der Topf den Gießpunkt erreicht (Hebe-Test „Knapp“), dann Eis und Ernte.' },
     },
     products: [
       { name: 'CalMag',      unit: 'ml/L', color: '#f0d050', note: '① Calcium & Magnesium (immer zuerst!)', waterDayDose: 0.3 },
@@ -4430,7 +4430,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.197';
+const APP_VERSION = 'v1.5.198';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -8619,7 +8619,7 @@ function classifyRestPct(restPct, isFinisher, isCoco, noWaterPhase) {
     const r = Math.round(p);
     if (noWaterPhase === 'ice') {
       return { status: 'noWater', color: '#a5f3fc', label: 'IceFlush — jetzt nicht gießen',
-        text: `Topf bei ~${r}% Restgewicht. In der IceFlush-Phase wird <b>nicht normal gegossen</b> — der leichte Topf ist gewollt, er nimmt das Schmelzwasser langsam auf.` };
+        text: `Topf bei ~${r}% Restgewicht. Nach dem IceFlush wird bis zur Ernte <b>nicht mehr gegossen</b> — das Schmelzwasser bleibt im Topf. Hängen die Blätter, ist das Wasserstress: einen kleinen Guss klares Wasser geben.` };
     }
     if (noWaterPhase === 'nachErnte') {
       return { status: 'noWater', color: 'var(--text-hint)', label: 'Nach der Ernte — kein Gießen mehr',
@@ -26971,9 +26971,11 @@ function renderEntry(iso) {
             clf = {
               status: 'iceflush',
               color: '#a5f3fc',
-              label: dryOk ? 'IceFlush bereit — Hard Dryback erreicht' : 'IceFlush — noch zu feucht',
+              label: !dryOk ? 'IceFlush — noch zu feucht' : (restVal < GIESSPUNKT.erde.von ? 'IceFlush — Topf trockener als der Gießpunkt' : 'IceFlush bereit — Gießpunkt erreicht'),
               text: dryOk
-                ? `Topf bei ~${Math.round(restVal)}% Restgewicht — perfekt für IceFlush. Voraussetzungs-Checkliste oben durchgehen, dann 1L Crushed Ice pro Topf am Rand verteilen.`
+                ? (restVal < GIESSPUNKT.erde.von
+                  ? `Topf bei ~${Math.round(restVal)}% Restgewicht, unter ${GIESSPUNKT.erde.von} %. Hängen die Blätter, ist das Wasserstress: erst einen kleinen Guss klares Wasser geben. Sonst die Checkliste oben durchgehen und das Eis am Topfrand verteilen.`
+                  : `Topf bei ~${Math.round(restVal)}% Restgewicht — trocken genug, dass das Schmelzwasser im Topf bleibt. Checkliste oben durchgehen, dann das Eis am Topfrand verteilen.`)
                 : `Topf bei ~${Math.round(restVal)}% — für den IceFlush sollte er den Gießpunkt erreicht haben (unter ${GIESSPUNKT.erde.bis} %). Lieber einen Tag warten, sonst läuft das Schmelzwasser als Drain durch.`,
             };
           }
@@ -29377,9 +29379,9 @@ function getLiftFeelForPct(pct) {
  * und Timeline. Wird nur am IceFlush-Tag (action='ice') gerendert.
  *
  * Inhalte basieren auf dem Premium-IceFlush-Protokoll:
- *   - Hard Dryback auf 35% vor IceFlush
- *   - 1L Crushed Ice pro Topf am Topfrand (NICHT Stamm/Mitte)
- *   - 4-6h schmelzen, Drain EC ≤ 0.4 erwartet
+ *   - Hard-Dryback bis zum Gießpunkt vor dem IceFlush (v1.5.198; vorher „auf 35%“)
+ *   - Crushed Ice am Topfrand (NICHT Stamm/Mitte), 1 L je 11 L Topf
+ *   - 4-6h schmelzen — das Schmelzwasser bleibt im Topf, es gibt keinen Drain zu messen
  *   - 24-36h Pitch-Black Dunkelphase
  *   - Ernte beim Lichtangang
  *
@@ -29423,10 +29425,9 @@ function _renderIceFlushPanel(c, iso) {
 
   // Schritt-für-Schritt
   const steps = [
-    'Alle Töpfe auf Drain-Schalen kontrollieren (Schmelzwasser läuft ab)',
+    'Untersetzer unter die Töpfe stellen — am Gießpunkt bleibt das Schmelzwasser im Topf',
     `Crushed Ice gleichmäßig entlang des gesamten Topfrandes verteilen — wie ein Ring (NICHT auf Stamm, NICHT in Mitte)`,
     '4–6 h schmelzen lassen — Zelt NICHT öffnen, kein Licht rein',
-    'Nach dem Schmelzen: Drain EC messen (sollte ≤ 0.4 mS/cm)',
     'Licht ausschalten → 24–36 h Dunkelphase startet',
     'Ernte am Folgetag beim Lichtangang — sofort, nicht warten',
   ];
@@ -29439,10 +29440,10 @@ function _renderIceFlushPanel(c, iso) {
 
   // Timeline
   const timeline = [
-    { time: 'Tag −4 bis −2', dot: '#fbbf24', text: 'Hard Dryback auf 35% — letzter Guss mit CalMag 0.2 ml/L' },
+    { time: 'Vor dem IceFlush', dot: '#fbbf24', text: `Hard-Dryback: nach dem letzten Spülgang nicht mehr gießen, bis der Topf den Gießpunkt erreicht (${GIESSPUNKT.erde.von}–${GIESSPUNKT.erde.bis} % Restgewicht)` },
     { time: 'Tag −1',        dot: '#4ade80', text: 'Trichome final mit Lupe checken · Crushed Ice bereitstellen · Trockenzelt vorbereiten' },
     { time: 'Heute · 18 Uhr',  dot: '#a5f3fc', text: `IceFlush — ${icePerPot} ml Crushed Ice pro Topf am Rand verteilen` },
-    { time: 'Heute · 22–24 Uhr', dot: '#a5f3fc', text: 'Eis geschmolzen · Drain EC messen · Licht AUS' },
+    { time: 'Heute · 22–24 Uhr', dot: '#a5f3fc', text: 'Eis geschmolzen · Licht AUS' },
     { time: 'Folgetag · Früh', dot: '#f87171', text: '✂️ ERNTE — beim Lichtangang sofort starten' },
     { time: 'Tag 2–12',        dot: '#4ade80', text: `Trocknung ${TROCKNEN_TEXT} · Pitch-Black · Snap-Test ab Tag 8` },
     { time: 'Tag 10–14',       dot: '#2dd4bf', text: 'Snap-Test bestanden → Curing in Glas mit Integra Boost 62%' },
@@ -29486,7 +29487,7 @@ function _renderIceFlushPanel(c, iso) {
         <div style="padding:6px 4px;margin-top:4px">
           ${stepsHtml}
           <div style="margin-top:8px;padding:8px 10px;background:rgba(248,113,113,0.06);border-left:2px solid #f87171;border-radius:0 6px 6px 0;font-size:11px;color:#fca5a5;line-height:1.5">
-            🚫 KEIN weiteres Wasser nach dem IceFlush — Topf bleibt knochentrocken bis zur Ernte!
+            🚫 Nach dem IceFlush wird bis zur Ernte nicht mehr gegossen — das Schmelzwasser bleibt im Topf. Hängen die Blätter, ist das Wasserstress: einen kleinen Guss klares Wasser geben.
           </div>
         </div>
       </details>
@@ -30334,11 +30335,9 @@ function intervalDryDefault(c, iso) {
   // führte dass der Hebe-Test am Gieß-Tag auf "Bald" (52%) statt "Knapp" (30%)
   // stehen blieb. Cup-Anbau zielt auf einen knackigen Dryback — am geplanten
   // Gieß-Tag soll der Topf bei ~30% Restgewicht ("Knapp") sein, dann gießen.
-  // Sonderfälle: Flush etwas trockener (35% Hard-Dryback-Vorbereitung),
-  // IceFlush-Dunkelphase knochentrocken (20%).
+  // (v1.5.198) Keine Sonderfälle mehr. Vorher Spülen 35 % („Hard-Dryback-Vorbereitung“, nasser als 30) und IceFlush 20 %
+  // („knochentrocken“, unter dem Gießpunkt) — der Hard-Dryback endet seit v1.5.196 am Gießpunkt.
   let targetPct = 30;
-  if (p.ph === 'flush') targetPct = 35;
-  if (p.ph === 'ice') targetPct = 20;
 
   // Wenn heute selbst schon gegossen → 100% (Aufrufer fängt das meist über
   // water>0 ab, hier als Sicherheit).
@@ -30812,7 +30811,7 @@ function getAutoFillTemplate(c, p, a, iso) {
     tpl.doses = {};
     tpl._allDosesZero = true;
     tpl.liftAfterPct = 100;
-    tpl.notePlaceholder = 'IceFlush: 1L Crushed Ice/Topf am RAND verteilen (nicht Mitte, nicht Stamm). 4–6h schmelzen lassen, dann Drain EC messen (≤0.4 erwartet). Danach Licht AUS → 24–36h Dunkelphase bis Ernte.';
+    tpl.notePlaceholder = 'IceFlush: Crushed Ice am Topfrand verteilen (nicht Mitte, nicht Stamm), 1 L je 11 L Topf. 4–6 h schmelzen lassen — das Schmelzwasser bleibt im Topf. Danach Licht AUS → 24–36 h Dunkelphase bis zur Ernte.';
     tpl._actionType = 'iceflush';
     return tpl;
   }
