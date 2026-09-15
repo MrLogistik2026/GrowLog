@@ -1430,7 +1430,7 @@ const PROBLEMS = [
     },
     description: '"Taco-Blätter" — Ränder rollen sich nach oben zu einer Taco-Form. Pflanze sieht gestresst trotz Wasser. Meist bei > 30 °C Raumtemp. Unterscheidung zu Lichtbrand: Hitzestress betrifft die ganze Pflanze gleichmäßig, nicht nur die Spitzen.',
     context: { tempHot: true, phase: ['vegi', 'bloom'] },
-    action: 'Lüftung verstärken, Lampe höher/dimmen, Klimaanlage oder Abluft aufdrehen. Ziel: 22–26 °C am Canopy. VPD im Auge behalten — über 1.5 kPa = trocken-Stress.',
+    action: 'Lüftung verstärken, Lampe höher/dimmen, Klimaanlage oder Abluft aufdrehen. Ziel bei Licht an: ' + KLIMA_ZIEL.mittel.temp.join('–') + ' °C in der Blüte, bis ' + KLIMA_ZIEL.anzucht.temp[1] + ' °C in der Anzucht. Liegt das VPD über dem Ziel der Phase (in der Blüte über ' + _klimaZahl(KLIMA_ZIEL.mittel.vpd[1]) + ' kPa), schließen die Spaltöffnungen zunehmend.',
     lexiconKey: 'heat_stress',
   },
   {
@@ -3418,7 +3418,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.189';
+const APP_VERSION = 'v1.5.190';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -5450,7 +5450,7 @@ const INFO_TERMS = {
   vpd: {
     title: 'VPD (Dampfdruck-Defizit)',
     text: 'VPD ist eine Kombi-Kennzahl aus Temperatur und Luftfeuchte. Sie sagt, ob die Pflanze gut „atmen" (Wasser verdunsten) kann — der Motor für Nährstoff-Transport und Wachstum.',
-    tip: 'Richtwert in der Blüte: <b>0.8–1.2 kPa</b>. Zu niedrig (feucht + kühl) → Schimmelgefahr. Zu hoch (heiß + trocken) → die Pflanze macht „dicht" und stresst. Stellst du Temperatur und Luftfeuchte passend ein, stimmt der VPD von selbst. Und ein Mythos: hohen VPD absichtlich zu fahren bringt <b>keine</b> extra Trichome — Trockenstress kostet Ertrag und riskiert Zwitter (Pollensäcke). Späte Blüte darf ruhig etwas trockener sein (Richtung 1.0–1.2 als Schimmel-Schutz), aber nie in den Stress über 1.5 kPa.<br><br>GrowSmart rechnet das <b>Blatt-VPD</b>: Deine Blätter sind durch die Verdunstung rund 2 °C kühler als die Raumluft, und verdunstet wird über das Blatt — nicht über die Luft im Zelt. Der Blatt-Wert liegt darum niedriger als der reine Luft-Wert (bei 25 °C/55 % etwa 1.07 statt 1.43 kPa). Genau darauf beziehen sich die Zielbereiche. Anpassen: Einstellungen › App-Einstellungen › VPD-Berechnung.',
+    tip: 'Ziele am Blatt: ' + _vpdBandKurz() + '. Zu niedrig (feucht + kühl) → Schimmelgefahr, und Calcium kommt schlecht in die jungen Blätter. Zu hoch (heiß + trocken) → die Pflanze schließt die Spaltöffnungen und wächst langsamer. Stellst du Temperatur und Luftfeuchte passend ein, stimmt der VPD von selbst. Und ein Mythos: hohen VPD absichtlich zu fahren bringt <b>keine</b> extra Trichome — Trockenstress kostet Ertrag. Auch die späte Blüte bekommt kein höheres VPD: Gegen Schimmel helfen eine Luftfeuchte von höchstens ' + KLIMA_ZIEL.spaet.deckel + ' % und Luftbewegung an den Blüten.<br><br>GrowSmart rechnet das <b>Blatt-VPD</b>: Deine Blätter sind durch die Verdunstung rund 2 °C kühler als die Raumluft, und verdunstet wird über das Blatt — nicht über die Luft im Zelt. Der Blatt-Wert liegt darum niedriger als der reine Luft-Wert (bei 25 °C/55 % etwa 1.07 statt 1.43 kPa). Genau darauf beziehen sich die Zielbereiche. Anpassen: Einstellungen › App-Einstellungen › VPD-Berechnung.',
     lex: 'VPD (Vapour Pressure Deficit)',
   },
   trichome: {
@@ -5778,7 +5778,7 @@ const SYMPTOMS = [
         heading: 'Spitzen + Ränder gleichzeitig braun, Blatt knittrig',
         verdict: '⚠ Lampe + Hitze kombiniert',
         color: 'var(--red)',
-        text: 'Klassisch im Sommer: Lampen-Hitze + Außentemperatur stapeln sich, Pflanze verdunstet mehr als sie nachholen kann. <b>Lösung:</b> Lampe höher, Lüftung verstärken (Abluft + Umluft), ggf. Lichtphase auf Nachtbetrieb umstellen (an wenn kühler). VPD prüfen — über 1.5 kPa = trocken-Stress.',
+        text: 'Klassisch im Sommer: Lampen-Hitze + Außentemperatur stapeln sich, Pflanze verdunstet mehr als sie nachholen kann. <b>Lösung:</b> Lampe höher, Lüftung verstärken (Abluft + Umluft), ggf. Lichtphase auf Nachtbetrieb umstellen (an wenn kühler). VPD prüfen — über dem Ziel der Phase (in der Blüte über ' + _klimaZahl(KLIMA_ZIEL.mittel.vpd[1]) + ' kPa) schließen die Spaltöffnungen zunehmend.',
         when: 'Indoor + Sommer',
         lex: 'VPD (Vapour Pressure Deficit)',
       },
@@ -6120,8 +6120,8 @@ const SYMPTOMS = [
         heading: 'Graue, watteartige Fäule INNEN in der Blüte',
         verdict: '⚠⚠ Knospenfäule (Botrytis)',
         color: 'var(--red)',
-        text: 'Der gefährlichste Spätblüten-Schaden: ein Grauschimmel frisst die Blüte von innen, ein Bud wird braun, weich und zerfällt zu „Staub". Breitet sich rasend aus. <b>Sofort handeln:</b> befallene Stelle großzügig herausschneiden (mind. 5 cm ins gesunde Gewebe, saubere Schere danach desinfizieren), Pflanze NICHT von oben befeuchten. <b>Ursache abstellen:</b> Luftfeuchte unter 50% senken, Luftbewegung erhöhen, sehr dichte Buds ausdünnen. Bei starkem Befall lieber etwas früher ernten als alles verlieren.',
-        when: 'Mittlere/späte Blüte, RLF über 55%',
+        text: 'Der gefährlichste Spätblüten-Schaden: ein Grauschimmel frisst die Blüte von innen, ein Bud wird braun, weich und zerfällt zu „Staub". Breitet sich rasend aus. <b>Sofort handeln:</b> befallene Stelle großzügig herausschneiden (mind. 5 cm ins gesunde Gewebe, saubere Schere danach desinfizieren), Pflanze NICHT von oben befeuchten. <b>Ursache abstellen:</b> Luftfeuchte senken — in der späten Blüte höchstens ' + KLIMA_ZIEL.spaet.deckel + ' %, im Ziel ' + _klimaLexRlf2K('spaet', 24) + ' —, Luftbewegung erhöhen, sehr dichte Buds ausdünnen. Bei starkem Befall lieber etwas früher ernten als alles verlieren.',
+        when: 'Mittlere/späte Blüte, Luftfeuchte über ' + KLIMA_ZIEL.spaet.deckel + '–' + KLIMA_ZIEL.mittel.deckel + ' %',
         lex: 'Schimmel (Botrytis)',
       },
       {
@@ -13115,8 +13115,8 @@ function klimaStufe(p) {
 }
 
 /** (v1.5.187) Luftfeuchte, bei der das Blatt-VPD bei Lufttemperatur T genau v beträgt — die Umkehrung von calcVPD. */
-function klimaRlfFuer(T, v) {
-  return 100 * (_svp(T - _leafOffset()) - v) / _svp(T);
+function klimaRlfFuer(T, v, off) {
+  return 100 * (_svp(T - (off == null ? _leafOffset() : off)) - v) / _svp(T);
 }
 
 /**
@@ -13124,13 +13124,13 @@ function klimaRlfFuer(T, v) {
  * dessen Mitte). Die Grenzen sind auf 0,1 % so gerundet, dass eine Luftfeuchte im Fenster ein angezeigtes Blatt-VPD im
  * Band ergibt und eine außerhalb nicht; danach Schimmel-Deckel und Boden.
  */
-function klimaRlfFenster(ziel, T) {
+function klimaRlfFenster(ziel, T, off) {   // off: Blattabzug in K; ohne Angabe die Einstellung (v1.5.190)
   // (v1.5.188) Stufe ohne VPD-Band (Dunkelphase, Erntetag): nur der Deckel, keine Untergrenze.
   if (!ziel.vpd) return { lo: ziel.boden != null ? ziel.boden : null, hi: ziel.deckel, t: (isFinite(T) && T !== 0) ? Math.round(T * 10) / 10 : null };
   const mitte = (ziel.temp[0] + ziel.temp[1]) / 2;
   const t = Math.max(ziel.temp[0], Math.min(ziel.temp[1], (isFinite(T) && T !== 0) ? T : mitte));
-  let lo = Math.ceil(klimaRlfFuer(t, ziel.vpd[1] + 0.005) * 10) / 10;
-  let hi = Math.floor(klimaRlfFuer(t, ziel.vpd[0] - 0.005) * 10) / 10;
+  let lo = Math.ceil(klimaRlfFuer(t, ziel.vpd[1] + 0.005, off) * 10) / 10;
+  let hi = Math.floor(klimaRlfFuer(t, ziel.vpd[0] - 0.005, off) * 10) / 10;
   if (ziel.deckel != null) hi = Math.min(hi, ziel.deckel);
   if (ziel.boden != null) lo = Math.max(lo, ziel.boden);
   return { lo, hi, t: Math.round(t * 10) / 10 };
@@ -13274,6 +13274,68 @@ function _klimaZone(v, stufe) {
     : lage === 'etwas_trocken' ? `Knapp über dem Ziel ${z.dativ} (${band}) — nicht dringend.`
     : `Zu trocken ${z.dativ} (Ziel ${band}): Luftfeuchte anheben oder die Temperatur leicht senken.`;
   return { label: pille.label, color: pille.color, bg: pille.bg, hint, pct: _vpdSkalaPct(v), lage };
+}
+
+/**
+ * (v1.5.190) Klima-Texte für Lexikon, Tipps und Diagnose aus KLIMA_ZIEL. Sie werden beim Laden gebaut und rechnen deshalb mit
+ * festem Blattabzug 2 K (wie ANBAU.md 2.2); der Tageseintrag rechnet mit der Einstellung. Vorher standen dort feste Fenster
+ * aus der Zeit vor Option B: Spätblüte 1,4–1,6 kPa bei 18–24 °C und 40–50 %, mittlere Blüte 45–55 %, frühe Blüte 50–60 %,
+ * Anzucht 55–70 % — jede davon widersprach dem Eintrag.
+ */
+function _vpdBandKurz() {
+  const b = (k) => KLIMA_ZIEL[k].vpd.map(_klimaZahl).join('–');
+  return `Sämling ${b('saemling')} · Anzucht ${b('anzucht')} · frühe Blüte ${b('frueh')} · ab mittlerer Blüte ${b('mittel')} kPa`;
+}
+function _klimaLexRlf2K(k, T) { return `bei ${T} °C ${_klimaRlfSpanne(klimaRlfFenster(KLIMA_ZIEL[k], T, 2))}`; }
+function _klimaLexZeile(k, T) {
+  const z = KLIMA_ZIEL[k];
+  return `${z.temp.join('–')} °C, VPD ${z.vpd.map(_klimaZahl).join('–')} kPa, Luftfeuchte ${_klimaLexRlf2K(k, T)} (höchstens ${z.deckel} %)`;
+}
+function _klimaLexListe(k, T) {
+  const z = KLIMA_ZIEL[k];
+  return `<b>Klima (bei Licht an):</b><br>• Temperatur ${z.temp.join('–')} °C<br>• VPD ${z.vpd.map(_klimaZahl).join('–')} kPa<br>• Luftfeuchte ${_klimaLexRlf2K(k, T)}${z.deckel != null ? ` (über ${z.deckel} % Pilzrisiko)` : ''}<br>`;
+}
+function _klimaLexTemperatur() {
+  const z = KLIMA_ZIEL, t = (k) => z[k].temp.join('–');
+  return `<b>🌱 Sämling:</b> ${t('saemling')} °C<br>` +
+    `<b>🌿 Anzucht:</b> ${t('anzucht')} °C<br>` +
+    `<b>🌸 Frühe Blüte (Stretch):</b> ${t('frueh')} °C<br>` +
+    `<b>🌺 Mittlere Blüte:</b> ${t('mittel')} °C<br>` +
+    `<b>🍯 Späte Blüte, Spülen, IceFlush-Tag:</b> ${t('spaet')} °C<br>` +
+    `<b>🌑 Dunkelphase, Erntetag:</b> kein Temperaturziel — kühler schont Terpene, solange die Luftfeuchte höchstens ${z.dunkel.deckel} % bleibt<br>` +
+    `<b>🍂 Trocknen:</b> ${TROCKNEN_KLIMA.tMin}–${TROCKNEN_KLIMA.tMax} °C konstant<br><br>` +
+    `Die Werte gelten <b>bei Licht an</b>, gemessen auf Höhe der Blätter, nicht am Boden. <b>Faustregel:</b> 25 °C liegt in jeder Phase mit Licht im Ziel.<br><br>` +
+    `<b>Nachts</b> gibt es keinen eigenen Zielwert, aber zwei Grenzen: Die Wurzelzone soll nicht unter 16 °C fallen — darunter brechen Phosphor- und Wasseraufnahme ein. Und jedes Grad kühler hebt die Luftfeuchte; der Schimmel-Deckel gilt auch nachts.`;
+}
+function _klimaLexRlf() {
+  const z = KLIMA_ZIEL;
+  return `<b>🌱 Sämling:</b> ${_klimaLexRlf2K('saemling', 24)} — unter ${z.saemling.boden} % trocknet er aus<br>` +
+    `<b>🌿 Anzucht:</b> ${_klimaLexRlf2K('anzucht', 25)} — über ${z.anzucht.deckel} % Pilzrisiko<br>` +
+    `<b>🌸 Frühe Blüte:</b> ${_klimaLexRlf2K('frueh', 25)} — über ${z.frueh.deckel} % Schimmelrisiko<br>` +
+    `<b>🌺 Mittlere Blüte:</b> ${_klimaLexRlf2K('mittel', 24)} — über ${z.mittel.deckel} % Schimmelrisiko<br>` +
+    `<b>🍯 Späte Blüte, Spülen, IceFlush-Tag:</b> ${_klimaLexRlf2K('spaet', 24)} — über ${z.spaet.deckel} % Schimmelgefahr<br>` +
+    `<b>🌑 Dunkelphase, Erntetag:</b> höchstens ${z.dunkel.deckel} %<br>` +
+    `<b>🍂 Trocknen:</b> ${TROCKNEN_KLIMA.rhMin}–${TROCKNEN_KLIMA.rhMax} % konstant (langsam und gleichmäßig trocknen)<br><br>` +
+    `<b>Warum „bei 24 °C":</b> Die Luftfeuchte ist keine eigene Zielgröße — sie folgt aus VPD und Temperatur (siehe <b>VPD</b>). Wärmer heißt: mehr Luftfeuchte erlaubt, kühler: weniger. Die Spannen gelten bei 2 K Blattabzug; der Tageseintrag rechnet mit deiner gemessenen Temperatur.<br><br>` +
+    `<b>Wichtig:</b> Das Ziel bei Licht an messen, den Deckel zusätzlich zur kühlsten Stunde prüfen (Nacht-Ende). Bei gleicher Wassermenge in der Luft werden aus 24 °C / 50 % bei 20 °C rund 64 %.`;
+}
+function _klimaLexVpd() {
+  const z = KLIMA_ZIEL, band = (k) => z[k].vpd.map(_klimaZahl).join('–');
+  return `<b>🌱 Sämling (Tag 1–10):</b> VPD ${band('saemling')} kPa · ${z.saemling.temp.join('–')} °C · Luftfeuchte ${_klimaLexRlf2K('saemling', 24)}<br>` +
+    `<i>Kaum Wurzeln — die Pflanze kann einen hohen Wasserverlust nicht ersetzen.</i><br><br>` +
+    `<b>🌿 Anzucht:</b> VPD ${band('anzucht')} kPa · ${z.anzucht.temp.join('–')} °C · Luftfeuchte ${_klimaLexRlf2K('anzucht', 25)}<br>` +
+    `<i>Kräftige Verdunstung zieht Wasser und Nährstoffe bis in die Triebspitzen.</i><br><br>` +
+    `<b>🌸 Frühe Blüte (Stretch):</b> VPD ${band('frueh')} kPa · ${z.frueh.temp.join('–')} °C · Luftfeuchte ${_klimaLexRlf2K('frueh', 25)} · höchstens ${z.frueh.deckel} %<br>` +
+    `<i>Das Streckungswachstum hängt am Wasserdruck in den Zellen; die Blüten sind noch locker.</i><br><br>` +
+    `<b>🌺 Mittlere Blüte:</b> VPD ${band('mittel')} kPa · ${z.mittel.temp.join('–')} °C · Luftfeuchte ${_klimaLexRlf2K('mittel', 24)} · höchstens ${z.mittel.deckel} %<br>` +
+    `<i>Die Buds werden dicht — Luftbewegung durch die Pflanzen wird wichtig.</i><br><br>` +
+    `<b>🍯 Späte Blüte, Spülen, IceFlush-Tag:</b> VPD ${band('spaet')} kPa · ${z.spaet.temp.join('–')} °C · Luftfeuchte ${_klimaLexRlf2K('spaet', 24)} · höchstens ${z.spaet.deckel} %<br>` +
+    `<i>Kein höheres VPD als in der mittleren Blüte: Es würde die Spaltöffnungen schließen, ohne die Blüten zu schützen. Gegen Schimmel helfen der Deckel von ${z.spaet.deckel} %, Luftbewegung an den Blüten und kein Wasser, das sich am Blatt niederschlägt.</i><br><br>` +
+    `<b>🌑 Dunkelphase, Erntetag:</b> kein VPD-Ziel · Luftfeuchte höchstens ${z.dunkel.deckel} %<br>` +
+    `<i>Ohne Licht verdunstet die Pflanze nur einen kleinen Teil der Tagesmenge.</i><br><br>` +
+    `<b>🍂 Trocknen:</b> ${TROCKNEN_KLIMA.tMin}–${TROCKNEN_KLIMA.tMax} °C · ${TROCKNEN_KLIMA.rhMin}–${TROCKNEN_KLIMA.rhMax} % RLF<br>` +
+    `<i>Das VPD-Konzept gilt nicht mehr — die Pflanze ist geschnitten. Langsam und gleichmäßig trocknen erhält das Aroma.</i><br><br>` +
+    `Die Luftfeuchte steht „bei 24 °C", weil sie aus VPD und Temperatur folgt. Der Tageseintrag rechnet mit deiner gemessenen Temperatur und deinem Blattabzug (Einstellungen › App-Einstellungen › VPD-Berechnung).`;
 }
 
 /**
@@ -13841,7 +13903,14 @@ function getCriticalWarning(category, value, p, c, t) {
         level: 'high',
         icon: '⚠️',
         title: `RLF ${Math.round(value)}% — hohes Pilzrisiko`,
-        action: 'RLF über 80% (außer in Trocknung): Echter Mehltau und Botrytis siedeln sich an. Lüftung prüfen, Entfeuchter.',
+        // (v1.5.190) Drinnen erreichen diesen Zweig nur noch Phasen ohne Klima-Stufe, also Trocknen und Curing — dort stand
+        // „(außer in Trocknung)". Beim Trocknen hält Luft über 80 % die Blüten nass (ANBAU.md 12.1), im Curing zählt die
+        // Feuchte im Glas (12.2).
+        action: (p && p.ph === 'dry')
+          ? `Über 80 % trocknen die Blüten kaum noch, Schimmel kann wachsen. Entfeuchten — Ziel beim Trocknen: ${TROCKNEN_TEXT}.`
+          : (p && p.ph === 'cure')
+          ? 'Über 80 % im Raum: Gläser zum Lüften nur kurz öffnen, sonst zieht Feuchte hinein. Im Glas zählen 58–65 %.'
+          : 'Über 80 %: Echter Mehltau und Botrytis siedeln sich an. Lüftung prüfen, Entfeuchter.',
       };
     }
   }
@@ -13982,14 +14051,14 @@ function vpdZone(v, phaseInfo, growType) {
   }
   if (v < 1.2) {
     // Vegi/frühe Blüte — abhängig von Phase
-    if (isSeedling) return { label: 'Zu trocken für Sämling', color: '#c8a04a', bg: '#2a1e0d', hint: 'Sämlinge brauchen 0.4–0.8 — RLF rauf auf 65–75%.', pct: 50 + (v - 0.8) / 0.4 * 25 };
+    if (isSeedling) return { label: 'Zu trocken für Sämling', color: '#c8a04a', bg: '#2a1e0d', hint: 'Sämlinge brauchen 0,4–0,8 kPa — Luftfeuchte anheben.', pct: 50 + (v - 0.8) / 0.4 * 25 };
     if (isVegi) return { label: 'Vegi ✓', color: '#4caf70', bg: '#0d1e0d', hint: 'Optimal für Wachstum.', pct: 50 + (v - 0.8) / 0.4 * 25 };
     // (v1.5.14) In der Spätblüte ist dieser Bereich NICHT gut: Dort sind 1.4–1.6 kPa das
     // Ziel. Vorher stand hier ein grünes „Frühe Blüte ✓" direkt über der orangen Warnung
     // „Späte Blüte: VPD 1.4–1.6" — zwei widersprüchliche Aussagen übereinander. Das Label
     // bewertet jetzt den Wert gegen die AKTUELLE Phase, nicht gegen irgendeinen Bereich,
     // in den er zufällig fällt.
-    if (isLateBloom) return { label: 'Zu niedrig für Spätblüte', color: '#c8a04a', bg: '#2a1e0d', hint: 'In der Spätblüte sind 1.4–1.6 kPa ideal — trockene Luft schützt die dichten Buds vor Schimmel. Luftfeuchte senken oder Temperatur leicht anheben.', pct: 50 + (v - 0.8) / 0.4 * 25 };
+    if (isLateBloom) return { label: 'Zu niedrig für Spätblüte', color: '#c8a04a', bg: '#2a1e0d', hint: 'In der späten Blüte liegt das Ziel bei ' + KLIMA_ZIEL.spaet.vpd.map(_klimaZahl).join('–') + ' kPa. Bei feuchtem Wetter die dichten Blüten auf Schimmel prüfen.', pct: 50 + (v - 0.8) / 0.4 * 25 };
     if (isBloom) return { label: 'Frühe Blüte ✓', color: '#4caf70', bg: '#0d1e0d', hint: 'Optimal für Stretch und frühe Blüte.', pct: 50 + (v - 0.8) / 0.4 * 25 };
     return { label: 'Vegi/Blüte ✓', color: '#4caf70', bg: '#0d1e0d', hint: 'Optimal.', pct: 50 + (v - 0.8) / 0.4 * 25 };
   }
@@ -14000,8 +14069,8 @@ function vpdZone(v, phaseInfo, growType) {
     if (isBloom) {
       return { label: 'Mittlere Blüte ✓', color: '#4caf70', bg: '#0d1e0d', hint: 'Optimal für Bud-Bildung.', pct: 75 + (v - 1.2) / 0.4 * 15 };
     }
-    if (isSeedling) return { label: 'Viel zu trocken!', color: '#e06060', bg: '#2a0d0d', hint: 'Sämling stirbt — sofort RLF rauf auf 70%!', pct: 75 + (v - 1.2) / 0.4 * 15 };
-    return { label: 'Etwas hoch', color: '#c8a04a', bg: '#2a1e0d', hint: outdoor ? 'Trockener Tag — häufiger gießen falls heiß.' : 'RLF erhöhen (in Spätblüte OK als Premium).', pct: 75 + (v - 1.2) / 0.4 * 15 };
+    if (isSeedling) return { label: 'Viel zu trocken!', color: '#e06060', bg: '#2a0d0d', hint: 'Viel zu trocken für den Sämling — sofort Luftfeuchte anheben (Haube oder Wasserschale).', pct: 75 + (v - 1.2) / 0.4 * 15 };
+    return { label: 'Etwas hoch', color: '#c8a04a', bg: '#2a1e0d', hint: outdoor ? 'Trockener Tag — häufiger gießen falls heiß.' : 'Luftfeuchte erhöhen.', pct: 75 + (v - 1.2) / 0.4 * 15 };
   }
   return { label: 'Stress!', color: '#e06060', bg: '#2a0d0d', hint: outdoor ? 'Sehr trocken — Schattenplatz und Wasser prüfen.' : 'Sofort RLF anpassen!', pct: Math.min(97, 90 + (v - 1.6) * 10) };
 }
@@ -17677,7 +17746,7 @@ function renderTips() {
 
   const gen = [
     { icon: '💧', text: 'pH im Zulauf: Erde ' + phTargetFor('erde').label + ', Coco ' + phTargetFor('coco').label + ', Hydro ' + phTargetFor('hydro').label + '.', cat: 'Grundlagen', lex: 'pH-Wert' },
-    { icon: '🌡️', text: 'Tag: 22–28°C, Nacht: 18–22°C. Max 30°C!', cat: 'Grundlagen', lex: 'VPD (Vapour Pressure Deficit)' },
+    { icon: '🌡️', text: 'Bei Licht an: Anzucht ' + KLIMA_ZIEL.anzucht.temp.join('–') + ' °C, Stretch ' + KLIMA_ZIEL.frueh.temp.join('–') + ' °C, danach ' + KLIMA_ZIEL.mittel.temp.join('–') + ' °C. Nachts kühler ist in Ordnung, solange die Luftfeuchte unter dem Schimmel-Deckel bleibt.', cat: 'Grundlagen', lex: 'Temperatur' },
     { icon: '💨', text: 'Gute Luftzirkulation = kein Schimmel.', cat: 'Grundlagen', lex: 'Schimmel (Botrytis)' },
     { icon: '🔬', text: 'Trichome: klar = zu früh, milchig = höchster Wirkstoffgehalt, bernsteinfarben = beginnender Abbau.', cat: 'Ernte', lex: 'Trichom-Analyse (Ernte-Trigger)' },
     { icon: '✂️', text: 'Wet Trim oder Dry Trim – beide Methoden haben Vorteile.', cat: 'Ernte', lex: 'Trocknung' },
@@ -29705,14 +29774,14 @@ function getAutoFillTemplate(c, p, a, iso) {
       tpl.notePlaceholder = _pickNote([
       'Späte Blüte — Trichome täglich mit Lupe checken (klar/milchig/amber).',
       'Reife: Pistillen färben sich braun? Trichome entscheiden über Ernte.',
-      'Späte Blüte: RLF runter (40–45%) — dichte Buds + Feuchte = Schimmel.',
+      'Späte Blüte: Luftfeuchte höchstens ' + KLIMA_ZIEL.spaet.deckel + ' % — dichte Buds + Feuchte = Schimmel.',
       'Untere Blätter vergilben — normal beim Ausreifen, nicht panisch düngen.',
       'Geruch maximal — Erntefenster nähert sich, Trichome im Blick.'
     ], 'gen|' + iso);
     } else if (ph === 'bloom') {
       tpl.notePlaceholder = _pickNote([
-      'Mittlere Blüte. EC schrittweise hoch, Klima 22–26°C / 45–55% RLF.',
-      'Buds setzen an — RLF unter 55% halten (Schimmelgefahr steigt).',
+      'Mittlere Blüte. EC schrittweise hoch, Klima ' + KLIMA_ZIEL.mittel.temp.join('–') + ' °C, Luftfeuchte ' + _klimaLexRlf2K('mittel', 24) + '.',
+      'Buds setzen an — Luftfeuchte unter ' + KLIMA_ZIEL.mittel.deckel + ' % halten (Schimmelgefahr steigt).',
       'Mittlere Blüte: Harzbildung beobachten, Lampenabstand passt?',
       'Geruch wird stärker — Lüftung/Filter im Blick.',
       'Mittlere Blüte: gleichmäßig gießen, Restgewicht checken.'
@@ -31545,59 +31614,19 @@ const LEXIKON = [
       brief: 'Bestimmt Stoffwechsel-Geschwindigkeit, Wurzelaktivität und Photosynthese. Direkter Einfluss auf Wachstumstempo und Aroma.',
       mechanism: 'Pflanzen sind <b>poikilotherm</b> — ihre Stoffwechselrate folgt der Umgebungstemperatur. Pro 10°C verdoppelt sich die Enzymaktivität ungefähr (van\'t Hoff-Regel). Aber: ab 30°C kippt der Effekt — Enzyme denaturieren, Photosynthese stagniert, Atmung steigt weiter → Pflanze verbrennt mehr Energie als sie aufbaut. Unter 18°C wird die Wurzelaktivität so langsam dass Phosphor und andere Nährstoffe nicht mehr aufgenommen werden — typisches „lila Stängel"-Bild.<br><br>Tag-Nacht-Differenz (DIF) steuert Streckenwachstum: hohe Differenz = stauchere Pflanze, niedrige Differenz = streckendes Wachstum.',
       practice: '<b>Zielwerte je Phase:</b><br><br>' +
-        '<b>🌱 Sämling/Klon:</b> 22–26°C Tag · 20–22°C Nacht<br>' +
-        '<b>🌿 Anzucht/Vegi:</b> 22–28°C Tag · 18–22°C Nacht<br>' +
-        '<b>🌸 Frühe Blüte:</b> 23–27°C Tag · 19–22°C Nacht<br>' +
-        '<b>🌺 Mittlere Blüte:</b> 22–26°C Tag · 18–21°C Nacht<br>' +
-        '<b>🍯 Späte Blüte:</b> 18–24°C Tag · 16–20°C Nacht (DIF 5–8°C verstärkt Farben/Trichome)<br>' +
-        '<b>🚿 Spülen:</b> 20–24°C · ähnlich wie späte Blüte<br>' +
-        '<b>🍂 Trocknen:</b> 18–20°C konstant<br><br>' +
-        '<b>Faustregel:</b> 25°C ist überall im sicheren Bereich. Erst in der späten Blüte gezielt absenken für Farben + Aroma. Messpunkt: Blattdach-Höhe, nicht Boden.',
+        _klimaLexTemperatur(),
       pitfall: 'Häufige Fehler:<br>• Lampen zu nah → Hitzespitze in Buds → verbrennen<br>• Im Winter zu kalt nachts → Wurzeln stehen still → P-Mangel<br>• Tagsüber 28°C plus 60% RLF = perfekt für Schimmel in der Blüte<br>• Thermometer am Boden statt am Blattdach → falsche Messwerte<br><br>Temperatur und Luftfeuchte arbeiten zusammen — siehe <b>VPD</b> für die kombinierte Logik.' },
     { t: 'Luftfeuchtigkeit (RLF)',
       brief: 'Wieviel Wasserdampf in der Luft ist (relativ zur maximal möglichen Menge bei dieser Temperatur). Steuert Transpiration und Schimmelrisiko.',
       mechanism: 'Relative Luftfeuchte (RLF) ist temperaturabhängig: 60% RLF bei 25°C enthält mehr absolutes Wasser als 60% RLF bei 18°C. Wenn nachts die Temperatur fällt, steigt die RLF von alleine — gleicher Wassergehalt, aber näher an der Sättigung. Daher kann eine Box tagsüber bei 50% sein und nachts auf 75% klettern → Botrytis-Risiko (Bud-Rot).<br><br>Pflanzen verlieren Wasser hauptsächlich durch Transpiration. Hohe RLF = wenig Verlust = schwacher Sog = Calcium und andere unbewegliche Nährstoffe wandern nicht in junge Triebe → Mangel-Symptome trotz Düngung. Niedrige RLF = starker Verlust = Stomata schließen → Photosynthese stoppt.',
       practice: '<b>Zielwerte je Phase:</b><br><br>' +
-        '<b>🌱 Sämling/Klon:</b> 65–75% RLF (kleine Wurzeln, viel Verdunstung über Blätter)<br>' +
-        '<b>🌿 Anzucht/Vegi:</b> 55–70% RLF<br>' +
-        '<b>🌸 Frühe Blüte:</b> 50–60% RLF (Stretch-Phase, schon runter)<br>' +
-        '<b>🌺 Mittlere Blüte:</b> 45–55% RLF (Buds werden dicht — Schimmelrisiko steigt)<br>' +
-        // (v1.5.126) „= mehr Trichome" abgeschwächt. Der belegte Grund für trockene Luft in
-        // der Spätblüte ist der Schimmelschutz (`ANBAU.md` 13.5: Botrytis ab 60–65 % RLF,
-        // im dichten Bud liegt das Mikroklima darüber). Das Trichom-Plus durch Trockenstress
-        // ist verbreitete Praxis, aber dünn belegt — `ANBAU.md` sagt dazu nichts.
-        '<b>🍯 Späte Blüte:</b> 40–50% RLF (vor allem Schimmelschutz — dichte Buds sind innen feuchter als der Raum)<br>' +
-        '<b>🚿 Spülen:</b> 40–50% RLF<br>' +
-        '<b>🍂 Trocknen:</b> 55–62% RLF konstant (langsames gleichmäßiges Trocknen)<br><br>' +
-        '<b>Wichtig:</b> RLF zur kühlsten Stunde messen (Nacht-Ende), nicht bei Lampen-an. Tagsüber 50% kann nachts 70% bedeuten → Schimmelfalle.',
-      pitfall: 'Klassische Fehler:<br>• Sämling bei 40% RLF → trocknet aus<br>• Späte Blüte bei 65% RLF → Botrytis (Bud-Rot, alles weg)<br>• Nur tagsüber gemessen, nachts steigt RLF um 15–25% → Schimmel in der Nacht<br>• Luftbefeuchter direkt neben Pflanze → Nasse Blätter → Mehltau<br><br>Temperatur und Luftfeuchte arbeiten zusammen — siehe <b>VPD</b> für die kombinierte Logik die wirklich relevant ist.' },
+        _klimaLexRlf(),
+      pitfall: 'Klassische Fehler:<br>• Sämling unter 40 % RLF → trocknet aus<br>• Späte Blüte bei 65% RLF → Botrytis (Bud-Rot, alles weg)<br>• Nur tagsüber gemessen, nachts steigt RLF um 15–25% → Schimmel in der Nacht<br>• Luftbefeuchter direkt neben Pflanze → Nasse Blätter → Mehltau<br><br>Temperatur und Luftfeuchte arbeiten zusammen — siehe <b>VPD</b> für die kombinierte Logik die wirklich relevant ist.' },
     { t: 'VPD (Vapour Pressure Deficit)',
       brief: 'Der Saugdruck zwischen Blatt und Luft. Steuert Transpiration, Nährstoff-Transport und Kühlung — die wichtigste Umgebungs-Variable nach Licht.',
       mechanism: 'Auf der Blattunterseite öffnen <b>Stomata</b> für CO₂-Aufnahme und lassen dabei Wasser verdunsten. Dieser <b>Transpirationssog</b> zieht Wasser + Nährstoffe von den Wurzeln bis in die Triebspitzen. VPD ist das Maß für diesen Sog: abhängig von Temperatur UND Luftfeuchte gleichzeitig.<br><br><b>VPD zu niedrig</b> (feucht/kalt): Pflanze kann nicht transpirieren → Calcium (unbeweglich!) stagniert → Ca-Mangel trotz Dünger.<br><b>VPD zu hoch</b> (heiß/trocken): Pflanze schließt Stomata zum Schutz → Photosynthese stoppt → Wachstum friert ein.',
-      practice: '<b>Zielwerte je Phase (kPa / Temp / RLF):</b><br><br>' +
-        '<b>🌱 Keimung & Sämling (Tag 1–10):</b><br>' +
-        'VPD 0.4–0.8 · Temp 22–26°C · RLF 65–75%<br>' +
-        '<i>Wurzeln noch klein → niedrige Transpiration nötig, sonst trocknet Sämling aus.</i><br><br>' +
-        '<b>🌿 Anzucht/Vegi (Tag 11–28):</b><br>' +
-        'VPD 0.8–1.2 · Temp 22–28°C · RLF 55–70%<br>' +
-        '<i>Wurzeln aufgebaut, Wachstum legt los. Höherer VPD = mehr Nährstoff-Transport, schnelleres Wachstum.</i><br><br>' +
-        '<b>🌸 Frühe Blüte (Tag 1–21 ab Blüte):</b><br>' +
-        'VPD 1.0–1.3 · Temp 23–27°C · RLF 50–60%<br>' +
-        '<i>Stretch-Phase. RLF runter um Schimmelrisiko zu mindern, Trichom-Bildung anzustoßen.</i><br><br>' +
-        '<b>🌺 Mittlere Blüte (Tag 22–42):</b><br>' +
-        'VPD 1.2–1.5 · Temp 22–26°C · RLF 45–55%<br>' +
-        '<i>Buds werden dicht. Strikt unter 55% RLF um Botrytis (Bud-Rot) zu vermeiden.</i><br><br>' +
-        '<b>🍯 Späte Blüte/Reife (letzte 2 Wochen):</b><br>' +
-        'VPD 1.4–1.6 · Temp 18–24°C · RLF 40–50%<br>' +
-        '<i>Der sichere Grund für den trockeneren Korridor ist der Schimmelschutz — dichte Buds sind innen feuchter als der Raum. Dass milder Trockenstress zusätzlich die Harzbildung anschiebt, ist verbreitete Praxis, aber dünn belegt. Tag 18–22°C, Nacht 16–20°C (Tag-Nacht-Diff 5–8°C verstärkt Farben).</i><br><br>' +
-        '<b>🚿 Spülen (8 Tage):</b><br>' +
-        'VPD 1.4–1.6 · Temp 20–24°C · RLF 40–50%<br>' +
-        '<i>Wie späte Blüte. Pflanze baut Restnährstoffe ab.</i><br><br>' +
-        '<b>🍂 Trocknen:</b><br>' +
-        'Temp 18–20°C · RLF 55–62%<br>' +
-        '<i>VPD-Konzept gilt nicht mehr — abgeschnittene Pflanze. Langsam und gleichmäßig trocknen für Aroma-Erhalt.</i><br><br>' +
-        '<b>VPD-Rechner</b> in der App nutzen (Umgebungs-Sektion).<br><br>' +
-        '<b>Für die letzte Blüte-Woche:</b> gezielt auf 1.4–1.6 kPa fahren. Das hält die Buds trocken, wenn sie am dichtesten und am anfälligsten sind. Ein zusätzlicher Trichom-Schub durch den milden Trockenstress wird oft berichtet — belastbar belegt ist er nicht.',
+      practice: '<b>Zielwerte je Phase</b> (VPD am Blatt · Temperatur bei Licht an · Luftfeuchte bei 2 K Blattabzug):<br><br>' +
+        _klimaLexVpd(),
       pitfall: 'VPD wird oft ignoriert, weil es abstrakt wirkt. Dabei entscheidet es darüber, ob die Pflanze überhaupt transpiriert — und ohne Transpiration kommen die unbeweglichen Nährstoffe (allen voran Calcium) nicht oben an. Temperatur- oder Feuchte-Werte allein sagen wenig, die Kombination ist entscheidend.<br><br><b>Fallen:</b><br>• Sämling bei 1.2 kPa → trocknet aus<br>• Späte Blüte bei 0.8 kPa + 65% RLF → Botrytis (Bud-Rot, alles weg)<br>• RLF tagsüber gemessen aber nachts steigt sie um 10–20% → Schimmel in der Nacht<br><br>RLF-Differenz Tag/Nacht beachten: nachts kühler = höhere relative Feuchte bei gleichem Wassergehalt der Luft. Daher Klima-Werte zur kühlsten Stunde messen.' },
     { t: 'PPFD & DLI (Licht-Matrix)',
       brief: 'Zwei Messungen die zusammen sagen wie viel Photosynthese tatsächlich passiert. PPFD ist der Tacho, DLI der Tages-Tank.',
@@ -32505,7 +32534,7 @@ const LEXIKON = [
     { t: 'Vegetationsphase',
       brief: 'Die Wachstumsphase. Pflanze baut Struktur auf — Stamm, Blätter, Wurzeln. Hier wird trainiert.',
       mechanism: 'Nach der Sämlingsphase startet das aktive Wachstum. Pflanze baut <b>Biomasse</b> auf (Blätter, Stiele) und das <b>Wurzelsystem</b>. Hoher Bedarf an <b>Stickstoff (N)</b> — primär für Chlorophyll und Proteine. Bei photoperiodischen Pflanzen kann diese Phase beliebig lang gehalten werden (18/6 Licht). Bei Autos läuft sie automatisch ~21 Tage und endet mit der Blüte-Phase.',
-      practice: '<b>Klima:</b><br>• Temperatur 22-26 °C<br>• Luftfeuchte 50-70 %<br>• VPD 0.8-1.2 kPa<br>• Licht: 400-600 PPFD<br><br><b>Düngung (Erde):</b><br>• All-Mix: Erst ab Woche 3 leichte Düngung<br>• Light-Mix: Ab Woche 2 mit halber Dosis starten<br>• Coco: Vom ersten Tag an Vegi-Dünger + CalMag<br><br><b>Trainings-Fenster:</b><br>• Topping/FIM bei Fem ab 5-6 Nodien<br>• LST von Anfang an möglich<br>• Mainlining ab Vegi-Mitte<br>• 3 Tage Pause nach jedem HST-Eingriff<br><br><b>Dauer:</b> Fem 4-8 Wochen frei wählbar; Autos fix 18-25 Tage.',
+      practice: _klimaLexListe('anzucht', 25) + '• Licht: 400-600 PPFD<br><br><b>Düngung (Erde):</b><br>• All-Mix: Erst ab Woche 3 leichte Düngung<br>• Light-Mix: Ab Woche 2 mit halber Dosis starten<br>• Coco: Vom ersten Tag an Vegi-Dünger + CalMag<br><br><b>Trainings-Fenster:</b><br>• Topping/FIM bei Fem ab 5-6 Nodien<br>• LST von Anfang an möglich<br>• Mainlining ab Vegi-Mitte<br>• 3 Tage Pause nach jedem HST-Eingriff<br><br><b>Dauer:</b> Fem 4-8 Wochen frei wählbar; Autos fix 18-25 Tage.',
       pitfall: 'Bei Fems oft zu früh auf 12/12 umgestellt → Pflanze zu klein → Ertrag halbiert. Mindestens 4 Wochen Vegi für ordentliche Größe einplanen. Bei Autos: aggressives HST in Vegi → kostet 5-10 Tage = direkt Ertragsverlust. Bei Autos nur LST.' },
     { t: 'Stretch (Pre-Flower)',
       brief: 'Die ersten 2-3 Wochen Blüte. Pflanze verdoppelt oder verdreifacht ihre Höhe — hier wird gnadenlos gestreckt.',
@@ -32515,7 +32544,7 @@ const LEXIKON = [
     { t: 'Blüte-Phasen (früh / mittel / spät)',
       brief: 'Drei sehr verschiedene Phasen mit verschiedenen Bedürfnissen. Du musst je nach Phase anders düngen, gießen und klimaregeln.',
       mechanism: '<b>Frühe Blüte (Woche 1-3):</b> Transition. Stretch läuft, weiße Stigmen (Pistil-Härchen) bilden sich. Pflanze ist noch im „Wachsen + Blühen"-Mix.<br><br><b>Mittlere Blüte / Bulk (Woche 4-6):</b> Höhenwachstum stoppt. Calyxe schwellen massiv. Nährstoffbedarf dreht von <b>N</b> hin zu <b>P + K</b>. Hier wird die meiste Bud-Masse aufgebaut.<br><br><b>Späte Blüte / Ripening (Woche 7+):</b> Ausreifen. Harzproduktion am Maximum, Terpene flüchtig. Erntezeitpunkt rückt näher.',
-      practice: '<b>Anpassungen je Phase:</b><br><br><b>Frühe Blüte:</b><br>• Klima: 22-26 °C, RLF 50-60 %, VPD 1.0-1.3<br>• Dünger: NPK noch leicht N-lastig, langsam P/K rein<br>• Defoliation an Tag 21<br><br><b>Mittlere Blüte:</b><br>• Klima: 22-26 °C, RLF 45-55 %, VPD 1.1-1.4<br>• Dünger: Voll P/K, hohe EC (1.6-2.0)<br>• Pflanzen-Stütze installieren<br><br><b>Späte Blüte:</b><br>• Klima: 20-24 °C, RLF 40-50 %, VPD 1.2-1.6<br>• Dünger: Reduzieren, Spülen vorbereiten<br>• UV-Bar einsetzen (letzte 2-4 Wochen)',
+      practice: '<b>Anpassungen je Phase:</b><br><br><b>Frühe Blüte:</b><br>• Klima: ' + _klimaLexZeile('frueh', 25) + '<br>• Dünger: NPK noch leicht N-lastig, langsam P/K rein<br>• Defoliation an Tag 21<br><br><b>Mittlere Blüte:</b><br>• Klima: ' + _klimaLexZeile('mittel', 24) + '<br>• Dünger: Voll P/K, hohe EC (1.6-2.0)<br>• Pflanzen-Stütze installieren<br><br><b>Späte Blüte:</b><br>• Klima: ' + _klimaLexZeile('spaet', 24) + '<br>• Dünger: Reduzieren, Spülen vorbereiten<br>• UV-Bar einsetzen (letzte 2-4 Wochen)',
       pitfall: 'Falsche Düngung in falscher Phase: zu viel N in Blüte = lange Blätter, weniger Buds. Zu früh K-Boost = Pflanze stresst, Hermie-Risiko. Klima nicht anpassen: 70 % RLF in Spätblüte = Schimmel binnen 3 Tagen. Jede Phase hat eigene Regeln, nicht alles gleich behandeln.' },
     { t: 'Reife (Seneszenz)',
       brief: 'Die letzte Phase. Pflanze baut sich selbst ab um die letzten Nährstoffe in die Blüten zu schicken.',
@@ -32614,8 +32643,8 @@ const LEXIKON = [
         '<b>Setup:</b><br>' +
         '1. Lampe komplett aus, Zelt absolut lichtdicht (auch kleine Lecks an Reißverschluss prüfen — UV-Restlicht reicht für Terpen-Abbau)<br>' +
         '2. Zelt nicht öffnen, nicht reinleuchten — auch nicht mit Handy-Licht oder Stirnlampe. Kurze Lichtimpulse können den Effekt zunichte machen<br>' +
-        '3. <b>Temperatur absenken</b>: 16–19°C ideal — kühl, aber nicht kalt<br>' +
-        '4. <b>Luftfeuchte runter</b>: 40–50% RLF — höher = Schimmelfalle, weil Pflanze sich nicht mehr verteidigt<br>' +
+        '3. <b>Temperatur</b>: kühler schont Terpene — aber nur so weit, wie die Luftfeuchte höchstens ' + KLIMA_ZIEL.dunkel.deckel + ' % bleibt. Beim Abkühlen steigt sie von selbst: 24 °C / 50 % werden bei 20 °C zu rund 64 %<br>' +
+        '4. <b>Luftfeuchte höchstens ' + KLIMA_ZIEL.dunkel.deckel + ' %</b> — die Blüten sind jetzt am dichtesten, darüber kann Botrytis keimen. Entfeuchter weiterlaufen lassen<br>' +
         '5. <b>Lüfter weiterhin laufen</b> lassen — Luftbewegung gegen Schimmel, Klima-Kontrolle aufrecht<br>' +
         '6. <b>Kein Wasser mehr</b> in dieser Phase (Hard Dryback ist eh schon erreicht)<br><br>' +
         '<b>Erntezeitpunkt am Ende der Dunkelphase:</b><br>' +
@@ -32628,7 +32657,7 @@ const LEXIKON = [
         '• <b>Zu lange:</b> Über 72 h kein Mehrwert, aber höheres Schimmelrisiko und Welken der Buds<br><br>' +
         '<b>Häufige Fehler:</b><br>' +
         '• Lampe nochmal kurz anmachen „nur zum Schauen" → Effekt zerstört<br>' +
-        '• Klima auf Standard-Blütewerte gelassen (24°C, 50% RLF) → suboptimal, kühler ist besser<br>' +
+        '• Zelt stark abgekühlt, ohne zu entfeuchten → die Luftfeuchte steigt über ' + KLIMA_ZIEL.dunkel.deckel + ' %, Schimmelfalle<br>' +
         '• Lüfter abgeschaltet weil „Pflanze schläft" → keine Luftbewegung = Schimmel<br>' +
         '• Mittags ernten statt früh morgens → Terpen-Konzentration schon gefallen<br><br>' +
         '<b>Wer skeptisch ist:</b> Der Effekt der Dunkelphase ist klein und in Studien teilweise widersprüchlich nachgewiesen. Manche Grower überspringen sie ganz — das ist legitim. Wenn die Bedingungen unsicher sind (zu warmes oder feuchtes Zelt), <b>besser weglassen</b> als Schimmel zu riskieren.' },
@@ -32727,7 +32756,7 @@ const LEXIKON = [
         '• Trichome bleiben aktiv (das ist gewollt, nicht Vergiftung)<br>' +
         '• <b>Stigmen/Pistillen färben sich orange/braun</b> und ziehen sich zurück<br>' +
         '• Pflanze duftet intensiver als zuvor<br><br>' +
-        '<b>Klima während der Spülung:</b> Standard-Spätblüte-Werte halten — 20–24°C, 40–50% RLF. Spülung verändert das Klima nicht, aber die Pflanze ist gestresster und reagiert empfindlicher.',
+        '<b>Klima während der Spülung:</b> wie in der späten Blüte — ' + _klimaLexZeile('spuelen', 24) + '. Spülen ändert am Klima nichts.',
       pitfall: '<b>Häufige Fehler:</b><br>' +
         '• <b>Zu lange spülen</b> (>14 Tage in Erde) → Pflanze leidet zu früh, Trichom-Produktion stoppt, Trichome werden grau-glasig<br>' +
         '• <b>Zu kurz spülen</b> (<5 Tage in Erde) → Salze bleiben drin, schwarze Asche, kratziger Rauch<br>' +
@@ -33253,7 +33282,7 @@ const LEXIKON = [
         '<b>Wachstums-Richtung:</b> Botrytis wächst <b>von innen nach außen</b> im Bud. Bis du ihn an der Oberfläche siehst, hat er den Bud-Kern bereits zerstört. Das ist der Grund warum frühe Diagnose so schwer und Prävention so wichtig ist.<br><br>' +
         '<b>Lebensdauer der Sporen:</b> Botrytis-Sporen überleben <b>jahrelang</b> in jedem Material — Zelt-Wänden, Substrat-Resten, Luftfilter, sogar trockenen Pflanzenresten. Einmal im Zelt eingenistet, ist er schwer wieder loszuwerden.<br><br>' +
         '<b>Risikofaktoren (alle gleichzeitig kritisch):</b><br>' +
-        '• <b>RLF >60%</b> in Blüte<br>' +
+        '• <b>Luftfeuchte über ' + KLIMA_ZIEL.spaet.deckel + '–' + KLIMA_ZIEL.mittel.deckel + ' %</b> in der Blüte (die App warnt bis zur mittleren Blüte ab ' + KLIMA_ZIEL.mittel.deckel + ' %, ab der späten ab ' + KLIMA_ZIEL.spaet.deckel + ' %)<br>' +
         '• <b>Schlechte Belüftung</b> in dichten Bud-Bereichen<br>' +
         '• <b>Dichte Buds</b> mit eingewachsenen Blättern als Startpunkt<br>' +
         '• <b>Tag/Nacht-Temperatur-Schwankungen</b> → Kondenswasser<br>' +

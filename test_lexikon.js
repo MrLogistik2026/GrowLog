@@ -306,11 +306,13 @@ function pruef(name, bedingung, info) {
       pruef(`Nirgends als Tatsache: ${name}`, zeilen.length === 0, JSON.stringify(zeilen));
     });
 
-    // Die Empfehlung selbst darf sich NICHT veraendert haben - nur ihre Begruendung.
-    pruef('Der Spaetblueten-Korridor steht weiterhin bei 1.4–1.6 kPa',
-      /1\.4[–-]1\.6/.test(ohneKommentare));
-    pruef('Und die Luftfeuchte weiterhin bei 40–50 %',
-      /40[–-]50%? RLF/.test(ohneKommentare));
+    // (v1.5.190) Bewusst geaendert: Die Empfehlung selbst hat sich mit Patricks Entscheidung vom 15.09.2026 geaendert
+    // (VPD Option B, KLIMA_ZIEL). Die Spaetbluete hat das Band der mittleren Bluete, der Schimmelschutz kommt ueber den
+    // Deckel von 60 % — die Begruendung bleibt der Schimmelschutz, nicht das Harz.
+    pruef('Der Spaetblueten-Korridor steht bei 1,2–1,5 kPa (KLIMA_ZIEL)',
+      /1,2–1,5 kPa/.test(text(/^VPD/)), text(/^VPD/).slice(0, 300));
+    pruef('Und der Luftfeuchte-Deckel der Spaetbluete bei 60 %',
+      /höchstens 60 %/.test(text(/^VPD/)));
     pruef('Der neue Grund ist der Schimmelschutz',
       /Schimmel/.test(text(/^VPD/)), text(/^VPD/).slice(-400));
   }

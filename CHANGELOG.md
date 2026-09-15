@@ -2,6 +2,34 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-15 — v1.5.190
+
+- **Lexikon, Infotexte und Diagnose nannten noch die Klimazahlen von vor Option B.** Seit v1.5.187 rechnet der
+  Tageseintrag mit `KLIMA_ZIEL`; die Texte blieben stehen und widersprachen ihm. Lexikon „VPD": Spätblüte 1,4–1,6 kPa bei
+  18–24 °C und 40–50 %, dazu „gezielt auf 1.4–1.6 kPa fahren". „Luftfeuchtigkeit": mittlere Blüte 45–55 %, frühe Blüte
+  50–60 %, Anzucht 55–70 %. „Temperatur": späte Blüte 18–24 °C, „gezielt absenken für Farben". „Vegetationsphase"
+  22–26 °C und 50–70 %, „Blüte-Phasen" 20–24 °C und VPD 1,2–1,6, „Dunkelphase" 16–19 °C und 40–50 %, „Spülung" 20–24 °C
+  und 40–50 %. Der VPD-Infotext: „Richtwert in der Blüte: 0.8–1.2 kPa". Die Diagnose: „über 1.5 kPa = trocken-Stress",
+  bei Knospenfäule „Luftfeuchte unter 50 % senken", typisch „ab RLF über 55 %". Drei Notiz-Vorschläge. Die
+  Outdoor-VPD-Hinweise „In der Spätblüte sind 1.4–1.6 kPa ideal" und „RLF rauf auf 65–75 %". Die Warnung über 80 % RLF
+  sagte „(außer in Trocknung)" — drinnen erschien sie nur noch beim Trocknen und im Curing.
+- **Warum das zählt:** Wer im Lexikon nachliest, warum der Eintrag „zu feucht" meldet, fand dort für die mittlere Blüte
+  45–55 % als Ziel — Werte, die der Eintrag bei 24 °C zum Teil „zu feucht" nennt. Zwei Antworten auf dieselbe Frage.
+- **Jetzt:** Alle diese Texte kommen aus `KLIMA_ZIEL` und `klimaRlfFenster` (`_klimaLexTemperatur`, `_klimaLexRlf`,
+  `_klimaLexVpd`, `_klimaLexZeile`, `_klimaLexListe`, `_vpdBandKurz`). Das Lexikon wird beim Laden gebaut und rechnet
+  deshalb mit 2 K Blattabzug — das steht dabei; der Eintrag rechnet mit der Einstellung. Für die Nacht nennt es keine
+  erfundene Zielzahl, sondern die zwei belegten Grenzen: Wurzelzone nicht unter 16 °C (`ANBAU.md` 7.3) und den
+  Schimmel-Deckel, der auch nachts gilt (13.5). Die Warnung über 80 % nennt beim Trocknen das Trockenklima und im
+  Curing die Feuchte im Glas. Beim Umschreiben mit gestrichen, weil ohne Beleg: „riskiert Zwitter" im VPD-Infotext und
+  „die Pflanze ist gestresster und reagiert empfindlicher" beim Spülen.
+- **`ANBAU.md` 2.2:** Vier Luftfeuchte-Spannen der Tabelle wichen um 1 % von der Anzeige ab (Rundung: Anzucht bei
+  28 °C, frühe Blüte bei 23 und 27 °C, mittlere Blüte bei 24 °C). Sie stammen jetzt aus derselben Funktion.
+- `test_klimatexte.js` (24 Prüfungen, beide Zeitzonen): acht Lexikon-Einträge, VPD-Infotext, Hitzestress-Diagnose,
+  Knospenfäule, Outdoor-Hinweise und die Warnung beim Trocknen — geprüft gegen dieselben Funktionen, mit denen der
+  Eintrag rechnet; dazu der Quelltext. Gegen den alten Stand: 21 Fehler. Bewusst angepasst: `test_lexikon.js` — die zwei
+  Prüfungen „Spätblüte weiterhin 1,4–1,6 kPa / 40–50 %" prüfen jetzt 1,2–1,5 kPa und den Deckel 60 % (Patricks
+  Entscheidung vom 15.09.2026).
+
 ## 2026-09-15 — v1.5.189
 
 - **Das abgeschaltete VPD-Diagramm rechnete noch mit fest 0,8–1,2 kPa.** Beim Abgleich der Klimazahlen gefunden: Der
