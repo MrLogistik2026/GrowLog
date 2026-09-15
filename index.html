@@ -3647,7 +3647,7 @@ const FERT_PRESETS = {
       7:  { phase: 'Blüte III', tip: 'Letzte PK-Woche. Buds werden dicht.' },
       8:  { phase: 'Reifung I', tip: 'A+B reduzieren. Reine Reifung.' },
       9:  { phase: 'Reifung II', tip: 'Trichome checken. CANNAZYM weiterführen.' },
-      10: { phase: 'Spülung',   tip: '7 Tage spülen mit reinem CalMag-Wasser. Drain-EC ≤0.4 anstreben.' },
+      10: { phase: 'Spülung',   tip: '7 Tage spülen mit reinem CalMag-Wasser. Das Spülende setzt der Plan, nicht der Drain-EC.' },
       11: { phase: 'Hard Dryback', tip: 'Coco trocknen lassen — geht schneller als Erde, Vorsicht.' },
       12: { phase: 'Ernte',     tip: 'Ernte beim Lichtangang. Trichom-Profil bestimmt Zeitpunkt.' },
     },
@@ -4459,7 +4459,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.210';
+const APP_VERSION = 'v1.5.211';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -13723,7 +13723,7 @@ function _waterSuggestionRawUncapped(c, p) {
     return snap(ml);
   }
 
-  // Phase 9: Flush (Tag 71+) — bis Drain-EC ≤ 0.4, viel Wasser kurz
+  // Phase 9: Flush (Tag 71+) — viel Wasser kurz; das Spülende setzt der Plan, kein Drain-EC-Wert (v1.5.211)
   // Wird sowieso vom Spül-Tag-Template gesetzt (×1.5)
   const ml = pot * 200;
   return snap(ml);
@@ -29754,9 +29754,11 @@ function _renderIceFlushPanel(c, iso) {
   const checks = cd._iceflushChecks || {};
 
   // Voraussetzungs-Checkliste
+  // (v1.5.211) Ohne „Drain EC nach letztem Spülen ≤ 0.4 mS/cm": Unter den EC des Spülwassers kann der Drain nicht fallen, und in
+  // Erde steigt er danach wieder, weil die Erde nachliefert (ANBAU.md 5.1). Die Schwelle war dort unerreichbar und trieb zu
+  // zusätzlichen Güssen vor dem Hard-Dryback — verdrängte Luft. Das Spülende setzt der Plan. Ein gespeichertes Häkchen bleibt, zählt nicht.
   const checklistItems = [
     { id: 'trichomes', label: 'Trichome 80–95% milchig · max 10% Bernstein (mit Lupe geprüft)' },
-    { id: 'drain_ec',  label: 'Drain EC nach letztem Spülen ≤ 0.4 mS/cm' },
     { id: 'dryback',   label: `Hard-Dryback: Gießpunkt erreicht (${giesspunktFor(c).von}–${giesspunktFor(c).bis} % Restgewicht, Hebe-Test bestätigt)` },
     { id: 'ice_ready', label: `Crushed Ice bereit: ${icePerPot} ml/Topf · ${icePerPot * plants} ml gesamt für ${plants} Pflanze${plants === 1 ? '' : 'n'}` },
     { id: 'tent_dark', label: 'Zelt auf Pitch-Black geprüft — alle Lichtquellen abgeklebt' },
@@ -31236,14 +31238,14 @@ async function applyRecommended(cId, wk) {
 
   // PRE-FLIGHT-CHECK für IceFlush:
   // Premium-Workflow schreibt vor dass ALLE Voraussetzungen erfüllt sein
-  // müssen bevor IceFlush gestartet wird (Trichome-Status, Drain EC, Hard
+  // müssen bevor IceFlush gestartet wird (Trichome-Status, Hard
   // Dryback, Crushed Ice bereit, Pitch-Black-Zelt, Trockenzelt, Schere steril,
   // Ernte beim Lichtangang geplant). Wenn nicht alles abgehakt → Warnung.
   // Der User kann trotzdem fortfahren (Verantwortung), aber er sieht klar
   // dass etwas fehlt. Schützt Anfänger vor zu frühem IceFlush.
   if (a === 'ice') {
     const checks = cd._iceflushChecks || {};
-    const required = ['trichomes','drain_ec','dryback','ice_ready','tent_dark','dry_tent','scissor','morning'];
+    const required = ['trichomes','dryback','ice_ready','tent_dark','dry_tent','scissor','morning'];   // (v1.5.211) ohne drain_ec
     const missing = required.filter(id => !checks[id]);
     if (missing.length > 0) {
       const ok = await customConfirm(
@@ -34075,7 +34077,7 @@ const LEXIKON = [
       mechanism: 'Wenn die Düngung gestoppt wird, beginnt die Pflanze ihre <b>internen Reserven</b> zu verbrauchen — gespeicherte Nährstoffe in Blättern und im Substrat werden mobilisiert und in die Blüten umgeleitet. Gleichzeitig spült das klare Wasser <b>angesammelte Salze</b> aus dem Substrat. Drei Effekte:<br><br>' +
         '<b>1. Weniger Salz im Substrat.</b> Das klare Wasser trägt angesammelte Salze aus — das ist messbar am fallenden Drain-EC. <b>Der oft genannte Schritt weiter — salzfreie Buds, weiße statt schwarzer Asche, runderer Rauch — ist dagegen nicht belegt:</b> Kontrollierte Vergleiche zwischen gespülten und ungespülten Pflanzen fanden keinen belastbaren Unterschied in Geschmack, Aschequalität oder Analytik. Kratziger Rauch entsteht vor allem durch zu schnelles Trocknen und fehlendes Curing (siehe dort).<br><br>' +
         '<b>2. Die Vergilbung kommt ohnehin.</b> Während der Spülung verbraucht die Pflanze ihre Stickstoff-Reserven, die Blätter werden gelb, dann lila/braun. Das sieht nach Wirkung aus, ist aber <b>überwiegend natürliche Seneszenz</b> — sie läuft in der Spätblüte auch ohne Spülung ab (siehe „Seneszenz"). Ein Grund zum Nachdüngen ist es in beiden Fällen nicht.<br><br>' +
-        '<b>3. Niedriger Drain-EC als Indikator.</b> Beim Auffangen des Spülwassers (Drain) lässt sich der EC-Wert messen. Hoch = noch viele Salze drin, niedrig = sauber. Drain-EC ≤ 0.4 mS/cm signalisiert: Substrat ist neutralisiert, fertig für Hard Dryback / Iceflush.',
+        '<b>3. Der Drain-EC fällt beim Spülen.</b> Unter den EC deines Gießwassers kann er nicht fallen, und in Erde steigt er danach wieder, weil die Erde Nährstoffe nachliefert. Ein Spülende setzt deshalb der Plan, nicht eine Drain-EC-Zahl.',
       practice: '<b>Dauer je nach Substrat:</b><br>' +
         '<table style="width:100%;border-collapse:collapse;font-size:13px;margin-top:6px">' +
         '<tr style="background:rgba(255,255,255,0.04)"><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Substrat</b></td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Spül-Dauer</b></td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Begründung</b></td></tr>' +
@@ -34090,11 +34092,7 @@ const LEXIKON = [
         '2. <b>Klares Wasser, pH-eingestellt:</b> ' + phTargetFor('erde').label + ' für Erde, ' + phTargetFor('coco').label + ' für Coco, ' + phTargetFor('hydro').label + ' für Hydro<br>' +
         '3. <b>Erste 2–3 Güsse:</b> normale Wassermenge — kein extra Spül-Volumen, das spült nur die obere Substrat-Schicht durch<br>' +
         '4. <b>Mittlere Phase (Tag 4–8):</b> 1× größerer Durchspülgang — etwa 2× Topfvolumen Wasser durchlaufen lassen, Drain auffangen<br>' +
-        '5. <b>Drain-EC messen</b> nach diesem großen Spülgang. Werte interpretieren:<br>' +
-        '&nbsp;&nbsp;• <b>EC > 1.5:</b> noch viele Salze, Spül-Phase länger durchziehen<br>' +
-        '&nbsp;&nbsp;• <b>EC 0.8–1.5:</b> Mittlerer Bereich, weiter spülen<br>' +
-        '&nbsp;&nbsp;• <b>EC 0.4–0.8:</b> fast sauber, 2–3 weitere Güsse<br>' +
-        '&nbsp;&nbsp;• <b>EC ≤ 0.4:</b> sauber, Spülung abgeschlossen — Übergang zu Hard Dryback möglich<br>' +
+        '5. <b>Drain-EC</b> fällt nach diesem großen Spülgang. Unter den EC deines Gießwassers kann er nicht fallen, und in Erde steigt er danach wieder — <b>das Spülende setzt der Plan</b>, keine Drain-EC-Zahl<br>' +
         '6. <b>Letzter Guss vor Hard Dryback / Ernte:</b> bei manchen Protokollen mit nur CalMag (~0.2 ml/L) — kein voller Dünger mehr, aber Erhalt der Mineral-Versorgung<br><br>' +
         '<b>Visuelle Indikatoren für gut gespülte Pflanze:</b><br>' +
         '• Untere Blätter werden gelb und welken<br>' +
@@ -34129,7 +34127,7 @@ const LEXIKON = [
         '• Trichome 80–95% milchig (mit Lupe geprüft, max. 10% Bernstein)<br>' +
         '• <b>Hard-Dryback</b>: nach dem letzten Spülgang nicht mehr gießen, bis der Topf den Gießpunkt erreicht (' + GIESSPUNKT.erde.von + '–' + GIESSPUNKT.erde.bis + ' % Restgewicht) — sonst läuft das Schmelzwasser als Drain durch<br>' +
         '• Der letzte Guss vor dem Hard-Dryback ist der letzte Spülgang — kein Dünger<br>' +
-        '• Drain EC vom letzten Spülen ≤ 0.4 mS/cm bestätigt (Salze raus)<br><br>' +
+        '<br>' +
         '<b>Menge & Setup:</b><br>' +
         '• Etwa <b>1 Liter Crushed Ice pro Topf</b> bei 11L-Töpfen (skaliert mit Topfgröße — 8L → ~700 ml, 15L → ~1.5 L)<br>' +
         '• Geschmolzen ergibt das ~700 ml Wasser pro Topf bei 11L = etwa 7% Substrat-Volumen<br>' +

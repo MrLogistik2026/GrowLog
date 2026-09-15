@@ -2,6 +2,21 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-15 — v1.5.211
+
+- **Das Spülende setzt der Plan, kein Drain-EC-Wert.** Befund der Begriffe-Prüfung (Schritt 7): Die IceFlush-Checkliste
+  verlangte „Drain EC nach letztem Spülen ≤ 0.4 mS/cm", das Lexikon führte eine Stufentabelle bis „EC ≤ 0.4: sauber, Spülung
+  abgeschlossen", die CANNA-Coco-Vorlage „Drain-EC ≤0.4 anstreben". Unter den EC des Wassers, mit dem gespült wird, kann der
+  Drain nicht fallen, und in Erde steigt er nach dem Spülen wieder, weil die Erde Nährstoffe nachliefert (`ANBAU.md` 5.1: „EC
+  fällt und steigt wieder an"). Die Schwelle war dort unerreichbar und trieb zu zusätzlichen Güssen vor dem Hard-Dryback —
+  verdrängte Luft in der Wurzelzone (`ANBAU.md` 1, 13.1).
+- **Jetzt:** Die Checkliste hat sieben Punkte; ein schon gesetztes Häkchen bleibt gespeichert, zählt aber nicht, und „Tag
+  ausfüllen" am IceFlush fragt es nicht mehr ab. Lexikon und Vorlage sagen: Der Drain-EC fällt beim Spülen, das Ende setzt der
+  Plan.
+- **Bewusst nicht geändert:** Patricks Rainbow-Plan nennt in Woche 14 „Ziel Drain-EC höchstens 0,5" — so steht es auf seinem
+  Plan-Blatt, und die Vorlage ist 1:1 davon übertragen. Ob der Satz bleibt, entscheidet er.
+- `test_spuelende.js` (10 Prüfungen, beide Zeitzonen).
+
 ## 2026-09-15 — v1.5.210
 
 - **Drain-EC-Texte folgen der Regel.** Seit v1.5.209 bewertet der Eintrag den Drain-EC nur als Verhältnis zum Gießwasser.
