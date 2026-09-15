@@ -2782,7 +2782,7 @@ function buildDiagnosticContext(c, iso = null) {
   if (latestEntry) {
     let pct = null;
     if (latestEntry.cd.weightG && c.saturatedWeight && c.dryWeight) {
-      pct = calcRestPct(latestEntry.cd.weightG, c.saturatedWeight, c.dryWeight);
+      pct = calcRestPct(latestEntry.cd.weightG, c.saturatedWeight, c.dryWeight, giesspunktFor(c).anker);
     } else if (latestEntry.cd.restPct !== undefined) {
       pct = parseFloat(latestEntry.cd.restPct);
     }
@@ -4437,7 +4437,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.203';
+const APP_VERSION = 'v1.5.204';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -4622,7 +4622,7 @@ function summarizeCycle(c) {
     // Restgewicht
     let pct = null;
     if (cd.weightG !== undefined && cd.weightG !== null && c.saturatedWeight && c.dryWeight) {
-      pct = calcRestPct(cd.weightG, c.saturatedWeight, c.dryWeight);
+      pct = calcRestPct(cd.weightG, c.saturatedWeight, c.dryWeight, giesspunktFor(c).anker);
     } else if (cd.restPct !== undefined && cd.restPct !== null) {
       pct = parseFloat(cd.restPct);
     }
@@ -8588,15 +8588,20 @@ function contextFor(c, iso) {
  * @param {number} dryG  Referenz-Gewicht bone-dry
  * @returns {number|null}  Restgewicht in % (0-110), oder null wenn Inputs ungültig
  */
-function calcRestPct(currentG, saturatedG, dryG) {
+// (v1.5.204) EINE Waage-Skala. Das zweite Gewicht ist „kurz bevor du gießen würdest" — der Gießpunkt, nicht knochentrocken.
+// Es liegt deshalb auf dem Anker des Substrats (Erde „Knapp" 30, Coco „Mittel" 70, giesspunktFor): Restgewicht = A + (100 − A)
+// · (g − Gießpunkt) / (voll − Gießpunkt). Vorher zählte es in der Bewertung als 0 % („Wasserstress" am normalen Gießtag) und im
+// Mengenmodell als 20 %.
+function calcRestPct(currentG, saturatedG, dryG, anker) {
   const cur = parseFloat(currentG);
   const sat = parseFloat(saturatedG);
   const dry = parseFloat(dryG);
+  const A = isFinite(parseFloat(anker)) ? parseFloat(anker) : GIESSPUNKT.erde.anker;
   if (!isFinite(cur) || !isFinite(sat) || !isFinite(dry)) return null;
-  if (sat <= dry) return null; // Saturated muss schwerer sein als Dry
-  const pct = ((cur - dry) / (sat - dry)) * 100;
-  // Clamp leicht über 100% (kurz nach Guss kann's 102% sein) und unter 0%
-  return Math.round(pct * 10) / 10;
+  if (sat <= dry) return null; // Das volle Gewicht muss schwerer sein als das Gewicht kurz vor dem Gießen
+  const pct = A + (100 - A) * (cur - dry) / (sat - dry);
+  // Leicht über 100 % ist möglich (kurz nach dem Guss), unter 0 % nicht.
+  return Math.round(Math.max(0, pct) * 10) / 10;
 }
 
 /**
@@ -8783,11 +8788,11 @@ async function setWeightModeScale(c) {
 
   // Schritt 2: Dry Weight (kann später eingetragen werden!)
   const dryMsg =
-    '<b>Das brauchen wir ein paar Tage später</b> — wenn der Topf sich spürbar leicht anfühlt und die Erde oben trocken ist (kurz bevor du normalerweise gießen würdest). ' +
+    '<b>Das brauchen wir ein paar Tage später</b> — wenn der Topf sich spürbar leicht anfühlt und die Erde oben trocken ist (kurz bevor du normalerweise gießen würdest — beim Hebe-Test „' + giesspunktFor(c).knopf + '“). Dieses Gewicht ist der Gießpunkt, nicht knochentrocken. ' +
     'Wiege dann wieder. Du kannst das auch jetzt überspringen und später nachtragen.';
 
   const dry = await customInput({
-    title: '⚖️ Schritt 2: Gewicht bone-dry (später)',
+    title: '⚖️ Schritt 2: Gewicht kurz vor dem Gießen (später)',
     msg: dryMsg,
     unit: 'g',
     initial: c.dryWeight || null,
@@ -8803,7 +8808,7 @@ async function setWeightModeScale(c) {
     c.dryWeight = dry;
     // Plausibilitäts-Check
     if (dry >= sat) {
-      toast('⚠ Dry-Gewicht muss leichter sein als Saturated!', 4000);
+      toast('⚠ Das Gewicht kurz vor dem Gießen muss leichter sein als das volle Gewicht', 4000);
       c.dryWeight = null;
     }
   }
@@ -8812,9 +8817,9 @@ async function setWeightModeScale(c) {
 
   if (c.dryWeight) {
     const capacity = c.saturatedWeight - c.dryWeight;
-    toast(`✓ Waage-Modus aktiv · Kapazität ${(capacity/1000).toFixed(1)} L`);
+    toast(`✓ Waage aktiv · von voll bis zum Gießpunkt ${(capacity/1000).toFixed(1)} L Wasser`);
   } else {
-    toast('✓ Saturated gespeichert — Dry später nachtragen');
+    toast('✓ Volles Gewicht gespeichert — das Gewicht kurz vor dem Gießen später nachtragen');
   }
   renderSet();
 }
@@ -10962,7 +10967,7 @@ function dayDataPreview(iso, opts = {}) {
 
     // Restgewicht (falls vorhanden, bevorzugt Waage über Hebe-Test)
     if (cd.weightG !== undefined && cd.weightG !== null && c.saturatedWeight && c.dryWeight) {
-      const pct = calcRestPct(cd.weightG, c.saturatedWeight, c.dryWeight);
+      const pct = calcRestPct(cd.weightG, c.saturatedWeight, c.dryWeight, giesspunktFor(c).anker);
       if (pct !== null) {
         const clf = classifyRestPct(pct, ctx.isFinisher, ctx.isCoco);
         parts.push(`<span style="color:${clf ? clf.color : 'var(--text-sub)'};font-family:var(--mono)">⚖️ ${cd.weightG}g · ${pct.toFixed(0)}%</span>`);
@@ -12596,10 +12601,11 @@ function _waterConsumptionInfo(c, p, iso) {
   }
 
   // 2) Kapazität: Waage exakt, sonst aus Lift-Paaren, sonst Pauschale.
-  if (c.weightMode === 'scale' && (c.saturatedWeight || c.dryWeight)) {
-    const sat = c.saturatedWeight || Math.round((c.dryWeight || 0) * 2.85);
-    const dry = c.dryWeight || Math.round(sat / 2.85);
-    if (sat > dry) { out.capMl = sat - dry; out.capSource = 'scale'; out.capSamples = 1; }
+  // (v1.5.204) Nur mit beiden Gewichten, ohne Faustformel für das fehlende. Die Spanne voll → Gießpunkt deckt (100 − Anker)
+  // Punkte der Skala ab; die Kapazität dieses Modells zählt 80 Punkte (100 → 20).
+  if (c.weightMode === 'scale' && c.saturatedWeight && c.dryWeight && c.saturatedWeight > c.dryWeight) {
+    const A = giesspunktFor(c).anker;
+    out.capMl = Math.round((c.saturatedWeight - c.dryWeight) * 80 / (100 - A)); out.capSource = 'scale'; out.capSamples = 1;
   }
   if (out.capMl == null) {
     let wSum = 0, vSum = 0;
@@ -12834,7 +12840,7 @@ function _waterDailyNeedPour(c, p, iso) {
   if (cdT) {
     if (c.weightMode === 'scale' && c.saturatedWeight && c.dryWeight && cdT.weightG != null && cdT.weightG !== '') {
       const cur = parseFloat(cdT.weightG), span = c.saturatedWeight - c.dryWeight;
-      if (isFinite(cur) && span > 0) { restNow = Math.max(0, Math.min(100, 20 + (cur - c.dryWeight) / span * 80)); measured = true; }
+      if (isFinite(cur) && span > 0) { restNow = Math.max(0, Math.min(100, calcRestPct(cur, c.saturatedWeight, c.dryWeight, giesspunktFor(c).anker))); measured = true; }   // (v1.5.204) dieselbe Skala wie die Bewertung
     } else if (cdT.restPct != null && cdT.restPct !== '') {
       const rp = parseFloat(cdT.restPct);
       if (isFinite(rp)) { restNow = rp; measured = true; }
@@ -21640,14 +21646,14 @@ function renderSet() {
               </div>
             </div>
             <div style="flex:1;min-width:90px">
-              <div style="color:var(--text-muted)">Trocken (0%)</div>
+              <div style="color:var(--text-muted)">Kurz vor dem Gießen (${giesspunktFor(sel).anker} %)</div>
               <div style="font-family:var(--mono);color:${sel.dryWeight ? 'var(--green)' : 'var(--text-hint)'};font-size:13px;font-weight:600">
                 ${sel.dryWeight ? sel.dryWeight + ' g' : '— später nachtragen'}
               </div>
             </div>
             ${capacity !== null ? `
               <div style="flex:1;min-width:90px">
-                <div style="color:var(--text-muted)">Kapazität</div>
+                <div style="color:var(--text-muted)">Voll → Gießpunkt</div>
                 <div style="font-family:var(--mono);color:var(--blue);font-size:13px;font-weight:600">${capacity.toFixed(1)} L</div>
               </div>
             ` : ''}
@@ -25083,7 +25089,7 @@ function exportCycleCSV(cId) {
     // Restgewicht als %: aus weightG+saturatedWeight+dryWeight oder direkt restPct
     let restPct = '';
     if (cd.weightG && c.saturatedWeight && c.dryWeight) {
-      const pct = calcRestPct(cd.weightG, c.saturatedWeight, c.dryWeight);
+      const pct = calcRestPct(cd.weightG, c.saturatedWeight, c.dryWeight, giesspunktFor(c).anker);
       if (pct !== null) restPct = pct.toFixed(0);
     } else if (cd.restPct !== undefined && cd.restPct !== null && cd.restPct !== '') {
       restPct = cd.restPct;
@@ -25170,7 +25176,7 @@ function exportReportPDF(cId) {
     // Restgewicht Sweet-Spot-Quote
     let pct = null;
     if (cd.weightG !== undefined && cd.weightG !== null && c.saturatedWeight && c.dryWeight) {
-      pct = calcRestPct(cd.weightG, c.saturatedWeight, c.dryWeight);
+      pct = calcRestPct(cd.weightG, c.saturatedWeight, c.dryWeight, giesspunktFor(c).anker);
     } else if (cd.restPct !== undefined && cd.restPct !== null) {
       pct = parseFloat(cd.restPct);
     }
@@ -25217,7 +25223,7 @@ function exportReportPDF(cId) {
     // Restgewicht
     let restStr = '—';
     if (cd.weightG !== undefined && cd.weightG !== null && c.saturatedWeight && c.dryWeight) {
-      const pct = calcRestPct(cd.weightG, c.saturatedWeight, c.dryWeight);
+      const pct = calcRestPct(cd.weightG, c.saturatedWeight, c.dryWeight, giesspunktFor(c).anker);
       if (pct !== null) restStr = `${pct.toFixed(0)}% (${cd.weightG}g)`;
     } else if (cd.restPct !== undefined && cd.restPct !== null) {
       restStr = `${cd.restPct}%`;
@@ -26875,7 +26881,7 @@ function renderEntry(iso) {
         if (isScale) {
           const savedG = cd.weightG !== undefined && cd.weightG !== null ? parseFloat(cd.weightG) : null;
           if (savedG !== null && hasRefs) {
-            restVal = calcRestPct(savedG, c.saturatedWeight, c.dryWeight);
+            restVal = calcRestPct(savedG, c.saturatedWeight, c.dryWeight, giesspunktFor(c).anker);
             clf = restVal !== null ? classifyRestPct(restVal, isFinisher, isCoco, ctx && ctx.noWaterPhase) : null;
             savedForDisplay = savedG;
           } else if (savedG !== null) {
@@ -27026,7 +27032,7 @@ function renderEntry(iso) {
             // Level 3: gar keine Referenzen
             body = `<div style="background:rgba(240,208,80,0.08);border-left:2px solid var(--yellow);padding:10px 12px;border-radius:6px;font-size:11px;line-height:1.55;color:var(--text-sub)">
               <div style="color:var(--yellow);font-weight:600;margin-bottom:4px">⚠ Referenz-Gewichte fehlen</div>
-              Für die Auswertung brauchen wir <b>Saturated</b> (voll gesättigt) und <b>Dry</b> (bone-dry). Setze sie einmalig per Küchenwaage.
+              Für die Auswertung brauchen wir zwei Gewichte: <b>voll</b> (frisch gegossen, abgetropft) und <b>kurz vor dem Gießen</b>. Setze sie einmalig per Küchenwaage.
               <button onclick="setWeightModeScale(S.cycles.find(c=>c.id==='${c.id}'))" style="margin-top:6px;background:var(--card);border:0.5px solid var(--border);border-radius:6px;padding:5px 10px;font-size:11px;color:var(--yellow);cursor:pointer;font-family:var(--font)">Referenzen setzen</button>
             </div>`;
             body += `<div style="display:flex;align-items:center;gap:8px;margin-top:8px">
@@ -27040,40 +27046,25 @@ function renderEntry(iso) {
               <span style="font-size:12px;color:var(--text-muted);min-width:14px">g</span>
             </div>`;
           } else if (halfRefs) {
-            // Level 2: nur eine Referenz da. Schätzen mit Faustformel.
-            // Faustformel: Dry-Gewicht ≈ 35% von Saturated (typisch für 11L Erde-Topf
-            // mit reifer Pflanze). Bei nur Dry-Gewicht: Saturated ≈ Dry × 2.85.
-            // Berechnung erfolgt nur fürs Display, Original-Felder unberührt.
-            const estimatedDry = c.saturatedWeight ? Math.round(c.saturatedWeight * 0.35) : c.dryWeight;
-            const estimatedSat = c.dryWeight && !c.saturatedWeight ? Math.round(c.dryWeight * 2.85) : c.saturatedWeight;
-            const savedG = cd.weightG !== undefined && cd.weightG !== null ? parseFloat(cd.weightG) : null;
-            const estPct = savedG !== null && estimatedSat && estimatedDry ? calcRestPct(savedG, estimatedSat, estimatedDry) : null;
-            const missing = c.saturatedWeight ? 'Dry-Gewicht' : 'Saturated-Gewicht';
-            const haveLabel = c.saturatedWeight ? 'Saturated' : 'Dry';
+            // (v1.5.204) Nur eine Referenz da: kein Schätzen mehr. Vorher „Schätzmodus" mit Faustformel (trocken = 35 % von voll,
+            // voll = trocken × 2,85) — das geschätzte Gewicht ergab ein Restgewicht mit Bewertung, als wäre es gemessen (ANBAU.md 15).
+            const missing = c.saturatedWeight ? 'das Gewicht kurz vor dem Gießen' : 'das volle Gewicht';
+            const haveLabel = c.saturatedWeight ? 'voll' : 'kurz vor dem Gießen';
             const haveValue = c.saturatedWeight || c.dryWeight;
-            const pctDisplay = estPct !== null ? `~${estPct.toFixed(0)}%` : '—';
-            const estClf = estPct !== null ? classifyRestPct(estPct, isFinisher, isCoco, ctx && ctx.noWaterPhase) : null;
-            // Override clf für die Klassifizierung
-            if (estClf) clf = estClf;
-            if (estPct !== null) restVal = estPct;
+            restVal = null; clf = null;
             body = `<div style="background:rgba(90,171,240,0.06);border-left:2px solid var(--blue);padding:8px 10px;border-radius:6px;font-size:10px;line-height:1.5;color:var(--text-sub);margin-bottom:8px">
-              <span style="color:var(--blue);font-weight:600">⚡ Schätzmodus aktiv</span> — nur ${haveLabel} ist gesetzt (${haveValue}g). Werte werden mit Faustformel berechnet (~70% genau). Für volle Präzision: ${missing} per
-              <button onclick="setWeightModeScale(S.cycles.find(c=>c.id==='${c.id}'))" style="background:transparent;border:none;color:var(--blue);font-weight:600;cursor:pointer;text-decoration:underline;padding:0;font-family:var(--font);font-size:10px">Setup</button> nachtragen.
+              <span style="color:var(--blue);font-weight:600">⚖️ Zweites Gewicht fehlt</span> — gesetzt ist nur „${haveLabel}" (${haveValue} g). Ohne das zweite Gewicht rechnet die App kein Restgewicht aus. Trag ${missing} ein:
+              <button onclick="setWeightModeScale(S.cycles.find(c=>c.id==='${c.id}'))" style="background:transparent;border:none;color:var(--blue);font-weight:600;cursor:pointer;text-decoration:underline;padding:0;font-family:var(--font);font-size:10px">Waage einrichten</button>
             </div>
             <div style="display:flex;align-items:center;gap:8px">
               <button onclick="stepWeightG('${c.id}',-50)" class="stepper-btn">−</button>
               <input class="inp-field" type="number" step="50" id="weight-g-${c.id}"
                 value="${savedForDisplay !== null ? savedForDisplay : ''}"
-                placeholder="${Math.round((estimatedSat + estimatedDry) / 2)}"
+                placeholder="Gewicht in g"
                 oninput="uWeightG('${c.id}',this.value)"
                 style="flex:1;font-size:14px;font-weight:600;font-family:var(--mono);text-align:center"/>
               <button onclick="stepWeightG('${c.id}',50)" class="stepper-btn">+</button>
               <span style="font-size:12px;color:var(--text-muted);min-width:14px">g</span>
-              <div style="min-width:50px;text-align:right;font-size:14px;font-weight:700;font-family:var(--mono);color:${clf ? clf.color : 'var(--text-hint)'}">${pctDisplay}</div>
-            </div>
-            <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--text-hint);font-family:var(--mono);margin-top:4px;padding:0 38px">
-              <span>Dry ${c.dryWeight ? c.dryWeight + 'g' : '~' + estimatedDry + 'g (geschätzt)'}</span>
-              <span>Sat ${c.saturatedWeight ? c.saturatedWeight + 'g' : '~' + estimatedSat + 'g (geschätzt)'}</span>
             </div>`;
           } else {
             // Level 1: voll ausgestattet
@@ -27090,8 +27081,8 @@ function renderEntry(iso) {
               <div style="min-width:50px;text-align:right;font-size:14px;font-weight:700;font-family:var(--mono);color:${clf ? clf.color : 'var(--text-hint)'}">${pctDisplay}</div>
             </div>
             <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--text-hint);font-family:var(--mono);margin-top:4px;padding:0 38px">
-              <span>Dry ${c.dryWeight}g</span>
-              <span>Sat ${c.saturatedWeight}g</span>
+              <span>Gießpunkt ${c.dryWeight} g</span>
+              <span>Voll ${c.saturatedWeight} g</span>
             </div>`;
           }
         } else {
@@ -27865,7 +27856,7 @@ function renderEntry(iso) {
         if (isScale) {
           const savedG = cd.weightG !== undefined && cd.weightG !== null ? parseFloat(cd.weightG) : null;
           if (savedG !== null && hasRefs) {
-            restVal = calcRestPct(savedG, c.saturatedWeight, c.dryWeight);
+            restVal = calcRestPct(savedG, c.saturatedWeight, c.dryWeight, giesspunktFor(c).anker);
             clf = restVal !== null ? classifyRestPct(restVal, isFinisher, isCoco, ctx && ctx.noWaterPhase) : null;
             savedForDisplay = savedG;
           } else if (savedG !== null) {
@@ -27947,7 +27938,7 @@ function renderEntry(iso) {
           if (!hasRefs) {
             body = `<div style="background:rgba(240,208,80,0.08);border-left:2px solid var(--yellow);padding:10px 12px;border-radius:6px;font-size:11px;line-height:1.55;color:var(--text-sub)">
               <div style="color:var(--yellow);font-weight:600;margin-bottom:4px">⚠ Referenz-Gewichte fehlen</div>
-              Für die Auswertung brauchen wir <b>Saturated</b> (voll gesättigt) und <b>Dry</b> (bone-dry).
+              Für die Auswertung brauchen wir zwei Gewichte: <b>voll</b> (frisch gegossen, abgetropft) und <b>kurz vor dem Gießen</b>.
               <button onclick="setWeightModeScale(S.cycles.find(c=>c.id==='${c.id}'))" style="margin-top:6px;background:var(--card);border:0.5px solid var(--border);border-radius:6px;padding:5px 10px;font-size:11px;color:var(--yellow);cursor:pointer;font-family:var(--font)">Referenzen setzen</button>
             </div>
             <div style="display:flex;align-items:center;gap:8px;margin-top:8px">
@@ -27966,7 +27957,7 @@ function renderEntry(iso) {
               <div style="min-width:50px;text-align:right;font-size:14px;font-weight:700;font-family:var(--mono);color:${clf ? clf.color : 'var(--text-hint)'}">${pctDisplay}</div>
             </div>
             <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--text-hint);font-family:var(--mono);margin-top:4px;padding:0 38px">
-              <span>Dry ${c.dryWeight}g</span><span>Sat ${c.saturatedWeight}g</span>
+              <span>Gießpunkt ${c.dryWeight} g</span><span>Voll ${c.saturatedWeight} g</span>
             </div>`;
           }
         } else {
@@ -35809,7 +35800,7 @@ function collectRestPctSeries(cycleId) {
     // Bevorzugt: weightG mit Saturated/Dry-Referenzen → exakte Berechnung
     if (cd.weightG !== undefined && cd.weightG !== null && cd.weightG !== '' &&
         cyc.saturatedWeight && cyc.dryWeight) {
-      val = calcRestPct(cd.weightG, cyc.saturatedWeight, cyc.dryWeight);
+      val = calcRestPct(cd.weightG, cyc.saturatedWeight, cyc.dryWeight, giesspunktFor(cyc).anker);
       source = 'scale';
     } else if (cd.restPct !== undefined && cd.restPct !== null && cd.restPct !== '') {
       // Fallback: Hebe-Test als %-Eingabe

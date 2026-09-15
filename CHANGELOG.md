@@ -2,6 +2,29 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-15 — v1.5.204
+
+- **Die Waage rechnete mit zwei Skalen.** Schritt 2 der Waage-Einrichtung fragt nach dem Gewicht „kurz bevor du
+  normalerweise gießen würdest", der Titel sagte „bone-dry". Die Bewertung setzte dieses Gewicht auf 0 %, am normalen
+  Gießtag stand „Wasserstress". Das Mengenmodell setzte dasselbe Gewicht auf 20 %. Bei 12500 g (voll 14000, Schritt 2
+  11000) zeigte der Eintrag 50 %, das Mengenmodell rechnete mit 60 %. Fehlte eines der beiden Gewichte, schätzte die App es
+  mit einer Faustformel (trocken = 35 % von voll, voll = trocken × 2,85), zeigte „~84 %" und bewertete das wie eine Messung
+  (Befund der Gießmengen-Prüfung).
+- **Warum das zählt:** Wer die Waage nutzt, misst am genauesten und bekam an jedem normalen Gießtag „Wasserstress"
+  gemeldet. Ein geschätztes Gewicht, das wie eine Messung bewertet wird, verstößt gegen `ANBAU.md` 15: Messwerte werden
+  nie geschätzt.
+- **Jetzt:** Eine Skala für Bewertung, Mengenmodell und Verlauf. Das zweite Gewicht ist der Gießpunkt und liegt auf dem
+  Anker des Substrats (Erde „Knapp" 30 %, Coco „Mittel" 70 %): Restgewicht = Anker + (100 − Anker) · (Gewicht −
+  Gießpunkt-Gewicht) / (voll − Gießpunkt-Gewicht). 12500 g → 65 %, 11000 g → 30 % „Sweet Spot". Die Kapazität des
+  Mengenmodells ist (voll − Gießpunkt) · 80 / (100 − Anker). Mit nur einem Gewicht steht „Zweites Gewicht fehlt", ohne Zahl.
+  Einrichtung, Einstellungen und Beschriftung sagen „voll" und „kurz vor dem Gießen" statt „Saturated", „Dry" und
+  „bone-dry".
+- **Für bestehende Waage-Nutzer:** Dieselben Gewichte zeigen jetzt ein höheres Restgewicht (am Gießpunkt 30 statt 0 %).
+  Patricks Daten sind nicht betroffen, er nutzt den Hebe-Test.
+- `test_waageskala.js` (15 Prüfungen, beide Zeitzonen): Skala für Erde und Coco, Eintrag bei 12500 g und 11000 g, Coco,
+  Beschriftung, Kapazität und Restgewicht im Mengenmodell, nur ein Gewicht, Einrichtung, Quelltext. Gegen den alten Stand:
+  12 Fehler.
+
 ## 2026-09-15 — v1.5.203
 
 - **Die Gießanleitung sagte fest „CalMag zuerst".** Im Eintrag stand „🧪 Mischen: CalMag zuerst → umrühren → Basisdünger →
