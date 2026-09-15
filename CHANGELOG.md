@@ -2,6 +2,17 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-15 — v1.5.212
+
+- **Die Trichom-Karte urteilt nur über eine Messung von heute.** Befund der Erntefenster-Prüfung (Schritt 1): Die Zeile
+  „Erntereif", „Milchig-dominant", „Fast bereit" oder „Noch zu viel klar" stand auch an Tagen, an denen niemand geschaut hatte —
+  aus dem übernommenen Stand eines früheren Tages (an Patricks Tag 111 „Fast bereit" aus den Werten von Tag 110) oder, ohne
+  jede Messung, aus der Vorgabe 70/25/5 („Noch zu viel klar — Geduld!"). Ein Urteil über eine Messung, die es nicht gibt,
+  verstößt gegen Regel 2; bei der Ernte ist zu früh der teuerste Fehler (`ANBAU.md` 11).
+- **Jetzt:** Das Urteil erscheint erst mit einer Messung von heute oder nach „Heute geschaut — sieht noch genauso aus". Der
+  übernommene Stand bleibt sichtbar, mit dem Hinweis, von welchem Tag er stammt.
+- `test_erntereif.js` um drei Prüfungen erweitert (9, beide Zeitzonen).
+
 ## 2026-09-15 — v1.5.211
 
 - **Das Spülende setzt der Plan, kein Drain-EC-Wert.** Befund der Begriffe-Prüfung (Schritt 7): Die IceFlush-Checkliste

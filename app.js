@@ -3458,7 +3458,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.211';
+const APP_VERSION = 'v1.5.212';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -27628,6 +27628,11 @@ function renderEntry(iso) {
     // täglich neu eintippen müssen. Nur Anzeige; gespeichert wird erst bei einer Änderung.
     const _prevTrich = cd.trichomes ? null : _lastTrichomes(c.id, iso, c);
     const _hasTrichData = (cd.trichomes && (cd.trichomes.clear !== undefined || cd.trichomes.milky !== undefined || cd.trichomes.amber !== undefined)) || !!_prevTrich;
+    // (v1.5.212) Ein Urteil („Erntereif", „Fast bereit", „Noch zu viel klar") nur aus einer Messung von heute. Vorher urteilte die
+    // Karte auch über einen übernommenen Stand — an Patricks Tag 111 „Fast bereit" aus den Werten von Tag 110 — und ohne jede
+    // Messung über die Vorgabe 70/25/5: „Noch zu viel klar — Geduld!", obwohl niemand geschaut hatte (Regel 2). Der übernommene
+    // Stand bleibt sichtbar, mit dem Hinweis und dem Knopf „Heute geschaut".
+    const _trichHeute = !!(cd.trichomes && (cd.trichomes.clear !== undefined || cd.trichomes.milky !== undefined || cd.trichomes.amber !== undefined));
     // (v1.5.46) Der Trichom-Check war im Einsteiger-Modus erst sichtbar, wenn schon Werte
     // drinstanden — man musste also wissen, wo man sie einträgt, um das Feld zu sehen.
     // Gleichzeitig sagt die App auf der Startseite „Blütewoche 10 — Trichome checken!".
@@ -27754,7 +27759,7 @@ function renderEntry(iso) {
           return `<div style="font-size:10px;color:${_old ? 'var(--yellow)' : 'rgba(90,171,240,0.9)'};margin-top:6px;text-align:center;line-height:1.45">${_txt}</div>
             <button onclick="confirmTrichCarry('${c.id}','${iso}')" style="width:100%;margin-top:6px;background:var(--card2);border:0.5px solid var(--border);border-radius:8px;padding:8px;font-size:11px;color:var(--text-sub);cursor:pointer;font-family:var(--font)">✓ Heute geschaut — sieht noch genauso aus</button>`;
         })() : ''}
-        ${trich.clear <= RIPE_CLEAR_DONE && trich.amber >= _targetAmber(c) ? `<div style="font-size:11px;color:var(--green);margin-top:6px;text-align:center">✅ Erntereif — kaum noch klare Trichome, dein Bernstein-Ziel (${_targetAmber(c)} %) ist erreicht</div>`
+        ${!_trichHeute ? '' : trich.clear <= RIPE_CLEAR_DONE && trich.amber >= _targetAmber(c) ? `<div style="font-size:11px;color:var(--green);margin-top:6px;text-align:center">✅ Erntereif — kaum noch klare Trichome, dein Bernstein-Ziel (${_targetAmber(c)} %) ist erreicht</div>`
           : trich.clear <= RIPE_CLEAR_DONE ? `<div style="font-size:11px;color:var(--green);margin-top:6px;text-align:center">✅ Milchig-dominant — reif · Bernstein ${_tFmt(trich.amber)} % von deinem Ziel ${_targetAmber(c)} %</div>` : 
           trich.milky >= 50 ? '<div style="font-size:11px;color:var(--yellow);margin-top:6px;text-align:center">⏳ Fast bereit</div>' : 
           '<div style="font-size:11px;color:var(--text-muted);margin-top:6px;text-align:center">Noch zu viel klar — Geduld!</div>'}

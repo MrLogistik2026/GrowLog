@@ -101,6 +101,23 @@ const TAG = '2026-08-27';   // Tag 104, späte Blüte — die Trichom-Karte steh
     pruef('Keine feste Schwelle „milchig ≥ 60 und Bernstein ≥ 10" mehr', !/trich\.milky >= 60 && trich\.amber >= 10/.test(src));
   }
 
+  // (v1.5.212) Die Karte urteilte auch über einen übernommenen Stand und über die Vorgabe 70/25/5 — ohne dass jemand geschaut hatte.
+  console.log('\nC - Ein Urteil nur aus einer Messung von heute');
+  {
+    const URTEIL = /✅ (Erntereif|Milchig-dominant)|⏳ Fast bereit|Noch zu viel klar/;
+    const lauf = async (iso, vorbereiten) => {
+      E(`(function(){ setDebugDate('${iso}'); ${vorbereiten || ''} openEntry('${iso}'); })()`);
+      await warte(150);
+      return E(`(function(){ const k = document.querySelector('[data-sect="trichome"]'); return k ? k.textContent.replace(/\\s+/g, ' ') : '(keine Karte)'; })()`);
+    };
+    const t111 = await lauf('2026-09-03');
+    pruef('Tag 111, Stand von Tag 110 übernommen: kein Urteil, der Hinweis auf den übernommenen Stand steht da', !URTEIL.test(t111) && /Stand von Tag 110 übernommen/.test(t111), (t111.match(URTEIL) || ['(kein Urteil)'])[0] + ' | ' + t111.slice(0, 120));
+    const t110 = await lauf('2026-09-02');
+    pruef('Tag 110 mit eigener Messung: das Urteil steht wie bisher', URTEIL.test(t110), t110.slice(0, 160));
+    const leer = await lauf('2026-09-03', `const c = S.cycles[0]; Object.keys(S.entries).forEach(k => { const cd = S.entries[k].cycleData && S.entries[k].cycleData[c.id]; if (cd) delete cd.trichomes; });`);
+    pruef('Ohne jede Messung (Vorgabe 70/25/5): kein Urteil', leer !== '(keine Karte)' && !URTEIL.test(leer), (leer.match(URTEIL) || ['(kein Urteil)'])[0] + ' | ' + leer.slice(0, 120));
+  }
+
   console.log(`\nErgebnis: ${ok} OK, ${fail} Fehler`);
   process.exit(fail ? 1 : 0);
 })();
