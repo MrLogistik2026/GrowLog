@@ -867,7 +867,7 @@ function stageForCycle(cyc, iso) {
       if (dayForStage <= 21) return 3;
       return 4;
     }
-    const anzuchtLen = cyc.anzuchtDays || PHASE_DEFAULTS.anzuchtDays;
+    const anzuchtLen = anzuchtLenFor(cyc);
     const stretchStart = Math.max(35, anzuchtLen - 14);
     if (dayForStage < stretchStart) return 3;
     return 4;
@@ -878,7 +878,7 @@ function stageForCycle(cyc, iso) {
 
   if (ph === 'bloom') {
     const bloomLen = cyc.bloomDays || PHASE_DEFAULTS.bloomDays;
-    const bloomDay = day - (cyc.anzuchtDays || PHASE_DEFAULTS.anzuchtDays);
+    const bloomDay = day - anzuchtLenFor(cyc);
     // First ~40% early flower, rest late flower
     if (bloomDay <= Math.ceil(bloomLen * 0.4)) return 5;
     return 6;
@@ -3395,7 +3395,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.184';
+const APP_VERSION = 'v1.5.185';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -7165,6 +7165,23 @@ function iceLenFor(c) {
 }
 
 /**
+ * (v1.5.185) Wie lange die Anzucht dieses Zyklus dauert — die EINE Quelle für jede Rechnung, die Tage ab dem Start
+ * zählt. Mit Blütestart-Datum (Photo nach dem Umschalten auf 12/12, Outdoor-Photo mit abgeleitetem Blütestart) sind es
+ * die Tage bis dahin, sonst anzuchtDays.
+ *
+ * phase() und getAction() rechneten schon ab dem Blütestart-Datum, rund zwanzig andere Stellen weiter mit
+ * anzuchtDays = 21. Beim Umschalten an Tag 36 meldeten Endspurt und Erntezähler die Ernte 14 Tage zu früh, die Liste
+ * der Spülgänge war leer, und am echten Spülstart stand der Düngeplan schon in der IceFlush-Woche. Draußen lag der
+ * Erntezähler vier Monate vor der Ernte. Dasselbe Muster wie iceLenFor (v1.5.123).
+ */
+function anzuchtLenFor(c) {
+  if (!c) return PHASE_DEFAULTS.anzuchtDays;
+  const bs = c.startDate ? _computeBloomStartDate(c) : null;
+  if (bs) return Math.max(0, isoDiff(bs, c.startDate));
+  return c.anzuchtDays || PHASE_DEFAULTS.anzuchtDays;
+}
+
+/**
  * pH-Ziel je Anbaumedium — die EINE Quelle für alle dynamischen pH-Anzeigen.
  * Erde-Werte entsprechen exakt der bisherigen Anzeige (6.2–6.4, Ziel 6.4) → kein Erde-Change.
  * Coco liegt tiefer (5.8–6.2, Ziel 6.0). labelComma = deutsche Schreibweise für Anfänger-Texte.
@@ -7405,7 +7422,7 @@ function contextFor(c, iso) {
   // FINISHER-MODUS: Letzte 2 Wochen vor Ernte — 30-35% Restgewicht als
   // bewusst trockener Topf erlaubt (Hard Dryback; ein Harz-Plus ist nicht belastbar belegt, v1.5.144).
   // Greift in Blüte-Ende (letzte 14 Tage), Flush, Ice, Harvest.
-  const totalDays = (c.anzuchtDays || PHASE_DEFAULTS.anzuchtDays) +
+  const totalDays = anzuchtLenFor(c) +
                     (c.bloomDays || PHASE_DEFAULTS.bloomDays) +
                     (c.flushDays || PHASE_DEFAULTS.flushDays) +
                     iceLenFor(c);
@@ -7419,7 +7436,7 @@ function contextFor(c, iso) {
   // der IceFlush selbst und der Erntetag. Ohne dieses Wissen ruft die Restgewicht-Box
   // dort "Wasserstress — sofort gießen", während direkt darüber "nicht mehr gießen" steht.
   // Genau ein Ort für die Regel, damit Banner und Status nicht auseinanderlaufen.
-  const iceStartDay = (c.anzuchtDays || PHASE_DEFAULTS.anzuchtDays)
+  const iceStartDay = anzuchtLenFor(c)
                     + (c.bloomDays || PHASE_DEFAULTS.bloomDays)
                     + (c.flushDays || PHASE_DEFAULTS.flushDays) + 1;   // 1-basiert wie p.day
   const daysUntilIce = iceStartDay - p.day;
@@ -8161,7 +8178,7 @@ function _dryLeadIn(c, iso, ph, iv) {
   // Tag, den der User bestätigt hat (c.flushDryFrom), fällt bis zum Spülstart kein Guss
   // mehr an. Ohne diese Zustimmung rührt die App den Rhythmus nicht an.
   if (ph === 'bloom' && c.flushDryFrom && flushDryDays(c) > 0 && iso > c.flushDryFrom) {
-    const anz = c.anzuchtDays || PHASE_DEFAULTS.anzuchtDays;
+    const anz = anzuchtLenFor(c);
     const bl  = c.bloomDays   || PHASE_DEFAULTS.bloomDays;
     const spuelISO = isoPlus(c.startDate, anz + bl);
     if (iso < spuelISO) return 'flush';
@@ -8185,7 +8202,7 @@ function _dryLeadIn(c, iso, ph, iv) {
  */
 function endspurtState(c, iso) {
   if (!c || !c.startDate) return null;
-  const anz = c.anzuchtDays || PHASE_DEFAULTS.anzuchtDays;
+  const anz = anzuchtLenFor(c);
   const bl  = c.bloomDays   || PHASE_DEFAULTS.bloomDays;
   const flNass = flushWetDays(c);
   const flDry  = iceDryDays(c);
@@ -8266,7 +8283,7 @@ function _endspurtAnchor(c, ankerTag, erlaubeVergangenheit) {
   const spuel = anker + abstand;
   // Vergangene Tage nur auf ausdrückliche Anweisung — die Automatik rührt sie nie an.
   if (spuel < heute && !erlaubeVergangenheit) return false;
-  const anz = c.anzuchtDays || PHASE_DEFAULTS.anzuchtDays;
+  const anz = anzuchtLenFor(c);
   const neuBloom = spuel - 1 - anz;
   if (neuBloom < 1) return false;
   c.bloomDays = neuBloom;
@@ -9306,7 +9323,7 @@ function holdPlanWeek(cId, tage) {
     return;
   }
   if (accNeu < acc0) {
-    const anz = c.anzuchtDays || PHASE_DEFAULTS.anzuchtDays;
+    const anz = anzuchtLenFor(c);
     const spuelISO = isoPlus(c.startDate, anz + base + accNeu);
     if (isoDiff(spuelISO, todayISO()) < 2) {
       toast('Geht nicht mehr — der Spülgang läge dann schon in der Vergangenheit');
@@ -9347,7 +9364,7 @@ function holdPlanWeek(cId, tage) {
 async function shiftPlanToDay(cId, zielTag, ohneRueckfrage) {
   const c = S.cycles.find(x => x.id === cId);
   if (!c || !c.startDate) return;
-  const anz = c.anzuchtDays || PHASE_DEFAULTS.anzuchtDays;
+  const anz = anzuchtLenFor(c);
   const fl  = c.flushDays   || PHASE_DEFAULTS.flushDays;
   const ic  = iceLenFor(c);
   const neu = zielTag - 1 - anz - fl - ic;
@@ -9532,7 +9549,7 @@ function _planWeekQuestion(c, iso) {
       // Im kopierten Plan heißen die Wochen „w14"; im Preset stehen sie als Zahl.
       const _diff = _planWochenDiff(plan, wk);
 
-      const _anz = c.anzuchtDays || PHASE_DEFAULTS.anzuchtDays;
+      const _anz = anzuchtLenFor(c);
       const _hc = harvestCountdown(c, iso);
       const _ernteTag = (_hc && _hc.harvestISO) ? isoDiff(_hc.harvestISO, c.startDate) + 1 : null;
       const _spuelTag = _anz + (c.bloomDays || PHASE_DEFAULTS.bloomDays) + 1;
@@ -9584,7 +9601,7 @@ function planWeekBounds(c) {
   if (!Array.isArray(wp) || !wp.length) return plan.weekDayBounds || null;
 
   const d = {
-    anzucht: c.anzuchtDays || PHASE_DEFAULTS.anzuchtDays,
+    anzucht: anzuchtLenFor(c),
     bloom:   c.bloomDays   || PHASE_DEFAULTS.bloomDays,
     flush:   c.flushDays   || PHASE_DEFAULTS.flushDays,
     // IceFlush und Erntetag stecken in derselben Plan-Woche.
@@ -9888,7 +9905,7 @@ function nextGiessTag(c, from) {
 
 function daysToHarvest(c) {
   if (!c.startDate) return null;
-  const hd = (c.anzuchtDays || PHASE_DEFAULTS.anzuchtDays) + (c.bloomDays || PHASE_DEFAULTS.bloomDays) + (c.flushDays || PHASE_DEFAULTS.flushDays) + iceLenFor(c);
+  const hd = anzuchtLenFor(c) + (c.bloomDays || PHASE_DEFAULTS.bloomDays) + (c.flushDays || PHASE_DEFAULTS.flushDays) + iceLenFor(c);
   const harvestISO = isoPlus(c.startDate, hd);
   const diff = isoDiff(harvestISO, todayISO());
   return diff > 0 ? diff : 0;
@@ -10058,7 +10075,7 @@ function harvestWindow(c, iso) {
   // 2. Samentüte
   const wLo = parseFloat(c.seedWeeksLo), wHi = parseFloat(c.seedWeeksHi);
   if (isFinite(wLo) && isFinite(wHi) && wLo > 0 && wHi >= wLo) {
-    const anz = c.anzuchtDays || PHASE_DEFAULTS.anzuchtDays;
+    const anz = anzuchtLenFor(c);
     const fl  = c.flushDays   || PHASE_DEFAULTS.flushDays;
     const ic  = iceLenFor(c);
     // (v1.5.34) Welche Art Angabe es ist, sagt der User selbst — geraten wird nicht mehr.
@@ -10115,7 +10132,7 @@ function _trichVsPlan(c, iso) {
 function bloomDaysFromSeedWeeks(c, wochen) {
   const w = parseFloat(wochen);
   if (!isFinite(w) || w <= 0) return null;
-  const anz = c.anzuchtDays || PHASE_DEFAULTS.anzuchtDays;
+  const anz = anzuchtLenFor(c);
   const fl  = c.flushDays   || PHASE_DEFAULTS.flushDays;
   const ic  = iceLenFor(c);
   const tage = seedWeeksKind(c) === 'total'
@@ -10144,7 +10161,7 @@ function seedWeeksWarning(c) {
   const w = isFinite(hi) ? hi : lo;
   if (!isFinite(w) || w <= 0) return null;
   if (isFinite(lo) && isFinite(hi) && hi < lo) return 'Die zweite Zahl sollte größer sein als die erste.';
-  const anz = c.anzuchtDays || PHASE_DEFAULTS.anzuchtDays;
+  const anz = anzuchtLenFor(c);
   const fl  = c.flushDays   || PHASE_DEFAULTS.flushDays;
   const ic  = iceLenFor(c);
   const art = seedWeeksKind(c);
@@ -10164,7 +10181,7 @@ function harvestCountdown(c, iso = null) {
   if (!c || !c.startDate) return null;
   const refISO = iso || todayISO();
 
-  const anzucht = c.anzuchtDays || PHASE_DEFAULTS.anzuchtDays;
+  const anzucht = anzuchtLenFor(c);
   const bloom = c.bloomDays || PHASE_DEFAULTS.bloomDays;
   const flush = c.flushDays || PHASE_DEFAULTS.flushDays;
   const ice = iceLenFor(c);
@@ -10234,7 +10251,7 @@ function cycleOverviewStrip(c) {
   if (!c || !c.startDate) return '';
 
   // Phasen-Dauern (mit Defaults)
-  const anzucht = c.anzuchtDays || PHASE_DEFAULTS.anzuchtDays;
+  const anzucht = anzuchtLenFor(c);
   const bloom = c.bloomDays || PHASE_DEFAULTS.bloomDays;
   const flush = c.flushDays || PHASE_DEFAULTS.flushDays;
   const ice = iceLenFor(c);
@@ -12680,7 +12697,7 @@ function getAlerts(c) {
     // (v1.5.183) Tage bis zum ersten Spültag — gespült wird ab Blütetag bloomDays + 1. Vorher stand hier
     // Blütetage − Blütetag: am Blütetag 63 von 70 „Spülung in 7 Tagen“ (es sind 8), am vorletzten „in 1 Tagen“ und am
     // letzten Blütetag, wenn morgen gespült wird, gar nichts.
-    const bisSpuelen = (c.bloomDays || PHASE_DEFAULTS.bloomDays) + 1 - (p.day - (c.anzuchtDays || PHASE_DEFAULTS.anzuchtDays));
+    const bisSpuelen = (c.bloomDays || PHASE_DEFAULTS.bloomDays) + 1 - (p.day - anzuchtLenFor(c));
     if (bisSpuelen >= 1 && bisSpuelen <= 7) out.push({ icon: '🚿', text: bisSpuelen === 1 ? 'Spülung morgen' : `Spülung in ${bisSpuelen} Tagen`, type: 'info' });
     if (bluetestufe(p) === 'spaet') out.push({ icon: '🔬', text: `Blütewoche ${p.week} – Trichome checken!`, type: 'tip', action: 'trichome', cId: c.id });
   }
@@ -15200,7 +15217,7 @@ function renderDash() {
       if (phVal > 0) { phSum += phVal; phCount++; }
     }
     if (phCount > 0) avgPH = (phSum / phCount).toFixed(1);
-    const hDays = (fc.anzuchtDays||PHASE_DEFAULTS.anzuchtDays) + (fc.bloomDays||PHASE_DEFAULTS.bloomDays) + (fc.flushDays||PHASE_DEFAULTS.flushDays) + (fc.iceDays||PHASE_DEFAULTS.iceDays);
+    const hDays = anzuchtLenFor(fc) + (fc.bloomDays||PHASE_DEFAULTS.bloomDays) + (fc.flushDays||PHASE_DEFAULTS.flushDays) + (fc.iceDays||PHASE_DEFAULTS.iceDays);
     harvestDate = fmtDE(isoPlus(fc.startDate, hDays), {day:'2-digit', month:'short'});
   }
 
@@ -17113,7 +17130,7 @@ function calcToppingOffset(c, toppingISO, pause) {
   }
 
   const diffFromStart = isoDiff(resumeDay, c.startDate);
-  const a = c.anzuchtDays || PHASE_DEFAULTS.anzuchtDays;
+  const a = anzuchtLenFor(c);
   const iv = diffFromStart < a ? (c.intAnzucht || 3) : (c.intBloom || 3);
 
   for (let testOff = 0; testOff < iv; testOff++) {
@@ -17782,7 +17799,7 @@ function isToppingWaterGuss(c, iso) {
 // Jeder Schritt: { iso, tag (1-basiert), gIdx (Blüte-Guss-Index), type, locked, ph }
 function collectBloomGusse(c) {
   if (!c || !c.startDate) return [];
-  const az = c.anzuchtDays || PHASE_DEFAULTS.anzuchtDays;
+  const az = anzuchtLenFor(c);
   const bl = c.bloomDays || PHASE_DEFAULTS.bloomDays;
   const fl = c.flushDays || PHASE_DEFAULTS.flushDays;
   // Ice-Phase mitnehmen (Indoor): Tag 1 = Iceflush, danach Dunkelphase (kein Guss).
@@ -24530,7 +24547,7 @@ function exportDiary() {
     md += `- **Status:** ${c.active ? 'Aktiv' : 'Inaktiv'}\n`;
     if (c.startDate) md += `- **Start:** ${fmtDE(c.startDate, { day:'2-digit', month:'long', year:'numeric' })}\n`;
     if (c.location) md += `- **Standort:** ${c.location}\n`;
-    md += `- **Phasen:** Anzucht ${c.anzuchtDays||PHASE_DEFAULTS.anzuchtDays}d → Blüte ${c.bloomDays||PHASE_DEFAULTS.bloomDays}d → Spülen ${c.flushDays||PHASE_DEFAULTS.flushDays}d → Ice ${c.iceDays||PHASE_DEFAULTS.iceDays}d\n`;
+    md += `- **Phasen:** Anzucht ${anzuchtLenFor(c)}d → Blüte ${c.bloomDays||PHASE_DEFAULTS.bloomDays}d → Spülen ${c.flushDays||PHASE_DEFAULTS.flushDays}d → Ice ${c.iceDays||PHASE_DEFAULTS.iceDays}d\n`;
     // (v1.5.136) Jeder Zyklus mit seinem eigenen Plan — vorher stand bei allen der aufgeschlagene.
     const _planExport = getPlanForCycle(c);
     if (_planExport) md += `- **Düngeplan:** ${_planExport.name}\n`;
@@ -25241,7 +25258,7 @@ function renderEntry(iso) {
     // dass das die Pitch-Black-Dunkelphase ist und nicht ein vergessener Gießtag.
     let iceRecoveryBanner = '';
     if (p && p.ph === 'ice' && a !== 'ice' && c.growType !== 'outdoor') {
-      const dayInIce = p.day - ((c.anzuchtDays || PHASE_DEFAULTS.anzuchtDays) + (c.bloomDays || PHASE_DEFAULTS.bloomDays) + (c.flushDays || PHASE_DEFAULTS.flushDays));
+      const dayInIce = p.day - (anzuchtLenFor(c) + (c.bloomDays || PHASE_DEFAULTS.bloomDays) + (c.flushDays || PHASE_DEFAULTS.flushDays));
       const totalIceDays = (c.iceDays || PHASE_DEFAULTS.iceDays);
       const isLastIceDay = dayInIce >= totalIceDays;
       iceRecoveryBanner = `<div style="background:linear-gradient(135deg,rgba(192,132,252,0.08),rgba(192,132,252,0.04));border:1px solid rgba(192,132,252,0.3);border-radius:10px;padding:10px 12px;margin-bottom:8px;display:flex;align-items:center;gap:10px">
@@ -27198,7 +27215,7 @@ function renderEntry(iso) {
                   // langsam kriechender Bernstein-Wert ein Ziel erreicht. Ohne Klar-Tempo
                   // (zu wenig Daten) bleibt die Bernstein-Prognose die einzige Marke.
                   const _ziel = _rw ? _rw.offenTag : _fc.dayLo;
-                  const _anz = (c.anzuchtDays || PHASE_DEFAULTS.anzuchtDays);
+                  const _anz = anzuchtLenFor(c);
                   const _spuelVon = (z) => _anz + (z - 1 - _anz - (c.flushDays || PHASE_DEFAULTS.flushDays) - iceLenFor(c)) + 1;
 
                   if (_rw && _rw.spaetBernstein) {
@@ -30695,7 +30712,7 @@ function _trichPlanNote(c, iso, trich, ageDays) {
   if (!c || !c.startDate || !iso || !trich) return null;
   const hc = harvestCountdown(c, iso);
   if (!hc || !hc.harvestISO) return null;
-  const anzucht = c.anzuchtDays || PHASE_DEFAULTS.anzuchtDays;
+  const anzucht = anzuchtLenFor(c);
   const bloom = c.bloomDays || PHASE_DEFAULTS.bloomDays;
   const today = isoDiff(iso, c.startDate) + 1;
   const flushDay = anzucht + bloom + 1;
@@ -34719,7 +34736,7 @@ function buildChartsSection(cycleId) {
   }
 
   // Figure out cycle total days (up to end of dry phase)
-  const a = cyc.anzuchtDays || PHASE_DEFAULTS.anzuchtDays;
+  const a = anzuchtLenFor(cyc);
   const b = a + (cyc.bloomDays || PHASE_DEFAULTS.bloomDays);
   const f = b + (cyc.flushDays || PHASE_DEFAULTS.flushDays);
   const ic = f + iceLenFor(cyc);

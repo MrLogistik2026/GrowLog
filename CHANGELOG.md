@@ -2,6 +2,33 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-15 — v1.5.185
+
+- **Mit Blütestart-Datum lagen Endspurt, Erntezähler und Düngeplan-Wochen bis zu 14 Tage neben der echten Blüte.**
+  Befund der zweiten Prüfrunde (Plan-Modell), gemessen und hier nachgestellt. Betroffen sind Photo-Sorten nach dem
+  Umschalten auf 12/12 und Outdoor-Photos. `phase()` und `getAction()` zählten ab dem Blütestart-Datum, rund
+  zwanzig andere Stellen weiter mit `anzuchtDays` = 21: `endspurtState`, `harvestCountdown`, `daysToHarvest`,
+  `contextFor` (Finisher, Hard-Dryback), der Spül-Hinweis, `collectBloomGusse` (Gieß-Fahrplan),
+  `planWeekBounds` (Düngeplan-Wochen), `holdPlanWeek`, `shiftPlanToDay`, die Trichom-Prognose, das
+  Phasen-Band, die Diagramme, der Export.
+- **Gemessen, Umschalten an Tag 36 und 70 Blütetage:** Laut Phase Spülen ab Tag 106, Ernte Tag 117. Endspurt und
+  Erntezähler sagten Tag 92 und Tag 103, die Liste der Spülgänge war leer, Hard-Dryback gab es nie, „Spülung in 7
+  Tagen" kam an Tag 85. Der Gieß-Fahrplan endete an Tag 100, und am echten Spülstart stand der Düngeplan schon in der
+  IceFlush-Woche. Beim Umschalten an Tag 15 stand der Plan an den ersten Blütetagen noch in der Anzucht-Woche, und
+  Endspurt wie Ernte lagen 7 Tage zu spät. Beim Outdoor-Photo mit abgeleitetem Blütestart (17.08.) meldete der
+  Erntezähler Tag 90 statt Tag 207.
+- **Warum das zählt:** Eine zu früh angezeigte Ernte ist nach `ANBAU.md` 11 der teuerste Fehler im Zyklus. Dazu
+  bekam die Pflanze bis zu 14 Tage Blütedünger unter 18/6 und danach bis zu 14 Blütetage ohne Dünger.
+- **Jetzt:** `anzuchtLenFor(c)` ist die einzige Quelle der Anzucht-Länge — die Tage bis zum Blütestart-Datum, sonst
+  `anzuchtDays`. 28 Stellen fragen sie. Ohne Blütestart-Datum rechnet alles wie vorher; die Gegenproben
+  (Photo mit Umschalten an Tag 22, Automatic) sind unverändert, Patricks Zyklus ebenso.
+- `test_bluetestart.js` (38 Prüfungen, beide Zeitzonen): Umschalten an Tag 15/22/29/36, Automatic, Outdoor-Photo.
+  Gegen den alten Stand: 21 Fehler.
+- **Nebenbei: `test_ecziel.js` fiel seit v1.5.178 um.** Er zählte 11 Vorlagen ohne eigene EC-Ziele; seit die
+  BioBizz-Outdoor-Vorlage entfernt ist, sind es 10. Beim Ausliefern von v1.5.178 lief der Test nicht mit. Gefunden
+  beim breiten Lauf für diese Version und gegen die Stände v1.5.177 (grün) und v1.5.178 (1 Fehler) nachgeprüft.
+  Angepasst ist nur die erwartete Zahl.
+
 ## 2026-09-15 — v1.5.184
 
 - **Die Karte vor einem Phasenwechsel sagte an allen drei Tagen davor „In 3 Tagen".** Beim Browser-Check von
