@@ -2,6 +2,24 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-15 — v1.5.193
+
+- **Die Diagnose nannte die Luftfeuchte „hoch", wo der Eintrag „im Ziel" sagte — und umgekehrt.** `buildDiagnosticContext`
+  setzte „Luftfeuchte hoch" in jeder Phase fest ab 70 % oder bei einer Schimmelwarnung. Seit v1.5.187 bewertet der Eintrag
+  die Luft je Phase aus `KLIMA_ZIEL`. Folge: Der Sämling unter der Haube bei 24 °C / 74 % — im Eintrag „Sämling ✓", Ziel
+  62–75 % — bekam im Symptom-Checker „Luftfeuchte hoch" als Grund; die Anzucht bei 24 °C / 66 % und die späte Blüte bei
+  24 °C / 55 % — im Eintrag „Zu feucht" — nicht.
+- **Warum das zählt:** Die Luftfeuchte ist im Symptom-Checker ein Grund für Calcium-Mangel (zu wenig Verdunstung,
+  `ANBAU.md` 1) und für Schimmel (13.5). Beim Sämling schob sie Diagnosen nach vorn, die dort nicht passen; bei zu feuchter
+  Luft in Anzucht und Blüte fehlte sie.
+- **Jetzt:** „Luftfeuchte hoch" genau dann, wenn der Eintrag für dieselben Werte „Zu feucht", „Schimmel…" oder „Nass" zeigt
+  (`klimaStatus`). Ohne Temperatur zählt das Fenster bei der mittleren Temperatur der Phase, wie die Luftfeuchte-Zeile im
+  Eintrag. Draußen und beim Trocknen bleibt die 70-%-Grenze.
+- `test_rlfdiagnose.js` bewusst neu gefasst (17 Prüfungen, beide Zeitzonen): elf Lagen vom Sämling bis zum Spülen bei 24 °C,
+  jede gegen die Pille des Eintrags; ohne Temperatur; Trocknen. Gegen den alten Stand: 3 Fehler — genau die drei
+  Widersprüche. Die früheren Erwartungen „Anzucht 66 % → nein" und „Spätblüte 59 % → nein" galten für die feste
+  70-%-Grenze.
+
 ## 2026-09-15 — v1.5.192
 
 - **Um IceFlush, Dunkelphase und Ernte standen Zusagen, die `ANBAU.md` 14 als unbelegt führt.** Lexikon „Dunkelphase vor

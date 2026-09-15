@@ -1757,8 +1757,17 @@ function buildDiagnosticContext(c, iso = null) {
     // „Luftfeuchte hoch“ erst ab 70 %, während der Eintrag bei 62 % schon „Schimmelgefahr“ meldete —
     // zwei Bildschirme, zwei Antworten (ANBAU.md 13.5). Die 70 bleibt als allgemeine Grenze: Sie trägt
     // auch Calcium-Mangel und Mehltau, außerhalb der Blüte (ANBAU.md 1).
-    const _rlfWarn = (isFinite(h) && h > 60) ? getCriticalWarning('rlf', h, phase(latestEntry.iso, c), c) : null;
-    if (isFinite(h) && (h >= 70 || (_rlfWarn && (_rlfWarn.level === 'critical' || _rlfWarn.level === 'high')))) result.humidityHigh = true;
+    // (v1.5.193) „Luftfeuchte hoch" folgt dem Befund des Eintrags (klimaStatus): nass, über dem Schimmel-Deckel oder „zu
+    // feucht" für die Phase — dieselbe Aussage wie die Pille. Zu feucht heißt zu wenig Verdunstung (Calcium, ANBAU.md 1)
+    // und mehr Schimmelrisiko (13.5). Ohne Temperatur zählt das Luftfeuchte-Fenster bei der mittleren Temperatur der Phase,
+    // wie die Zeile im Eintrag. Vorher galten in jeder Phase fest 70 %: Der Sämling unter der Haube stand bei 74 % neben
+    // „Sämling ✓" mit „Luftfeuchte hoch" in der Diagnose, die Anzucht bei 66 % und 24 °C (Ziel 49–61 %) ohne. Draußen und in
+    // Phasen ohne Klima-Stufe (Trocknen, Curing) bleibt die 70.
+    const _st = isFinite(h) ? klimaStatus(parseFloat(latestEntry.e.temp), h, phase(latestEntry.iso, c), c) : null;
+    if (_st) {
+      if (_st.s === 'nass' || _st.s === 'schimmel' || _st.s === 'zu_feucht'
+        || (_st.s === null && _st.rh !== null && _st.fenster.hi != null && _st.rh > _st.fenster.hi)) result.humidityHigh = true;
+    } else if (isFinite(h) && h >= 70) result.humidityHigh = true;
   }
 
   // Restgewicht (Hebe oder Waage)
@@ -3420,7 +3429,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.192';
+const APP_VERSION = 'v1.5.193';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,

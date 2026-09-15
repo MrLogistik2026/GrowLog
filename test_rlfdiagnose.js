@@ -1,13 +1,14 @@
 /**
- * (v1.5.155) Der Diagnose-Kontext kennt „Luftfeuchte hoch" ab derselben Grenze wie der Schimmel-Alarm.
+ * (v1.5.155) Der Diagnose-Kontext kannte „Luftfeuchte hoch" erst ab 70 %, während der Eintrag schon über 60 % „Schimmelgefahr"
+ * meldete — zwei Bildschirme, zwei Antworten.
  *
- * Der Fehler (Befund der Prüf-Agenten, gegengeprüft): buildDiagnosticContext setzte humidityHigh erst
- * ab 70 % RLF. getCriticalWarning meldet in der Spätblüte schon über 60 % „Schimmelgefahr (Botrytis)",
- * in der mittleren Blüte über 65 % „Schimmelrisiko" (ANBAU.md 13.5). Bei 62–69 % stand im Eintrag rot
- * „Schimmelgefahr", und der Symptom-Checker nannte die Luftfeuchte nicht als Grund.
- *
- * Gegenprobe nach dem Hinweis des Gegenprüfers: Außerhalb der Blüte bleibt 70 % die Grenze — sie trägt
- * dort auch Calcium-Mangel und Mehltau.
+ * (v1.5.193) Bewusst neu gefasst: Seit v1.5.187 bewertet der Eintrag die Luft je Phase aus KLIMA_ZIEL (klimaStatus). Die
+ * Diagnose nahm dagegen weiter fest 70 % in jeder Phase und die Schimmelwarnung dazu. Folge: Der Sämling unter der Haube bei
+ * 74 % — im Eintrag „Sämling ✓" — bekam in der Diagnose „Luftfeuchte hoch", die Anzucht bei 66 % und 24 °C — im Eintrag
+ * „Zu feucht" — nicht. Jetzt gilt: „Luftfeuchte hoch" genau dann, wenn der Eintrag für dieselben Werte „Zu feucht",
+ * „Schimmel…" oder „Nass" zeigt. Zu feucht heißt zu wenig Verdunstung (Calcium, ANBAU.md 1) und mehr Schimmelrisiko (13.5).
+ * Die frühere Erwartung „Anzucht 66 % → nein" und „Spätblüte 59 % → nein" galt für die feste 70-%-Grenze.
+ * Draußen und in Phasen ohne Klima-Stufe (Trocknen) bleibt die 70.
  */
 const fs = require('fs');
 const path = require('path');
@@ -66,47 +67,57 @@ function pruef(name, bedingung, info) {
   console.log('TZ=' + (process.env.TZ || '(System)'));
   const { E, errors } = await load();
   pruef('Start ohne JS-Fehler', errors.length === 0, errors[0]);
+  E(`S.leafOffset = 2; S.beginnerMode = false`);
 
+  // Je Klima-Stufe der erste Tag in Patricks Zyklus, dazu ein Trocknungstag.
   const tage = JSON.parse(E(`(function(){
     const c = S.cycles[0]; const t = {};
-    for (let i = 20; i < 140; i++) {
+    for (let i = 0; i < 140; i++) {
       const iso = isoPlus(c.startDate, i); const p = phase(iso, c); if (!p) continue;
-      const key = p.ph === 'bloom' ? 'bloom_' + bluetestufe(p) : p.ph;
+      const key = klimaStufe(p) || p.ph;
       if (!t[key]) t[key] = iso;
     }
     return JSON.stringify(t);
   })()`));
-  console.log('    Tage: ' + ['anzucht', 'bloom_mittel', 'bloom_spaet', 'flush'].map(k => k + ' ' + tage[k]).join(' · '));
-  pruef('Prüflage: Anzucht, mittlere und späte Blüte, Spülen gefunden', ['anzucht', 'bloom_mittel', 'bloom_spaet', 'flush'].every(k => tage[k]), JSON.stringify(tage));
+  console.log('    Tage: ' + ['saemling', 'anzucht', 'mittel', 'spaet', 'spuelen', 'dry'].map(k => k + ' ' + tage[k]).join(' · '));
+  pruef('Prüflage: Sämling, Anzucht, mittlere und späte Blüte, Spülen, Trocknen gefunden',
+    ['saemling', 'anzucht', 'mittel', 'spaet', 'spuelen', 'dry'].every(k => tage[k]), JSON.stringify(tage));
 
-  // Luftfeuchte an genau diesem Tag setzen und den Kontext bauen
-  const kontext = (iso, rlf) => JSON.parse(E(`(function(){
+  // Temperatur und Luftfeuchte an genau diesem Tag setzen; Kontext der Diagnose und Pille des Eintrags bauen.
+  const lage = (iso, temp, rlf) => JSON.parse(E(`(function(){
     const c = S.cycles[0]; const iso = '${iso}';
     if (!S.entries[iso]) S.entries[iso] = { temp: '', humidity: '', cycleData: {} };
     if (!S.entries[iso].cycleData) S.entries[iso].cycleData = {};
     if (!S.entries[iso].cycleData[c.id]) S.entries[iso].cycleData[c.id] = { doses: {} };
-    S.entries[iso].humidity = '${rlf}';
+    S.entries[iso].temp = '${temp}'; S.entries[iso].humidity = '${rlf}';
     const ctx = buildDiagnosticContext(c, iso);
-    const w = getCriticalWarning('rlf', ${rlf}, phase(iso, c), c);
-    return JSON.stringify({ hoch: !!ctx.humidityHigh, warnung: w ? w.level : null });
+    const teile = _klimaEntryTeile('${temp}', '${rlf}', [c], iso);
+    const m = teile.vpdBox.match(/id="vpd-p"[^>]*>([^<]*)</);
+    return JSON.stringify({ hoch: !!ctx.humidityHigh, pille: m ? m[1] : null });
   })()`));
+  const FEUCHT = /^(Zu feucht|Schimmelgefahr|Schimmelrisiko|Pilzrisiko|Nass — Schimmelgefahr)$/;
 
-  console.log('\nA - In der Blüte und beim Spülen: dieselbe Grenze wie der Schimmel-Alarm');
+  console.log('\nA - „Luftfeuchte hoch" genau dann, wenn der Eintrag zu feucht, Schimmel oder Nässe zeigt (24 °C)');
   const faelle = [
-    ['Spätblüte', tage.bloom_spaet, 62, true], ['Spätblüte', tage.bloom_spaet, 59, false],
-    ['mittlere Blüte', tage.bloom_mittel, 66, true], ['mittlere Blüte', tage.bloom_mittel, 62, false],
-    ['Spülen', tage.flush, 62, true],
+    ['Sämling unter der Haube', 'saemling', 74, false], ['Sämling', 'saemling', 85, true],
+    ['Anzucht', 'anzucht', 55, false], ['Anzucht', 'anzucht', 66, true], ['Anzucht', 'anzucht', 72, true],
+    ['mittlere Blüte', 'mittel', 45, false], ['mittlere Blüte', 'mittel', 66, true],
+    ['Spätblüte', 'spaet', 45, false], ['Spätblüte', 'spaet', 55, true], ['Spätblüte', 'spaet', 62, true],
+    ['Spülen', 'spuelen', 62, true],
   ];
-  for (const [name, iso, rlf, soll] of faelle) {
-    const r = kontext(iso, rlf);
-    pruef(`${name}, ${rlf} % → „Luftfeuchte hoch" ${soll ? 'ja' : 'nein'} (Eintrag: ${r.warnung || 'keine Warnung'})`, r.hoch === soll && (!!r.warnung === soll), JSON.stringify(r));
+  for (const [name, k, rlf, soll] of faelle) {
+    const r = lage(tage[k], 24, rlf);
+    pruef(`${name}, 24 °C / ${rlf} % → „Luftfeuchte hoch" ${soll ? 'ja' : 'nein'} (Pille: ${r.pille})`,
+      r.hoch === soll && FEUCHT.test(r.pille || '') === soll, JSON.stringify(r));
   }
 
-  console.log('\nB - Gegenprobe außerhalb der Blüte: 70 % bleibt die Grenze');
+  console.log('\nB - Ohne Temperatur, und Phasen ohne Klima-Stufe');
   {
-    const r66 = kontext(tage.anzucht, 66), r72 = kontext(tage.anzucht, 72);
-    pruef('Anzucht, 66 % → nein', r66.hoch === false, JSON.stringify(r66));
-    pruef('Anzucht, 72 % → ja (trägt Calcium-Mangel und Mehltau)', r72.hoch === true, JSON.stringify(r72));
+    const ohneT62 = lage(tage.spaet, '', 62), ohneT45 = lage(tage.spaet, '', 45);
+    pruef('Spätblüte ohne Temperatur, 62 % → ja (über dem Deckel)', ohneT62.hoch === true, JSON.stringify(ohneT62));
+    pruef('Spätblüte ohne Temperatur, 45 % → nein (im Fenster bei 24 °C)', ohneT45.hoch === false, JSON.stringify(ohneT45));
+    const t75 = lage(tage.dry, 19, 75), t65 = lage(tage.dry, 19, 65);
+    pruef('Trocknen: 75 % → ja, 65 % → nein (70 % bleibt die Grenze)', t75.hoch === true && t65.hoch === false, JSON.stringify([t75, t65]));
   }
 
   pruef('Keine JS-Fehler', errors.length === 0, errors[0]);
