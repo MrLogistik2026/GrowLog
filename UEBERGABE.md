@@ -164,6 +164,101 @@ sehen, ob die Sprungmarken im Alltag reichen, bevor Blöcke verschoben werden.
 
 ---
 
+## 0m · Zweite Agenten-Runde (15.09.2026) — vier Designfragen, Antworten offen
+
+Patrick am 14.09.2026: offene Fragen „aus Sicht eines Anfängers und eines Profis" von Agenten prüfen lassen, „immer auf
+wissenschaftlicher Basis". Vier Agenten, je Frage einer, mit beiden Sichten und eigener Gegenprüfung. Rohdaten:
+`subagents/workflows/wf_312e6495-74a/journal.jsonl` im Sitzungsordner, Messskripte im Scratchpad unter `agenten/`.
+**Zwei frühere Läufe mit je zwölf Agenten brachen am Nutzungslimit ab, ohne ein Ergebnis zu liefern** — deshalb
+der schlanke Aufbau mit Zwischenständen als Datei. Für die nächste Runde so beibehalten.
+
+**Daraus schon behoben (Fehler, ohne Rückfrage):** Feed-Tag-Ausgleich in Anzucht-Wochen (v1.5.170) · Dosis-Modus
+aus dem aufgeschlagenen Plan (v1.5.171) · Bernstein-Texte (v1.5.172) · Erntereif-Zeichen (v1.5.173) ·
+Ablaufziel (v1.5.174) und Gießpunkt (v1.5.175) in den Gießanleitungen.
+
+### 0m.1 · Gießmenge bei 30 % Restgewicht
+
+- **Befund:** Der Deckel `_waterCapPerPot` rechnet Topf × 420 × Anteil (40/35/30 %) × 1,10 und liest den Gießpunkt
+  damit als Verbrauch; 11 L Erde → 1500 ml. Physikalisch folgt aus „gießen bei r, auffüllen bis gesättigt plus
+  Ablauf d" die Nachfüll-Grenze **V = S · (1 − r) / (1 − d)** — S nutzbares Wasser (Waage; sonst gelernte `capMl`;
+  sonst Topf × 420, eine Konvention ohne Herleitung), d = `DRAIN_ZIEL.mid`. 11 L Erde: 3900 ml statt 1500.
+- Bei Patrick bremst nicht der Deckel direkt, sondern seine eigenen Korridore (Reife ≤ 2200) und die Rampe um den
+  Median der letzten vier Güsse (Tag 47: Vorschlag 1290, gegossen 1800). Mit „letzter Guss × Trend" läge die
+  Abweichung bei +1 % statt −13 %. Ein frischer Zyklus bekommt ab Tag 36 flach 1500 ml, egal wie lang die Blüte ist.
+- Tag 21 → 22 springt die Empfehlung eines frischen Zyklus von 550 auf 1450 ml: Die natürliche Korridor-Untergrenze
+  hebt die Sämlingsrampe an. **Das ist ein Fehler (`ANBAU.md` 13.1) und steht unter „Als Nächstes".**
+- `drainAdjust` überspringt jeden Ablauf, wenn die Gießmenge per „Erledigt" oder Autofill übernommen wurde
+  (`_suggested.water`). Der Regelkreis aus v1.5.112 wirkt damit nicht für den, der der App folgt. Seit v1.5.112 von
+  einem Test so festgeschrieben — deshalb eine Entscheidung, kein stiller Fix.
+- **Vorschlag der Agentin:** V als einzige Obergrenze an allen drei Stellen (`_waterCapPerPot`,
+  `_waterDailyNeedPour`, `_waterAnchorInfo`), die Menge selbst = letzter echter Guss × Trend × Ablauf-Faktor, die
+  Rampe um den letzten Guss, keine Korridor-Untergrenze, V erst ab `_drainMoeglich`.
+- **Fragen an Patrick:** (a) Gießpunkt 30 % für die ganze Blüte und den Stretch, oder wie im Cup-Plan 40/35/30?
+  (b) Welche Startkurve für jemanden, der nie eine Menge und nie einen Ablauf einträgt? (c) Sollen deine eigenen
+  Korridore (Stretch ≤ 1750, Reife ≤ 2200) ohne Ablaufmessung weiter deckeln? (d) Ablauf zählt auch bei übernommener
+  Menge — einverstanden? (e) Für Run 02 einmal wiegen (trocken aus dem Sack, gesättigt und abgetropft) oder einige
+  Ablaufmengen in der Blüte eintragen, damit S gemessen statt geschätzt ist?
+
+### 0m.2 · Erntefenster
+
+- **Befund:** Patricks 47 Trichom-Einträge sind auf 0,1 Punkte glatt (01.–10.08. jeden Tag genau −1,1) — mit einer
+  Lupe unmöglich; vermutlich über „Heutigen Stand berechnen" oder „Verlauf angleichen" entstanden. Diese Rechenwerte
+  werden ohne Kennzeichen gespeichert und als Messung gelesen (Regel 2). Die Kopfzeile rechnete aus 0,2 Punkten
+  Bernstein in 8 Tagen „Tag 118–158" und fiel an Tag 114 auf die Samentüte zurück (−13 Tage). Mit echtem Zählrauschen
+  (100 Köpfe) springt die heutige Zahl zwischen Tag 99 und 119 — auch vor die Reife.
+- **Vorschlag der Agentin:** eine Funktion `erntefenster(c, iso)` für Kopfzeile, Dashboard, Trichom-Karte, Endspurt
+  und Ernte-Hinweis. Die Zahl ist der Plan-Erntetag. Eine Hochrechnung schiebt sie nur nach hinten, wenn selbst das
+  früheste Reifen danach liegt; nach vorn zieht nur eine Messung (Klar gemessen ≤ 10 % und Bernstein-Ziel gemessen).
+  Gewichtete Gerade über 21 Tage, Streuung aus der Zählstatistik 100·√(p(1−p)/N), Rechenwerte gekennzeichnet und
+  ausgeschlossen. In vier Messreihen blieb die Zahl ohne Sprung und nie vor der Reife.
+- **Fragen an Patrick:** (a) Wie viele Trichom-Köpfe schaust du je Messung an — oder nach Augenmaß? (b) Welche
+  deiner 47 Einträge waren echte Lupen-Blicke, welche berechnet oder angeglichen? (c) Ist „Klar ≤ 10 %" für dich der
+  Punkt, ab dem Schneiden nicht mehr zu früh ist? (d) Ist dein 5-%-Ziel auch die Grenze, ab der die App zum Vorziehen
+  rät — und wenn sich das Ziel nicht vorhersagen lässt: Ernte nach Plan, sobald Klar weg ist? (e) Umbau: vorne der
+  Plan-Erntetag mit Freigabe-Wort, die Spanne nur noch in der Trichom-Karte, „min. X d" entfällt — einverstanden?
+
+### 0m.3 · VPD und Luftfeuchte
+
+- **Befund (86 Einträge):** 44-mal grüne VPD-Pille über oranger VPD-Zielzeile, 13-mal „✓ Luft passt" im
+  Einsteiger-Modus über ⚠. Temperatur-, RLF- und VPD-Fenster je Phase sind überbestimmt: In der Spätblüte ergeben
+  18–24 °C und 40–50 % RLF mit 2 K Blattabzug 0,79–1,45 kPa, das Band sagt 1,4–1,6 (0–3 % des Fensters liegen
+  darin). Das Gießmodell ändert den VPD-Faktor an Stufengrenzen bei gleichem Klima (67 von 69 Blütetagen), das
+  Autofill rechnet Luft-VPD ohne Blattabzug.
+- **Vorschlag der Agentin:** VPD-Band und Temperaturfenster fest, das RLF-Ziel bei der gemessenen Temperatur
+  abgeleitet (Magnus, `_leafOffset`), der Schimmeldeckel (`ANBAU.md` 13.5) hart. Eine Quelle für Pille,
+  Einsteiger-Satz, Zielzeilen, Diagramm und Alarm; der Gießfaktor aus dem absoluten VPD-Verhältnis. Prototyp:
+  44 Widersprüche → 0.
+- **Fragen an Patrick:** (a) Spätblüte, Spülen, IceFlush — Variante A: Band 1,4–1,6 bleibt, Temperatur 24–27 °C
+  (RLF dann etwa 35–50 %). Variante B: Band wie mittlere Blüte 1,2–1,5, Schimmelschutz über den RLF-Deckel 60 % und
+  die Nass-Stufe, Temperatur 22–26 °C (deine Spätblüte mit 23 °C / 45 % läge im Band; ändert `ANBAU.md` 2.2).
+  Empfehlung der Agentin: B. (b) Frühe Blüte: App 1,0–1,3 kPa, `ANBAU.md` 2.2 1,2–1,5 — was gilt?
+- **Bewusst nicht angefasst:** die Einsteiger-VPD-Box. Sie an die Zielzeile zu koppeln, würde bis zur Entscheidung
+  in der Spätblüte ständig „zu feucht" melden.
+
+### 0m.4 · weekly-split und BioBizz
+
+- **Befund:** BioBizz nennt Milliliter je Liter Gießwasser (Schema 2020 wörtlich „ml/L water", dazu „Water 2-3
+  times a week"); eine Wochen-Gesamtdosis kommt nicht vor. Die App teilt bei BioBizz Official und Outdoor durch
+  7 / Intervall — bei Intervall 3 kommen Bio·Grow 43 % und Bio·Bloom 14 % der Herstellerkonzentration an, CalMag
+  286 %; ab Intervall 8 liegt die Mischung über dem Tabellenwert. Die Vorlage „BioBizz Official · 2025 · Light-Mix"
+  weicht zudem vom Schema ab (Bio·Bloom trägt die Top·Max-Reihe, Top·Max und Acti·Vera überall 1, Alg·A·Mic
+  verschoben, CalMag 1–2 statt 0,3/0,5/0,8, Bio·Grow fehlt in WK7–8, Bio·Heaven fehlt). Eine offizielle
+  Outdoor-Tabelle fand die Agentin nicht.
+- **Selbst nicht nachgeprüft:** Die PDFs ließen sich auf diesem Laptop nicht lesen (kein PDF-Werkzeug). Vor jeder
+  Dosisänderung eine zweite Abschrift wie beim Rainbow-Plan (`ANBAU.md`-Regel: keine Dosen aus dem Gedächtnis).
+  Quellen: https://biobizz.com/wp-content/uploads/2025/05/Nutrient-Schedule-EN-PF-2025.pdf,
+  https://www.biobizz.com/wp-content/uploads/2020/03/Nutrient-Schedule-EN-2020.pdf
+- **Vorschlag der Agentin:** BioBizz-Pläne auf `per-watering` mit `feedDayBasis`, die Zahlen neu aus dem Schema
+  2025 abschreiben, gespeicherte Plankopien vorher mit ihrem bisherigen Modus stempeln (sonst stünde CalMag 2 ml/L
+  ungeteilt je Guss da).
+- **Fragen an Patrick:** (a) Wasser-Tage bei BioBizz behalten (weniger Fracht, sichere Seite) oder jeder Guss mit
+  Dünger? (b) BioBizz Outdoor als App-Anpassung kennzeichnen, nach dem Standardschema neu aufbauen oder entfernen?
+  (c) Bio·Grow in WK7–8: Hersteller 4 ml/L, Vorlage 0 — bewusst abweichen (dann nicht „Offiziell") oder
+  Herstellerwert? (d) weekly-split als Modus behalten, etwa als Häufigkeit am Produkt (Microbes „once a week")?
+  (e) Bio·Heaven aufnehmen? Dazu die Bitte: die Light-Mix-Spalte im Schema 2025 einmal selbst ansehen.
+
+---
+
 ## 0l · Prüf-Agenten, erste Runde (14.09.2026) — Befunde und Abarbeitung
 
 Patrick am 13.09.2026: „Lasse die Agenten immer automatisch und eigenständig die App innovativ und
@@ -191,27 +286,15 @@ Wiederholung repariert und dafür auf dem Handy eine Düngermenge weiterlaufen l
 das erst das Nachmessen im Browser; der jsdom-Test prüft es seitdem mit.
 
 **Als Nächstes, in dieser Reihenfolge** (Fehler, ohne Rückfrage):
-1. **Gießmengen folgen der Blütedauer — wartet auf Patricks Antwort.** `waterPhaseKey` hängt noch an
-   festen Blütewochen, die Mengen-Leiter in `_waterSuggestionRawUncapped` an festen Tagen ab Samen
-   (Tag 29–35 Stretch, 36–56 Vollblüte, 57–70 Reife). Dazu die vertauschten Obergrenzen:
-   `_REST_REFILL_FRAC` erlaubt im Stretch 0,35, in der Vollblüte 0,30 — daher Vollblüte
-   1250–1750 unter Frühe Blüte 1450–2150 ml je Pflanze (11 L). Vor dem Umbau die ganze Kennlinie
-   über 42/60/85/105 Blütetage messen (Monotonie, Regelkreis v1.5.112 unverändert).
-   **Gemessen am 14.09.2026:** In der Blüte entscheidet nicht die Leiter, sondern der Deckel
-   `_waterCapPerPot` — bei jeder Blütedauer flach 1800 ml (Stretch), dann 1500 ml je Pflanze
-   (11 L, Erde). Patricks 28 echte Blüte-Güsse: Median 2400 ml je Pflanze, 21 davon über dem
-   Deckel, stetig steigend 700 → 3000 ml. Auch der Lernpfad (`_waterAnchorInfo`) kappt auf den
-   Deckel — daher die im Mittel 23 % zu niedrigen Vorschläge aus v1.5.112. **Offene Frage an
-   Patrick:** Der Kommentar nennt die Anteile „nach dem Cup-Plan (Vegi 40 %, Stretch 35 %, Blüte
-   30 %)". Im Rainbow-Blatt sind das Restgewicht-Gates (gießen bei 30 % Rest). Der Deckel rechnet
-   sie als Verbrauch zwischen zwei Güssen. Worauf beziehen sich die 30 % im Cup-Plan — Anteil des
-   Wassers, das noch im Topf ist, oder Anteil des Topfgewichts? Davon hängt ab, wie groß die
-   Nachfüllmenge richtig ist. Nicht ohne Antwort ändern (`ANBAU.md` 13.1).
+1. **Der Mengen-Korridor hebt die Sämlingsrampe an Tag 22 an (550 → 1450 ml je Pflanze).** Fehler aus Abschnitt 0m.1.
+   `_naturalPhaseRange` liefert für den Stretch eine Untergrenze aus dem Tag 31, `_klemm` in `waterSuggestion` hebt
+   damit schon Blütetag 1 an. Vor dem Fix die Kennlinie Tag 18–40 messen, frisch und mit Patricks Daten.
+2. **Der Umbau der Gießmenge (Nachfüll-Grenze V) wartet auf Patricks Antworten in 0m.1.** Nicht ohne Antwort
+   ändern (`ANBAU.md` 13.1).
 
 **Beim Abarbeiten von v1.5.168 gesehen, offen (braucht eine Quelle — `ANBAU.md` sagt zur Keimung nichts, geraten wird nicht):** Die Keimungs-Zahlen widersprechen sich: Keimwurzel beim Einsetzen 2–3 mm (Lexikon) · 2–5 mm (Anleitung) · 0,5–1 cm (Keimungskarte, `GERM_GUIDES`); Wasserglas höchstens 32 h (Karte) gegen 48 h (Lexikon); Keimling in der Erde nach 3–7 Tagen (Karte) gegen 5–10 Tage (Lexikon) gegen „Tag 3–5" (Anleitung).
 
-**Braucht Patricks Entscheidung** (Umbauten): VPD-Band gegen RLF-Fenster je Phase · welche Erntezahl vorne steht (Kopfzeile und Startseite rechnen das Erntefenster nur aus dem Bernstein-Tempo: bei Patrick am 03.09. „Ernte Tag 118–158“ aus Bernstein 4,1 → 4,0 %, während die Trichom-Karte „erntereif um Tag 113“ sagt; `harvestWindow` gegen `_ripeWindow` — soll das Reifefenster vorne stehen und ein Bernstein-Fenster über 20 Tage gar nicht als Erntetag erscheinen?) · Pflanzenzahl im Assistenten ·
-Wochenfrage in der Anzucht · weekly-split-Konzentration je Intervall.
+**Braucht Patricks Entscheidung** (Umbauten): Gießmenge, Erntefenster, VPD/RLF und weekly-split — die Fragen stehen in Abschnitt 0m · (älter, dort aufgegangen:) welche Erntezahl vorne steht (Kopfzeile und Startseite rechnen das Erntefenster nur aus dem Bernstein-Tempo: bei Patrick am 03.09. „Ernte Tag 118–158“ aus Bernstein 4,1 → 4,0 %, während die Trichom-Karte „erntereif um Tag 113“ sagt; `harvestWindow` gegen `_ripeWindow` — soll das Reifefenster vorne stehen und ein Bernstein-Fenster über 20 Tage gar nicht als Erntetag erscheinen?) · Pflanzenzahl im Assistenten · Wochenfrage in der Anzucht.
 
 **Verworfen von den Skeptikern:** „Gießmenge folgt dem Intervall nicht" (die angezeigte Größe
 gibt es so nicht) und „Plan-Wochen springen bei später Korrektur" (gewollte Dehnung aus v1.5.51;
