@@ -2,6 +2,30 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-15 — v1.5.197
+
+- **Die Frage „wann gießen?" hatte bis zu sieben Zahlen.** Infotext „Restgewicht": „auf etwa 40 %"; Lexikon
+  „Restgewicht": eine Tabelle je Phase mit 50–60 / 40–50 / 35–45 / 25–35 %; Lexikon „Sämlingsphase": „50–55 % (sanft,
+  nicht 40 %)"; „35–40 %" im Infotext „Trauermücken", zweimal im Lexikon „Trauermücken" und in „Wurzelfäule"; Diagnose
+  „Überwässerung": „unter 45 %"; der Sämlings-Hinweis nach dem Anlegen eines Zyklus: „Tag 9+: ~40 %, ab Tag 15
+  ~30–40 %"; das abgeschaltete Restgewicht-Diagramm: fest 30–50 %. Bewertet wird aber mit einem Gießpunkt: 25–40 %,
+  Hebe-Test „Knapp".
+- **Warum das zählt:** Wer der Tabelle folgte, goss in der Anzucht bei 50–60 %, wo die Bewertung der App noch „Bald
+  gießen" sagt. Zu häufiges Gießen verdrängt die Luft aus dem Topf (`ANBAU.md` 1, 13.1). Und die Zahl stand ohne
+  Gültigkeitsbedingung da: Beim Sämling im großen Topf wiegt vor allem Substrat ohne Wurzeln, der Hebe-Test zeigt dann nur,
+  ob der Topf noch nass ist (`ANBAU.md` 1, 7.4).
+- **Jetzt:** Alle Stellen nennen den Gießpunkt aus `GIESSPUNKT` — in Erde „Knapp", 25–40 %, in jeder Phase bis zur Ernte;
+  Coco „Mittel". Die Zahl gilt ab Tag 25 (`DRAIN_AB_TAG`: ab dann zieht ein Guss den ganzen Topf durch), davor wird an den
+  Gießtagen der App gegossen. Der Sämlings-Hinweis nennt den Gießpunkt je Substrat. Mit gestrichen, weil ohne Beleg: „der
+  Stress des Antrocknens triggert die massenhafte Ausschüttung von Wuchshormonen". Belegt ist, dass Wurzeln dorthin
+  wachsen, wo Wasser war und jetzt Sauerstoff ist (`ANBAU.md` 1).
+- **Bewusst nicht angefasst:** die Gates im Rainbow-Plan (40 / 35 / 30 %, Flush-Gate 32–35 %, Hard Dryback 25–30 %). Sie
+  stammen 1:1 aus Patricks Plan-Blatt und liegen im Gießpunkt-Band. Die Diagnose „Überwässerung" rät weiter „dann kleinere
+  Mengen" — das gehört zum Umbau der Gießmenge (Übergabe 0m.1).
+- `test_giesspunktzahlen.js` (14 Prüfungen, beide Zeitzonen): Infotexte „Restgewicht" und „Trauermücken", Lexikon
+  „Restgewicht", „Trauermücken", „Wurzelfäule" und „Sämlingsphase", Diagnose „Überwässerung" und „Trauermücken",
+  Sämlings-Hinweis, Diagramm-Legende, Quelltext. Gegen den alten Stand: 12 Fehler.
+
 ## 2026-09-15 — v1.5.196
 
 - **Der Hard-Dryback zielte auf ~35 % — nasser als der eigene Gießpunkt.** Hebe-Test-Bewertung, Banner und IceFlush-Status

@@ -2312,7 +2312,7 @@ const PROBLEMS = [
     },
     description: 'Blätter hängen nach unten obwohl Topf nass ist. Stamm kann weich werden. Langsames Wachstum. Klassisch: „aussieht wie Wassermangel, ist aber Wasserüberschuss".',
     context: { restHigh: true, phase: ['vegi', 'anzucht'] },
-    action: 'GIESSEN STOPPEN. Topf abtrocknen lassen bis Restgewicht unter 45 %. Wurzeln brauchen Sauerstoff. Mehrere Tage pausieren, dann kleinere Mengen.',
+    action: 'GIESSEN STOPPEN. Erst wieder gießen, wenn der Topf den Gießpunkt erreicht (Erde: Hebe-Test „Knapp“, unter ' + GIESSPUNKT.erde.bis + ' % Restgewicht; Coco: „Mittel“). Wurzeln brauchen Sauerstoff. Mehrere Tage pausieren, dann kleinere Mengen.',
     lexiconKey: 'overwatering',
   },
   {
@@ -2514,7 +2514,7 @@ const PROBLEMS = [
     },
     description: 'Kleine schwarze Mücken über der Erde — Larven fressen Wurzelhaare. Oft bei konstant feuchter Erde.',
     context: { restHigh: true },
-    action: 'Erde antrocknen lassen (Restgewicht unter 40 %). Gelbtafeln fangen adulte. Neemkuchen oder Bti-Granulat gegen Larven.',
+    action: 'Erde bis zum Gießpunkt abtrocknen lassen (Restgewicht unter ' + GIESSPUNKT.erde.bis + ' %). Gelbtafeln fangen adulte. Neemkuchen oder Bti-Granulat gegen Larven.',
     lexiconKey: 'fungus_gnats',
   },
 
@@ -4430,7 +4430,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.196';
+const APP_VERSION = 'v1.5.197';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -6479,7 +6479,7 @@ const INFO_TERMS = {
   },
   dryback: {
     title: 'Restgewicht (Dryback)',
-    text: 'Restgewicht heißt: erst wieder gießen, wenn der Topf spürbar leichter geworden ist — auf etwa 40 % seiner Nass-Last abgetrocknet. Also nach Gewicht gießen statt stur nach Kalender. (Fachbegriff: „Dryback".)',
+    text: 'Restgewicht heißt: erst wieder gießen, wenn der Topf spürbar leichter geworden ist und den Gießpunkt erreicht hat: in Erde beim Hebe-Test „Knapp“, etwa ' + GIESSPUNKT.erde.von + '–' + GIESSPUNKT.erde.bis + ' % Restgewicht (Coco früher, bei „Mittel“). Also nach Gewicht gießen statt stur nach Kalender. Die Zahl gilt, sobald ein Guss den ganzen Topf durchzieht — ab Tag ' + DRAIN_AB_TAG + '. Davor wiegt der Topf vor allem Substrat ohne Wurzeln, und gegossen wird an den Gießtagen der App. (Fachbegriff: „Dryback".)',
     tip: 'Warum: Beim Abtrocknen zieht die Wurzel Sauerstoff in die Erde — das ist der Motor fürs Wachstum. Dauernd nasse Erde erstickt die Wurzel und lockt Trauermücken an. Heb den Topf an und „lies" am Gewicht, wann es Zeit ist.',
     lex: 'Restgewicht (Dryback · Trocken-Nass-Zyklus)',
   },
@@ -6576,7 +6576,7 @@ const INFO_TERMS = {
   trauermuecken: {
     title: 'Trauermücken',
     text: 'Der häufigste Anfänger-Schädling: kleine schwarze Fliegen über der Erde. Das eigentliche Problem sind die Larven im Boden, die feine Wurzelhaare fressen.',
-    tip: 'Ursache ist fast immer zu nasses Substrat. Wer konsequent nach Restgewicht gießt (Topf zwischendurch auf 35–40 % abtrocknen lassen), hat selten welche. Dazu helfen: Gelbtafeln, eine Schicht Quarzsand obenauf und BTI (ein biologisches Mittel gegen Mückenlarven).',
+    tip: 'Ursache ist fast immer zu nasses Substrat. Wer konsequent nach Restgewicht gießt (Erde zwischen den Güssen bis zum Gießpunkt abtrocknen lassen, ' + GIESSPUNKT.erde.von + '–' + GIESSPUNKT.erde.bis + ' % Restgewicht), hat selten welche. Dazu helfen: Gelbtafeln, eine Schicht Quarzsand obenauf und BTI (ein biologisches Mittel gegen Mückenlarven).',
     lex: 'Trauermücken (Sciaridae)',
   },
   npk: {
@@ -9108,7 +9108,7 @@ function _daysUntilPhase(c, iso, zielPh, maxTage) {
 /**
  * (v1.5.65) Wie viele Tage soll der Topf vor dem Spülstart abtrocknen?
  * Standard 4 — ein Tag mehr als das übliche 3-Tage-Intervall. Der Spülgang braucht ein
- * Substrat bei etwa 30–35 % Restgewicht, sonst nimmt der Topf die Spülmenge nicht auf.
+ * Substrat am Gießpunkt (GIESSPUNKT, seit v1.5.197 im Kommentar), sonst nimmt der Topf die Spülmenge nicht auf.
  * Pro Zyklus einstellbar, weil Topfgröße und Substrat das verschieben.
  */
 /**
@@ -24177,13 +24177,15 @@ function addCyc(overrides) {
       // (v1.5.169) Mengen und pH aus Topf und Substrat — vorher fest ~400/~700/~150 ml und pH 6.2–6.5 auch bei Coco.
       const _phL = phTargetFor(c.medium).label;
       const _sat = _tag1MengeJeTopf(c, 'saturated'), _dir = _tag1MengeJeTopf(c, 'direct');
+      // (v1.5.197) Gießpunkt aus GIESSPUNKT, genannt erst ab DRAIN_AB_TAG — vorher „Tag 9+: ~40 %, ab Tag 15 ~30–40 %“.
+      const _gp = c.medium === 'coco' ? 'Hebe-Test „Mittel“, etwa 60–70 % Restgewicht' : `Hebe-Test „Knapp“, ${GIESSPUNKT.erde.von}–${GIESSPUNKT.erde.bis} % Restgewicht`;
       const msg = sm === 'direct' ? `Du hast 'Direkt' gewählt — Tag 1 ohne vollen Sättigungsguss, dafür kleinere Tagesgüsse.
 
 App-Plan für Sämlinge:
 • Tag 1 (Keimstart): Erde nicht vorbefeuchtet, ~${_dir} ml pH-Wasser (pH ${_phL}) je Topf in die Mitte, wo der Samen liegt oder hinkommt
 • Tag 2–8: Bei Bedarf ~30ml pro Tag — kein striktes Sprüh-Verbot, aber dosiert. Erde sollte nie ganz austrocknen, aber auch nie pfützen
-• Tag 9+: Normaler Gießrhythmus alle 2–3 Tage, Topf-Restgewicht ~40% beim Gießzeitpunkt
-• Ab Tag 15: Tiefer trocknen lassen, Restgewicht ~30–40%
+• Tag 9–${DRAIN_AB_TAG - 1}: an den Gießtagen der App gießen, mit ihrer Gießmenge — der Topf wiegt vor allem Substrat ohne Wurzeln, der Hebe-Test zeigt nur, ob er noch nass ist
+• Ab Tag ${DRAIN_AB_TAG}: gießen, wenn der Topf den Gießpunkt erreicht (${_gp})
 
 Vorteil dieser Methode: Wurzel wächst aktiv nach unten weil sie das Wasser suchen muss. Weniger Risiko von durchgenässtem Topf — Pythium-Druck geringer als bei Sättigung.
 
@@ -24196,8 +24198,8 @@ App-Plan für Sämlinge:
 • 24h vor Tag 1: Erde mit pH-Wasser (pH ${_phL}) anfeuchten, bis sie sich wie ein ausgewrungener Schwamm anfühlt — trockenes Substrat nimmt sonst schlecht Wasser an
 • Tag 1 (Keimstart): Einmaliger Sättigungsguss ~${_sat} ml je Topf in 3 Etappen mit je 15 min Pause (Wasser sickert besser ein, keine Pfützen)
 • Tag 2–8: KEIN weiteres Gießen — nur Sprühen (3–5 Sprühstöße auf die Oberfläche, pH ${_phL}, nicht auf die Keimblätter)
-• Tag 9+: Normaler Gießrhythmus alle 2–3 Tage, Topf-Restgewicht ~40% beim Gießzeitpunkt
-• Ab Tag 15: Tiefer trocknen lassen, Restgewicht ~30–40%
+• Tag 9–${DRAIN_AB_TAG - 1}: an den Gießtagen der App gießen, mit ihrer Gießmenge — der Topf wiegt vor allem Substrat ohne Wurzeln, der Hebe-Test zeigt nur, ob er noch nass ist
+• Ab Tag ${DRAIN_AB_TAG}: gießen, wenn der Topf den Gießpunkt erreicht (${_gp})
 
 Warum kein Gießen Tag 2–8?
 Sämlings-Wurzeln reichen wenige Zentimeter. Voll durchnässte Erde ohne aktive Wurzel = Pythium-Risiko (Wurzelfäule, oft tödlich binnen 24h). Der einmalige Sättigungsguss am Tag 1 stellt die Erde ein — danach trinkt der Sämling aus der oberen Schicht, gesprüht reicht.
@@ -32686,8 +32688,8 @@ const LEXIKON = [
   { cat: '💧 Bewässerung', items: [
     { t: 'Restgewicht (Dryback · Trocken-Nass-Zyklus)',
       brief: 'Das Intervall zwischen Gießen. Der wichtigste Hebel für gesunde Wurzeln — wichtiger als der Dünger selbst.',
-      mechanism: 'Wurzeln brauchen <b>Sauerstoff</b>. Wenn die Pflanze Wasser aufnimmt und es verdunstet, entsteht im Substrat leichter Unterdruck — der frischen Sauerstoff in die Wurzelzone zieht. Dauerfeuchtigkeit = kein Sog = keine Sauerstoff-Versorgung = faulende Wurzeln und schwaches Wurzelsystem.<br><br>Gleichzeitig <b>triggert der leichte Stress des Antrocknens</b> die massenhafte Ausschüttung von Wuchshormonen in den Wurzelspitzen. Die Pflanze reagiert mit aktiverem, dichterem Wurzelwachstum.',
-      practice: '<b>Dryback-Zielwerte (Restgewicht):</b><br>• Anzucht: 50-60 %<br>• Vegi: 40-50 %<br>• Blüte Mitte: 35-45 %<br>• Blüte Ende/Finisher: 25-35 %<br><br>Messen: Topf wiegen oder Hebe-Test mit Erfahrung. Die App kann beide Methoden (Einstellungen → Bewässerungs-Modus).<br><br><b>Praxis-Signal:</b> Topf fühlt sich leicht an, Pflanze ist nicht welk → guter Guss-Zeitpunkt. Lieber einen Tag zu spät als zu früh.',
+      mechanism: 'Wurzeln brauchen <b>Sauerstoff</b>. Wenn die Pflanze Wasser aufnimmt und es verdunstet, entsteht im Substrat leichter Unterdruck — der frischen Sauerstoff in die Wurzelzone zieht. Dauerfeuchtigkeit = kein Sog = keine Sauerstoff-Versorgung = faulende Wurzeln und schwaches Wurzelsystem.<br><br>Wurzeln wachsen bevorzugt dorthin, wo Wasser war und jetzt Sauerstoff ist. Ein Topf, der zwischen den Güssen nie leichter wird, begrenzt deshalb das Wurzelsystem — und damit die Endgröße der Pflanze.',
+      practice: '<b>Gießpunkt:</b> In Erde wird gegossen, wenn der Topf beim Hebe-Test „Knapp“ ist — etwa ' + GIESSPUNKT.erde.von + '–' + GIESSPUNKT.erde.bis + ' % Restgewicht, in jeder Phase bis zur Ernte. Unter ' + GIESSPUNKT.erde.von + ' % beginnt Wasserstress. Coco wird viel früher gegossen, beim Hebe-Test „Mittel“ (etwa 60–70 %).<br><br><b>Ab wann die Zahl gilt:</b> sobald ein Guss den ganzen Topf durchzieht — in der App ab Tag ' + DRAIN_AB_TAG + '. Beim Sämling im großen Topf wiegt vor allem Substrat ohne Wurzeln: Der Hebe-Test zeigt dann, ob der Topf noch nass ist, aber nicht, wann die Wurzel Wasser braucht. Bis dahin wird an den Gießtagen der App gegossen, mit ihrer Gießmenge.<br><br>Messen: Topf wiegen oder Hebe-Test mit Erfahrung. Die App kann beide Methoden (Einstellungen → Bewässerungs-Modus).<br><br><b>Praxis-Signal:</b> Topf fühlt sich leicht an, Pflanze ist nicht welk → guter Guss-Zeitpunkt. Lieber einen Tag zu spät als zu früh.',
       pitfall: 'Zu häufiges Gießen ist Problem Nr. 1 bei Einsteigern. Symptome von Überwässerung (hängende Blätter, gelbe untere Blätter) sehen oft wie „zu wenig Wasser" aus → User gießt noch mehr → Teufelskreis. Immer Topf-Gewicht prüfen, nicht Blätter deuten.' },
     { t: 'Sättigungsguss (Start-Guss)',
       brief: 'Der erste gründliche Guss an Tag 1, dem Keimstart — durchfeuchtet den ganzen Topf einmal komplett, in Etappen, damit nichts ersäuft.',
@@ -33489,11 +33491,11 @@ const LEXIKON = [
         '• ⚠️ Keimblätter hängen → zu trocken, sofort leicht besprühen<br>' +
         '• 🚨 Stiel wird dünn und braun an der Basis → <b>Damping-Off</b>! Haube sofort weg, Lüfter an, trockener lassen<br>' +
         '• 🚨 Gelbe Keimblätter → zu nass ODER zu wenig Licht<br><br>' +
-        '<b>Tag 7–14: Übergang zum Dryback-System</b><br>' +
+        '<b>Tag 7–14: vom Sprühen zum Gießen</b><br>' +
         '<table style="width:100%;border-collapse:collapse;font-size:13px;margin-top:6px">' +
         '<tr style="background:rgba(255,255,255,0.04)"><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)" colspan="2"><b>Werte Tag 7–14</b></td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Übergang ab</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Sobald erste echte Blätter sichtbar</td></tr>' +
-        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Dryback-Ziel</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">50–55% Restgewicht (sanft, nicht 40%)</td></tr>' +
+        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Restgewicht</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Noch kein Gießpunkt: Der Topf wiegt vor allem Substrat ohne Wurzeln, der Hebe-Test zeigt nur, ob er noch nass ist. Gegossen wird an den Gießtagen der App, mit ihrer Gießmenge — den Gießpunkt gibt es ab Tag ' + DRAIN_AB_TAG + '</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Erster richtiger Guss</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">200–300 ml pro Topf</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Haube</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Täglich länger offen, ab Tag 10 weg</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Licht hochdrehen</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Auf 70–80% Leistung</td></tr>' +
@@ -34034,7 +34036,7 @@ const LEXIKON = [
       mechanism: 'Trauermücken-Adulte sind <b>harmlos</b> — sie fliegen herum, sehen lästig aus, fressen aber nichts. Das Problem sind ihre <b>Larven</b>: weiße Würmchen die in den oberen 2–3 cm Substrat leben und feine Wurzelhaare sowie organisches Material fressen. Bei starkem Befall: ganze Wurzelhaar-Schichten weg → Pflanze nimmt Wasser/Nährstoffe schlechter auf, kümmert.<br><br>' +
         '<b>Lebenszyklus (kritisch):</b> Bei feuchtem Substrat können sich <b>3 Generationen pro Monat</b> entwickeln. Das macht die Bekämpfung anspruchsvoll — du musst alle Lebensstadien gleichzeitig erwischen, sonst bist du in 2 Wochen wieder am Anfang.<br><br>' +
         '<b>Sekundäres Risiko:</b> Die Frassstellen an Wurzeln sind <b>Eintrittspforten für Pythium</b> und andere Pilzkrankheiten. Aus einem Trauermücken-Befall wird schnell ein Wurzelfäule-Problem — und das ist tödlich.<br><br>' +
-        '<b>Ursache fast immer:</b> Übergiessen. Trauermücken brauchen <b>konstant feuchtes Substrat</b> für ihre Eiablage. Wer einen sauberen Dryback fährt (Topf zwischen Güssen auf 35–40% austrocknen lassen), bekommt selten Trauermücken.',
+        '<b>Ursache fast immer:</b> Übergiessen. Trauermücken brauchen <b>konstant feuchtes Substrat</b> für ihre Eiablage. Wer nach Restgewicht gießt (Erde zwischen den Güssen bis zum Gießpunkt abtrocknen lassen, ' + GIESSPUNKT.erde.von + '–' + GIESSPUNKT.erde.bis + ' % Restgewicht), bekommt selten Trauermücken.',
       practice: '<b>Diagnose:</b><br>' +
         '• Schwarze, fruchtfliegen-große Insekten beim Gießen oder Bewegen der Pflanze<br>' +
         '• Sitzen auf der Erde oder fliegen kurz herum, dann zurück<br>' +
@@ -34043,7 +34045,7 @@ const LEXIKON = [
         '<b>Eskalations-Stufen (Reihenfolge wichtig):</b><br>' +
         '<table style="width:100%;border-collapse:collapse;font-size:13px;margin-top:6px">' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)" width="30%"><b>Stufe</b></td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Maßnahme</b></td></tr>' +
-        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Sofort</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Dryback strenger einhalten — Topf auf 35–40% Restgewicht trocknen lassen, bricht den Lebenszyklus</td></tr>' +
+        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Sofort</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Erst wieder gießen, wenn der Topf den Gießpunkt erreicht (' + GIESSPUNKT.erde.von + '–' + GIESSPUNKT.erde.bis + ' % Restgewicht) — die Larven brauchen dauerhaft feuchte Erde</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Stufe 1</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Gelbtafeln direkt über der Erde aufhängen — fängt Adulte bevor sie Eier legen</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Stufe 2</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Substrat-Oberfläche mit 2 cm Quarzsand oder Perlite abdecken — verhindert Eiablage und Schlupf</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Stufe 3</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">BTI-Bakterien (Bacillus thuringiensis israelensis) mit Gießwasser einbringen — tötet Larven biologisch, harmlos für Pflanze</td></tr>' +
@@ -34204,7 +34206,7 @@ const LEXIKON = [
         '6. <b>Trichoderma-Präparat einsetzen</b> — biologischer Gegenspieler von Pythium, etabliert sich im neuen Substrat<br>' +
         '7. <b>2–3 Tage nur Wasser</b> mit CalMag, kein voller Dünger bis Erholung<br><br>' +
         '<b>Prävention:</b><br>' +
-        '• <b>Strikter Dryback</b> — Topf zwischen Güssen auf 35–40% Restgewicht trocknen lassen<br>' +
+        '• <b>Nach Restgewicht gießen</b> — Erde zwischen den Güssen bis zum Gießpunkt abtrocknen lassen (' + GIESSPUNKT.erde.von + '–' + GIESSPUNKT.erde.bis + ' % Restgewicht)<br>' +
         '• <b>Wassertemperatur</b> 18–22°C, niemals kaltes Leitungswasser direkt<br>' +
         '• <b>Luftbewegung</b> auch am Substrat — kein Stagnieren<br>' +
         '• <b>Mykorrhiza und Trichoderma</b> präventiv einsetzen — die Konkurrenz im Substrat verhindert dass Pythium dominant wird<br>' +
@@ -36011,7 +36013,7 @@ function buildChartsSection(cycleId) {
   // Y-Bereich 0–110 (über 100 möglich kurz nach Guss).
   const restPctChart = buildChart(restPctData, dr, {
     title: 'Restgewicht-Verlauf', unit: '%', min: 0, max: 110, decimals: 0,
-    zones: [{ from: 30, to: 50, color: '#4CAF70' }],
+    zones: [{ from: GIESSPUNKT.erde.von, to: GIESSPUNKT.erde.bis, color: '#4CAF70' }],   // (v1.5.197) vorher fest 30–50
     type: 'line', chartId: 'restpct-' + cycleId,
   });
 
@@ -36021,7 +36023,7 @@ function buildChartsSection(cycleId) {
     ${_chartBlock('📊 pH-Verlauf', phData.length, `Grüner Bereich: ${phTargetFor(cyc.medium).label} (Ziel für ${cyc.medium === 'coco' ? 'Coco' : (cyc.medium === 'hydro' ? 'Hydro' : 'Erde')}) · tipp auf Punkt für Details`, phChart, true)}
     ${_chartBlock('📊 EC-Verlauf', ecData.length, `Grüner Bereich: ${ecFmt(1.2)}–${ecFmt(2.2)} ${ecUnitLabel()} (typisch Vegi→Blüte)`, ecChart)}
     ${drainEcData.length >= minPoints ? _chartBlock('🌊 Drain-EC-Verlauf', drainEcData.length, `Drain ÷ Zulauf bis 1,3 = Gleichgewicht · 1,3–1,6 = in der Vollversorgung normal · über 1,6 = Anreicherung. In Erde kann ein Anstieg ab der Blütemitte auch Nachlieferung aus der Erde sein. Aussagekräftig erst ab etwa 15 % Ablauf. Grüner Bereich: ${ecFmt(0.8)}–${ecFmt(2.0)} ${ecUnitLabel()} typisch.`, drainEcChart) : ''}
-    ${restPctData.length >= minPoints ? _chartBlock('⚖️ Restgewicht-Verlauf', restPctData.length, 'Sweet-Spot 30–50% (gewollter Dryback). Über 80% = noch nass, unter 25% = zu trocken (Stress).', restPctChart) : ''}
+    ${restPctData.length >= minPoints ? _chartBlock('⚖️ Restgewicht-Verlauf', restPctData.length, `Gießpunkt ${GIESSPUNKT.erde.von}–${GIESSPUNKT.erde.bis} % (Hebe-Test „Knapp“). Ab 85 % frisch gegossen, unter ${GIESSPUNKT.erde.von} % Wasserstress.`, restPctChart) : ''}
     ${_chartBlock('📊 VPD-Verlauf', vpdData.length, _vpdDiagrammLegende(cyc), vpdChart)}
     ${_chartBlock('📊 Wassermenge', waterData.length, 'Bar = Liter pro Gießtag', waterChart)}
   `;
