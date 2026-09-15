@@ -2,6 +2,22 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-15 — v1.5.184
+
+- **Die Karte vor einem Phasenwechsel sagte an allen drei Tagen davor „In 3 Tagen".** Beim Browser-Check von
+  v1.5.183 auf Patricks Startseite gesehen: Am 29.08.2026 (Tag 106, Spülen ab Tag 107) stand „In 3 Tagen:
+  Spülphase beginnt … Vorbereiten: pH-Wasser für ~2 Wochen bereitstellen." direkt unter „Spülung morgen".
+  `getAlerts` sah nur auf den Tag in drei Tagen und übergab den Texten fest `daysUntil: 3`; die „~2 Wochen"
+  standen fest da, obwohl vier Spültage eingestellt sind. Dieselbe Rechnung galt für Blüte-Start, IceFlush, Erntetag
+  und Trocknung. Lagen zwei Wechsel in drei Tagen, übersprang die Karte den näheren: Am IceFlush-Tag vor der Ernte
+  kündigte sie „In 3 Tagen: Trocknung" an statt „Morgen: Erntetag".
+- **Warum das zählt:** Zwei Karten mit verschiedenen Zahlen für denselben Termin — beim Überfliegen gewinnt die
+  größere, nicht die richtigere. Wer „in 3 Tagen" liest, stellt das Spülwasser nicht heute bereit.
+- **Jetzt:** Die Karte sucht den nächsten Wechsel innerhalb von drei Tagen und nennt seinen Abstand („In 2 Tagen",
+  „Morgen"). Die Spülphasen-Karte nennt die eingestellten Spültage (`flushWetDays`). Neu dafür: `_inNTagen(n)`.
+- `test_phasenwechsel.js` (7 Prüfungen, beide Zeitzonen): alle Karten von Tag 16 bis 106 eines Automatic-Zyklus
+  gegen den echten Abstand zum nächsten Wechsel. Gegen den alten Stand: 4 Fehler.
+
 ## 2026-09-15 — v1.5.183
 
 - **„Spülung in N Tagen" zählte einen Tag zu wenig.** Beim Durchsehen der Stellen gesehen, die mit der

@@ -156,27 +156,29 @@ const T = {
     // Vor Blüte-Start — unterschiedlich je nach Setup
     toBloomSoon: ({ seedType, growType, daysUntil }) => {
       if (seedType === 'auto') {
-        return `In ${daysUntil} Tagen beginnt die Blüte automatisch. Die Pflanze macht das alleine — du musst nichts umstellen.`;
+        return `${_inNTagen(daysUntil)} beginnt die Blüte automatisch. Die Pflanze macht das alleine — du musst nichts umstellen.`;
       }
       // Feminisiert
       if (growType === 'outdoor') {
-        return `In ${daysUntil} Tagen typischer Blüte-Start. Outdoor wird der Trigger durch kürzere Tage ab Mitte August ausgelöst — passiert von allein.`;
+        return `${_inNTagen(daysUntil)} typischer Blüte-Start. Outdoor wird der Trigger durch kürzere Tage ab Mitte August ausgelöst — passiert von allein.`;
       }
       // Feminisiert Indoor
-      return `In ${daysUntil} Tagen: <b>Blüte-Start</b>. Du musst jetzt das Licht auf <b>12/12</b> umstellen, sonst bleibt die Pflanze in Vegi.`;
+      return `${_inNTagen(daysUntil)}: <b>Blüte-Start</b>. Du musst jetzt das Licht auf <b>12/12</b> umstellen, sonst bleibt die Pflanze in Vegi.`;
     },
 
-    toFlushSoon: ({ daysUntil }) =>
-      `In ${daysUntil} Tagen: <b>Spülphase</b> beginnt. Ab dann nur noch klares Wasser ohne Dünger. Vorbereiten: pH-Wasser für ~2 Wochen bereitstellen.`,
+    // (v1.5.184) Mit echtem Abstand und der eingestellten Spüldauer — vorher fest „In 3 Tagen" und „pH-Wasser für
+    // ~2 Wochen", auch am Tag vor dem Spülen und bei vier Spültagen.
+    toFlushSoon: ({ daysUntil, spuelTage }) =>
+      `${_inNTagen(daysUntil)}: <b>Spülphase</b> beginnt. Ab dann nur noch klares Wasser ohne Dünger. Vorbereiten: pH-eingestelltes Wasser${spuelTage ? (spuelTage === 1 ? ' für den Spültag' : ` für die ${spuelTage} Spültage`) : ''}.`,
 
     toIceSoon: ({ daysUntil }) =>
-      `In ${daysUntil} Tagen: <b>IceFlush</b>. Eiskaltes Wasser zum Abschluss — eine beliebte Grower-Technik (ein Trichom-Plus ist wissenschaftlich allerdings nicht belegt).`,
+      `${_inNTagen(daysUntil)}: <b>IceFlush</b>. Eiskaltes Wasser zum Abschluss — eine beliebte Grower-Technik (ein Trichom-Plus ist wissenschaftlich allerdings nicht belegt).`,
 
     // (v1.5.97) Wenn die eigene Trichom-Messung einen späteren Tag nennt als der Plan, darf
     // hier nicht zum Schneiden aufgefordert werden. Der Plan-Tag stammt aus einer
     // Wochenangabe, die Messung von der Pflanze — die Messung gewinnt.
     toHarvestSoon: ({ daysUntil, vsPlan }) => {
-      const kopf = `In ${daysUntil} Tagen: <b>Erntetag</b> — so steht es in deinem Plan.`;
+      const kopf = `${_inNTagen(daysUntil)}: <b>Erntetag</b> — so steht es in deinem Plan.`;
       if (!vsPlan) {
         // (v1.5.151) Vorher „milchig = bereit, bernsteinfarben = Peak". Bernstein ist nach ANBAU.md 11 Abbau
         // (THCA oxidiert zu CBNA), nicht der Höhepunkt; wie viel davon, ist die Entscheidung des Growers.
@@ -196,7 +198,7 @@ const T = {
     },
 
     toDrySoon: ({ daysUntil }) =>
-      `In ${daysUntil} Tagen: <b>Trocknung</b>. Ziel: ${TROCKNEN_TEXT} für 7–14 Tage. Aufhängen an einer Schnur, dunkel.`,
+      `${_inNTagen(daysUntil)}: <b>Trocknung</b>. Ziel: ${TROCKNEN_TEXT} für 7–14 Tage. Aufhängen an einer Schnur, dunkel.`,
   },
 
   // ---------------------------------------------------------------------
@@ -3393,7 +3395,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.183';
+const APP_VERSION = 'v1.5.184';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -6899,6 +6901,8 @@ function setDebugDate(v) {
 function iso12(iso) { return new Date(iso + 'T12:00:00'); }
 function isoPlus(iso, d) { const o = iso12(iso); o.setDate(o.getDate() + d); return _localISO(o); }
 function isoDiff(a, b) { return Math.round((iso12(a) - iso12(b)) / 86400000); }
+/** (v1.5.184) „Morgen" oder „In N Tagen" — für Hinweise vor einem Termin. */
+function _inNTagen(n) { return n === 1 ? 'Morgen' : `In ${n} Tagen`; }
 function fmtDE(iso, o) { return iso12(iso).toLocaleDateString('de-DE', o || { day: '2-digit', month: '2-digit' }); }
 
 /**
@@ -12957,7 +12961,14 @@ function getAlerts(c) {
   // So bekommt der User Zeit sich vorzubereiten (Licht umstellen, Spülwasser bereit, etc.).
   // MIGRATION Phase 2: nutzt jetzt T.phaseTransition.* mit seedType×growType-Logik —
   // Automatics bekommen den korrekten "nichts tun"-Text, nicht generische "12/12"-Pauke.
-  const p3 = phase(isoPlus(today, 3), c);
+  // (v1.5.184) Der nächste Wechsel mit seinem echten Abstand. Vorher sah die Karte nur auf den Tag in drei Tagen und
+  // schrieb an allen drei Tagen davor „In 3 Tagen" — am Tag vor dem Spülen „In 3 Tagen: Spülphase beginnt" direkt unter
+  // „Spülung morgen". Liegen zwei Wechsel in den drei Tagen (IceFlush, Ernte, Trocknen), kommt der nähere zuerst.
+  let p3 = null, _wechselIn = 0;
+  for (let _d = 1; _d <= 3 && !p3; _d++) {
+    const _pd = phase(isoPlus(today, _d), c);
+    if (_pd && _pd.ph !== p.ph) { p3 = _pd; _wechselIn = _d; }
+  }
   if (p3 && p && p3.ph !== p.ph) {
     const transitionKey = `prev_${p.ph}_to_${p3.ph}`;
     const seedType = c.seedType || 'auto';
@@ -12966,15 +12977,15 @@ function getAlerts(c) {
     if (p3.ph === 'bloom' && isVegiPhase(p.ph)) {
       // ZENTRALE STELLE: T.phaseTransition.toBloomSoon entscheidet seedType×growType-
       // abhängig was der User lesen soll. Kein "12/12" für Automatics mehr.
-      hint = { icon: '🌸', text: T.phaseTransition.toBloomSoon({ seedType, growType, daysUntil: 3 }) };
+      hint = { icon: '🌸', text: T.phaseTransition.toBloomSoon({ seedType, growType, daysUntil: _wechselIn }) };
     } else if (p3.ph === 'flush') {
-      hint = { icon: '🚿', text: T.phaseTransition.toFlushSoon({ daysUntil: 3 }) };
+      hint = { icon: '🚿', text: T.phaseTransition.toFlushSoon({ daysUntil: _wechselIn, spuelTage: flushWetDays(c) }) };
     } else if (p3.ph === 'ice') {
-      hint = { icon: '🧊', text: T.phaseTransition.toIceSoon({ daysUntil: 3 }) };
+      hint = { icon: '🧊', text: T.phaseTransition.toIceSoon({ daysUntil: _wechselIn }) };
     } else if (p3.ph === 'harvest') {
-      hint = { icon: '✂️', text: T.phaseTransition.toHarvestSoon({ daysUntil: 3, vsPlan: _trichVsPlan(c, today) }) };
+      hint = { icon: '✂️', text: T.phaseTransition.toHarvestSoon({ daysUntil: _wechselIn, vsPlan: _trichVsPlan(c, today) }) };
     } else if (p3.ph === 'dry') {
-      hint = { icon: '🍂', text: T.phaseTransition.toDrySoon({ daysUntil: 3 }) };
+      hint = { icon: '🍂', text: T.phaseTransition.toDrySoon({ daysUntil: _wechselIn }) };
     }
     if (hint && !c._milestones?.[transitionKey]) {
       milestones.push({ key: transitionKey, ...hint, type: 'milestone' });
