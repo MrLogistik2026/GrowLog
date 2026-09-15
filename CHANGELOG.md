@@ -2,6 +2,22 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-15 — v1.5.194
+
+- **Beim Trocknen und im Curing warnte der Eintrag vor Pflanzenschäden an einer geschnittenen Pflanze.**
+  `getEntryWarnings` kannte dafür keine Phase: Im Trockenraum stand bei 17 °C „Fällt die Wurzelzone unter 16 °C, brechen
+  Phosphor- und Wasseraufnahme ein", bei 14 °C „das Wachstum stockt", bei 30 °C „Stoffwechsel bremst. Ziel: 22–28 °C bei
+  Licht an" — direkt neben der Zielzeile „Trocknen: 18–20 °C" — und bei 33 °C „Hitzestress (Taco-Blätter)". In der
+  Dunkelphase und am Erntetag kam über 32 °C ebenfalls „Taco-Blätter", obwohl dieselben Tage ab 29 °C den Terpen-Hinweis
+  zeigen.
+- **Warum das zählt:** „Ziel 22–28 °C" beim Trocknen widerspricht der Zielzeile daneben — und trocknet nach `ANBAU.md`
+  12.1 zu schnell: Die Außenseite verhornt, die leichten Terpene gehen zuerst.
+- **Jetzt:** Beim Trocknen und im Curing gibt es keine Pflanzen-Warnung zur Temperatur; die Zielzeile im Umgebungsblock
+  bewertet sie gegen `TROCKNEN_KLIMA` und zeigt 17 °C weiter mit ⚠. In Dunkelphase und am Erntetag gilt über 32 °C der
+  Terpen-Hinweis, als Fehler-Stufe.
+- `test_trockenwarnungen.js` (10 Prüfungen, beide Zeitzonen): Trocknen und Curing bei 14, 17, 30 und 33 °C, die
+  Zielzeile beim Trocknen, Dunkelphase und Erntetag bei 33 °C, Gegenprobe späte Blüte. Gegen den alten Stand: 4 Fehler.
+
 ## 2026-09-15 — v1.5.193
 
 - **Die Diagnose nannte die Luftfeuchte „hoch", wo der Eintrag „im Ziel" sagte — und umgekehrt.** `buildDiagnosticContext`

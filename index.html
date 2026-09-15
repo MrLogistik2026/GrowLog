@@ -4430,7 +4430,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.193';
+const APP_VERSION = 'v1.5.194';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -15190,8 +15190,14 @@ function getEntryWarnings(cd, p, e, c, iso) {
       // wird nicht mehr gedüngt — Wachstumsstopp und Phosphor-Lockout sind dort keine Folgen. Kühle schont Terpene
       // (ANBAU.md 14); die Luftfeuchte bewertet der Umgebungsblock.
       const _kStT = klimaStufe(p), _ohneTempZiel = !!(_kStT && !KLIMA_ZIEL[_kStT].temp);
-      if (tempVal > 32) out.push({ type: 'err', text: `🌡️ ${tempVal}°C zu heiß! Hitzestress (Taco-Blätter). Lüftung erhöhen.` });
-      else if (tempVal > 29) out.push({ type: 'warn', text: _ohneTempZiel
+      // (v1.5.194) Beim Trocknen und im Curing ist die Pflanze geschnitten: Wachstum, Wurzelzone und Blattstress gibt es nicht
+      // mehr. Die Temperatur bewertet dort die Zielzeile im Umgebungsblock (Trocknen 18–20 °C, TROCKNEN_KLIMA). Vorher kam bei
+      // 17 °C im Trockenraum „Fällt die Wurzelzone unter 16 °C …", bei 30 °C „Stoffwechsel bremst. Ziel: 22–28 °C bei Licht an"
+      // und bei 33 °C „Hitzestress (Taco-Blätter)". In Dunkelphase und am Erntetag gilt über 32 °C der Terpen-Hinweis.
+      const _geschnitten = !!(p && (p.ph === 'dry' || p.ph === 'cure'));
+      if (_geschnitten) { /* keine Pflanzen-Warnung — siehe Zielzeile */ }
+      else if (tempVal > 32 && !_ohneTempZiel) out.push({ type: 'err', text: `🌡️ ${tempVal}°C zu heiß! Hitzestress (Taco-Blätter). Lüftung erhöhen.` });
+      else if (tempVal > 29) out.push({ type: tempVal > 32 ? 'err' : 'warn', text: _ohneTempZiel
         ? `🌡️ ${tempVal}°C hoch — Terpene sind flüchtig: kühler halten, die Luftfeuchte dabei höchstens ${KLIMA_ZIEL[_kStT].deckel} %.`
         : `🌡️ ${tempVal}°C hoch — Stoffwechsel bremst. Ziel: ${_kStT ? KLIMA_ZIEL[_kStT].temp.join('–') : '22–28'} °C bei Licht an.` });
       // (v1.5.191) Die Grenze sitzt an der Wurzel (ANBAU.md 7.3): unter 16 °C in der Wurzelzone brechen Phosphor- und
