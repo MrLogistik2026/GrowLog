@@ -2,6 +2,19 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-15 — v1.5.183
+
+- **„Spülung in N Tagen" zählte einen Tag zu wenig.** Beim Durchsehen der Stellen gesehen, die mit der
+  Anzucht-Länge rechnen. `getAlerts` rechnete Blütetage minus Blütetag. Gespült wird aber erst am Tag danach: Bei
+  70 Blütetagen beginnt das Spülen an Blütetag 71, und an Blütetag 63 stand „Spülung in 7 Tagen" — es waren 8. Am
+  vorletzten Blütetag stand „Spülung in 1 Tagen", am letzten, wenn am nächsten Morgen gespült wird, gar nichts.
+  Mit Patricks Daten (Spülen ab Tag 107): Der Hinweis lief vom 22.08. bis 28.08. und fehlte am 29.08.
+- **Warum das zählt:** Ein Countdown, der am letzten Tag verschwindet, fällt genau an dem Tag aus, an dem der
+  Wechsel ansteht — dem Tag, an dem man das pH-Wasser für den ersten Spülgang vorbereitet.
+- **Jetzt:** Die Zahl zählt bis zum ersten Spültag, sieben Tage lang; am letzten Blütetag steht „Spülung morgen".
+- `test_spuelhinweis.js` (8 Prüfungen, beide Zeitzonen): 70 und 49 Blütetage. Gegen den alten Stand: 6 Fehler. Im
+  Browser mit Patricks Daten: 22.08. kein Hinweis, 23.08. „in 7 Tagen", 29.08. „morgen", 30.08. (Spülen) keiner.
+
 ## 2026-09-15 — v1.5.182
 
 - **Das Feld „Blüte-Start" zeigte bei Outdoor-Photos einen anderen Tag, als die App rechnet.** Beim Beheben von

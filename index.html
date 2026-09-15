@@ -4394,7 +4394,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.182';
+const APP_VERSION = 'v1.5.183';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -13674,8 +13674,11 @@ function getAlerts(c) {
 
   // Phase-specific alerts
   if (p.ph === 'bloom') {
-    const rem = (c.bloomDays || PHASE_DEFAULTS.bloomDays) - (p.day - (c.anzuchtDays || PHASE_DEFAULTS.anzuchtDays));
-    if (rem > 0 && rem <= 7) out.push({ icon: '🚿', text: `Spülung in ${rem} Tagen`, type: 'info' });
+    // (v1.5.183) Tage bis zum ersten Spültag — gespült wird ab Blütetag bloomDays + 1. Vorher stand hier
+    // Blütetage − Blütetag: am Blütetag 63 von 70 „Spülung in 7 Tagen“ (es sind 8), am vorletzten „in 1 Tagen“ und am
+    // letzten Blütetag, wenn morgen gespült wird, gar nichts.
+    const bisSpuelen = (c.bloomDays || PHASE_DEFAULTS.bloomDays) + 1 - (p.day - (c.anzuchtDays || PHASE_DEFAULTS.anzuchtDays));
+    if (bisSpuelen >= 1 && bisSpuelen <= 7) out.push({ icon: '🚿', text: bisSpuelen === 1 ? 'Spülung morgen' : `Spülung in ${bisSpuelen} Tagen`, type: 'info' });
     if (bluetestufe(p) === 'spaet') out.push({ icon: '🔬', text: `Blütewoche ${p.week} – Trichome checken!`, type: 'tip', action: 'trichome', cId: c.id });
   }
   if (p.ph === 'ice' || p.ph === 'harvest') {
