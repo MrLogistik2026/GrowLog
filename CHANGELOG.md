@@ -2,6 +2,30 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-15 — v1.5.168
+
+- **Was „Tag 1" ist, stand an jeder Stelle anders.** Offene Entscheidung aus der ersten Prüfrunde, von Patrick
+  am 14.09.2026 beantwortet: „Tag 1 ist im Normalfall immer die Keimung." Die App sagte bis hierher an
+  verschiedenen Stellen Verschiedenes:
+  - Die Anleitung „Dein erster Grow" ließ erst 2–5 Tage keimen und dann „Schritt 3 — Einpflanzen · Tag 1"
+    den Zyklus anlegen. Die Sortendauer „Samen bis Ernte" zählt aber ab Keimung.
+  - Im Eintrag an Tag 1 stand „✅ Heute: Samen einpflanzen", daneben die Keimungskarte mit vorgewähltem
+    Papiertuch: „Nach 2–5 Tagen zeigt sich die weiße Pfahlwurzel … dann in Erde setzen". Unter „Vermeiden"
+    stand „Kontrolliertes Gießen, jede Stunde nachsehen" — das ist kein Fehler, den man vermeiden sollte.
+  - Der Assistent sagte „Wähle den Zeitpunkt, an dem deine Pflanze ‚Tag 1' hat", ohne zu sagen, was das ist.
+  - Der Notiz-Chip „Keimling sichtbar" wurde nur bis Tag 3 angeboten — bevor ein Keimling meist da ist.
+  - Lexikon „Sättigungsguss" und „Vorbefeuchtet" sowie fünf Code-Kommentare nannten Tag 1 den Einpflanztag.
+- **Jetzt:** Tag 1 ist überall der Keimstart — der Tag, an dem der Samen ins Wasserglas, ins feuchte Tuch
+  oder direkt in die Erde kommt. Assistent (drinnen und draußen), Einstellungen („Startdatum (Tag 1 =
+  Keimstart)"), Anleitung (Zyklus wird in Schritt 2 angelegt), Lexikon und Kommentare sagen dasselbe.
+  Die Sämlings-Pflege nimmt an Tag 1 und 2 die Schritte der gewählten Keimmethode wörtlich aus der
+  Keimungskarte; beide lesen die Methode über `_keimMethode(c)`. Der Chip „Keimling sichtbar" steht bis Tag 10.
+- **Unverändert, mit Absicht:** das Protokoll selbst — Tag 1 Sättigungsguss, Tag 2–8 sprühen, erster Guss
+  Tag 9. Es passt zum Keimstart: Keimt der Samen im Glas oder Tuch, kommt er in den folgenden Tagen in die
+  schon feuchte Erde und wird nur besprüht.
+- `test_tag1keimung.js` (25 Prüfungen, beide Zeitzonen): Assistent, Anleitung, Eintrag an Tag 1 und 2 für
+  alle drei Keimmethoden und ohne Wahl, Notiz-Chip, Lexikon, Quelltext. Gegen den alten Stand: 22 Fehler.
+
 ## 2026-09-14 — v1.5.167
 
 - **Kam unter 5 % Ablauf unten an, blieb die Gießmenge stehen.** `drainAdjust` warf jede Messung unter 5 %
