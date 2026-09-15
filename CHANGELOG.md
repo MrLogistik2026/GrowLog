@@ -2,6 +2,26 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-15 — v1.5.186
+
+- **„Tag automatisch ausfüllen" trug Temperatur und Luftfeuchte ein, die niemand gemessen hat.** Befund der zweiten
+  Prüfrunde (VPD), mit Patricks Sicherung nachgezählt. `getAutoFillTemplate` rechnete aus der Phasen-Tabelle ein
+  Klima — mit Luft-VPD statt Blatt-VPD, auf das RLF-Fenster geklemmt —, und `applyRecommended` speicherte es ohne
+  Kennzeichen. Danach zählte es als Messung: im Klimafaktor der Gießmenge, im VPD-Diagramm, in Diagnose und
+  Schimmel-Alarm. In Patricks Sicherung sind 22 von 86 Klimawerten genau solche Vorlagenpaare (21/40 achtmal, 24/55
+  siebenmal, 25/60 sechsmal, 22/43 einmal), 21/40 auch in der mittleren Blüte. Am 27.08. schrieb das Auto-Fill
+  21,0 °C und 40 %, während der Platzhalter im selben Feld 45 % nannte.
+- **Warum das zählt:** Ein geschätztes Klima ist keine Messung (`ANBAU.md`, Regel 2) — dieselbe Regel wie beim Drain,
+  den die App seit v1.5.177 nie schätzt. Eine Gießmenge oder Warnung auf erfundenen Werten ist schlimmer als keine.
+- **Jetzt:** Das Auto-Fill lässt Temperatur und Luftfeuchte leer; die Zielwerte stehen weiter als grauer Platzhalter.
+  „Klima-justiert" in der Meldung erscheint genau dann, wenn der Klimafaktor der Gießmenge wirkt
+  (`_vpdFactorForDay`). Vorher war es eine eigene Rechnung mit Luft-VPD, an 71 von Patricks 86 Klimatagen anders als
+  der Faktor. Patricks gespeicherte Werte bleiben unangetastet: Die Vorlagenpaare lassen sich nicht sicher von echten
+  Messungen trennen (24/55 kann gemessen sein). `ANBAU.md` 15 nennt die Regel.
+- `test_klimanieschaetzen.js` (7 Prüfungen, beide Zeitzonen): Vorlage an sechs Tagen (Sättigung, Sprühen, Gießtage,
+  Spülen, Tag ohne Guss), „Empfehlung übernehmen" am 27.08., Hinweis gegen Faktor bei vier Klimawerten. Gegen den
+  alten Stand: 3 Fehler.
+
 ## 2026-09-15 — v1.5.185
 
 - **Mit Blütestart-Datum lagen Endspurt, Erntezähler und Düngeplan-Wochen bis zu 14 Tage neben der echten Blüte.**

@@ -844,6 +844,9 @@ ist wissenschaftlich allerdings nicht belegt" ist die richtige Formulierung.
 - **Jede Schwelle trägt ihre Gültigkeitsbedingung mit.** Eine Regel, die nur für inerte Substrate
   gilt, muss das im Code wissen — nicht nur im Kommentar. Substrattyp ist eine Eingangsgröße,
   keine Anzeigeoption.
+- **Messwerte werden nie geschätzt und eingetragen.** Drain und Klima trägt nur ein, wer gemessen hat.
+  Ein geschätzter Wert fließt sonst als Messung in Gießmenge, Diagramm und Warnungen ein. Zielwerte darf die
+  App zeigen — als Platzhalter, nicht als Eintrag.
 - **Vor der Interpretation die Validität.** Drain-EC ohne Durchflussangabe, VPD ohne
   Blattoffset-Annahme, PPFD ohne Messort: In allen drei Fällen ist die richtige Ausgabe eine
   Rückfrage, keine Bewertung.

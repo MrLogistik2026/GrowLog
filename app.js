@@ -3395,7 +3395,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.185';
+const APP_VERSION = 'v1.5.186';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -29339,29 +29339,12 @@ function getAutoFillTemplate(c, p, a, iso) {
   const targets = (typeof getPhaseTargets === 'function') ? getPhaseTargets(p) : null;
   const tpl = {};
 
-  // Klima: für ALLE Tage (auch Mess-Tage) — nur als Vorschlag bei leerem Feld
-  // VPD-AWARE: Statt arithmetische Mitte aus tempMin/tempMax und rhMin/rhMax
-  // (was den VPD-Ziel-Bereich verfehlen kann — z.B. Sämling: Mitte 24°C/70%
-  // ergibt VPD 0.90 = außerhalb Ziel 0.4–0.8) berechnen wir das passende RLF
-  // für den VPD-Mittelpunkt bei Temp-Mitte.
-  // Magnus-Formel für gesättigten Dampfdruck: SVP = 0.61078 × exp(17.27×T/(T+237.3))
-  // VPD = SVP × (1 - RH/100), umgestellt: RH = 100 × (1 - VPD/SVP)
-  if (targets) {
-    const tMid = (targets.tempMin + targets.tempMax) / 2;
-    if (targets.vpdMin && targets.vpdMax) {
-      const vpdTarget = (targets.vpdMin + targets.vpdMax) / 2;
-      const svp = 0.61078 * Math.exp(17.27 * tMid / (tMid + 237.3));
-      const idealRh = 100 * (1 - vpdTarget / svp);
-      // Auf RH-Range clampen: nicht außerhalb der Phasen-Empfehlung gehen
-      const clampedRh = Math.max(targets.rhMin, Math.min(targets.rhMax, idealRh));
-      tpl.temp = tMid.toFixed(1);
-      tpl.humidity = String(Math.round(clampedRh));
-    } else {
-      // Kein VPD-Ziel (z.B. Trockenphase) → arithmetische Mitte ist ok
-      tpl.temp = tMid.toFixed(1);
-      tpl.humidity = String(Math.round((targets.rhMin + targets.rhMax) / 2));
-    }
-  }
+  // (v1.5.186) KEIN KLIMA MEHR IM AUTO-FILL. Hier entstanden Temperatur und Luftfeuchte aus der Phasen-Tabelle —
+  // mit Luft-VPD statt Blatt-VPD, auf das RLF-Fenster geklemmt — und wurden ohne Kennzeichen gespeichert. Danach
+  // zählten sie als Messung: im Klimafaktor der Gießmenge, im VPD-Diagramm, in Diagnose und Schimmel-Alarm. In
+  // Patricks Sicherung sind 22 von 86 Klimawerten genau solche Vorlagenpaare (21/40 achtmal, 24/55 siebenmal, 25/60
+  // sechsmal), 21/40 sogar in der mittleren Blüte. Ein geschätztes Klima ist keine Messung (ANBAU.md, Regel 2) —
+  // dieselbe Regel wie beim Drain (v1.5.177). Die Zielwerte stehen weiter als grauer Platzhalter im Feld.
 
   // SPEZIAL-FALL: Topping-Tag (User hat heute getoppt)
   // Biophysik: Pflanze hat Turgor verloren, kann Wasser nicht aufnehmen.
@@ -29439,17 +29422,9 @@ function getAutoFillTemplate(c, p, a, iso) {
     if (typeof _waterSuggestionRaw === 'function') {
       const plants = (typeof getEffectivePlantCount === 'function') ? getEffectivePlantCount(c, iso) : 1;
       const rawNoFactor = Math.round(_waterSuggestionRaw(c, p) * plants / 50) * 50;
-      const e = S.entries[iso];
-      const targets2 = (typeof getPhaseTargets === 'function') ? getPhaseTargets(p) : null;
-      if (e && e.temp && e.humidity && targets2 && targets2.vpdMin) {
-        // VPD wurde wahrscheinlich angewendet — wir berechnen es nochmal kurz für die Anzeige
-        const t = parseFloat(e.temp), r = parseFloat(e.humidity);
-        if (isFinite(t) && isFinite(r) && r > 0) {
-          const svp = 0.61078 * Math.exp(17.27 * t / (t + 237.3));
-          const vpd = svp * (1 - r / 100);
-          if (vpd > targets2.vpdMax || vpd < targets2.vpdMin) tpl._vpdAdjusted = true;
-        }
-      }
+      // (v1.5.186) „Klima-justiert" genau dann, wenn der Klimafaktor der Gießmenge wirkt — aus derselben Funktion.
+      // Vorher eine eigene Rechnung mit Luft-VPD gegen das Band: an Patricks Tagen 71-mal anders als der Faktor.
+      if (Math.abs(_vpdFactorForDay(c, iso, p) - 1) >= 0.02) tpl._vpdAdjusted = true;
       if (ph === 'bloom' && (p.week || 1) <= 3) tpl._stretchBonus = true;
     }
 
@@ -29701,9 +29676,7 @@ async function applyRecommended(cId, wk) {
     }
   }
 
-  // Klima (auf Eintrags-Ebene, nicht cycleData)
-  if (tpl.temp !== undefined) maybeSet(e, 'temp', tpl.temp);
-  if (tpl.humidity !== undefined) maybeSet(e, 'humidity', tpl.humidity);
+  // (v1.5.186) Klima wird nicht mehr ausgefüllt — Temperatur und Luftfeuchte trägt nur ein, wer gemessen hat.
 
   // Düngerdosen
   if (tpl.doses) {
