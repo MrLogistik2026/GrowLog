@@ -328,6 +328,12 @@ const T = {
     },
   },
 
+  // (v1.5.210) EIN Satz für die Drain-EC-Regel (ANBAU.md 5.1), aus DRAIN_EC_VERHAELTNIS und DRAIN_ZIEL — für Lexikon, Infotexte,
+  // Diagnose und Vorlagen. Vorher standen dort sechs verschiedene Faustregeln mit festen Zahlen („±0,2 gesund", „+0,5 → spülen",
+  // „über 2,5 versalzt", „1,0–1,8 mS/cm", „ähnlich Input"), die der Bewertung im Eintrag widersprachen.
+  drainRegel: () => `Bewertet wird das Verhältnis Drain-EC ÷ Gießwasser-EC, und nur bei mindestens ${DRAIN_ZIEL.min} % Drain: bis zum ${_zahlKomma(DRAIN_EC_VERHAELTNIS.gleich)}-Fachen Gleichgewicht, bis zum ${_zahlKomma(DRAIN_EC_VERHAELTNIS.voll)}-Fachen normal bei voller Düngung, darüber reichert sich Salz an. Liegt der Drain unter dem Gießwasser, nimmt die Pflanze mehr auf als zugeführt — in der zweiten Blütehälfte normal.`,
+  drainRegelKurz: () => `bis zum ${_zahlKomma(DRAIN_EC_VERHAELTNIS.voll)}-Fachen des Gießwassers normal, darüber Anreicherung (gemessen bei mindestens ${DRAIN_ZIEL.min} % Drain)`,
+
   // ---------------------------------------------------------------------
   // RUNOFF — Ablauf-Wasser-Messung als Diagnose-Tool
   // Runoff-pH und Runoff-EC zeigen was in der Erde passiert.
@@ -2629,11 +2635,11 @@ const FERT_PRESETS = {
     doseMode: 'per-watering',
     mixOrder: ['CalMag','CANNA Coco A','CANNA Coco B','RHIZOTONIC','CANNAZYM','CANNABOOST','PK 13/14'],
     mixInfo: 'Mineral-Plan für Coco-Substrat. Reihenfolge: 1. CalMag zuerst (Coco bindet Ca, daher Pflicht). 2. CANNA Coco A vollständig auflösen. 3. CANNA Coco B (immer A vor B, niemals zusammen ins Konzentrat — sonst Ausfällung!). 4. RHIZOTONIC für Wurzeln. 5. CANNAZYM (Enzyme). 6. CANNABOOST in Blüte. 7. PK 13/14 nur Wo 5-7. pH am Ende auf 5.8–6.2 (NICHT 6.2–6.4 wie Erde!).',
-    drainInfo: '🥥 Coco-Besonderheiten: Coco ist inert — Pflanze hängt komplett am Düngerwasser. Daher: jeder Guss MUSS Dünger enthalten (außer Spülung). pH-Bereich 5.8–6.2, NIE über 6.5. Drain bei jedem Guss anstreben (10-20%), Drain-EC sollte 1.0-1.8 mS/cm sein. CalMag durchgehend Pflicht, mit RO-Wasser noch mehr.',
+    drainInfo: '🥥 Coco-Besonderheiten: Coco ist inert — Pflanze hängt komplett am Düngerwasser. Daher: jeder Guss MUSS Dünger enthalten (außer Spülung). pH-Bereich 5.8–6.2, NIE über 6.5. Drain bei jedem Guss anstreben (' + DRAIN_ZIEL.min + '–' + DRAIN_ZIEL.max + ' %), Drain-EC ' + T.drainRegelKurz() + '. CalMag durchgehend Pflicht, mit RO-Wasser noch mehr.',
     weekFocus: {
       1:  { phase: 'Sämling',   tip: 'Coco vorquellen mit CalMag + RHIZOTONIC. Sämling vorsichtig einsetzen.' },
       2:  { phase: 'Vegi I',    tip: 'CANNA Coco A+B startet ab Tag 1 (Coco hat keine Vordüngung wie Erde).' },
-      3:  { phase: 'Vegi II',   tip: 'A+B steigern. Drain-EC checken — sollte ähnlich Input-EC sein.' },
+      3:  { phase: 'Vegi II',   tip: 'A+B steigern. Drain-EC checken: ' + T.drainRegelKurz() + '.' },
       4:  { phase: 'Stretch',   tip: 'Pre-Blüte. CANNABOOST startet für Blütenbildung.' },
       5:  { phase: 'Blüte I',   tip: 'PK 13/14 startet (nur 3 Wochen Fenster). Buds beginnen sich zu bilden.' },
       6:  { phase: 'Blüte II',  tip: 'PK 13/14 maximal. CANNABOOST hochfahren.' },
@@ -2732,7 +2738,7 @@ const FERT_PRESETS = {
                  'Bio-Grow', 'Bio-Bloom', 'Acti-Vera', 'Alfa Boost',
                  'Advanced Amino', 'Mykorrhiza HomeGrow24'],
       mixInfo: 'Silica Force IMMER ZUERST ins Wasser, 2 Min ruhen lassen (sonst Ausfällung). Dann der Reihe nach: CalMag, Epsom Salz, POWHUMUS, Bio-Grow/Bio-Bloom, Acti-Vera (flüssig direkt aus der Flasche), Alfa Boost (schütteln!), Advanced Amino (strikt nur per Einwegspritze 0.2 ml/L! niemals schätzen). EC messen, pH zuletzt auf 6.2-6.4 (Erde) korrigieren. MKP ist gestrichen — damit auch kein MKP+Silica-pH-Selbstausgleich mehr, pH-Down wie gewohnt einstellen. POWHUMUS läuft durchgehend mit 10 ml/L (auch an Wasser-Tagen), nur in der letzten Blütewoche (Wo 10) auf 5 ml/L reduziert zum Ausklingen. Mykorrhiza HomeGrow24 gehört NICHT in die Mischung: trocken ans Pflanzloch (Tag 0) + Refresher rund um FIM.',
-      drainInfo: '⚠️ Premium Cup-Plan: Strenge EC-Kontrolle. Drain-EC pro Phase prüfen — bei Überschreitung Warnschwelle (z.B. >2.3 in Stretch II) 1-2 Water-Days einlegen. Mykorrhiza-freundlich durch moderate EC und Pause-Tage. Wo 11 nur Wasser (Flush), Wo 12 Ice-Wasser (1L crushed ice, 4-6h Schmelzzeit, 24-36h Dunkelphase vor Ernte).',
+      drainInfo: '⚠️ Premium Cup-Plan: Strenge EC-Kontrolle. Drain-EC prüfen: ' + T.drainRegelKurz() + '. Bleibt er über mehrere Güsse darüber, 1-2 Water-Days einlegen. Mykorrhiza-freundlich durch moderate EC und Pause-Tage. Wo 11 nur Wasser (Flush), Wo 12 Ice-Wasser (1L crushed ice, 4-6h Schmelzzeit, 24-36h Dunkelphase vor Ernte).',
       weekFocus: {
           "1": {
               "phase": "Seedling",
@@ -3452,7 +3458,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.209';
+const APP_VERSION = 'v1.5.210';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -5478,7 +5484,7 @@ const INFO_TERMS = {
   runoff: {
     title: 'Runoff-Messung',
     text: 'Runoff ist das Wasser, das beim Gießen unten aus dem Topf läuft. Misst du dessen pH und EC, siehst du, was <b>wirklich in der Erde</b> passiert — nicht nur, was du oben reingibst.',
-    tip: 'Beim Gießen ein sauberes Gefäß unter den Topf stellen, Ablauf auffangen, pH und EC messen. Faustregel: Liegt der Runoff-EC mehr als <b>0.5</b> über dem Gießwasser, stauen sich Salze → spülen. Driftet der pH stark ab, droht ein Lockout (Nährstoff-Blockade).',
+    tip: 'Beim Gießen den Drain in einer breiten Wanne auffangen, die Menge messen, dann pH und EC. ' + T.drainRegel() + ' Driftet der pH stark ab, droht ein Lockout (Nährstoff-Blockade).',
     lex: 'Runoff-EC (Drain-Messung)',
   },
   vpd: {
@@ -5796,7 +5802,7 @@ const SYMPTOMS = [
         heading: 'Spitzen braun, krumm nach oben',
         verdict: '⚠ Überdüngung (Nutrient Burn)',
         color: 'var(--red)',
-        text: 'Zu hohe Düngerkonzentration. <b>Sofort:</b> Dosis um 30-50% reduzieren. Ggf. einmal nur mit reinem Wasser gießen (Zwischenguss). Bei EC-Messgerät: Drain-EC prüfen — über 2.5 = versalzt.',
+        text: 'Zu hohe Düngerkonzentration. <b>Sofort:</b> Dosis um 30-50% reduzieren. Ggf. einmal nur mit reinem Wasser gießen (Zwischenguss). Bei EC-Messgerät: Drain-EC prüfen — ' + T.drainRegelKurz() + '.',
         when: 'Alle Phasen',
         lex: 'Überdüngung',
       },
@@ -5970,7 +5976,7 @@ const SYMPTOMS = [
         heading: 'Ältere Pflanze, stagniert',
         verdict: '⚠ Nährstoff-Lockout möglich',
         color: 'var(--orange)',
-        text: 'Alles scheint richtig aber nichts passiert. <b>Prüfen:</b> pH 6.2-6.4? Drain-EC nicht > 2.5? Topf nicht knochentrocken UND nicht sumpfnass? Eine Woche Bio-Routine (halbe Dosis + Enzyme) fixt das meist.',
+        text: 'Alles scheint richtig aber nichts passiert. <b>Prüfen:</b> pH 6.2-6.4? Drain-EC nicht über dem ' + _zahlKomma(DRAIN_EC_VERHAELTNIS.voll) + '-Fachen des Gießwassers? Topf nicht knochentrocken UND nicht sumpfnass? Eine Woche Bio-Routine (halbe Dosis + Enzyme) fixt das meist.',
         when: 'Vegi/Blüte',
         lex: 'Nährstoff-Lockout',
       },
@@ -18143,7 +18149,7 @@ function renderTips() {
         <div>⚗️ <b>Reihenfolge:</b> ${mixZeile}</div>
         <div>🚿 <b>Drain:</b> 15–20% Drain bei jedem Guss — erst ab 15% läuft das Wasser wirklich durch den Wurzelballen</div>
         <div>📉 <b>Überdüngung:</b> Gelbe/braune Blattspitzen? Den Blütedünger deines Plans um 20 % zurücknehmen</div>
-        <div>🧪 <b>EC-Wert:</b> Drain-EC messen. Steigt er über 2.5 → Zwischenguss mit reinem Wasser</div>
+        <div>🧪 <b>EC-Wert:</b> Drain-EC messen und mit dem Gießwasser vergleichen: ${T.drainRegelKurz()}. Bleibt er über mehrere Güsse darüber, gieß mehr Volumen mit der normalen Nährlösung.</div>
       </div>
       </div>
     </div>`;
@@ -31948,7 +31954,7 @@ const LEXIKON = [
     { t: 'EC-Wert (Osmotischer Druck)',
       brief: 'Misst die Gesamt-Nährstoffkonzentration. Steuert ob die Pflanze Wasser aufnehmen kann — oder ob das Substrat ihr welches entzieht.',
       mechanism: 'Pflanzen nehmen Wasser durch <b>Osmose</b> auf — Wasser wandert immer von niedriger zu höherer Salzkonzentration. Ist die Konzentration im Substrat niedriger als in der Wurzel → Wasser fließt rein. Wird sie höher (Überdüngung, Versalzung) → <b>der Sog kehrt sich um</b>, das Substrat zieht aktiv Wasser aus der Pflanze. Ergebnis: „Nutrient Burn" — sie vertrocknet in nasser Erde.',
-      practice: '<b>Zielwerte (in Erde, Light-Mix):</b><br>• Anzucht: 0.4–0.8<br>• Vegi: 0.8–1.4<br>• Blüte Mitte: 1.4–2.0<br>• Spülen: <0.4<br><br>EC immer nach allen Düngern messen, vor pH-Einstellung. <b>Runoff-EC</b> höher als Inflow = Salze sammeln sich → Flushen.',
+      practice: '<b>Zielwerte (in Erde, Light-Mix):</b><br>• Anzucht: 0.4–0.8<br>• Vegi: 0.8–1.4<br>• Blüte Mitte: 1.4–2.0<br>• Spülen: <0.4<br><br>EC immer nach allen Düngern messen, vor pH-Einstellung. <b>Drain-EC:</b> ' + T.drainRegelKurz() + '.',
       pitfall: 'Über 2.5 im Substrat ist gefährlich — sofort mit reinem Wasser zwischen-gießen. Viele Coco/Hydro-Grower dosieren zu hart weil sie es „härter als Erde" interpretieren. Nein — die Pflanze toleriert nicht mehr, du hast nur <b>weniger Puffer</b> und musst öfter messen.' },
     { t: 'Temperatur',
       brief: 'Bestimmt Stoffwechsel-Geschwindigkeit, Wurzelaktivität und Photosynthese. Direkter Einfluss auf Wachstumstempo und Aroma.',
@@ -32140,9 +32146,9 @@ const LEXIKON = [
       pitfall: 'Zu lange im Wasser = Wurzelfäule-Risiko. Nicht über 30 Min. Nach bottom-watering muss auch normales „top-watering" mit Drain erfolgen, sonst sammeln sich Salze oben im Substrat (Umgekehrtes Problem: EC-Aufbau an der Oberfläche).' },
     { t: 'Runoff-EC (Drain-Messung)',
       brief: 'EC des abgelaufenen Wassers messen — zeigt den tatsächlichen Zustand im Substrat, lange bevor Symptome sichtbar sind.',
-      mechanism: 'Der <b>Inflow-EC</b> (was du reingibst) kann perfekt sein — entscheidend ist der <b>Runoff-EC</b> (was unten rauskommt). Der Runoff zeigt was die Wurzeln wirklich „sehen":<br>• Runoff = Inflow → Pflanze nimmt ausgeglichen auf<br>• Runoff HÖHER als Inflow → Salze sammeln sich, Versalzungs-Gefahr<br>• Runoff NIEDRIGER als Inflow → Pflanze hungert, nimmt mehr auf als du gibst',
-      practice: '<b>Messung einfach:</b> Unter den Drain ein Glas halten, 5-10 ml fangen, mit EC-Meter messen.<br><br><b>Typische Zielwerte:</b><br>• Runoff-EC ≈ Inflow-EC ±0.2 = gesund<br>• Runoff 0.5+ höher = Dosis reduzieren oder zwischen-flushen<br>• Runoff 0.3+ niedriger = Dosis erhöhen<br><br><b>Frequenz:</b> 1× pro Woche reicht, bei Problemen öfter.',
-      pitfall: 'Erstmessung oft überraschend hoch (Substrat-eigene Salze). Erst nach 2-3 Gieß-Zyklen pendelt sich das System ein, dann vergleichen. Bei Coco: Runoff-EC oft 0.3-0.5 höher als Inflow normal.' },
+      mechanism: 'Der <b>Inflow-EC</b> (was du reingibst) kann perfekt sein — entscheidend ist der <b>Runoff-EC</b> (was unten rauskommt). Der Drain zeigt, was die Wurzeln wirklich „sehen". Bei voller Düngung ist er konzentrierter als das Gießwasser, weil die Pflanze Wasser schneller aufnimmt als Salz:<br>• bis zum ' + _zahlKomma(DRAIN_EC_VERHAELTNIS.gleich) + '-Fachen: Aufnahme und Zufuhr im Gleichgewicht<br>• bis zum ' + _zahlKomma(DRAIN_EC_VERHAELTNIS.voll) + '-Fachen: normal bei voller Düngung<br>• darüber: Salz reichert sich an<br>• unter dem Gießwasser: Die Pflanze nimmt mehr auf, als du zuführst — in der zweiten Blütehälfte normal',
+      practice: '<b>Messung:</b> Den ganzen Drain in einer breiten Wanne auffangen und die Menge messen, dann 5–10 ml davon mit dem EC-Meter.<br><br><b>So liest du den Wert:</b> ' + T.drainRegel() + '<br><br><b>Frequenz:</b> 1× pro Woche reicht, bei Problemen öfter.',
+      pitfall: 'Erstmessung oft überraschend hoch (Substrat-eigene Salze). Erst nach 2–3 Güssen pendelt sich das System ein, dann vergleichen. Aus weniger als ' + DRAIN_ZIEL.min + ' % Drain misst du nur den Rand des Topfs — dann nicht werten.' },
     { t: 'Wassertemperatur',
       brief: 'Gießwasser zwischen 18-22 °C. Kälter = Wurzelschock, wärmer = Sauerstoffmangel und Fäulnis-Risiko.',
       mechanism: '<b>Unter 18 °C:</b> Wurzeln erleiden <b>Kälteschock</b>, Membranfunktion stoppt, Nährstoffaufnahme friert kurzzeitig ein. Nach wiederholten Kälteschocks: Wachstumsstau und Anfälligkeit.<br><br><b>Über 22 °C:</b> Gelöster <b>Sauerstoff sinkt drastisch</b>. <b>Pythium</b> (Wurzelfäule-Pilz) wird aktiv. Bei Hydro besonders kritisch, da keine Puffer.',
@@ -32487,7 +32493,7 @@ const LEXIKON = [
         '<b>Behandlungs-Strategien je nach Ursache:</b><br>' +
         '<table style="width:100%;border-collapse:collapse;font-size:13px;margin-top:6px">' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>pH-Lockout</b></td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Zwischenguss mit pH-korrigiertem Wasser (2× Topfvolumen) — pH soll im Drain wieder 6.0–6.5 sein. Dann erst düngen.</td></tr>' +
-        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Salzakkumulation</b></td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Voll-Spülung mit klarem Wasser bis Drain-EC nahe Input-EC. 2–3× Topfvolumen.</td></tr>' +
+        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Salzakkumulation</b></td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Beim nächsten Guss mehr Volumen mit der normalen Nährlösung, bis reichlich Drain kommt. Eine Zwischenspülung mit klarem Wasser nur, wenn der Drain-EC über mehrere Güsse über dem ' + _zahlKomma(DRAIN_EC_VERHAELTNIS.voll) + '-Fachen des Gießwassers bleibt und die Pflanze Symptome zeigt.</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Sauerstoffmangel</b></td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Dryback abwarten — Topf trocken werden lassen, dann normaler Rhythmus. Bei nächstem Mix mehr Perlite einarbeiten.</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Mehrere Ursachen</b></td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Spülung als Universallösung — wäscht sowohl Salze raus als auch korrigiert pH bei richtigem Wasser-pH</td></tr>' +
         '</table>' +
@@ -32521,7 +32527,7 @@ const LEXIKON = [
     { t: 'Flushen (Zwischenguss)',
       brief: 'Gezieltes Durchspülen des Substrats um Salze rauszuwaschen. Nicht verwechseln mit dem finalen Flush vor der Ernte.',
       mechanism: 'Durch das Eingießen großer Mengen <b>pH-reguliertem, dünger-freiem Wasser</b> werden die im Substrat angesammelten Salze aktiv ausgewaschen. Der Runoff-EC sinkt, der Lockout löst sich. Danach kann normale Düngung wieder ohne Blockade aufgenommen werden.',
-      practice: '<b>Wann flushen:</b><br>• Bei Überdüngung (Blattspitzen verbrennen)<br>• Bei Lockout durch Versalzung (Runoff-EC >> Inflow)<br>• Präventiv alle 4-6 Wochen bei intensiver Düngung<br><br><b>Wie:</b><br>1. Wasser auf pH 6.3-6.4 einstellen<br>2. 2-3× Topfvolumen langsam durchspülen (11 L Topf → 22-33 L)<br>3. Runoff-EC während Spülen messen — soll unter 1.0 sinken<br>4. Topf gut abtropfen lassen<br>5. Nächsten Guss mit leichter Enzym-Zugabe, halbe Dünger-Dosis',
+      practice: '<b>Wann flushen:</b><br>• Bei Überdüngung (Blattspitzen verbrennen)<br>• Bei Lockout durch Versalzung (Drain-EC über mehrere Güsse über dem ' + _zahlKomma(DRAIN_EC_VERHAELTNIS.voll) + '-Fachen des Gießwassers)<br>• Präventiv alle 4-6 Wochen bei intensiver Düngung<br><br><b>Wie:</b><br>1. Wasser auf pH 6.3-6.4 einstellen<br>2. 2-3× Topfvolumen langsam durchspülen (11 L Topf → 22-33 L)<br>3. Runoff-EC während Spülen messen — soll unter 1.0 sinken<br>4. Topf gut abtropfen lassen<br>5. Nächsten Guss mit leichter Enzym-Zugabe, halbe Dünger-Dosis',
       pitfall: 'Nicht jeden kleinen Mangel mit Flushen „fixen" — kostet die Pflanze 3-5 Tage Wachstum und kann Mikronährstoffe auswaschen die knapp waren. Flush ist das große Werkzeug, nicht die Erstlinien-Maßnahme. Niemals in der Peak-Blüte flushen — Stress in falscher Phase.' },
   ]},
   { cat: '🧪 Düngerarten', items: [
@@ -33771,7 +33777,7 @@ const LEXIKON = [
         '<br>' +
         '<b>Universelle Erstmaßnahme:</b><br>' +
         '1. <b>pH messen</b> im Drain-Wasser (sollte 6.0–6.5 in Erde sein, 5.5–6.2 in Coco)<br>' +
-        '2. <b>EC messen</b> im Drain (sollte ähnlich Input-EC sein)<br>' +
+        '2. <b>EC messen</b> im Drain (' + T.drainRegelKurz() + ')<br>' +
         '3. <b>Klima prüfen</b> (Temperatur, RLF, VPD)<br>' +
         '4. <b>Substrat prüfen</b> (zu trocken oder zu nass?)<br>' +
         '5. Erst danach gezielt behandeln<br><br>' +
@@ -33814,7 +33820,7 @@ const LEXIKON = [
         '<b>Behandlung:</b><br>' +
         '<table style="width:100%;border-collapse:collapse;font-size:13px;margin-top:6px">' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Bei N-Mangel</b></td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">N-Komponente leicht erhöhen (z.B. Bio-Grow oder Equivalent), pH auf 6.2–6.4 prüfen, in 3–5 Tagen Besserung sichtbar</td></tr>' +
-        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Bei N-Überschuss</b></td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Mit klarem Wasser spülen (2× Topfvolumen), Dünger reduzieren, einige Tage warten<br>Bei sehr starkem Befall: kompletter Flush bis Drain-EC nahe Input-EC</td></tr>' +
+        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Bei N-Überschuss</b></td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Mit klarem Wasser spülen (2× Topfvolumen), Dünger reduzieren, einige Tage warten<br>Bei sehr starkem Befall: eine Zwischenspülung mit klarem Wasser — ihr Ende setzt kein Drain-EC-Wert, in Erde steigt er danach wieder</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Bei Lockout-Verdacht</b></td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">pH korrigieren, mit pH-eingestelltem Wasser spülen, 2 Tage warten, dann halbe Dosis Dünger</td></tr>' +
         '</table>' +
         '<br>' +
@@ -33848,7 +33854,7 @@ const LEXIKON = [
     { t: 'EC-Messgerät',
       brief: 'Robuster als pH-Meter, aber Reinigung trotzdem Pflicht. Salze auf den Elektroden = falsche Werte.',
       mechanism: 'Das EC-Meter sendet einen <b>kleinen Wechselstrom</b> zwischen zwei Elektroden im Wasser. Je mehr gelöste Salze (= mehr Ionen), desto besser leitet das Wasser → höherer EC-Wert. Denselben Messwert schreibt man auf drei Arten: <b>mS/cm</b> (kleine Zahlen wie 1,4), <b>µS/cm</b> (große Zahlen wie 1400 — einfach ×1000) und <b>ppm</b> (US-Standard, 500er-Skala). Faustregel: <b>1,4 mS/cm = 1400 µS/cm ≈ 700 ppm</b>. Viele günstige Meter zeigen µS/cm an (große Zahlen). GrowSmart rechnet intern immer gleich — welche Schreibweise du im Eintrag siehst und eintippst, stellst du unter Einstellungen → EC-Einheit ein. Die Richtwerte in diesem Lexikon sind durchgehend in mS/cm angegeben (der Fach-Standard der Grow-Literatur).',
-      practice: '<b>Pflege:</b><br>• Nach Gebrauch mit destilliertem Wasser abspülen<br>• Salzablagerungen entfernen: 5 Min in verdünntem Essig (1 %) einlegen<br>• Kalibrieren mit EC-1.41-Pufferlösung (Standard) oder EC-2.77 für höhere Bereiche<br>• Aufbewahrung: trocken oder feucht beides OK (anders als pH)<br><br><b>Empfehlungen:</b><br>• 2-in-1: BlueLab Truncheon (EC + Temp, sehr robust)<br>• Combo: BlueLab Combo Meter (pH + EC + Temp, einer für alles)<br>• Budget: Hanna HI98301 (gut für Hobby)<br><br><b>Mess-Routine:</b> Vor Düngung den Inflow-EC messen → nach Gießen den Runoff-EC. Differenz zeigt was im Substrat passiert.',
+      practice: '<b>Pflege:</b><br>• Nach Gebrauch mit destilliertem Wasser abspülen<br>• Salzablagerungen entfernen: 5 Min in verdünntem Essig (1 %) einlegen<br>• Kalibrieren mit EC-1.41-Pufferlösung (Standard) oder EC-2.77 für höhere Bereiche<br>• Aufbewahrung: trocken oder feucht beides OK (anders als pH)<br><br><b>Empfehlungen:</b><br>• 2-in-1: BlueLab Truncheon (EC + Temp, sehr robust)<br>• Combo: BlueLab Combo Meter (pH + EC + Temp, einer für alles)<br>• Budget: Hanna HI98301 (gut für Hobby)<br><br><b>Mess-Routine:</b> Vor Düngung den Inflow-EC messen → nach Gießen den Runoff-EC. Das Verhältnis zeigt, was im Substrat passiert: ' + T.drainRegelKurz() + '.',
       pitfall: 'Vergessen vor Messung umzurühren = Salz-Schichten falsch interpretiert. Auch: EC-Werte hängen von Temperatur ab — bei 15 °C andere Anzeige als bei 25 °C. Gute Meter haben Auto-Compensation, billige nicht. Falls keine ATC: Wasser auf 20 °C bringen vor Messung.' },
     { t: 'Timer / Smartplug',
       brief: 'Schalter für Licht-Zyklen. Digitale Smartplugs sind besser als mechanische — und billiger als gedacht.',
@@ -35349,7 +35355,7 @@ function buildChartsSection(cycleId) {
     title: 'Wassermenge', unit: 'L', min: 0, max: waterMax, decimals: 1,
     type: 'bar', chartId: 'water-' + cycleId,
   });
-  // Drain-EC: Salz-Akkumulation. Drain-EC > Input-EC × 1.5 = Spülung nötig.
+  // Drain-EC-Verlauf. Bewertet wird das Verhältnis Drain ÷ Gießwasser (drainEcStufe, v1.5.209).
   // Y-Bereich 0–4: typisch 0.8–2.5, kritisch ab 3.0+.
   const drainEcChart = buildChart(drainEcData.map(p => ({ ...p, val: ecDisp(p.val) })), dr, {
     title: 'Drain-EC-Verlauf', unit: ecUnitLabel(), min: 0, max: ecDisp(4.0), decimals: _ecDec,

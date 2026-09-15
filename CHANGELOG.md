@@ -2,6 +2,23 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-15 — v1.5.210
+
+- **Drain-EC-Texte folgen der Regel.** Seit v1.5.209 bewertet der Eintrag den Drain-EC nur als Verhältnis zum Gießwasser.
+  Daneben standen sechs andere Faustregeln mit festen Zahlen, und wer einer davon folgte, bekam im Eintrag eine andere Antwort:
+  Infotext „mehr als 0,5 über dem Gießwasser → spülen", Lexikon „±0,2 gesund · 0,5+ höher Dosis reduzieren · 0,3+ niedriger
+  Dosis erhöhen" und „bei Coco 0,3–0,5 höher normal", Diagnose und Tipps „über 2,5 versalzt", CANNA-Coco-Vorlage „1,0–1,8 mS/cm"
+  und „ähnlich Input-EC", Cup-Plan „Warnschwelle > 2,3 in Stretch II", Salz-Hilfe „spülen bis Drain-EC nahe Input-EC". Beim
+  Durchklicken kamen vier Lexikon-Stellen dazu, die kein Suchlauf gefunden hatte: die Mechanik im Eintrag „Runoff-EC" („Runoff
+  höher als Inflow → Salze sammeln sich"), „EC-Wert" („höher als Inflow = Salze → Flushen"), „Zwischenspülung" („Runoff-EC >>
+  Inflow") und „Messgeräte" („Differenz zeigt, was im Substrat passiert"). Ein Drain
+  von 2,4 bei Gießwasser 1,6 (das 1,5-Fache, normal bei voller Düngung) stand nach der Diagnose kurz vor „versalzt", einer von
+  1,0 bei Gießwasser 0,5 (das Doppelte, Anreicherung) weit darunter.
+- **Jetzt:** ein Satz, `T.drainRegel()` und `T.drainRegelKurz()`, aus `DRAIN_EC_VERHAELTNIS` und `DRAIN_ZIEL` (`ANBAU.md` 5.1).
+  Die Salz-Hilfe rät wie der Eintrag zuerst zu mehr Volumen mit der normalen Nährlösung, zu einer Zwischenspülung erst bei
+  anhaltend hohem Wert mit Symptomen. Texte in schon gespeicherten Plan-Kopien ändern sich nicht; Dosen sind unberührt.
+- `test_draintexte.js` (18 Prüfungen, beide Zeitzonen).
+
 ## 2026-09-15 — v1.5.209
 
 - **Drain-EC: eine Regel — das Verhältnis Drain ÷ Gießwasser.** Befund der Begriffe-Prüfung (Schritt 4 und 6), im Code
