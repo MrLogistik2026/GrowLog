@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.175** · index.html 2,28 MB · 644 Funktionen
+Stand: **v1.5.176** · index.html 2,28 MB · 644 Funktionen
 Zuletzt fortgeschrieben am 14.09.2026 (Prüf-Agenten, Abschnitt 0l). Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
@@ -174,7 +174,7 @@ der schlanke Aufbau mit Zwischenständen als Datei. Für die nächste Runde so b
 
 **Daraus schon behoben (Fehler, ohne Rückfrage):** Feed-Tag-Ausgleich in Anzucht-Wochen (v1.5.170) · Dosis-Modus
 aus dem aufgeschlagenen Plan (v1.5.171) · Bernstein-Texte (v1.5.172) · Erntereif-Zeichen (v1.5.173) ·
-Ablaufziel (v1.5.174) und Gießpunkt (v1.5.175) in den Gießanleitungen.
+Ablaufziel (v1.5.174) und Gießpunkt (v1.5.175) in den Gießanleitungen · Korridor-Untergrenze über der Sämlingsrampe (v1.5.176).
 
 ### 0m.1 · Gießmenge bei 30 % Restgewicht
 
@@ -185,8 +185,8 @@ Ablaufziel (v1.5.174) und Gießpunkt (v1.5.175) in den Gießanleitungen.
 - Bei Patrick bremst nicht der Deckel direkt, sondern seine eigenen Korridore (Reife ≤ 2200) und die Rampe um den
   Median der letzten vier Güsse (Tag 47: Vorschlag 1290, gegossen 1800). Mit „letzter Guss × Trend" läge die
   Abweichung bei +1 % statt −13 %. Ein frischer Zyklus bekommt ab Tag 36 flach 1500 ml, egal wie lang die Blüte ist.
-- Tag 21 → 22 springt die Empfehlung eines frischen Zyklus von 550 auf 1450 ml: Die natürliche Korridor-Untergrenze
-  hebt die Sämlingsrampe an. **Das ist ein Fehler (`ANBAU.md` 13.1) und steht unter „Als Nächstes".**
+- Tag 21 → 22 sprang die Empfehlung eines frischen Zyklus von 550 auf 1450 ml: Die natürliche Korridor-Untergrenze
+  hob die Sämlingsrampe an. Behoben in v1.5.176.
 - `drainAdjust` überspringt jeden Ablauf, wenn die Gießmenge per „Erledigt" oder Autofill übernommen wurde
   (`_suggested.water`). Der Regelkreis aus v1.5.112 wirkt damit nicht für den, der der App folgt. Seit v1.5.112 von
   einem Test so festgeschrieben — deshalb eine Entscheidung, kein stiller Fix.
@@ -276,7 +276,7 @@ Plan des Zyklus (v1.5.145, `_planAnsicht`). · Gedrückthalten der ±-Knöpfe in
 wieder und stoppt beim Loslassen auch mit dem Finger (v1.5.146). · Ein nicht eingetragener Guss
 erzeugt keinen Wasserstress-Alarm mehr, sondern eine Rückfrage mit Knopf zum Nachtragen (v1.5.147,
 `_gussLueckeStatus`). · Plan-Blatt markiert die Woche des Zyklus, der den Plan nutzt (v1.5.148,
-`_zyklusFuerPlan`). · Schimmel-Alarm ab 60 % RLF auch beim Spülen und am IceFlush (v1.5.149). · Drain-EC ohne Ablaufmenge wird nicht bewertet, das Etikett beschreibt statt zu deuten (v1.5.150). · Ernte-Hinweis ohne „bernsteinfarben = Peak" (v1.5.151). · Trocknungsklima aus einer Quelle, beim Trocknen kein VPD-Rat „RLF runter" mehr (v1.5.152, `TROCKNEN_KLIMA`). · Startseite kennt die Wasser-Tage des Plans, alle Ablaufziele aus `DRAIN_ZIEL` (v1.5.153). · Nachholen und „Erledigt" kennen den Sättigungsguss (v1.5.154). · Diagnose-Kontext „Luftfeuchte hoch" ab derselben Grenze wie der Schimmel-Alarm (v1.5.155). · Sorten-Chip im Assistenten rechnet wie die Wochen-Eingabe (v1.5.156). · pH-Zahlen in Texten und im Diagramm aus `phTargetFor` (v1.5.157). · Vierte Stelle der Drain-Faustregel 1,5 im Lexikon (v1.5.158). · Anzucht-Dünger: Startseite und Sämlings-Pflege nennen, was der Plan sagt (v1.5.159). · pH-Zeile der Sämlings-Pflege aus `phTargetFor` (v1.5.160). · Tag 1: Menge, pH, Mittel und Referenz-Schritt aus dem Zustand (v1.5.161). · Demo-Zyklus: Toast, Spül-Notiz und Ablaufmengen passen zu seinen Tagen (v1.5.162). · Wochendosis-Pläne zählen Plan-Wochen und nehmen das Intervall der Plan-Phase (v1.5.163). · Demo-Zyklus ohne eigene EC-Warnung an Spültagen (v1.5.164). · EC-Spanne im Eintrag aus dem Plan-Ziel statt fest 0,8–2,0 (v1.5.165). · Ablauf-Etikett beim Spülen ohne ⚠ (v1.5.166, Patricks Entscheidung). · Ablauf unter 5 % hebt die Gießmenge, vor Tag 25 zählt er nicht (v1.5.167, Patricks Entscheidung, `_drainMoeglich`). · Tag 1 ist überall der Keimstart (v1.5.168, Patricks Entscheidung, `_keimMethode`). · Sämlings-Start in Assistent, Einstellungen und Hinweis nennt die Tag-1-Menge aus Topf und Substrat (v1.5.169, `_tag1MengeJeTopf`). · Kein Feed-Tag-Ausgleich mehr in Anzucht-Wochen (v1.5.170, `_planWocheIstAnzucht`). · Dosis-Modus aus dem Plan des Zyklus, nicht aus dem aufgeschlagenen (v1.5.171, `_doseModeFor`). · Kein Text knüpft die Ernte an eine feste Bernstein-Menge (v1.5.172, 13 Stellen). · „Erntereif" in der Trichom-Karte nach Klar ≤ 10 % und eigenem Bernstein-Ziel (v1.5.173). · Gießanleitungen nennen das Ablaufziel aus `DRAIN_ZIEL` (v1.5.174). · Gießpunkt in Anleitungen und Bewertung aus `GIESSPUNKT`, ohne „Harz-Trigger" (v1.5.175).
+`_zyklusFuerPlan`). · Schimmel-Alarm ab 60 % RLF auch beim Spülen und am IceFlush (v1.5.149). · Drain-EC ohne Ablaufmenge wird nicht bewertet, das Etikett beschreibt statt zu deuten (v1.5.150). · Ernte-Hinweis ohne „bernsteinfarben = Peak" (v1.5.151). · Trocknungsklima aus einer Quelle, beim Trocknen kein VPD-Rat „RLF runter" mehr (v1.5.152, `TROCKNEN_KLIMA`). · Startseite kennt die Wasser-Tage des Plans, alle Ablaufziele aus `DRAIN_ZIEL` (v1.5.153). · Nachholen und „Erledigt" kennen den Sättigungsguss (v1.5.154). · Diagnose-Kontext „Luftfeuchte hoch" ab derselben Grenze wie der Schimmel-Alarm (v1.5.155). · Sorten-Chip im Assistenten rechnet wie die Wochen-Eingabe (v1.5.156). · pH-Zahlen in Texten und im Diagramm aus `phTargetFor` (v1.5.157). · Vierte Stelle der Drain-Faustregel 1,5 im Lexikon (v1.5.158). · Anzucht-Dünger: Startseite und Sämlings-Pflege nennen, was der Plan sagt (v1.5.159). · pH-Zeile der Sämlings-Pflege aus `phTargetFor` (v1.5.160). · Tag 1: Menge, pH, Mittel und Referenz-Schritt aus dem Zustand (v1.5.161). · Demo-Zyklus: Toast, Spül-Notiz und Ablaufmengen passen zu seinen Tagen (v1.5.162). · Wochendosis-Pläne zählen Plan-Wochen und nehmen das Intervall der Plan-Phase (v1.5.163). · Demo-Zyklus ohne eigene EC-Warnung an Spültagen (v1.5.164). · EC-Spanne im Eintrag aus dem Plan-Ziel statt fest 0,8–2,0 (v1.5.165). · Ablauf-Etikett beim Spülen ohne ⚠ (v1.5.166, Patricks Entscheidung). · Ablauf unter 5 % hebt die Gießmenge, vor Tag 25 zählt er nicht (v1.5.167, Patricks Entscheidung, `_drainMoeglich`). · Tag 1 ist überall der Keimstart (v1.5.168, Patricks Entscheidung, `_keimMethode`). · Sämlings-Start in Assistent, Einstellungen und Hinweis nennt die Tag-1-Menge aus Topf und Substrat (v1.5.169, `_tag1MengeJeTopf`). · Kein Feed-Tag-Ausgleich mehr in Anzucht-Wochen (v1.5.170, `_planWocheIstAnzucht`). · Dosis-Modus aus dem Plan des Zyklus, nicht aus dem aufgeschlagenen (v1.5.171, `_doseModeFor`). · Kein Text knüpft die Ernte an eine feste Bernstein-Menge (v1.5.172, 13 Stellen). · „Erntereif" in der Trichom-Karte nach Klar ≤ 10 % und eigenem Bernstein-Ziel (v1.5.173). · Gießanleitungen nennen das Ablaufziel aus `DRAIN_ZIEL` (v1.5.174). · Gießpunkt in Anleitungen und Bewertung aus `GIESSPUNKT`, ohne „Harz-Trigger" (v1.5.175). · Natürlicher Mengen-Korridor hebt die Sämlingsrampe nicht mehr an (v1.5.176).
 
 **Daraus zu lernen (v1.5.146):** Wer am document auf das Loslassen wartet, muss wissen, wohin das
 Ereignis geht, wenn das Element dazwischen neu gebaut wird. Maus-Ereignisse gehen an das, was jetzt
@@ -286,10 +286,7 @@ Wiederholung repariert und dafür auf dem Handy eine Düngermenge weiterlaufen l
 das erst das Nachmessen im Browser; der jsdom-Test prüft es seitdem mit.
 
 **Als Nächstes, in dieser Reihenfolge** (Fehler, ohne Rückfrage):
-1. **Der Mengen-Korridor hebt die Sämlingsrampe an Tag 22 an (550 → 1450 ml je Pflanze).** Fehler aus Abschnitt 0m.1.
-   `_naturalPhaseRange` liefert für den Stretch eine Untergrenze aus dem Tag 31, `_klemm` in `waterSuggestion` hebt
-   damit schon Blütetag 1 an. Vor dem Fix die Kennlinie Tag 18–40 messen, frisch und mit Patricks Daten.
-2. **Der Umbau der Gießmenge (Nachfüll-Grenze V) wartet auf Patricks Antworten in 0m.1.** Nicht ohne Antwort
+1. **Der Umbau der Gießmenge (Nachfüll-Grenze V) wartet auf Patricks Antworten in 0m.1.** Nicht ohne Antwort
    ändern (`ANBAU.md` 13.1).
 
 **Beim Abarbeiten von v1.5.168 gesehen, offen (braucht eine Quelle — `ANBAU.md` sagt zur Keimung nichts, geraten wird nicht):** Die Keimungs-Zahlen widersprechen sich: Keimwurzel beim Einsetzen 2–3 mm (Lexikon) · 2–5 mm (Anleitung) · 0,5–1 cm (Keimungskarte, `GERM_GUIDES`); Wasserglas höchstens 32 h (Karte) gegen 48 h (Lexikon); Keimling in der Erde nach 3–7 Tagen (Karte) gegen 5–10 Tage (Lexikon) gegen „Tag 3–5" (Anleitung).
@@ -1546,10 +1543,10 @@ cat head.html app.js tail.html | cmp - index.html && echo "BYTE-IDENTISCH OK"
 **Byte-Identität mit `cmp` ist Pflicht, bevor irgendetwas geändert wird.** Danach wird
 `app.js` geändert, mit `build.sh` neu gebaut und erneut verglichen.
 
-78 Testdateien (Gesamtlauf auf v1.5.165 grün, beide Zeitzonen; seit v1.5.166 die betroffenen) — neu dazu
+79 Testdateien (Gesamtlauf auf v1.5.176 grün, beide Zeitzonen) — neu dazu
 `test_tageseintrag` (33), `test_navwege` (28), `test_leerzustand` (27),
 `test_outdoor` (29), `test_diagnose` (38), `test_lexikon` (52), `test_kalender` (23), `test_ernte_iceflush` (35), `test_rainbowplan` (61), `test_planumhaengen` (17),
-`test_wochentipp` (17), `test_assistentplan` (33), `test_kopfkarte` (12), `test_zuweisungskarte` (10), `test_ecziel` (20), `test_bluetestufen` (14), `test_einsteigersatz` (11), `test_iceflushtexte` (13), `test_zweiplaene` (11), `test_dauerdruecken` (10), `test_giessluecke` (19), `test_planblattwoche` (12), `test_schimmelspuelen` (14), `test_drainohnemenge` (26), `test_trocknungsklima` (29), `test_wassertagstart` (20), `test_saettigungnachholen` (10), `test_rlfdiagnose` (10), `test_sortenchip` (9), `test_phtexte` (22), `test_anzuchtduenger` (15), `test_tag1` (22), `test_demozyklus` (11), `test_weeklysplit` (9) und `test_ecspanne` (12), `test_tag1keimung` (25), `test_tag1mengen` (16), `test_feedtaganzucht` (13), `test_dosismodus` (7), `test_bernsteintexte` (15), `test_erntereif` (6), `test_drainzieltexte` (4), `test_giesspunkttexte` (6):
+`test_wochentipp` (17), `test_assistentplan` (33), `test_kopfkarte` (12), `test_zuweisungskarte` (10), `test_ecziel` (20), `test_bluetestufen` (14), `test_einsteigersatz` (11), `test_iceflushtexte` (13), `test_zweiplaene` (11), `test_dauerdruecken` (10), `test_giessluecke` (19), `test_planblattwoche` (12), `test_schimmelspuelen` (14), `test_drainohnemenge` (26), `test_trocknungsklima` (29), `test_wassertagstart` (20), `test_saettigungnachholen` (10), `test_rlfdiagnose` (10), `test_sortenchip` (9), `test_phtexte` (22), `test_anzuchtduenger` (15), `test_tag1` (22), `test_demozyklus` (11), `test_weeklysplit` (9) und `test_ecspanne` (12), `test_tag1keimung` (25), `test_tag1mengen` (16), `test_feedtaganzucht` (13), `test_dosismodus` (7), `test_bernsteintexte` (15), `test_erntereif` (6), `test_drainzieltexte` (4), `test_giesspunkttexte` (6), `test_korridorsaemling` (6):
 
 **Tests mit Patricks Grow an einem bestimmten Tag setzen das Datum fest** (`setDebugDate`). Mit
 der echten Uhr fielen am 13.09.2026 15 Prüfungen in drei Dateien um — nicht wegen eines Fehlers,

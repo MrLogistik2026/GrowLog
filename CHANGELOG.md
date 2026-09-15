@@ -2,6 +2,25 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-15 — v1.5.176
+
+- **Der Mengen-Korridor hob die Sämlingsrampe an Blütetag 1 auf das Zweieinhalbfache.** Befund der Prüf-Agentin
+  zur Gießmenge, nachgemessen. Ein frischer Zyklus (11 L Erde, Automatic, keine Einträge) bekam an Tag 21 550 ml
+  und an Tag 22 1450 ml je Pflanze — die eigene Rampe der App sagt 650, 900, 1100, 1350 ml. Ursache:
+  `_naturalPhaseRange` rechnet den Stretch-Korridor aus einem repräsentativen Tag 31 (1450–2150 ml), und `_klemm`
+  in `waterSuggestion` hob damit schon Blütetag 1 auf die Untergrenze; bis Tag 25 blieb die Menge dort
+  festgeklemmt. Ohne seine eigenen Korridore hätte die App Patrick an Tag 22 7250 ml für fünf Pflanzen
+  vorgeschlagen; gegossen hat er 3500 ml. Sein eigener Korridor (Stretch ab 600 ml) hatte ihn davor geschützt —
+  ein Einsteiger hat keinen.
+- **Warum das zählt:** Nach `ANBAU.md` 1 und 13.1 ist ein Topf, der mit kleinem Wurzelballen dauernass bleibt,
+  der häufigste Weg zur toten Pflanze. Die Rampe war eigens als „sanfte Rampe statt Klippe" gebaut; der Korridor
+  hob sie wieder auf.
+- **Jetzt:** Nach unten hebt nur noch ein selbst gesetzter Korridor an. Der natürliche Korridor begrenzt weiter
+  nach oben. Tag 22 bekommt 650 ml, die Menge steigt der Rampe entlang und nie ab.
+- **Unverändert, mit Absicht:** der Deckel und die Frage nach der Nachfüll-Grenze V (Übergabe 0m.1).
+- `test_korridorsaemling.js` (6 Prüfungen, beide Zeitzonen): Kennlinie Tag 15–40 eines frischen Zyklus, die
+  Obergrenze, ein eigener Korridor als Gegenprobe. Gegen den alten Stand: 2 Fehler.
+
 ## 2026-09-15 — v1.5.175
 
 - **Drei Gießanleitungen nannten „Sweet Spot ~40 % Restgewicht" — genau den Wert, bei dem die Bewertung daneben

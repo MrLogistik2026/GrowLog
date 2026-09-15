@@ -3450,7 +3450,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.175';
+const APP_VERSION = 'v1.5.176';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -11987,8 +11987,14 @@ function waterSuggestion(c, p, iso) {
   // Sprung: Bei 25 % Ablauf käme mehr heraus als bei 17,8 %, weil im einen Fall der Korridor
   // mitgeht und im anderen nicht. „Die Menge stimmt" ist genauso ein Befund wie „zu wenig".
   const _messungDarfWeiten = !_eigenerKorridor || !!_drainF;
+  // (v1.5.176) Nach unten hebt nur ein SELBST gesetzter Korridor an. Der natürliche Korridor stammt aus einem
+  // repräsentativen Tag (_naturalPhaseRange: Stretch = Tag 31) und hob die Sämlingsrampe schon an Blütetag 1 an:
+  // Ein frischer Zyklus (11 L Erde) bekam an Tag 21 550 ml, an Tag 22 1450 ml je Pflanze statt der 650 ml seiner
+  // eigenen Rampe — und bis Tag 25 festgeklemmt. Genau das Fenster, in dem ein dauernasser Topf den jungen
+  // Wurzelballen erstickt (ANBAU.md 1, 13.1). Nach oben begrenzt der natürliche Korridor weiter.
   const _rangeEff = _phaseRange ? {
-    min: (_gemessen && _messungDarfWeiten) ? Math.min(_phaseRange.min, _gemessen * 0.8) : _phaseRange.min,
+    min: !_eigenerKorridor ? 0
+      : (_gemessen && _messungDarfWeiten) ? Math.min(_phaseRange.min, _gemessen * 0.8) : _phaseRange.min,
     max: (_gemessen && _messungDarfWeiten) ? Math.max(_phaseRange.max, _gemessen * 1.15) : _phaseRange.max,
   } : null;
   const _klemm = (perPlant) => _rangeEff
