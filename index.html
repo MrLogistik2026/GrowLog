@@ -4394,7 +4394,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.179';
+const APP_VERSION = 'v1.5.180';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -13638,16 +13638,26 @@ function getAlerts(c) {
     .filter(d => d <= today && S.entries[d]?.cycleData?.[c.id]?.water)
     .sort();
   const lastW = waterDates[waterDates.length - 1];
-  if (lastW) {
+  // (v1.5.180) Überfällig ist ein GEPLANTER Guss, der verstrichen ist — nicht „lange nicht gegossen". Bisher zählte nur
+  // der Abstand zum letzten Guss gegen das Intervall der Phase. Nach der Ernte, im Hard-Dryback und an den IceFlush-
+  // Tagen wird aber absichtlich nicht gegossen: Patricks Startseite meldete an Tag 123 mitten in der Trocknung „Gießen
+  // überfällig! Letztes: vor 13d (Intervall: 1d)". Maßgeblich ist jetzt isGiessTag — dieselbe Regel, nach der Kalender,
+  // Gieß-Fahrplan und Startseite die Gießtage zeigen. Ein Tag Spielraum bleibt wie bisher.
+  const _nachErnte = ['harvest', 'dry', 'cure'].includes(p.ph);
+  if (lastW && !_nachErnte) {
     const days = isoDiff(today, lastW);
-    const iv = getInt(c, p.ph);
-    if (days > iv + 1) {
-      out.push({ icon: '⚠️', text: `Gießen überfällig! Letztes: vor ${days}d (Intervall: ${iv}d)`, type: 'warn' });
+    let verpasst = null;
+    for (let d = 1; d <= days - 2; d++) {
+      const dIso = isoPlus(lastW, d);
+      if (isGiessTag(dIso, c)) { verpasst = dIso; break; }
+    }
+    if (verpasst) {
+      out.push({ icon: '⚠️', text: `Gießen überfällig! Geplant war der ${fmtDE(verpasst, { day: '2-digit', month: '2-digit' })} (vor ${isoDiff(today, verpasst)} Tagen), der letzte Guss ist ${days} Tage her.`, type: 'warn' });
     }
   }
 
-  // Irregular interval warning (check last 5 waterings)
-  if (waterDates.length >= 3) {
+  // Irregular interval warning (check last 5 waterings) — nach der Ernte ohne Aussage
+  if (waterDates.length >= 3 && !_nachErnte) {
     const recent = waterDates.slice(-5);
     const gaps = [];
     for (let i = 1; i < recent.length; i++) gaps.push(isoDiff(recent[i], recent[i-1]));

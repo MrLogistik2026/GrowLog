@@ -2,6 +2,23 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-15 — v1.5.180
+
+- **Die Startseite meldete mitten in der Trocknung „Gießen überfällig!".** Beim Browser-Check von v1.5.177 auf
+  Patricks Startseite gesehen: am 15.09.2026, Tag 123, Phase Trocknen, stand „⚠️ Gießen überfällig! Letztes: vor 13d
+  (Intervall: 1d)". `getAlerts` verglich nur den Abstand zum letzten Guss mit dem Gießintervall der Phase. Nach der
+  Ernte, im Hard-Dryback und an den IceFlush-Tagen wird aber absichtlich nicht gegossen — und in der Trocknung
+  lieferte `getInt` sogar ein Intervall von einem Tag. Dazu erschien nach der Ernte weiter der Tipp „Gießrhythmus
+  schwankt".
+- **Warum das zählt:** Eine Warnung, die zur falschen Zeit kommt, lehrt, Warnungen zu übergehen. Wer ihr in der
+  Trocknung folgt, fragt sich, ob er die geerntete Pflanze gießen soll.
+- **Jetzt:** Überfällig ist ein geplanter Gießtag, der verstrichen ist — nach `isGiessTag`, derselben Regel, nach
+  der Kalender, Gieß-Fahrplan und Startseite die Gießtage zeigen, mit einem Tag Spielraum wie bisher. Die Warnung
+  nennt den verpassten Tag („Geplant war der 13.07. (vor 7 Tagen), der letzte Guss ist 10 Tage her."). Nach der
+  Ernte gibt es weder die Warnung noch den Rhythmus-Tipp.
+- `test_ueberfaellig.js` (6 Prüfungen, beide Zeitzonen): Trocknung mit Warnungen und gerenderter Startseite, dazu
+  eine Blüte-Lage mit wirklich verpasstem Gießtag als Gegenprobe. Gegen den alten Stand: 3 Fehler.
+
 ## 2026-09-15 — v1.5.179
 
 - **Die Wochenfrage fragte nach dicker werdenden Blüten, bevor es Blüten gibt.** Befund der ersten Prüfrunde (E7),
