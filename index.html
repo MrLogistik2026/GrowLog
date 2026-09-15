@@ -4447,7 +4447,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.169';
+const APP_VERSION = 'v1.5.170';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -10170,6 +10170,16 @@ function weekGussCounts(c, w) {
 }
 
 /**
+ * (v1.5.170) Gehört Plan-Woche w zur Anzucht? Die Phase steht im Rückgrat des Plans (weekPhases, v1.5.51);
+ * ohne Rückgrat gelten wie bisher Woche 1–2. Eine Quelle für den Teiler in getWeekDoses (v1.5.163) und den
+ * Anzucht-Ausschluss in feedDayCompFactor.
+ */
+function _planWocheIstAnzucht(plan, w) {
+  const ph = (plan && Array.isArray(plan.weekPhases)) ? plan.weekPhases[w - 1] : null;
+  return ph ? ph === 'anzucht' : w <= 2;
+}
+
+/**
  * Feed-Tag-Verstärkungs-Faktor (Hybrid-Lösung, v1.1.90).
  * WARUM: Die Guss-Dosen der rhythmuslosen Pläne (Light/Master/Official/Outdoor/
  * konservativ) sind "jedes Gießen"-Dosen. Entstehen über die Gießmap (c.gussPlan)
@@ -10181,7 +10191,8 @@ function weekGussCounts(c, w) {
  * unter der Decke (bewusst konservativ; darüber wird abgeklemmt = sichere Richtung).
  *   Feed-Tag-Basis-Pläne (eigener feedWaterRhythm, z.B. Cup-Sieger): NIE skaliert —
  *   ihre Dosen SIND schon Feed-Tag-Dosen, Liefermenge bleibt mathematisch 1:1.
- *   Anzucht (hat ohnehin keine Wasser-Tage) + Reifung/Spülung ab Wo 10 (da wollen wir
+ *   Anzucht (v1.5.170: die Wochenphase des Plans entscheidet — Wasser-Tage gibt es dort
+ *   durchaus, z. B. ARC_RHYTHM Woche 3) + Reifung/Spülung ab Wo 10 (da wollen wir
  *   WENIGER, nicht mehr): ebenfalls keine Verstärkung.
  * @returns {number} Faktor ≥ 1 (1 = keine Änderung)
  */
@@ -10192,6 +10203,11 @@ function feedDayCompFactor(c, w, preset) {
   // Fehlt jede Quelle, gibt's nichts zu kompensieren (spart die Tages-Enumeration).
   const _fwPlan = (typeof getPlanForCycle === 'function') ? getPlanForCycle(c) : null;
   if (!c.gussPlan && !c.useWaterDays && !(_fwPlan && _fwPlan.feedWaterRhythm)) return 1;
+  // (v1.5.170) Anzucht nie verstärken. So stand es seit v1.1.90 im Kommentar oben, geprüft wurde aber nur die
+  // Wochennummer: Pläne mit Wasser-Tagen in einer Anzucht-Woche bekamen dort mehr als die Plandosis je
+  // Düngerguss. Ein Sämling reagiert auf Konzentration am empfindlichsten (ANBAU.md 13.2), und bei der
+  // Düngermenge ist weniger die sichere Seite (15).
+  if (_planWocheIstAnzucht(_fwPlan, w)) return 1;
   if (!(w >= 1 && w <= 9)) return 1;                // ab Wo 10 (Reifung/Spülung) nicht verstärken
   const ecPeak = parseFloat(preset.ecPeak);
   if (!(ecPeak > 0)) return 1;                      // ungeprüfter Plan ohne ecPeak → sicherheitshalber nicht kompensieren
@@ -10726,8 +10742,7 @@ function getWeekDoses(cId, w, c) {
     // (v1.5.163) Welches Gießintervall gilt, sagt die Phase der Plan-Woche (plan.weekPhases). Die feste
     // Grenze „Woche 1–2 Anzucht“ passte nur zufällig zu BioBizz Official; BioBizz Outdoor führt drei
     // Anzucht-Wochen, und dessen Woche 3 wurde durch das Blüte-Intervall geteilt.
-    const _phW = (plan && Array.isArray(plan.weekPhases)) ? plan.weekPhases[w - 1] : null;
-    const iv = (_phW ? _phW === 'anzucht' : w <= 2) ? (c.intAnzucht || RI.anzucht) : (c.intBloom || RI.bloom);
+    const iv = _planWocheIstAnzucht(plan, w) ? (c.intAnzucht || RI.anzucht) : (c.intBloom || RI.bloom);
     const wateringsPerWeek = 7 / iv;
     if (wateringsPerWeek <= 0) {
       out = { ...raw };

@@ -2,6 +2,28 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-15 — v1.5.170
+
+- **In der Anzucht bekam jeder Düngerguss mehr als die Plandosis, sobald es Wasser-Tage gab.** Befund der
+  Prüf-Agentin zu weekly-split (15.09.2026), selbst nachgemessen. `feedDayCompFactor` hebt an Düngergüssen die
+  Dosis an, damit die Wochenmenge trotz Wasser-Tagen gleich bleibt. Sein Kommentar schließt die Anzucht seit
+  v1.1.90 ausdrücklich aus („Anzucht … keine Verstärkung"), geprüft wurde aber nur die Wochennummer 1–9.
+  Mit einer Kopie von Patricks Zyklus (Wasser-Tage aus seinen Einträgen): BioBizz Official Woche 2 ×1,333,
+  BioBizz Outdoor Woche 3 ×1,467, BioBizz Light Woche 3 ×1,5 — alle drei laut Plan-Rückgrat Anzucht.
+  Ein frischer Zyklus zeigt es nicht, weil dort in der Anzucht keine Wasser-Tage liegen; das ist der Grund,
+  warum es bisher niemand gesehen hat.
+- **Warum das zählt:** Ein Sämling reagiert auf Konzentration am empfindlichsten (`ANBAU.md` 13.2), und bei
+  der Düngermenge ist weniger die sichere Seite (15). Die Verstärkung hob genau die Konzentration über den
+  Planwert.
+- **Jetzt:** `_planWocheIstAnzucht(plan, w)` liest die Phase aus dem Rückgrat des Plans (ohne Rückgrat wie
+  bisher Woche 1–2). `feedDayCompFactor` gibt dort 1 zurück, und der Teiler in `getWeekDoses` (v1.5.163)
+  fragt dieselbe Funktion statt einer eigenen Kopie. Blüte-Wochen mit Wasser-Tagen behalten ihren Ausgleich.
+- **Unverändert, mit Absicht:** Ob weekly-split überhaupt der Herstellerangabe folgt, wie die Wochenzahlen
+  der BioBizz-Vorlagen zum Schema passen und ob der Ausgleich in der Blüte bleiben soll — das sind Fragen an
+  Patrick (Übergabe, Abschnitt 0l). Keine Dosis wurde geändert.
+- `test_feedtaganzucht.js` (13 Prüfungen, beide Zeitzonen): drei Vorlagen mit Patricks Zyklus, je Anzucht-Woche
+  mit Wasser-Tag und Blüte-Woche als Gegenprobe, die Dosis in der Mischliste, eine Quelle im Quelltext.
+
 ## 2026-09-15 — v1.5.169
 
 - **Der Sämlings-Start nannte feste Mengen, die an Tag 1 nicht stimmen.** Beim Abarbeiten von v1.5.168
