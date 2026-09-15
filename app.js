@@ -3393,7 +3393,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.180';
+const APP_VERSION = 'v1.5.181';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -7012,12 +7012,16 @@ function _datebasedPhase(iso, c) {
   const iceLen = iceLenFor(c);
 
   const msPerDay = 86400000;
-  const flushStart = new Date(bs.getTime() + bloomLen * msPerDay);
-  const iceStart   = new Date(flushStart.getTime() + flushLen * msPerDay);
-  const harvestStart = new Date(iceStart.getTime() + iceLen * msPerDay);
-  const dryStart     = new Date(harvestStart.getTime() + harvestLen * msPerDay);
-  const dryEnd       = new Date(dryStart.getTime() + dryLen * msPerDay);
-  const cureEnd      = new Date(dryEnd.getTime() + cureLen * msPerDay);
+  // (v1.5.181) Grenzen in Kalendertagen (isoPlus). Vorher n · 86 400 000 ms auf das 12-Uhr-Datum: Lag die
+  // Frühjahrsumstellung dazwischen, stand die Grenze auf 13 Uhr Sommerzeit, und der Tag zählte noch zur alten Phase —
+  // in Berlin begannen Spülen, IceFlush und Ernte einen Tag zu spät, in Zonen ohne Zeitumstellung nicht. Die
+  // Tageszählungen darunter runden und bleiben richtig.
+  const flushStart   = iso12(isoPlus(bloomStart, bloomLen));
+  const iceStart     = iso12(isoPlus(bloomStart, bloomLen + flushLen));
+  const harvestStart = iso12(isoPlus(bloomStart, bloomLen + flushLen + iceLen));
+  const dryStart     = iso12(isoPlus(bloomStart, bloomLen + flushLen + iceLen + harvestLen));
+  const dryEnd       = iso12(isoPlus(bloomStart, bloomLen + flushLen + iceLen + harvestLen + dryLen));
+  const cureEnd      = iso12(isoPlus(bloomStart, bloomLen + flushLen + iceLen + harvestLen + dryLen + cureLen));
 
   const diffDays = Math.round((d - start) / msPerDay);
   const totalDays = Math.max(1, Math.round((dryEnd - start) / msPerDay));
@@ -7028,7 +7032,7 @@ function _datebasedPhase(iso, c) {
   if (d < bs) {
     const tp = c.transplantDate ? iso12(c.transplantDate) : null;
     if (tp && tp >= start && tp <= bs) {
-      const hardenStart = new Date(tp.getTime() - 7 * msPerDay);
+      const hardenStart = iso12(isoPlus(c.transplantDate, -7));
       const week = Math.floor(diffDays / 7) + 1;
       if (d < hardenStart) {
         // Vorzucht drinnen, Tag seit startDate
@@ -7042,7 +7046,7 @@ function _datebasedPhase(iso, c) {
       }
       // Vegi draußen — Tag seit Transplant
       const vDay = Math.round((d - tp) / msPerDay) + 1;
-      const vWeek = Math.floor((d - tp) / msPerDay / 7) + 1;
+      const vWeek = Math.floor(isoDiff(iso, c.transplantDate) / 7) + 1;
       return { ph: 'vegi_out', day: diffDays + 1, vegDay: vDay, week: vWeek, total: totalDays, pct };
     }
     // Kein Transplant-Datum gesetzt — klassische Anzucht-Phase (wie bisher)

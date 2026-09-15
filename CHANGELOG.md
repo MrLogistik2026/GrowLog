@@ -2,6 +2,24 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-15 — v1.5.181
+
+- **Nach der Zeitumstellung im Frühjahr begannen Spülen, IceFlush und Ernte einen Tag zu spät.** Befund der zweiten
+  Prüfrunde (Plan-Modell), in beiden Zeitzonen gemessen und hier nachgestellt. Betroffen sind Zyklen mit
+  Blütestart-Datum: Photo-Sorten nach dem Umschalten auf 12/12 und Outdoor-Photos. `_datebasedPhase` legte die
+  Phasengrenzen mit `getTime() + n · 86 400 000 ms` auf das 12-Uhr-Datum. Lag die Umstellung am 29.03. dazwischen,
+  stand die Grenze auf 13 Uhr Sommerzeit, und der Tag zählte noch zur alten Phase. Beispiel: Umschalten am 26.01.,
+  70 Blütetage — Spülen soll am 06.04. beginnen, die App sagte 07.04., IceFlush, Ernte, Trocknen und Curing ebenso
+  einen Tag später. In Kiritimati (keine Zeitumstellung) stimmte alles: Dieselben Eingaben ergaben je nach Zeitzone
+  einen anderen Erntetag.
+- **Draußen dieselbe Rechnung:** Das Abhärten (7 Tage vor dem Raus-Datum) begann nach der Herbstumstellung einen Tag
+  zu spät, und nach der Frühjahrsumstellung zählte der 8. Tag draußen noch als Woche 1.
+- **Jetzt:** Alle Grenzen in Kalendertagen über `isoPlus`/`isoDiff`, wie überall sonst in der App. Die
+  Tageszählungen innerhalb der Phasen runden und waren schon richtig.
+- `test_zeitumstellung.js` (13 Prüfungen, beide Zeitzonen): drei Photo-Zyklen über die Frühjahrsumstellung, zwei
+  Gegenproben (ohne Umstellung, Herbst), Abhärten und Wochenzählung draußen. Gegen den alten Stand: 5 Fehler in
+  Berlin, keiner in Kiritimati.
+
 ## 2026-09-15 — v1.5.180
 
 - **Die Startseite meldete mitten in der Trocknung „Gießen überfällig!".** Beim Browser-Check von v1.5.177 auf
