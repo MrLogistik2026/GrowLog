@@ -4451,7 +4451,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.176';
+const APP_VERSION = 'v1.5.177';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -13131,8 +13131,11 @@ function drainAdjust(c, iso) {
     if (werte.length >= 3) break;
     const cd = S.entries[k] && S.entries[k].cycleData && S.entries[k].cycleData[c.id];
     if (!cd) continue;
-    // Vorgeschlagene Güsse zählen nicht — sonst lernt die App aus sich selbst.
-    if (cd._suggested && cd._suggested.water) continue;
+    // (v1.5.177) Ein eingetragener Drain zählt immer — auch wenn die Gießmenge per „Erledigt“ oder Autofill
+    // übernommen wurde. Die Drain-Menge trägt nur ein Mensch ein (die App füllt sie nie aus), sie ist also ein
+    // Befund über diesen Topf, kein Echo der eigenen Empfehlung. Patrick am 15.09.2026: „Die Werte sind zu wichtig,
+    // um diese zu schätzen. Am Drain sieht man sofort, ob die Salzkonzentration erhöht ist." Vorher lief der
+    // Regelkreis aus v1.5.112 ausgerechnet für den nie, der der App folgt.
     const f = (typeof drainFlow === 'function') ? drainFlow(cd) : null;
     if (!f) continue;
     // Spülen und IceFlush haben absichtlich einen ganz anderen Durchfluss.
@@ -27153,7 +27156,7 @@ function renderEntry(iso) {
               <div>
                 <div style="font-size:10px;color:var(--text-hint);margin-bottom:2px">Ablauf (ml)</div>
                 <div style="display:flex;align-items:center;gap:3px">
-                  <input class="inp-field" type="number" step="10" min="0" max="20000" id="runoff-ml-${c.id}" value="${cd.drainMl || ''}" placeholder="${cd.water ? Math.round(parseFloat(cd.water) * 0.2) : '—'}"
+                  <input class="inp-field" type="number" step="10" min="0" max="20000" id="runoff-ml-${c.id}" value="${cd.drainMl || ''}" placeholder="ml"
                     style="width:58px;font-size:15px;font-weight:600;font-family:var(--mono);text-align:center;padding:6px 2px;border-color:${ra.flow ? (ra.flow.gueltig ? 'var(--green-dk)' : 'var(--yellow)') : 'var(--border)'}"
                     oninput="uEF('${c.id}','drainMl',this.value);refreshRunoffAnalysis('${c.id}')"/>
                 </div>
@@ -29443,7 +29446,7 @@ function _runoffFlowLine(ra, cd) {
   if (!ra || !ra.flow) {
     return (cd && (cd.runoffPh || cd.runoffEc))
       ? `<div style="font-size:10px;color:var(--yellow);padding:0 4px;line-height:1.45">⚠ Ohne Ablaufmenge lässt sich nicht sagen, ob die Messung etwas taugt — trag sie oben ein.</div>`
-      : `<div style="font-size:10px;color:var(--text-hint);padding:0 4px;line-height:1.45">Auffangen, messen, Menge eintragen. Erst ab etwa einem Fünftel Ablauf sagen pH und EC etwas über die Erde im Topf.</div>`;
+      : `<div style="font-size:10px;color:var(--text-hint);padding:0 4px;line-height:1.45">Auffangen, messen, Menge eintragen — Ziel ${DRAIN_ZIEL.min}–${DRAIN_ZIEL.max} %${parseFloat(cd && cd.water) > 0 ? `, bei ${Math.round(parseFloat(cd.water))} ml also ${Math.round(parseFloat(cd.water) * DRAIN_ZIEL.min / 100)}–${Math.round(parseFloat(cd.water) * DRAIN_ZIEL.max / 100)} ml` : ''}. Erst ab ${DRAIN_ZIEL.min} % sagen pH und EC im Drain etwas über die Erde im Topf.</div>`;
   }
   const f = ra.flow;
   const farbe = f.guete === 'gut' ? 'var(--green)'

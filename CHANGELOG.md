@@ -2,6 +2,29 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-15 — v1.5.177
+
+- **Ein eingetragener Drain zählte nicht, wenn die Gießmenge per „Erledigt" oder Autofill übernommen war.**
+  Patricks Entscheidung vom 15.09.2026: „Wenn ich den Drain nicht eingegeben habe, können wir diesen nicht
+  automatisch ausfüllen lassen. Die Werte sind zu wichtig, um diese zu schätzen. Am Drain sieht man sofort, ob die
+  Salzkonzentration erhöht ist." `drainAdjust` übersprang jeden Eintrag mit `_suggested.water` — gedacht als
+  Schutz gegen das Lernen aus eigenen Vorschlägen. Die Drain-Menge trägt aber nur ein Mensch ein; sie ist ein Befund
+  über den Topf. Folge bisher: Wer der App folgt und „Erledigt" tippt, bekam den Regelkreis aus v1.5.112 nie —
+  450 ml Drain auf 9000 ml (5 %) änderten nichts. Jetzt: Faktor 1,15, die Menge geht hoch.
+- **Geprüft und abgesichert, dass die App nie einen Drain schätzt:** Weder „Tag automatisch ausfüllen" noch
+  „Erledigt" noch „Empfehlung übernehmen" schreiben Drain-Menge, Drain-pH oder Drain-EC. Einzige Ausnahme bleibt
+  der Demo-Zyklus mit seinen erfundenen Beispieldaten.
+- **Dazu:** Das Drain-Feld zeigte als grauen Platzhalter „1800" (20 % der Gießmenge) — für einen Anfänger leicht
+  als eingetragener Wert zu lesen. Der Hinweis darunter sagte „Erst ab etwa einem Fünftel Ablauf sagen pH und EC
+  etwas", obwohl ein Drain nach `ANBAU.md` 5.1 ab 15 % aussagekräftig ist. Jetzt: Platzhalter „ml", und der
+  Hinweis nennt das Ziel aus `DRAIN_ZIEL` mit der Menge für den heutigen Guss („Ziel 15–20 % — bei 9000 ml also
+  1350–1800 ml"). Ein erster Versuch mit dem Ziel als Platzhalter wurde im 58 Pixel schmalen Feld zu „1350–1"
+  abgeschnitten — gesehen erst im Browser.
+- `test_drainnieschaetzen.js` (7 Prüfungen, beide Zeitzonen): Autofill-Vorlage an Guss- und Spültag, „Erledigt",
+  „Empfehlung übernehmen", Drain bei übernommener Gießmenge, Platzhalter und Hinweis. Gegen den alten Stand: 3 Fehler.
+  `test_drainregelkreis.js` prüfte bisher das Gegenteil („Ein von der App gefuellter Guss zaehlt nicht als
+  Messung") und ist umgestellt.
+
 ## 2026-09-15 — v1.5.176
 
 - **Der Mengen-Korridor hob die Sämlingsrampe an Blütetag 1 auf das Zweieinhalbfache.** Befund der Prüf-Agentin

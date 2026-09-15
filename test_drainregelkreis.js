@@ -178,19 +178,19 @@ const vorschlag = (E) => E(`(function(){ const c=S.cycles[0], i=isoPlus(c.startD
     pruef('2,2 % Ablauf zieht die Menge nach oben (Faktor 1,186)',
       !!f2 && f2.richtung === 'mehr' && Math.abs(f2.faktor - 1.1855) < 0.001, JSON.stringify(f2));
 
-    // Ein von der App vorgeschlagener Guss darf nicht als Messung zaehlen
+    // (v1.5.177) Bis v1.5.176 stand hier das Gegenteil: „Ein von der App gefuellter Guss zaehlt nicht als
+    // Messung". Den Drain traegt aber nur ein Mensch ein — er ist ein Befund ueber den Topf, auch wenn die
+    // Giessmenge per „Erledigt" uebernommen wurde (Patrick am 15.09.2026). Siehe test_drainnieschaetzen.js.
     const { E: E2 } = await load((st) => {
       const c = st.cycles.find(x => x.active);
-      const iso = Object.keys(st.entries).sort().filter(k => {
-        const cd = st.entries[k].cycleData && st.entries[k].cycleData[c.id];
-        return cd && cd.water;
-      }).pop();
+      const iso = Object.keys(st.entries).sort().find(k => k === '2026-08-27');
       const cd = st.entries[iso].cycleData[c.id];
-      cd.drainMl = '100';
+      cd.drainMl = '900';
       cd._suggested = Object.assign({}, cd._suggested, { water: true });
     });
-    pruef('Ein von der App gefuellter Guss zaehlt nicht als Messung',
-      E2(`drainAdjust(S.cycles[0], todayISO())`) === null);
+    const f2b = JSON.parse(E2(`JSON.stringify(drainAdjust(S.cycles[0], '2026-08-27'))`));
+    pruef('Ein eingetragener Drain zaehlt auch bei uebernommener Giessmenge (10 % -> Faktor 1,091)',
+      !!f2b && Math.abs(f2b.faktor - 1.0909) < 0.001, JSON.stringify(f2b));
   }
 
   console.log('');
