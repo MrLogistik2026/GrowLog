@@ -3986,7 +3986,7 @@ function createCustomPresetFromCurrent(name, subtitle = '') {
     subtitle: subtitle || 'Eigenes Preset',
     doseMode: 'per-watering',
     mixOrder: products.map(p => p.name),
-    mixInfo: S.mixInfo || 'Reihenfolge wie oben — CalMag zuerst, Chelat-Additive zuletzt.',
+    mixInfo: S.mixInfo || 'Reihenfolge wie oben. Nutzt du ein Silikat, kommt es zuerst ins Wasser; Chelate und lebende Produkte zuletzt.',
     drainInfo: '15–20 % Drain bei jedem Guss erzeugen. Drain sofort entsorgen.',
     weekFocus: {},
     products,
@@ -4437,7 +4437,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.202';
+const APP_VERSION = 'v1.5.203';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -27682,7 +27682,7 @@ function renderEntry(iso) {
         const mixSteps = activeMixProducts.length > 0
           ? `<div style="background:var(--card);border:0.5px solid var(--border);border-top:none;border-radius:0 0 10px 10px;padding:10px 12px">
               <div style="font-size:10px;color:var(--text-hint);margin-bottom:6px;font-weight:600">⚗️ MISCHREIHENFOLGE <span class="mix-header-water" data-cycle="${c.id}" style="color:var(--text-muted);font-weight:400">${waterAmt > 0 ? `· für ${fmtWater(waterAmt)}` : ''}</span></div>
-              ${c.medium === 'coco' ? `<div style="font-size:10px;color:var(--teal);background:rgba(90,200,180,0.08);border-radius:6px;padding:5px 8px;margin-bottom:6px;line-height:1.45">🥥 <b>Coco:</b> CalMag zuerst einrühren — Coco bindet Calcium &amp; Magnesium, darum ist CalMag hier Pflicht (nicht optional). Fehlt es, kommen schnell Mangelflecken.</div>` : ''}
+              ${c.medium === 'coco' ? `<div style="font-size:10px;color:var(--teal);background:rgba(90,200,180,0.08);border-radius:6px;padding:5px 8px;margin-bottom:6px;line-height:1.45">🥥 <b>Coco:</b> CalMag gehört in jede Mischung — Coco bindet Calcium &amp; Magnesium, darum ist CalMag hier Pflicht (nicht optional). Fehlt es, kommen schnell Mangelflecken.</div>` : ''}
               ${mixActive.length > 0
                 ? mixActive.map((n, i) => renderMixRow(n, i, true)).join('')
                 : `<div style="padding:14px 4px;text-align:center;font-size:11px;color:var(--text-hint);line-height:1.4">Keine Dünger diese Woche aktiv.<br><span style="font-size:10px">Schau in <b>Tipps → Dünger</b> oder erweitere unten ↓</span></div>`}
@@ -27769,7 +27769,7 @@ function renderEntry(iso) {
                 <div>${c.medium === 'coco' ? '<b style="color:var(--teal)">② Feucht halten:</b> Coco nie ganz austrocknen lassen — nur leicht abtrocknen, dann wieder gießen. Die Wurzeln mögen es gleichmäßig feucht.' : '<b style="color:var(--teal)">② Rücktrocknung:</b> Finger weg! Trocknung zieht O₂ in die Wurzelzone = Motor für Wachstum.'}</div>
                 <div>${c.medium === 'coco' ? `<b style="color:var(--green)">③ Gießpunkt:</b> Gießen sobald der Topf merklich leichter wird (Hebe-Test „${GIESSPUNKT.coco.knopf}“, ${GIESSPUNKT.coco.von}–${GIESSPUNKT.coco.bis} % Restgewicht) — jedes Mal mit Nährlösung. (${getInt(c, p?.ph || 'bloom') <= 1 ? 'meist täglich' : '~alle ' + getInt(c, p?.ph || 'bloom') + ' Tage'})` : `<b style="color:var(--green)">③ Sweetspot:</b> Gießen im Sweet Spot bei ${GIESSPUNKT.erde.von}–${GIESSPUNKT.erde.bis} % Restgewicht (Hebe-Test „Knapp“). Obere 3–5 cm trocken. (~alle ${getInt(c, p?.ph || 'bloom')} Tage)`}</div>
                 <div style="background:rgba(240,208,80,0.06);border-radius:6px;padding:6px 8px;color:var(--yellow)">${c.medium === 'coco' ? '💡 <b>Tipp:</b> In Coco lieber etwas früher gießen als zu spät — Coco verzeiht Austrocknen schlecht. Staunässe trotzdem vermeiden, aber nie knochentrocken werden lassen.' : '💡 <b>Unsicher?</b> Morgen wieder anheben — nicht warten, bis die Blätter hängen: Dann steht die Photosynthese schon. Nass macht zu häufiges Gießen oder Wasser im Untersetzer, nicht eine volle Menge mit Drain.'}</div>
-                <div><b style="color:var(--orange)">🧪 Mischen:</b> CalMag zuerst → umrühren → Basisdünger → Additive → pH auf ${pht.mid.toFixed(1)}</div>
+                <div><b style="color:var(--orange)">🧪 Mischen:</b> ${(() => { const _mo = (_planAnsicht(c).mixOrder || []); return _mo.length ? `${_mo[0]} zuerst → umrühren → dann der Rest in der Reihenfolge deines Plans` : 'ein Silikat zuerst, falls du eins nutzt → dann CalMag → umrühren → Basisdünger → Additive'; })()} → pH auf ${pht.mid.toFixed(1)}</div>
                 <div><b style="color:var(--orange)">🚿 Drain:</b> ${DRAIN_ZIEL.min}–${DRAIN_ZIEL.max} % Drain bei jedem Guss. Drain-Wasser sofort entsorgen!</div>
               </div>
             </div>

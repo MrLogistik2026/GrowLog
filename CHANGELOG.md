@@ -2,6 +2,20 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-15 — v1.5.203
+
+- **Die Gießanleitung sagte fest „CalMag zuerst".** Im Eintrag stand „🧪 Mischen: CalMag zuerst → umrühren → Basisdünger →
+  Additive", der Coco-Hinweis „CalMag zuerst einrühren", die Vorlage für eigene Pläne „CalMag zuerst". Seit v1.5.109 kommt
+  die Reihenfolge in der Tipps-Karte aus dem Plan, hier nicht (Befund der Gießmengen-Prüfung).
+- **Warum das zählt:** Für jeden Plan mit Silikat ist das die falsche Reihenfolge. Silikat ist stark alkalisch und fällt mit
+  Calcium sofort als Calciumsilikat aus; beides ist dann für die Pflanze verloren (`ANBAU.md` 10). Patricks Rainbow-Plan
+  für Run 02 führt Silica Force zuerst.
+- **Jetzt:** Die Mischen-Zeile nennt das erste Produkt aus der Mischreihenfolge des Plans, der am Zyklus hängt
+  (`_planAnsicht`), dann „der Rest in der Reihenfolge deines Plans". Ohne Reihenfolge: ein Silikat zuerst, falls vorhanden,
+  dann CalMag. Der Coco-Hinweis sagt „CalMag gehört in jede Mischung", ohne Rangfolge.
+- `test_mischzeile.js` (7 Prüfungen, beide Zeitzonen): Patricks Plan, ein Plan mit Silikat an erster Stelle,
+  Coco-Hinweis, Quelltext. Gegen den alten Stand: 4 Fehler.
+
 ## 2026-09-15 — v1.5.202
 
 - **„Lieber einen Tag länger warten" schickte die Pflanze in den Wasserstress.** Der Master-Tipp in den Tipps sagte
