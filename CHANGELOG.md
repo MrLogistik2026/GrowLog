@@ -2,6 +2,27 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-15 — v1.5.200
+
+- **Coco bekam die Gießpunkt-Zahlen von Erde.** Die Hebe-Test-Vorgabe sprang am fälligen Gießtag für jedes Substrat auf
+  30 % („Knapp"). Die Coco-Bewertung meldete damit an jedem Gießtag „Wasserstress" (Befund der Gießmengen-Prüfung). Im
+  Hard-Dryback und am IceFlush-Tag hieß es in Coco „noch zu feucht" bis unter 40 %. Banner, Checkliste, Timeline und die
+  Karte vor dem Spülen nannten 25–40 %. Die Dryback-Vorhersage zielte auf 60 %, der Knopf „Mittel" steht für 70.
+  Gießanleitung und Sämlings-Hinweis nannten „~60–70 %", die Bewertung sagt „Jetzt gießen" von 60 bis 85 %.
+- **Warum das zählt:** Coco hat kaum Austauschkapazität und verzeiht Austrocknen schlecht (`ANBAU.md` 7.1). Wer im
+  Hard-Dryback der App folgte, ließ einen Coco-Topf bis in den Bereich trocknen, den dieselbe App sonst „Wasserstress"
+  nennt — in den letzten Tagen vor der Ernte. Für den Zweck des Hard-Drybacks, Platz für das Schmelzwasser im Topf, reicht
+  der Coco-Gießpunkt.
+- **Jetzt:** `GIESSPUNKT.coco` (60–85 %, Knopf „Mittel", Anker 70) steht neben `GIESSPUNKT.erde` (25–40 %, „Knapp",
+  30), dazu `giesspunktFor(c)`. Bewertung, Vorgabe, Vorhersage, Hard-Dryback, IceFlush-Tag, Banner, Checkliste, Timeline,
+  Karte vor dem Spülen, Gießanleitung und Sämlings-Hinweis lesen daraus. Das Lexikon „Hard Dryback" nennt beide Substrate.
+  Erde bleibt unverändert.
+- Bewusst angepasst: `test_giesspunktzahlen.js` prüfte den Sämlings-Hinweis am alten Ausdruck
+  (`c.medium === 'coco' ? …`); er prüft jetzt `giesspunktFor(c)`.
+- `test_cocogiesspunkt.js` (18 Prüfungen, beide Zeitzonen): Konstante, Vorgabe am fälligen Gießtag für Coco und Erde,
+  Coco-Grenzen, Hard-Dryback-Bewertung für Coco und Erde, Banner, IceFlush-Status, Checkliste und Timeline in Coco,
+  Vorhersage, Gießanleitung, Lexikon, Quelltext. Gegen den alten Stand: 12 Fehler.
+
 ## 2026-09-15 — v1.5.199
 
 - **Zwei Stellen rechneten nach v1.5.195 weiter mit einem eigenen Finisher-Band.** Die Dryback-Vorhersage

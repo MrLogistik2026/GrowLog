@@ -56,7 +56,14 @@ const DRAIN_AB_TAG = 25;
 // der Texte, die sie erklären. Erde: Sweet Spot 25–40 % (Knopf „Knapp“ = 30, Patricks Gießpunkt); Finisher: 30–40 %.
 // ANBAU.md nennt keine Zahl — es ist eine Konvention über den Nass-Trocken-Zyklus (ANBAU.md 1).
 // (v1.5.195) Kein eigenes Finisher-Band mehr — derselbe Gießpunkt bis zur Ernte (classifyRestPct).
-const GIESSPUNKT = { erde: { von: 25, bis: 40 } };
+// (v1.5.200) Coco hat einen eigenen Gießpunkt: Knopf „Mittel“, 60–85 % — dieselben Grenzen wie die Coco-Bewertung. Vorher
+// galten in Hebe-Test-Vorgabe, Hard-Dryback, IceFlush-Tag und Vorhersage auch für Coco die Erde-Zahlen (ANBAU.md 7.1: Coco
+// verzeiht Austrocknen schlecht). anker = der Knopf, auf den die Vorgabe am fälligen Gießtag springt.
+const GIESSPUNKT = {
+  erde: { von: 25, bis: 40, anker: 30, knopf: 'Knapp' },
+  coco: { von: 60, bis: 85, anker: 70, knopf: 'Mittel' },
+};
+function giesspunktFor(c) { return (c && c.medium === 'coco') ? GIESSPUNKT.coco : GIESSPUNKT.erde; }
 
 // (v1.5.187) KLIMA JE PHASE AUS EINER QUELLE (ANBAU.md 2.2; Patricks Entscheidung vom 15.09.2026: Option B). Fest sind zwei
 // Größen: das VPD am Blatt (Antrieb der Transpiration) und die Temperatur bei Licht an. Die Luftfeuchte folgt daraus
@@ -3429,7 +3436,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.199';
+const APP_VERSION = 'v1.5.200';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -7633,16 +7640,18 @@ function classifyRestPct(restPct, isFinisher, isCoco, noWaterPhase) {
     // und das Schmelzwasser bleibt im Topf — sein einziger belegter Zweck. Vorher „auf etwa 35 % abtrocknen" (nasser als der
     // eigene Gießpunkt, Knopf „Knapp" = 30) und unter 30 % „Federleicht — bereit", auch unter 25 %, wo dieselbe Funktion
     // sonst Wasserstress meldet.
-    if (p >= GIESSPUNKT.erde.bis) {
+    // (v1.5.200) Coco nach dem Coco-Gießpunkt — vorher „Noch zu feucht" bis unter 40 %, wo Coco sonst „Wasserstress" heißt.
+    const gp = isCoco ? GIESSPUNKT.coco : GIESSPUNKT.erde;
+    if (p >= gp.bis) {
       return { status: 'noWater', color: 'var(--blue)', label: 'Noch zu feucht — nicht gießen',
-        text: `Topf bei ~${r}% Restgewicht. Vor dem IceFlush wird nicht mehr gegossen, bis der Topf den Gießpunkt erreicht (${GIESSPUNKT.erde.von}–${GIESSPUNKT.erde.bis} %, Hebe-Test „Knapp"). Dann bleibt das Schmelzwasser im Topf.` };
+        text: `Topf bei ~${r}% Restgewicht. Vor dem IceFlush wird nicht mehr gegossen, bis der Topf den Gießpunkt erreicht (${gp.von}–${gp.bis} %, Hebe-Test „${gp.knopf}"). Dann bleibt das Schmelzwasser im Topf.` };
     }
-    if (p >= GIESSPUNKT.erde.von) {
+    if (p >= gp.von) {
       return { status: 'noWater', color: 'var(--green)', label: 'Gießpunkt erreicht — bereit für den IceFlush',
         text: `Topf bei ~${r}% Restgewicht — trocken genug, dass das Schmelzwasser im Topf bleibt. <b>Nicht mehr gießen</b>; der IceFlush ersetzt diesen Guss.` };
     }
     return { status: 'noWater', color: 'var(--orange)', label: 'Trockener als der Gießpunkt — Blätter prüfen',
-      text: `Topf bei ~${r}% Restgewicht, unter ${GIESSPUNKT.erde.von} %. Hängen die Blätter, ist das Wasserstress: einen kleinen Guss klares Wasser geben. Sonst nicht gießen.` };
+      text: `Topf bei ~${r}% Restgewicht, unter ${gp.von} %. Hängen die Blätter, ist das Wasserstress: einen kleinen Guss klares Wasser geben. Sonst nicht gießen.` };
   }
 
   // COCO: kein tiefer Dryback. Gießpunkt liegt viel höher als bei Erde — Coco wird
@@ -7651,8 +7660,8 @@ function classifyRestPct(restPct, isFinisher, isCoco, noWaterPhase) {
   // der "Mittel"-Button (60-85%) ist bei Coco bereits der Gießpunkt. Finisher-Stress
   // wird in Coco nicht gefahren → isFinisher hier bewusst ignoriert.
   if (isCoco) {
-    if (p >= 85) return { status: 'fresh', color: 'var(--blue)', label: 'Frisch gegossen', text: T.water.cocoFresh() };
-    if (p >= 60) return { status: 'sweetSpot', color: 'var(--green)', label: 'Jetzt gießen', text: T.water.cocoReady() };
+    if (p >= GIESSPUNKT.coco.bis) return { status: 'fresh', color: 'var(--blue)', label: 'Frisch gegossen', text: T.water.cocoFresh() };
+    if (p >= GIESSPUNKT.coco.von) return { status: 'sweetSpot', color: 'var(--green)', label: 'Jetzt gießen', text: T.water.cocoReady() };
     if (p >= 40) return { status: 'approaching', color: 'var(--orange)', label: 'Zu trocken für Coco', text: T.water.cocoGettingDry({ restPct: Math.round(p) }) };
     return { status: 'stress', color: 'var(--red)', label: 'Wasserstress', text: T.water.cocoStress({ restPct: Math.round(p) }) };
   }
@@ -8724,12 +8733,13 @@ function _dryLeadInCard(c, iso) {
   const p = phase(iso, c);
   if (!p) return '';
   const grund = _dryLeadIn(c, iso, p.ph, _ivAt(c, p.ph, iso));
+  const _gpL = giesspunktFor(c);   // (v1.5.200) Coco nach dem Coco-Gießpunkt
   if (!grund) return '';
   const n = _daysUntilPhase(c, iso, grund, 4) || 1;
   const wann = n === 1 ? 'morgen' : `in ${n} Tagen`;
   const txt = grund === 'flush'
-    ? `Das Spülen beginnt ${wann} — und der erste Spültag ist selbst ein großer Guss. Bis dahin soll der Topf den Gießpunkt erreichen (<b>${GIESSPUNKT.erde.von}–${GIESSPUNKT.erde.bis} % Restgewicht</b>, Hebe-Test „Knapp"), sonst nimmt er die Spülmenge gar nicht auf. Dafür sind ${flushDryDays(c)} Tage ohne Guss eingeplant. Wird er vorher deutlich zu leicht, gieß ruhig, aber nur etwa die Hälfte.`
-    : `Der IceFlush kommt ${wann}. Bis dahin wird nicht gegossen, bis der Topf den Gießpunkt erreicht (${GIESSPUNKT.erde.von}–${GIESSPUNKT.erde.bis} % Restgewicht) — dann bleibt das Schmelzwasser im Topf.`;
+    ? `Das Spülen beginnt ${wann} — und der erste Spültag ist selbst ein großer Guss. Bis dahin soll der Topf den Gießpunkt erreichen (<b>${_gpL.von}–${_gpL.bis} % Restgewicht</b>, Hebe-Test „${_gpL.knopf}"), sonst nimmt er die Spülmenge gar nicht auf. Dafür sind ${flushDryDays(c)} Tage ohne Guss eingeplant. Wird er vorher deutlich zu leicht, gieß ruhig, aber nur etwa die Hälfte.`
+    : `Der IceFlush kommt ${wann}. Bis dahin wird nicht gegossen, bis der Topf den Gießpunkt erreicht (${_gpL.von}–${_gpL.bis} % Restgewicht) — dann bleibt das Schmelzwasser im Topf.`;
   return `<div style="padding:10px 12px;background:rgba(90,171,240,0.07);border:0.5px solid rgba(90,171,240,0.3);border-radius:10px;margin-bottom:8px">
     <div style="font-size:13px;font-weight:600;color:var(--blue)">💧 Heute kein Guss — mit Absicht</div>
     <div style="font-size:11px;color:var(--text-muted);line-height:1.5;margin-top:3px">${txt}</div>
@@ -11727,12 +11737,12 @@ function drybackForecast(c, p, iso) {
 
   // Gießpunkt (Sweet Spot, Restgewicht%) — 1:1 mit classifyRestPct:
   //   Erde     ~30% (grüner "jetzt gießen"-Sweet-Spot)
-  //   Coco     ~60% (Coco wird viel früher gegossen, nie tief runter)
+  //   Coco     ~70% (Knopf „Mittel“, v1.5.200 — vorher 60; Coco wird viel früher gegossen, nie tief runter)
   // (v1.5.199) Kein Finisher-Ziel mehr: vorher 35 % in den letzten 14 Tagen („bewusster Stress-Korridor“). Seit v1.5.195
   // gilt derselbe Gießpunkt bis zur Ernte.
   const ctx = (typeof contextFor === 'function') ? contextFor(c, today) : null;
   const isCoco = ctx ? !!ctx.isCoco : (c.medium === 'coco');
-  const targetPct = isCoco ? 60 : 30;
+  const targetPct = (isCoco ? GIESSPUNKT.coco : GIESSPUNKT.erde).anker;
 
   // Tagesrate mit heutigem VPD (trockene Luft heute → schneller). Annahme: die nächsten
   // Tage verlaufen klimatisch wie heute — deshalb "voraussichtlich", nicht "am".
@@ -23177,7 +23187,8 @@ function addCyc(overrides) {
       const _phL = phTargetFor(c.medium).label;
       const _sat = _tag1MengeJeTopf(c, 'saturated'), _dir = _tag1MengeJeTopf(c, 'direct');
       // (v1.5.197) Gießpunkt aus GIESSPUNKT, genannt erst ab DRAIN_AB_TAG — vorher „Tag 9+: ~40 %, ab Tag 15 ~30–40 %“.
-      const _gp = c.medium === 'coco' ? 'Hebe-Test „Mittel“, etwa 60–70 % Restgewicht' : `Hebe-Test „Knapp“, ${GIESSPUNKT.erde.von}–${GIESSPUNKT.erde.bis} % Restgewicht`;
+      const _gpc = giesspunktFor(c);   // (v1.5.200) aus GIESSPUNKT je Substrat — vorher standen die Coco-Zahlen hier fest
+      const _gp = `Hebe-Test „${_gpc.knopf}“, ${_gpc.von}–${_gpc.bis} % Restgewicht`;
       const msg = sm === 'direct' ? `Du hast 'Direkt' gewählt — Tag 1 ohne vollen Sättigungsguss, dafür kleinere Tagesgüsse.
 
 App-Plan für Sämlinge:
@@ -25525,7 +25536,7 @@ function renderEntry(iso) {
           <span style="font-size:18px">🎯</span>
           <div style="flex:1">
             <div style="font-size:12px;font-weight:700;color:#fbbf24">Hard-Dryback-Phase · IceFlush in ${daysToIce === 0 ? 'morgen' : daysToIce + ' Tag' + (daysToIce === 1 ? '' : 'en')}</div>
-            <div style="font-size:11px;color:var(--text-sub);line-height:1.45;margin-top:2px">Ab jetzt nicht mehr gießen, bis der Topf den Gießpunkt erreicht (${GIESSPUNKT.erde.von}–${GIESSPUNKT.erde.bis} % Restgewicht, Hebe-Test „Knapp"). Dann bleibt das Schmelzwasser des IceFlush im Topf.</div>
+            <div style="font-size:11px;color:var(--text-sub);line-height:1.45;margin-top:2px">Ab jetzt nicht mehr gießen, bis der Topf den Gießpunkt erreicht (${giesspunktFor(c).von}–${giesspunktFor(c).bis} % Restgewicht, Hebe-Test „${giesspunktFor(c).knopf}"). Dann bleibt das Schmelzwasser des IceFlush im Topf.</div>
           </div>
         </div>`;
       }
@@ -25966,16 +25977,17 @@ function renderEntry(iso) {
           }
           // IceFlush-Tag: eigener Status-Text, weist auf Hard-Dryback und Anleitung hin
           if (clf && isIceFlushToday) {
-            const dryOk = restVal < GIESSPUNKT.erde.bis;   // (v1.5.196) Gießpunkt erreicht — dieselbe Grenze wie classifyRestPct
+            const _gpI = giesspunktFor(c);   // (v1.5.200) Coco nach dem Coco-Gießpunkt
+            const dryOk = restVal < _gpI.bis;   // (v1.5.196) Gießpunkt erreicht — dieselbe Grenze wie classifyRestPct
             clf = {
               status: 'iceflush',
               color: '#a5f3fc',
-              label: !dryOk ? 'IceFlush — noch zu feucht' : (restVal < GIESSPUNKT.erde.von ? 'IceFlush — Topf trockener als der Gießpunkt' : 'IceFlush bereit — Gießpunkt erreicht'),
+              label: !dryOk ? 'IceFlush — noch zu feucht' : (restVal < _gpI.von ? 'IceFlush — Topf trockener als der Gießpunkt' : 'IceFlush bereit — Gießpunkt erreicht'),
               text: dryOk
-                ? (restVal < GIESSPUNKT.erde.von
-                  ? `Topf bei ~${Math.round(restVal)}% Restgewicht, unter ${GIESSPUNKT.erde.von} %. Hängen die Blätter, ist das Wasserstress: erst einen kleinen Guss klares Wasser geben. Sonst die Checkliste oben durchgehen und das Eis am Topfrand verteilen.`
+                ? (restVal < _gpI.von
+                  ? `Topf bei ~${Math.round(restVal)}% Restgewicht, unter ${_gpI.von} %. Hängen die Blätter, ist das Wasserstress: erst einen kleinen Guss klares Wasser geben. Sonst die Checkliste oben durchgehen und das Eis am Topfrand verteilen.`
                   : `Topf bei ~${Math.round(restVal)}% Restgewicht — trocken genug, dass das Schmelzwasser im Topf bleibt. Checkliste oben durchgehen, dann das Eis am Topfrand verteilen.`)
-                : `Topf bei ~${Math.round(restVal)}% — für den IceFlush sollte er den Gießpunkt erreicht haben (unter ${GIESSPUNKT.erde.bis} %). Lieber einen Tag warten, sonst läuft das Schmelzwasser als Drain durch.`,
+                : `Topf bei ~${Math.round(restVal)}% — für den IceFlush sollte er den Gießpunkt erreicht haben (unter ${_gpI.bis} %). Lieber einen Tag warten, sonst läuft das Schmelzwasser als Drain durch.`,
             };
           }
         }
@@ -26753,7 +26765,7 @@ function renderEntry(iso) {
                 <div style="background:rgba(224,96,96,0.06);border-radius:6px;padding:6px 8px;color:var(--red)">⚠️ <b>Regel Nr. 1:</b> Nach Topfgewicht gießen, nicht nach Kalender!</div>
                 <div><b style="color:var(--blue)">① Vollsättigung:</b> Langsam gießen, bis ${DRAIN_ZIEL.min}–${DRAIN_ZIEL.max} % unten ablaufen (~${waterSug} ml). Topfgewicht merken = 100% Referenz.</div>
                 <div>${c.medium === 'coco' ? '<b style="color:var(--teal)">② Feucht halten:</b> Coco nie ganz austrocknen lassen — nur leicht abtrocknen, dann wieder gießen. Die Wurzeln mögen es gleichmäßig feucht.' : '<b style="color:var(--teal)">② Rücktrocknung:</b> Finger weg! Trocknung zieht O₂ in die Wurzelzone = Motor für Wachstum.'}</div>
-                <div>${c.medium === 'coco' ? `<b style="color:var(--green)">③ Gießpunkt:</b> Gießen sobald der Topf merklich leichter wird (~60–70% Restgewicht) — jedes Mal mit Nährlösung. (${getInt(c, p?.ph || 'bloom') <= 1 ? 'meist täglich' : '~alle ' + getInt(c, p?.ph || 'bloom') + ' Tage'})` : `<b style="color:var(--green)">③ Sweetspot:</b> Gießen im Sweet Spot bei ${GIESSPUNKT.erde.von}–${GIESSPUNKT.erde.bis} % Restgewicht (Hebe-Test „Knapp“). Obere 3–5 cm trocken. (~alle ${getInt(c, p?.ph || 'bloom')} Tage)`}</div>
+                <div>${c.medium === 'coco' ? `<b style="color:var(--green)">③ Gießpunkt:</b> Gießen sobald der Topf merklich leichter wird (Hebe-Test „${GIESSPUNKT.coco.knopf}“, ${GIESSPUNKT.coco.von}–${GIESSPUNKT.coco.bis} % Restgewicht) — jedes Mal mit Nährlösung. (${getInt(c, p?.ph || 'bloom') <= 1 ? 'meist täglich' : '~alle ' + getInt(c, p?.ph || 'bloom') + ' Tage'})` : `<b style="color:var(--green)">③ Sweetspot:</b> Gießen im Sweet Spot bei ${GIESSPUNKT.erde.von}–${GIESSPUNKT.erde.bis} % Restgewicht (Hebe-Test „Knapp“). Obere 3–5 cm trocken. (~alle ${getInt(c, p?.ph || 'bloom')} Tage)`}</div>
                 <div style="background:rgba(240,208,80,0.06);border-radius:6px;padding:6px 8px;color:var(--yellow)">${c.medium === 'coco' ? '💡 <b>Tipp:</b> In Coco lieber etwas früher gießen als zu spät — Coco verzeiht Austrocknen schlecht. Staunässe trotzdem vermeiden, aber nie knochentrocken werden lassen.' : '💡 <b>Unsicher?</b> Lieber 1 Tag länger warten. Hängende Blätter = 2h Erholung. Staunässe-Wurzelfäule = irreversibel.'}</div>
                 <div><b style="color:var(--orange)">🧪 Mischen:</b> CalMag zuerst → umrühren → Basisdünger → Additive → pH auf ${pht.mid.toFixed(1)}</div>
                 <div><b style="color:var(--orange)">🚿 Drain:</b> 15–20% Drain bei jedem Guss. Drain-Wasser sofort entsorgen!</div>
@@ -28402,7 +28414,7 @@ function _renderIceFlushPanel(c, iso) {
   const checklistItems = [
     { id: 'trichomes', label: 'Trichome 80–95% milchig · max 10% Bernstein (mit Lupe geprüft)' },
     { id: 'drain_ec',  label: 'Drain EC nach letztem Spülen ≤ 0.4 mS/cm' },
-    { id: 'dryback',   label: `Hard-Dryback: Gießpunkt erreicht (${GIESSPUNKT.erde.von}–${GIESSPUNKT.erde.bis} % Restgewicht, Hebe-Test bestätigt)` },
+    { id: 'dryback',   label: `Hard-Dryback: Gießpunkt erreicht (${giesspunktFor(c).von}–${giesspunktFor(c).bis} % Restgewicht, Hebe-Test bestätigt)` },
     { id: 'ice_ready', label: `Crushed Ice bereit: ${icePerPot} ml/Topf · ${icePerPot * plants} ml gesamt für ${plants} Pflanze${plants === 1 ? '' : 'n'}` },
     { id: 'tent_dark', label: 'Zelt auf Pitch-Black geprüft — alle Lichtquellen abgeklebt' },
     { id: 'dry_tent',  label: `Trockenzelt vorbereitet: ${TROCKNEN_TEXT} · kein direkter Luftstrom` },
@@ -28438,7 +28450,7 @@ function _renderIceFlushPanel(c, iso) {
 
   // Timeline
   const timeline = [
-    { time: 'Vor dem IceFlush', dot: '#fbbf24', text: `Hard-Dryback: nach dem letzten Spülgang nicht mehr gießen, bis der Topf den Gießpunkt erreicht (${GIESSPUNKT.erde.von}–${GIESSPUNKT.erde.bis} % Restgewicht)` },
+    { time: 'Vor dem IceFlush', dot: '#fbbf24', text: `Hard-Dryback: nach dem letzten Spülgang nicht mehr gießen, bis der Topf den Gießpunkt erreicht (${giesspunktFor(c).von}–${giesspunktFor(c).bis} % Restgewicht)` },
     { time: 'Tag −1',        dot: '#4ade80', text: 'Trichome final mit Lupe checken · Crushed Ice bereitstellen · Trockenzelt vorbereiten' },
     { time: 'Heute · 18 Uhr',  dot: '#a5f3fc', text: `IceFlush — ${icePerPot} ml Crushed Ice pro Topf am Rand verteilen` },
     { time: 'Heute · 22–24 Uhr', dot: '#a5f3fc', text: 'Eis geschmolzen · Licht AUS' },
@@ -29335,7 +29347,8 @@ function intervalDryDefault(c, iso) {
   // Gieß-Tag soll der Topf bei ~30% Restgewicht ("Knapp") sein, dann gießen.
   // (v1.5.198) Keine Sonderfälle mehr. Vorher Spülen 35 % („Hard-Dryback-Vorbereitung“, nasser als 30) und IceFlush 20 %
   // („knochentrocken“, unter dem Gießpunkt) — der Hard-Dryback endet seit v1.5.196 am Gießpunkt.
-  let targetPct = 30;
+  // (v1.5.200) Coco springt auf „Mittel“ (70): Mit 30 meldete die Coco-Bewertung an jedem Gießtag „Wasserstress“.
+  let targetPct = giesspunktFor(c).anker;
 
   // Wenn heute selbst schon gegossen → 100% (Aufrufer fängt das meist über
   // water>0 ab, hier als Sicherheit).
@@ -31686,7 +31699,7 @@ const LEXIKON = [
     { t: 'Restgewicht (Dryback · Trocken-Nass-Zyklus)',
       brief: 'Das Intervall zwischen Gießen. Der wichtigste Hebel für gesunde Wurzeln — wichtiger als der Dünger selbst.',
       mechanism: 'Wurzeln brauchen <b>Sauerstoff</b>. Wenn die Pflanze Wasser aufnimmt und es verdunstet, entsteht im Substrat leichter Unterdruck — der frischen Sauerstoff in die Wurzelzone zieht. Dauerfeuchtigkeit = kein Sog = keine Sauerstoff-Versorgung = faulende Wurzeln und schwaches Wurzelsystem.<br><br>Wurzeln wachsen bevorzugt dorthin, wo Wasser war und jetzt Sauerstoff ist. Ein Topf, der zwischen den Güssen nie leichter wird, begrenzt deshalb das Wurzelsystem — und damit die Endgröße der Pflanze.',
-      practice: '<b>Gießpunkt:</b> In Erde wird gegossen, wenn der Topf beim Hebe-Test „Knapp“ ist — etwa ' + GIESSPUNKT.erde.von + '–' + GIESSPUNKT.erde.bis + ' % Restgewicht, in jeder Phase bis zur Ernte. Unter ' + GIESSPUNKT.erde.von + ' % beginnt Wasserstress. Coco wird viel früher gegossen, beim Hebe-Test „Mittel“ (etwa 60–70 %).<br><br><b>Ab wann die Zahl gilt:</b> sobald ein Guss den ganzen Topf durchzieht — in der App ab Tag ' + DRAIN_AB_TAG + '. Beim Sämling im großen Topf wiegt vor allem Substrat ohne Wurzeln: Der Hebe-Test zeigt dann, ob der Topf noch nass ist, aber nicht, wann die Wurzel Wasser braucht. Bis dahin wird an den Gießtagen der App gegossen, mit ihrer Gießmenge.<br><br>Messen: Topf wiegen oder Hebe-Test mit Erfahrung. Die App kann beide Methoden (Einstellungen → Bewässerungs-Modus).<br><br><b>Praxis-Signal:</b> Topf fühlt sich leicht an, Pflanze ist nicht welk → guter Guss-Zeitpunkt. Lieber einen Tag zu spät als zu früh.',
+      practice: '<b>Gießpunkt:</b> In Erde wird gegossen, wenn der Topf beim Hebe-Test „Knapp“ ist — etwa ' + GIESSPUNKT.erde.von + '–' + GIESSPUNKT.erde.bis + ' % Restgewicht, in jeder Phase bis zur Ernte. Unter ' + GIESSPUNKT.erde.von + ' % beginnt Wasserstress. Coco wird viel früher gegossen, beim Hebe-Test „Mittel“ (' + GIESSPUNKT.coco.von + '–' + GIESSPUNKT.coco.bis + ' %).<br><br><b>Ab wann die Zahl gilt:</b> sobald ein Guss den ganzen Topf durchzieht — in der App ab Tag ' + DRAIN_AB_TAG + '. Beim Sämling im großen Topf wiegt vor allem Substrat ohne Wurzeln: Der Hebe-Test zeigt dann, ob der Topf noch nass ist, aber nicht, wann die Wurzel Wasser braucht. Bis dahin wird an den Gießtagen der App gegossen, mit ihrer Gießmenge.<br><br>Messen: Topf wiegen oder Hebe-Test mit Erfahrung. Die App kann beide Methoden (Einstellungen → Bewässerungs-Modus).<br><br><b>Praxis-Signal:</b> Topf fühlt sich leicht an, Pflanze ist nicht welk → guter Guss-Zeitpunkt. Lieber einen Tag zu spät als zu früh.',
       pitfall: 'Zu häufiges Gießen ist Problem Nr. 1 bei Einsteigern. Symptome von Überwässerung (hängende Blätter, gelbe untere Blätter) sehen oft wie „zu wenig Wasser" aus → User gießt noch mehr → Teufelskreis. Immer Topf-Gewicht prüfen, nicht Blätter deuten.' },
     { t: 'Sättigungsguss (Start-Guss)',
       brief: 'Der erste gründliche Guss an Tag 1, dem Keimstart — durchfeuchtet den ganzen Topf einmal komplett, in Etappen, damit nichts ersäuft.',
@@ -32584,7 +32597,7 @@ const LEXIKON = [
         '• Pflanze für Foto-Session anfassen → Trichom-Schaden, Pistillen verfärben sich<br><br>' +
         'Wichtigster Punkt: <b>Trichome entscheiden, nicht der Kalender</b>. Eine 70-Tage-Auto kann mit 60 oder 90 Tagen reif sein, je nach Bedingungen.' },
     { t: 'Hard Dryback (Ernte-Vorbereitung)',
-      brief: 'Nach dem letzten Spülgang nicht mehr gießen, bis der Topf den Gießpunkt erreicht (' + GIESSPUNKT.erde.von + '–' + GIESSPUNKT.erde.bis + ' % Restgewicht, Hebe-Test „Knapp"). Dann bleibt das Schmelzwasser des IceFlush im Topf. Ein Harz-Plus durch Trockenstress ist nicht belegt.',
+      brief: 'Nach dem letzten Spülgang nicht mehr gießen, bis der Topf den Gießpunkt erreicht (in Erde ' + GIESSPUNKT.erde.von + '–' + GIESSPUNKT.erde.bis + ' % Restgewicht, Hebe-Test „Knapp"; in Coco beim Hebe-Test „Mittel“ (' + GIESSPUNKT.coco.von + '–' + GIESSPUNKT.coco.bis + ' %)). Dann bleibt das Schmelzwasser des IceFlush im Topf. Ein Harz-Plus durch Trockenstress ist nicht belegt.',
       // (v1.5.196) Vorher: „gezielt auf ~35 % trocknen lassen … triggert leichten Stress", „regulär bei ~50 % nachgießen",
       // „35 % ist Ziel, 30 % ist Untergrenze" — nasser als der eigene Gießpunkt (Knapp = 30 %) und gegen die Stress-Grenze
       // unter 25 %. Dazu CalMag 0,2 ml/L im letzten Guss (der letzte Guss ist ein Spülgang), Drain-EC ≤ 0,4 als Ziel, „die
@@ -32598,13 +32611,13 @@ const LEXIKON = [
         '<b>Während des Hard-Drybacks:</b><br>' +
         '• <b>Kein Wasser</b> — der letzte Guss war der letzte Spülgang<br>' +
         '• Hebe-Test täglich<br>' +
-        '• Ziel: Gießpunkt erreicht (' + GIESSPUNKT.erde.von + '–' + GIESSPUNKT.erde.bis + ' % Restgewicht) am Tag des IceFlush<br>' +
+        '• Ziel: Gießpunkt erreicht (Erde ' + GIESSPUNKT.erde.von + '–' + GIESSPUNKT.erde.bis + ' %, Coco ' + GIESSPUNKT.coco.von + '–' + GIESSPUNKT.coco.bis + ' % Restgewicht) am Tag des IceFlush<br>' +
         '• pH beim letzten Spülgang wie üblich (' + phTargetFor('erde').label + ' in Erde, ' + phTargetFor('coco').label + ' in Coco)<br><br>' +
-        '<b>Wenn der Topf unter ' + GIESSPUNKT.erde.von + ' % fällt und die Blätter hängen:</b><br>' +
+        '<b>Wenn der Topf unter den Gießpunkt fällt (Erde ' + GIESSPUNKT.erde.von + ' %, Coco ' + GIESSPUNKT.coco.von + ' %) und die Blätter hängen:</b><br>' +
         '• Das ist Wasserstress: einen kleinen Guss klares Wasser geben<br><br>' +
-        '<b>Wenn der Topf am geplanten Tag noch über ' + GIESSPUNKT.erde.bis + ' % liegt:</b><br>' +
+        '<b>Wenn der Topf am geplanten Tag noch über dem Gießpunkt liegt (Erde ' + GIESSPUNKT.erde.bis + ' %, Coco ' + GIESSPUNKT.coco.bis + ' %):</b><br>' +
         '• Den IceFlush im Endspurt um einen Tag verschieben — nicht mit vollem Topf ins Eis',
-      pitfall: '<b>Unter ' + GIESSPUNKT.erde.von + ' % Restgewicht</b> beginnt Wasserstress — dieselbe Grenze wie sonst. Ein Hard-Dryback ist kein Rekordversuch im Trocknen.<br><br>' +
+      pitfall: '<b>Unter dem Gießpunkt</b> (Erde ' + GIESSPUNKT.erde.von + ' %, Coco ' + GIESSPUNKT.coco.von + ' % Restgewicht) wird es zu trocken — dieselbe Grenze wie sonst. Ein Hard-Dryback ist kein Rekordversuch im Trocknen.<br><br>' +
         '<b>Häufige Fehler:</b><br>' +
         '• Mit vollem Topf in den IceFlush → das Schmelzwasser läuft als Drain durch<br>' +
         '• Hard-Dryback, obwohl der Trichom-Check noch nicht reif zeigt → du erntest zu früh<br>' +

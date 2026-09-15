@@ -104,7 +104,7 @@ const zaehle = (s, teil) => String(s || '').split(teil).length - 1;
   pruef('Sämlings-Hinweis (beide Startarten): Gießpunkt erst ab DRAIN_AB_TAG, aus GIESSPUNKT, Coco mit „Mittel"',
     zaehle(roh, 'Ab Tag ${DRAIN_AB_TAG}: gießen, wenn der Topf den Gießpunkt erreicht (${_gp})') === 2
     && zaehle(roh, 'Tag 9–${DRAIN_AB_TAG - 1}: an den Gießtagen der App gießen') === 2
-    && roh.includes("const _gp = c.medium === 'coco' ? 'Hebe-Test „Mittel“"));
+    && roh.includes('const _gpc = giesspunktFor(c)'));   // (v1.5.200) vorher fester Coco-Ausdruck, jetzt GIESSPUNKT je Substrat
   const html = E(`buildChartsSection(S.cycles[0].id)`);
   pruef('Restgewicht-Diagramm (abgeschaltet): Legende aus GIESSPUNKT, falls es Daten gibt',
     !/Sweet-Spot 30–50%/.test(html) && (!/Restgewicht-Verlauf/.test(html) || html.includes(`Gießpunkt ${band}`)), (html.match(/Restgewicht-Verlauf.{0,160}/) || ['(keine Restgewicht-Daten)'])[0]);
