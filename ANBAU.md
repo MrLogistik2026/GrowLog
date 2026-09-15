@@ -74,6 +74,44 @@ Topfvolumen. Ein Feuchtigkeitssensor misst einen Punkt, ein Finger die obersten 
 einem Stofftopf mit Randabtrocknung sind beide systematisch falsch. Das Gewicht ist die einzige
 Größe, die den tatsächlichen Wasservorrat abbildet.
 
+### 1.1 Wann und wie viel
+
+Zwei Fragen, zwei Messgrößen. **Wann** gegossen wird, sagt das Restgewicht (1.2). **Wie viel**, sagt das Defizit seit dem
+letzten Auffüllen plus Drain; aufgenommen = gegossen · (1 − Drain-Anteil).
+
+In einen Topf passt beim Gießen höchstens, was seit dem letzten Auffüllen fehlt: S · (100 − r) / 80. S ist das nutzbare
+Wasser des Topfs zwischen voll (Restgewicht 100) und der Welkegrenze (20, Konvention), r das Restgewicht vor dem Guss (7.5).
+Was darüber hinausgeht, läuft als Drain ab. Nach dem Abtropfen hält ein Topf unabhängig von der Gießmenge dieselbe
+Wassermenge, die Container-Kapazität; sie hängt an Substrat und Topfhöhe (Fields et al. 2014, HortScience 49:827).
+
+**Daraus folgt:** Staunässe entsteht durch zu häufiges Gießen, einen für die Wurzelmasse zu großen Topf oder Wasser, das im
+Untersetzer stehen bleibt — nicht durch eine volle Menge mit Drain. Mehr Menge kostet Wasser und wäscht Dünger aus (5.1).
+
+In GrowSmart: `nachfuellGrenze`, `gussMengeJePflanze` (seit v1.5.205).
+
+### 1.2 Der Gießpunkt
+
+Das Restgewicht in GrowSmart ist eine Hebe-Skala mit Anker, kein Wasseranteil: 100 ist der frisch durchgegossene Topf, der
+Gießpunkt liegt bei Erde auf dem Knopf „Knapp" (30), bei Coco auf „Mittel" (70). Wer mit der Waage arbeitet, wiegt als
+zweites Gewicht den Topf kurz vor dem Gießen. Mit einem knochentrockenen Nullpunkt dürfte man 30 % nicht als Gießpunkt lesen.
+
+**Warum dort:** Bei Cannabis in Torf fallen Transpiration und Photosynthese beim Austrocknen etwa linear mit dem
+Wassergehalt und kommen unter 30 % der Container-Kapazität fast zum Erliegen (Frontiers in Plant Science 2026,
+doi:10.3389/fpls.2026.1930650). Über viele Feldkulturen schließen die Stomata im Mittel ab 37 %, das Blattwachstum sinkt
+schon ab 56 % des pflanzenverfügbaren Wassers (Sadras & Milroy 1996, Field Crops Res 47:253; geprüft am Abstract). Nach
+Patricks Mengen — rund 2,5 L Aufnahme in 3 Tagen im 11-L-Topf — sind bei „Knapp" etwa 50–60 % des verfügbaren Wassers
+verbraucht. Das ist eine Konvention: Die Drain-Menge ist nicht gemessen.
+
+**Trocknet der Topf schneller als der Rhythmus, wird früher gegossen.** FAO-56 senkt den zulässigen Wasserentzug bei hoher
+Verdunstung; auf den Topf übertragen (eine Analogie, keine Messung): Läge der Topf morgen unter dem Gießpunkt, wird heute
+gegossen. Der Gießpunkt selbst gleitet nicht.
+
+**Coco wird häufiger gegossen:** Es hat kaum Austauschkapazität (7.1), und eine hohe Bewässerungsfrequenz verbesserte in
+Perlit die Nachlieferung von Nährstoffen an die Wurzel (Silber et al. 2003, Plant Soil 253:467, an Salat; geprüft am
+Abstract).
+
+In GrowSmart: `GIESSPUNKT`, `giesspunktFor`, `tagesAbnahme` (seit v1.5.206).
+
 ---
 
 ## 2 · VPD: das Sättigungsdefizit, und warum es am Blatt gilt
@@ -235,6 +273,14 @@ aussehen.
 Grund, warum Umluft kein Komfortmerkmal ist, sondern Teil der Klimaregelung. Und es ist der
 Grund, warum Kalkulationen für ein Zelt mit sechs dichten Pflanzen anders ausfallen als für
 dasselbe Zelt mit vier lockeren.
+
+**Für die Gießmenge** rechnet GrowSmart das Klima als Transpiration relativ zu 1 kPa: E ∝ D · (1 − 0,6 · ln D), aus der
+Stomata-Empfindlichkeit in 2.2 (Oren et al. 1999; geprüft am Abstract). Das Maximum liegt bei rund 1,95 kPa. Die Daten
+stammen aus Messungen gegen das Luft-VPD, der Übertrag auf das Blatt-VPD im Zelt ist Konvention. Deshalb nur als Verhältnis
+— Klima seit dem letzten Guss gegen das Klima davor, nie absolut, denn Guss und Startkurve enthalten das damalige Klima
+schon. Wertepaare der alten Autofill-Tabelle zählen nicht als Messung.
+
+In GrowSmart: `klimaTranspiration`, `_klimaTagFaktor` (seit v1.5.207).
 
 ---
 
@@ -433,6 +479,17 @@ automatisch** Anreicherung durch Überdüngung. Zwei Prozesse laufen gegenläufi
 Ohne diese Unterscheidung meldet die App bei jedem organischen Grow ab Blütewoche 5 einen Fehler,
 den es nicht gibt.
 
+**Drain-Ziel beim Gießen: 15–20 %.** So empfehlen es Beratungsstellen für Containerkulturen (SNA-BMP, Alabama Cooperative
+Extension: 15–20 %; Virginia Tech SPES-128: im Routinebetrieb 15–30 %, anfangs rund 50 %). Ein Ziel von 20 statt 40 %
+brachte gleiches Wachstum bei 36 % weniger Wasser (HortScience 56:147, 2021; geprüft am Abstract). Wird mit jedem Guss
+gedüngt, halten 20–40 % Drain die Salze unten: Die Substrat-EC lag bei 3 bzw. 2 dS/m statt 7 bzw. 4 bei 0 und 10 % Drain,
+die Blattfläche war um 46 % größer (Ku & Hershey 1992, J Amer Soc Hort Sci 117:893). Die Versuche stammen aus Baumschule
+und Zierpflanzen; für Cannabis ist das Fenster übertragen, nicht gemessen.
+
+Ein Drain-EC ohne Menge heißt nur „es kam Drain", nie ein Prozentwert — für die Probe reichen wenige Dutzend Milliliter.
+Eine übernommene Gießmenge mit Drain-EC ist kein Befund über die Menge. **Stofftöpfe und Air-Pots laufen auch seitlich
+ab:** Aus dem Untersetzer gemessen ist die Drain-Menge zu klein. In einer breiten Wanne auffangen.
+
 ---
 
 ## 6 · Nährstoffe: Mobilität, Antagonismen, Diagnose
@@ -580,6 +637,24 @@ Wurzelsystem bis zum Blühbeginn nicht aufgebaut hat, fehlt für den Rest des Zy
 
 **Regel für die App:** Wo Ertragserwartungen ausgegeben werden, ist das Substratvolumen eine
 Eingangsgröße. Züchterangaben in g/m² setzen unbegrenzte Wurzelraumverhältnisse voraus.
+
+**Wie stark das Volumen wirkt:** Über viele Arten brachte ein doppeltes Topfvolumen im Mittel 43 % mehr Biomasse; die
+Autoren raten zu höchstens 1 g Biomasse je Liter Topf, darüber begrenzt der Topf (Poorter et al. 2012, Funct Plant Biol
+39:839). Eine blühende Cannabispflanze liegt weit darüber. Darauf beruht die Startkurve der Gießmenge mit √(Topf / 11):
+doppeltes Volumen, rund 41 % mehr Verbrauch. Ihr Plateau von 825 ml je Tag im 11-L-Topf stammt aus Patricks erstem Zyklus
+bei einem Blatt-VPD um 1,2 kPa (Konvention). Es zählt das gefüllte Volumen, nicht die Nennliter.
+
+### 7.5 Wasserhaltekapazität im Topf
+
+Wie viel Wasser ein Topf nach dem Abtropfen hält, hängt an Substrat und Topfhöhe. Torf mit 20 % Perlit hielt im
+15-cm-Topf 62 % Wasser bei 25 % Luft, im 3,9-L-Topf mit 17,8 cm Höhe 57 % bei 30 % Luft; je höher der Topf, desto weniger
+Wasser und mehr Luft (Fields et al. 2014, HortScience 49:827, Tab. 3). Für einen 11-L-Topf folgen daraus etwa 215–245 ml
+Wasser je Liter bis −10 kPa Saugspannung und 350–425 ml je Liter bis zur Welkegrenze.
+
+GrowSmart startet mit **300 ml je Liter**. Das ist eine Kalibrierung an Patricks Zyklus, keine Messung. Eine Waage (voll
+und kurz vor dem Gießen) oder eine gemessene Drain-Menge ersetzen den Wert.
+
+In GrowSmart: `WASSER_JE_LITER`, `wasserKapazitaet` (seit v1.5.205).
 
 ---
 
@@ -892,6 +967,12 @@ Releases gekostet (die „Abtrockenphase vor dem Spülen", v1.5.65–79).
 - **Griffelbräunung als Reifezeichen.** Verbreitet und falsch (Abschnitt 11).
 - **Feste ppm-Angaben ohne Skala.** Keine Fehlpraxis im engeren Sinn, aber eine
   Fehlerquelle mit demselben Effekt (Abschnitt 5).
+- **Gießmenge als fester Anteil des Topfvolumens je Phase** („40/35/30 %"). Verwechselt Gießpunkt und Verbrauch: Wie viel
+  in den Topf geht, hängt am Restgewicht vor dem Guss (1.1), nicht an der Phase.
+- **„Lieber einen Tag länger warten, hängende Blätter erholen sich in zwei Stunden."** Welken heißt, dass Photosynthese und
+  Transpiration schon fast stehen (Frontiers in Plant Science 2026), und bei Automatics ist jeder Stresstag dauerhaft (9).
+- **Trockenstress für mehr Harz.** Die Befundlage ist dünn. Im kontrollierten Versuch mit Cannabis in Torf brachte moderate
+  Trockenheit keinen Vorteil bei Blütenmasse und CBD, schwere schadete (Frontiers in Plant Science 2026). Keine Automatik.
 
 **Der Umgang damit in der App:** Nichts davon wird verboten oder wegdiskutiert — Patrick und
 andere Grower nutzen diese Techniken, und sie planbar zu machen ist der Zweck der App. Aber kein
@@ -928,6 +1009,10 @@ ist wissenschaftlich allerdings nicht belegt" ist die richtige Formulierung.
 - **Erst prüfen, ob die App die Antwort schon kennt.** Bevor ein Regler entsteht: Lässt sich der
   Wert aus dem Zustand herleiten? Vorbilder sind `_snapFlushToRhythm` und `_trainingFit` —
   Letzteres wertete nur ein Feld aus, das seit jeher im Datenmodell stand.
+- **Die Gießmenge kommt aus dem Topf.** Rangfolge: Waage > Hebe-Test > eigener Guss mit Drain-Menge > eigener Guss mit
+  Drain-EC > eigener Guss > Startkurve, nie über die Nachfüll-Grenze (1.1). Ein übernommener Vorschlag ist kein Befund über
+  die Menge, ein eigener Korridor ein Startwert und keine Grenze gegen die eigene Messung. Trocknet der Topf schneller als
+  der Rhythmus, sagt die Messung „heute gießen", auch wenn der Kalender es nicht tut (1.2).
 - **Eine Zahl ohne Einordnung ist keine Information.** „EC 1150" hilft niemandem. „EC 1,15 — im
   Ziel für Blütewoche 5" ist eine Aussage. Bei jedem Wert gehört das Wort davor.
 - **Fachbegriffe bekommen ihre Erklärung dort, wo sie stehen** (`INFO_TERMS`,

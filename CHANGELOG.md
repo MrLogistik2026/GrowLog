@@ -2,6 +2,38 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-15 — v1.5.208
+
+- **Die restlichen Texte der Gießmenge.** Seit v1.5.205 kommt die Menge aus dem Topf: Höchstens V passt hinein, der Rest wird
+  Drain. Sieben Stellen sprachen noch die alte Sprache (Gießmengen-Prüfung, Runde 3, Schritt 11):
+  - **Gieß-Fahrplan (Profi):** „Startwert ~X ml" aus der Startkurve in der Mitte jeder Blüte-Stufe, beim Spülen „Spülmenge",
+    statt „Ideal ~min–max" aus einem Band um die alte Faustregel. Ein eigener Korridor gilt seit v1.5.205 nur bis zum ersten
+    eigenen Guss.
+  - **Einstellungen, Topfgröße:** „Zähl, was wirklich im Topf ist: Aufgehäuft hält ein 11-L-Stofftopf 14–16 L Substrat"
+    (`ANBAU.md` 7.4), darunter „In diesen Topf passen ab dem Gießpunkt höchstens ~V ml je Guss" mit der Quelle (Waage,
+    Drain-Messungen oder die Annahme 300 ml je Liter). Patricks Rainbow-Plan nennt „11L Stofftopf (aufgemoundet 14–16L)"; mit
+    11 statt 15 L wäre V für Run 02 um gut ein Viertel zu klein.
+  - **Tipps-Leitfaden:** Topf und Menge aus dem laufenden Zyklus statt „11L Stofftöpfe … ca. 3,0–3,5 Liter" für jeden Topf,
+    bei Coco mit eigenem Satz.
+  - **Durchfluss 25–30 %:** „viel, noch gültig" statt „aussagekräftig" — `ANBAU.md` 5.1 nennt 15–25 % das Standardfenster.
+  - **Drain auffangen:** „Stofftopf oder Air-Pot: in einer breiten Wanne auffangen". Dort läuft der Drain auch seitlich heraus;
+    eine Messung aus dem Untersetzer wäre zu klein und würde die nächste Menge anheben (Regel 2).
+  - **Einsteiger-Satz:** eine Menge je Pflanze und dazu die Drain-Spanne („15–20 % der Menge als Drain sind richtig so") statt
+    „bis unten ein bisschen Wasser rausläuft".
+  - **Warnung zur Wassermenge ab Tag 25 und in der Blüte:** Statt „Sehr viel Wasser … Zu viel Wasser = Wurzelfäule" ab dem
+    2,5-Fachen der Empfehlung zwei Hinweise nach dem Mechanismus: „Mehr, als in den Topf passt" über V (der Rest wird Drain,
+    das schadet nicht) und „Topf war noch feucht", wenn der Hebe-Test vor dem Guss bei Erde 70 % oder mehr zeigt. Staunässe
+    kommt vom zu häufigen Gießen, nicht von einer vollen Menge (`ANBAU.md` 1.1, 13.1). Beim Sämling bleibt die bisherige
+    Warnung: Dort hält ein großer Guss den ganzen Topf lange nass.
+- **`ANBAU.md`, Grundlagen der Gießmenge** (Text der Prüfung; die Quellen hat sie geöffnet oder, wo vermerkt, am Abstract
+  geprüft): 1.1 „Wann und wie viel" (Mengenbilanz, Container-Kapazität), 1.2 „Der Gießpunkt" (Hebe-Skala mit Anker, Frontiers
+  in Plant Science 2026, Sadras & Milroy 1996, FAO-56 als Analogie), 2.3 Klima nur als Verhältnis (Oren et al. 1999), 5.1
+  Drain-Ziel 15–20 % mit Belegen und die Wanne, 7.4 Poorter et al. 2012 und das gefüllte Volumen, 7.5 neu
+  „Wasserhaltekapazität im Topf" (300 ml je Liter als Kalibrierung, Fields et al. 2014), dazu drei Punkte in 14 und die
+  Rangfolge der Gießmenge in 15. Den Beleg für „Trockenstress für mehr Harz" (Caplan et al. 2019) konnte die Prüfung nicht
+  öffnen; er steht deshalb nicht drin.
+- `test_giesstexte.js` (16 Prüfungen, beide Zeitzonen).
+
 ## 2026-09-15 — v1.5.207
 
 - **Eine Klimafunktion für die Gießmenge.** Befund der Gießmengen-Prüfung (Runde 3, Schritt 10): Neben `klimaTranspiration`

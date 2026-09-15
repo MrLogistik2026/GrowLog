@@ -3441,7 +3441,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.207';
+const APP_VERSION = 'v1.5.208';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -7911,7 +7911,7 @@ function drainFlow(cd) {
   let guete, kurz;
   if (pct < 10)       { guete = 'keine';        kurz = 'zu wenig Ablauf'; }
   else if (pct < 15)  { guete = 'schwach';      kurz = 'wenig Ablauf'; }
-  else if (pct <= 30) { guete = 'gut';          kurz = 'aussagekräftig'; }
+  else if (pct <= 30) { guete = 'gut';          kurz = pct > DRAIN_ZIEL.obergrenze ? 'viel, noch gültig' : 'aussagekräftig'; }   // (v1.5.208) ANBAU.md 5.1
   else                { guete = 'auswaschend';  kurz = 'viel Ablauf'; }
   return { ml, gegossen, pct, guete, kurz, gueltig: (guete === 'gut' || guete === 'auswaschend') };
 }
@@ -11352,6 +11352,18 @@ function _naturalPhaseRange(c, key) {
   const std = (key === 'flush') ? _waterSuggestionRaw(c, { ph: 'flush' }) : _waterSuggestionRaw(c, repP[key]);
   return { min: Math.round(std * b[0] / 50) * 50, max: Math.round(std * b[1] / 50) * 50 };
 }
+/**
+ * (v1.5.208) Was der Gieß-Fahrplan je Blüte-Stufe als Menge nennt: die Startkurve in der Mitte der Stufe (Woche 2, 4 und 6,
+ * wie waterPhaseKey), beim Spülen die Spülmenge. Vorher stand dort „Ideal ~min–max" aus einem Band um die alte Faustregel —
+ * seit v1.5.205 gilt ein eigener Korridor nur bis zum ersten eigenen Guss, danach kommt die Menge aus dem Topf.
+ */
+function _startwertStufe(c, key) {
+  if (key === 'flush') return Math.round(_waterSuggestionRaw(c, { ph: 'flush' }) / 50) * 50;
+  const woche = { stretch: 2, vollbluete: 4, reife: 6 }[key];
+  if (!woche || !c || !c.startDate) return '—';
+  const tag = anzuchtLenFor(c) + Math.round((woche - 0.5) * 7);
+  return Math.round(startkurve(c, tag, isoPlus(c.startDate, tag - 1), 'bloom') / 50) * 50;
+}
 function getPhaseRange(c, key) {
   if (!key || !_PHASE_RANGE_BAND[key]) return null;
   const u = c && c.waterRange && c.waterRange[key];
@@ -12008,6 +12020,15 @@ function wasserKapazitaet(c, iso) {
 }
 
 /** Nachfüll-Grenze V je Pflanze: mehr passt nicht in den Topf, der Rest wird Drain. */
+/** (v1.5.208) Einstellungen: was die Topfgröße bewirkt — die Nachfüll-Grenze V mit ihrer Quelle (ANBAU.md 7.4). */
+function _topfGrenzeZeile(d) {
+  if (!d || !d.id || d.medium === 'hydro') return '';
+  const iso = todayISO();
+  const V = Math.round(nachfuellGrenze(d, iso, null) / 50) * 50;
+  const q = wasserKapazitaet(d, iso).quelle;
+  const woher = q === 'waage' ? 'aus deiner Waage' : (q === 'gemessen' ? 'aus deinen Drain-Messungen' : (q === 'drain' ? 'nach deinen Drain-Mengen' : `angenommen ${WASSER_JE_LITER} ml Wasser je Liter, bis Waage oder Drain es messen`));
+  return `<div style="font-size:10px;color:var(--text-sub);line-height:1.45;padding:4px 4px 0">In diesen Topf passen ab dem Gießpunkt höchstens <b>~${V} ml</b> je Guss, mehr läuft als Drain ab (${woher}).</div>`;
+}
 function nachfuellGrenze(c, iso, restHeute) {
   const { kap } = wasserKapazitaet(c, iso);
   const von = giesspunktFor(c).von;
@@ -14347,8 +14368,20 @@ function getEntryWarnings(cd, p, e, c, iso) {
   const tempVal = parseFloat(e?.temp);
   const rhVal = parseFloat(e?.humidity);
 
-  // Water: too much compared to suggestion (only during growth phases)
-  if (p && waterVal > 0 && (isVegiPhase(p.ph) || p.ph === 'bloom')) {
+  // (v1.5.208) Wasser ab dem ersten Durchgießen (Tag 25, Blüte): Nach dem Abtropfen hält ein Topf dieselbe Menge, egal wie viel
+  // gegossen wurde — Staunässe kommt vom zu häufigen Gießen, nicht von einer vollen Menge (ANBAU.md 1, 13.1). Deshalb zwei
+  // Hinweise statt „viel im Verhältnis zur Empfehlung": mehr als in den Topf passt (V), und gegossen, obwohl er noch feucht war.
+  if (p && iso && c && c.id && c.medium !== 'hydro' && waterVal > 0 && (isVegiPhase(p.ph) || p.ph === 'bloom') && _drainMoeglich(p)) {
+    const _rH = restgewichtHeute(c, iso), _gp = giesspunktFor(c);
+    const _V = Math.round(nachfuellGrenze(c, iso, _rH) / 50) * 50;
+    if (_V > 0 && waterVal / (_gussPflanzen(c, cd || {}, iso) || 1) > _V * 1.15) {
+      out.push({ type: 'info', text: `💧 Mehr, als in den Topf passt: höchstens ~${_V} ml je Pflanze, der Rest läuft unten als Drain heraus. Das schadet nicht, spült aber Dünger aus.` });
+    }
+    if (_rH != null && _rH >= 70 && !(contextFor(c, iso) || {}).isCoco) {
+      out.push({ type: 'warn', text: `💧 Topf war noch feucht (Hebe-Test ~${Math.round(_rH)} %). Zu häufiges Gießen verdrängt die Luft aus dem Topf, und die Wurzeln brauchen Sauerstoff. Nächstes Mal warten, bis er leichter ist (Gießpunkt ${_gp.von}–${_gp.bis} %).` });
+    }
+  } else if (p && waterVal > 0 && (isVegiPhase(p.ph) || p.ph === 'bloom')) {
+    // Sämling: Ein großer Guss hält den ganzen Topf lange nass, die kleine Wurzel nimmt kaum etwas davon auf (ANBAU.md 13.1).
     const sug = waterSuggestion(c, p, iso);
     if (waterVal > sug * 2.5) {
       out.push({ type: 'err', text: `⚠️ Sehr viel Wasser für Tag ${p.day}! Empfehlung: ~${sug} ml. Zu viel Wasser = Wurzelfäule.` });
@@ -15025,7 +15058,7 @@ function plainSentence(action, c, p, waterMl) {
     }
     return isOutdoor
       ? `Prüf ob der Topf sich leicht anfühlt. Wenn ja, gieß ${_jeTopfWort}etwa <b>${_jeTopf(waterMl)} ml</b> lauwarmes Wasser${_zusammen(waterMl)}. Wenn er schwer ist, warte bis morgen. <b>Bei Hitze:</b> Pflanze kann täglich (oder sogar 2×) Wasser brauchen.`
-      : `Gib ${_wem} heute etwa <b>${_jeTopf(waterMl)} ml</b> lauwarmes Wasser${_zusammen(waterMl)}. Langsam gießen bis unten ein bisschen Wasser rausläuft (das ist richtig so).`;
+      : `Gib ${_wem} heute etwa <b>${_jeTopf(waterMl)} ml</b> lauwarmes Wasser${_zusammen(waterMl)}. Langsam gießen, bis unten etwas herausläuft: ${DRAIN_ZIEL.min}–${DRAIN_ZIEL.max} % der Menge als Drain sind richtig so.`;
   }
   if (action === 'spuelen') {
     return `Heute nur klares Wasser ohne Dünger — davon ${_jeTopfWort}ungefähr <b>${_jeTopf(waterMl)} ml</b>${_zusammen(waterMl)}. Das spült die letzten Nährsalze aus der Erde.`;
@@ -18022,6 +18055,16 @@ function renderTips() {
 
   const cats = [...new Set(tips.map(t => t.cat))];
 
+  // (v1.5.208) Topf und Menge aus dem ersten laufenden Zyklus statt „11L Stofftöpfe … 3,0–3,5 Liter" für jeden (ANBAU.md 7.4).
+  const _c0 = act.find(x => x.medium !== 'hydro') || null;
+  const _topf0 = _c0 ? String(getPotSize(_c0)).replace('.', ',') : '';
+  const _v0 = _c0 ? Math.round(nachfuellGrenze(_c0, today, null) / 50) * 50 : null;
+  const _leitKopf = _c0 ? `${_topf0} L · ` : '';
+  const _leitMenge = !_c0 ? 'Wie viel das ist, rechnet die App aus Topf und Substrat, sobald ein Zyklus läuft.'
+    : ((contextFor(_c0, today) || {}).isCoco
+      ? `Coco gießt du öfter und mit kleineren Mengen: In deinen ${_topf0}-L-Topf passen ab dem Gießpunkt höchstens ~${_v0} ml.`
+      : `In deinen ${_topf0}-L-Topf passen ab dem Gießpunkt höchstens ~${_v0} ml, mehr läuft als Drain ab.`);
+
   // Gieß- & Düngeleitfaden (collapsible sections)
   const guideHTML = `
     <div style="background:linear-gradient(135deg,#0a1520,#0d1e0d);border:1px solid var(--green-dk);border-radius:16px;overflow:hidden;margin-bottom:12px;margin-top:12px">
@@ -18029,7 +18072,7 @@ function renderTips() {
         <span style="font-size:22px">🚰</span>
         <div style="flex:1">
           <div style="font-size:14px;font-weight:700;color:var(--green)">Restgewicht — Gieß-Leitfaden</div>
-          <div style="font-size:11px;color:var(--text-muted)">11L Stofftöpfe · Das goldene Gieß-Gesetz</div>
+          <div style="font-size:11px;color:var(--text-muted)">${_leitKopf}Das goldene Gieß-Gesetz</div>
         </div>
         <span class="tgl" style="color:var(--green);font-size:16px">${S._tipsOpen.guss ? '▾' : '▸'}</span>
       </div>
@@ -18042,7 +18085,7 @@ function renderTips() {
       <div style="display:flex;flex-direction:column;gap:10px">
         <div style="background:var(--card);border:0.5px solid var(--border);border-radius:10px;padding:10px 12px">
           <div style="font-size:11px;font-weight:600;color:var(--blue);margin-bottom:4px">① Vollsättigung (100% Referenz)</div>
-          <div style="font-size:11px;color:var(--text-sub);line-height:1.6">Langsam gießen, bis ${DRAIN_ZIEL.min}–${DRAIN_ZIEL.max} % unten ablaufen. Bei 11L Topf = ca. 3,0–3,5 Liter. <b>Topf anheben und Gewicht merken!</b></div>
+          <div style="font-size:11px;color:var(--text-sub);line-height:1.6">Langsam gießen, bis ${DRAIN_ZIEL.min}–${DRAIN_ZIEL.max} % unten ablaufen. ${_leitMenge} <b>Topf anheben und Gewicht merken!</b></div>
         </div>
 
         <div style="background:var(--card);border:0.5px solid var(--border);border-radius:10px;padding:10px 12px">
@@ -18763,12 +18806,12 @@ function renderGussplan() {
     return `<div style="display:flex;align-items:center;gap:6px;padding:8px 10px;background:var(--card);border:0.5px solid var(--border);border-radius:10px;margin-bottom:5px">
       <div style="flex:1;min-width:0">
         <div style="font-size:12px;font-weight:700;color:var(--text)">${ph.label}</div>
-        <div style="font-size:10px;color:var(--text-muted)">Ideal ~${nat.min}–${nat.max} ${wmlUnit}${totalNote}</div>
+        <div style="font-size:10px;color:var(--text-muted)">${ph.key === 'flush' ? 'Spülmenge' : 'Startwert'} ~${_startwertStufe(c, ph.key)} ${wmlUnit}${totalNote}</div>
       </div>
       ${fld('min', rng.min)}
       <span style="color:var(--text-muted);font-size:13px;flex:0 0 auto">–</span>
       ${fld('max', rng.max)}
-      ${userSet ? `<button onclick="resetPhaseRange('${ph.key}')" title="zurück auf Ideal-Korridor" style="flex:0 0 30px;height:34px;border:0.5px solid var(--border);background:var(--surface);color:var(--text-muted);border-radius:9px;font-size:13px;cursor:pointer;font-family:var(--font)">↺</button>` : ''}
+      ${userSet ? `<button onclick="resetPhaseRange('${ph.key}')" title="eigene Spanne löschen, zurück auf den Startwert" style="flex:0 0 30px;height:34px;border:0.5px solid var(--border);background:var(--surface);color:var(--text-muted);border-radius:9px;font-size:13px;cursor:pointer;font-family:var(--font)">↺</button>` : ''}
     </div>`;
   }).join('');
   const wmlRows = anzuchtRow + bloomRows;
@@ -20396,7 +20439,8 @@ function renderSet() {
             <button onclick="_setScrollY=document.getElementById('set-body').scrollTop;dd('potSize',Math.min(100,(parseFloat(draft.potSize)||${S.potSize || 11})+1));renderSet()" style="width:44px;height:44px;border-radius:8px;background:var(--card2);border:0.5px solid var(--border);color:var(--text);font-size:18px;cursor:pointer;font-family:var(--mono)">+</button>
             <span style="font-size:12px;color:var(--text-muted);min-width:60px">Liter</span>
           </div>
-          <div style="font-size:10px;color:var(--text-hint);line-height:1.45;padding:4px 4px 0">Bestimmt die Gießmengen und den Hebe-Test für <b>diesen</b> Zyklus. Hast du mehrere Zyklen in unterschiedlich großen Töpfen, kannst du das hier pro Zyklus einstellen. Standard kommt aus den App-Einstellungen (${S.potSize || 11} L).</div>
+          <div style="font-size:10px;color:var(--text-hint);line-height:1.45;padding:4px 4px 0">Zähl, was wirklich im Topf ist: Aufgehäuft hält ein 11-L-Stofftopf 14–16 L Substrat. Bestimmt die Gießmengen und den Hebe-Test für <b>diesen</b> Zyklus. Hast du mehrere Zyklen in unterschiedlich großen Töpfen, kannst du das hier pro Zyklus einstellen. Standard kommt aus den App-Einstellungen (${S.potSize || 11} L).</div>
+          ${_topfGrenzeZeile(d)}
 
           <label style="display:flex;align-items:center;gap:8px;padding:8px 4px;cursor:pointer;font-size:12px;color:var(--text-sub)">
             <input type="checkbox" ${d.useWaterDays ? 'checked' : ''} onchange="_setScrollY=document.getElementById('set-body').scrollTop;dd('useWaterDays',this.checked);renderSet()" style="width:16px;height:16px;cursor:pointer"/>
@@ -29014,7 +29058,7 @@ function _runoffFlowLine(ra, cd) {
   if (!ra || !ra.flow) {
     return (cd && (cd.runoffPh || cd.runoffEc))
       ? `<div style="font-size:10px;color:var(--yellow);padding:0 4px;line-height:1.45">⚠ Ohne Ablaufmenge lässt sich nicht sagen, ob die Messung etwas taugt — trag sie oben ein.</div>`
-      : `<div style="font-size:10px;color:var(--text-hint);padding:0 4px;line-height:1.45">Auffangen, messen, Menge eintragen — Ziel ${DRAIN_ZIEL.min}–${DRAIN_ZIEL.max} %${parseFloat(cd && cd.water) > 0 ? `, bei ${Math.round(parseFloat(cd.water))} ml also ${Math.round(parseFloat(cd.water) * DRAIN_ZIEL.min / 100)}–${Math.round(parseFloat(cd.water) * DRAIN_ZIEL.max / 100)} ml` : ''}. Erst ab ${DRAIN_ZIEL.min} % sagen pH und EC im Drain etwas über die Erde im Topf.</div>`;
+      : `<div style="font-size:10px;color:var(--text-hint);padding:0 4px;line-height:1.45">Auffangen, messen, Menge eintragen — Ziel ${DRAIN_ZIEL.min}–${DRAIN_ZIEL.max} %${parseFloat(cd && cd.water) > 0 ? `, bei ${Math.round(parseFloat(cd.water))} ml also ${Math.round(parseFloat(cd.water) * DRAIN_ZIEL.min / 100)}–${Math.round(parseFloat(cd.water) * DRAIN_ZIEL.max / 100)} ml` : ''}. Erst ab ${DRAIN_ZIEL.min} % sagen pH und EC im Drain etwas über die Erde im Topf. Stofftopf oder Air-Pot: in einer breiten Wanne auffangen — der Drain läuft dort auch seitlich heraus, ein Untersetzer fängt zu wenig.</div>`;
   }
   const f = ra.flow;
   const farbe = f.guete === 'gut' ? 'var(--green)'
@@ -29022,7 +29066,7 @@ function _runoffFlowLine(ra, cd) {
   const wort = {
     keine: 'zu wenig für eine Aussage',
     schwach: 'knapp — Werte eher zu hoch',
-    gut: 'aussagekräftig',
+    gut: f.pct > DRAIN_ZIEL.obergrenze ? 'viel, noch gültig' : 'aussagekräftig',   // (v1.5.208) über 25 % schon viel (ANBAU.md 5.1)
     auswaschend: 'viel — spült schon mit',
   }[f.guete];
   return `<div style="font-size:10px;color:${farbe};padding:0 4px;line-height:1.45">Durchfluss <b>${String(f.pct).replace('.', ',')} %</b> · ${wort}</div>`;
