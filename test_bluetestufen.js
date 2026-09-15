@@ -133,7 +133,8 @@ const HELFER = `
     })()`));
     pruef('Blütetag 40 von 42: Klimaziel „Späte Blüte"', r.klima === 'Späte Blüte', JSON.stringify(r));
     pruef('… Schimmel-Alarm bei 62 % RLF', r.alarm === 'critical', r.alarm);
-    pruef('… VPD 1,3 gilt als zu niedrig für die Spätblüte', /Spätblüte/.test(r.vpd || ''), r.vpd);
+    // (v1.5.187) Option B: Die späte Blüte hat das Band der mittleren (1,2–1,5 kPa) — 1,3 liegt darin.
+    pruef('… VPD 1,3 liegt im Band der späten Blüte (1,2–1,5 kPa)', r.vpd === 'Späte Blüte ✓', r.vpd);
     pruef('… Hinweis „Trichome checken"', r.hinweis === true);
   }
 

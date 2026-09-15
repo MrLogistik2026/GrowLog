@@ -140,16 +140,57 @@ niedrig und die App meldet Entwarnung, während die Photosynthese bereits steht.
 Symptome und VPD-Anzeige auseinanderlaufen, gewinnen die Symptome. Wo verfügbar, ist ein
 Infrarot-Thermometer am Blatt die bessere Datenquelle als jede Rechnung.
 
+**Messdaten:** Blätter gut versorgter Pflanzen lagen unter Sonne, HPS und LED meist innerhalb von
+2 °C der Lufttemperatur, unter LED rund 1,3 °C kühler als unter HPS (Nelson & Bugbee 2015, PLoS ONE
+10:e0138930). 2 K ist damit das obere Ende der Kühlung unter LED. In der Blüte liegt dieser Fehler auf
+der sicheren Seite: Das VPD wird eher zu niedrig gerechnet, die App mahnt eher „zu feucht". Einen
+phasenabhängigen Abzug gibt es bewusst nicht — dieselbe Klimazahl spränge sonst an einem Phasenwechsel
+um etwa 0,17 kPa je Kelvin.
+
 ### 2.2 Zielkorridore
 
-Konvention aus der Praxis, keine Naturkonstante.
+Konvention aus der Praxis, keine Naturkonstante. Fest sind je Phase **zwei** Größen: das VPD am Blatt
+(Antrieb der Transpiration, Abschnitt 1) und die Lufttemperatur bei Licht an. Die Luftfeuchte ist
+keine dritte Zielgröße — sie folgt aus beiden:
 
-| Phase | VPD am Blatt | Warum |
-|---|---|---|
-| Sämling / Steckling | 0,4–0,8 kPa | Kaum Wurzeln, kann Verlust nicht ersetzen |
-| Wachstum | 0,8–1,2 kPa | Kräftige Transpiration, schneller Nährstofftransport |
-| Frühe/mittlere Blüte | 1,2–1,5 kPa | Hoher Bedarf bei noch weichem Gewebe |
-| Späte Blüte | 1,4–1,6 kPa | Trockener gegen Schimmel in dichten Blüten |
+```
+RLF_Ziel = 100 · ( SVP(T − Offset) − VPD_Ziel ) / SVP(T)
+```
+
+Drei feste Fenster für zwei freie Größen widersprechen sich zwangsläufig. Die Vorversion dieses
+Abschnitts verlangte in der Spätblüte 1,4–1,6 kPa bei 18–24 °C und 40–50 % RLF; bei 18 °C wäre das
+Band nur mit 11–20 % RLF erreichbar gewesen.
+
+| Phase | VPD am Blatt | Temperatur (Licht an) | RLF-Ziel bei 2 K Abzug | RLF-Deckel |
+|---|---|---|---|---|
+| Sämling (Tag 1–10) | 0,4–0,8 kPa | 22–26 °C | 22 °C 58–73 · 24 °C 62–75 · 26 °C 65–77 % | keiner — unter 40 % trocknet er aus |
+| Anzucht | 0,8–1,2 kPa | 22–28 °C | 22 °C 43–58 · 25 °C 51–63 · 28 °C 57–68 % | 80 % |
+| Frühe Blüte (Stretch) | 1,0–1,3 kPa | 23–27 °C | 23 °C 42–53 · 25 °C 48–57 · 27 °C 52–61 % | 65 % |
+| Mittlere Blüte | 1,2–1,5 kPa | 22–26 °C | 22 °C 32–43 · 24 °C 38–48 · 26 °C 44–53 % | 65 % |
+| Späte Blüte, Spülen, IceFlush, Erntetag | 1,2–1,5 kPa | 22–26 °C | wie mittlere Blüte | 60 % |
+
+**Warum die Spätblüte kein höheres VPD bekommt:** Schimmelschutz entsteht an der Blüte, nicht am Blatt.
+*Botrytis* braucht zum Keimen Wasser oder sehr hohe Feuchte, und im Inneren reifer Blüten ist es
+feuchter als im Raum (13.5). Dagegen helfen der Deckel, Luftbewegung an den Blüten und die Nass-Stufe.
+Ein höheres VPD schließt dagegen die Stomata: Über viele Arten sinkt die stomatäre Leitfähigkeit etwa
+mit g_s = g_s,ref · (1 − 0,6 · ln D) (Oren et al. 1999, Plant Cell Environ 22:1515) — von 1,0 auf
+1,5 kPa um rund ein Viertel, während die Transpiration nur um etwa 13 % steigt.
+
+**Warum die frühe Blüte 1,0–1,3 kPa:** Keine Cannabis-Studie vergleicht die beiden Korridore direkt. Im
+Stretch ist das Streckungswachstum am stärksten und hängt am Turgor, die Blüten sind noch locker, und
+derselbe Klimawert stünde bei 1,2–1,5 kPa am letzten Anzuchttag im Ziel und am ersten Blütetag „zu
+feucht". In einem kontrollierten Versuch lieferte die Blüte bei 0,92 kPa gut dreimal so viel
+Blütenmasse wie bei 0,25 kPa (Corredor-Perilla et al. 2025, Front Plant Sci 16:1678142, CBD-Sorte).
+
+**Warum 22–26 °C auch am Ende:** Die Photosynthese von Cannabis erreicht ihr Maximum um 30 °C (Chandra
+et al. 2008, Physiol Mol Biol Plants 14:299). *Botrytis* zerstört Blüten auch bei 17–24 °C schnell
+(Mahmoud et al. 2023, Botany 101:200; geprüft am Abstract). Kühle schützt nicht — sie hebt bei gleicher
+Wassermenge in der Luft nur die relative Feuchte.
+
+**Knapp daneben:** ±0,1 kPa entsprechen bei 24 °C etwa ±0,6 K Unsicherheit im Blattabzug (2.1). Dort
+meldet die App „knapp", ohne Handlungsdruck.
+
+In GrowSmart: `KLIMA_ZIEL`, `klimaRlfFenster`, `klimaStatus` (seit v1.5.187).
 
 **Zu niedriges VPD:** Die Pflanze verdunstet kaum, der Massenstrom stockt, immobile Nährstoffe
 (Ca, B) kommen nicht an. Zusätzlich bleibt die Blattoberfläche lange feucht — die
@@ -158,7 +199,7 @@ Eintrittsbedingung für Pilze.
 **VPD ≤ 0 ist eine eigene Kategorie:** Die Luft ist am kühleren Blatt bereits gesättigt, es
 **kondensiert Wasser auf dem Blatt**. In der Blüte bedeutet stehende Nässe auf dichten Blüten
 *Botrytis cinerea* innerhalb von Stunden. Das ist kein „etwas zu feucht"; die App behandelt es
-seit v1.5.101 als eigene Warnstufe.
+seit v1.5.101 als eigene Warnstufe. Bei 2 K Blattabzug beginnt diese Stufe bei 24 °C ab etwa 89 % RLF.
 
 **Zu hohes VPD:** Die Pflanze schließt die Stomata, um Wasser zu halten. Damit stoppt auch die
 CO₂-Aufnahme — die Photosynthese kommt zum Erliegen. Die Pflanze steht im Licht und wächst
@@ -785,7 +826,13 @@ Nach diesen Punkten wird jede neue Warnung, jeder neue Default und jeder Text ge
 5. **Schimmel in der Blüte.** *Botrytis* bei dichten Blüten ab etwa 60–65 % Raumfeuchte,
    drastisch beschleunigt durch stehende Nässe (VPD ≤ 0) und fehlende Luftbewegung. Das
    Mikroklima im Bud-Inneren liegt deutlich über dem Raumwert. Deshalb prüft man von innen, nicht
-   von außen.
+   von außen. Deckel in GrowSmart (`KLIMA_ZIEL`): frühe und mittlere Blüte 65 %, späte Blüte, Spülen,
+   IceFlush und Erntetag 60 %. Er gilt für jede Messung — nachts steigt die relative Feuchte bei
+   gleicher Wassermenge in der Luft: 24 °C / 50 % werden bei 20 °C zu rund 64 %. In der Blüte deshalb
+   zur kühlsten Stunde messen. Belege: Über 70 % RLF zerstörte Bud Rot Blüten im Gewächshaus schnell
+   (Mahmoud et al. 2023, Abstract); Infektionen zwischen Blütetag 14 und 28 führten zum schwersten Befall,
+   Luftbewegung an den Blüten senkte ihn deutlich (Buirs, Lung & Punja 2025, Abstract); unter 80 % RLF
+   ist die Keimung der Sporen gehemmt (Eden et al. 1996, zitiert bei Li et al. 2023).
 6. **Lichtschaden.** Zwei verschiedene Mechanismen mit verschiedenen Gegenmaßnahmen
    (Abschnitt 8.2). Erst unterscheiden, dann regeln.
 7. **Zu früh ernten.** Kostet Ertrag und Wirkung, nicht rückholbar (Abschnitt 11).
@@ -844,6 +891,8 @@ ist wissenschaftlich allerdings nicht belegt" ist die richtige Formulierung.
 - **Jede Schwelle trägt ihre Gültigkeitsbedingung mit.** Eine Regel, die nur für inerte Substrate
   gilt, muss das im Code wissen — nicht nur im Kommentar. Substrattyp ist eine Eingangsgröße,
   keine Anzeigeoption.
+- **Klima: zwei Größen fest, die Luftfeuchte folgt.** VPD am Blatt und Temperatur sind je Phase das Ziel; die
+  Luftfeuchte wird bei der gemessenen Temperatur daraus gerechnet, der Schimmel-Deckel ist hart (2.2, 13.5).
 - **Messwerte werden nie geschätzt und eingetragen.** Drain und Klima trägt nur ein, wer gemessen hat.
   Ein geschätzter Wert fließt sonst als Messung in Gießmenge, Diagramm und Warnungen ein. Zielwerte darf die
   App zeigen — als Platzhalter, nicht als Eintrag.

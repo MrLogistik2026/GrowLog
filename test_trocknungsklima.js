@@ -81,7 +81,8 @@ const TROCKENTAG = '2026-09-13';
     pruef('Trocknen: kein „RLF kann etwas runter"', !RAT_FALSCH.test(r.dry.hint) && r.dry.label !== 'Etwas niedrig', r.dry.label + ' / ' + r.dry.hint);
     pruef('Trocknen: der Hinweis nennt das Klima aus ANBAU.md 12.1', r.dry.hint.includes(ZIEL), r.dry.hint);
     pruef('Curing: kein „RLF kann etwas runter"', !RAT_FALSCH.test(r.cure.hint), r.cure.hint);
-    pruef('Gegenprobe Anzucht: 0,60 bleibt „Etwas niedrig"', r.anz.label === 'Etwas niedrig', r.anz.label);
+    // (v1.5.187) Die Anzucht wird weiter bewertet — gegen ihr Band aus KLIMA_ZIEL (0,8–1,2 kPa); 0,60 liegt mehr als 0,1 darunter.
+    pruef('Gegenprobe Anzucht: 0,60 wird bewertet — unter dem Band 0,8–1,2 „Zu feucht"', r.anz.label === 'Zu feucht', r.anz.label);
     pruef('Zielzeile Trocknen 18–20 °C / 55–62 %', r.ziel.tempMin === 18 && r.ziel.tempMax === 20 && r.ziel.rhMin === 55 && r.ziel.rhMax === 62, JSON.stringify(r.ziel));
   }
 

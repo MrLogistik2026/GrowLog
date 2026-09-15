@@ -57,6 +57,23 @@ const DRAIN_AB_TAG = 25;
 // ANBAU.md nennt keine Zahl — es ist eine Konvention über den Nass-Trocken-Zyklus (ANBAU.md 1).
 const GIESSPUNKT = { erde: { von: 25, bis: 40 }, finisher: { von: 30, bis: 40 } };
 
+// (v1.5.187) KLIMA JE PHASE AUS EINER QUELLE (ANBAU.md 2.2; Patricks Entscheidung vom 15.09.2026: Option B). Fest sind zwei
+// Größen: das VPD am Blatt (Antrieb der Transpiration) und die Temperatur bei Licht an. Die Luftfeuchte folgt daraus
+// (klimaRlfFenster), der Schimmel-Deckel ist hart. Späte Blüte, Spülen, IceFlush und Erntetag haben das Band der mittleren
+// Blüte — Schutz gegen Botrytis kommt über Deckel, Luftbewegung und die Nass-Stufe, nicht über ein höheres VPD, das die
+// Stomata schließt. Vorher standen hier drei feste Fenster je Phase, die sich widersprachen: Die Spätblüte verlangte
+// 1,4–1,6 kPa bei 18–24 °C und 40–50 % RLF — bei 18 °C ist das Band nur mit 11–20 % RLF erreichbar.
+const KLIMA_ZIEL = {
+  saemling: { name: 'Sämling',        dativ: 'beim Sämling',           icon: '🌱', bluete: false, vpd: [0.4, 0.8], temp: [22, 26], deckel: null, deckelStufe: null,       boden: 40 },
+  anzucht:  { name: 'Anzucht',        dativ: 'in der Anzucht',         icon: '🌿', bluete: false, vpd: [0.8, 1.2], temp: [22, 28], deckel: 80,   deckelStufe: 'high',     boden: null },
+  frueh:    { name: 'Frühe Blüte',    dativ: 'in der frühen Blüte',    icon: '🌸', bluete: true,  vpd: [1.0, 1.3], temp: [23, 27], deckel: 65,   deckelStufe: 'high',     boden: null },
+  mittel:   { name: 'Mittlere Blüte', dativ: 'in der mittleren Blüte', icon: '🌺', bluete: true,  vpd: [1.2, 1.5], temp: [22, 26], deckel: 65,   deckelStufe: 'high',     boden: null },
+  spaet:    { name: 'Späte Blüte',    dativ: 'in der späten Blüte',    icon: '🍯', bluete: true,  vpd: [1.2, 1.5], temp: [22, 26], deckel: 60,   deckelStufe: 'critical', boden: null },
+  spuelen:  { name: 'Spülen',         dativ: 'beim Spülen',            icon: '🚿', bluete: true,  vpd: [1.2, 1.5], temp: [22, 26], deckel: 60,   deckelStufe: 'critical', boden: null },
+  ice:      { name: 'IceFlush',       dativ: 'am IceFlush',            icon: '🧊', bluete: true,  vpd: [1.2, 1.5], temp: [22, 26], deckel: 60,   deckelStufe: 'critical', boden: null },
+  ernte:    { name: 'Ernte',          dativ: 'am Erntetag',            icon: '✂️', bluete: true,  vpd: [1.2, 1.5], temp: [22, 26], deckel: 60,   deckelStufe: 'critical', boden: null },
+};
+
 const T = {
   // ---------------------------------------------------------------------
   // PHASES — Anzeige-Namen der Pflanzen-Phasen
@@ -3395,7 +3412,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.186';
+const APP_VERSION = 'v1.5.187';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -11339,15 +11356,15 @@ function getPhaseRange(c, key) {
 function _vpdFactorForDay(c, dIso, pFallback) {
   const e = S.entries?.[dIso];
   const pd = phase(dIso, c) || pFallback;
-  const targets = (typeof getPhaseTargets === 'function' && pd) ? getPhaseTargets(pd) : null;
-  if (!e || !e.temp || !e.humidity || !targets || !targets.vpdMin || !targets.vpdMax) return 1.0;
+  const band = pd ? _vpdFaktorBand(pd) : null;   // (v1.5.187) eingefroren, siehe _vpdFaktorBand
+  if (!e || !e.temp || !e.humidity || !band) return 1.0;
   const t = parseFloat(e.temp), r = parseFloat(e.humidity);
   if (!isFinite(t) || !isFinite(r) || r <= 0 || r > 100) return 1.0;
   const vpd = calcVPD(t, r);
-  if (vpd < targets.vpdMin * 0.85) return 0.85;
-  if (vpd < targets.vpdMin) return 0.95;
-  if (vpd > targets.vpdMax * 1.25) return 1.25;
-  if (vpd > targets.vpdMax) return 1.15;
+  if (vpd < band[0] * 0.85) return 0.85;
+  if (vpd < band[0]) return 0.95;
+  if (vpd > band[1] * 1.25) return 1.25;
+  if (vpd > band[1]) return 1.15;
   return 1.0;
 }
 
@@ -11505,15 +11522,15 @@ function _waterConsumptionInfo(c, p, iso) {
   const vpdF = (dIso) => {
     const e = S.entries?.[dIso];
     const pd = phase(dIso, c) || p;
-    const targets = (typeof getPhaseTargets === 'function') ? getPhaseTargets(pd) : null;
-    if (!e || !e.temp || !e.humidity || !targets || !targets.vpdMin || !targets.vpdMax) return 1.0;
+    const band = pd ? _vpdFaktorBand(pd) : null;   // (v1.5.187) eingefroren, siehe _vpdFaktorBand
+    if (!e || !e.temp || !e.humidity || !band) return 1.0;
     const t = parseFloat(e.temp), r = parseFloat(e.humidity);
     if (!isFinite(t) || !isFinite(r) || r <= 0 || r > 100) return 1.0;
     const vpd = calcVPD(t, r);
-    if (vpd < targets.vpdMin * 0.85) return 0.85;
-    if (vpd < targets.vpdMin) return 0.95;
-    if (vpd > targets.vpdMax * 1.25) return 1.25;
-    if (vpd > targets.vpdMax) return 1.15;
+    if (vpd < band[0] * 0.85) return 0.85;
+    if (vpd < band[0]) return 0.95;
+    if (vpd > band[1] * 1.25) return 1.25;
+    if (vpd > band[1]) return 1.15;
     return 1.0;
   };
 
@@ -13075,6 +13092,257 @@ function calcVPD(t, rh) {
   return Math.round((_svp(t - off) - _svp(t) * rh / 100) * 100) / 100;
 }
 
+/**
+ * (v1.5.187) Die Klima-Stufe eines Tages — Schlüssel in KLIMA_ZIEL. Abhärten, Vegi draußen, Trocknen und Curing haben
+ * eigene Regeln und liefern null.
+ */
+function klimaStufe(p) {
+  if (!p) return null;
+  const ph = p.ph;
+  if (ph === 'anzucht' || ph === 'vorzucht') return (p.day || 1) <= 10 ? 'saemling' : 'anzucht';
+  if (ph === 'bloom') return bluetestufe(p) || 'mittel';
+  if (ph === 'flush') return 'spuelen';
+  if (ph === 'ice') return 'ice';
+  if (ph === 'harvest') return 'ernte';
+  return null;
+}
+
+/** (v1.5.187) Luftfeuchte, bei der das Blatt-VPD bei Lufttemperatur T genau v beträgt — die Umkehrung von calcVPD. */
+function klimaRlfFuer(T, v) {
+  return 100 * (_svp(T - _leafOffset()) - v) / _svp(T);
+}
+
+/**
+ * (v1.5.187) Luftfeuchte-Fenster einer Stufe bei der gemessenen Temperatur, ins Temperaturfenster geklemmt (ohne Messung:
+ * dessen Mitte). Die Grenzen sind auf 0,1 % so gerundet, dass eine Luftfeuchte im Fenster ein angezeigtes Blatt-VPD im
+ * Band ergibt und eine außerhalb nicht; danach Schimmel-Deckel und Boden.
+ */
+function klimaRlfFenster(ziel, T) {
+  const mitte = (ziel.temp[0] + ziel.temp[1]) / 2;
+  const t = Math.max(ziel.temp[0], Math.min(ziel.temp[1], (isFinite(T) && T !== 0) ? T : mitte));
+  let lo = Math.ceil(klimaRlfFuer(t, ziel.vpd[1] + 0.005) * 10) / 10;
+  let hi = Math.floor(klimaRlfFuer(t, ziel.vpd[0] - 0.005) * 10) / 10;
+  if (ziel.deckel != null) hi = Math.min(hi, ziel.deckel);
+  if (ziel.boden != null) lo = Math.max(lo, ziel.boden);
+  return { lo, hi, t: Math.round(t * 10) / 10 };
+}
+
+/** (v1.5.187) Lage des Blatt-VPD zum Band. Bis 0,1 kPa daneben gilt als „knapp" — etwa ±0,6 K Unsicherheit im Blattabzug. */
+function _klimaVpdLage(v, ziel) {
+  const r2 = (x) => Math.round(x * 100) / 100;
+  const w = r2(v);
+  if (w <= 0) return 'nass';
+  if (w < r2(ziel.vpd[0] - 0.1)) return 'zu_feucht';
+  if (w < ziel.vpd[0]) return 'etwas_feucht';
+  if (w <= ziel.vpd[1]) return 'im_ziel';
+  if (w <= r2(ziel.vpd[1] + 0.1)) return 'etwas_trocken';
+  return 'zu_trocken';
+}
+
+/** (v1.5.187) Zahl mit Komma und höchstens einer Nachkommastelle. */
+function _klimaZahl(x) { return String(Math.round(x * 10) / 10).replace('.', ','); }
+
+/** (v1.5.187) Luftfeuchte-Spanne für Sätze: ganze Prozent innerhalb des Fensters, bei sehr engem Fenster eine Nachkommastelle. */
+function _klimaRlfSpanne(f) {
+  const a = Math.ceil(f.lo), b = Math.floor(f.hi);
+  return a <= b ? `${a}–${b} %` : `${_klimaZahl(f.lo)}–${_klimaZahl(f.hi)} %`;
+}
+
+/**
+ * (v1.5.187) DER Klima-Befund — Pille, Einsteiger-Satz, Zielzeilen, Live-Anzeige und Luftfeuchte-Warnung lesen nur noch
+ * hieraus. Reihenfolge: Nässe am Blatt → Schimmel-Deckel → Boden → Blatt-VPD gegen das Band; die Temperatur kommt als
+ * Zusatz. Vorher bewerteten drei feste Fenster dieselbe Luft unabhängig voneinander — an Patricks 86 Einträgen 44-mal grüne
+ * VPD-Pille über oranger Zielzeile, 40-mal Temperatur ✓ und Luftfeuchte ✓ bei VPD ⚠.
+ * Outdoor (nicht steuerbar) und Phasen ohne Stufe liefern null.
+ */
+function klimaStatus(t, rh, p, c) {
+  if (c && c.growType === 'outdoor') return null;
+  const stufe = klimaStufe(p);
+  if (!stufe) return null;
+  const ziel = KLIMA_ZIEL[stufe];
+  const hatT = isFinite(t) && t !== 0, hatRh = isFinite(rh) && rh > 0;
+  const fenster = klimaRlfFenster(ziel, hatT ? t : NaN);
+  const tS = hatT ? (t < ziel.temp[0] ? 'kuehl' : (t > ziel.temp[1] ? 'warm' : 'ok')) : null;
+  const v = (hatT && hatRh) ? calcVPD(t, rh) : null;
+  let s = null;
+  if (v !== null && v <= 0) s = 'nass';
+  else if (hatRh && ziel.deckel != null && rh > ziel.deckel) s = 'schimmel';
+  else if (hatRh && ziel.boden != null && rh < ziel.boden) s = 'zu_trocken';
+  else if (v !== null) s = _klimaVpdLage(v, ziel);
+  const level = s === 'nass' ? 'critical' : s === 'schimmel' ? ziel.deckelStufe
+    : (s === 'zu_feucht' || s === 'zu_trocken') ? 'warn'
+    : (s === 'etwas_feucht' || s === 'etwas_trocken') ? 'knapp' : (s === 'im_ziel' ? 'ok' : null);
+  return { stufe, ziel, t: hatT ? t : null, rh: hatRh ? rh : null, v, vLuft: v !== null ? calcVPDAir(t, rh) : null, s, tS, level, fenster };
+}
+
+/** (v1.5.187) Symbol zum Befund: ✓ im Ziel · ≈ knapp · ⚠ Handlungsbedarf · 🚨 sofort. */
+function _klimaMarke(st) {
+  if (!st || !st.level) return '';
+  return st.level === 'ok' ? '✓' : st.level === 'knapp' ? '≈' : st.level === 'critical' ? '🚨' : '⚠';
+}
+
+/** (v1.5.187) Etikett und Farbe der VPD-Pille aus dem Befund. */
+function _klimaPille(st) {
+  const z = st.ziel;
+  switch (st.s) {
+    case 'nass': return { label: 'Nass — Schimmelgefahr', color: '#e06060', bg: '#2a0d0d' };
+    case 'schimmel': return st.level === 'critical'
+      ? { label: 'Schimmelgefahr', color: '#e06060', bg: '#2a0d0d' }
+      : { label: z.bluete ? 'Schimmelrisiko' : 'Pilzrisiko', color: '#e0a040', bg: '#2a1e0d' };
+    case 'zu_feucht': return { label: 'Zu feucht', color: '#7a7af0', bg: '#1e1e3a' };
+    case 'etwas_feucht': return { label: 'Knapp feucht', color: '#5aabf0', bg: '#0d1e2e' };
+    case 'im_ziel': return { label: z.name + ' ✓', color: '#4caf70', bg: '#0d1e0d' };
+    case 'etwas_trocken': return { label: 'Knapp trocken', color: '#c8a04a', bg: '#2a1e0d' };
+    default: return { label: 'Zu trocken', color: '#e0a040', bg: '#2a1e0d' };
+  }
+}
+
+/**
+ * (v1.5.187) Ein Satz mit Handlung — für den Einsteiger, ohne das Wort VPD. Die Zielspanne ist die Luftfeuchte bei der
+ * eigenen Temperatur; knapp daneben erzeugt keinen Druck, rot kommt nur bei Schimmel- oder Nässegefahr.
+ */
+function klimaSatz(st) {
+  if (!st || !st.s) return '';
+  const z = st.ziel, f = st.fenster;
+  const ziel = `${_klimaRlfSpanne(f)} bei ${_klimaZahl(f.t)} °C`;
+  const temp = st.tS === 'kuehl' ? `Temperatur auf ${z.temp[0]}–${z.temp[1]} °C anheben, dann `
+    : st.tS === 'warm' ? `Temperatur auf ${z.temp[0]}–${z.temp[1]} °C senken, dann ` : '';
+  switch (st.s) {
+    case 'nass': return `🚨 Am Blatt schlägt sich Wasser nieder: sofort entfeuchten, Luft bewegen und 2–3 °C wärmer.${z.bluete ? ' Die dichten Blüten aufdrücken und auf graue, matschige Stellen prüfen.' : ''}`;
+    case 'schimmel': return st.level === 'critical'
+      ? `🚨 Über ${z.deckel} % Luftfeuchte ${z.dativ} — Schimmelgefahr: sofort entfeuchten und Luft durch die Pflanzen bewegen. Ziel ${ziel}.`
+      : `⚠️ Über ${z.deckel} % Luftfeuchte ${z.dativ} — ${z.bluete ? 'Schimmelrisiko' : 'Pilzrisiko'}: heute entfeuchten und Luft bewegen. Ziel ${ziel}.`;
+    case 'zu_feucht': return `Luft zu feucht ${z.dativ}: ${temp}Luftfeuchte auf ${ziel} senken.`;
+    case 'etwas_feucht': return `Luft knapp zu feucht ${z.dativ} — nicht dringend. Wenn es leicht geht: ${temp}Luftfeuchte auf ${ziel}.`;
+    case 'etwas_trocken': return `Luft knapp zu trocken ${z.dativ} — nicht dringend. Wenn es leicht geht: ${temp}Luftfeuchte auf ${ziel}.`;
+    case 'zu_trocken': return `Luft zu trocken ${z.dativ}: ${temp}Luftfeuchte auf ${ziel} anheben${st.stufe === 'saemling' ? ' (Haube oder Wasserschale)' : ''}.`;
+    case 'im_ziel': return (st.tS === 'kuehl' || st.tS === 'warm')
+      ? `Luftfeuchte passt, aber es ist zu ${st.tS === 'kuehl' ? 'kühl' : 'warm'} ${z.dativ}: ${temp}Luftfeuchte auf ${ziel}.`
+      : `✓ Luft passt ${z.dativ} — so lassen.`;
+  }
+  return '';
+}
+
+/** (v1.5.187) Position des Markers auf der VPD-Skala (0,4 · 0,8 · 1,2 · 1,8) — unabhängig von der Phase. */
+function _vpdSkalaPct(v) {
+  if (v <= 0) return 0;
+  if (v < 0.4) return v / 0.4 * 15;
+  if (v < 0.8) return 15 + (v - 0.4) / 0.4 * 35;
+  if (v < 1.2) return 50 + (v - 0.8) / 0.4 * 25;
+  if (v < 1.6) return 75 + (v - 1.2) / 0.4 * 15;
+  return Math.min(97, 90 + (v - 1.6) * 10);
+}
+
+/** (v1.5.187) VPD-Zone ohne Temperatur und Luftfeuchte (Tipps): Lage des Blatt-VPD gegen das Band der Stufe. */
+function _klimaZone(v, stufe) {
+  const z = KLIMA_ZIEL[stufe];
+  const lage = _klimaVpdLage(v, z);
+  const band = `${_klimaZahl(z.vpd[0])}–${_klimaZahl(z.vpd[1])} kPa`;
+  const pille = _klimaPille({ s: lage, ziel: z, level: null });
+  const hint = lage === 'nass'
+    ? (z.bluete
+        ? 'Am Blatt schlägt sich Wasser nieder. Sofort entfeuchten, Luft in Bewegung bringen, Temperatur um 2–3 °C anheben. In der Blüte jetzt täglich die dichten Blüten aufdrücken und auf graue, matschige Stellen prüfen — Schimmel entsteht hier binnen Stunden.'
+        : 'Am Blatt schlägt sich Wasser nieder. Sofort entfeuchten, Luft in Bewegung bringen und die Temperatur um 2–3 °C anheben.')
+    : lage === 'zu_feucht' ? `Zu feucht ${z.dativ} (Ziel ${band}): Luftfeuchte senken oder die Temperatur leicht anheben.`
+    : lage === 'etwas_feucht' ? `Knapp unter dem Ziel ${z.dativ} (${band}) — nicht dringend.`
+    : lage === 'im_ziel' ? `Im Ziel ${z.dativ} (${band}).`
+    : lage === 'etwas_trocken' ? `Knapp über dem Ziel ${z.dativ} (${band}) — nicht dringend.`
+    : `Zu trocken ${z.dativ} (Ziel ${band}): Luftfeuchte anheben oder die Temperatur leicht senken.`;
+  return { label: pille.label, color: pille.color, bg: pille.bg, hint, pct: _vpdSkalaPct(v), lage };
+}
+
+/**
+ * (v1.5.187) Die VPD-Bänder, gegen die der Klimafaktor der Gießmenge bis v1.5.186 rechnete — bewusst eingefroren. Mit
+ * KLIMA_ZIEL (Option B) wäre die Gießmenge in Spätblüte, Spülen und IceFlush nebenbei um bis zu 12 % gesprungen. Der Faktor
+ * selbst ist physikalisch fragwürdig — gleiches Klima ergibt je nach Stufe 0,85, 0,95 oder 1,0 — und wird mit dem
+ * Gießmengen-Umbau durch die Transpirationskurve nach Oren et al. (1999) ersetzt. Bis dahin ändert sich keine Gießmenge.
+ */
+function _vpdFaktorBand(p) {
+  if (!p) return null;
+  const ph = p.ph;
+  if (ph === 'anzucht' || ph === 'vorzucht') return (p.day || 1) <= 10 ? [0.4, 0.8] : [0.8, 1.2];
+  if (ph === 'abhärten' || ph === 'vegi_out') return [0.8, 1.4];
+  if (ph === 'bloom') { const s = bluetestufe(p); return s === 'frueh' ? [1.0, 1.3] : (s === 'mittel' ? [1.2, 1.5] : [1.4, 1.6]); }
+  if (ph === 'flush' || ph === 'ice' || ph === 'harvest') return [1.4, 1.6];
+  return null;
+}
+
+/**
+ * (v1.5.187) Die Klima-Teile des Tageseintrags aus EINER Rechnung: VPD-Kasten (Einsteiger-Satz oder Profi-Pille mit
+ * Zielzeile), Temperatur- und Luftfeuchte-Zeile samt kritischer Warnung, Platzhalter. renderEntry baut sie beim Öffnen,
+ * uEnv beim Tippen — vorher zog beim Tippen nur die Profi-Pille mit, Satz, Zielzeilen und Warnung blieben stehen.
+ */
+function _klimaEntryTeile(tRaw, rhRaw, act, iso) {
+  const t = parseFloat(tRaw), rh = parseFloat(rhRaw);
+  const vpd = calcVPD(t, rh);
+  const c0 = act.length > 0 ? act[0] : null;
+  const p0 = c0 ? phase(iso, c0) : null;
+  const allOutdoor = act.length > 0 && act.every(c => c.growType === 'outdoor');
+  const isOutdoorEnv = !!(c0 && c0.growType === 'outdoor');
+  const st = c0 ? klimaStatus(t, rh, p0, c0) : null;
+  const z = vpdZone(vpd, p0, c0 ? c0.growType : 'indoor');
+  const pt = (!st && p0) ? getPhaseTargets(p0) : null;   // Outdoor und Phasen ohne Stufe: wie bisher
+  const suffix = isOutdoorEnv ? ' (Indoor-Idealwert)' : '';
+  const farbe = (m) => m === '✓' ? 'var(--green)' : m === '≈' ? 'var(--blue)' : m === '🚨' ? 'var(--red)' : m === '⚠' ? 'var(--orange)' : 'var(--text-muted)';
+  const zeile = (m, text) => `<div style="font-size:10px;color:${farbe(m)};margin-top:3px;display:flex;align-items:center;gap:4px"><span>${m}</span><span>${text}</span></div>`;
+
+  let vpdBox = '';
+  if (!allOutdoor) {
+    if (S.beginnerMode) {
+      if (vpd !== null) {
+        const satz = st && st.s ? klimaSatz(st) : (z && z.hint ? `💡 ${z.hint}` : 'Luftwerte passen');
+        vpdBox = `<div style="background:var(--teal-bg);border:0.5px solid var(--teal-bd);border-radius:10px;padding:10px 12px;font-size:12px;color:var(--text-sub);line-height:1.5">${satz}</div>`;
+      }
+    } else if (vpd !== null) {
+      const pille = st && st.s ? _klimaPille(st) : { label: z.label, color: z.color, bg: z.bg };
+      const zielMark = st ? _klimaMarke(st) : (pt && pt.vpdMin ? inRangeMark(vpd, pt.vpdMin, pt.vpdMax) : '');
+      const zielText = st
+        ? `${st.ziel.icon} ${st.ziel.name}: VPD ${_klimaZahl(st.ziel.vpd[0])}–${_klimaZahl(st.ziel.vpd[1])} kPa · ${st.ziel.temp[0]}–${st.ziel.temp[1]} °C · bei ${_klimaZahl(st.fenster.t)} °C RLF ${_klimaZahl(st.fenster.lo)}–${_klimaZahl(st.fenster.hi)} %${st.ziel.deckel != null ? ` · Schimmel-Deckel ${st.ziel.deckel} %` : ''}`
+        : (pt && pt.vpdMin ? `${pt.icon} ${pt.label}: VPD ${pt.vpdMin}–${pt.vpdMax} kPa · ${pt.tempMin}–${pt.tempMax}°C · ${pt.rhMin}–${pt.rhMax}% RLF` : '');
+      vpdBox = `<div class="vpd-box">
+          <div>
+            <div style="font-size:10px;color:#3a7a7a;margin-bottom:2px;font-weight:600">VPD</div>
+            <div style="display:flex;align-items:baseline;gap:3px">
+              <span class="vpd-val" id="vpd-v">${vpd.toFixed(2)}</span>
+              <span style="font-size:11px;color:#3a7a7a"> kPa</span>
+            </div>
+            <span class="vpd-pill" id="vpd-p" style="background:${pille.bg};color:${pille.color}">${pille.label}</span>
+            ${st && st.vLuft !== null ? `<div style="font-size:9px;color:var(--text-hint);margin-top:3px">am Blatt · Luft ${st.vLuft.toFixed(2)} · Abzug ${_leafOffset()} K</div>` : ''}
+          </div>
+          <div style="display:flex;flex-direction:column;gap:3px;width:88px">
+            <div style="display:flex;justify-content:space-between;font-size:8px;color:var(--text-hint)"><span>Anz.</span><span>Blüte</span><span>Stress</span></div>
+            <div class="vpd-scale">
+              <div class="vpd-seg" style="background:#1e3a6e"></div>
+              <div class="vpd-seg" style="background:#1e6e3a"></div>
+              <div class="vpd-seg" style="background:#6e4a1e"></div>
+            </div>
+            <div class="vpd-mrow"><div class="vpd-marker" id="vpd-m" style="left:${Math.max(0, Math.min(95, _vpdSkalaPct(vpd)))}%"></div></div>
+            <div style="display:flex;justify-content:space-between;font-size:8px;color:var(--text-hint)"><span>0.4</span><span>0.8</span><span>1.2</span><span>1.8</span></div>
+          </div>
+        </div>${zielText ? `<div id="klima-ziel" style="margin-top:6px;padding:6px 10px;background:rgba(255,255,255,0.02);border:0.5px dashed var(--border);border-radius:8px;font-size:10px;color:${farbe(zielMark)};display:flex;align-items:center;gap:6px"><span>${zielMark}</span><span>${zielText}</span></div>` : ''}`;
+    } else {
+      vpdBox = `<div style="background:var(--teal-bg);border:0.5px solid var(--teal-bd);border-radius:10px;padding:10px 12px;font-size:12px;color:var(--text-muted)">Temp & RLF eingeben → VPD</div>`;
+    }
+  }
+
+  const tMark = st ? (st.tS === 'ok' ? '✓' : (st.tS ? '⚠' : '')) : (pt ? inRangeMark(t, pt.tempMin, pt.tempMax) : '');
+  const tempZeile = st ? zeile(tMark, `${st.ziel.icon} ${st.ziel.name}: ${st.ziel.temp[0]}–${st.ziel.temp[1]} °C bei Licht an`)
+    : (pt ? zeile(tMark, `${pt.icon} ${pt.label}: ${pt.tempMin}–${pt.tempMax}°C${suffix}`) : '');
+  const rhIn = !!(st && st.rh !== null && st.rh >= st.fenster.lo && st.rh <= st.fenster.hi);
+  const rMark = st ? (st.rh === null ? '' : (st.level === 'critical' ? '🚨' : (rhIn ? '✓' : (st.level === 'knapp' ? '≈' : '⚠'))))
+    : (pt ? inRangeMark(rh, pt.rhMin, pt.rhMax) : '');
+  const rlfZeile = st ? zeile(rMark, `${st.ziel.icon} ${st.ziel.name}: bei ${_klimaZahl(st.fenster.t)} °C ${_klimaZahl(st.fenster.lo)}–${_klimaZahl(st.fenster.hi)} % RLF`)
+    : (pt ? zeile(rMark, `${pt.icon} ${pt.label}: ${pt.rhMin}–${pt.rhMax}% RLF${suffix}`) : '');
+  const kritT = renderCriticalWarning(getCriticalWarning('temp', t, p0, c0));
+  const kritR = renderCriticalWarning(getCriticalWarning('rlf', rh, p0, c0, t));
+  const zMitte = st ? (st.ziel.temp[0] + st.ziel.temp[1]) / 2 : null;
+  const phT = st ? zMitte.toFixed(1) : (pt ? ((pt.tempMin + pt.tempMax) / 2).toFixed(1) : '23.5');
+  const phR = st ? String(Math.round(klimaRlfFuer(zMitte, (st.ziel.vpd[0] + st.ziel.vpd[1]) / 2))) : (pt ? String(Math.round((pt.rhMin + pt.rhMax) / 2)) : '60');
+  // Kritische Warnungen über die ganze Breite: In der halben Spalte unter dem Feld wurde der Handlungstext auf dem Handy
+  // zu einem zwölfzeiligen Streifen.
+  return { vpdBox, tempZeile, rlfZeile, krit: kritT + kritR, phT, phR, st };
+}
+
 /** Reines Luft-VPD — für die Nebenanzeige, damit der Unterschied sichtbar bleibt. */
 function calcVPDAir(t, rh) {
   if (isNaN(t) || isNaN(rh)) return null;
@@ -13329,36 +13597,19 @@ function getEcTarget(c, p, iso) {
 function getPhaseTargets(p) {
   if (!p) return null;
   const ph = p.ph;
-  const day = p.day || 1;
-  const week = p.week || 1;
-  // Anzucht/Vegi-out/Abhärten: alle drinnen-vegi (auch Anzucht ≤10 Tage = Sämling)
-  if (ph === 'anzucht' || ph === 'vorzucht') {
-    if (day <= 10) {
-      return { tempMin: 22, tempMax: 26, rhMin: 65, rhMax: 75, vpdMin: 0.4, vpdMax: 0.8, label: 'Sämling', icon: '🌱' };
-    }
-    return { tempMin: 22, tempMax: 28, rhMin: 55, rhMax: 70, vpdMin: 0.8, vpdMax: 1.2, label: 'Anzucht/Vegi', icon: '🌿' };
+  // (v1.5.187) Indoor-Stufen aus KLIMA_ZIEL. Die Luftfeuchte-Spanne ist das Fenster bei der mittleren Temperatur der Stufe,
+  // für Aufrufer ohne Messwert; bei gemessener Temperatur gilt klimaRlfFenster — Zielzeile und Satz im Eintrag nennen dieses.
+  const _kSt = klimaStufe(p);
+  if (_kSt) {
+    const z = KLIMA_ZIEL[_kSt];
+    const f = klimaRlfFenster(z, NaN);
+    return { tempMin: z.temp[0], tempMax: z.temp[1], rhMin: Math.ceil(f.lo), rhMax: Math.floor(f.hi), vpdMin: z.vpd[0], vpdMax: z.vpd[1], label: z.name, icon: z.icon, stufe: _kSt, deckel: z.deckel };
   }
   if (ph === 'abhärten') {
     return { tempMin: 18, tempMax: 26, rhMin: 50, rhMax: 70, vpdMin: 0.8, vpdMax: 1.4, label: 'Abhärten', icon: '🌬' };
   }
   if (ph === 'vegi_out') {
     return { tempMin: 18, tempMax: 28, rhMin: 50, rhMax: 70, vpdMin: 0.8, vpdMax: 1.4, label: 'Vegi draußen', icon: '🌿' };
-  }
-  if (ph === 'bloom') {
-    const _stufe = bluetestufe(p);   // (v1.5.141) nach Anteil an der Blüte
-    if (_stufe === 'frueh') {
-      return { tempMin: 23, tempMax: 27, rhMin: 50, rhMax: 60, vpdMin: 1.0, vpdMax: 1.3, label: 'Frühe Blüte', icon: '🌸' };
-    }
-    if (_stufe === 'mittel') {
-      return { tempMin: 22, tempMax: 26, rhMin: 45, rhMax: 55, vpdMin: 1.2, vpdMax: 1.5, label: 'Mittlere Blüte', icon: '🌺' };
-    }
-    return { tempMin: 18, tempMax: 24, rhMin: 40, rhMax: 50, vpdMin: 1.4, vpdMax: 1.6, label: 'Späte Blüte', icon: '🍯' };
-  }
-  if (ph === 'flush') {
-    return { tempMin: 20, tempMax: 24, rhMin: 40, rhMax: 50, vpdMin: 1.4, vpdMax: 1.6, label: 'Spülen', icon: '🚿' };
-  }
-  if (ph === 'ice' || ph === 'harvest') {
-    return { tempMin: 18, tempMax: 22, rhMin: 40, rhMax: 50, vpdMin: 1.4, vpdMax: 1.6, label: ph === 'ice' ? 'IceFlush' : 'Ernte', icon: ph === 'ice' ? '🧊' : '✂️' };
   }
   if (ph === 'dry') {
     return { tempMin: TROCKNEN_KLIMA.tMin, tempMax: TROCKNEN_KLIMA.tMax, rhMin: TROCKNEN_KLIMA.rhMin, rhMax: TROCKNEN_KLIMA.rhMax, vpdMin: null, vpdMax: null, label: 'Trocknen', icon: '🍂' };
@@ -13408,7 +13659,7 @@ function _ecHighCeilFor(c) {
  * @param {object} c Cycle, optional für growType
  * @returns {object|null}
  */
-function getCriticalWarning(category, value, p, c) {
+function getCriticalWarning(category, value, p, c, t) {
   if (value === null || value === undefined || isNaN(value) || value === 0) return null;
   const ph = p?.ph;
   const day = p?.day || 0;
@@ -13509,35 +13760,44 @@ function getCriticalWarning(category, value, p, c) {
   }
 
   if (category === 'rlf') {
-    // SCHIMMELGEFAHR in Spätblüte — der wichtigste Eintrag.
-    // (v1.5.149) Spülen und IceFlush gehören dazu: die letzten Tage vor der Ernte, mit den dichtesten
-    // Blüten, und getPhaseTargets nennt dort wie in der Spätblüte 40–50 %. Vorher zählte nur die Blüte
-    // selbst — zwischen 60 und 80 % RLF schwieg die App genau in diesen Tagen (ANBAU.md 13.5).
-    if ((isLateBloom || isFlushOrIce) && value > 60) {
-      return {
-        level: 'critical',
-        icon: '🚨',
-        title: `RLF ${Math.round(value)}% — Schimmelgefahr (Botrytis)`,
-        action: isFlushOrIce
-          ? 'Vor der Ernte sind die Blüten am dichtesten. Botrytis ist bei RLF über 60% innerhalb von 48 Stunden möglich und vernichtet die Ernte. SOFORT RLF unter 50% senken: Lüfter hochdrehen, Entfeuchter an.'
-          : 'In Spätblüte ist Botrytis bei RLF >60% innerhalb 48h möglich und vernichtet die Ernte. SOFORT RLF unter 50% senken: Lüfter hochdrehen, Entfeuchter an, ggf. Defoliation.',
-      };
-    }
-    if (isMidBloom && value > 65) {
-      return {
-        level: 'high',
-        icon: '⚠️',
-        title: `RLF ${Math.round(value)}% — Schimmelrisiko`,
-        action: 'Mittlere Blüte braucht RLF unter 55%. Bei 65%+ steigt das Botrytis-Risiko deutlich. Lüfter prüfen, Entfeuchter einsetzen.',
-      };
-    }
-    if (isSeedling && value < 40) {
-      return {
-        level: 'high',
-        icon: '⚠️',
-        title: `RLF ${Math.round(value)}% — zu trocken für Sämling`,
-        action: 'Sämlinge brauchen RLF 65–75%. Bei <40% trocknen junge Blätter aus, Wurzelbildung stoppt. Haube zurück oder Wasserschale ins Zelt.',
-      };
+    // (v1.5.187) Deckel und Stufe aus KLIMA_ZIEL (ANBAU.md 13.5): frühe und mittlere Blüte über 65 % hoch; späte Blüte,
+    // Spülen, IceFlush und Erntetag über 60 % kritisch; Anzucht über 80 %. Beim Sämling nur der Boden von 40 % — die Haube
+    // arbeitet gewollt feucht, Nässe am Blatt meldet klimaStatus. Die Zielspanne im Text ist das Luftfeuchte-Fenster bei der
+    // gemessenen Temperatur (t), dieselbe Zahl wie in der Zeile darüber. Vorher: „SOFORT RLF unter 50% senken" und „Mittlere
+    // Blüte braucht RLF unter 55%" — beides passte zu keinem Zielbereich —, dazu in der frühen Blüte bis 80 % Stille.
+    const _kStufe = !isOutdoor ? klimaStufe(p) : null;
+    if (_kStufe) {
+      const z = KLIMA_ZIEL[_kStufe];
+      const _f = klimaRlfFenster(z, t);
+      const ziel = `Ziel ${_klimaRlfSpanne(_f)} bei ${_klimaZahl(_f.t)} °C`;
+      if (z.deckel != null && value > z.deckel) {
+        if (z.deckelStufe === 'critical') {
+          const vorErnte = _kStufe === 'spuelen' || _kStufe === 'ice' || _kStufe === 'ernte';
+          return {
+            level: 'critical',
+            icon: '🚨',
+            title: `RLF ${Math.round(value)}% — Schimmelgefahr (Botrytis)`,
+            action: `${vorErnte ? 'Vor der Ernte sind die Blüten am dichtesten' : 'In Spätblüte sind die Blüten dicht'}, und in ihrem Inneren ist es feuchter als im Raum — über ${z.deckel} % kann Botrytis keimen und die Ernte vernichten. Sofort entfeuchten und Luft durch die Pflanzen bewegen. ${ziel}.`,
+          };
+        }
+        return {
+          level: 'high',
+          icon: '⚠️',
+          title: `RLF ${Math.round(value)}% — ${z.bluete ? 'Schimmelrisiko' : 'hohes Pilzrisiko'}`,
+          action: z.bluete
+            ? `Über ${z.deckel} % ${z.dativ} steigt das Risiko für Schimmel in den Blüten. Heute entfeuchten und Luft durch die Pflanzen bewegen. ${ziel}.`
+            : `Über ${z.deckel} % ${z.dativ} keimen Pilzsporen leichter. Lüftung prüfen und entfeuchten. ${ziel}.`,
+        };
+      }
+      if (z.boden != null && value < z.boden) {
+        return {
+          level: 'high',
+          icon: '⚠️',
+          title: `RLF ${Math.round(value)}% — zu trocken für Sämling`,
+          action: `Unter ${z.boden} % trocknen junge Blätter aus, die Wurzelbildung stockt. Haube auflegen oder eine Wasserschale ins Zelt. ${ziel}.`,
+        };
+      }
+      return null;
     }
     if (value > 80 && !isOutdoor) {
       return {
@@ -13648,6 +13908,12 @@ function vpdZone(v, phaseInfo, growType) {
       pct: Math.max(0, Math.min(95, v / 1.8 * 95)),
     };
   }
+
+  // (v1.5.187) Indoor: Etikett, Farbe und Hinweis gegen das Band der eigenen Stufe aus KLIMA_ZIEL — dieselbe Quelle wie
+  // Pille, Zielzeilen und Einsteiger-Satz im Eintrag. Hier gibt es nur das VPD; Deckel und Temperatur bewertet klimaStatus.
+  // Outdoor und Phasen ohne Stufe laufen wie bisher.
+  const _kStufe = growType !== 'outdoor' ? klimaStufe(phaseInfo) : null;
+  if (_kStufe) return _klimaZone(v, _kStufe);
 
   // PHASE-AWARE LABEL:
   // Die VPD-Skala ist universal, aber der Status ✓/⚠ hängt von der Phase ab.
@@ -13801,7 +14067,7 @@ function getEntryWarnings(cd, p, e, c, iso) {
     } else {
       // Indoor: engere Schwellen
       if (tempVal > 32) out.push({ type: 'err', text: `🌡️ ${tempVal}°C zu heiß! Hitzestress (Taco-Blätter). Lüftung erhöhen.` });
-      else if (tempVal > 29) out.push({ type: 'warn', text: `🌡️ ${tempVal}°C hoch — Stoffwechsel bremst. Ideal: 22–28°C.` });
+      else if (tempVal > 29) out.push({ type: 'warn', text: `🌡️ ${tempVal}°C hoch — Stoffwechsel bremst. Ziel: ${klimaStufe(p) ? KLIMA_ZIEL[klimaStufe(p)].temp.join('–') : '22–28'} °C bei Licht an.` });
       else if (tempVal < 15) out.push({ type: 'err', text: `🌡️ ${tempVal}°C zu kalt — Wachstum stoppt, Wurzelschäden drohen. Heizen!` });
       else if (tempVal < 18) out.push({ type: 'warn', text: `🌡️ ${tempVal}°C unter 18°C — Phosphor-Lockout droht, lila/rote Verfärbungen möglich.` });
     }
@@ -13815,39 +14081,17 @@ function getEntryWarnings(cd, p, e, c, iso) {
         out.push({ type: 'warn', text: `💨 ${rhVal}% RLF sehr hoch in späterer Blüte — Schimmelrisiko! Bei anhaltender Nässe Netz/Dach nutzen.` });
       }
     } else {
-      if (rhVal > 80) out.push({ type: 'err', text: `💨 ${rhVal}% RLF sehr hoch — Schimmelrisiko! Lüftung maximal.` });
-      else if (rhVal > 70) out.push({ type: 'warn', text: `💨 ${rhVal}% RLF über 70 — Aktivkohlefilter kann kondensieren und Geruch durchlassen.` });
+      // (v1.5.187) Schimmel- und Trockengrenzen bewertet der Umgebungsblock (klimaStatus, KLIMA_ZIEL). Hier stand „über 80 %"
+      // unabhängig von der Phase und „über 70" als Warnung — beim Sämling unter der Haube neben „Sämling ✓". Es bleibt der
+      // Gerätehinweis: Aktivkohlefilter verlieren in feuchter Luft an Wirkung.
+      if (rhVal > 70 && klimaStufe(p) !== 'saemling' && p && p.ph !== 'dry' && p.ph !== 'cure') out.push({ type: 'info', text: `💨 ${rhVal} % RLF — über 70 % kann der Aktivkohlefilter feucht werden und Geruch durchlassen.` });
       else if (rhVal < 30 && p && p.ph !== 'dry' && p.ph !== 'cure') out.push({ type: 'warn', text: `💨 ${rhVal}% RLF sehr niedrig — Pflanze schließt Stomata.` });
     }
   }
 
-  // PHASE-SPEZIFISCHE INFOS (nur Indoor — Outdoor lässt sich Klima eh nicht steuern):
-  // Wenn die extremen Schwellen oben nicht greifen aber der Wert vom Phase-Ziel
-  // abweicht, geben wir einen sanften Hinweis. So lernt der User die Phase-Targets
-  // ohne dass jede kleine Abweichung als Fehler behandelt wird.
-  if (!isOutdoor) {
-    const targets = typeof getPhaseTargets === 'function' ? getPhaseTargets(p) : null;
-    if (targets) {
-      // Temp-Hinweis: nur wenn extreme-Warnungen NICHT bereits drin sind
-      const hasTempErr = out.some(o => /\d°C/.test(o.text));
-      if (!hasTempErr && !isNaN(tempVal) && tempVal > 0) {
-        if (tempVal < targets.tempMin - 1) {
-          out.push({ type: 'info', text: `${targets.icon} ${targets.label}: Temp zielt auf ${targets.tempMin}–${targets.tempMax}°C — du hast ${tempVal}°C.` });
-        } else if (tempVal > targets.tempMax + 1) {
-          out.push({ type: 'info', text: `${targets.icon} ${targets.label}: Temp zielt auf ${targets.tempMin}–${targets.tempMax}°C — du hast ${tempVal}°C.` });
-        }
-      }
-      // RLF-Hinweis: ähnliche Logik
-      const hasRhErr = out.some(o => /\d%\s?RLF/.test(o.text));
-      if (!hasRhErr && !isNaN(rhVal) && rhVal > 0) {
-        if (rhVal < targets.rhMin - 3) {
-          out.push({ type: 'info', text: `${targets.icon} ${targets.label}: RLF zielt auf ${targets.rhMin}–${targets.rhMax}% — du hast ${rhVal}%.` });
-        } else if (rhVal > targets.rhMax + 3) {
-          out.push({ type: 'info', text: `${targets.icon} ${targets.label}: RLF zielt auf ${targets.rhMin}–${targets.rhMax}% — du hast ${rhVal}%.` });
-        }
-      }
-    }
-  }
+  // (v1.5.187) Die sanften Phasen-Hinweise zu Temperatur und Luftfeuchte sind entfallen: Sie wiederholten die Zielzeilen
+  // unter den Feldern mit eigenen Toleranzen (±1 K, ±3 %) gegen feste Fenster und widersprachen damit dem VPD-Befund.
+  // Temperatur und Luftfeuchte bewertet nur noch der Umgebungsblock (klimaStatus).
 
   // Sort: err > warn > info.
   // Use ?? (nullish coalescing) not ||, because 0 || 9 === 9 would misplace err-type.
@@ -17377,7 +17621,7 @@ function renderTips() {
   let tips = [];
 
   if (vpd !== null && z) {
-    tips.push({ icon: vpd < 0.4 || vpd > 1.5 ? '⚠️' : '✅', text: `VPD: ${vpd.toFixed(2)} kPa – ${z.hint}`, cat: 'Umgebung' });
+    tips.push({ icon: z.lage ? (z.lage === 'im_ziel' ? '✅' : ((z.lage === 'etwas_feucht' || z.lage === 'etwas_trocken') ? '≈' : '⚠️')) : (vpd < 0.4 || vpd > 1.5 ? '⚠️' : '✅'), text: `VPD: ${vpd.toFixed(2)} kPa – ${z.hint}`, cat: 'Umgebung' });
   } else {
     tips.push({ icon: '🌡️', text: 'Trage Temp & RLF im Tageseintrag ein für VPD.', cat: 'Umgebung' });
   }
@@ -25044,57 +25288,11 @@ function renderEntry(iso) {
   const saved = S.entries[iso] || {};
   const temp = saved.temp || '';
   const rh = saved.humidity || '';
-  const vpd = calcVPD(parseFloat(temp), parseFloat(rh));
-  // Pass phase for Premium-Spätblüte zone logic (first active cycle as reference)
-  const p4vpd = act.length > 0 ? phase(iso, act[0]) : null;
-  const gt4vpd = act.length > 0 ? act[0].growType : 'indoor';
-  const z = vpdZone(vpd, p4vpd, gt4vpd);
-
-  // VPD nur bei Indoor sinnvoll — Outdoor hat keine Klimakammer.
-  // Wenn ALLE aktiven Zyklen Outdoor sind, VPD komplett ausblenden.
-  const allOutdoor = act.length > 0 && act.every(c => c.growType === 'outdoor');
-
-  const vpdBox = allOutdoor
-    ? ''
-    : S.beginnerMode
-    ? (vpd !== null
-        ? `<div style="background:var(--teal-bg);border:0.5px solid var(--teal-bd);border-radius:10px;padding:10px 12px;font-size:12px;color:var(--text-sub);line-height:1.5">
-            ${z && z.label === 'Blüte ✓' || z && z.label === 'Anzucht ✓' || z && z.label === 'Spätblüte ✓'
-              ? `✓ Luft passt für diese Phase`
-              : z && z.hint ? `💡 ${z.hint}` : 'Luftwerte passen'}
-          </div>`
-        : '')
-    : (vpd !== null
-      ? `<div class="vpd-box">
-          <div>
-            <div style="font-size:10px;color:#3a7a7a;margin-bottom:2px;font-weight:600">VPD</div>
-            <div style="display:flex;align-items:baseline;gap:3px">
-              <span class="vpd-val" id="vpd-v">${vpd.toFixed(2)}</span>
-              <span style="font-size:11px;color:#3a7a7a"> kPa</span>
-            </div>
-            <span class="vpd-pill" id="vpd-p" style="background:${z.bg};color:${z.color}">${z.label}</span>
-          </div>
-          <div style="display:flex;flex-direction:column;gap:3px;width:88px">
-            <div style="display:flex;justify-content:space-between;font-size:8px;color:var(--text-hint)"><span>Anz.</span><span>Blüte</span><span>Stress</span></div>
-            <div class="vpd-scale">
-              <div class="vpd-seg" style="background:#1e3a6e"></div>
-              <div class="vpd-seg" style="background:#1e6e3a"></div>
-              <div class="vpd-seg" style="background:#6e4a1e"></div>
-            </div>
-            <div class="vpd-mrow"><div class="vpd-marker" id="vpd-m" style="left:${Math.max(0, Math.min(95, z.pct))}%"></div></div>
-            <div style="display:flex;justify-content:space-between;font-size:8px;color:var(--text-hint)"><span>0.4</span><span>0.8</span><span>1.2</span><span>1.8</span></div>
-          </div>
-        </div>${(() => {
-          // Phase-Target unter dem VPD-Cup-Display: zeigt Soll-Bereich für aktuelle Phase
-          const t = getPhaseTargets(p4vpd);
-          if (!t || !t.vpdMin) return '';
-          const mark = inRangeMark(vpd, t.vpdMin, t.vpdMax);
-          const color = mark === '✓' ? 'var(--green)' : mark === '⚠' ? 'var(--orange)' : 'var(--text-muted)';
-          return `<div style="margin-top:6px;padding:6px 10px;background:rgba(255,255,255,0.02);border:0.5px dashed var(--border);border-radius:8px;font-size:10px;color:${color};display:flex;align-items:center;gap:6px">
-            <span>${mark}</span><span>${t.icon} ${t.label}: VPD ${t.vpdMin}–${t.vpdMax} kPa · ${t.tempMin}–${t.tempMax}°C · ${t.rhMin}–${t.rhMax}% RLF</span>
-          </div>`;
-        })()}`
-      : `<div style="background:var(--teal-bg);border:0.5px solid var(--teal-bd);border-radius:10px;padding:10px 12px;font-size:12px;color:var(--text-muted)">Temp & RLF eingeben → VPD</div>`);
+  // (v1.5.187) VPD-Kasten, Zielzeilen, Warnungen und Platzhalter aus EINER Rechnung (_klimaEntryTeile, klimaStatus).
+  // Vorher prüfte der Einsteiger-Kasten auf Etiketten, die vpdZone nie ausgab („Blüte ✓", „Anzucht ✓"), und die
+  // Profi-Zielzeile rechnete mit eigenen festen Fenstern — 13-mal „✓ Luft passt" über ⚠, 44-mal grüne Pille über oranger Zeile.
+  const _klima = _klimaEntryTeile(temp, rh, act, iso);
+  const vpdBox = _klima.vpdBox;
 
   // Build per-cycle blocks
   const blocks = act.map(c => {
@@ -26929,40 +27127,8 @@ function renderEntry(iso) {
       ${waterRow}`;
   }).join('');
 
-  // Phase-Targets für den ersten aktiven Zyklus (für Temp/RLF-Hinweise unter den Feldern).
-  // Wenn mehrere aktive Zyklen mit unterschiedlichen Phasen → wir zeigen die häufigste.
-  const phaseTargetsForEnv = (() => {
-    if (act.length === 0) return null;
-    const p = phase(iso, act[0]);
-    return getPhaseTargets(p);
-  })();
-  // Phase-Info für kritische Warnungen (Hitze/Schimmel/etc)
-  const phaseForCrit = act.length > 0 ? phase(iso, act[0]) : null;
-  const cycleForCrit = act[0] || null;
-  const tempVal = parseFloat(temp);
-  const rhValN = parseFloat(rh);
-  const isOutdoorEnv = act.length > 0 && act[0].growType === 'outdoor';
-  // KRITISCHE WARNUNGEN — werden zusätzlich zur normalen ✓/⚠-Markierung
-  // angezeigt wenn wirklich gefährliche Werte erreicht sind (Hitze, Schimmel,
-  // Frost). Konkrete Handlungsanweisung statt nur Farb-Markierung.
-  const tempCritWarn = renderCriticalWarning(getCriticalWarning('temp', tempVal, phaseForCrit, cycleForCrit));
-  const rhCritWarn = renderCriticalWarning(getCriticalWarning('rlf', rhValN, phaseForCrit, cycleForCrit));
-  const tempTargetHTML = phaseTargetsForEnv ? (() => {
-    const mark = inRangeMark(tempVal, phaseTargetsForEnv.tempMin, phaseTargetsForEnv.tempMax);
-    const color = mark === '✓' ? 'var(--green)' : mark === '⚠' ? 'var(--orange)' : 'var(--text-muted)';
-    const suffix = isOutdoorEnv ? ' (Indoor-Idealwert)' : '';
-    return `<div style="font-size:10px;color:${color};margin-top:3px;display:flex;align-items:center;gap:4px">
-      <span>${mark}</span><span>${phaseTargetsForEnv.icon} ${phaseTargetsForEnv.label}: ${phaseTargetsForEnv.tempMin}–${phaseTargetsForEnv.tempMax}°C${suffix}</span>
-    </div>`;
-  })() : '';
-  const rhTargetHTML = phaseTargetsForEnv ? (() => {
-    const mark = inRangeMark(rhValN, phaseTargetsForEnv.rhMin, phaseTargetsForEnv.rhMax);
-    const color = mark === '✓' ? 'var(--green)' : mark === '⚠' ? 'var(--orange)' : 'var(--text-muted)';
-    const suffix = isOutdoorEnv ? ' (Indoor-Idealwert)' : '';
-    return `<div style="font-size:10px;color:${color};margin-top:3px;display:flex;align-items:center;gap:4px">
-      <span>${mark}</span><span>${phaseTargetsForEnv.icon} ${phaseTargetsForEnv.label}: ${phaseTargetsForEnv.rhMin}–${phaseTargetsForEnv.rhMax}% RLF${suffix}</span>
-    </div>`;
-  })() : '';
+  // (v1.5.187) Temperatur- und Luftfeuchte-Zeile samt kritischer Warnung kommen aus _klimaEntryTeile (oben), damit uEnv
+  // beim Tippen dieselben Teile neu bauen kann.
 
   // Umgebung (global, once, between nutrient section and tips/notes)
   const envHTML = act.length > 0 ? `
@@ -26972,22 +27138,21 @@ function renderEntry(iso) {
         <div class="inp-wrap"><div class="inp-label">Temperatur (°C)</div>
           <div style="display:flex;align-items:center;gap:4px">
             <button onclick="stepEnv('et',-0.1)" class="stepper-btn">−</button>
-            <input class="inp-field" type="number" step="0.1" value="${temp}" placeholder="${phaseTargetsForEnv ? ((phaseTargetsForEnv.tempMin + phaseTargetsForEnv.tempMax) / 2).toFixed(1) : '23.5'}" id="et" style="flex:1;text-align:center;height:32px;font-family:var(--mono);font-weight:600" oninput="uEnv()"/>
+            <input class="inp-field" type="number" step="0.1" value="${temp}" placeholder="${_klima.phT}" id="et" style="flex:1;text-align:center;height:32px;font-family:var(--mono);font-weight:600" oninput="uEnv()"/>
             <button onclick="stepEnv('et',0.1)" class="stepper-btn">+</button>
           </div>
-          ${tempTargetHTML}
-          ${tempCritWarn}
+          <div id="klima-temp">${_klima.tempZeile}</div>
         </div>
         <div class="inp-wrap"><div class="inp-label">Luftfeuchtigkeit (%)</div>
           <div style="display:flex;align-items:center;gap:4px">
             <button onclick="stepEnv('er',-0.2)" class="stepper-btn">−</button>
-            <input class="inp-field" type="number" step="0.2" value="${rh}" placeholder="${phaseTargetsForEnv ? Math.round((phaseTargetsForEnv.rhMin + phaseTargetsForEnv.rhMax) / 2) : '60'}" id="er" style="flex:1;text-align:center;height:32px;font-family:var(--mono);font-weight:600" oninput="uEnv()"/>
+            <input class="inp-field" type="number" step="0.2" value="${rh}" placeholder="${_klima.phR}" id="er" style="flex:1;text-align:center;height:32px;font-family:var(--mono);font-weight:600" oninput="uEnv()"/>
             <button onclick="stepEnv('er',0.2)" class="stepper-btn">+</button>
           </div>
-          ${rhTargetHTML}
-          ${rhCritWarn}
+          <div id="klima-rlf">${_klima.rlfZeile}</div>
         </div>
       </div>
+      <div id="klima-krit">${_klima.krit}</div>
       <div id="vpd-c" style="margin-top:8px">${vpdBox}</div>
     </div>` : '';
 
@@ -28519,7 +28684,10 @@ function stepEnv(id, step) {
   // Treating 0 as "use default" is intentional: a user seeing the placeholder
   // 23.5 expects the next + to go to 23.6, not 0.1. A genuine 0°C is not a
   // realistic grow scenario anyway.
-  const defaultVal = id === 'et' ? 23.5 : 60;
+  // (v1.5.187) Leeres Feld: vom grauen Platzhalter aus zählen — er zeigt das Ziel der Phase. Vorher fest 23,5 °C und 60 %;
+  // in der Spätblüte stand damit nach einem Tipp auf „+" sofort 60,2 % und die Schimmelwarnung da.
+  const _platz = parseFloat(el.placeholder);
+  const defaultVal = isFinite(_platz) && _platz > 0 ? _platz : (id === 'et' ? 23.5 : 60);
   const raw = parseFloat(el.value);
   const current = (isNaN(raw) || raw === 0) ? defaultVal : raw;
   // Range: temp 0-45, humidity 0-100
@@ -28660,23 +28828,15 @@ function stepMixDose(cId, prodId, wk, stepMl, waterAmt, isWaterDayDose) {
 
 function uEnv() {
   _entryDirty = true;
-  const t = parseFloat(document.getElementById('et')?.value);
-  const r = parseFloat(document.getElementById('er')?.value);
-  // Phase-aware VPD zone: Spätblüte gets different zone labels (Premium)
-  const actL = active();
-  const p4vpd = editISO && actL.length > 0 ? phase(editISO, actL[0]) : null;
-  const gt4vpd = actL.length > 0 ? actL[0].growType : 'indoor';
-  const v = calcVPD(t, r), z = vpdZone(v, p4vpd, gt4vpd);
-  if (v !== null && z) {
-    const vv = document.getElementById('vpd-v');
-    const vp = document.getElementById('vpd-p');
-    const vm = document.getElementById('vpd-m');
-    if (vv) vv.textContent = v.toFixed(2);
-    if (vp) { vp.textContent = z.label; vp.style.background = z.bg; vp.style.color = z.color; }
-    // (v1.5.101) Untergrenze ergänzt: Bei negativem VPD war `pct` negativ und der Marker
-    // rutschte aus der Skala — ausgerechnet in der gefährlichsten Lage war nichts zu sehen.
-    if (vm) vm.style.left = Math.max(0, Math.min(95, z.pct)) + '%';
-  }
+  // (v1.5.187) Beim Tippen zieht der ganze Umgebungsblock mit — Einsteiger-Satz oder Pille mit Zielzeile, Temperatur- und
+  // Luftfeuchte-Zeile samt Warnung —, gebaut von derselben Funktion wie beim Öffnen (_klimaEntryTeile). Vorher änderte sich
+  // nur die Profi-Pille; bei 18 °C stand darunter weiter „✓ Frühe Blüte: 23–27°C". Der Marker bleibt bei jedem Wert in der
+  // Skala (_vpdSkalaPct, v1.5.101).
+  const k = _klimaEntryTeile(document.getElementById('et')?.value, document.getElementById('er')?.value, active(), editISO || todayISO());
+  const box = document.getElementById('vpd-c'); if (box) box.innerHTML = k.vpdBox;
+  const tz = document.getElementById('klima-temp'); if (tz) tz.innerHTML = k.tempZeile;
+  const rz = document.getElementById('klima-rlf'); if (rz) rz.innerHTML = k.rlfZeile;
+  const kz = document.getElementById('klima-krit'); if (kz) kz.innerHTML = k.krit;
 }
 
 function ensE(cId) {
@@ -33818,8 +33978,12 @@ function lexCycleNote(itemTitle) {
   }
   if (itemTitle === 'Luftfeuchtigkeit (RLF)' && pt) {
     const last = _lastEnvVal('humidity');
-    if ((p.ph === 'bloom' || p.ph === 'flush') && last !== null && last > 60) {
-      return wrap(`Richtwert jetzt: <b>${pt.rhMin}–${pt.rhMax} % RLF</b>. <span style="color:var(--red)">Dein letzter Wert ${last} % — über 60 % in der Blüte ist Schimmelrisiko. Luft bewegen, entfeuchten.</span>`);
+    // (v1.5.187) Die Schimmel-Grenze der eigenen Stufe (KLIMA_ZIEL) statt fest „über 60 % in der Blüte" — frühe und mittlere
+    // Blüte haben 65 %, der Eintrag meldete bei 62 % dort keine Warnung. Die Spanne gilt bei der mittleren Temperatur der
+    // Stufe; wie sie sich mit der eigenen Temperatur verschiebt, zeigt der Tageseintrag.
+    const _kSt = klimaStufe(p), _kZ = _kSt ? KLIMA_ZIEL[_kSt] : null;
+    if (_kZ && _kZ.deckel != null && last !== null && last > _kZ.deckel) {
+      return wrap(`Richtwert jetzt: <b>${pt.rhMin}–${pt.rhMax} % RLF</b>. <span style="color:var(--red)">Dein letzter Wert ${last} % — über ${_kZ.deckel} % ${_kZ.dativ} ist ${_kZ.bluete ? 'Schimmelrisiko' : 'Pilzrisiko'}. Luft bewegen, entfeuchten.</span>`);
     }
     return wrap(`Richtwert jetzt: <b>${pt.rhMin}–${pt.rhMax} % RLF</b>.${dev(last, pt.rhMin, pt.rhMax, ' %', 'recht trocken — die Pflanze schließt evtl. die Poren.', 'recht feucht — auf Luftbewegung achten.')}`);
   }

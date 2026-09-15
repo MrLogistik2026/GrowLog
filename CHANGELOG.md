@@ -2,6 +2,41 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-15 — v1.5.187
+
+- **Temperatur, Luftfeuchte und VPD bewerteten dieselbe Luft mit drei Fenstern, die sich widersprachen.** Befund der
+  zweiten Prüfrunde (VPD), an Patricks 86 Einträgen gemessen; Patricks Entscheidung vom 15.09.2026: Option B. Die
+  Spätblüte verlangte 1,4–1,6 kPa bei 18–24 °C und 40–50 % RLF — bei 18 °C geht das nur mit 11–20 % RLF. Im Eintrag
+  stand 44-mal eine grüne VPD-Pille über oranger Zielzeile, 13-mal „✓ Luft passt" über ⚠ (der Einsteiger-Kasten verglich
+  Etiketten, die `vpdZone` nie ausgab), 40-mal Temperatur ✓ und Luftfeuchte ✓ bei VPD ⚠. Beim Tippen zog nur die
+  Profi-Pille mit. Die Luftfeuchte-Warnung riet „SOFORT RLF unter 50% senken" und „Mittlere Blüte braucht RLF unter
+  55%", die frühe Blüte blieb bis 80 % still, und der Sämling unter der Haube bekam bei 74 % eine Warnung neben
+  „Sämling ✓".
+- **Warum das zählt:** Drei Antworten auf dieselbe Frage — man folgt der, die gerade passt, oder keiner. Bei dichten
+  Blüten kostet das die Ernte (`ANBAU.md` 13.5).
+- **Jetzt:** Eine Tabelle `KLIMA_ZIEL`. VPD-Band und Temperatur sind fest, die Luftfeuchte wird bei der gemessenen
+  Temperatur gerechnet (`klimaRlfFenster`), der Schimmel-Deckel ist hart. Späte Blüte, Spülen, IceFlush und Erntetag
+  haben das Band der mittleren Blüte (1,2–1,5 kPa, 22–26 °C); Schutz kommt über den Deckel von 60 % und die Nass-Stufe.
+  Frühe Blüte 1,0–1,3 kPa mit neuem Deckel 65 %. Ein Befund `klimaStatus` speist Pille, Einsteiger-Satz („Luft zu
+  feucht in der späten Blüte: Luftfeuchte auf 39–48 % bei 24 °C senken."), Zielzeilen, die Live-Anzeige beim Tippen,
+  die Luftfeuchte-Warnung (jetzt in voller Breite) und den Lexikon-Hinweis; `vpdZone` und `getPhaseTargets` lesen
+  dieselbe Tabelle. Die sanften Phasen-Hinweise in `getEntryWarnings` entfallen — sie doppelten die Zielzeilen mit
+  eigenen Toleranzen —, der Aktivkohlefilter-Hinweis ist eine Info und fehlt beim Sämling. Die Plus-Taste zählt bei
+  leerem Feld vom Platzhalter statt von fest 60 %. `ANBAU.md` 2.1, 2.2, 13.5 und 15 nachgezogen.
+- **Was Patrick an seinen Einträgen sieht:** frühe Blüte 16 im Ziel, 7 knapp, 4 zu feucht, einmal über dem neuen Deckel
+  (22.06., 28,6 °C / 68 %); mittlere Blüte 5 im Ziel, 5 knapp, 13 zu feucht (7 davon die Vorlagenwerte 24/55); späte
+  Blüte 13 im Ziel, 3 knapp, 1 zu feucht, dazu fünfmal „zu kühl" (die Vorlagenwerte 21/40). Mehr Meldungen als vorher
+  — gewollt, denn vorher stand dort eine grüne Pille.
+- **Bewusst noch nicht geändert:** der Klimafaktor der Gießmenge. `_vpdFaktorBand` hält die bisherigen Bänder, sonst
+  wäre die Gießmenge in der Spätblüte nebenbei um bis zu 12 % gesprungen; er wird mit dem Gießmengen-Umbau ersetzt
+  (Transpirationskurve nach Oren et al. 1999). Ebenfalls offen: VPD-Diagramm, feste Klimazahlen in Lexikon, Tipps und
+  Diagnose-Texten, der Diagnose-Kontext „Luftfeuchte hoch" — die nächsten Versionen.
+- `test_klimaziel.js` (32 Prüfungen, beide Zeitzonen): Tabelle; Fenster gegen eine unabhängige Magnus-Rechnung; ein
+  Raster aus 180 225 Punkten ohne Widerspruch zwischen Fenster und Befund; zwölf Befunde; fünf Sätze; Zielwerte;
+  Warnung; Eintrag mit Patricks Werten samt Live-Tippen; alle 86 Klimatage; unveränderte Gießmenge; Eintrags-Warnungen;
+  Quelltext. Gegen den alten Stand: 14 Fehler. Bewusst angepasst: `test_bluetestufen.js` (VPD 1,3 liegt jetzt im Band
+  der späten Blüte) und `test_trocknungsklima.js` (Anzucht-Gegenprobe: 0,60 heißt „Zu feucht").
+
 ## 2026-09-15 — v1.5.186
 
 - **„Tag automatisch ausfüllen" trug Temperatur und Luftfeuchte ein, die niemand gemessen hat.** Befund der zweiten
