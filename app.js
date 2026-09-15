@@ -3420,7 +3420,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.191';
+const APP_VERSION = 'v1.5.192';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -25582,8 +25582,8 @@ function renderEntry(iso) {
         <div style="flex:1">
           <div style="font-size:12px;font-weight:700;color:#c084fc">Pitch-Black-Dunkelphase · Tag ${dayInIce}/${totalIceDays}</div>
           <div style="font-size:11px;color:var(--text-sub);line-height:1.45;margin-top:2px">${isLastIceDay
-            ? 'Letzter Dunkel-Tag. Ernte morgen früh beim Lichtangang — nicht warten, jede Stunde kostet Terpene.'
-            : 'KEIN Wasser, KEIN Licht, Zelt nicht öffnen. Pflanze produziert auf Hochtouren Trichome. Geduld!'}</div>
+            ? 'Letzter Dunkel-Tag. Ernte morgen früh vor dem Lichtangang, solange das Zelt kühl ist.'
+            : 'Kein Wasser. Luftfeuchte im Blick behalten: höchstens ' + KLIMA_ZIEL.dunkel.deckel + ' %. Einen Wirkstoff-Schub durch die Dunkelheit gibt es nicht — es geht um einen kühlen Schnitt.'}</div>
         </div>
       </div>`;
     }
@@ -32643,30 +32643,32 @@ const LEXIKON = [
         '<b>3. Was NICHT belegt ist.</b> Verbreitet ist die Aussage, die Dunkelphase steigere THC oder die Trichom-Dichte („5–10 % mehr THC"). Dafür gibt es <b>keinen Nachweis</b>. Der Grund, es trotzdem zu tun, liegt oben unter Punkt 1 und in der Ernte selbst: kühl und dunkel schneiden erhält Aroma. Wer die Dunkelphase weglässt, verliert nichts an Wirkstoff.<br><br>' +
         '<b>Kombination mit IceFlush:</b> Beides zusammen ist üblich — erst der IceFlush, dann Licht aus. Ein darüber hinausgehender „Synergie-Effekt" ist allerdings nicht belegt; für den IceFlush selbst gibt es keinen nachgewiesenen Trichom-Effekt (siehe dort).',
       practice: '<b>Dauer:</b><br>' +
-        '• <b>24 h:</b> Minimum, klar messbarer Terpen-Erhalt<br>' +
-        '• <b>36 h:</b> guter Kompromiss aus Effekt und Schimmelrisiko (besonders nach IceFlush)<br>' +
-        '• <b>48–72 h:</b> Maximum, mehr bringt nichts und erhöht Schimmelrisiko<br><br>' +
+        '• <b>24 h:</b> reicht, damit der Schnitt vor dem Lichtangang in einem kühlen Zelt passiert<br>' +
+        '• <b>36 h:</b> üblich — länger heißt vor allem länger Schimmelrisiko (besonders nach dem IceFlush)<br>' +
+        '• <b>48–72 h:</b> ohne belegten Zusatznutzen, das Schimmelrisiko wächst mit jedem Tag<br><br>' +
         '<b>Setup:</b><br>' +
-        '1. Lampe komplett aus, Zelt absolut lichtdicht (auch kleine Lecks an Reißverschluss prüfen — UV-Restlicht reicht für Terpen-Abbau)<br>' +
-        '2. Zelt nicht öffnen, nicht reinleuchten — auch nicht mit Handy-Licht oder Stirnlampe. Kurze Lichtimpulse können den Effekt zunichte machen<br>' +
+        '1. Lampe aus. Ein lichtdichtes Zelt ist hier kein Muss — um einen Wirkstoff-Effekt der Dunkelheit geht es nicht, der ist nicht belegt; es geht um einen kühlen Schnitt<br>' +
+        '2. Zum Nachsehen darfst du kurz Licht machen — es gibt keinen belegten Effekt, den das zunichtemacht. Wichtiger ist, dabei die Luftfeuchte zu prüfen<br>' +
         '3. <b>Temperatur</b>: kühler schont Terpene — aber nur so weit, wie die Luftfeuchte höchstens ' + KLIMA_ZIEL.dunkel.deckel + ' % bleibt. Beim Abkühlen steigt sie von selbst: 24 °C / 50 % werden bei 20 °C zu rund 64 %<br>' +
         '4. <b>Luftfeuchte höchstens ' + KLIMA_ZIEL.dunkel.deckel + ' %</b> — die Blüten sind jetzt am dichtesten, darüber kann Botrytis keimen. Entfeuchter weiterlaufen lassen<br>' +
         '5. <b>Lüfter weiterhin laufen</b> lassen — Luftbewegung gegen Schimmel, Klima-Kontrolle aufrecht<br>' +
         '6. <b>Kein Wasser mehr</b> in dieser Phase (Hard Dryback ist eh schon erreicht)<br><br>' +
         '<b>Erntezeitpunkt am Ende der Dunkelphase:</b><br>' +
         '• <b>Direkt vor dem geplanten Lichtangang</b> ernten — ohne die Lampe wieder anzuschalten<br>' +
-        '• Cannabinoide und Terpene sind nachts maximal in den Buds konzentriert (Pflanze hat hochgepumpt, Verdunstung minimal)<br>' +
-        '• Mit gedämpfter grüner LED-Stirnlampe arbeiten (grünes Licht wird von der Pflanze nicht photosynthetisch verarbeitet) oder bei sehr schwachem Außenlicht — wenn das nicht möglich ist, normale Lampe akzeptabel, aber schnell arbeiten',
+        // (v1.5.192) Vorher: „Cannabinoide und Terpene sind nachts maximal konzentriert (Pflanze hat hochgepumpt)" und
+        // „grünes Licht wird nicht photosynthetisch verarbeitet". Beides falsch bzw. unbelegt (ANBAU.md 14; Terashima 2009).
+        '• Warum früh: Das Zelt ist noch kühl, und Terpene verdunsten bei Wärme und Licht schneller. Dass die Pflanze nachts Cannabinoide „hochpumpt", ist nicht belegt<br>' +
+        '• Zum Arbeiten reicht normales Licht — an diesem Tag stört es nichts mehr. Grünes Licht wird übrigens sehr wohl für die Photosynthese genutzt; es dringt sogar tiefer ins Blatt als rotes (Terashima et al. 2009)',
       pitfall: '<b>Hauptrisiken:</b><br>' +
-        '• <b>Schimmelfalle:</b> Bei zu hoher RLF (>60%) in dichten Buds bildet sich Botrytis innerhalb von 24 h. Pflanze hat nicht mehr die Aktivität sich zu wehren. Hygrometer im Zelt PFLICHT, am besten mit Datenlogger<br>' +
-        '• <b>Lichtlecks:</b> Zelt-Reißverschluss, Abluft-Schlauch, Türritzen — auch kleinste Lichtquellen werden von der Pflanze registriert. Bei Verdacht: Taschenlampe-Test mit jemandem draußen, der die Lichtquellen schwenkt während du im Zelt bist<br>' +
+        '• <b>Schimmelfalle:</b> Über ' + KLIMA_ZIEL.dunkel.deckel + ' % Luftfeuchte kann Botrytis in den dichten Blüten keimen und sie binnen Tagen zerstören. Hygrometer im Zelt PFLICHT, am besten mit Datenlogger<br>' +
+        '• <b>Lichtlecks</b> sind in den letzten Tagen vor der Ernte kein Risiko mehr — wichtig sind sie während der Blüte photoperiodischer Sorten, dort muss die Nacht wirklich dunkel sein<br>' +
         '• <b>Zu lange:</b> Über 72 h kein Mehrwert, aber höheres Schimmelrisiko und Welken der Buds<br><br>' +
         '<b>Häufige Fehler:</b><br>' +
-        '• Lampe nochmal kurz anmachen „nur zum Schauen" → Effekt zerstört<br>' +
+        '• Aus Sorge ums Licht nicht ins Zelt schauen → Schimmel bleibt unentdeckt<br>' +
         '• Zelt stark abgekühlt, ohne zu entfeuchten → die Luftfeuchte steigt über ' + KLIMA_ZIEL.dunkel.deckel + ' %, Schimmelfalle<br>' +
         '• Lüfter abgeschaltet weil „Pflanze schläft" → keine Luftbewegung = Schimmel<br>' +
-        '• Mittags ernten statt früh morgens → Terpen-Konzentration schon gefallen<br><br>' +
-        '<b>Wer skeptisch ist:</b> Der Effekt der Dunkelphase ist klein und in Studien teilweise widersprüchlich nachgewiesen. Manche Grower überspringen sie ganz — das ist legitim. Wenn die Bedingungen unsicher sind (zu warmes oder feuchtes Zelt), <b>besser weglassen</b> als Schimmel zu riskieren.' },
+        '• Erst mittags schneiden, wenn das Zelt schon warm ist → mehr Terpene verdunsten<br><br>' +
+        '<b>Wer skeptisch ist:</b> Ein Wirkstoff-Effekt der Dunkelphase ist nicht nachgewiesen. Manche Grower überspringen sie ganz — das ist legitim. Wenn die Bedingungen unsicher sind (zu warmes oder feuchtes Zelt), <b>besser weglassen</b> als Schimmel zu riskieren.' },
     { t: 'Wet Trim vs. Dry Trim',
       brief: 'Sofort nach dem Schnitt trimmen oder erst nach der Trocknung? Standard ist Dry Trim — schützt Trichome und Aroma, dauert aber länger.',
       mechanism: '<b>Wet Trim</b> bedeutet: Direkt nach dem Schnitt werden alle Sugar Leaves abgeschnitten, dann werden die <b>nackten, feuchten Buds</b> aufgehängt oder auf Netzen ausgelegt. Trocknet schneller (5–8 Tage) weil keine Blattmasse als Feuchtigkeits-Buffer wirkt.<br><br>' +
@@ -32784,10 +32786,10 @@ const LEXIKON = [
       // Lexikon-Text versprach „5–20 % mehr Trichome". Die Anthocyan-Färbung bleibt
       // beschrieben: Kälteinduzierte Anthocyane sind belegte Pflanzenphysiologie.
       brief: 'Crushed Ice am Topfrand verteilen, 1–2 Tage vor der Ernte. Beliebte Grower-Technik; bei Genetiken mit Anthocyan-Anlage entstehen dabei lila Farben. Ein Trichom-Plus ist wissenschaftlich nicht belegt.',
-      mechanism: 'Schmelzendes Eis kühlt die Wurzelzone langsam auf etwa 8–12 °C ab. Die Pflanze interpretiert diesen Temperatursturz als <b>nahenden Winter</b> und schaltet auf Notfall-Modus:<br>• <b>Anthocyan-Produktion</b> hoch (Frostschutz-Pigmente, sichtbar als lila/violette Verfärbung — nur bei Genetiken mit Anthocyan-Anlage)<br>• <b>Salze werden ausgespült</b>, da das Schmelzwasser durch das Substrat zieht<br><br><b>Was NICHT belegt ist:</b> Der oft genannte „letzte Trichom-Schub". Kontrollierte Vergleiche dazu gibt es nicht; die kursierenden Zahlen (5–20 % mehr Trichome) stammen aus Erfahrungsberichten, nicht aus Messungen. Wer den IceFlush machen will, soll ihn machen — die App plant ihn sauber ein. Sie verspricht dir dafür aber nichts.<br><br>Wichtig: Crushed Ice schmilzt <b>langsam und gleichmäßig</b>. Eiswürfel sind zu kompakt (lokal zu kalt), Eisblöcke zu langsam, einfach kaltes Wasser kühlt zu schnell wieder ab. Die graduelle Temperaturabsenkung über 4–6 h ist biologisch wirksamer als ein Schock.',
+      mechanism: 'Schmelzendes Eis kühlt die Wurzelzone am Topfrand für einige Stunden ab — wie weit, hängt von Topf, Substrat und Raum ab; gemessen hat es die App nicht. Bei Genetiken mit Anthocyan-Anlage kann Kälte die lila Färbung verstärken (siehe „Anthocyane"). Das Schmelzwasser bleibt im abgetrockneten Topf: Es läuft kein Drain, also wird auch nichts ausgespült.<br><br><b>Was NICHT belegt ist:</b> Der oft genannte „letzte Trichom-Schub". Kontrollierte Vergleiche dazu gibt es nicht; die kursierenden Zahlen (5–20 % mehr Trichome) stammen aus Erfahrungsberichten, nicht aus Messungen. Wer den IceFlush machen will, soll ihn machen — die App plant ihn sauber ein. Sie verspricht dir dafür aber nichts.<br><br>Wichtig: Crushed Ice schmilzt <b>langsam und gleichmäßig</b>. Eiswürfel sind zu kompakt (lokal zu kalt), Eisblöcke zu langsam, einfach kaltes Wasser kühlt zu schnell wieder ab. Einen gemessenen Vorteil der einen oder anderen Form gibt es nicht.',
       practice: '<b>Voraussetzungen vor dem IceFlush:</b><br>' +
         '• Trichome 80–95% milchig (mit Lupe geprüft, max. 10% Bernstein)<br>' +
-        '• <b>Hard Dryback</b>: Topf 2–3 Tage vorher auf ~35% Restgewicht trocknen lassen — trockenes Substrat absorbiert das Schmelzwasser langsamer und gleichmäßiger. Volles Substrat würde das Eiswasser durchspülen, Kontaktzeit zu kurz<br>' +
+        '• <b>Hard Dryback</b>: Topf 2–3 Tage vorher auf ~35% Restgewicht trocknen lassen — trockenes Substrat absorbiert das Schmelzwasser langsamer und gleichmäßiger. Volles Substrat würde das Schmelzwasser als Drain durchlaufen lassen<br>' +
         '• Letzter regulärer Guss vor dem Dryback nur mit CalMag (0.2 ml/L), kein Vollnährstoff<br>' +
         '• Drain EC vom letzten Spülen ≤ 0.4 mS/cm bestätigt (Salze raus)<br><br>' +
         '<b>Menge & Setup:</b><br>' +
@@ -32798,18 +32800,18 @@ const LEXIKON = [
         '1. Eis <b>am Topfrand entlang</b> verteilen — wie ein Ring um den Stamm<br>' +
         '2. NICHT auf den Stamm, NICHT in die Mitte (lokaler Schock kann den Stamm schädigen)<br>' +
         '3. 4–6 h schmelzen lassen, Zelt nicht öffnen<br>' +
-        '4. Nach dem Schmelzen Drain-EC messen — sollte < 0.4 sein<br>' +
+        '4. Kein Drain erwartet — das Schmelzwasser bleibt im abgetrockneten Topf, eine Drain-EC-Messung gibt es hier nicht<br>' +
         '5. Licht ausschalten → 24–36 h Dunkelphase startet<br>' +
         '6. Ernte am Folgetag beim Lichtangang<br><br>' +
-        '<b>Kombination Dunkelphase:</b> Iceflush + 24–36 h Pitch-Black ergeben einen Synergie-Effekt — die Pflanze wechselt komplett auf Notfall-Stoffwechsel, alle Reserven gehen in die Blüten. Ohne Lichtwärme bleiben Terpene länger stabil.',
+        '<b>Kombination Dunkelphase:</b> Beides zusammen ist üblich. Ein Synergie-Effekt ist nicht belegt; belegt ist nur, dass Terpene ohne Licht und Wärme langsamer verdunsten.',
       pitfall: '<b>Was schiefgehen kann:</b><br>' +
-        '• <b>Wurzeltemperatur unter 5 °C</b> = echter Schaden, Wurzeln können absterben. 1L pro 11L-Topf bleibt sicher im 8–12°C-Bereich. Mehr Eis ≠ besser.<br>' +
-        '• <b>IceFlush bei zu klaren Trichomen</b> = Stress ohne Vorteile, die Pflanze ist noch nicht bereit den Effekt zu nutzen<br>' +
-        '• <b>Voller Topf statt Hard Dryback</b> = Schmelzwasser läuft schnell durch, Kontaktzeit zu kurz<br>' +
+        '• <b>Mehr Eis ≠ besser</b> — je kälter die Wurzelzone, desto größer das Risiko für die Wurzeln. Die Temperatur im Topf bei 1 L je 11-L-Topf hat niemand gemessen; wer es wissen will, steckt ein Thermometer an den Rand<br>' +
+        '• <b>IceFlush bei zu klaren Trichomen</b> = zu früh geerntet; der IceFlush macht die Trichome nicht reifer<br>' +
+        '• <b>Voller Topf statt Hard Dryback</b> = Schmelzwasser läuft als Drain durch, der Topf bleibt nass<br>' +
         '• <b>Eis auf den Stamm</b> = lokaler Frostschock, kein Effekt in der Wurzelzone<br>' +
-        '• <b>Bei rein grünen Genetiken</b>: lila Verfärbung passiert nicht (Anthocyan-Anlage fehlt), aber der Trichom-Effekt funktioniert trotzdem<br>' +
-        '• <b>Auto-Bewässerung weiter aktiv</b> — sofort abschalten vor dem IceFlush, sonst kein Effekt<br><br>' +
-        'IceFlush ist ein <b>finaler Schritt</b>, nicht Standard. Wer es nicht machen will, ernten ohne ist genauso valide — der Effekt liegt im Bereich „nice to have", nicht „pflicht für gute Ernte".' },
+        '• <b>Bei rein grünen Genetiken</b>: lila Verfärbung passiert nicht (Anthocyan-Anlage fehlt); einen Trichom-Effekt gibt es auch dann nicht<br>' +
+        '• <b>Auto-Bewässerung weiter aktiv</b> — sofort abschalten vor dem IceFlush, sonst läuft Wasser nach und der Topf wird nass<br><br>' +
+        'IceFlush ist ein <b>finaler Schritt</b>, nicht Standard. Wer es nicht machen will, ernten ohne ist genauso valide — ein Qualitätsgewinn ist nicht belegt.' },
     { t: 'Wurzelschnitt (Splitting)',
       brief: 'Stamm spalten oder Wurzeln verletzen 48–72 h vor der Ernte. Stress-Maximum für angeblichen Harz-Push. Wissenschaftlich umstritten, hohes Risiko.',
       mechanism: 'Zwei Varianten dieser umstrittenen Technik:<br><br>' +
@@ -32846,8 +32848,8 @@ const LEXIKON = [
   { cat: '🍂 Nach der Ernte', items: [
     { t: 'Erntetag — Schnitttechnik',
       brief: 'Wann und wie wird tatsächlich geschnitten. Früh morgens bei Lichtangang, Pflanze für Pflanze, Schere desinfiziert, Buds nicht anfassen.',
-      mechanism: 'Der Erntemoment selbst entscheidet über das <b>Terpen-Profil</b> des Endprodukts. Terpene sind <b>flüchtige Verbindungen</b> die bei Wärme und Licht verdampfen. Die kühlste Phase im 24h-Zyklus ist die letzte Stunde vor Lichtangang — dann sind Cannabinoide und Terpene maximal in den Buds konzentriert (Pflanze hat über Nacht hochgepumpt, Verdunstung war minimal).<br><br>' +
-        'Sobald die Lampe angeht oder draußen die Sonne aufgeht, beginnt die Pflanze wieder Wasser zu verdampfen — und mit dem Wasser auch Terpene. Jede Stunde Verzögerung nach Lichtangang kostet messbar Aroma. Daher: <b>Ernte beim Lichtangang, sofort starten</b>. Idealerweise Lampe an um z.B. 6 Uhr, Schnitt ab 6:01.<br><br>' +
+      mechanism: 'Der Erntemoment selbst entscheidet über das <b>Terpen-Profil</b> des Endprodukts. Terpene sind <b>flüchtige Verbindungen</b> die bei Wärme und Licht verdampfen. Die kühlste Phase im 24h-Zyklus ist die letzte Stunde vor Lichtangang — dann verdunsten am wenigsten Terpene. Dass die Pflanze über Nacht Cannabinoide oder Terpene „hochpumpt", ist nicht belegt.<br><br>' +
+        'Sobald die Lampe angeht oder draußen die Sonne aufgeht, wird es wärmer, und Terpene verdunsten bei Wärme und Licht schneller. Wie viel Aroma eine Stunde kostet, ist nicht gemessen — die Richtung ist aber klar. Daher: <b>Ernte beim Lichtangang, sofort starten</b>. Idealerweise Lampe an um z.B. 6 Uhr, Schnitt ab 6:01.<br><br>' +
         'Die Schnitttechnik beeinflusst, wie schnell die Buds ins Trockenklima kommen. Je <b>kürzer die Zeit zwischen Schnitt und Aufhängen</b>, desto weniger Terpene gehen verloren. Daher: eine Pflanze nach der anderen, direkt vom Schnitt ins Trockenzelt.',
       practice: '<b>Vorbereitung am Vorabend:</b><br>' +
         '• Schere mit <b>Isopropanol</b> desinfizieren, trocken wischen, eine Reserve-Schere bereitlegen<br>' +
@@ -33283,7 +33285,7 @@ const LEXIKON = [
       practice: '<b>Diagnose:</b><br>• Violette/rote Stängel und Blattadern<br>• Blätter hängen, langsames Wachstum<br>• Untere Blätter werden lila bis purpur<br>• Wurzelzone unter 16 °C — Topf auf kaltem Boden, kaltes Gießwasser — oder nachts deutlich kühle Luft<br><br><b>⚠ Wichtige Unterscheidung:</b> Violette Färbung am <b>Ende der Blüte</b> kann <b>genetisch gewollt</b> sein (Anthocyan-Aktivierung bei kühlen Nächten — siehe Eintrag „Anthocyane"). In der <b>Veg-Phase oder früher Blüte</b> ist es <b>fast immer ein Warnsignal</b>.<br><br><b>Lösungen:</b><br>1. <b>Heizmatte</b> unter den Topf (5-10 € im Aquaristik-Bedarf) — Wurzelraum auf 20-22 °C<br>2. <b>Raumheizung</b> im Außenraum, Zelt indirekt aufwärmen<br>3. <b>Wassertemperatur</b> beachten — Gießwasser nicht unter 18 °C<br>4. Im Winter: Zelt isolieren (Styropor-Platten an Außenwänden)',
       pitfall: 'Im Winter bei kaltem Keller wird Heizung schnell teuer. Kältester Punkt im Zelt: der Topfboden auf kaltem Boden. Heizmatte ist effizienter als Raumheizung. Auch: Wenn Zelt im unbeheizten Schuppen → erst gar nicht versuchen, Cannabis braucht Mindesttemperaturen.' },
     { t: 'Schimmel (Botrytis)',
-      brief: 'Grauschimmel in dichten Blüten — der gefürchtetste Ernte-Killer. Tötet Buds in 24h. Wenn du es siehst, ist es zu spät für diesen Bud. Prävention ist die einzige verlässliche Methode.',
+      brief: 'Grauschimmel in dichten Blüten — der gefürchtetste Ernte-Killer. Zerstört Blüten binnen Tagen. Wenn du es siehst, ist es zu spät für diesen Bud. Prävention ist die einzige verlässliche Methode.',
       mechanism: '<b>Botrytis cinerea</b> ist ein <b>nekrotropher Pilz</b> — er befällt geschwächtes oder totes Pflanzenmaterial und breitet sich von dort aus. In Cannabis-Buds siedelt er sich vorzugsweise an alten Blättern an, die in dichten Bud-Strukturen eingewachsen sind und dort zwischen den Blütenhärchen erhöhte Feuchte schaffen.<br><br>' +
         '<b>Wachstums-Richtung:</b> Botrytis wächst <b>von innen nach außen</b> im Bud. Bis du ihn an der Oberfläche siehst, hat er den Bud-Kern bereits zerstört. Das ist der Grund warum frühe Diagnose so schwer und Prävention so wichtig ist.<br><br>' +
         '<b>Lebensdauer der Sporen:</b> Botrytis-Sporen überleben <b>jahrelang</b> in jedem Material — Zelt-Wänden, Substrat-Resten, Luftfilter, sogar trockenen Pflanzenresten. Einmal im Zelt eingenistet, ist er schwer wieder loszuwerden.<br><br>' +

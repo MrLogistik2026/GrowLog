@@ -2,6 +2,30 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-15 — v1.5.192
+
+- **Um IceFlush, Dunkelphase und Ernte standen Zusagen, die `ANBAU.md` 14 als unbelegt führt.** Lexikon „Dunkelphase vor
+  der Ernte" und „Erntetag — Schnitttechnik": „Cannabinoide und Terpene sind nachts maximal in den Buds konzentriert
+  (Pflanze hat hochgepumpt)", „jede Stunde Verzögerung kostet messbar Aroma", „kurze Lichtimpulse können den Effekt
+  zunichte machen", der Effekt sei „in Studien teilweise widersprüchlich nachgewiesen". Lexikon „IceFlush": Die Pflanze
+  „interpretiert den Temperatursturz als nahenden Winter", IceFlush und Dunkelheit „ergeben einen Synergie-Effekt — alle
+  Reserven gehen in die Blüten", bei grünen Genetiken „funktioniert der Trichom-Effekt trotzdem". Das Banner in der
+  Dunkelphase: „Pflanze produziert auf Hochtouren Trichome. Geduld!"
+- **Dazu Physik, die nicht aufging:** „Salze werden ausgespült, da das Schmelzwasser durch das Substrat zieht" und „nach
+  dem Schmelzen Drain-EC messen — sollte < 0,4 sein" — beim IceFlush in den abgetrockneten Topf läuft gerade kein Drain,
+  dafür ist der Hard-Dryback da. „Grünes Licht wird von der Pflanze nicht photosynthetisch verarbeitet" — es treibt die
+  Photosynthese und dringt tiefer ins Blatt als rotes (Terashima et al. 2009, Plant Cell Physiol 50:684). Zahlen ohne
+  Messung: die Wurzelzone bleibe bei 1 L Eis „sicher im 8–12-°C-Bereich", Botrytis „tötet Buds in 24 h".
+- **Warum das zählt:** Die App plant IceFlush und Dunkelphase sauber ein, weil Grower sie machen wollen — eine Wirkung
+  versprechen darf sie dafür nicht (`ANBAU.md` 14). Und wer nach dem IceFlush den Drain-EC messen will, wartet auf
+  Wasser, das nicht kommt.
+- **Jetzt:** Die Texte sagen, was belegt ist: Terpene verdunsten bei Wärme und Licht schneller, deshalb kühl und früh
+  schneiden; ein Wirkstoff- oder Trichom-Effekt ist nicht belegt; das Schmelzwasser bleibt im Topf. In der Dunkelphase
+  darf man zum Nachsehen kurz Licht machen — wichtiger ist die Luftfeuchte, das Banner nennt den Deckel von 60 %.
+- `test_iceflushzusagen.js` (12 Prüfungen, beide Zeitzonen): Lexikon „Dunkelphase vor der Ernte", „IceFlush",
+  „Erntetag — Schnitttechnik" und „Schimmel (Botrytis)", das Banner am mittleren und am letzten Dunkeltag, Quelltext.
+  Gegen den alten Stand: 9 Fehler.
+
 ## 2026-09-15 — v1.5.191
 
 - **Das Lexikon erklärte die Tag-Nacht-Differenz verkehrt herum.** „Temperatur": „hohe Differenz = stauchere Pflanze,
