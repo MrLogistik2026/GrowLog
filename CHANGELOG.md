@@ -2,6 +2,25 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-15 — v1.5.173
+
+- **Die Trichom-Karte zeigte „✅ Erntereif!" nach einer festen Zahl, die weder zur eigenen Reife-Regel noch zum
+  Bernstein-Ziel passte.** Beim Abarbeiten von v1.5.172 gesehen. Die Bedingung war „milchig ≥ 60 % und
+  Bernstein ≥ 10 %". Dieselbe Karte rechnet seit v1.5.40 mit „milchig-dominant = Klar ≤ 10 %"
+  (`RIPE_CLEAR_DONE`) und mit dem Bernstein-Ziel aus den Einstellungen (`_targetAmber`, Patrick 5 %).
+  Nachgestellt an Tag 104:
+  - 25 % klar, 62 % milchig, 13 % Bernstein → „✅ Erntereif!". Ein Viertel der Trichome unfertig — nach
+    `ANBAU.md` 11 der teuerste Fehler, weil er sich nicht mehr korrigieren lässt.
+  - 8 % klar, 6 % Bernstein bei Ziel 5 % → nur „⏳ Fast bereit".
+  - Ziel 15 %, 5 % klar, 10 % Bernstein → „✅ Erntereif!", obwohl das eigene Ziel nicht erreicht war.
+- **Jetzt:** „✅ Erntereif — kaum noch klare Trichome, dein Bernstein-Ziel (X %) ist erreicht", wenn Klar ≤ 10 %
+  und das eigene Ziel erreicht ist. „✅ Milchig-dominant — reif · Bernstein X % von deinem Ziel Y %", wenn Klar
+  ≤ 10 % ist, das Ziel aber noch nicht. „Fast bereit" und „Noch zu viel klar" bleiben wie bisher.
+- **Nicht angefasst:** Welche Erntezahl vorne steht (Kopfzeile, Startseite, Endspurt) — das ist der Umbau aus der
+  Agenten-Runde zum Erntefenster und Patricks Entscheidung.
+- `test_erntereif.js` (6 Prüfungen, beide Zeitzonen): vier Wertelagen in der gerenderten Karte an Tag 104,
+  dazu der Quelltext. Gegen den alten Stand: 5 Fehler.
+
 ## 2026-09-15 — v1.5.172
 
 - **Dreizehn Stellen knüpften die Ernte an eine feste Bernstein-Menge oder erklärten Bernstein zum Optimum.**
