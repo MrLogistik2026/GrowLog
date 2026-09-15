@@ -2,6 +2,23 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-15 — v1.5.213
+
+- **Keimung: eine Zahlenbasis statt widersprüchlicher Angaben.** Befund der Keimungs-Prüfung (Schritte 1, 2, 10, 11), offen seit
+  v1.5.168: Keimungskarte, Anleitung und Lexikon nannten verschiedene Zahlen für dieselbe Sache — Keimwurzel beim Einsetzen
+  2–3 mm, 2–5 mm oder „~0,5–1 cm", Wasserglas höchstens 32 oder 48 Stunden, der Keimling nach 3–7 Tagen, 5–10 Tagen oder
+  „Tag 3–5", Saattiefe 5 mm oder 1 cm, Temperatur 22–25 oder 24–26 °C.
+- **Mechanismus und Belege** (am Abstract geprüft): Hanf keimt bei 19–30 °C gut; bei 22–26 °C zeigt sich die Keimwurzel im
+  Median nach 23–37 Stunden (Geneve et al. 2022), aus 1 cm Tiefe durchbricht der Keimling die Erde nach 3,3–3,9 Tagen (Lisson et
+  al. 2000). Unter Wasser fehlt der Keimwurzel Sauerstoff, und nach dem Durchbruch ist sie nicht mehr austrocknungsfest (Pereira
+  et al. 2018). Deshalb: im Wasserglas 12–24 Stunden, nie länger; einsetzen bei 2–5 mm Keimwurzel; 0,5–1 cm tief, nie tiefer als
+  2 cm; der Keimling kommt meist an Tag 4–7, nachsehen erst ab Tag 10 (Konvention). Die Temperatur kommt aus
+  `KLIMA_ZIEL.saemling` (22–26 °C).
+- **Jetzt:** `KEIMUNG` ist die einzige Quelle für Keimungskarte (`GERM_GUIDES`), Anleitung für den ersten Grow und Lexikon
+  „Keimung". Gestrichen, weil nicht belegt (`ANBAU.md` 14): Keimraten je Methode, „Temperaturschock senkt die Keimrate
+  drastisch", pH 6,8–7,0 als ideal, Aloe als Keim-Booster, „Osmose", „Haube Pflicht für 70–80 %".
+- `test_keimung.js` (22 Prüfungen, beide Zeitzonen).
+
 ## 2026-09-15 — v1.5.212
 
 - **Die Trichom-Karte urteilt nur über eine Messung von heute.** Befund der Erntefenster-Prüfung (Schritt 1): Die Zeile

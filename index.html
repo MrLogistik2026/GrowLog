@@ -1047,6 +1047,15 @@ const PROD_COLORS = ['#4caf70','#5aabf0','#e8884a','#b06ac8','#f0d050','#e06060'
 // (IceFlush-Karte, Notiz), 15–18 °C/50 % als „Sweet Spot“ (Lexikon) und 18 °C/60 % (Notiz). Richtwert
 // nach ANBAU.md 12.1; 50–54 % sind dort ein bewusster Tausch, kein besserer Wert.
 const TROCKNEN_KLIMA = { tMin: 18, tMax: 20, rhMin: 55, rhMax: 62 };
+// (v1.5.213) KEIMUNG — eine Zahlenbasis für alle Keimungs-Texte (Keimungskarte, Anleitung, Lexikon). Vorher widersprachen sich die
+// Stellen: Keimwurzel beim Einsetzen 2–3 / 2–5 mm / 0,5–1 cm, Wasserglas höchstens 32 / 48 h, Keimling nach 3–7 / 5–10 Tagen bzw.
+// „Tag 3–5", Saattiefe 5 mm / 1 cm. Belege, geprüft am Abstract: Hanf keimt optimal bei 19–30 °C, Wärmesumme 694 °C·h bis 50 % —
+// bei 22–26 °C also 23–37 h bis zur Keimwurzel (Geneve et al. 2022, Crops 2:415); Auflaufen aus 1 cm bei 22–26 °C nach 3,3–3,9
+// Tagen (Lisson et al. 2000, Aust J Exp Agric 40:405). Unter Wasser fehlt der Keimwurzel Sauerstoff; nach dem Durchbruch ist sie
+// nicht mehr austrocknungsfest (Pereira et al. 2018). Saattiefe etwa zweimal die Samenbreite (UC IPM). Konvention: höchstens 2 cm
+// tief, nachsehen erst ab Tag 10. Die Temperatur kommt aus KLIMA_ZIEL.saemling.
+const KEIMUNG = { glasStdVon: 12, glasStdBis: 24, wurzelTageVon: 1, wurzelTageBis: 3, wurzelTageAufgeben: 7, wurzelMmVon: 2, wurzelMmBis: 5,
+  tiefeCmVon: 0.5, tiefeCmBis: 1, tiefeCmMax: 2, auflaufenVon: 4, auflaufenBis: 7, nachsehenAbTag: 10 };
 const TROCKNEN_TEXT = `${TROCKNEN_KLIMA.tMin}–${TROCKNEN_KLIMA.tMax} °C, ${TROCKNEN_KLIMA.rhMin}–${TROCKNEN_KLIMA.rhMax} % RLF`;
 // Wie viel Prozent der Gießmenge unten ankommen sollen — Begründung bei drainAdjust (v1.5.112, ANBAU.md 5.1).
 // (v1.5.153) Hier oben, weil auch die Symptom-Liste beim Laden die Zahl braucht; drei Texte nannten noch ~10 %.
@@ -4459,7 +4468,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.212';
+const APP_VERSION = 'v1.5.213';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -7649,17 +7658,17 @@ const FIRST_GROW_STEPS = [
       <p><b>Heute ist Tag 1.</b> Leg jetzt in der App einen neuen Zyklus mit heutigem Startdatum an. Ab dem Keimstart zählt auch die Wochen-Angabe auf der Samentüte.</p>
       <p><b>Variante A — Wasserglas (einfach):</b></p>
       <ul>
-        <li>Samen in ein Glas lauwarmes Wasser legen</li>
-        <li>12 Stunden warten — Samen sollten absinken</li>
-        <li>Fertig, wenn eine kleine weiße Wurzelspitze rausschaut</li>
+        <li>Samen in ein Glas Wasser mit Zimmertemperatur legen, dunkel stellen</li>
+        <li>Nach ${KEIMUNG.glasStdVon}–${KEIMUNG.glasStdBis} Stunden herausnehmen — auch ohne Wurzel: in die Erde oder ins Tuch</li>
+        <li>Nie länger im Wasser: Wächst die Keimwurzel unter Wasser, fehlt ihr Sauerstoff</li>
       </ul>
-      <p><b>Variante B — Küchentuch (sicherer):</b></p>
+      <p><b>Variante B — Küchentuch (du siehst die Wurzel):</b></p>
       <ul>
         <li>Zwei feuchte Küchentücher in einen Teller</li>
         <li>Samen dazwischen, Teller in den Schrank (dunkel, warm)</li>
-        <li>Täglich prüfen, feucht halten — nicht nass</li>
+        <li>Morgens und abends prüfen, feucht halten — nicht nass</li>
       </ul>
-      <p><b>Typischer Fehler:</b> Zu lange warten. Sobald 2–5 mm Wurzel sichtbar — rein in die Erde.</p>
+      <p><b>Typischer Fehler:</b> Zu lange warten. Sobald ${KEIMUNG.wurzelMmVon}–${KEIMUNG.wurzelMmBis} mm Wurzel sichtbar — rein in die Erde.</p>
     `,
   },
   {
@@ -7670,12 +7679,12 @@ const FIRST_GROW_STEPS = [
       <p><b>So machst du's richtig:</b></p>
       <ul>
         <li>Topf bis 2 cm unter den Rand mit Erde füllen</li>
-        <li>Mit dem Finger ein Loch ca. <b>1 cm tief</b> in die Mitte drücken</li>
+        <li>Mit dem Finger ein Loch <b>${_zahlKomma(KEIMUNG.tiefeCmVon)}–${_zahlKomma(KEIMUNG.tiefeCmBis)} cm tief</b> in die Mitte drücken</li>
         <li>Samen rein, <b>Wurzel nach unten</b> (weiße Spitze zeigt nach unten!)</li>
         <li>Locker mit Erde bedecken, nicht festdrücken</li>
         <li>Mit Sprühflasche leicht anfeuchten — nicht gießen</li>
       </ul>
-      <p><b>Typische Fehler:</b> Zu tief gepflanzt (mehr als 2 cm) oder beim Einpflanzen gegossen. Das kann den Samen ertränken.</p>
+      <p><b>Typische Fehler:</b> Zu tief gepflanzt (mehr als ${KEIMUNG.tiefeCmMax} cm) oder beim Einpflanzen gegossen. Das kann den Samen ertränken.</p>
       <p><b>In der App:</b> nichts umstellen. Tag 1 bleibt der Tag, an dem du den Samen ins Glas oder Tuch gelegt hast. Keimst du direkt in der Erde, entfällt dieser Schritt — dann war das Einsetzen selbst dein Tag 1.</p>
     `,
   },
@@ -7690,8 +7699,8 @@ const FIRST_GROW_STEPS = [
       <p><b>Dünger:</b> <b>KEINER</b> in den ersten 2–3 Wochen. Light-Mix-Erde hat genug.</p>
       <p><b>Was du siehst:</b></p>
       <ul>
-        <li>Tag 3–5: Erster Keimling schaut raus</li>
-        <li>Tag 7: Erste echte Blätter (gezackt, 3-fingrig)</li>
+        <li>Tag ${KEIMUNG.auflaufenVon}–${KEIMUNG.auflaufenBis}: Der Keimling durchbricht die Erde</li>
+        <li>Danach öffnen sich die Keimblätter, dann folgt das erste gezackte Blattpaar</li>
         <li>Tag 14: Mehrere Etagen, Pflanze wird buschiger</li>
       </ul>
       <p><b>Häufigster Anfänger-Fehler:</b> Zu viel Wasser, zu viel Dünger, zu viel „Liebe". Weniger ist mehr.</p>
@@ -14894,23 +14903,24 @@ function _keimMethode(c) {
 // Keimmethoden-Anleitungen — methoden-spezifische Schritte für die Keimphase.
 // Bewusst beginnerfreundlich und konservativ-sicher (warm, feucht nicht nass, dunkel).
 const GERM_GUIDES = {
+  // (v1.5.213) Zahlen aus KEIMUNG und KLIMA_ZIEL.saemling; die vier Schritte behalten ihre Plätze (Sämlings-Pflege Tag 1 und 2).
   water: { icon: '🥤', label: 'Wasserglas', steps: [
-    'Samen in ein Glas lauwarmes Wasser (Zimmertemperatur) legen, dunkel stellen.',
-    'Nach 12–24 h (höchstens 32 h) sinken die Samen / quellen auf — dann herausnehmen.',
-    'Direkt in leicht feuchte Erde (~0,5–1 cm tief) oder zum Vorkeimen ins Papiertuch.',
-    '⚠️ Nicht länger als ~32 h im Wasser — sonst erstickt der Keim (Sauerstoffmangel).',
+    'Samen in ein Glas Leitungswasser mit Zimmertemperatur legen (kein pH-Mittel) und dunkel stellen.',
+    `Nach ${KEIMUNG.glasStdVon}–${KEIMUNG.glasStdBis} Stunden herausnehmen — nie länger, auch ohne sichtbare Wurzel: Wächst die Keimwurzel unter Wasser, fehlt ihr Sauerstoff.`,
+    `Dann ${_zahlKomma(KEIMUNG.tiefeCmVon)}–${_zahlKomma(KEIMUNG.tiefeCmBis)} cm tief in die feuchte Erde legen, locker bedecken — oder zum Weiterkeimen ins feuchte Tuch.`,
+    `Der Keimling durchbricht die Erde meist zwischen Tag ${KEIMUNG.auflaufenVon} und ${KEIMUNG.auflaufenBis}.`,
   ] },
   paper: { icon: '🧻', label: 'Papiertuch', steps: [
-    'Samen zwischen 2 feuchte (nicht tropfnasse) Küchentücher legen, in eine Box oder einen Zip-Beutel.',
-    'Dunkel und warm halten (22–25 °C), die Tücher feucht halten — nie austrocknen lassen.',
-    'Nach 2–5 Tagen zeigt sich die weiße Pfahlwurzel (~0,5–1 cm).',
-    'Dann vorsichtig in Erde setzen, Wurzel nach unten — die Wurzel dabei nicht berühren!',
+    `Samen zwischen zwei feuchte, nicht tropfnasse Küchentücher in eine Box oder einen Zip-Beutel legen, bei ${KLIMA_ZIEL.saemling.temp[0]}–${KLIMA_ZIEL.saemling.temp[1]} °C dunkel stellen.`,
+    'Morgens und abends nachsehen, die Tücher feucht halten — eine ausgetrocknete Keimwurzel stirbt ab.',
+    `Die Keimwurzel zeigt sich meist nach ${KEIMUNG.wurzelTageVon}–${KEIMUNG.wurzelTageBis} Tagen. Ist sie ${KEIMUNG.wurzelMmVon}–${KEIMUNG.wurzelMmBis} mm lang, sofort einsetzen — nicht warten. Nach ${KEIMUNG.wurzelTageAufgeben} Tagen ohne Wurzel keimt der Samen sehr wahrscheinlich nicht mehr.`,
+    `${_zahlKomma(KEIMUNG.tiefeCmVon)}–${_zahlKomma(KEIMUNG.tiefeCmBis)} cm tief in die feuchte Erde, weiße Spitze nach unten, locker bedecken, die Stelle mit 3–5 Sprühstößen anfeuchten. Die Wurzel nicht anfassen.`,
   ] },
   direct: { icon: '🌱', label: 'Direkt in Erde', steps: [
-    'Samen ~0,5–1 cm tief in leicht feuchte Erde legen und locker bedecken.',
-    'Dunkel und warm halten (22–25 °C), Oberfläche feucht — aber nicht nass.',
-    'Nach 3–7 Tagen kommt der Keimling — kein Umpflanzen nötig (kein Umpflanz-Stress).',
-    'Du siehst die Keimung nicht — Geduld, den Samen nicht zum „Nachschauen" ausgraben.',
+    `Nach dem Start-Guss den Samen ${_zahlKomma(KEIMUNG.tiefeCmVon)}–${_zahlKomma(KEIMUNG.tiefeCmBis)} cm tief in die feuchte Erde legen und locker bedecken — nicht andrücken.`,
+    `Bei ${KLIMA_ZIEL.saemling.temp[0]}–${KLIMA_ZIEL.saemling.temp[1]} °C halten. Die Erde direkt am Samen feucht, nicht nass: Wird sie dort oben hell, 3–5 Sprühstöße.`,
+    `Der Keimling durchbricht die Erde meist zwischen Tag ${KEIMUNG.auflaufenVon} und ${KEIMUNG.auflaufenBis} — ohne Umsetzen, ohne verletzte Wurzel.`,
+    `Nicht zum Nachsehen ausgraben. Erst wenn an Tag ${KEIMUNG.nachsehenAbTag} nichts zu sehen ist, vorsichtig nachschauen.`,
   ] },
 };
 
@@ -33772,51 +33782,48 @@ const LEXIKON = [
   ]},
   { cat: '🌸 Lebensphasen', items: [
     { t: 'Keimung',
-      brief: 'Der embryonale Start. 24–72 h bis die erste Wurzel sichtbar ist. Methoden- und Werte-Wahl entscheidet zwischen 90% und 50% Keimrate.',
-      mechanism: 'Der Samen nimmt durch <b>Osmose</b> Wasser auf, quillt, die Schale platzt. Die <b>Pfahlwurzel (Radicula)</b> bricht zuerst durch — sie sucht aktiv Schwerkraft + Wasser nach unten. Erst nach erfolgreicher Verwurzelung entfalten sich die <b>Keimblätter (Kotyledonen)</b> nach oben und beginnen mit der Photosynthese.<br><br>' +
+      brief: 'Vom trockenen Samen bis der Keimling die Erde durchbricht — meist Tag ' + KEIMUNG.auflaufenVon + '–' + KEIMUNG.auflaufenBis + '. Die Keimwurzel zeigt sich bei ' + KLIMA_ZIEL.saemling.temp[0] + '–' + KLIMA_ZIEL.saemling.temp[1] + ' °C meist nach ' + KEIMUNG.wurzelTageVon + '–' + KEIMUNG.wurzelTageBis + ' Tagen.',
+      mechanism: 'Der Samen nimmt Wasser auf und quillt, die Schale platzt. Die <b>Pfahlwurzel (Radicula)</b> bricht zuerst durch — sie sucht aktiv Schwerkraft + Wasser nach unten. Erst nach erfolgreicher Verwurzelung entfalten sich die <b>Keimblätter (Kotyledonen)</b> nach oben und beginnen mit der Photosynthese.<br><br>' +
         'Drei Faktoren entscheiden über Erfolg oder Versagen:<br>' +
         '• <b>Sauerstoff:</b> Stehendes Wasser oder zu nasse Erde = Samen erstickt bevor er keimt. Sauerstoff muss zur Wurzel können.<br>' +
-        '• <b>Temperatur:</b> 22–25°C ist Optimum. Unter 20°C → langsam und unzuverlässig. Über 28°C → Pilzwachstum, Wurzel verbrennt.<br>' +
+        '• <b>Temperatur:</b> ' + KLIMA_ZIEL.saemling.temp[0] + '–' + KLIMA_ZIEL.saemling.temp[1] + ' °C am Samen. Hanf keimt zwischen 19 und 30 °C gut, unter 20 °C deutlich langsamer, ab 30 °C schlechter; über 26 °C fehlt der Wurzelzone Sauerstoff.<br>' +
         '• <b>Feuchtigkeit:</b> Konstant feucht, niemals nass-stehend. Die Keimwurzel ist extrem trocknungsempfindlich — wenn sie einmal anfängt rauszuwachsen und dann austrocknet, ist der Samen verloren.<br><br>' +
-        '<b>Wichtig zur Vorbereitung:</b> Samen 2–3 h aus dem Kühlschrank akklimatisieren bevor sie ins Wasser kommen. Temperaturschock senkt Keimrate drastisch.',
-      practice: '<b>Methode 1 — Wasserglas (höchste Keimrate):</b><br>' +
+        '<b>Aus dem Kühlschrank:</b> die geschlossene Packung erst auf Zimmertemperatur kommen lassen — sonst schlägt sich Kondenswasser auf den übrigen Samen nieder.',
+      practice: '<b>Methode 1 — Wasserglas:</b><br>' +
         '<table style="width:100%;border-collapse:collapse;font-size:13px;margin-top:6px">' +
         '<tr style="background:rgba(255,255,255,0.04)"><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)" colspan="2"><b>Wasserglas-Werte</b></td></tr>' +
-        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Wassertemperatur</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">22–25°C</td></tr>' +
-        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">pH</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Natürlich 6.8–7.0 (kein pH-Down!)</td></tr>' +
-        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Keimrate</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">90–100% bei guter Genetik</td></tr>' +
-        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Dauer</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">18–48 h</td></tr>' +
-        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Maximum</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">48 h — danach Sauerstoffmangel</td></tr>' +
-        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Einpflanzen bei</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Keimwurzel 2–3 mm sichtbar</td></tr>' +
-        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Optional Keim-Booster</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Aloe Vera-Konzentrat ~2.5 ml/100 ml Wasser</td></tr>' +
+        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Wassertemperatur</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Zimmertemperatur</td></tr>' +
+        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">pH</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Leitungswasser, kein pH-Mittel — ohne Wurzel nimmt der Samen keine Nährstoffe auf</td></tr>' +
+        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Im Glas</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">' + KEIMUNG.glasStdVon + '–' + KEIMUNG.glasStdBis + ' h, dann heraus — auch ohne Wurzel</td></tr>' +
+        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Nie länger</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Unter Wasser fehlt der Keimwurzel Sauerstoff</td></tr>' +
+        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Einpflanzen bei</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Keimwurzel ' + KEIMUNG.wurzelMmVon + '–' + KEIMUNG.wurzelMmBis + ' mm (bis dahin im feuchten Tuch)</td></tr>' +
         '</table>' +
-        'Glas mit lauwarmem Wasser füllen, Samen reinlegen, Glas dunkel stellen (Schrank, Schublade). Alle 12 h kurz checken. Sobald 2–3 mm Wurzel sichtbar → vorsichtig in Endbehälter umsetzen, Wurzel nach unten.<br><br>' +
+        'Glas mit Wasser (Zimmertemperatur) füllen, Samen reinlegen, dunkel stellen. Nach ' + KEIMUNG.glasStdVon + '–' + KEIMUNG.glasStdBis + ' h herausnehmen — auch ohne Wurzel — und ' + _zahlKomma(KEIMUNG.tiefeCmVon) + '–' + _zahlKomma(KEIMUNG.tiefeCmBis) + ' cm tief in die Erde legen oder im feuchten Tuch weiterkeimen lassen, bis die Keimwurzel ' + KEIMUNG.wurzelMmVon + '–' + KEIMUNG.wurzelMmBis + ' mm lang ist. Wurzel nach unten, nicht anfassen.<br><br>' +
         '<b>Methode 2 — Direkt in Erde (anfängerfreundlich):</b><br>' +
         '<table style="width:100%;border-collapse:collapse;font-size:13px;margin-top:6px">' +
-        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Pflanztiefe</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">5 mm — nicht tiefer!</td></tr>' +
+        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Pflanztiefe</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">' + _zahlKomma(KEIMUNG.tiefeCmVon) + '–' + _zahlKomma(KEIMUNG.tiefeCmBis) + ' cm, nie tiefer als ' + KEIMUNG.tiefeCmMax + ' cm</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Substrat</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Light-Mix oder ähnlich, leicht angefeuchtet</td></tr>' +
-        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Haube</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Pflicht für 70–80% RLF</td></tr>' +
-        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Temperatur</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">24–26°C</td></tr>' +
-        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Keimrate</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">70–85%</td></tr>' +
-        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Dauer bis Erdoberfläche</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">5–10 Tage</td></tr>' +
+        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Haube</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Nur bei trockener Raumluft, Lüftung offen — geschlossen schlägt sich Wasser nieder</td></tr>' +
+        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Temperatur</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">' + KLIMA_ZIEL.saemling.temp[0] + '–' + KLIMA_ZIEL.saemling.temp[1] + ' °C</td></tr>' +
+        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Keimling an der Oberfläche</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">meist Tag ' + KEIMUNG.auflaufenVon + '–' + KEIMUNG.auflaufenBis + ' — nachsehen erst ab Tag ' + KEIMUNG.nachsehenAbTag + '</td></tr>' +
         '</table>' +
-        'Kein Umtopfstress, weil Pflanze direkt im Endbehälter steht. Kein Fortschritt sichtbar — man muss vertrauen. Vorteil: Anfänger-freundlich, geringeres Schadensrisiko durch Handhabung. Nachteil: niedrigere Keimrate, längere Wartezeit.<br><br>' +
+        'Kein Umtopfstress, weil Pflanze direkt im Endbehälter steht. Kein Fortschritt sichtbar — man muss vertrauen. Vorteil: Anfänger-freundlich, geringeres Schadensrisiko durch Handhabung. Nachteil: Man sieht die Keimung nicht und muss warten.<br><br>' +
         '<b>Methode 3 — Anzuchtwürfel (Jiffy / Rockwool):</b><br>' +
         '• Profimethode, vor allem für Stecklinge<br>' +
         '• Bei Rockwool: pH-Anpassung des Würfels auf 5.5 vor dem Einsatz<br>' +
         '• Bei Jiffy: kann zu feucht werden, sorgfältige Kontrolle<br>' +
         '• Vorteil: perfekte Feuchtigkeit, einfaches Umtopfen<br>' +
         '• <b>Nicht ideal für Automatics</b> — der Umtopf-Schritt kostet wertvolle Blütezeit<br><br>' +
-        '<b>Wichtige Regel für Automatics:</b> Wasserglas-Methode → direkt in den 11-L-Endbehälter. KEIN Anzuchttopf, KEIN Umtopfen. Bei photoperiodischen Pflanzen kann ein 0.5–1 L Anzuchttopf vorgeschaltet werden, dann nach 2 Wochen umtopfen.',
+        '<b>Wichtige Regel für Automatics:</b> direkt in den Endtopf — kein Anzuchttopf, kein Umtopfen. Bei photoperiodischen Pflanzen kann ein 0.5–1 L Anzuchttopf vorgeschaltet werden, dann nach 2 Wochen umtopfen.',
       pitfall: '<b>Die 8 häufigsten Keimfehler:</b><br>' +
         '<table style="width:100%;border-collapse:collapse;font-size:13px;margin-top:6px">' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)" width="40%"><b>Fehler</b></td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Was passiert / wie vermeiden</b></td></tr>' +
-        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Zu kaltes Wasser</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Samen direkt aus Kühlschrank ins Wasser → Keimrate <50%. Immer 2–3 h akklimatisieren.</td></tr>' +
-        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Zu tief gepflanzt</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Mehr als 1 cm tief → Sämling kämpft ans Licht, Energie verschwendet, Stiel streckt.</td></tr>' +
-        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Zu lange im Wasserglas</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Über 48 h → Sauerstoffmangel → Wurzel fault ab. Spätestens nach 48 h einpflanzen.</td></tr>' +
-        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">pH-Down ins Keimwasser</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Unnötig und schädlich. Natürlicher pH 6.8–7.0 ist ideal für Keimung.</td></tr>' +
+        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Kalte Samen</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Die Packung aus dem Kühlschrank erst auf Zimmertemperatur kommen lassen — sonst Kondenswasser auf den übrigen Samen.</td></tr>' +
+        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Zu tief gepflanzt</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Tiefer als ' + KEIMUNG.tiefeCmMax + ' cm → der Keimling braucht länger an die Oberfläche, die anfällige Zeit wird länger.</td></tr>' +
+        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Zu lange im Wasserglas</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Über ' + KEIMUNG.glasStdBis + ' h → der Keimwurzel fehlt Sauerstoff. Nach ' + KEIMUNG.glasStdVon + '–' + KEIMUNG.glasStdBis + ' h heraus, auch ohne Wurzel.</td></tr>' +
+        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">pH-Down ins Keimwasser</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Unnötig: Ohne Wurzel nimmt der Samen keine Nährstoffe auf, eine Wirkung ist nicht belegt.</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Wurzel zu lang</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Über 5 mm wird die Keimwurzel fragil und bricht beim Einpflanzen leicht.</td></tr>' +
-        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Gießen in Woche 1</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Keine funktionierende Wurzel → Staunässe → Pythium binnen 24 h. Nur sprühen!</td></tr>' +
+        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Gießen vor Tag 9</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Nach dem Start-Guss wird bis Tag 9 nicht gegossen: In nasser Erde befällt Pythium keimende Samen binnen 24 Stunden. Nur die Erde am Samen besprühen.</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Samen andrücken</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Verdichtet Substrat genau dort wo die Wurzel wachsen soll → Wurzelbehinderung.</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Dünger beim ersten Guss</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Light-Mix hat Nährstoffe für 2–3 Wochen. Erste Düngung zu früh = Nährstoffbrand.</td></tr>' +
         '</table>' +
