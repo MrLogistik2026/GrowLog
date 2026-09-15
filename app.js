@@ -3393,7 +3393,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.181';
+const APP_VERSION = 'v1.5.182';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -19903,23 +19903,13 @@ function renderSet() {
 
           <!-- Photoperiode: Blüte-Start-Datum (Indoor manuell, Outdoor auto ableitbar) -->
           ${d.seedType !== 'auto' ? (() => {
-            // Auto-berechnet für Outdoor-Photoperiode (immer, ohne phaseMode)
+            // Auto-berechnet für Outdoor-Photoperiode (immer, ohne phaseMode).
+            // (v1.5.182) Dieselbe Regel, nach der die Phasen gerechnet werden (_computeBloomStartDate: 17. August bzw.
+            // 17. Februar, frühestens 4 Wochen nach dem Start). Hier stand eine eigene Kopie mit der Sonnenwende und
+            // 6 Wochen — das Feld zeigte einen Blütestart, den keine Rechnung benutzte, bis zu einem Jahr daneben, und
+            // widersprach dem Lexikon-Eintrag, nach dem die Sonnenwende die Blüte nicht auslöst.
             const autoBloomDate = (d.growType === 'outdoor')
-              ? (() => {
-                  if (!d.startDate) return null;
-                  const start = iso12(d.startDate);
-                  const isSouth = d.hemisphere === 'south';
-                  const month = isSouth ? 11 : 5;
-                  const c1 = new Date(start.getFullYear(), month, 21, 12);
-                  const c2 = new Date(start.getFullYear() + 1, month, 21, 12);
-                  const solstice = (c1 >= start) ? c1 : c2;
-                  const minVegi = new Date(start.getTime() + 42 * 86400000);
-                  const bs = solstice >= minVegi ? solstice : minVegi;
-                  const yyyy = bs.getFullYear();
-                  const mm = String(bs.getMonth() + 1).padStart(2, '0');
-                  const dd2 = String(bs.getDate()).padStart(2, '0');
-                  return `${yyyy}-${mm}-${dd2}`;
-                })()
+              ? _computeBloomStartDate(Object.assign({}, d, { bloomStartDate: null }))
               : null;
             const effectiveBloomDate = d.bloomStartDate || autoBloomDate;
             const isAuto = !d.bloomStartDate && autoBloomDate;
@@ -19927,7 +19917,7 @@ function renderSet() {
             let hint = '';
             if (d.growType === 'outdoor') {
               if (isAuto) {
-                hint = `<span style="color:var(--green)">☀️ Automatisch berechnet</span> aus max(Sonnenwende, 6 Wochen nach Start). Bei Bedarf manuell überschreiben.`;
+                hint = `<span style="color:var(--green)">☀️ Automatisch berechnet</span>: 17. August (Südhalbkugel 17. Februar), frühestens 4 Wochen nach dem Start. Bei Bedarf manuell überschreiben.`;
               } else if (d.bloomStartDate) {
                 hint = `✏ Manuell gesetzt — automatische Berechnung überschrieben.`;
               }

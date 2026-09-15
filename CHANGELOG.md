@@ -2,6 +2,23 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-15 — v1.5.182
+
+- **Das Feld „Blüte-Start" zeigte bei Outdoor-Photos einen anderen Tag, als die App rechnet.** Beim Beheben von
+  v1.5.181 gesehen. Die Phasen kommen aus `_computeBloomStartDate`: 17. August (Südhalbkugel 17. Februar),
+  frühestens 4 Wochen nach dem Start. Die Einstellungen hatten eine eigene Kopie der Regel mit der
+  Sommersonnenwende (21.06.) und 6 Wochen Mindest-Vegi. Bei Start am 01.04. zeigte das Feld den 21.06., gerechnet
+  wurde mit dem 17.08.; bei Start am 01.08. stand dort der 21.06.2027 — ein knappes Jahr neben dem 29.08.2026, mit
+  dem die App plant. Der Hinweis darunter nannte die Sonnenwenden-Regel, obwohl das Lexikon selbst erklärt, dass
+  die Sonnenwende die Blüte nicht auslöst.
+- **Warum das zählt:** Wer das Feld liest, plant Training, Dünger und Ernte nach einem Datum, das nirgends gilt,
+  und sieht im Kalender einen anderen Blütebeginn als in den Einstellungen.
+- **Jetzt:** Das Feld fragt `_computeBloomStartDate`, der Hinweis nennt dieselbe Regel. Ob der 17. August für
+  jeden Breitengrad passt, gehört zum späteren Outdoor-Bereich (Patrick am 15.09.2026: erst Indoor). Hier ging es
+  nur darum, dass Anzeige und Rechnung übereinstimmen.
+- `test_bluetestartfeld.js` (10 Prüfungen, beide Zeitzonen): Nord- und Südhalbkugel, dazu die 4 Wochen
+  Mindest-Vegi. Gegen den alten Stand: 6 Fehler.
+
 ## 2026-09-15 — v1.5.181
 
 - **Nach der Zeitumstellung im Frühjahr begannen Spülen, IceFlush und Ernte einen Tag zu spät.** Befund der zweiten
