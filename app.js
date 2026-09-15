@@ -1318,7 +1318,7 @@ const PROBLEMS = [
     },
     description: 'Blätter hängen nach unten obwohl Topf nass ist. Stamm kann weich werden. Langsames Wachstum. Klassisch: „aussieht wie Wassermangel, ist aber Wasserüberschuss".',
     context: { restHigh: true, phase: ['vegi', 'anzucht'] },
-    action: 'GIESSEN STOPPEN. Erst wieder gießen, wenn der Topf den Gießpunkt erreicht (Erde: Hebe-Test „Knapp“, unter ' + GIESSPUNKT.erde.bis + ' % Restgewicht; Coco: „Mittel“). Wurzeln brauchen Sauerstoff. Mehrere Tage pausieren, dann kleinere Mengen.',
+    action: 'GIESSEN STOPPEN. Erst wieder gießen, wenn der Topf den Gießpunkt erreicht (Erde: Hebe-Test „Knapp“, unter ' + GIESSPUNKT.erde.bis + ' % Restgewicht; Coco: „Mittel“). Wurzeln brauchen Sauerstoff. Untersetzer leeren. Danach nicht öfter gießen, als der Hebe-Test sagt — nass macht zu häufiges Gießen, nicht eine volle Menge mit Drain.',
     lexiconKey: 'overwatering',
   },
   {
@@ -3436,7 +3436,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.201';
+const APP_VERSION = 'v1.5.202';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -17798,7 +17798,7 @@ function renderTips() {
       </div>
 
       <div style="background:rgba(240,208,80,0.06);border:0.5px solid rgba(240,208,80,0.2);border-radius:10px;padding:10px 12px;margin-top:10px">
-        <div style="font-size:11px;color:var(--yellow);line-height:1.6">💡 <b>Master-Tipp:</b> Unsicher ob trocken genug? <b>Warte einen Tag länger!</b> Von leicht hängenden Blättern erholt sich die Pflanze in 2h nach dem Gießen. Von abgefaulten Wurzeln durch Staunässe erholt sie sich nie.</div>
+        <div style="font-size:11px;color:var(--yellow);line-height:1.6">💡 <b>Master-Tipp:</b> Unsicher, ob der Topf schon leicht genug ist? <b>Morgen wieder anheben</b> — aber nicht warten, bis die Blätter hängen: Dann sind die Spaltöffnungen schon zu, und die Photosynthese steht. Nass macht zu häufiges Gießen oder Wasser im Untersetzer, nicht eine volle Menge mit Drain.</div>
       </div>
 
       <div style="background:rgba(110,190,130,0.06);border:0.5px solid var(--green-dk);border-radius:10px;padding:10px 12px;margin-top:10px">
@@ -26767,7 +26767,7 @@ function renderEntry(iso) {
                 <div><b style="color:var(--blue)">① Vollsättigung:</b> Langsam gießen, bis ${DRAIN_ZIEL.min}–${DRAIN_ZIEL.max} % unten ablaufen (~${waterSug} ml). Topfgewicht merken = 100% Referenz.</div>
                 <div>${c.medium === 'coco' ? '<b style="color:var(--teal)">② Feucht halten:</b> Coco nie ganz austrocknen lassen — nur leicht abtrocknen, dann wieder gießen. Die Wurzeln mögen es gleichmäßig feucht.' : '<b style="color:var(--teal)">② Rücktrocknung:</b> Finger weg! Trocknung zieht O₂ in die Wurzelzone = Motor für Wachstum.'}</div>
                 <div>${c.medium === 'coco' ? `<b style="color:var(--green)">③ Gießpunkt:</b> Gießen sobald der Topf merklich leichter wird (Hebe-Test „${GIESSPUNKT.coco.knopf}“, ${GIESSPUNKT.coco.von}–${GIESSPUNKT.coco.bis} % Restgewicht) — jedes Mal mit Nährlösung. (${getInt(c, p?.ph || 'bloom') <= 1 ? 'meist täglich' : '~alle ' + getInt(c, p?.ph || 'bloom') + ' Tage'})` : `<b style="color:var(--green)">③ Sweetspot:</b> Gießen im Sweet Spot bei ${GIESSPUNKT.erde.von}–${GIESSPUNKT.erde.bis} % Restgewicht (Hebe-Test „Knapp“). Obere 3–5 cm trocken. (~alle ${getInt(c, p?.ph || 'bloom')} Tage)`}</div>
-                <div style="background:rgba(240,208,80,0.06);border-radius:6px;padding:6px 8px;color:var(--yellow)">${c.medium === 'coco' ? '💡 <b>Tipp:</b> In Coco lieber etwas früher gießen als zu spät — Coco verzeiht Austrocknen schlecht. Staunässe trotzdem vermeiden, aber nie knochentrocken werden lassen.' : '💡 <b>Unsicher?</b> Lieber 1 Tag länger warten. Hängende Blätter = 2h Erholung. Staunässe-Wurzelfäule = irreversibel.'}</div>
+                <div style="background:rgba(240,208,80,0.06);border-radius:6px;padding:6px 8px;color:var(--yellow)">${c.medium === 'coco' ? '💡 <b>Tipp:</b> In Coco lieber etwas früher gießen als zu spät — Coco verzeiht Austrocknen schlecht. Staunässe trotzdem vermeiden, aber nie knochentrocken werden lassen.' : '💡 <b>Unsicher?</b> Morgen wieder anheben — nicht warten, bis die Blätter hängen: Dann steht die Photosynthese schon. Nass macht zu häufiges Gießen oder Wasser im Untersetzer, nicht eine volle Menge mit Drain.'}</div>
                 <div><b style="color:var(--orange)">🧪 Mischen:</b> CalMag zuerst → umrühren → Basisdünger → Additive → pH auf ${pht.mid.toFixed(1)}</div>
                 <div><b style="color:var(--orange)">🚿 Drain:</b> ${DRAIN_ZIEL.min}–${DRAIN_ZIEL.max} % Drain bei jedem Guss. Drain-Wasser sofort entsorgen!</div>
               </div>

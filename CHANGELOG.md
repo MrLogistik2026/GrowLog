@@ -2,6 +2,23 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-15 — v1.5.202
+
+- **„Lieber einen Tag länger warten" schickte die Pflanze in den Wasserstress.** Der Master-Tipp in den Tipps sagte
+  „Unsicher ob trocken genug? Warte einen Tag länger! Von leicht hängenden Blättern erholt sich die Pflanze in 2h", die
+  Gießanleitung für Erde „Lieber 1 Tag länger warten. Hängende Blätter = 2h Erholung". Die Diagnose „Überwässerung" riet
+  „Mehrere Tage pausieren, dann kleinere Mengen" (Befund der Gießmengen-Prüfung; in der Übergabe seit v1.5.197 notiert).
+- **Warum das zählt:** Hängen die Blätter, sind die Spaltöffnungen längst zu, und die Photosynthese steht (`ANBAU.md`
+  2.2). Bei Automatics ist jeder solche Tag ein dauerhafter Ertragsverlust (9). Staunässe entsteht durch verdrängte Luft,
+  also durch zu häufiges Gießen oder Wasser im Untersetzer (1, 13.1). In einem Topf mit Abfluss läuft, was nicht mehr
+  hineinpasst, als Drain ab. Eine kleinere Menge macht den Topf nicht luftiger, sie lässt nur den Drain weg, der die Salze
+  ausspült (5.1).
+- **Jetzt:** „Unsicher? Morgen wieder anheben — nicht warten, bis die Blätter hängen. Nass macht zu häufiges Gießen oder
+  Wasser im Untersetzer, nicht eine volle Menge mit Drain." Die Diagnose sagt: Untersetzer leeren, danach nicht öfter
+  gießen, als der Hebe-Test sagt. Die Coco-Anleitung bleibt.
+- `test_giesstipps.js` (7 Prüfungen, beide Zeitzonen): Master-Tipp, Gießanleitung Erde und Coco, Diagnose, Quelltext.
+  Gegen den alten Stand: 4 Fehler.
+
 ## 2026-09-15 — v1.5.201
 
 - **Der Gieß-Guide rechnete die Drain-Menge mit 10 %.** Beim Öffnen und live beim Tippen stand bei Patrick „1300 ml →
