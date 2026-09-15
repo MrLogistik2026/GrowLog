@@ -2,6 +2,24 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-15 — v1.5.171
+
+- **Ein eigener Plan bekam den Dosis-Modus des gerade aufgeschlagenen Plans.** Beim Nachprüfen des
+  weekly-split-Befunds gefunden. `getWeekDoses` las Vorlage und Modus aus `plan.presetKey || S.presetKey`.
+  Ein selbst angelegter Plan hat keinen `presetKey` — also galt der Plan, der im Dünger-Bildschirm offen ist.
+  Nachgemessen: Ein eigener Plan mit 4 ml/L in Woche 5 lieferte 4 ml/L, solange er selbst aufgeschlagen war,
+  und 1,71 ml/L, sobald BioBizz Official aufgeschlagen war (geteilt durch 7/3 Güsse). Ein Blick in einen
+  anderen Plan änderte also die Menge in der Gießkanne — das Muster aus v1.5.100 an einer weiteren Stelle.
+- **Dazu der Rhythmus-Dialog:** `maybeSuggestIntervalChange` las nur `plan.doseMode`. Dieses Feld trägt keine
+  gespeicherte Plankopie. Bei Patricks „BioBizz Official" warnte der Dialog deshalb „Bei deinem Plan wird pro
+  Guss gedüngt", während die Dosis durch die Güsse der Woche geteilt wurde.
+- **Jetzt:** `_planVorlage(plan)` (nur über den eigenen `presetKey`; ohne Plan wie bisher der aufgeschlagene) und
+  `_doseModeFor(plan)` (eigenes Feld vor der Vorlage, sonst „je Guss"). `getWeekDoses` und der Dialog lesen
+  dort. Für Pläne aus einer Vorlage ändert sich nichts.
+- `test_dosismodus.js` (7 Prüfungen, beide Zeitzonen): eigener Plan mit aufgeschlagenem BioBizz Official,
+  Patricks Kopie im Rhythmus-Dialog, Rainbow als Gegenprobe, Quelltext. Gegen den alten Stand: 2 Fehler
+  in der Sache, 1 im Quelltext.
+
 ## 2026-09-15 — v1.5.170
 
 - **In der Anzucht bekam jeder Düngerguss mehr als die Plandosis, sobald es Wasser-Tage gab.** Befund der

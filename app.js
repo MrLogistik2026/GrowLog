@@ -3446,7 +3446,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.170';
+const APP_VERSION = 'v1.5.171';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -7302,8 +7302,11 @@ async function maybeSuggestIntervalChange(c, iso, sugOverride) {
     if (sn && sn.fromIv === sug.fromIv && sn.toIv === sug.toIv) return;
   }
 
-  const plan = (S.fertPlans || []).find(pl => pl.id === c.fertPlanId) || null;
-  const perWatering = !plan || plan.doseMode !== 'weekly-split';
+  const plan = getPlanForCycle(c);
+  // (v1.5.171) Derselbe Modus wie in getWeekDoses. Vorher las der Dialog nur plan.doseMode — ein Feld, das
+  // keine gespeicherte Plankopie trägt — und warnte bei BioBizz Official „pro Guss gedüngt“, während die
+  // Dosis durch die Güsse der Woche geteilt wurde.
+  const perWatering = _doseModeFor(plan) !== 'weekly-split';
   const isShort = sug.dir === 'shorten';
 
   let title, msg, label;
@@ -9179,6 +9182,23 @@ function _planWocheIstAnzucht(plan, w) {
 }
 
 /**
+ * (v1.5.171) Die Vorlage eines Plans — nur über dessen eigenen presetKey. Ohne Plan (Aufruf ohne Zyklus) gilt
+ * wie bisher der aufgeschlagene Plan. Ein eigener Plan ohne Vorlage hat keine: Er darf weder Modus noch
+ * EC-Spitze eines anderen Plans erben.
+ */
+function _planVorlage(plan) {
+  if (!plan) return S.presetKey ? getPreset(S.presetKey) : null;
+  return plan.presetKey ? getPreset(plan.presetKey) : null;
+}
+
+/** (v1.5.171) Dosis-Modus eines Plans: eigenes Feld vor der Vorlage, sonst „je Guss“. getWeekDoses und der Rhythmus-Dialog lesen hier. */
+function _doseModeFor(plan) {
+  if (plan && plan.doseMode) return plan.doseMode;
+  const pre = _planVorlage(plan);
+  return (pre && pre.doseMode) || 'per-watering';
+}
+
+/**
  * Feed-Tag-Verstärkungs-Faktor (Hybrid-Lösung, v1.1.90).
  * WARUM: Die Guss-Dosen der rhythmuslosen Pläne (Light/Master/Official/Outdoor/
  * konservativ) sind "jedes Gießen"-Dosen. Entstehen über die Gießmap (c.gussPlan)
@@ -9730,9 +9750,11 @@ function getWeekDoses(cId, w, c) {
     : _globals;
   // doseMode ebenfalls aus dem Plan des Zyklus. Der globale S.presetKey taugt nicht als
   // Quelle: Er kann von einem nur kurz angetippten Preset stammen.
-  const presetKey = plan?.presetKey || S.presetKey;
-  const preset = presetKey ? getPreset(presetKey) : null;
-  const mode = preset?.doseMode || 'per-watering';
+  // (v1.5.171) Vorlage und Modus nur noch aus dem Plan des Zyklus. Der Rückfall auf S.presetKey gab einem
+  // eigenen Plan ohne Vorlage den Modus des gerade aufgeschlagenen Plans: Mit BioBizz Official im
+  // Dünger-Bildschirm wurden aus 4 ml/L eines eigenen Plans 1,71 ml/L (v1.5.100 an einer weiteren Stelle).
+  const preset = _planVorlage(plan);
+  const mode = _doseModeFor(plan);
   // Basis-Dosen bestimmen — IMMER als Klon, damit S.weekSchedule unberührt bleibt.
   let out;
   if (mode !== 'weekly-split' || !c) {
