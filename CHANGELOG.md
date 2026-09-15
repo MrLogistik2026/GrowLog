@@ -2,6 +2,30 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-15 — v1.5.188
+
+- **In der Dunkelphase und am Erntetag riet die App zum Heizen.** Beim Durcharbeiten der Klimatexte gefunden:
+  `KLIMA_ZIEL` (v1.5.187) gab dem IceFlush und dem Erntetag das Band der späten Blüte, und `klimaStufe` unterschied den
+  IceFlush-Tag nicht von den Dunkeltagen danach. Im dunklen Zelt bei 18 °C / 55 % stand „Luft zu feucht am IceFlush:
+  Temperatur auf 22–26 °C anheben, dann Luftfeuchte auf 32–43 % bei 22 °C senken" — am Erntetag dasselbe, dazu bei 17 °C
+  „Phosphor-Lockout droht" und bei 14 °C „Heizen!". Das Lexikon rät für dieselben Tage zu einem kühlen Zelt.
+- **Warum das falsch ist:** Das VPD-Band beschreibt den Antrieb der Transpiration bei Licht. Nachts verdunstet eine Pflanze
+  typisch nur 5–15 % der Tagesmenge (Caird, Richards & Donovan 2007, Plant Physiol 143:4), und ohne Verdunstung entfällt
+  der Blattabzug (`ANBAU.md` 2.1). Heizen hätte nur die Terpene schneller verdunsten lassen (`ANBAU.md` 14). Am Erntetag
+  wird vor dem Lichtangang geschnitten, danach gilt das Trockenklima.
+- **Jetzt:** `phase()` zählt die Ice-Tage (`iceDay`, in beiden Phasen-Pfaden), `klimaStufe` liefert ab dem zweiten
+  Ice-Tag die neue Stufe `dunkel`. Dunkelphase und Erntetag haben kein VPD-Band und kein Temperaturziel, nur den
+  Schimmel-Deckel 60 % (kritisch). Der Satz lautet „✓ Luftfeuchte passt in der Dunkelphase (höchstens 60 %). Kühler schont
+  die Terpene — aber nur, solange die Luftfeuchte dabei nicht über 60 % steigt.", am Erntetag mit dem Trockenklima für
+  nach dem Schnitt. Zielzeilen, Pille, Luftfeuchte-Warnung, Tipps-Zone und Lexikon-Hinweis folgen derselben Stufe. Die
+  Warnungen „Wachstum stoppt" und „Phosphor-Lockout" entfallen an diesen Tagen; über 29 °C heißt es „Terpene sind
+  flüchtig: kühler halten". Die Nass-Stufe rechnet dort nicht mehr mit dem Blattabzug — über 60 % greift der Deckel. Der
+  IceFlush-Tag selbst (Licht an) rechnet wie vorher.
+- `test_dunkelphase.js` (36 Prüfungen, beide Zeitzonen): Ice-Tage in beiden Phasen-Pfaden, Tabelle, Befunde in der
+  Dunkelphase und am Erntetag, Zielwerte und Warnung, Temperatur-Warnungen, Tageseintrag im Profi- und Einsteiger-Modus
+  samt Tippen, Tipps-Zone, Lexikon-Hinweis, Quelltext. Gegen den alten Stand: 22 Fehler. Bewusst angepasst:
+  `test_klimaziel.js` (Tabelle und Zielwerte des Erntetags).
+
 ## 2026-09-15 — v1.5.187
 
 - **Temperatur, Luftfeuchte und VPD bewerteten dieselbe Luft mit drei Fenstern, die sich widersprachen.** Befund der

@@ -59,7 +59,7 @@ const GIESSPUNKT = { erde: { von: 25, bis: 40 }, finisher: { von: 30, bis: 40 } 
 
 // (v1.5.187) KLIMA JE PHASE AUS EINER QUELLE (ANBAU.md 2.2; Patricks Entscheidung vom 15.09.2026: Option B). Fest sind zwei
 // Größen: das VPD am Blatt (Antrieb der Transpiration) und die Temperatur bei Licht an. Die Luftfeuchte folgt daraus
-// (klimaRlfFenster), der Schimmel-Deckel ist hart. Späte Blüte, Spülen, IceFlush und Erntetag haben das Band der mittleren
+// (klimaRlfFenster), der Schimmel-Deckel ist hart. Späte Blüte, Spülen und der IceFlush-Tag haben das Band der mittleren
 // Blüte — Schutz gegen Botrytis kommt über Deckel, Luftbewegung und die Nass-Stufe, nicht über ein höheres VPD, das die
 // Stomata schließt. Vorher standen hier drei feste Fenster je Phase, die sich widersprachen: Die Spätblüte verlangte
 // 1,4–1,6 kPa bei 18–24 °C und 40–50 % RLF — bei 18 °C ist das Band nur mit 11–20 % RLF erreichbar.
@@ -71,7 +71,13 @@ const KLIMA_ZIEL = {
   spaet:    { name: 'Späte Blüte',    dativ: 'in der späten Blüte',    icon: '🍯', bluete: true,  vpd: [1.2, 1.5], temp: [22, 26], deckel: 60,   deckelStufe: 'critical', boden: null },
   spuelen:  { name: 'Spülen',         dativ: 'beim Spülen',            icon: '🚿', bluete: true,  vpd: [1.2, 1.5], temp: [22, 26], deckel: 60,   deckelStufe: 'critical', boden: null },
   ice:      { name: 'IceFlush',       dativ: 'am IceFlush',            icon: '🧊', bluete: true,  vpd: [1.2, 1.5], temp: [22, 26], deckel: 60,   deckelStufe: 'critical', boden: null },
-  ernte:    { name: 'Ernte',          dativ: 'am Erntetag',            icon: '✂️', bluete: true,  vpd: [1.2, 1.5], temp: [22, 26], deckel: 60,   deckelStufe: 'critical', boden: null },
+  // (v1.5.188) Ohne Licht kein VPD-Band und keine Temperatur. In der Dunkelphase nach dem IceFlush verdunstet die Pflanze nur
+  // einen kleinen Teil der Tagesmenge (nachts typisch 5–15 %, Caird et al. 2007, Plant Physiol 143:4), und der Blattabzug aus
+  // Verdunstungskälte entfällt (ANBAU.md 2.1). Am Erntetag wird vor dem Lichtangang geschnitten, danach gilt TROCKNEN_KLIMA.
+  // Vorher riet die App im dunklen Zelt bei 18 °C „Temperatur auf 22–26 °C anheben" — gegen die eigene Anleitung zur
+  // Dunkelphase. Es bleibt der Schimmel-Deckel: Beim Abkühlen steigt die Luftfeuchte von selbst (ANBAU.md 13.5).
+  dunkel:   { name: 'Dunkelphase',    dativ: 'in der Dunkelphase',     icon: '🌑', bluete: true,  vpd: null,       temp: null,     deckel: 60,   deckelStufe: 'critical', boden: null },
+  ernte:    { name: 'Ernte',          dativ: 'am Erntetag',            icon: '✂️', bluete: true,  vpd: null,       temp: null,     deckel: 60,   deckelStufe: 'critical', boden: null },
 };
 
 const T = {
@@ -3412,7 +3418,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.187';
+const APP_VERSION = 'v1.5.188';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -7082,7 +7088,7 @@ function _datebasedPhase(iso, c) {
     return { ph: 'flush', day: diffDays + 1, week: null, total: totalDays, pct };
   }
   if (iceLen > 0 && d < harvestStart) {
-    return { ph: 'ice', day: diffDays + 1, week: null, total: totalDays, pct };
+    return { ph: 'ice', day: diffDays + 1, week: null, iceDay: Math.round((d - iceStart) / msPerDay) + 1, total: totalDays, pct };
   }
   if (d < dryStart) {
     return { ph: 'harvest', day: diffDays + 1, week: null, total: totalDays, pct };
@@ -7136,7 +7142,8 @@ function phase(iso, c) {
   if (diff < a)  return { ph: 'anzucht', day: diff + 1, week: Math.floor(diff / 7) + 1, total: dr, pct: Math.round(diff / dr * 100) };
   if (diff < b)  return { ph: 'bloom',   day: diff + 1, week: Math.floor((diff - a) / 7) + 1, bloomDay: diff - a + 1, bloomLen: b - a, total: dr, pct: Math.round(diff / dr * 100) };
   if (diff < f)  return { ph: 'flush',   day: diff + 1, week: null, total: dr, pct: Math.round(diff / dr * 100) };
-  if (diff < ic) return { ph: 'ice',     day: diff + 1, week: null, total: dr, pct: Math.round(diff / dr * 100) };
+  // (v1.5.188) iceDay 1 ist der IceFlush-Tag, ab 2 die Dunkelphase (klimaStufe).
+  if (diff < ic) return { ph: 'ice',     day: diff + 1, week: null, iceDay: diff - f + 1, total: dr, pct: Math.round(diff / dr * 100) };
   if (diff < h)  return { ph: 'harvest', day: diff + 1, week: null, total: dr, pct: Math.round(diff / dr * 100) };
   if (diff < dr) return { ph: 'dry',     day: diff + 1, week: null, total: dr, pct: Math.round(diff / dr * 100) };
   if (diff < cu) return { ph: 'cure',    day: diff + 1, week: null, cureDay: diff - dr + 1, cureTotal: (c.cureDays || PHASE_DEFAULTS.cureDays), total: dr, pct: 100 };
@@ -13102,7 +13109,7 @@ function klimaStufe(p) {
   if (ph === 'anzucht' || ph === 'vorzucht') return (p.day || 1) <= 10 ? 'saemling' : 'anzucht';
   if (ph === 'bloom') return bluetestufe(p) || 'mittel';
   if (ph === 'flush') return 'spuelen';
-  if (ph === 'ice') return 'ice';
+  if (ph === 'ice') return (p.iceDay || 1) > 1 ? 'dunkel' : 'ice';   // (v1.5.188) nach dem IceFlush-Tag: Licht aus
   if (ph === 'harvest') return 'ernte';
   return null;
 }
@@ -13118,6 +13125,8 @@ function klimaRlfFuer(T, v) {
  * Band ergibt und eine außerhalb nicht; danach Schimmel-Deckel und Boden.
  */
 function klimaRlfFenster(ziel, T) {
+  // (v1.5.188) Stufe ohne VPD-Band (Dunkelphase, Erntetag): nur der Deckel, keine Untergrenze.
+  if (!ziel.vpd) return { lo: ziel.boden != null ? ziel.boden : null, hi: ziel.deckel, t: (isFinite(T) && T !== 0) ? Math.round(T * 10) / 10 : null };
   const mitte = (ziel.temp[0] + ziel.temp[1]) / 2;
   const t = Math.max(ziel.temp[0], Math.min(ziel.temp[1], (isFinite(T) && T !== 0) ? T : mitte));
   let lo = Math.ceil(klimaRlfFuer(t, ziel.vpd[1] + 0.005) * 10) / 10;
@@ -13144,6 +13153,7 @@ function _klimaZahl(x) { return String(Math.round(x * 10) / 10).replace('.', ','
 
 /** (v1.5.187) Luftfeuchte-Spanne für Sätze: ganze Prozent innerhalb des Fensters, bei sehr engem Fenster eine Nachkommastelle. */
 function _klimaRlfSpanne(f) {
+  if (f.lo == null) return `höchstens ${f.hi} %`;   // (v1.5.188) Stufe ohne Band
   const a = Math.ceil(f.lo), b = Math.floor(f.hi);
   return a <= b ? `${a}–${b} %` : `${_klimaZahl(f.lo)}–${_klimaZahl(f.hi)} %`;
 }
@@ -13162,12 +13172,15 @@ function klimaStatus(t, rh, p, c) {
   const ziel = KLIMA_ZIEL[stufe];
   const hatT = isFinite(t) && t !== 0, hatRh = isFinite(rh) && rh > 0;
   const fenster = klimaRlfFenster(ziel, hatT ? t : NaN);
-  const tS = hatT ? (t < ziel.temp[0] ? 'kuehl' : (t > ziel.temp[1] ? 'warm' : 'ok')) : null;
+  const tS = (hatT && ziel.temp) ? (t < ziel.temp[0] ? 'kuehl' : (t > ziel.temp[1] ? 'warm' : 'ok')) : null;
   const v = (hatT && hatRh) ? calcVPD(t, rh) : null;
   let s = null;
-  if (v !== null && v <= 0) s = 'nass';
+  // (v1.5.188) Ohne Band (Dunkelphase, Erntetag) zählt nur der Deckel. Die Nass-Stufe rechnet mit dem Blattabzug aus
+  // Verdunstungskälte — ohne Licht gibt es den nicht, und über 60 % greift der Deckel ohnehin.
+  if (v !== null && v <= 0 && ziel.vpd) s = 'nass';
   else if (hatRh && ziel.deckel != null && rh > ziel.deckel) s = 'schimmel';
   else if (hatRh && ziel.boden != null && rh < ziel.boden) s = 'zu_trocken';
+  else if (!ziel.vpd) s = hatRh ? 'im_ziel' : null;
   else if (v !== null) s = _klimaVpdLage(v, ziel);
   const level = s === 'nass' ? 'critical' : s === 'schimmel' ? ziel.deckelStufe
     : (s === 'zu_feucht' || s === 'zu_trocken') ? 'warn'
@@ -13204,7 +13217,7 @@ function _klimaPille(st) {
 function klimaSatz(st) {
   if (!st || !st.s) return '';
   const z = st.ziel, f = st.fenster;
-  const ziel = `${_klimaRlfSpanne(f)} bei ${_klimaZahl(f.t)} °C`;
+  const ziel = z.vpd ? `${_klimaRlfSpanne(f)} bei ${_klimaZahl(f.t)} °C` : _klimaRlfSpanne(f);
   const temp = st.tS === 'kuehl' ? `Temperatur auf ${z.temp[0]}–${z.temp[1]} °C anheben, dann `
     : st.tS === 'warm' ? `Temperatur auf ${z.temp[0]}–${z.temp[1]} °C senken, dann ` : '';
   switch (st.s) {
@@ -13216,7 +13229,12 @@ function klimaSatz(st) {
     case 'etwas_feucht': return `Luft knapp zu feucht ${z.dativ} — nicht dringend. Wenn es leicht geht: ${temp}Luftfeuchte auf ${ziel}.`;
     case 'etwas_trocken': return `Luft knapp zu trocken ${z.dativ} — nicht dringend. Wenn es leicht geht: ${temp}Luftfeuchte auf ${ziel}.`;
     case 'zu_trocken': return `Luft zu trocken ${z.dativ}: ${temp}Luftfeuchte auf ${ziel} anheben${st.stufe === 'saemling' ? ' (Haube oder Wasserschale)' : ''}.`;
-    case 'im_ziel': return (st.tS === 'kuehl' || st.tS === 'warm')
+    case 'im_ziel':
+      // (v1.5.188) Ohne Band ist die Luftfeuchte die einzige Größe. Kühle schont Terpene, hebt aber die Luftfeuchte.
+      if (!z.vpd) return st.stufe === 'ernte'
+        ? `✓ Luftfeuchte passt am Erntetag (${_klimaRlfSpanne(f)}). Nach dem Schnitt gilt das Trockenklima: ${TROCKNEN_TEXT}.`
+        : `✓ Luftfeuchte passt ${z.dativ} (${_klimaRlfSpanne(f)}). Kühler schont die Terpene — aber nur, solange die Luftfeuchte dabei nicht über ${z.deckel} % steigt.`;
+      return (st.tS === 'kuehl' || st.tS === 'warm')
       ? `Luftfeuchte passt, aber es ist zu ${st.tS === 'kuehl' ? 'kühl' : 'warm'} ${z.dativ}: ${temp}Luftfeuchte auf ${ziel}.`
       : `✓ Luft passt ${z.dativ} — so lassen.`;
   }
@@ -13236,6 +13254,13 @@ function _vpdSkalaPct(v) {
 /** (v1.5.187) VPD-Zone ohne Temperatur und Luftfeuchte (Tipps): Lage des Blatt-VPD gegen das Band der Stufe. */
 function _klimaZone(v, stufe) {
   const z = KLIMA_ZIEL[stufe];
+  // (v1.5.188) Ohne Licht kein Band: nur die Einordnung, kein ✓ und kein „zu feucht" — die Luftfeuchte kennt die Zone nicht.
+  if (!z.vpd) {
+    return { label: z.name, color: '#9aa7b0', bg: '#1a2024', pct: _vpdSkalaPct(v), lage: 'ohne_band',
+      hint: stufe === 'ernte'
+        ? `Am Erntetag gibt es kein VPD-Ziel: Geschnitten wird vor dem Lichtangang. Bis zum Schnitt Luftfeuchte höchstens ${z.deckel} %, danach Trockenklima: ${TROCKNEN_TEXT}.`
+        : `In der Dunkelphase gibt es kein VPD-Ziel: Ohne Licht verdunstet die Pflanze nur einen kleinen Teil der Tagesmenge. Entscheidend ist die Luftfeuchte — höchstens ${z.deckel} %.` };
+  }
   const lage = _klimaVpdLage(v, z);
   const band = `${_klimaZahl(z.vpd[0])}–${_klimaZahl(z.vpd[1])} kPa`;
   const pille = _klimaPille({ s: lage, ziel: z, level: null });
@@ -13296,7 +13321,9 @@ function _klimaEntryTeile(tRaw, rhRaw, act, iso) {
     } else if (vpd !== null) {
       const pille = st && st.s ? _klimaPille(st) : { label: z.label, color: z.color, bg: z.bg };
       const zielMark = st ? _klimaMarke(st) : (pt && pt.vpdMin ? inRangeMark(vpd, pt.vpdMin, pt.vpdMax) : '');
-      const zielText = st
+      const zielText = (st && !st.ziel.vpd)
+        ? `${st.ziel.icon} ${st.ziel.name}: kein VPD-Ziel ohne Licht · Luftfeuchte höchstens ${st.ziel.deckel} %${st.stufe === 'ernte' ? ` · nach dem Schnitt ${TROCKNEN_TEXT}` : ''}`
+        : st
         ? `${st.ziel.icon} ${st.ziel.name}: VPD ${_klimaZahl(st.ziel.vpd[0])}–${_klimaZahl(st.ziel.vpd[1])} kPa · ${st.ziel.temp[0]}–${st.ziel.temp[1]} °C · bei ${_klimaZahl(st.fenster.t)} °C RLF ${_klimaZahl(st.fenster.lo)}–${_klimaZahl(st.fenster.hi)} %${st.ziel.deckel != null ? ` · Schimmel-Deckel ${st.ziel.deckel} %` : ''}`
         : (pt && pt.vpdMin ? `${pt.icon} ${pt.label}: VPD ${pt.vpdMin}–${pt.vpdMax} kPa · ${pt.tempMin}–${pt.tempMax}°C · ${pt.rhMin}–${pt.rhMax}% RLF` : '');
       vpdBox = `<div class="vpd-box">
@@ -13326,18 +13353,27 @@ function _klimaEntryTeile(tRaw, rhRaw, act, iso) {
   }
 
   const tMark = st ? (st.tS === 'ok' ? '✓' : (st.tS ? '⚠' : '')) : (pt ? inRangeMark(t, pt.tempMin, pt.tempMax) : '');
-  const tempZeile = st ? zeile(tMark, `${st.ziel.icon} ${st.ziel.name}: ${st.ziel.temp[0]}–${st.ziel.temp[1]} °C bei Licht an`)
+  const tempZeile = (st && !st.ziel.temp) ? zeile('', st.stufe === 'ernte'
+      ? `${st.ziel.icon} ${st.ziel.name}: nach dem Schnitt ${TROCKNEN_KLIMA.tMin}–${TROCKNEN_KLIMA.tMax} °C`
+      : `${st.ziel.icon} ${st.ziel.name}: kein Temperaturziel — kühler schont Terpene, hebt aber die Luftfeuchte`)
+    : st ? zeile(tMark, `${st.ziel.icon} ${st.ziel.name}: ${st.ziel.temp[0]}–${st.ziel.temp[1]} °C bei Licht an`)
     : (pt ? zeile(tMark, `${pt.icon} ${pt.label}: ${pt.tempMin}–${pt.tempMax}°C${suffix}`) : '');
-  const rhIn = !!(st && st.rh !== null && st.rh >= st.fenster.lo && st.rh <= st.fenster.hi);
+  const rhIn = !!(st && st.rh !== null && (st.fenster.lo == null || st.rh >= st.fenster.lo) && st.rh <= st.fenster.hi);
   const rMark = st ? (st.rh === null ? '' : (st.level === 'critical' ? '🚨' : (rhIn ? '✓' : (st.level === 'knapp' ? '≈' : '⚠'))))
     : (pt ? inRangeMark(rh, pt.rhMin, pt.rhMax) : '');
-  const rlfZeile = st ? zeile(rMark, `${st.ziel.icon} ${st.ziel.name}: bei ${_klimaZahl(st.fenster.t)} °C ${_klimaZahl(st.fenster.lo)}–${_klimaZahl(st.fenster.hi)} % RLF`)
+  const rlfZeile = (st && !st.ziel.vpd) ? zeile(rMark, `${st.ziel.icon} ${st.ziel.name}: höchstens ${st.ziel.deckel} % RLF${st.stufe === 'ernte' ? ' bis zum Schnitt' : ''}`)
+    : st ? zeile(rMark, `${st.ziel.icon} ${st.ziel.name}: bei ${_klimaZahl(st.fenster.t)} °C ${_klimaZahl(st.fenster.lo)}–${_klimaZahl(st.fenster.hi)} % RLF`)
     : (pt ? zeile(rMark, `${pt.icon} ${pt.label}: ${pt.rhMin}–${pt.rhMax}% RLF${suffix}`) : '');
   const kritT = renderCriticalWarning(getCriticalWarning('temp', t, p0, c0));
   const kritR = renderCriticalWarning(getCriticalWarning('rlf', rh, p0, c0, t));
-  const zMitte = st ? (st.ziel.temp[0] + st.ziel.temp[1]) / 2 : null;
-  const phT = st ? zMitte.toFixed(1) : (pt ? ((pt.tempMin + pt.tempMax) / 2).toFixed(1) : '23.5');
-  const phR = st ? String(Math.round(klimaRlfFuer(zMitte, (st.ziel.vpd[0] + st.ziel.vpd[1]) / 2))) : (pt ? String(Math.round((pt.rhMin + pt.rhMax) / 2)) : '60');
+  // (v1.5.188) Platzhalter ohne Band: die Dunkelphase vom Klima der späten Blüte aus (dasselbe Zelt, Licht aus), der Erntetag
+  // vom Trockenklima — beide unter dem Deckel, damit „+" nicht sofort in die Schimmelwarnung springt.
+  const zVorbild = st ? (st.ziel.vpd ? st.ziel : (st.stufe === 'ernte' ? null : KLIMA_ZIEL.spaet)) : null;
+  const zMitte = zVorbild ? (zVorbild.temp[0] + zVorbild.temp[1]) / 2 : null;
+  const phT = zVorbild ? zMitte.toFixed(1)
+    : st ? ((TROCKNEN_KLIMA.tMin + TROCKNEN_KLIMA.tMax) / 2).toFixed(1) : (pt ? ((pt.tempMin + pt.tempMax) / 2).toFixed(1) : '23.5');
+  const phR = zVorbild ? String(Math.round(klimaRlfFuer(zMitte, (zVorbild.vpd[0] + zVorbild.vpd[1]) / 2)))
+    : st ? String(Math.floor((TROCKNEN_KLIMA.rhMin + TROCKNEN_KLIMA.rhMax) / 2)) : (pt ? String(Math.round((pt.rhMin + pt.rhMax) / 2)) : '60');
   // Kritische Warnungen über die ganze Breite: In der halben Spalte unter dem Feld wurde der Handlungstext auf dem Handy
   // zu einem zwölfzeiligen Streifen.
   return { vpdBox, tempZeile, rlfZeile, krit: kritT + kritR, phT, phR, st };
@@ -13603,6 +13639,7 @@ function getPhaseTargets(p) {
   if (_kSt) {
     const z = KLIMA_ZIEL[_kSt];
     const f = klimaRlfFenster(z, NaN);
+    if (!z.vpd) return { tempMin: null, tempMax: null, rhMin: null, rhMax: z.deckel, vpdMin: null, vpdMax: null, label: z.name, icon: z.icon, stufe: _kSt, deckel: z.deckel };   // (v1.5.188)
     return { tempMin: z.temp[0], tempMax: z.temp[1], rhMin: Math.ceil(f.lo), rhMax: Math.floor(f.hi), vpdMin: z.vpd[0], vpdMax: z.vpd[1], label: z.name, icon: z.icon, stufe: _kSt, deckel: z.deckel };
   }
   if (ph === 'abhärten') {
@@ -13769,10 +13806,10 @@ function getCriticalWarning(category, value, p, c, t) {
     if (_kStufe) {
       const z = KLIMA_ZIEL[_kStufe];
       const _f = klimaRlfFenster(z, t);
-      const ziel = `Ziel ${_klimaRlfSpanne(_f)} bei ${_klimaZahl(_f.t)} °C`;
+      const ziel = z.vpd ? `Ziel ${_klimaRlfSpanne(_f)} bei ${_klimaZahl(_f.t)} °C` : `Ziel: ${_klimaRlfSpanne(_f)}`;
       if (z.deckel != null && value > z.deckel) {
         if (z.deckelStufe === 'critical') {
-          const vorErnte = _kStufe === 'spuelen' || _kStufe === 'ice' || _kStufe === 'ernte';
+          const vorErnte = _kStufe === 'spuelen' || _kStufe === 'ice' || _kStufe === 'dunkel' || _kStufe === 'ernte';
           return {
             level: 'critical',
             icon: '🚨',
@@ -14066,10 +14103,16 @@ function getEntryWarnings(cd, p, e, c, iso) {
       // Kälte in der Blüte ist IHM sogar erwünscht (Trichomfärbung) — keine Warnung.
     } else {
       // Indoor: engere Schwellen
+      // (v1.5.188) In der Dunkelphase und am Erntetag gibt es kein Temperaturziel (KLIMA_ZIEL): Es wächst nichts mehr und es
+      // wird nicht mehr gedüngt — Wachstumsstopp und Phosphor-Lockout sind dort keine Folgen. Kühle schont Terpene
+      // (ANBAU.md 14); die Luftfeuchte bewertet der Umgebungsblock.
+      const _kStT = klimaStufe(p), _ohneTempZiel = !!(_kStT && !KLIMA_ZIEL[_kStT].temp);
       if (tempVal > 32) out.push({ type: 'err', text: `🌡️ ${tempVal}°C zu heiß! Hitzestress (Taco-Blätter). Lüftung erhöhen.` });
-      else if (tempVal > 29) out.push({ type: 'warn', text: `🌡️ ${tempVal}°C hoch — Stoffwechsel bremst. Ziel: ${klimaStufe(p) ? KLIMA_ZIEL[klimaStufe(p)].temp.join('–') : '22–28'} °C bei Licht an.` });
-      else if (tempVal < 15) out.push({ type: 'err', text: `🌡️ ${tempVal}°C zu kalt — Wachstum stoppt, Wurzelschäden drohen. Heizen!` });
-      else if (tempVal < 18) out.push({ type: 'warn', text: `🌡️ ${tempVal}°C unter 18°C — Phosphor-Lockout droht, lila/rote Verfärbungen möglich.` });
+      else if (tempVal > 29) out.push({ type: 'warn', text: _ohneTempZiel
+        ? `🌡️ ${tempVal}°C hoch — Terpene sind flüchtig: kühler halten, die Luftfeuchte dabei höchstens ${KLIMA_ZIEL[_kStT].deckel} %.`
+        : `🌡️ ${tempVal}°C hoch — Stoffwechsel bremst. Ziel: ${_kStT ? KLIMA_ZIEL[_kStT].temp.join('–') : '22–28'} °C bei Licht an.` });
+      else if (tempVal < 15 && !_ohneTempZiel) out.push({ type: 'err', text: `🌡️ ${tempVal}°C zu kalt — Wachstum stoppt, Wurzelschäden drohen. Heizen!` });
+      else if (tempVal < 18 && !_ohneTempZiel) out.push({ type: 'warn', text: `🌡️ ${tempVal}°C unter 18°C — Phosphor-Lockout droht, lila/rote Verfärbungen möglich.` });
     }
   }
 
@@ -17621,7 +17664,7 @@ function renderTips() {
   let tips = [];
 
   if (vpd !== null && z) {
-    tips.push({ icon: z.lage ? (z.lage === 'im_ziel' ? '✅' : ((z.lage === 'etwas_feucht' || z.lage === 'etwas_trocken') ? '≈' : '⚠️')) : (vpd < 0.4 || vpd > 1.5 ? '⚠️' : '✅'), text: `VPD: ${vpd.toFixed(2)} kPa – ${z.hint}`, cat: 'Umgebung' });
+    tips.push({ icon: z.lage ? (z.lage === 'im_ziel' ? '✅' : z.lage === 'ohne_band' ? 'ℹ️' : ((z.lage === 'etwas_feucht' || z.lage === 'etwas_trocken') ? '≈' : '⚠️')) : (vpd < 0.4 || vpd > 1.5 ? '⚠️' : '✅'), text: `VPD: ${vpd.toFixed(2)} kPa – ${z.hint}`, cat: 'Umgebung' });
   } else {
     tips.push({ icon: '🌡️', text: 'Trage Temp & RLF im Tageseintrag ein für VPD.', cat: 'Umgebung' });
   }
@@ -33973,6 +34016,12 @@ function lexCycleNote(itemTitle) {
   };
 
   // --- Stufe 1 + 3: Wert-Einträge ---
+  if (itemTitle === 'Temperatur' && pt && pt.stufe && pt.tempMin == null) {
+    // (v1.5.188) Dunkelphase und Erntetag haben kein Temperaturziel.
+    return wrap(pt.stufe === 'ernte'
+      ? `Heute ist Erntetag — geschnitten wird vor dem Lichtangang. Danach gilt das Trockenklima: <b>${TROCKNEN_TEXT}</b>.`
+      : `Dunkelphase: kein Temperaturziel. Kühler schont die Terpene, hebt aber die Luftfeuchte — sie darf höchstens <b>${pt.deckel} %</b> erreichen.`);
+  }
   if (itemTitle === 'Temperatur' && pt) {
     return wrap(`Richtwert jetzt: <b>${pt.tempMin}–${pt.tempMax} °C</b> tagsüber.${dev(_lastEnvVal('temp'), pt.tempMin, pt.tempMax, ' °C', 'etwas kühl — der Stoffwechsel bremst.', 'etwas warm — lüften/kühlen, sonst Hitzestress.')}`);
   }
@@ -33982,10 +34031,14 @@ function lexCycleNote(itemTitle) {
     // Blüte haben 65 %, der Eintrag meldete bei 62 % dort keine Warnung. Die Spanne gilt bei der mittleren Temperatur der
     // Stufe; wie sie sich mit der eigenen Temperatur verschiebt, zeigt der Tageseintrag.
     const _kSt = klimaStufe(p), _kZ = _kSt ? KLIMA_ZIEL[_kSt] : null;
+    const _rw = pt.rhMin != null ? `${pt.rhMin}–${pt.rhMax} % RLF` : `höchstens ${pt.rhMax} % RLF`;   // (v1.5.188) ohne Band nur der Deckel
     if (_kZ && _kZ.deckel != null && last !== null && last > _kZ.deckel) {
-      return wrap(`Richtwert jetzt: <b>${pt.rhMin}–${pt.rhMax} % RLF</b>. <span style="color:var(--red)">Dein letzter Wert ${last} % — über ${_kZ.deckel} % ${_kZ.dativ} ist ${_kZ.bluete ? 'Schimmelrisiko' : 'Pilzrisiko'}. Luft bewegen, entfeuchten.</span>`);
+      return wrap(`Richtwert jetzt: <b>${_rw}</b>. <span style="color:var(--red)">Dein letzter Wert ${last} % — über ${_kZ.deckel} % ${_kZ.dativ} ist ${_kZ.bluete ? 'Schimmelrisiko' : 'Pilzrisiko'}. Luft bewegen, entfeuchten.</span>`);
     }
-    return wrap(`Richtwert jetzt: <b>${pt.rhMin}–${pt.rhMax} % RLF</b>.${dev(last, pt.rhMin, pt.rhMax, ' %', 'recht trocken — die Pflanze schließt evtl. die Poren.', 'recht feucht — auf Luftbewegung achten.')}`);
+    return wrap(`Richtwert jetzt: <b>${_rw}</b>.${dev(last, pt.rhMin != null ? pt.rhMin : 0, pt.rhMax, ' %', 'recht trocken — die Pflanze schließt evtl. die Poren.', 'recht feucht — auf Luftbewegung achten.')}`);
+  }
+  if (itemTitle === 'VPD (Vapour Pressure Deficit)' && pt && pt.stufe && pt.vpdMin == null) {
+    return wrap(`${pt.label}: kein VPD-Ziel — ohne Licht verdunstet die Pflanze nur einen kleinen Teil der Tagesmenge. Entscheidend ist die Luftfeuchte: höchstens <b>${pt.deckel} %</b>.`);   // (v1.5.188)
   }
   if (itemTitle === 'VPD (Vapour Pressure Deficit)' && pt && pt.vpdMin != null) {
     const t = _lastEnvVal('temp'), r = _lastEnvVal('humidity');

@@ -91,8 +91,11 @@ const HELFER = `
     const z = JSON.parse(E(`JSON.stringify(KLIMA_ZIEL)`));
     const gleich = (k, vpd, temp, deckel, stufe, boden) => JSON.stringify([z[k].vpd, z[k].temp, z[k].deckel, z[k].deckelStufe, z[k].boden])
       === JSON.stringify([vpd, temp, deckel, stufe, boden]);
-    pruef('Späte Blüte, Spülen, IceFlush, Erntetag: 1,2–1,5 kPa · 22–26 °C · Deckel 60 % kritisch',
-      ['spaet', 'spuelen', 'ice', 'ernte'].every(k => gleich(k, [1.2, 1.5], [22, 26], 60, 'critical', null)), JSON.stringify(z.spaet));
+    pruef('Späte Blüte, Spülen, IceFlush-Tag: 1,2–1,5 kPa · 22–26 °C · Deckel 60 % kritisch',
+      ['spaet', 'spuelen', 'ice'].every(k => gleich(k, [1.2, 1.5], [22, 26], 60, 'critical', null)), JSON.stringify(z.spaet));
+    // (v1.5.188) Bewusst angepasst: Dunkelphase und Erntetag ohne VPD-Band (ohne Licht kein Band, test_dunkelphase.js).
+    pruef('Dunkelphase und Erntetag: kein Band, keine Temperatur · Deckel 60 % kritisch',
+      ['dunkel', 'ernte'].every(k => gleich(k, null, null, 60, 'critical', null)), JSON.stringify([z.dunkel, z.ernte]));
     pruef('Frühe Blüte 1,0–1,3 · 23–27 °C · 65 %; mittlere 1,2–1,5 · 22–26 °C · 65 %',
       gleich('frueh', [1.0, 1.3], [23, 27], 65, 'high', null) && gleich('mittel', [1.2, 1.5], [22, 26], 65, 'high', null), JSON.stringify([z.frueh, z.mittel]));
     pruef('Anzucht 0,8–1,2 · 22–28 °C · 80 %; Sämling 0,4–0,8 · 22–26 °C · ohne Deckel, Boden 40 %',
@@ -166,8 +169,10 @@ const HELFER = `
     const t = r.spaet;
     pruef('Späte Blüte: VPD 1,2–1,5 · 22–26 °C · RLF 39–48 % bei 24 °C · Deckel 60', t.label === 'Späte Blüte' && t.vpdMin === 1.2 && t.vpdMax === 1.5
       && t.tempMin === 22 && t.tempMax === 26 && t.rhMin === 39 && t.rhMax === 48 && t.deckel === 60, JSON.stringify(t));
-    pruef('Spülen, IceFlush und Ernte mit demselben Band; Sämling 0,4–0,8; Trocknen unverändert 18–20 °C / 55–62 %',
-      r.flush.label === 'Spülen' && r.ice.label === 'IceFlush' && r.ernte.label === 'Ernte' && [r.flush, r.ice, r.ernte].every(x => x.vpdMin === 1.2 && x.vpdMax === 1.5 && x.rhMin === 39)
+    // (v1.5.188) Bewusst angepasst: Der Erntetag hat kein Band mehr, nur den Deckel.
+    pruef('Spülen und IceFlush-Tag mit demselben Band, Erntetag nur mit Deckel 60 %; Sämling 0,4–0,8; Trocknen unverändert 18–20 °C / 55–62 %',
+      r.flush.label === 'Spülen' && r.ice.label === 'IceFlush' && r.ernte.label === 'Ernte' && [r.flush, r.ice].every(x => x.vpdMin === 1.2 && x.vpdMax === 1.5 && x.rhMin === 39)
+      && r.ernte.vpdMin === null && r.ernte.rhMin === null && r.ernte.rhMax === 60
       && r.saemling.vpdMin === 0.4 && r.saemling.vpdMax === 0.8 && r.dry.tempMin === 18 && r.dry.rhMax === 62, JSON.stringify(r));
   });
 

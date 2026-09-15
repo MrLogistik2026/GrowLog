@@ -167,7 +167,8 @@ Band nur mit 11–20 % RLF erreichbar gewesen.
 | Anzucht | 0,8–1,2 kPa | 22–28 °C | 22 °C 43–58 · 25 °C 51–63 · 28 °C 57–68 % | 80 % |
 | Frühe Blüte (Stretch) | 1,0–1,3 kPa | 23–27 °C | 23 °C 42–53 · 25 °C 48–57 · 27 °C 52–61 % | 65 % |
 | Mittlere Blüte | 1,2–1,5 kPa | 22–26 °C | 22 °C 32–43 · 24 °C 38–48 · 26 °C 44–53 % | 65 % |
-| Späte Blüte, Spülen, IceFlush, Erntetag | 1,2–1,5 kPa | 22–26 °C | wie mittlere Blüte | 60 % |
+| Späte Blüte, Spülen, IceFlush-Tag | 1,2–1,5 kPa | 22–26 °C | wie mittlere Blüte | 60 % |
+| Dunkelphase nach dem IceFlush, Erntetag | kein Band | keine | — | 60 % |
 
 **Warum die Spätblüte kein höheres VPD bekommt:** Schimmelschutz entsteht an der Blüte, nicht am Blatt.
 *Botrytis* braucht zum Keimen Wasser oder sehr hohe Feuchte, und im Inneren reifer Blüten ist es
@@ -186,6 +187,14 @@ Blütenmasse wie bei 0,25 kPa (Corredor-Perilla et al. 2025, Front Plant Sci 16:
 et al. 2008, Physiol Mol Biol Plants 14:299). *Botrytis* zerstört Blüten auch bei 17–24 °C schnell
 (Mahmoud et al. 2023, Botany 101:200; geprüft am Abstract). Kühle schützt nicht — sie hebt bei gleicher
 Wassermenge in der Luft nur die relative Feuchte.
+
+**Warum Dunkelphase und Erntetag kein Band haben:** Das VPD-Band beschreibt den Antrieb der Transpiration bei
+Licht. Nachts sind die Stomata vieler Arten nicht ganz geschlossen, die Transpiration erreicht aber typisch nur
+5–15 % des Tageswerts (Caird, Richards & Donovan 2007, Plant Physiol 143:4, doi:10.1104/pp.106.092940). Ohne
+Strahlung und mit kaum Verdunstung entfällt auch der Blattabzug (2.1). Ein Rat wie „Temperatur anheben" brächte der
+Pflanze nichts und ließe nur Terpene schneller verdunsten (14). Am Erntetag wird vor dem Lichtangang geschnitten,
+danach gilt das Trockenklima (12.1). Es bleibt der Deckel von 60 %: Kühlt das Zelt ab, steigt die relative Feuchte
+von selbst (13.5).
 
 **Knapp daneben:** ±0,1 kPa entsprechen bei 24 °C etwa ±0,6 K Unsicherheit im Blattabzug (2.1). Dort
 meldet die App „knapp", ohne Handlungsdruck.
@@ -827,7 +836,7 @@ Nach diesen Punkten wird jede neue Warnung, jeder neue Default und jeder Text ge
    drastisch beschleunigt durch stehende Nässe (VPD ≤ 0) und fehlende Luftbewegung. Das
    Mikroklima im Bud-Inneren liegt deutlich über dem Raumwert. Deshalb prüft man von innen, nicht
    von außen. Deckel in GrowSmart (`KLIMA_ZIEL`): frühe und mittlere Blüte 65 %, späte Blüte, Spülen,
-   IceFlush und Erntetag 60 %. Er gilt für jede Messung — nachts steigt die relative Feuchte bei
+   IceFlush, Dunkelphase und Erntetag 60 %. Er gilt für jede Messung — nachts steigt die relative Feuchte bei
    gleicher Wassermenge in der Luft: 24 °C / 50 % werden bei 20 °C zu rund 64 %. In der Blüte deshalb
    zur kühlsten Stunde messen. Belege: Über 70 % RLF zerstörte Bud Rot Blüten im Gewächshaus schnell
    (Mahmoud et al. 2023, Abstract); Infektionen zwischen Blütetag 14 und 28 führten zum schwersten Befall,
