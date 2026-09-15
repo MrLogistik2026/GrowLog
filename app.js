@@ -3441,7 +3441,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.205';
+const APP_VERSION = 'v1.5.206';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -11718,8 +11718,65 @@ function _waterConsumptionInfo(c, p, iso) {
  *
  * @returns {null | { days, dateIso, currentPct, targetPct, rateSamples }}
  */
+/**
+ * (v1.5.206) RESERVE ALS ZEITPUNKT — wie schnell trocknet dieser Topf zwischen zwei Güssen?
+ * Aus dem letzten vollständigen Zyklus: Der vorletzte Guss füllt auf (100), am letzten Gusstag wird vor dem Gießen gemessen
+ * (Hebe-Test oder Waage). Tagesabnahme = (100 − max(20, Messung)) / Tage dazwischen. Ohne diese Messung keine Aussage —
+ * geschätzt wird nicht (ANBAU.md 15). Gedanke wie in FAO-56 (bei hohem Verbrauch früher bewässern), auf den Topf übertragen.
+ * Gegengeprüft von der Gießmengen-Prüfung (Runde 3, Schritt 9): im Topfmodell mit 220 ml/L 0–1 statt 13 Stress-Tage, im
+ * normalen Topf keine zusätzlichen Güsse. Der Gießpunkt selbst gleitet nicht.
+ */
+function tagesAbnahme(c, iso) {
+  if (!c || !iso) return null;
+  let letzter = null, vorletzter = null;
+  for (let i = 1; i <= 21 && !vorletzter; i++) {
+    const k = isoPlus(iso, -i);
+    const cd = _gussCd(c, k);
+    if (!cd || !(_gussZahl(cd.water) > 0)) continue;
+    const pk = phase(k, c);
+    if (!pk || pk.ph === 'flush' || pk.ph === 'ice') continue;
+    if (!letzter) letzter = { k, cd }; else vorletzter = { k };
+  }
+  if (!letzter || !vorletzter) return null;
+  const tage = isoDiff(letzter.k, vorletzter.k);
+  if (!(tage >= 1 && tage <= 10)) return null;
+  let messung = null;
+  if (_waageAktiv(c) && _gussZahl(letzter.cd.weightG) != null) {
+    messung = calcRestPct(letzter.cd.weightG, c.saturatedWeight, c.dryWeight, giesspunktFor(c).anker);
+  } else {
+    const r = _gussZahl(letzter.cd.restPct);
+    if (r != null && r < 85) messung = r;   // ab 85 ist es kein Wert vor dem Gießen
+  }
+  if (messung == null) return null;
+  return { proTag: (100 - Math.max(20, messung)) / tage, tage, messung, letzterGuss: letzter.k };
+}
+
+/** (v1.5.206) An einem Tag ohne Guss: Läge der heute gemessene Topf morgen unter der Gießpunkt-Untergrenze, heute gießen. */
+function _reserveStatus(c, iso, restHeute) {
+  const p = phase(iso, c);
+  if (!p || !(p.ph === 'bloom' || (p.ph === 'anzucht' && (p.day || 1) >= DRAIN_AB_TAG))) return null;
+  if (typeof isGiessTag === 'function' && isGiessTag(iso, c)) return null;
+  const r = parseFloat(restHeute);
+  if (!isFinite(r)) return null;
+  const gp = giesspunktFor(c);
+  if (r < gp.bis) return null;   // schon am Gießpunkt — das sagt die Bewertung selbst
+  const ab = tagesAbnahme(c, iso);
+  if (!ab) return null;
+  const morgen = r - ab.proTag;
+  if (morgen >= gp.von) return null;
+  return { status: 'reserve', color: 'var(--orange)', label: 'Heute gießen — der Topf trocknet schnell',
+    text: `Topf bei ~${Math.round(r)} % Restgewicht. Zwischen deinen letzten beiden Güssen hat er etwa ${Math.round(ab.proTag)} Punkte am Tag verloren — morgen läge er bei ~${Math.max(0, Math.round(morgen))} %, unter dem Gießpunkt (${gp.von} %). Heute gießen, auch wenn kein Gießtag ist.` };
+}
+
 function drybackForecast(c, p, iso) {
   if (!c || !p) return null;
+  // (v1.5.206) Eine Antwort auf „wann": Fällt der heute gemessene Topf bis morgen unter die Untergrenze des Gießpunkts
+  // (_reserveStatus), heißt es hier wie in der Statusbox „heute" — auch ohne gelernte Trocknungsrate. Sonst stand unter
+  // „Heute gießen" im selben Eintrag „Nach deinem Trocknungs-Tempo eher morgen", und die Startseite sagte „~morgen".
+  if (c.medium !== 'hydro') {
+    const _heute = iso || todayISO(), _rH = restgewichtHeute(c, _heute);
+    if (_rH != null && _reserveStatus(c, _heute, _rH)) return { days: 0, dateIso: _heute, currentPct: Math.round(_rH), targetPct: giesspunktFor(c).anker, rateSamples: 0, reserve: true };
+  }
   // Nur Phasen mit echtem Gieß-Dryback. Anzucht = Sämling-Schutz (eigene Rampe), nach der
   // Ernte ist die Pflanze geschnitten, Hydro hat keinen Substrat-Dryback.
   if (['anzucht', 'vorzucht', 'flush', 'ice', 'harvest', 'dry', 'cure'].includes(p.ph)) return null;
@@ -27178,6 +27235,9 @@ function renderEntry(iso) {
           savedForDisplay = savedRest;
           var _defaultSource2 = (savedRest === null) ? defaultSource : null;
         }
+        // (v1.5.206) RESERVE: Trocknet der Topf schneller, als der Gießrhythmus erlaubt, heißt es heute schon „gießen" — nur mit
+        // heutiger Messung, aus dem gemessenen Tempo des letzten vollständigen Zyklus (tagesAbnahme).
+        if (savedForDisplay !== null && restVal != null && !(ctx && ctx.noWaterPhase)) clf = _reserveStatus(c, iso, restVal) || clf;
         const showReset2 = !isScale && savedForDisplay !== null;
         const header = `<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px">
           <div style="display:flex;align-items:center;gap:6px">
@@ -27316,7 +27376,8 @@ function renderEntry(iso) {
       let drybackInfo = '';
       if (iso === todayISO()) {
         const _efc = drybackForecast(c, p, iso);
-        if (_efc) {
+        // (v1.5.206) Greift die Reserve, sagt die Statusbox darüber schon „Heute gießen" samt Zahlen — keine zweite Zeile.
+        if (_efc && !_efc.reserve) {
           const _ewhen = _drybackShort(_efc.dateIso, _efc.days);
           const _eextra = _efc.days > 1 ? ` (in ${_efc.days} Tagen)` : '';
           drybackInfo = `<div style="background:rgba(90,171,240,0.06);border:0.5px solid rgba(90,171,240,0.25);border-radius:10px;padding:8px 12px;margin-bottom:8px;display:flex;align-items:flex-start;gap:8px;font-size:11px;color:var(--text-sub)">

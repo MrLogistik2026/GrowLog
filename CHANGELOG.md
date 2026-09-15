@@ -2,6 +2,24 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-15 — v1.5.206
+
+- **Heute gießen, wenn der Topf bis morgen unter den Gießpunkt fällt.** Befund der Gießmengen-Prüfung (Runde 3, Schritt 9):
+  Gießpunkt und Rhythmus sind fest. Trocknet ein Topf schneller, als der Rhythmus erlaubt — kleiner Topf, große Pflanze,
+  trockene Luft —, fällt er zwischen zwei Gießtagen unter die Stressgrenze. Im Topfmodell der Prüfung mit 220 ml je Liter
+  waren das 13 Stress-Tage in einem Zyklus; bei Automatics ist jeder davon ein dauerhafter Verlust (`ANBAU.md` 9).
+- **Mechanismus:** Der vorletzte Guss füllt den Topf, am letzten Gusstag wird vor dem Gießen gemessen (Hebe-Test oder Waage).
+  Daraus folgt, wie viele Punkte Restgewicht der Topf am Tag verliert (`tagesAbnahme`). Zeigt die heutige Messung an einem
+  Tag ohne geplanten Guss, dass er morgen unter der Untergrenze des Gießpunkts läge (Erde 25 %, Coco 60 %), sagt die
+  Statusbox im Eintrag „Heute gießen — der Topf trocknet schnell", mit beiden Zahlen. Ohne Messung vor dem letzten Guss keine
+  Aussage — geschätzt wird nicht (`ANBAU.md` 15). Der Gießpunkt selbst gleitet nicht. Gilt in der Blüte und ab Tag 25 der
+  Anzucht. In der Prüfung: 0–1 statt 13 Stress-Tage, im normalen Topf kein zusätzlicher Guss.
+- **Eine Antwort auf „wann":** Beim Durchklicken mit Patricks Daten stand unter der neuen Box „Nach deinem Trocknungs-Tempo
+  eher morgen". Die Vorhersage (`drybackForecast`) rechnet mit der gelernten Rate über viele Messungen und zielt auf 30 %, die
+  Reserve fragt, ob der Topf morgen schon unter 25 % liegt. Greift die Reserve, sagt jetzt auch die Vorhersage „heute": auf
+  der Startseite „💧 ~heute" statt „~morgen", im Eintrag entfällt die zweite Zeile.
+- `test_reserve.js` (13 Prüfungen, beide Zeitzonen).
+
 ## 2026-09-15 — v1.5.205
 
 - **Die Gießmenge kommt aus dem Topf.** Befund der Gießmengen-Prüfung (Runde 3, von einem zweiten Agenten gegengeprüft), mit
