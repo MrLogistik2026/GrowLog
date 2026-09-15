@@ -85,13 +85,16 @@ const KURVE = (eigen) => `(function(){
     const k = JSON.parse(E(KURVE(null)));
     const tag = (d) => k.find(x => x.d === d);
     console.log('    ' + k.filter(x => x.d >= 19 && x.d <= 30).map(x => x.d + ':' + x.sug).join(' · '));
-    pruef('Tag 22 folgt der eigenen Rampe (roh ' + tag(22).raw + ' ml), höchstens 700 ml', tag(22).sug === tag(22).raw && tag(22).sug <= 700, 'Vorschlag ' + tag(22).sug);
+    // (v1.5.205) Ab Tag 22 kommt die Menge aus der Startkurve, die glatt an Tag 21 anschließt — nicht mehr aus der Tag-Leiter.
+    pruef('Tag 22 schließt an Tag 21 an (Startkurve), höchstens 700 ml', tag(22).sug >= tag(21).sug && tag(22).sug <= 700, 'Vorschlag ' + tag(21).sug + ' → ' + tag(22).sug);
     pruef('Tag 21 → 22 höchstens +25 %', tag(22).sug <= tag(21).sug * 1.25, tag(21).sug + ' → ' + tag(22).sug);
     let bruch = null;
     for (let i = 1; i < k.length; i++) if (k[i].d <= 35 && k[i].sug < k[i - 1].sug) bruch = k[i - 1].d + ':' + k[i - 1].sug + ' → ' + k[i].d + ':' + k[i].sug;
     pruef('Tag 15–35 steigt die Menge nie ab', bruch === null, bruch);
-    const drueber = k.filter(x => x.max != null && x.sug > x.max).map(x => x.d + ':' + x.sug + '>' + x.max);
-    pruef('Nach oben begrenzt der Korridor weiter (Tag 22–40)', drueber.length === 0, drueber.join(' '));
+    // (v1.5.205) Nach oben begrenzt die Nachfüll-Grenze V (11 L Erde: 3750 ml), nicht mehr der natürliche Korridor der Tag-Leiter.
+    const V = E(`Math.round(nachfuellGrenze(S.cycles[0], '2026-04-10', null))`);
+    const drueber = k.filter(x => x.d >= 22 && x.sug > V).map(x => x.d + ':' + x.sug + '>' + V);
+    pruef('Nach oben begrenzt die Nachfüll-Grenze (Tag 22–40)', V === 3750 && drueber.length === 0, 'V=' + V + ' ' + drueber.join(' '));
   }
 
   console.log('\nB - Ein selbst gesetzter Korridor hebt weiter an');

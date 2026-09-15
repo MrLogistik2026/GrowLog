@@ -80,6 +80,15 @@ const setDrain = (E, ml) => E(ml === null
   ? `delete S.entries[isoPlus(S.cycles[0].startDate, ${T104})].cycleData[S.cycles[0].id].drainMl; saveS();`
   : `S.entries[isoPlus(S.cycles[0].startDate, ${T104})].cycleData[S.cycles[0].id].drainMl = '${ml}'; saveS();`);
 const vorschlag = (E) => E(`(function(){ const c=S.cycles[0], i=isoPlus(c.startDate,${T104}); return waterSuggestion(c, phase(i,c), i); })()`);
+// (v1.5.205) Die Gießmenge kommt aus dem Topf: Ein Drain wirkt auf den NÄCHSTEN Guss — gemessen wird er erst nach dem Gießen.
+// Die Mengen-Prüfungen setzen ihn deshalb auf Patricks vorletzten Blüte-Guss (Tag 101, 12000 ml, 4 Pflanzen) und lesen den
+// Vorschlag am Morgen von Tag 104 — ohne den Eintrag dieses Tages, so wie Patrick ihn vor dem Gießen gesehen hätte.
+const T101 = 100;
+const setDrain101 = (E, ml) => E(ml === null
+  ? `delete S.entries[isoPlus(S.cycles[0].startDate, ${T101})].cycleData[S.cycles[0].id].drainMl; saveS();`
+  : `S.entries[isoPlus(S.cycles[0].startDate, ${T101})].cycleData[S.cycles[0].id].drainMl = '${ml}'; saveS();`);
+const vorschlagMorgen = (E) => E(`(function(){ const c=S.cycles[0], i=isoPlus(c.startDate,${T104}); const cd=S.entries[i].cycleData[c.id];
+  delete S.entries[i].cycleData[c.id]; const v = waterSuggestion(c, phase(i,c), i); S.entries[i].cycleData[c.id] = cd; return v; })()`);
 
 (async () => {
   console.log('TZ=' + (process.env.TZ || '(System)'));
@@ -117,9 +126,9 @@ const vorschlag = (E) => E(`(function(){ const c=S.cycles[0], i=isoPlus(c.startD
   {
     const { E } = await load();
     const reihe = [];
-    for (const ml of [450, 900, 1350, 1600, 1800, 2250, 2700, 3600]) {
-      setDrain(E, ml);
-      reihe.push({ pct: Math.round(ml / 9000 * 1000) / 10, v: vorschlag(E) });
+    for (const ml of [600, 1200, 1800, 2136, 2400, 3000, 3600, 4800]) {
+      setDrain101(E, ml);
+      reihe.push({ pct: Math.round(ml / 12000 * 1000) / 10, v: vorschlagMorgen(E) });
     }
     let bruch = null;
     for (let i = 1; i < reihe.length; i++) {
@@ -133,8 +142,9 @@ const vorschlag = (E) => E(`(function(){ const c=S.cycles[0], i=isoPlus(c.startD
     const imZiel = reihe.filter(r => r.pct >= 15 && r.pct <= 20).map(r => r.v);
     pruef('Im Zielfenster ist der Vorschlag stabil',
       new Set(imZiel).size === 1, 'Werte: ' + imZiel.join(', '));
-    pruef('Und er entspricht der gegossenen Menge (9000 ml)',
-      imZiel[0] === 9000, 'vorschlag=' + imZiel[0]);
+    // (v1.5.205) Der Vorschlag folgt den letzten drei Güssen (3:2:1), nicht nur dem letzten.
+    pruef('Und er liegt nahe am letzten Guss (9000 ml fuer 3 Pflanzen, hoechstens 10 % daneben)',
+      Math.abs(imZiel[0] - 9000) <= 900, 'vorschlag=' + imZiel[0]);
   }
 
   console.log('');
@@ -144,24 +154,26 @@ const vorschlag = (E) => E(`(function(){ const c=S.cycles[0], i=isoPlus(c.startD
     // Patricks Zustand: eigene Korridore gesetzt
     pruef('Es gibt einen eigenen Korridor fuer die Reife-Phase',
       E("!!(S.cycles[0].waterRange && S.cycles[0].waterRange.reife)"));
-    const ohne = vorschlag(E);
-    setDrain(E, 450);   // 5 % - viel zu wenig
-    const mit = vorschlag(E);
+    const ohne = vorschlagMorgen(E);
+    setDrain101(E, 600);   // 5 % - viel zu wenig
+    const mit = vorschlagMorgen(E);
     pruef('Trotz eigenem Korridor zieht die Messung die Menge hoch',
       mit > ohne, `ohne=${ohne} mit=${mit}`);
-    pruef('Die Anhebung ist spuerbar (mindestens 15 %)',
-      mit >= ohne * 1.15, `ohne=${ohne} mit=${mit}`);
+    // (v1.5.205) Eine Messung zählt mit Gewicht 3 von 6 in den Nutzer-Faktor — erst ein wiederholt zu geringer Drain hebt voll.
+    // Das dämpft eine einzelne Fehlmessung (Untersetzer, Stofftopf).
+    pruef('Die Anhebung ist spuerbar (mindestens 5 %)',
+      mit >= ohne * 1.05, `ohne=${ohne} mit=${mit}`);
   }
 
   console.log('');
   console.log('D - Spuelen und IceFlush bleiben unberuehrt');
   {
     const { E } = await load();
-    setDrain(E, 450);   // starke Nachfuehrung aktiv
+    setDrain101(E, 600);   // starke Nachfuehrung aktiv
     const spuelV = E(`(function(){ const c=S.cycles[0], i=isoPlus(c.startDate,109); return waterSuggestion(c, phase(i,c), i); })()`);
     const iceV = E(`(function(){ const c=S.cycles[0], i=isoPlus(c.startDate,113); return waterSuggestion(c, phase(i,c), i); })()`);
     // Ohne Nachfuehrung dieselben Tage
-    setDrain(E, null);
+    setDrain101(E, null);
     const spuelO = E(`(function(){ const c=S.cycles[0], i=isoPlus(c.startDate,109); return waterSuggestion(c, phase(i,c), i); })()`);
     const iceO = E(`(function(){ const c=S.cycles[0], i=isoPlus(c.startDate,113); return waterSuggestion(c, phase(i,c), i); })()`);
     pruef('Spuelmenge unveraendert', spuelV === spuelO, `mit=${spuelV} ohne=${spuelO}`);
@@ -198,8 +210,8 @@ const vorschlag = (E) => E(`(function(){ const c=S.cycles[0], i=isoPlus(c.startD
   {
     const { E } = await load();
     E('S.beginnerMode = false');
-    setDrain(E, 900);   // 10 %
-    E(`openEntry(isoPlus(S.cycles[0].startDate, ${T104}))`);
+    setDrain101(E, 1200);   // 10 % an Tag 101 — der Lern-Status dieses Tages sagt, was es für den nächsten Guss heißt
+    E(`openEntry(isoPlus(S.cycles[0].startDate, ${T101}))`);
     await new Promise((r) => setTimeout(r, 200));
     const txt = E("document.getElementById('scr-entry').textContent.replace(/\\s+/g,' ')");
     pruef('Der Ablaufwert wird genannt', /10 %/.test(txt), txt.slice(0, 60));
@@ -228,12 +240,14 @@ const vorschlag = (E) => E(`(function(){ const c=S.cycles[0], i=isoPlus(c.startD
 
     // Die ganze Kennlinie, nicht ein Punkt (Lehre aus v1.5.112)
     setDrain(E, null);
-    const ohneMessung = vorschlag(E);
+    setDrain101(E, null);
+    const ohneMessung = vorschlagMorgen(E);
     const reihe = [];
-    for (const ml of [0, 90, 200, 441, 450, 900, 1600, 2700, 3600]) {
-      setDrain(E, ml);
-      reihe.push({ pct: Math.round(ml / 9000 * 1000) / 10, v: vorschlag(E) });
+    for (const ml of [0, 120, 264, 588, 600, 1200, 2136, 3600, 4800]) {
+      setDrain101(E, ml);
+      reihe.push({ pct: Math.round(ml / 12000 * 1000) / 10, v: vorschlagMorgen(E) });
     }
+    setDrain101(E, null);
     const zeig = JSON.stringify(reihe.map(r => r.pct + '%:' + r.v)) + ' ohne=' + ohneMessung;
     let bruch = null;
     for (let i = 1; i < reihe.length; i++) {
@@ -268,8 +282,8 @@ const vorschlag = (E) => E(`(function(){ const c=S.cycles[0], i=isoPlus(c.startD
     pruef('Ablauf-Feld fehlt am Giesstag 24 und steht am Giesstag 27', feld24 === false && feld27 === true, `24=${feld24} 27=${feld27}`);
 
     // Lern-Status bei 0 %
-    setDrain(E, 0);
-    E(`openEntry(isoPlus(S.cycles[0].startDate, ${T104}))`);
+    setDrain101(E, 0);
+    E(`openEntry(isoPlus(S.cycles[0].startDate, ${T101}))`);
     await new Promise((r) => setTimeout(r, 200));
     const txt = E("document.getElementById('scr-entry').textContent.replace(/\\s+/g,' ')");
     pruef('Bei 0 % sagt der Lern-Status "kam unten nichts an" und geht nach oben',

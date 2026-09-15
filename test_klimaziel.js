@@ -249,7 +249,8 @@ const HELFER = `
         .map(d => { setDebugDate(d); return waterSuggestion(c, phase(d, c), d); });
       return JSON.stringify({ n, falsch, giess }); })()`));
     pruef(`Klimafaktor an allen ${r.n} Klimatagen wie vor dem Umbau`, r.n > 80 && r.falsch.length === 0, r.falsch.slice(0, 3).join(' | '));
-    pruef('Gießvorschläge an neun Tagen der Blüte unverändert', JSON.stringify(r.giess) === JSON.stringify([4000, 5000, 9500, 11000, 11000, 13200, 13200, 10550, 7900]), JSON.stringify(r.giess));
+    // (v1.5.205) Neu festgelegt: Die Gießmenge kommt aus dem Topf (Patricks Güsse im Mittel 7,6 % statt 15,6 % daneben).
+    pruef('Gießvorschläge an neun Tagen der Blüte wie festgelegt', JSON.stringify(r.giess) === JSON.stringify([3750, 6500, 10500, 11500, 12250, 14750, 15000, 12600, 9000]), JSON.stringify(r.giess));
   });
 
   await abschnitt('K - Die Eintrags-Warnungen doppeln den Umgebungsblock nicht mehr', async () => {

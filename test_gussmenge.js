@@ -39,7 +39,7 @@ const { boot } = require('./audit_lib');
       }
     }
 
-    // 4) Ein SELBST gesetzter Korridor bleibt die Steuerung — die Menge gleitet dorthin
+    // 4) (v1.5.205) Ein SELBST gesetzter Korridor ist Startwert — die Messung bleibt
     aufbau({ reife: { min: 500, max: 800 } });
     const verlauf = [];
     for (let d = 97; d <= 106; d += 3) {
@@ -50,9 +50,12 @@ const { boot } = require('./audit_lib');
       saveS();
     }
     out.gleitet = verlauf;
-    if (!(verlauf[0] > verlauf[verlauf.length - 1])) fehler.push('Menge gleitet nicht auf den eigenen Korridor zu');
+    // Bis v1.5.204 sollte die Menge hier auf den eigenen Korridor (500–800 ml) hinabgleiten. Seit der Gießmenge aus dem Topf ist
+    // ein eigener Korridor Startwert, keine Grenze gegen die eigene Messung: Wer 3000 ml je Pflanze gießt, bekommt nicht Guss
+    // für Guss weniger vorgeschlagen, weil früher einmal 500–800 eingetragen war (ANBAU.md 15).
+    if (verlauf.some(v => v < 2700)) fehler.push('eigener Korridor zieht die Menge von den gemessenen Güssen weg: ' + verlauf.join(' → '));
     for (let i = 1; i < verlauf.length; i++) {
-      if ((verlauf[i - 1] - verlauf[i]) / verlauf[i - 1] > 0.15) fehler.push('Absenkung zu ruckartig: ' + verlauf[i - 1] + ' → ' + verlauf[i]);
+      if (Math.abs(verlauf[i] - verlauf[i - 1]) / verlauf[i - 1] > 0.15) fehler.push('Sprung: ' + verlauf[i - 1] + ' → ' + verlauf[i]);
     }
 
     // 5) Ins Spülen darf die Menge springen — dort ist mehr Absicht

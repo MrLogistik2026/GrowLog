@@ -1065,6 +1065,11 @@ const GIESSPUNKT = {
   coco: { von: 60, bis: 85, anker: 70, knopf: 'Mittel' },
 };
 function giesspunktFor(c) { return (c && c.medium === 'coco') ? GIESSPUNKT.coco : GIESSPUNKT.erde; }
+// (v1.5.205) Gießmenge aus dem Topf — Konventionen; Herleitung bei gussMengeJePflanze und in ANBAU.md 1.1, 7.5.
+const WASSER_JE_LITER = 300;                                  // nutzbares Wasser (Restgewicht 100 → 20) je Liter Topf, bis Waage oder Drain es messen
+const STARTKURVE = { mlTag11L: 825, plateauAnteil: 0.6 };     // Tagesbedarf im 11-L-Topf auf dem Plateau, erreicht bei Anzucht + 60 % der Blüte
+const GUSS_RAMPE = { runter: 0.75, rauf: 1.30 };              // höchstens −25 % / +30 % gegenüber dem jüngsten belastbaren Guss
+const KLIMA_VORLAGEN = { '21/40': 1, '24/55': 1, '25/60': 1 }; // Wertepaare der alten Autofill-Tabelle — keine Messung
 
 // (v1.5.187) KLIMA JE PHASE AUS EINER QUELLE (ANBAU.md 2.2; Patricks Entscheidung vom 15.09.2026: Option B). Fest sind zwei
 // Größen: das VPD am Blatt (Antrieb der Transpiration) und die Temperatur bei Licht an. Die Luftfeuchte folgt daraus
@@ -4437,7 +4442,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.204';
+const APP_VERSION = 'v1.5.205';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -12309,6 +12314,8 @@ function waterBasis(c, p, iso) {
   if (p.ph === 'harvest' || p.ph === 'dry' || p.ph === 'cure') return 'none';
   const key = waterPhaseKey(c, p);
   if (key === 'anzucht' && c.waterMl && c.waterMl.anzucht != null && c.waterMl.anzucht > 0) return 'fixed';
+  // (v1.5.205) Ab Tag 22 kommt die Menge aus dem Topf — dieselbe Quelle wie waterSuggestion.
+  if (gussMengeJePflanze(c, p, iso || todayISO())) return 'topf';
   if (p.ph === 'anzucht' || p.ph === 'vorzucht') return 'anzucht';
   if (c.medium !== 'hydro') {
     const cdT = S.entries?.[iso]?.cycleData?.[c.id];
@@ -12905,6 +12912,225 @@ function _measuredPerPlant(c, iso) {
   return m > 0 ? m : null;
 }
 
+// ── GIESSMENGE AUS DEM TOPF (v1.5.205) ──────────────────────────────────────────────────────────────────────────────
+// Befund der Gießmengen-Prüfung (Runde 3, gegengeprüft; UEBERGABE 0m.1): Der alte Deckel _waterCapPerPot las den Gießpunkt-Anteil
+// (40/35/30 %) als Verbrauch je Guss. Ein frischer 11-L-Topf bekam ab Blütetag 15 flach 1500 ml, egal ob die Blüte 42 oder 105
+// Tage dauert; von Tag 22 auf 23 sprang die Menge um 38 %. Der Drain wirkte nur nach einer getippten Menge, ein eigener Korridor
+// sperrte die Messung aus, und Patricks Vorschlag am Morgen lag im Mittel 13 % unter seinem Guss.
+//
+// Mechanismus (ANBAU.md 1, 5.1, 7.4): WANN gegossen wird, sagt das Restgewicht (GIESSPUNKT). WIE VIEL, sagt das Defizit seit dem
+// letzten Auffüllen plus Drain — aufgenommen = gegossen · (1 − Drain). In den Topf passt höchstens V = S · (100 − r) / 80 /
+// (1 − Drain-Ziel); was darüber geht, läuft als Drain ab. Nach dem Abtropfen hält ein Topf dieselbe Wassermenge, egal wie viel
+// gegossen wurde — Staunässe kommt vom zu häufigen Gießen, nicht von einer vollen Menge mit Drain.
+//
+// Rangfolge: Messung heute (Waage > Hebe-Test) > Nutzer-Faktor aus den letzten bis zu drei belastbaren Güssen (Drain-Menge >
+// eigene Menge mit Drain-EC/-pH > eigene Menge; eine übernommene Menge mit Drain-EC bestätigt nur „es kam Drain") > Startkurve.
+// Alles ≤ V. Unverändert: Sämlingsrampe bis Tag 21, Spülen, IceFlush, Outdoor, Hydro, Anzucht-Festmenge.
+function _gussCd(c, iso) { return (S.entries && S.entries[iso] && S.entries[iso].cycleData) ? S.entries[iso].cycleData[c.id] : null; }
+function _gussZahl(v) { if (v == null || v === '') return null; const x = parseFloat(v); return isFinite(x) ? x : null; }
+function _gussPflanzen(c, cd, iso) { const n = Math.min(parseInt(cd.plantsAtWatering) || 0, _plantsCap(c)); return n >= 1 ? n : getEffectivePlantCount(c, iso); }
+function _gussIv(c, iso, ph) { const k = (ph === 'anzucht' || ph === 'vorzucht') ? 'anzucht' : ph; return Math.max(1, _ivAt(c, k, iso) || 1); }
+function _waageAktiv(c) { return c.weightMode === 'scale' && c.saturatedWeight && c.dryWeight && c.saturatedWeight > c.dryWeight; }
+function _gussUebernommen(cd) { return !!(cd && cd._suggested && cd._suggested.water); }
+
+/** Heute gemessenes Restgewicht (Waage vor Hebe-Test), sonst null. */
+function restgewichtHeute(c, iso) {
+  const cd = _gussCd(c, iso);
+  if (!cd) return null;
+  if (_waageAktiv(c) && _gussZahl(cd.weightG) != null) {
+    return Math.max(0, Math.min(100, calcRestPct(cd.weightG, c.saturatedWeight, c.dryWeight, giesspunktFor(c).anker)));
+  }
+  return _gussZahl(cd.restPct);
+}
+
+/** Nutzbares Wasser im Topf (ml, Restgewicht 100 → 20): Waage > Güsse mit Drain-Menge und Hebe-Test > WASSER_JE_LITER. */
+function wasserKapazitaet(c, iso) {
+  const pot = getPotSize(c);
+  if (_waageAktiv(c)) return { kap: (c.saturatedWeight - c.dryWeight) * 80 / (100 - giesspunktFor(c).anker), quelle: 'waage' };
+  const std = pot * WASSER_JE_LITER;
+  const gemessen = [], schranken = [];
+  const von = isoPlus(iso, -60);
+  Object.keys(S.entries || {}).forEach((k) => {
+    if (k >= iso || k < von) return;
+    const cd = _gussCd(c, k);
+    if (!cd) return;
+    const pk = phase(k, c);
+    if (!pk || pk.ph === 'flush' || pk.ph === 'ice' || !_drainMoeglich(pk)) return;
+    const f = drainFlow(cd);
+    if (!f) return;
+    const bleibt = Math.max(0, (f.gegossen - f.ml) / _gussPflanzen(c, cd, k));
+    const r = _gussZahl(cd.restPct);
+    const vor = r != null ? Math.max(20, Math.min(90, r)) : giesspunktFor(c).anker;
+    const est = bleibt * 80 / (100 - vor);
+    if (r != null && f.pct >= 10) gemessen.push(est); else schranken.push(est);
+  });
+  if (gemessen.length) {
+    const sortiert = gemessen.slice().sort((a, b) => a - b), mi = Math.floor(sortiert.length / 2);
+    const median = sortiert.length % 2 ? sortiert[mi] : (sortiert[mi - 1] + sortiert[mi]) / 2;
+    return { kap: Math.max(pot * 100, Math.min(pot * 700, median)), quelle: 'gemessen' };
+  }
+  const hoch = schranken.length ? Math.max(...schranken) : 0;
+  return hoch > std ? { kap: Math.min(pot * 700, hoch), quelle: 'drain' } : { kap: std, quelle: 'standard' };
+}
+
+/** Nachfüll-Grenze V je Pflanze: mehr passt nicht in den Topf, der Rest wird Drain. */
+function nachfuellGrenze(c, iso, restHeute) {
+  const { kap } = wasserKapazitaet(c, iso);
+  const von = giesspunktFor(c).von;
+  const r = (restHeute != null && restHeute < von) ? Math.max(0, restHeute) : von;
+  return kap * (100 - r) / 80 / (1 - DRAIN_ZIEL.mid / 100);
+}
+
+/** Startkurve in ml je Tag: vom Ende der Sämlingsrampe glatt bis zum Plateau × √(Topf/11) (Poorter et al. 2012). */
+function startkurveTag(c, day) {
+  const K0 = _waterSuggestionRaw(c, { ph: 'anzucht', day: 21 }) / Math.max(1, getInt(c, 'anzucht'));
+  const plateau = STARTKURVE.mlTag11L * Math.sqrt(getPotSize(c) / 11) / (1 - DRAIN_ZIEL.mid / 100);
+  const tPlat = anzuchtLenFor(c) + STARTKURVE.plateauAnteil * (c.bloomDays || PHASE_DEFAULTS.bloomDays);
+  const t = Math.max(0, Math.min(1, (day - 21) / Math.max(1, tPlat - 21)));
+  return K0 + (Math.max(K0, plateau) - K0) * t * t * (3 - 2 * t);
+}
+function startkurve(c, day, iso, ph) { return Math.min(nachfuellGrenze(c, iso, null), startkurveTag(c, day) * _gussIv(c, iso, ph)); }
+
+/** Transpiration relativ zu 1 kPa: E ∝ D · (1 − 0,6 · ln D) (Oren et al. 1999). Nur als Verhältnis benutzen. */
+function klimaTranspiration(D) { const d = Math.max(0.05, Math.min(1.95, parseFloat(D))); return d * (1 - 0.6 * Math.log(d)); }
+function klimaMittelGemessen(c, abIso, bisIso) {
+  let summe = 0, n = 0, k = isoPlus(abIso, 1), guard = 0;
+  while (k <= bisIso && guard++ < 60) {
+    const e = S.entries && S.entries[k];
+    const t = e ? _gussZahl(e.temp) : null, r = e ? _gussZahl(e.humidity) : null;
+    if (t != null && r != null && r > 0 && r <= 100 && !KLIMA_VORLAGEN[t + '/' + r]) { summe += klimaTranspiration(calcVPD(t, r)); n++; }
+    k = isoPlus(k, 1);
+  }
+  return n ? summe / n : null;
+}
+
+/** Was ein Guss über die Menge aussagt: 'drain' | 'drainwerte' | 'echo' | 'guss' | null (übernommen ohne Befund). */
+function gussBefund(c, cd, pk) {
+  const dm = _drainMoeglich(pk);
+  const f = dm ? drainFlow(cd) : null;
+  if (f) return { art: 'drain', f };
+  if (dm && (_gussZahl(cd.runoffEc) != null || _gussZahl(cd.runoffPh) != null)) return { art: _gussUebernommen(cd) ? 'echo' : 'drainwerte' };
+  if (!_gussUebernommen(cd)) return { art: 'guss' };
+  return null;
+}
+function _hatteBelastbarenGuss(c, iso) {
+  const ab = isoPlus(c.startDate, 21);
+  return Object.keys(S.entries || {}).some((k) => {
+    if (k < ab || k >= iso) return false;
+    const cd = _gussCd(c, k);
+    if (!cd || !(_gussZahl(cd.water) > 0)) return false;
+    const pk = phase(k, c);
+    if (!pk || pk.ph === 'flush' || pk.ph === 'ice') return false;
+    return !!gussBefund(c, cd, pk);
+  });
+}
+
+/** Nutzer-Faktor aus den letzten bis zu drei belastbaren Güssen (Gewichte 3:2:1), Bezug der Rampe, Klima-Verhältnis. */
+function gussBasis(c, iso, p) {
+  const ivH = _gussIv(c, iso, p.ph);
+  const fensterRef = Math.max(5, Math.min(14, 2 * ivH + 2));
+  const funde = [];
+  let ref = null;
+  for (let i = 1; i <= 14 && funde.length < 3; i++) {
+    const k = isoPlus(iso, -i);
+    const cd = _gussCd(c, k);
+    if (!cd) continue;
+    const w = _gussZahl(cd.water);
+    if (!(w > 0)) continue;
+    const pk = phase(k, c);
+    if (!pk || pk.ph === 'flush' || pk.ph === 'ice') continue;
+    if (pk.ph === 'anzucht' && (pk.day || 1) <= 21) break;
+    const bf = gussBefund(c, cd, pk);
+    if (!bf) continue;
+    const P = w / _gussPflanzen(c, cd, k);
+    const ivG = _gussIv(c, k, pk.ph);
+    if (!ref && i <= fensterRef) ref = { k, pk, art: bf.art, P, ivG, drainPct: bf.art === 'drain' ? bf.f.pct : null };
+    if (bf.art === 'echo') continue;
+    let fak = 1;
+    if (bf.art === 'drain' && (bf.f.pct < DRAIN_ZIEL.min || bf.f.pct > DRAIN_ZIEL.max)) { const ist = Math.max(0, Math.min(0.6, bf.f.pct / 100)); fak = Math.max(0.75, Math.min(1.25, (1 - ist) / (1 - DRAIN_ZIEL.mid / 100))); }
+    funde.push({ k, pk, art: bf.art, f: P * fak / Math.max(1, startkurveTag(c, pk.day) * ivG) });
+  }
+  if (!ref && !funde.length) return null;
+  const GEWICHT = [3, 2, 1];
+  let sw = 0, sf = 0;
+  funde.forEach((x, j) => { sw += GEWICHT[j]; sf += GEWICHT[j] * x.f; });
+  const ziel = (funde.length ? sf / sw : 1) * startkurveTag(c, p.day) * ivH;
+  const x0 = ref || funde[0];
+  const refMenge = ref ? ref.P * Math.max(0.25, Math.min(4, ivH / ref.ivG)) : ziel;
+  let vorIso = isoPlus(x0.k, -_gussIv(c, x0.k, x0.pk.ph));
+  for (let j = 1; j <= 14; j++) { const k2 = isoPlus(x0.k, -j); const cd2 = _gussCd(c, k2); if (cd2 && _gussZahl(cd2.water) > 0) { vorIso = k2; break; } }
+  const jetzt = klimaMittelGemessen(c, x0.k, iso), vorher = klimaMittelGemessen(c, vorIso, x0.k);
+  const klima = (jetzt != null && vorher != null && vorher > 0) ? Math.max(0.8, Math.min(1.25, jetzt / vorher)) : 1;
+  return { iso: x0.k, art: ref ? ref.art : 'alt', ref: refMenge, ziel, klima, n: funde.length, drainMoeglich: _drainMoeglich(x0.pk), drainPct: ref ? ref.drainPct : null };
+}
+
+/**
+ * Gießmenge je Pflanze von Tag 22 bis zum Blüteende (auch Photo-Vegi), Indoor, Erde und Coco.
+ * @returns {null|{m:number, quelle:string, V:number, kap:number, kapQuelle:string, K:number, klima:number, basis:object|null, restHeute:number|null}}
+ *          null = hier gilt der bisherige Weg (Sämling bis Tag 21, Spülen, IceFlush, Outdoor, Hydro).
+ */
+function gussMengeJePflanze(c, p, iso) {
+  if (!c || !p || !iso || !c.startDate) return null;
+  if (c.growType === 'outdoor' || c.medium === 'hydro') return null;
+  if (!(p.ph === 'bloom' || (p.ph === 'anzucht' && (p.day || 1) > 21))) return null;
+  if (typeof getAction === 'function' && getAction(iso, c) === 'ice') return null;
+  const dz = DRAIN_ZIEL.mid / 100;
+  const restH = restgewichtHeute(c, iso);
+  if (restH != null && restH >= 95) return { m: 0, quelle: 'voll', V: 0, kap: 0, kapQuelle: null, K: 0, klima: 1, basis: null, restHeute: restH };
+  const { kap, quelle: kapQuelle } = wasserKapazitaet(c, iso);
+  const V = nachfuellGrenze(c, iso, restH);
+  const K = startkurve(c, p.day, iso, p.ph);
+  const b = gussBasis(c, iso, p);
+  let m, quelle;
+  if (b) {
+    m = Math.max(b.ref * GUSS_RAMPE.runter, Math.min(b.ref * GUSS_RAMPE.rauf, b.ziel * b.klima));
+    if (b.art === 'guss' && b.drainMoeglich) m = Math.max(m, K);
+    quelle = b.art;
+  } else {
+    m = K; quelle = 'start';
+    // Ein eigener Korridor ist Startwert, keine Grenze gegen die eigene Messung — er gilt nur vor dem ersten belastbaren Guss.
+    if (!_hatteBelastbarenGuss(c, iso)) {
+      const u = c.waterRange && c.waterRange[waterPhaseKey(c, p)];
+      if (u && u.min != null && u.max != null) { m = Math.max(u.min, Math.min(u.max, m)); quelle = 'korridor'; }
+    }
+  }
+  const cdH = _gussCd(c, iso);
+  if (restH != null) {
+    if (_waageAktiv(c) && cdH && _gussZahl(cdH.weightG) != null) { m = Math.max(0, c.saturatedWeight - _gussZahl(cdH.weightG)) / (1 - dz); quelle = 'waage'; }
+    else if (c.medium === 'coco') { const fk = Math.max(1, (100 - restH) / (100 - GIESSPUNKT.coco.anker)); if (fk > 1) { m = m * fk; quelle = 'hebetest'; } }
+    else { const mh = kap * (100 - restH) / 80 / (1 - dz); if (quelle !== 'drain' || mh > m) { m = mh; quelle = 'hebetest'; } }
+  }
+  return { m: Math.min(Math.round(m / 50) * 50, Math.floor(V / 50) * 50), quelle, V: Math.round(V), kap: Math.round(kap), kapQuelle, K: Math.round(K), klima: b ? b.klima : 1, basis: b, restHeute: restH };
+}
+
+/** Woher die Menge kommt, als Satzteil — eine Quelle für Gießtag-Karte, Guss-Dialog und Lern-Status. */
+function _gussQuelleTeil(g) {
+  if (!g) return '';
+  const b = g.basis, dat = (b && b.iso) ? fmtDE(b.iso, { day: '2-digit', month: '2-digit' }) : '';
+  switch (g.quelle) {
+    case 'waage': return 'aus deinem heutigen Topfgewicht';
+    case 'hebetest': return 'aus deinem heutigen Hebe-Test';
+    case 'drain': return `aus deinem Guss vom ${dat}${b && b.drainPct != null ? ` mit ${String(b.drainPct).replace('.', ',')} % Drain` : ' mit Drain-Menge'}`;
+    case 'drainwerte': return `aus deinem Guss vom ${dat} (Drain gemessen)`;
+    case 'guss': return `aus deinem Guss vom ${dat}`;
+    case 'echo': return `an deinem Guss vom ${dat} ausgerichtet`;
+    case 'alt': return 'aus deinen letzten Güssen';
+    case 'korridor': return 'Startwert in deinem eigenen Korridor';
+    case 'voll': return 'der Topf ist noch voll';
+    default: return 'Startwert aus Topfgröße und Wachstum';
+  }
+}
+function _gussIstStart(g) { return !!(g && (g.quelle === 'start' || g.quelle === 'korridor')); }
+function _gussLernSatz(c, iso, g) {
+  if (!g) return '';
+  if (g.quelle === 'voll') return 'Der Topf ist noch voll — heute nicht gießen.';
+  const n = getEffectivePlantCount(c, iso);
+  const einheit = (c.scaleByPlants && n > 1) ? ' ml/Pflanze' : ' ml';
+  const dMin = Math.round(g.m * DRAIN_ZIEL.min / 100), dMax = Math.round(g.m * DRAIN_ZIEL.max / 100);
+  const klima = (g.klima && Math.abs(g.klima - 1) >= 0.02) ? ` · die Luft war seit dem Guss ${g.klima > 1 ? 'trockener' : 'feuchter'}` : '';
+  return `~${g.m}${einheit} ${_gussQuelleTeil(g)}${klima}. Höchstens ~${g.V} ml — mehr passt nicht in den Topf. Hör auf, sobald unten ${dMin}–${dMax} ml als Drain ankommen (${DRAIN_ZIEL.min}–${DRAIN_ZIEL.max} %)${_gussIstStart(g) ? '. Ab deinem ersten eigenen Guss folgt die App dir' : ''}.`;
+}
+
 function waterSuggestion(c, p, iso) {
   // STABILITÄT: Nach der Ernte (Ernte/Trocknen/Curing) wird nicht mehr gegossen —
   // die Pflanze ist geschnitten. Wir geben hier 0 zurück, damit kein Anzeige-Pfad
@@ -12943,6 +13169,17 @@ function waterSuggestion(c, p, iso) {
     const plantsW = getEffectivePlantCount(c, iso || todayISO());
     const finalW = c.waterMl[_wmlKey] * plantsW;
     return finalW < 100 ? Math.round(finalW / 5) * 5 : Math.round(finalW / 50) * 50;
+  }
+
+  // (v1.5.205) GIESSMENGE AUS DEM TOPF — von Tag 22 bis zum Blüteende, auch in der Photo-Vegi. Details: gussMengeJePflanze.
+  // Der bisherige Weg darunter gilt noch für Spülen, Outdoor und Hydro.
+  {
+    const _isoG = iso || todayISO();
+    const _g = gussMengeJePflanze(c, p, _isoG);
+    if (_g) {
+      const _totG = _g.m * getEffectivePlantCount(c, _isoG);
+      return _totG < 100 ? Math.round(_totG / 5) * 5 : Math.round(_totG / 50) * 50;
+    }
   }
 
   // Helper: berechnet die "rohe" biophysikalische Empfehlung (ohne Personalisierung)
@@ -18809,7 +19046,7 @@ function renderTips() {
       </div>
 
       <div style="background:rgba(110,190,130,0.06);border:0.5px solid var(--green-dk);border-radius:10px;padding:10px 12px;margin-top:10px">
-        <div style="font-size:11px;color:var(--text-sub);line-height:1.6">📈 <b style="color:var(--green)">Die Menge wächst mit:</b> Wie viel pro Guss schlägt GrowSmart aus deinem letzten <b>echten</b> Guss vor — und zieht ihn sanft mit nach oben, wenn deine Pflanze größer wird und mehr trinkt. Beim Tageseintrag steht unter „🧠 Lern-Status" dazu ein Regler <b>Verlauf: Sanft · Auto · Steil</b>. Damit bestimmst du, wie kräftig der Vorschlag deinen eigenen Steigerungen folgt: <b>Auto</b> passt für die meisten, <b>Steil</b> wenn du zügig hochfährst, <b>Sanft</b> wenn es ruhiger steigen soll. Egal was du wählst — mehr als +30% von einem Guss zum nächsten schlägt die App nie vor. Das ist dein Schutz vor Überwässerung.</div>
+        <div style="font-size:11px;color:var(--text-sub);line-height:1.6">📈 <b style="color:var(--green)">Die Menge kommt aus dem Topf:</b> GrowSmart rechnet aus deinen letzten <b>echten</b> Güssen und dem Drain, wie viel dein Topf braucht, und zieht die Menge mit dem Wachstum nach — höchstens +30 % von einem Guss zum nächsten und nie mehr, als in den Topf passt. <b>Trag nach dem Gießen ein, wie viel unten ankam:</b> Kommt zu wenig, geht die Menge hoch, kommt zu viel, geht sie runter. Beim Tageseintrag steht unter „🧠 Lern-Status", woraus die Zahl gerade entsteht.</div>
       </div>
       </div>
     </div>
@@ -26499,6 +26736,7 @@ function renderEntry(iso) {
     const _wBasis = waterBasis(c, p, iso);
     const _wAnchor = (_wBasis === 'anchor' && typeof _waterAnchorInfo === 'function') ? _waterAnchorInfo(c, p, iso) : null;
     const waterBasisTxt =
+      _wBasis === 'topf' ? (() => { const _gK = gussMengeJePflanze(c, p, iso); const _tK = _gussQuelleTeil(_gK); return _gussIstStart(_gK) ? `📋 ${_tK.charAt(0).toUpperCase() + _tK.slice(1)} — ab deinem ersten eigenen Guss folgt die App dir` : `🎯 ${_tK.charAt(0).toUpperCase() + _tK.slice(1)}`; })() :
       _wBasis === 'fixed' ? '📌 Deine feste Menge für diese Phase' :
       _wBasis === 'weight' ? '🎯 Aus deinem heutigen Topfgewicht berechnet' :
       _wBasis === 'lift' ? '🎯 Aus deinem heutigen Hebe-Test berechnet' :
@@ -26514,6 +26752,7 @@ function renderEntry(iso) {
     // Blick sichtbar, wie verlässlich der Vorschlag ist — ohne dass der User die Mechanik
     // dahinter kennen muss. Direkte Antwort auf die Sorge "stimmt der Vorschlag mit echt?".
     const _wTrustColor =
+      _wBasis === 'topf' ? (_gussIstStart(gussMengeJePflanze(c, p, iso)) ? 'var(--yellow)' : 'var(--green)') :
       _wBasis === 'model' ? 'var(--yellow)' :
       (_wBasis === 'anchor' || _wBasis === 'weight' || _wBasis === 'lift' || _wBasis === 'consumption') ? 'var(--green)' :
       'var(--text-muted)';
@@ -27304,7 +27543,26 @@ function renderEntry(iso) {
         const _p2 = phase(iso, c);
         const _basis = waterBasis(c, _p2, iso);
         let line = '', col = 'var(--green)', trendCtrl = '';
-        if (_basis === 'fullpour') {
+        if (_basis === 'topf') {
+          // (v1.5.205) Erklärt die Menge aus dem Topf mit derselben Quelle wie die Zahl — ohne Regler: Die Rampe ist fest (GUSS_RAMPE).
+          const _gL = gussMengeJePflanze(c, _p2, iso);
+          line = _gussLernSatz(c, iso, _gL);
+          const _cdHeute = _gussCd(c, iso);
+          const _fHeute = (_cdHeute && _gussZahl(_cdHeute.water) > 0) ? drainFlow(_cdHeute) : null;
+          if (_fHeute) {
+            const _pHeute = String(_fHeute.pct).replace('.', ',');
+            const _nx = (typeof nextGiessTag === 'function') ? nextGiessTag(c, iso) : null;
+            const _pNx = _nx ? phase(_nx.iso, c) : null;
+            const _gNx = _pNx ? gussMengeJePflanze(c, _pNx, _nx.iso) : null;
+            const _zuWenig = _fHeute.pct < DRAIN_ZIEL.min, _zuViel = _fHeute.pct > DRAIN_ZIEL.max;
+            const _lage = _zuWenig ? (_fHeute.pct === 0 ? 'kam unten nichts an' : `kamen nur ${_pHeute} % unten an`)
+              : _zuViel ? `liefen ${_pHeute} % ab — mehr als nötig, das wäscht Nährstoffe aus` : `liefen ${_pHeute} % ab — im Ziel`;
+            const _folge = !_gNx ? '' : _zuWenig ? ` Ich gehe deshalb mit der Menge nach oben: nächster Guss ~${_gNx.m} ml.`
+              : _zuViel ? ` Ich nehme die Menge zurück: nächster Guss ~${_gNx.m} ml.` : ` Nächster Guss ~${_gNx.m} ml.`;
+            line += ` <span style="color:${(_zuWenig || _zuViel) ? 'var(--yellow)' : 'var(--green)'}">Bei deinem Guss heute ${_lage} (Ziel ${DRAIN_ZIEL.min}–${DRAIN_ZIEL.max} %).${_folge}</span>`;
+          }
+          if (_gussIstStart(_gL)) col = 'var(--text-hint)';
+        } else if (_basis === 'fullpour') {
           // (v1.4.21) Erklärt das aktive Voll-Guss-Modell EXAKT so, wie die Zahl entsteht:
           // letzter echter Guss × Wachstums-Trend, konstant — keine Tages-/Pausen-Sprünge.
           const _dn = _waterDailyNeedPour(c, _p2, iso);
@@ -27348,7 +27606,7 @@ function renderEntry(iso) {
         // (v1.5.112) Führt der gemessene Ablauf die Menge gerade nach, gehört das dazu —
         // sonst wirkt eine veränderte Empfehlung wie ein Eigenleben der App.
         const _dj = (typeof drainAdjust === 'function') ? drainAdjust(c, iso) : null;
-        if (_dj && _p2 && _p2.ph !== 'flush' && _p2.ph !== 'ice') {
+        if (_dj && _basis !== 'topf' && _p2 && _p2.ph !== 'flush' && _p2.ph !== 'ice') {
           const _p = String(_dj.istPct).replace('.', ',');
           const _n = _dj.proben === 1 ? 'deinem letzten Guss' : `deinen letzten ${_dj.proben} Güssen`;
           line += _dj.richtung === 'passt'
@@ -27408,7 +27666,7 @@ function renderEntry(iso) {
               : `<div style="font-size:10px;color:var(--text-sub);line-height:1.4"><span style="color:var(--green)">●</span> ~<span class="live-water" data-cycle="${c.id}">${guidePerPlant}</span> ml${effPlants > 1 && c.scaleByPlants ? '/Pfl.' : ''} · kein Drain</div>
                  <div style="font-size:10px;color:var(--text-sub);line-height:1.4"><span style="color:var(--blue)">●</span> ${growDay <= 10 ? 'Ring um Sämling' : growDay <= 18 ? 'Radius vergrößern' : 'Ganzer Topf'}</div>`
             }
-            <div style="font-size:10px;color:var(--text-sub);line-height:1.4"><span style="color:var(--blue)">●</span> ${pot}L · ~alle ${iv}d${(() => { const _cap = _waterCapPerPot(c, p); return _cap ? ` · max ~${_cap} ml/Guss` : ''; })()}</div>
+            <div style="font-size:10px;color:var(--text-sub);line-height:1.4"><span style="color:var(--blue)">●</span> ${pot}L · ~alle ${iv}d${(() => { const _gV = gussMengeJePflanze(c, p, iso); if (_gV && _gV.V) return ` · höchstens ~${_gV.V} ml/Guss`; const _cap = _waterCapPerPot(c, p); return _cap ? ` · max ~${_cap} ml/Guss` : ''; })()}</div>
           </div>
         </div>
         ${plantsBadge}
@@ -30027,11 +30285,12 @@ function openGussSheet(cId, iso) {
   const _ppHint = (totalMl) => _gpMulti ? ` <span style="color:var(--text-muted)">(${Math.round(totalMl / _gpEff)} ml/Pfl.)</span>` : '';
   const _ppPlain = (totalMl) => _gpMulti ? ` (${Math.round(totalMl / _gpEff)} ml/Pfl.)` : '';
   const basis = waterBasis(c, p, iso);
-  const basisNote = basis === 'fixed' ? '📌 deine feste Menge' :
+  const basisNote = basis === 'topf' ? (() => { const _gD = gussMengeJePflanze(c, p, iso); return _gussIstStart(_gD) ? 'Startwert' : `🎯 ${_gussQuelleTeil(_gD)}`; })() :
+    basis === 'fixed' ? '📌 deine feste Menge' :
     basis === 'weight' ? '🎯 aus deinem Topfgewicht' :
     basis === 'lift' ? '🎯 aus deinem Topf-Check' :
     basis === 'model' ? 'Schätzung' : '';
-  const showHebe = (basis === 'model' || basis === 'lift') && c.weightMode !== 'scale';
+  const showHebe = (basis === 'model' || basis === 'lift' || basis === 'topf') && c.weightMode !== 'scale';
   const overlay = document.createElement('div');
   overlay.setAttribute('data-day-picker', '1');
   overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:10001;display:flex;align-items:flex-end;justify-content:center;padding:12px;font-family:var(--font)';
@@ -37418,7 +37677,7 @@ const TOUR_GIESSEN = {
     {
       tab: 'dash',
       title: '📈 Die Menge darf mitwachsen',
-      body: 'Wie viel du pro Guss gibst, darf mit der Pflanze wachsen: GrowSmart nimmt deinen letzten echten Guss als Basis und zieht ihn sanft mit nach oben, sobald deine Pflanze größer wird und mehr trinkt. Im Tageseintrag steht unter „🧠 Lern-Status" dazu ein Regler „Verlauf" — Sanft, Auto oder Steil. Damit bestimmst du selbst, wie kräftig der Vorschlag deinen eigenen Steigerungen folgt. „Auto" passt für die meisten. Egal was du wählst: mehr als +30% von einem Guss zum nächsten schlägt die App nie vor — dein Schutz vor Überwässerung.',
+      body: 'Wie viel du pro Guss gibst, wächst mit der Pflanze: GrowSmart rechnet aus deinen letzten echten Güssen und dem Drain, wie viel dein Topf braucht — höchstens +30 % von einem Guss zum nächsten und nie mehr, als in den Topf passt. Trag nach dem Gießen ein, wie viel unten als Drain ankam: Kommt zu wenig, geht die Menge hoch, kommt zu viel, geht sie runter. Im Tageseintrag steht unter „🧠 Lern-Status", woraus die Zahl gerade entsteht.',
     },
     {
       tab: 'dash',

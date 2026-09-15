@@ -2,6 +2,45 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-15 — v1.5.205
+
+- **Die Gießmenge kommt aus dem Topf.** Befund der Gießmengen-Prüfung (Runde 3, von einem zweiten Agenten gegengeprüft), mit
+  v1.5.204 nachgemessen: Ein frischer 11-L-Topf bekam ab Blütetag 15 flach 1500 ml, egal ob die Blüte 42 oder 105 Tage dauert;
+  von Tag 22 auf 23 sprang die Menge um 38 %, im 20-L-Topf um 77 %. Der Deckel `_waterCapPerPot` las den Gießpunkt-Anteil
+  (40/35/30 %) als Verbrauch je Guss. Ein eingetragener Drain änderte die Menge nur nach einer getippten Gießmenge, der
+  Hebe-Test gar nicht (1800 ml bei jedem Knopf), ein eigener Korridor sperrte die Messung aus. Patricks Vorschlag am Morgen
+  lag über 25 echte Blüte-Güsse im Mittel 12,9 % unter seinem Guss (Betrag 15,6 %).
+- **Mechanismus** (`ANBAU.md` 1, 5.1, 7.4): Wann gegossen wird, sagt das Restgewicht; wie viel, sagt das Defizit seit dem
+  letzten Auffüllen plus Drain — aufgenommen = gegossen · (1 − Drain). In den Topf passt höchstens V = S · (100 − Gießpunkt) /
+  80 / (1 − Drain-Ziel); was darüber geht, läuft als Drain ab. Nach dem Abtropfen hält ein Topf dieselbe Wassermenge, egal wie
+  viel gegossen wurde. Staunässe kommt vom zu häufigen Gießen, nicht von einer vollen Menge.
+- **Jetzt, von Tag 22 bis zum Blüteende (auch in der Photo-Vegi):** Messung heute (Waage vor Hebe-Test). Sonst der
+  Nutzer-Faktor aus den letzten bis zu drei belastbaren Güssen, Gewichte 3:2:1. Ein Guss mit Drain-Menge zählt mit seiner
+  Mengenbilanz, im Zielfenster als bestätigt; eine übernommene Menge mit Drain-EC bestätigt nur „es kam Drain". Sonst die
+  Startkurve: vom Ende der Sämlingsrampe glatt bis 825 ml/Tag × √(Topf/11), erreicht bei Anzucht + 60 % der Blüte.
+  Höchstens −25 % / +30 % gegenüber dem jüngsten Guss, nie über V. Ein eigener Korridor gilt nur bis zum ersten eigenen
+  Guss. Klima nur als Verhältnis seit dem Guss (Oren et al. 1999), ohne die Wertepaare der alten Autofill-Tabelle. S = 300 ml
+  je Liter ist eine Konvention, bis Waage oder Drain sie messen (Fields et al. 2014: 215–425 ml/L).
+- **Gemessen:** Elf frische Zyklen ohne fallenden Tag, größter Sprung 12,4 %. Plateau 11 L 3000 ml, 7 L 2350, 20 L 4050,
+  Coco 1000, Gießabstand 4 → 3750 (= V). Patricks Güsse: Vorschlag im Mittel +1,9 %, Betrag 7,6 % (vorher −12,9 / 15,6 %).
+  „Erledigt" mit 0 % Drain → nächster Guss +21 %, mit 40 % → −25 %. Hebe-Test 70/50/30/20 → 1500/2500/3500/4000 ml im
+  11-L-Topf.
+- **Anzeigen:** Gießtag-Karte, Guss-Dialog und Lern-Status nennen dieselbe Quelle („aus deinem Guss vom 06.08.", „aus
+  deinem heutigen Hebe-Test") und „höchstens ~V ml — mehr passt nicht in den Topf". Am Gusstag steht, was der eingetragene
+  Drain für den nächsten Guss bedeutet. Der Gieß-Guide zeigt V statt des alten Deckels. Der Regler „Verlauf: Sanft · Auto ·
+  Steil" entfällt, die Rampe ist fest; Tipps und Hilfe sagen es so.
+- **Unverändert:** Sämlingsrampe bis Tag 21, Spülen, IceFlush, Outdoor, Hydro, Anzucht-Festmenge.
+- **Bewusst angepasst:** `test_drainregelkreis.js` — der Drain wirkt auf den nächsten Guss: gemessen am vorletzten
+  Blüte-Guss, Vorschlag am Morgen danach; eine Messung hebt um mindestens 5 %, weil sie mit 3 von 6 zählt.
+  `test_gussmenge.js` Fall 4 — ein eigener Korridor zieht die Menge nicht mehr von den gemessenen Güssen weg.
+  `test_klimaziel.js` — die neun festgehaltenen Gießvorschläge. `test_korridorsaemling.js` — Tag 22 schließt an die
+  Rampe an, oben begrenzt V statt des natürlichen Korridors.
+- `test_giessmenge_topf.js` (21 Prüfungen, beide Zeitzonen): Bausteine, elf frische Zyklen, Patricks Güsse, Drain nach
+  „Erledigt", Messung heute, Anzeigen, Sämlingsrampe. Gegen den alten Stand: 10 Fehler; zwei Abschnitte liefen dort gar
+  nicht, weil es die Funktionen noch nicht gab. Zwei eigene Prüffehler vor dem Commit korrigiert: Sprünge werden an der
+  ungerundeten Kurve gemessen (gerundet auf 50 ml wirkt 650 → 750 ml wie 15,4 %), und das Coco-Beispiel gießt täglich, damit
+  der Knopf unter der Nachfüll-Grenze wirken kann.
+
 ## 2026-09-15 — v1.5.204
 
 - **Die Waage rechnete mit zwei Skalen.** Schritt 2 der Waage-Einrichtung fragt nach dem Gewicht „kurz bevor du
