@@ -2,6 +2,28 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-15 — v1.5.209
+
+- **Drain-EC: eine Regel — das Verhältnis Drain ÷ Gießwasser.** Befund der Begriffe-Prüfung (Schritt 4 und 6), im Code
+  bestätigt: `analyzeRunoff` rechnete den Status mit „Differenz > 0,5 und Drain über dem Zielbereich × 1,15", das Etikett mit
+  dem Verhältnis 1,6. Gießwasser 1,8 / Drain 2,35 — das 1,31-Fache, nach `ANBAU.md` 5.1 normal bei voller Düngung — ergab eine
+  orange Warnung „im Substrat sammeln sich Salze"; 0,5 / 1,0, das Doppelte und damit Anreicherung, nur ein ⚠ im Etikett und
+  keinen Hinweis. Der Zielbereich gilt fürs Gießwasser, nicht für den Drain.
+- **Mechanismus:** Wasser verdunstet, Salz wird nur zum Teil aufgenommen — der Drain ist deshalb konzentrierter als das
+  Gießwasser. Neu `DRAIN_EC_VERHAELTNIS` (1,3 / 1,6) und `drainEcStufe` für Status und Etikett: bis zum 1,3-Fachen
+  Gleichgewicht, bis zum 1,6-Fachen normal bei voller Düngung, darüber Anreicherung (orange; in organischer Spätblüte weiter mit
+  zwei möglichen Ursachen), unter dem Gießwasser „nimmt mehr auf als zugeführt" als ruhiger Hinweis. In der zweiten Blütehälfte
+  ist das normal, dort steht „Nicht nachdüngen" statt „nachdüngen?" (`ANBAU.md` 6.4). Beim Spülen gilt die Tabelle nicht
+  (v1.5.166).
+- **Nur mit gültiger Messung:** Bewertet wird bei mindestens 15 % Drain und einem gemessenen Gießwasser-EC. Stand dort nur der
+  Vorschlag der App, rechnete sie das Verhältnis trotzdem (Regel 2); jetzt heißt es „Gießwasser-EC nicht gemessen · nicht
+  bewertet" mit der Bitte, das Gießwasser zu messen. Ohne gültige Messung bleibt auch der Status leer.
+- **Patricks 24 Drain-Messungen** liegen beim 1,28- bis 1,63-Fachen seines Gießwassers: 20 normal bei voller Düngung, eine im
+  Gleichgewicht, drei knapp über dem 1,6-Fachen (1,61–1,63). Bewertet werden sie weiterhin nicht, weil die Drain-Menge fehlt
+  (v1.5.150).
+- **Tests bewusst nachgezogen:** `test_drainohnemenge` hielt die alten Etiketten („EC +0.5 (Drain 1,45× Zulauf)") und den
+  Status einer ungültigen Messung fest. Neu `test_drainregel.js` (16 Prüfungen, beide Zeitzonen).
+
 ## 2026-09-15 — v1.5.208
 
 - **Die restlichen Texte der Gießmenge.** Seit v1.5.205 kommt die Menge aus dem Topf: Höchstens V passt hinein, der Rest wird

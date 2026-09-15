@@ -63,7 +63,7 @@ function pruef(name, bedingung, info) {
   else { fail++; console.log('  FEHL ' + name + (info !== undefined ? '  -> ' + info : '')); }
 }
 
-const BEWERTUNG = /Zielbereich|zehrt gerade|Salz|Kalk-Puffer|driftet|frisst die Nährstoffe/;
+const BEWERTUNG = /Zielbereich|zehrt gerade|Salz|Kalk-Puffer|driftet|frisst die Nährstoffe|Gleichgewicht|voller Düngung|zuführst|Vorrat im Topf/;   // (v1.5.209) auch die neuen Drain-EC-Texte
 const TAG = '2026-07-19';
 
 (async () => {
@@ -106,12 +106,13 @@ const TAG = '2026-07-19';
     const ohne = lauf(null), mit = lauf(0.2);
     console.log('    ohne Menge: ' + ohne.label + ' · Box ' + ohne.box + ' · Diagnose-Kontext ecDeltaPos ' + ohne.ecDeltaPos);
     console.log('    mit 20 %:   ' + mit.label + ' · Box ' + mit.box + ' · Diagnose-Kontext ecDeltaPos ' + mit.ecDeltaPos);
-    pruef('Prüflage: der Wert selbst ist „zu hoch"', ohne.status === 'warning-high' && mit.status === 'warning-high', ohne.status + ' / ' + mit.status);
+    // (v1.5.209) Ohne gültige Messung gibt es gar keinen Status mehr — vorher stand dort „warning-high", nur nicht angezeigt.
+    pruef('Prüflage: mit Menge „Anreicherung" (2,5×), ohne Menge kein Befund', ohne.status === null && mit.status === 'warning-high', ohne.status + ' / ' + mit.status);
     pruef('Ohne Menge: nicht bewertet, keine Warnung, keine orange Box', ohne.ecGueltig === false && !ohne.warnungen.some(w => BEWERTUNG.test(w)) && ohne.box !== 'warning', JSON.stringify(ohne).slice(0, 160));
     pruef('Ohne Menge: auch der Diagnose-Kontext wertet ihn nicht', ohne.ecDeltaPos === false);
-    pruef('Mit 20 % Ablauf: die Bewertung kommt zurück, Box orange', mit.ecGueltig === true && mit.warnungen.some(w => /Zielbereich/.test(w)) && mit.box === 'warning', JSON.stringify(mit).slice(0, 160));
+    pruef('Mit 20 % Ablauf: die Bewertung kommt zurück, Box orange', mit.ecGueltig === true && mit.warnungen.some(w => /mehr als das 1,6-Fache/.test(w)) && mit.box === 'warning', JSON.stringify(mit).slice(0, 160));
     pruef('Mit 20 % Ablauf: Diagnose-Kontext kennt den Befund', mit.ecDeltaPos === true);
-    pruef('Mit 20 % Ablauf: Etikett nennt das Verhältnis mit ⚠, ohne eine Ursache zu behaupten', /^⚠ EC \+1\.8 \(Drain 2,50× Zulauf\)$/.test(mit.label), mit.label);
+    pruef('Mit 20 % Ablauf: Etikett nennt das Verhältnis mit ⚠, ohne eine Ursache zu behaupten', /^⚠ Drain 2,50× Gießwasser · Anreicherung$/.test(mit.label), mit.label);
   }
 
   console.log('\nC - Das Etikett folgt der Tabelle aus ANBAU.md 5.1');
@@ -119,7 +120,7 @@ const TAG = '2026-07-19';
     const l = (d, v, g) => E(`T.runoff.ecLabel({ delta: ${d}, verhaeltnis: ${v}, gueltig: ${g} })`);
     const normal = l(0.5, 1.45, true), anreich = l(0.8, 1.7, true), leicht = l(0.3, 1.25, true), ungueltig = l(0.6, 1.5, false);
     console.log(`    1,45: „${normal}" · 1,70: „${anreich}" · 1,25: „${leicht}" · ungültig: „${ungueltig}"`);
-    pruef('1,45× Zulauf: beschrieben, ohne ⚠', normal === 'EC +0.5 (Drain 1,45× Zulauf)', normal);
+    pruef('1,45× Gießwasser: „normal bei voller Düngung", ohne ⚠ (seit v1.5.209)', normal === 'Drain 1,45× Gießwasser · normal bei voller Düngung', normal);
     pruef('1,70× Zulauf: mit ⚠', /^⚠ /.test(anreich), anreich);
     pruef('1,25× Zulauf: ohne ⚠', !/⚠/.test(leicht), leicht);
     pruef('Nicht beurteilbar: „EC +0.6 · nicht bewertet"', ungueltig === 'EC +0.6 · nicht bewertet', ungueltig);

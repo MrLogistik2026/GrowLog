@@ -50,6 +50,9 @@ const TROCKNEN_TEXT = `${TROCKNEN_KLIMA.tMin}–${TROCKNEN_KLIMA.tMax} °C, ${TR
 // Wie viel Prozent der Gießmenge unten ankommen sollen — Begründung bei drainAdjust (v1.5.112, ANBAU.md 5.1).
 // (v1.5.153) Hier oben, weil auch die Symptom-Liste beim Laden die Zahl braucht; drei Texte nannten noch ~10 %.
 const DRAIN_ZIEL = { min: 15, mid: 17.5, max: 20, obergrenze: 25 };
+// (v1.5.209) Drain-EC ÷ Gießwasser-EC (ANBAU.md 5.1): bis „gleich" Gleichgewicht, bis „voll" normal bei voller Düngung, darüber
+// Anreicherung. Die einzige Regel für den Drain-EC — nie gegen den Zielbereich des Gießwassers, keine feste Differenz.
+const DRAIN_EC_VERHAELTNIS = { gleich: 1.3, voll: 1.6 };
 // (v1.5.167) Ab diesem Tag zieht ein Guss den ganzen Topf durch — Begründung bei _drainMoeglich.
 const DRAIN_AB_TAG = 25;
 // (v1.5.175) Wann gegossen wird, in Prozent Restgewicht — die Grenzen der Hebe-Test-Bewertung (classifyRestPct) und
@@ -343,31 +346,39 @@ const T = {
     // (v1.5.166) Beim Spülen gilt die Tabelle aus ANBAU.md 5.1 nicht: Sie beschreibt die Düngung. Mit klarem
     // Wasser im Zulauf liegt der Ablauf fast zwangsläufig darüber, weil Salze aus dem Topf mitkommen —
     // Patrick am 14.09.2026: „Ja, beim Flush kann das weg.“
-    ecLabel: ({ delta, verhaeltnis, gueltig, spuelen }) => {
-      if (delta === null || delta === undefined) return 'EC-Differenz unbekannt';
+    // (v1.5.209) Etikett und Status aus derselben Rechnung (drainEcStufe).
+    ecLabel: ({ delta, verhaeltnis, gueltig, spuelen, ohneGiesswasser, spaet }) => {
+      if (delta === null || delta === undefined) return ohneGiesswasser ? 'Gießwasser-EC fehlt · nicht bewertet' : 'EC-Differenz unbekannt';
       if (gueltig === false) return `EC ${delta > 0 ? '+' : ''}${delta.toFixed(1)} · nicht bewertet`;
-      if (Math.abs(delta) < 0.2) return '✓ EC stabil';
-      if (delta > 0.2) {
-        const _v = (verhaeltnis && isFinite(verhaeltnis)) ? ` (Drain ${verhaeltnis.toFixed(2).replace('.', ',')}× Zulauf)` : '';
-        if (spuelen) return `EC +${delta.toFixed(1)}${_v} · beim Spülen normal`;
-        return `${verhaeltnis > 1.6 ? '⚠ ' : ''}EC +${delta.toFixed(1)}${_v}`;
-      }
-      if (delta < -0.5) return `⚠ EC sinkt um ${delta.toFixed(1)} — Pflanze frisst stark, nachdüngen?`;
-      return `EC leicht niedriger (${delta.toFixed(1)})`;
+      if (ohneGiesswasser || !(verhaeltnis > 0)) return 'Gießwasser-EC nicht gemessen · nicht bewertet';
+      const v = `Drain ${verhaeltnis.toFixed(2).replace('.', ',')}× Gießwasser`;
+      if (spuelen) return `${v} · beim Spülen normal`;
+      const stufe = drainEcStufe(verhaeltnis);
+      if (stufe === 'warning-high') return `⚠ ${v} · Anreicherung`;
+      if (stufe === 'rising-ok') return `${v} · normal bei voller Düngung`;
+      if (stufe === 'ok') return `✓ ${v} · Gleichgewicht`;
+      return spaet ? `${v} · zehrt vom Vorrat im Topf` : `${v} · nimmt mehr auf als zugeführt`;
     },
 
-    ecWarningHigh: ({ inputEc, runoffEc, ecMax }) =>
-      `Runoff-EC ${ecFmt(runoffEc)} ${ecUnitLabel()} liegt über dem Zielbereich${ecMax ? ` (bis ${ecFmt(ecMax)})` : ''} — im Substrat sammeln sich Salze. `
-      + `Gib beim nächsten Guss <b>mehr Volumen mit der normalen Nährlösung</b>, bis reichlich unten rausläuft: Das spült den Überschuss aus, ohne die Pflanze leerzuräumen. `
-      + `Einen Flush mit klarem Wasser nur, wenn der Wert über mehrere Güsse hoch bleibt und die Pflanze Symptome zeigt — <b>in der Blüte kostet ein Flush Ertrag</b>, weil danach Nährstoffe fehlen.`,
+    ecWarningHigh: ({ inputEc, runoffEc, verhaeltnis }) =>
+      `Drain-EC ${ecFmt(runoffEc)} ${ecUnitLabel()} ist das ${_zahlKomma(verhaeltnis)}-Fache deines Gießwassers (${ecFmt(inputEc)}), mehr als das ${_zahlKomma(DRAIN_EC_VERHAELTNIS.voll)}-Fache — im Substrat sammeln sich Salze. `
+      + `Gib beim nächsten Guss <b>mehr Volumen mit der normalen Nährlösung</b>, bis reichlich Drain kommt: Das spült den Überschuss aus, ohne die Pflanze leerzuräumen. `
+      + `Eine Zwischenspülung mit klarem Wasser nur, wenn der Wert über mehrere Güsse hoch bleibt und die Pflanze Symptome zeigt — <b>in der Blüte kostet sie Ertrag</b>, weil danach Nährstoffe fehlen.`,
 
-    ecRisingOk: ({ inputEc, runoffEc, ecMax }) =>
-      `Runoff-EC ${ecFmt(runoffEc)} ${ecUnitLabel()} liegt über deinem Input ${ecFmt(inputEc)}, aber noch im Zielbereich${ecMax ? ` (bis ${ecFmt(ecMax)})` : ''}. `
-      + `Die Pflanze zehrt gerade vom Vorrat im Substrat — <b>kein Handlungsbedarf</b>. Nicht spülen: Das würde ihr die Reserve nehmen. `
-      + `Wenn dein Input dauerhaft unter dem Ziel liegt, lieber die Düngermenge leicht anheben.`,
+    ecRisingOk: ({ inputEc, runoffEc, verhaeltnis }) =>
+      `Drain-EC ${ecFmt(runoffEc)} ${ecUnitLabel()} ist das ${_zahlKomma(verhaeltnis)}-Fache deines Gießwassers (${ecFmt(inputEc)}). `
+      + `Bei voller Düngung ist das ${_zahlKomma(DRAIN_EC_VERHAELTNIS.gleich)}- bis ${_zahlKomma(DRAIN_EC_VERHAELTNIS.voll)}-Fache normal: Die Pflanze nimmt Wasser schneller auf als Salz. <b>Kein Handlungsbedarf</b>, nicht spülen.`,
 
-    ecWarningLow: ({ inputEc, runoffEc }) =>
-      `Runoff-EC ${ecFmt(runoffEc)} ${ecUnitLabel()} ist niedriger als Input ${ecFmt(inputEc)} — Pflanze frisst die Nährstoffe gut. Normal in Stretch & früher Blüte.`,
+    ecWarningLow: ({ inputEc, runoffEc, verhaeltnis, spaet }) =>
+      `Drain-EC ${ecFmt(runoffEc)} ${ecUnitLabel()} liegt unter deinem Gießwasser (${ecFmt(inputEc)}, das ${_zahlKomma(verhaeltnis)}-Fache): Die Pflanze nimmt mehr Salz auf, als du zuführst. `
+      + (spaet
+        ? `In der zweiten Blütehälfte ist das normal. <b>Nicht nachdüngen</b> — das verlängert den Zyklus ohne Gewinn an Qualität.`
+        : `Bleibt das über mehrere Güsse so und werden die unteren Blätter heller, die Dosis leicht anheben.`),
+
+    // (v1.5.209) Regel 2: Ohne gemessenen Gießwasser-EC gibt es kein Verhältnis.
+    ecOhneGiesswasser: ({ vorgeschlagen }) =>
+      (vorgeschlagen ? 'Die EC beim Gießwasser ist nur der Vorschlag der App, nicht gemessen. ' : 'Die EC deines Gießwassers fehlt. ')
+      + 'Miss dein Gießwasser und trag den Wert ein — erst dann lässt sich der Drain einordnen: Bewertet wird, das Wievielfache des Gießwassers unten ankommt.',
 
     // (v1.5.104) Zu wenig Ablauf heißt: gemessen wurde nicht die Wurzelzone.
     flowTooLow: ({ pct, ml, gegossen, schwach }) =>
@@ -383,8 +394,8 @@ const T = {
 
     // (v1.5.104) Organisches Substrat, zweite Blütehälfte: derselbe Messwert hat zwei mögliche
     // Ursachen. Beide nennen und das Unterscheidungskriterium mitliefern.
-    ecHighOrganic: ({ inputEc, runoffEc, ecMax, flow }) =>
-      `Runoff-EC ${ecFmt(runoffEc)} ${ecUnitLabel()} liegt über dem Zielbereich${ecMax ? ` (bis ${ecFmt(ecMax)})` : ''}. `
+    ecHighOrganic: ({ inputEc, runoffEc, verhaeltnis, flow }) =>
+      `Drain-EC ${ecFmt(runoffEc)} ${ecUnitLabel()} ist das ${_zahlKomma(verhaeltnis)}-Fache deines Gießwassers (${ecFmt(inputEc)}), mehr als das ${_zahlKomma(DRAIN_EC_VERHAELTNIS.voll)}-Fache. `
       + `In Erde und in dieser Phase hat das <b>zwei mögliche Ursachen</b>, und der Messwert allein unterscheidet sie nicht:<br><br>`
       + `<b>1 · Es sammelt sich wirklich Salz an.</b> Dann steigt der Wert schon seit Wochen, und die Pflanze zeigt Symptome — verbrannte, eingerollte Blattspitzen, fleckige Vergilbung.<br>`
       + `<b>2 · Die Erde gibt nach und die Pflanze nimmt weniger auf.</b> Organisch gebundene Nährstoffe werden bis zuletzt aufgeschlossen, während die Pflanze zum Ende hin die Aufnahme zurückfährt. Der Rest bleibt im Topf. Dann steigt der Wert <b>erst spät</b>, die Blätter vergilben <b>gleichmäßig von unten nach oben</b>, und die Pflanze sieht sonst gesund aus.<br><br>`
@@ -3441,7 +3452,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.208';
+const APP_VERSION = 'v1.5.209';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -7857,7 +7868,7 @@ async function setWeightModeScale(c) {
  *   hasRunoff: boolean  — sind überhaupt Runoff-Werte eingetragen?
  *   ecDelta: number|null  — runoffEc - inputEc
  *   phDelta: number|null  — runoffPh - inputPh
- *   ecStatus: 'ok' | 'warning-high' | 'warning-low' | null
+ *   ecStatus: 'ok' | 'rising-ok' | 'warning-high' | 'warning-low' | 'spuelen' | null  — (v1.5.209) drainEcStufe, null ohne gültige Messung
  *   phStatus: 'ok' | 'warning-high' | 'warning-low' | null
  *   ecLabel: string  — T.runoff.ecLabel-Ausgabe
  *   phLabel: string  — T.runoff.phLabel-Ausgabe
@@ -7948,6 +7959,16 @@ function _organischSpaetbluete(c, iso) {
   } catch (e) { return false; }
 }
 
+/** (v1.5.209) Stufe des Drain-EC aus dem Verhältnis Drain ÷ Gießwasser (ANBAU.md 5.1) — dieselbe Rechnung für Status und Etikett. */
+function drainEcStufe(verhaeltnis) {
+  if (!(verhaeltnis > 0)) return null;
+  if (verhaeltnis > DRAIN_EC_VERHAELTNIS.voll) return 'warning-high';
+  if (verhaeltnis > DRAIN_EC_VERHAELTNIS.gleich) return 'rising-ok';
+  if (verhaeltnis >= 1) return 'ok';
+  return 'warning-low';
+}
+function _zahlKomma(x) { return String(Math.round(x * 100) / 100).replace('.', ','); }
+
 function analyzeRunoff(cd, medium, ecTarget, ctx) {
   if (!cd) {
     return { hasRunoff: false, ecDelta: null, phDelta: null, ecStatus: null, phStatus: null, ecLabel: '', phLabel: '', warnings: [], flow: null };
@@ -7965,24 +7986,18 @@ function analyzeRunoff(cd, medium, ecTarget, ctx) {
   const ecDelta = (isFinite(inputEc) && hasRunoffEc) ? (runoffEc - inputEc) : null;
   const phDelta = (isFinite(inputPh) && hasRunoffPh) ? (runoffPh - inputPh) : null;
 
-  // Status-Klassifikation
-  // (v1.5.09) Ein steigender Runoff-EC allein ist KEIN Grund zu spülen. Entscheidend ist,
-  // ob der Runoff über dem Zielbereich liegt. Liegt er darin oder darunter, zehrt die Pflanze
-  // vom Vorrat im Substrat — ein Flush würde sie dann leerräumen statt zu helfen. Genau das
-  // empfahl die App vorher: Bei Input 0.95 und Runoff 1.52 (Ziel 1.6–2.0) riet sie zu
-  // „2–3× klarem Wasser", obwohl der Runoff noch UNTER dem Ziel lag.
-  const _ecMax = (ecTarget && isFinite(ecTarget.max)) ? ecTarget.max : null;
-  // Ohne bekannten Zielbereich wird NICHT zum Spülen geraten — im Zweifel nichts empfehlen,
-  // was einen Grow kosten kann.
-  const _overTarget = _ecMax !== null ? (runoffEc > _ecMax * 1.15) : false;
-  let ecStatus = null;
-  if (ecDelta !== null) {
-    if (Math.abs(ecDelta) < 0.2) ecStatus = 'ok';
-    else if (ecDelta > 0.5 && _overTarget) ecStatus = 'warning-high';
-    else if (ecDelta > 0.5) ecStatus = 'rising-ok';
-    else if (ecDelta < -0.5) ecStatus = 'warning-low';
-    else ecStatus = 'ok';
-  }
+  // (v1.5.209) EINE Regel für den Drain-EC: das Verhältnis Drain ÷ Gießwasser (ANBAU.md 5.1), nie der Zielbereich des Gießwassers
+  // und keine feste Differenz. Wasser verdunstet, Salz wird nur zum Teil aufgenommen — deshalb liegt der Drain bei voller Düngung
+  // normal beim 1,3- bis 1,6-Fachen. Vorher rechnete der Status mit „Differenz > 0,5 und Drain > Zielbereich × 1,15", das Etikett
+  // mit dem Verhältnis: Gießwasser 1,8 / Drain 2,35 (1,31×, normal) ergab eine orange Warnung, 0,5 / 1,0 (2,0×, Anreicherung) keinen
+  // Hinweis. Bewertet wird nur bei gültigem Drain (drainFlow) und gemessenem Gießwasser-EC — ein Vorschlag der App ist keine
+  // Messung (Regel 2). Beim Spülen gilt die Tabelle nicht (v1.5.166).
+  const _ecVorgeschlagen = !!(cd._suggested && cd._suggested.ec);
+  const _mitGiesswasserEc = isFinite(inputEc) && inputEc > 0 && !_ecVorgeschlagen;
+  const verhaeltnis = (hasRunoffEc && isFinite(inputEc) && inputEc > 0) ? runoffEc / inputEc : null;
+  const _pDrain = (ctx && ctx.c && ctx.iso) ? phase(ctx.iso, ctx.c) : null;
+  const _spuelen = !!(_pDrain && (_pDrain.ph === 'flush' || _pDrain.ph === 'ice'));
+  const _zweiteBluetehaelfte = !!(_pDrain && _pDrain.ph === 'bloom' && _pDrain.bloomDay > 0 && _pDrain.bloomLen > 0 && _pDrain.bloomDay * 2 > _pDrain.bloomLen);
 
   let phStatus = null;
   if (phDelta !== null) {
@@ -8002,22 +8017,27 @@ function analyzeRunoff(cd, medium, ecTarget, ctx) {
   // Patricks Daten wurden bewertet, während die Zeile darunter sagte, das lasse sich nicht sagen.
   const _ecUngueltig = !!(hasRunoffEc && (!flow || !flow.gueltig));
   const _organisch = !!(ctx && _organischSpaetbluete(ctx.c, ctx.iso));
+  const _ecOhneGiesswasser = !!(hasRunoffEc && !_ecUngueltig && !_mitGiesswasserEc);
+  let ecStatus = null;   // null, solange die Messung nichts aussagt
+  if (hasRunoffEc && !_ecUngueltig && !_ecOhneGiesswasser) ecStatus = _spuelen ? 'spuelen' : drainEcStufe(verhaeltnis);
 
   // Warnungen sammeln (nur die wichtigen)
   const warnings = [];
   if (_ecUngueltig) {
     // Ohne Menge steht die Rückfrage schon in der Durchfluss-Zeile (_runoffFlowLine) — nicht doppelt.
     if (flow) warnings.push(T.runoff.flowTooLow({ pct: flow.pct, ml: flow.ml, gegossen: flow.gegossen, schwach: flow.guete === 'schwach' }));
+  } else if (_ecOhneGiesswasser) {
+    warnings.push(T.runoff.ecOhneGiesswasser({ vorgeschlagen: _ecVorgeschlagen }));
   } else if (ecStatus === 'warning-high') {
     // Im organischen Substrat der Spätblüte hat derselbe Messwert zwei mögliche Ursachen.
     // Beide nennen, mit dem Kriterium zur Unterscheidung — statt auf eine zu schließen.
     warnings.push(_organisch
-      ? T.runoff.ecHighOrganic({ inputEc, runoffEc, ecMax: _ecMax, flow })
-      : T.runoff.ecWarningHigh({ inputEc, runoffEc, ecMax: _ecMax }));
+      ? T.runoff.ecHighOrganic({ inputEc, runoffEc, verhaeltnis, flow })
+      : T.runoff.ecWarningHigh({ inputEc, runoffEc, verhaeltnis }));
   } else if (ecStatus === 'rising-ok') {
-    warnings.push(T.runoff.ecRisingOk({ inputEc, runoffEc, ecMax: _ecMax }));
+    warnings.push(T.runoff.ecRisingOk({ inputEc, runoffEc, verhaeltnis }));
   } else if (ecStatus === 'warning-low') {
-    warnings.push(T.runoff.ecWarningLow({ inputEc, runoffEc }));
+    warnings.push(T.runoff.ecWarningLow({ inputEc, runoffEc, verhaeltnis, spaet: _zweiteBluetehaelfte }));
   }
   // Sehr hoher Durchfluss ist gültig, aber er wäscht bereits aus — das gehört gesagt,
   // damit niemand den niedrigen Wert für eine gute Nachricht hält.
@@ -8049,9 +8069,12 @@ function analyzeRunoff(cd, medium, ecTarget, ctx) {
     : (phStatus === 'warning-high' || phStatus === 'warning-low')
       ? ((medium === 'coco' || medium === 'hydro') ? 'warning' : 'info')
       : null;
-  const ecSeverity = _ecUngueltig ? 'info'
-    : ecStatus === 'ok' ? 'ok'
-    : (ecStatus === 'warning-high' || ecStatus === 'warning-low') ? 'warning'
+  // (v1.5.209) Nur die Anreicherung ist ein Alarm. Unter dem Gießwasser nimmt die Pflanze mehr auf als zugeführt — ein Hinweis,
+  // in der zweiten Blütehälfte normal (ANBAU.md 6.4).
+  const ecSeverity = (_ecUngueltig || _ecOhneGiesswasser) ? 'info'
+    : ecStatus === 'warning-high' ? 'warning'
+    : ecStatus === 'warning-low' ? 'info'
+    : (ecStatus === 'ok' || ecStatus === 'rising-ok' || ecStatus === 'spuelen') ? 'ok'
     : null;
   const boxSeverity = (ecSeverity === 'warning' || phSeverity === 'warning') ? 'warning'
     : ((warnings.length > 0 || phSeverity === 'info' || ecSeverity === 'info') ? 'info' : 'ok');
@@ -8065,12 +8088,11 @@ function analyzeRunoff(cd, medium, ecTarget, ctx) {
     phSeverity,
     ecSeverity,
     boxSeverity,
-    ecLabel: T.runoff.ecLabel({ delta: ecDelta, verhaeltnis: (hasRunoffEc && isFinite(inputEc) && inputEc > 0) ? runoffEc / inputEc : null, gueltig: !_ecUngueltig,
-      spuelen: !!(ctx && ctx.c && ctx.iso && ['flush', 'ice'].includes((phase(ctx.iso, ctx.c) || {}).ph)) }),
+    ecLabel: T.runoff.ecLabel({ delta: ecDelta, verhaeltnis, gueltig: !_ecUngueltig, spuelen: _spuelen, ohneGiesswasser: hasRunoffEc && !_mitGiesswasserEc, spaet: _zweiteBluetehaelfte }),
     phLabel: T.runoff.phLabel({ delta: phDelta, medium }),
     warnings,
     flow,
-    ecGueltig: !_ecUngueltig,
+    ecGueltig: !_ecUngueltig && !_ecOhneGiesswasser,
     phGueltig: !_phUngueltig,
   };
 }
