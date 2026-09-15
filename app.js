@@ -3418,7 +3418,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.188';
+const APP_VERSION = 'v1.5.189';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -34742,7 +34742,13 @@ function collectVPDSeries(cycleId) {
     const day = isoDiff(iso, cyc.startDate);
     if (day < 0) return;
     const ph = phase(iso, cyc);
-    points.push({ day, iso, val: v, phase: ph ? ph.ph : null });
+    // (v1.5.189) Befund je Punkt aus klimaStatus — dieselbe Quelle wie die Pille im Eintrag. Vorher färbte das Diagramm
+    // jeden Punkt gegen fest 0,8–1,2 kPa: In der mittleren und späten Blüte war damit jeder Wert im Ziel orange.
+    const st = klimaStatus(t, r, ph, cyc);
+    const pille = (st && st.s) ? _klimaPille(st) : null;
+    points.push({ day, iso, val: v, phase: ph ? ph.ph : null,
+      ziel: (st && st.ziel.vpd) ? st.ziel.vpd : null, band: !!(st && st.ziel.vpd), befund: st ? st.s : null,
+      stufe: st ? st.ziel.name : null, etikett: pille ? pille.label : null });
   });
   points.sort((a, b) => a.day - b.day);
   return points;
@@ -34824,13 +34830,19 @@ function buildChart(points, totalDays, config) {
   const H = 84;
   const bars = points.map((p, i) => {
     const barH = Math.max(6, pct(p.val));
-    const clr = !hasZone ? 'var(--teal)' : inZone(p.val) ? 'var(--green)' : 'var(--orange)';
+    // (v1.5.189) zoneJePunkt (VPD-Diagramm): Die Farbe kommt aus dem Befund des Punkts — grün im Ziel der Phase, orange
+    // daneben, türkis ohne VPD-Ziel (Dunkelphase, Erntetag, Trocknen, draußen); Schimmel und Nässe auch dort orange.
+    const clr = config.zoneJePunkt
+      ? (p.band ? (p.befund === 'im_ziel' ? 'var(--green)' : 'var(--orange)') : ((p.befund === 'schimmel' || p.befund === 'nass') ? 'var(--orange)' : 'var(--teal)'))
+      : (!hasZone ? 'var(--teal)' : inZone(p.val) ? 'var(--green)' : 'var(--orange)');
     return `<div onclick="showChartTooltip('${config.chartId}', ${i}, event)" style="flex:1;min-width:2px;height:${barH}%;background:${clr};border-radius:2px 2px 0 0;cursor:pointer"></div>`;
   }).join('');
 
   const yL = v => v.toFixed(dec);
   // Zielbereich-Hinweis als Text (statt Hintergrund-Overlay), wenn vorhanden
-  const zoneNote = hasZone
+  const zoneNote = config.zoneJePunkt
+    ? `<div style="font-size:9px;color:var(--text-hint);margin-top:5px;text-align:right">grün = im Ziel der Phase · orange = daneben · türkis = ohne VPD-Ziel</div>`
+    : hasZone
     ? `<div style="font-size:9px;color:var(--text-hint);margin-top:5px;text-align:right">grün = Ziel ${yL(zones[0].from)}–${yL(zones[0].to)} ${config.unit || ''}</div>`
     : '';
 
@@ -34868,11 +34880,14 @@ function showChartTooltip(chartId, idx, ev) {
   // Phase labels
   const phaseLabels = { anzucht: 'Anzucht', bloom: 'Blüte', flush: 'Spülen', ice: 'Ice', harvest: 'Ernte', dry: 'Trocknung' };
   const phLabel = p.phase ? phaseLabels[p.phase] || p.phase : '';
+  // (v1.5.189) VPD-Punkte tragen Stufe, Ziel und Befund — dieselbe Aussage wie die Pille im Eintrag.
+  const _stufe = p.stufe || phLabel;
+  const _befund = p.etikett ? `<div style="color:#b0c0b0;font-size:10px;margin-top:2px">${p.etikett}${p.ziel ? ' · Ziel ' + p.ziel.map(_klimaZahl).join('–') + ' kPa' : ''}</div>` : '';
 
   tt.innerHTML = `
     <div style="font-weight:600;color:#4CAF70">${fmtDE(p.iso, { day: '2-digit', month: '2-digit', year: 'numeric' })}</div>
-    <div style="color:#b0c0b0;font-size:10px;margin-top:2px">Tag ${p.day + 1}${phLabel ? ' · ' + phLabel : ''}</div>
-    <div style="margin-top:3px;font-family:monospace;font-size:13px"><b>${p.val.toFixed(2)}</b> ${unit}</div>
+    <div style="color:#b0c0b0;font-size:10px;margin-top:2px">Tag ${p.day + 1}${_stufe ? ' · ' + _stufe : ''}</div>
+    <div style="margin-top:3px;font-family:monospace;font-size:13px"><b>${p.val.toFixed(2)}</b> ${unit}</div>${_befund}
   `;
 
   // Position tooltip near click point, clamped to wrapper bounds
@@ -34905,6 +34920,16 @@ document.addEventListener('click', (e) => {
  * Build the complete charts section for a cycle.
  * Returns HTML string with all 4 charts or a "not enough data" notice.
  */
+/**
+ * (v1.5.189) Legende des VPD-Diagramms aus KLIMA_ZIEL. Vorher stand dort fest „Grüner Bereich: 0.8–1.2 kPa (Blüte optimal)
+ * · Spätblüte: gezielt 1.4–1.6 gegen Schimmel" — beides widersprach den Zielen, mit denen der Eintrag seit v1.5.187 rechnet.
+ */
+function _vpdDiagrammLegende(c) {
+  if (c && c.growType === 'outdoor') return 'Blatt-VPD aus Temperatur und Luftfeuchte. Draußen nicht steuerbar, deshalb ohne Ziel (türkis) · tipp auf einen Punkt für Details.';
+  const b = (k) => KLIMA_ZIEL[k].vpd.map(_klimaZahl).join('–');
+  return `Grün = Luft im Ziel der Phase, wie die Anzeige im Eintrag: Sämling ${b('saemling')} · Anzucht ${b('anzucht')} · frühe Blüte ${b('frueh')} · ab mittlerer Blüte ${b('mittel')} kPa. Orange = daneben oder Schimmelgefahr. Türkis = ohne VPD-Ziel (Dunkelphase, Erntetag, Trocknen). Blatt-VPD aus Temperatur und Luftfeuchte · tipp auf einen Punkt für Details.`;
+}
+
 function buildChartsSection(cycleId) {
   const cyc = S.cycles.find(c => c.id === cycleId);
   if (!cyc || !cyc.startDate) return '';
@@ -34948,7 +34973,7 @@ function buildChartsSection(cycleId) {
   });
   const vpdChart = buildChart(vpdData, dr, {
     title: 'VPD-Verlauf', unit: 'kPa', min: 0, max: 2.0, decimals: 2,
-    zones: [{ from: 0.8, to: 1.2, color: '#4CAF70' }],
+    zoneJePunkt: true,   // (v1.5.189) Befund je Punkt statt fest 0,8–1,2 kPa
     type: 'line', chartId: 'vpd-' + cycleId,
   });
   const waterMax = Math.max(5, ...waterData.map(p => p.val)) * 1.1;
@@ -34978,7 +35003,7 @@ function buildChartsSection(cycleId) {
     ${_chartBlock('📊 EC-Verlauf', ecData.length, `Grüner Bereich: ${ecFmt(1.2)}–${ecFmt(2.2)} ${ecUnitLabel()} (typisch Vegi→Blüte)`, ecChart)}
     ${drainEcData.length >= minPoints ? _chartBlock('🌊 Drain-EC-Verlauf', drainEcData.length, `Drain ÷ Zulauf bis 1,3 = Gleichgewicht · 1,3–1,6 = in der Vollversorgung normal · über 1,6 = Anreicherung. In Erde kann ein Anstieg ab der Blütemitte auch Nachlieferung aus der Erde sein. Aussagekräftig erst ab etwa 15 % Ablauf. Grüner Bereich: ${ecFmt(0.8)}–${ecFmt(2.0)} ${ecUnitLabel()} typisch.`, drainEcChart) : ''}
     ${restPctData.length >= minPoints ? _chartBlock('⚖️ Restgewicht-Verlauf', restPctData.length, 'Sweet-Spot 30–50% (gewollter Dryback). Über 80% = noch nass, unter 25% = zu trocken (Stress).', restPctChart) : ''}
-    ${_chartBlock('📊 VPD-Verlauf', vpdData.length, 'Grüner Bereich: 0.8–1.2 kPa (Blüte optimal) · Spätblüte: gezielt 1.4–1.6 gegen Schimmel in dichten Buds · aus Temp + Luftfeuchte berechnet', vpdChart)}
+    ${_chartBlock('📊 VPD-Verlauf', vpdData.length, _vpdDiagrammLegende(cyc), vpdChart)}
     ${_chartBlock('📊 Wassermenge', waterData.length, 'Bar = Liter pro Gießtag', waterChart)}
   `;
 }

@@ -2,6 +2,26 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-15 — v1.5.189
+
+- **Das abgeschaltete VPD-Diagramm rechnete noch mit fest 0,8–1,2 kPa.** Beim Abgleich der Klimazahlen gefunden: Der
+  Bereich „Verlauf & Charts" (`buildChartsSection`) färbte jeden VPD-Punkt gegen 0,8–1,2 kPa und schrieb dazu „Grüner
+  Bereich: 0.8–1.2 kPa (Blüte optimal) · Spätblüte: gezielt 1.4–1.6". Gegen die Bewertung im Eintrag gerechnet
+  widersprach die Farbe an Patricks 86 Klimatagen 50-mal — jeder Sämlingstag wäre orange gewesen.
+- **Sichtbar ist davon nichts.** Der Bereich ist abgeschaltet (`renderDash`: `chartsHTML = ''`), weil er in der
+  App-Vorschau nie zuverlässig dargestellt wurde; die Startseite zeigt nur die Mini-Verläufe für Wasser, pH und EC.
+  Laut Kommentar bleibt er im Code, um ihn mit einer Zeile wieder einzuschalten — und hätte dann den Zielen
+  widersprochen, mit denen die App seit v1.5.187 rechnet.
+- **Jetzt:** Jeder Punkt trägt den Befund aus `klimaStatus` — dieselbe Quelle wie die Pille im Eintrag. Grün = im Ziel
+  der Phase, orange = daneben oder Schimmelgefahr, türkis = ohne VPD-Ziel (Dunkelphase, Erntetag, Trocknen, draußen).
+  Die Legende kommt aus `KLIMA_ZIEL` (`_vpdDiagrammLegende`), der Tipp auf einen Punkt zeigt Stufe, Befund und Ziel.
+- **Daraus zu lernen:** Erst die Aufrufer suchen, dann ändern. Ich hatte das Diagramm für sichtbar gehalten; erst die
+  Suche nach der Stelle für die Browser-Prüfung zeigte, dass `buildChartsSection` nirgends aufgerufen wird. Ein grüner
+  jsdom-Test sagt darüber nichts.
+- `test_vpddiagramm.js` (14 Prüfungen, beide Zeitzonen): Balkenfarbe gegen die Pille des Eintrags an allen 86
+  Klimatagen, Legende, Tooltip, Dunkeltag mit und ohne Schimmelgefahr, draußen, Quelltext. Gegen den alten Stand:
+  10 Fehler.
+
 ## 2026-09-15 — v1.5.188
 
 - **In der Dunkelphase und am Erntetag riet die App zum Heizen.** Beim Durcharbeiten der Klimatexte gefunden:
