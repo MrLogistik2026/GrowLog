@@ -2,6 +2,27 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-15 — v1.5.175
+
+- **Drei Gießanleitungen nannten „Sweet Spot ~40 % Restgewicht" — genau den Wert, bei dem die Bewertung daneben
+  „Bald gießen" meldet.** Befund der Prüf-Agentin zur Gießmenge. `classifyRestPct` bewertet Erde ab 40 % mit
+  „Bald gießen", 25–40 % mit „Sweet Spot — jetzt gießen", darunter Wasserstress; im Finisher 30–40 %. Patricks
+  Gießpunkt ist 30 %, der Hebe-Test-Knopf „Knapp". Die Texte sagten:
+  - Tipps, Gieß-Leitfaden: „③ Sweetspot (~40% Restgewicht) — Erst gießen wenn der Topf **extrem leicht** ist … alle
+    3–4 Tage". „Extrem leicht" liegt unter 25 % und damit im Wasserstress, und „alle 3–4 Tage" steht zwei Absätze
+    nach „Vergiss starre Zeitpläne — gegossen wird nach Topfgewicht".
+  - Gießanleitung im Eintrag: „Erst gießen bei ~40% Restgewicht".
+  - Einstellungen, Restgewicht-Modul: „Sweet Spot bei ~40% Restgewicht … In der finalen Blüte bewusst 25–30% für
+    Harz-Trigger". Die Finisher-Bewertung nennt 30–40 %, und ein Harz-Plus durch Trockenstress ist nicht belegt
+    (`ANBAU.md` 14; derselbe Satz war in v1.5.144 am Finisher-Hinweis schon korrigiert).
+- **Jetzt:** `GIESSPUNKT` hält die Grenzen an einer Stelle (Erde 25–40, Finisher 30–40). `classifyRestPct` urteilt
+  danach, und alle drei Texte nennen sie — mit dem Knopf „Knapp" als Anker und ohne festen Kalender. Die
+  Bewertung selbst ändert sich nicht: dieselben Zahlen, nur aus einer Quelle. `ANBAU.md` nennt keinen Gießpunkt;
+  es bleibt eine Konvention über den Nass-Trocken-Zyklus (Abschnitt 1). Ob er je Phase verschieden sein soll, fragt
+  Übergabe-Abschnitt 0m.1.
+- `test_giesspunkttexte.js` (6 Prüfungen, beide Zeitzonen): Quelltext, die Bewertung an den Grenzen, Tipps und
+  Eintrag gerendert. Gegen den alten Stand: 5 Fehler.
+
 ## 2026-09-15 — v1.5.174
 
 - **Zwei Gießanleitungen nannten noch „bis 10–15 % Drain".** Befund der Prüf-Agentin zur Gießmenge. Seit

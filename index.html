@@ -1053,6 +1053,10 @@ const TROCKNEN_TEXT = `${TROCKNEN_KLIMA.tMin}–${TROCKNEN_KLIMA.tMax} °C, ${TR
 const DRAIN_ZIEL = { min: 15, mid: 17.5, max: 20, obergrenze: 25 };
 // (v1.5.167) Ab diesem Tag zieht ein Guss den ganzen Topf durch — Begründung bei _drainMoeglich.
 const DRAIN_AB_TAG = 25;
+// (v1.5.175) Wann gegossen wird, in Prozent Restgewicht — die Grenzen der Hebe-Test-Bewertung (classifyRestPct) und
+// der Texte, die sie erklären. Erde: Sweet Spot 25–40 % (Knopf „Knapp“ = 30, Patricks Gießpunkt); Finisher: 30–40 %.
+// ANBAU.md nennt keine Zahl — es ist eine Konvention über den Nass-Trocken-Zyklus (ANBAU.md 1).
+const GIESSPUNKT = { erde: { von: 25, bis: 40 }, finisher: { von: 30, bis: 40 } };
 
 const T = {
   // ---------------------------------------------------------------------
@@ -4447,7 +4451,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.174';
+const APP_VERSION = 'v1.5.175';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -8643,7 +8647,7 @@ function classifyRestPct(restPct, isFinisher, isCoco, noWaterPhase) {
         text: T.water.finisherWait({ restPct: Math.round(p) }),
       };
     }
-    if (p >= 30 && p <= 40) {
+    if (p >= GIESSPUNKT.finisher.von && p <= GIESSPUNKT.finisher.bis) {
       return {
         status: 'finisher', color: 'var(--green)',
         label: 'Finisher Sweet Spot',
@@ -8691,14 +8695,14 @@ function classifyRestPct(restPct, isFinisher, isCoco, noWaterPhase) {
       text: T.water.tooWet({ restPct: Math.round(p) }),
     };
   }
-  if (p >= 40) {
+  if (p >= GIESSPUNKT.erde.bis) {
     return {
       status: 'approaching', color: 'var(--teal)',
       label: 'Bald gießen',
       text: T.water.gettingDry({ restPct: Math.round(p) }),
     };
   }
-  if (p >= 25) {
+  if (p >= GIESSPUNKT.erde.von) {
     return {
       status: 'sweetSpot', color: 'var(--green)',
       label: 'Sweet Spot — jetzt gießen',
@@ -18394,8 +18398,8 @@ function renderTips() {
         </div>
 
         <div style="background:var(--card);border:0.5px solid var(--border);border-radius:10px;padding:10px 12px">
-          <div style="font-size:11px;font-weight:600;color:var(--green);margin-bottom:4px">③ Sweetspot (~40% Restgewicht)</div>
-          <div style="font-size:11px;color:var(--text-sub);line-height:1.6">Erst gießen wenn der Topf <b>extrem leicht</b> ist. Obere 3–5cm knochentrocken. Unter guten LED-Bedingungen = alle 3–4 Tage.</div>
+          <div style="font-size:11px;font-weight:600;color:var(--green);margin-bottom:4px">③ Gießpunkt: Sweet Spot ${GIESSPUNKT.erde.von}–${GIESSPUNKT.erde.bis} % Restgewicht</div>
+          <div style="font-size:11px;color:var(--text-sub);line-height:1.6">Gegossen wird, wenn der Topf <b>spürbar leichter</b> ist — beim Hebe-Test „Knapp“ (~30 %). Die obersten 3–5 cm sind dann trocken. Wie oft das ist, sagt der Topf, nicht der Kalender.</div>
         </div>
       </div>
 
@@ -21269,7 +21273,7 @@ function renderSet() {
 
       const explainBlock = `
         <div style="font-size:11px;color:var(--text-hint);line-height:1.55;padding:4px 0;border-top:0.5px solid var(--border);margin-top:4px">
-          Das Restgewicht-Modul macht die Bewässerungs-Entscheidung <b>präzise</b>. Sweet Spot bei <b>~40% Restgewicht</b> (Topf spürbar leichter). In der finalen Blüte bewusst <b>25–30%</b> für Harz-Trigger.
+          Das Restgewicht-Modul macht die Bewässerungs-Entscheidung <b>präzise</b>. Gegossen wird im Sweet Spot bei <b>${GIESSPUNKT.erde.von}–${GIESSPUNKT.erde.bis} % Restgewicht</b> (Topf spürbar leichter). Kurz vor der Ernte (Finisher) sind <b>${GIESSPUNKT.finisher.von}–${GIESSPUNKT.finisher.bis} %</b> gewollt — ein Harz-Plus durch den Trockenstress ist oft berichtet, aber nicht belastbar belegt.
         </div>
       `;
 
@@ -27419,7 +27423,7 @@ function renderEntry(iso) {
                 <div style="background:rgba(224,96,96,0.06);border-radius:6px;padding:6px 8px;color:var(--red)">⚠️ <b>Regel Nr. 1:</b> Nach Topfgewicht gießen, nicht nach Kalender!</div>
                 <div><b style="color:var(--blue)">① Vollsättigung:</b> Langsam gießen, bis ${DRAIN_ZIEL.min}–${DRAIN_ZIEL.max} % unten ablaufen (~${waterSug} ml). Topfgewicht merken = 100% Referenz.</div>
                 <div>${c.medium === 'coco' ? '<b style="color:var(--teal)">② Feucht halten:</b> Coco nie ganz austrocknen lassen — nur leicht abtrocknen, dann wieder gießen. Die Wurzeln mögen es gleichmäßig feucht.' : '<b style="color:var(--teal)">② Rücktrocknung:</b> Finger weg! Trocknung zieht O₂ in die Wurzelzone = Motor für Wachstum.'}</div>
-                <div>${c.medium === 'coco' ? `<b style="color:var(--green)">③ Gießpunkt:</b> Gießen sobald der Topf merklich leichter wird (~60–70% Restgewicht) — jedes Mal mit Nährlösung. (${getInt(c, p?.ph || 'bloom') <= 1 ? 'meist täglich' : '~alle ' + getInt(c, p?.ph || 'bloom') + ' Tage'})` : `<b style="color:var(--green)">③ Sweetspot:</b> Erst gießen bei ~40% Restgewicht. Obere 3–5cm knochentrocken. (~alle ${getInt(c, p?.ph || 'bloom')} Tage)`}</div>
+                <div>${c.medium === 'coco' ? `<b style="color:var(--green)">③ Gießpunkt:</b> Gießen sobald der Topf merklich leichter wird (~60–70% Restgewicht) — jedes Mal mit Nährlösung. (${getInt(c, p?.ph || 'bloom') <= 1 ? 'meist täglich' : '~alle ' + getInt(c, p?.ph || 'bloom') + ' Tage'})` : `<b style="color:var(--green)">③ Sweetspot:</b> Gießen im Sweet Spot bei ${GIESSPUNKT.erde.von}–${GIESSPUNKT.erde.bis} % Restgewicht (Hebe-Test „Knapp“). Obere 3–5 cm trocken. (~alle ${getInt(c, p?.ph || 'bloom')} Tage)`}</div>
                 <div style="background:rgba(240,208,80,0.06);border-radius:6px;padding:6px 8px;color:var(--yellow)">${c.medium === 'coco' ? '💡 <b>Tipp:</b> In Coco lieber etwas früher gießen als zu spät — Coco verzeiht Austrocknen schlecht. Staunässe trotzdem vermeiden, aber nie knochentrocken werden lassen.' : '💡 <b>Unsicher?</b> Lieber 1 Tag länger warten. Hängende Blätter = 2h Erholung. Staunässe-Wurzelfäule = irreversibel.'}</div>
                 <div><b style="color:var(--orange)">🧪 Mischen:</b> CalMag zuerst → umrühren → Basisdünger → Additive → pH auf ${pht.mid.toFixed(1)}</div>
                 <div><b style="color:var(--orange)">🚿 Drain:</b> 15–20% Drain bei jedem Guss. Drain-Wasser sofort entsorgen!</div>
