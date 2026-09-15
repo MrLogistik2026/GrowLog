@@ -2,6 +2,21 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-15 — v1.5.199
+
+- **Zwei Stellen rechneten nach v1.5.195 weiter mit einem eigenen Finisher-Band.** Die Dryback-Vorhersage
+  (`drybackForecast`) zielte in den letzten 14 Tagen vor der Ernte auf 35 % statt auf den Gießpunkt (im Code: „bewusster
+  Stress-Korridor"). Der Hebe-Test trug im Eintrag ein rotes Schild „FINISHER", auch am IceFlush-Tag, als gälten dort
+  andere Grenzen.
+- **Warum das zählt:** Seit v1.5.195 gilt derselbe Gießpunkt bis zur Ernte. Einen trockeneren Topf in den letzten zwei
+  Wochen stützt kein belegter Mechanismus (`ANBAU.md` 14). Die Vorhersage „gießen voraussichtlich …" lag dadurch zu früh,
+  und das Schild kündigte eine Regel an, die es nicht mehr gibt.
+- **Jetzt:** Das Ziel der Vorhersage ist in jeder Blütewoche der Gießpunkt, das Schild entfällt. `contextFor` kennt das
+  Finisher-Fenster weiter, andere Stellen nutzen es.
+- `test_finisherreste.js` (8 Prüfungen, beide Zeitzonen): Vorhersage an einem Finisher-Blütetag (Ziel 30 %, bei 55 %
+  und 10 Punkten je Tag in 3 statt 2 Tagen) und an einem normalen Blütetag, Hebe-Test am IceFlush-Tag ohne Schild,
+  Quelltext. Gegen den alten Stand: 4 Fehler.
+
 ## 2026-09-15 — v1.5.198
 
 - **Die IceFlush-Anleitung sagte noch „Hard Dryback auf 35 %" — v1.5.196 hatte sieben Stellen übersehen.** Am IceFlush-Tag

@@ -3429,7 +3429,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.198';
+const APP_VERSION = 'v1.5.199';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -11728,11 +11728,11 @@ function drybackForecast(c, p, iso) {
   // Gießpunkt (Sweet Spot, Restgewicht%) — 1:1 mit classifyRestPct:
   //   Erde     ~30% (grüner "jetzt gießen"-Sweet-Spot)
   //   Coco     ~60% (Coco wird viel früher gegossen, nie tief runter)
-  //   Finisher ~35% (bewusster Stress-Korridor 30–40% vor der Ernte)
+  // (v1.5.199) Kein Finisher-Ziel mehr: vorher 35 % in den letzten 14 Tagen („bewusster Stress-Korridor“). Seit v1.5.195
+  // gilt derselbe Gießpunkt bis zur Ernte.
   const ctx = (typeof contextFor === 'function') ? contextFor(c, today) : null;
   const isCoco = ctx ? !!ctx.isCoco : (c.medium === 'coco');
-  const isFinisher = ctx ? !!ctx.isFinisher : false;
-  const targetPct = isCoco ? 60 : (isFinisher ? 35 : 30);
+  const targetPct = isCoco ? 60 : 30;
 
   // Tagesrate mit heutigem VPD (trockene Luft heute → schneller). Annahme: die nächsten
   // Tage verlaufen klimatisch wie heute — deshalb "voraussichtlich", nicht "am".
@@ -25984,12 +25984,12 @@ function renderEntry(iso) {
         // Reset-Link erscheint nur wenn ein gespeicherter User-Wert existiert.
         // Klick setzt restPct + Flag zurück → UI zeigt wieder dynamischen Default
         // basierend auf aktuellen Daten. Wichtig wenn z.B. Gusszyklen geändert wurden.
+        // (v1.5.199) Ohne Schild „FINISHER“ — seit v1.5.195 gelten in den letzten 14 Tagen dieselben Grenzen.
         const showReset = !isScale && savedForDisplay !== null;
         const header = `<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px">
           <div style="display:flex;align-items:center;gap:6px">
             <span style="font-size:14px">${isScale ? '⚖️' : (c.weightMode === 'finger' ? '👆' : '✋')}</span>
             <span style="font-size:12px;font-weight:600;color:var(--text)">${isScale ? 'Waage' : (c.weightMode === 'finger' ? 'Fingertest' : 'Hebe-Test')}</span>
-            ${isFinisher ? '<span style="font-size:9px;background:rgba(224,96,96,0.15);color:var(--red);padding:2px 6px;border-radius:8px;font-weight:600">FINISHER</span>' : ''}
           </div>
           ${(userExpanded && (isSaturationDay || isSprayDay || isPostHarvest))
             ? `<button onclick="collapseLiftTest('${c.id}','${iso}')" style="background:transparent;border:none;color:var(--text-hint);font-size:10px;cursor:pointer;padding:2px 6px;text-decoration:underline;font-family:var(--font)" title="Hebe-Test wieder ausblenden">▲ ausblenden</button>`
@@ -26921,7 +26921,6 @@ function renderEntry(iso) {
           <div style="display:flex;align-items:center;gap:6px">
             <span style="font-size:14px">${isScale ? '⚖️' : (c.weightMode === 'finger' ? '👆' : '✋')}</span>
             <span style="font-size:12px;font-weight:600;color:var(--text)">${isScale ? 'Waage' : (c.weightMode === 'finger' ? 'Fingertest' : 'Hebe-Test')}</span>
-            ${isFinisher ? '<span style="font-size:9px;background:rgba(224,96,96,0.15);color:var(--red);padding:2px 6px;border-radius:8px;font-weight:600">FINISHER</span>' : ''}
           </div>
           ${(userExpanded && (isSaturationDay || isSprayDay || isPostHarvest))
             ? `<button onclick="collapseLiftTest('${c.id}','${iso}')" style="background:transparent;border:none;color:var(--text-hint);font-size:10px;cursor:pointer;padding:2px 6px;text-decoration:underline;font-family:var(--font)" title="Hebe-Test wieder ausblenden">▲ ausblenden</button>`
