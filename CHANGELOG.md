@@ -2,6 +2,31 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-15 — v1.5.191
+
+- **Das Lexikon erklärte die Tag-Nacht-Differenz verkehrt herum.** „Temperatur": „hohe Differenz = stauchere Pflanze,
+  niedrige Differenz = streckendes Wachstum". Belegt ist das Gegenteil: Je wärmer der Tag gegenüber der Nacht, desto
+  länger die Internodien; Tag- und Nachttemperatur wirken dabei jede für sich (Carvalho et al. 2002, Ann Bot 90:111). Wer
+  mit großem Unterschied kompakt halten wollte, bekam mehr Stretch. Im selben Eintrag: „ab 30 °C kippt der Effekt —
+  Enzyme denaturieren" — die Photosynthese von Cannabis ist um 30 °C am höchsten (Chandra et al. 2008, `ANBAU.md` 2.2).
+- **Kühle Nächte versprachen mehr, als belegt ist.** Die FAQ „Warum sind kühle Nächte in der Blüte gut?" nannte bei
+  10–15 °C dichtere Buds, intensiveres Aroma und etwas mehr Harz; der Eintrag „Anthocyane" sagte „Temperaturdifferenz ist
+  der Schlüssel", der Outdoor-Wetterhinweis „dichtere Buds" und „Terpen-Erhalt". In einem Versuch mit Cannabis färbten
+  gleichmäßig 8–15 °C am stärksten, ein Wechsel aus warmem Tag und kalter Nacht weniger — und Trockengewicht und CBD
+  waren bei 22 °C am höchsten (Kim et al. 2025, J Cannabis Res). Farbe kostet Ertrag; die übrigen Vorteile sind nicht
+  belegt. Die Frage heißt jetzt „Sind kühle Nächte in der Blüte gut?".
+- **„Phosphor-Lockout unter 18 °C" an fünf Stellen** — Lexikon „Temperatur" und „Kältestress", die Eintrags-Warnung ab
+  17 °C, die Phosphor-Diagnose, dazu „Wurzelschäden drohen" unter 15 °C. `ANBAU.md` 7.3 setzt die Grenze an die
+  Wurzelzone: Unter 16 °C brechen Phosphor- und Wasseraufnahme ein. Die Phosphor-Diagnose begann mit „P-reiche
+  Blüh-Dünger jetzt" — bei kalter Wurzelzone oder falschem pH hilft mehr Dünger nicht (`ANBAU.md` 13.3). Sie nennt jetzt
+  zuerst diese beiden Prüfungen.
+- **Warum das zählt:** Ein verdrehter Mechanismus führt zur falschen Handlung — hier zu mehr Stretch, zu kühlen Nächten
+  mit steigender Luftfeuchte in der Spätblüte und zu Dünger gegen ein Temperaturproblem.
+- `test_temperaturtexte.js` (15 Prüfungen, beide Zeitzonen): Lexikon „Temperatur", „Anthocyane" und „Kältestress", FAQ,
+  Phosphor-Diagnose, Eintrags-Warnungen bei 17 und 14 °C, Quelltext. Gegen den alten Stand: 13 Fehler. Bewusst angepasst:
+  `test_dunkelphase.js` — seine Gegenprobe suchte den alten Wortlaut „unter 18"; sie prüft jetzt, dass die Warnung bei
+  17 °C in der späten Blüte weiter erscheint.
+
 ## 2026-09-15 — v1.5.190
 
 - **Lexikon, Infotexte und Diagnose nannten noch die Klimazahlen von vor Option B.** Seit v1.5.187 rechnet der

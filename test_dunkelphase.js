@@ -153,8 +153,9 @@ async function abschnitt(titel, fn) {
       !r.d17.concat(r.d14).some(x => /Phosphor|Heizen|Wachstum stoppt/.test(x)), JSON.stringify([r.d17, r.d14]));
     pruef('Dunkelphase 30 °C: Terpene statt „Ziel 22–26 °C bei Licht an"',
       r.d30.some(x => /Terpene/.test(x)) && !r.d30.some(x => /bei Licht an/.test(x)), JSON.stringify(r.d30));
+    // (v1.5.191) Bewusst angepasst: Die Warnung bei 17 °C nennt seit v1.5.191 die Wurzelzone unter 16 °C statt „unter 18 °C".
     pruef('Gegenprobe späte Blüte: 17 °C warnt weiter, 30 °C nennt 22–26 °C bei Licht an',
-      r.s17.some(x => /unter 18/.test(x)) && r.s30.some(x => /22–26 °C bei Licht an/.test(x)), JSON.stringify([r.s17, r.s30]));
+      r.s17.some(x => /^warn: .*kühl/.test(x)) && r.s30.some(x => /22–26 °C bei Licht an/.test(x)), JSON.stringify([r.s17, r.s30]));
   });
 
   const txt = "const txt = function (id) { const el = document.getElementById(id); return el ? el.textContent.replace(/\\s+/g, ' ').trim() : null; };";

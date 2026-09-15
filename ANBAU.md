@@ -188,6 +188,12 @@ et al. 2008, Physiol Mol Biol Plants 14:299). *Botrytis* zerstört Blüten auch 
 (Mahmoud et al. 2023, Botany 101:200; geprüft am Abstract). Kühle schützt nicht — sie hebt bei gleicher
 Wassermenge in der Luft nur die relative Feuchte.
 
+**Kühle Nächte und Tag-Nacht-Differenz:** Lila Farbe entsteht nur bei Sorten mit der Anlage dazu. In einem Versuch mit
+einer CBD-Sorte bildeten die Blüten bei gleichmäßig 8–15 °C am meisten Anthocyane, ein Wechsel aus 22 °C und 4 °C bei
+gleicher Wärmesumme weniger; Trockengewicht und CBD waren bei 22 °C am höchsten (Kim et al. 2025, J Cannabis Res). Ein
+wärmerer Tag als die Nacht verlängert die Internodien, Tag- und Nachttemperatur wirken dabei getrennt (Carvalho et al.
+2002, Ann Bot 90:111, an Chrysanthemen). Dichtere Blüten oder mehr Harz durch kühle Nächte sind nicht belegt (14).
+
 **Warum Dunkelphase und Erntetag kein Band haben:** Das VPD-Band beschreibt den Antrieb der Transpiration bei
 Licht. Nachts sind die Stomata vieler Arten nicht ganz geschlossen, die Transpiration erreicht aber typisch nur
 5–15 % des Tageswerts (Caird, Richards & Donovan 2007, Plant Physiol 143:4, doi:10.1104/pp.106.092940). Ohne
@@ -871,6 +877,8 @@ Releases gekostet (die „Abtrockenphase vor dem Spülen", v1.5.65–79).
 - **Dunkelphase 24–72 h vor der Ernte.** Kein belegter THC-Zuwachs. Was belegt ist: Terpene sind
   flüchtig und verlieren sich unter Licht und Wärme. Ein kühler, dunkler Schnitt ist deshalb
   sinnvoll — die Begründung liegt in der Ernte, nicht im Stoffwechsel.
+- **Kühle Nächte für dichtere Blüten, mehr Harz oder mehr Aroma.** Nicht belegt. Belegt ist die Farbe bei passender
+  Genetik — und dass Kühle Blütenmasse kostet (2.2).
 - **UV-Ergänzung für mehr Harz.** Die Befundlage ist gemischt bis negativ. Kontrollierte Versuche
   fanden keinen Cannabinoidzuwachs in den Blüten, teils Rückgänge und Wuchsschäden; ein
   berichteter Zuwachs betraf Zuckerblätter, die ohnehin entfernt werden. Nicht als

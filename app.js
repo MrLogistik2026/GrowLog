@@ -1166,7 +1166,9 @@ const PROBLEMS = [
     },
     description: 'Blätter bekommen purpur-rote Stiele und Adern, Blattränder werden bronze-braun, trocken. Wachstum stockt.',
     context: { phase: ['bloom'], tempCold: true },
-    action: 'P-reiche Blüh-Dünger jetzt. Oft durch kalte Temperaturen unter 18 °C ausgelöst — Raumklima prüfen. pH im grünen Bereich halten.',
+    // (v1.5.191) Erst die Ursachen, die mehr Dünger nicht behebt (ANBAU.md 7.3 und 13.3). Vorher „P-reiche Blüh-Dünger
+    // jetzt", dazu „unter 18 °C" statt der Wurzelzone unter 16 °C.
+    action: 'Erst Wurzelzone und pH prüfen: Unter 16 °C in der Wurzelzone bricht die Phosphor-Aufnahme ein, und bei falschem pH ist Phosphor da, aber nicht verfügbar — in beiden Fällen hilft mehr Dünger nicht. Stimmen beide, P-betonten Blütedünger geben.',
     lexiconKey: 'p_deficiency',
   },
   {
@@ -3418,7 +3420,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.190';
+const APP_VERSION = 'v1.5.191';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -6482,10 +6484,12 @@ const FAQ = [
     a: '<b>Cannabis reagiert auf die Nachtlänge, nicht den Kalender.</b> Die Pflanze hat ein Protein namens <b>Phytochrom</b>, das messen kann ob Nächte länger werden.<br><br><b>In Mitteleuropa</b> fällt das Tageslicht <b>Mitte/Ende August</b> unter 14h — das ist der natürliche Blüte-Trigger. Nicht schon zur Sonnenwende (21. Juni), wie oft angenommen!<br><br>Die Tage müssen also erst wieder kürzer werden, und zwar deutlich. <b>Ab ~17. August in Deutschland</b> switcht die Hormon-Steuerung von "wachsen" auf "blühen". Bis zur Ernte dann nochmal 8-10 Wochen → Ernte Ende September bis Oktober.<br><br><b>Automatics</b> ignorieren das — sie blühen nach Alter, nicht nach Licht.',
   },
   {
-    q: 'Warum sind kühle Nächte in der Blüte gut?',
+    q: 'Sind kühle Nächte in der Blüte gut?',
     icon: '❄️',
     category: 'Biologie',
-    a: '<b>Kühle Nächte in der späten Blüte (ab Woche 4–5) bringen ein paar echte Vorteile</b> — nicht durch „Stress", sondern durch Physik. Bei Nachttemperaturen um 10–15°C:<br><br>• <b>Anthocyane</b> bilden sich → schöne Lila-/Rot-Färbung der Blüten (rein optisch, gut belegt)<br>• <b>Terpene bleiben erhalten</b> → verdampfen bei Kälte weniger, das Aroma wird intensiver<br>• <b>Buds werden dichter</b> statt flauschig<br>• Die Harzbildung <b>kann</b> leicht zunehmen — der Effekt ist aber klein. Mehr Trichome kommen vor allem aus <b>Genetik, gesunder Pflanze und gutem Licht</b>, nicht aus Kälte.<br><br><b>Wichtig:</b> „Kühl" heißt <b>10–15°C</b>, nicht kälter — und es ist kein „stresse die Pflanze für mehr Ertrag"-Trick. Absichtlich in echten Kälte-Stress zu gehen schadet mehr als es bringt. Finger weg bei Frost (<5°C), und bei kalten Nächten <b>plus</b> hoher Luftfeuchte/Regen droht Schimmel. Trockene, mild-kühle Nächte sind das Ziel.',
+    // (v1.5.191) Vorher: „bringen ein paar echte Vorteile" bei 10–15 °C — dichtere Buds, intensiveres Aroma, mehr Harz. Belegt
+    // ist nur die Farbe, und die kostet Ertrag (Kim et al. 2025). Frage und Antwort sagen jetzt, was gesichert ist.
+    a: '<b>Für die Farbe — bei Sorten mit der Anlage dazu. Mehr ist nicht belegt, und die Farbe hat einen Preis.</b><br><br>• <b>Anthocyane:</b> In einem Versuch mit einer CBD-Sorte bildeten die Blüten bei gleichmäßig 8–15 °C am meisten davon; ein Wechsel aus warmem Tag und kalter Nacht färbte weniger. Trockengewicht und CBD waren bei 22 °C am höchsten (Kim et al. 2025).<br>• <b>Dichtere Buds, mehr Harz, intensiveres Aroma</b> durch kühle Nächte: nicht belegt. Terpene verdunsten bei Kälte langsamer — das spricht für einen kühlen Schnitt, nicht für wochenlang kalte Nächte.<br>• <b>Stretch:</b> Ist der Tag viel wärmer als die Nacht, strecken sich die Stängel stärker (Carvalho et al. 2002).<br><br><b>Worauf es ankommt:</b> Kühlt die Nacht ab, steigt die Luftfeuchte von selbst — aus 24 °C / 50 % werden bei 20 °C rund 64 %. Der Schimmel-Deckel gilt auch nachts. Die Wurzelzone soll nicht unter 16 °C fallen. Finger weg bei Frost (unter 5 °C) und bei kalten Nächten plus hoher Luftfeuchte oder Regen.',
   },
 ];
 
@@ -12784,8 +12788,8 @@ function getAlerts(c) {
         out.push({
           icon: '❄️',
           text: S.beginnerMode
-            ? `Kühle Nacht (${wTMin}°C) — in der Blüte gut für die Färbung (Lila/Rot) und dichtere Buds. Bei Nässe auf Schimmel achten.`
-            : `${wTMin}°C nachts → fördert Anthocyan-Färbung und Terpen-Erhalt in der Spätblüte. Trichom-Effekt gering, bei Nässe Schimmelrisiko.`,
+            ? `Kühle Nacht (${wTMin}°C) — bei Sorten mit der Anlage färben sich die Blüten eher lila. Bei Nässe auf Schimmel achten.`
+            : `${wTMin}°C nachts → Anthocyan-Färbung bei passender Genetik; Kühle kostet etwas Blütenmasse (Kim et al. 2025). Bei Nässe Schimmelrisiko.`,
           type: 'tip',
         });
       }
@@ -14180,8 +14184,10 @@ function getEntryWarnings(cd, p, e, c, iso) {
       else if (tempVal > 29) out.push({ type: 'warn', text: _ohneTempZiel
         ? `🌡️ ${tempVal}°C hoch — Terpene sind flüchtig: kühler halten, die Luftfeuchte dabei höchstens ${KLIMA_ZIEL[_kStT].deckel} %.`
         : `🌡️ ${tempVal}°C hoch — Stoffwechsel bremst. Ziel: ${_kStT ? KLIMA_ZIEL[_kStT].temp.join('–') : '22–28'} °C bei Licht an.` });
-      else if (tempVal < 15 && !_ohneTempZiel) out.push({ type: 'err', text: `🌡️ ${tempVal}°C zu kalt — Wachstum stoppt, Wurzelschäden drohen. Heizen!` });
-      else if (tempVal < 18 && !_ohneTempZiel) out.push({ type: 'warn', text: `🌡️ ${tempVal}°C unter 18°C — Phosphor-Lockout droht, lila/rote Verfärbungen möglich.` });
+      // (v1.5.191) Die Grenze sitzt an der Wurzel (ANBAU.md 7.3): unter 16 °C in der Wurzelzone brechen Phosphor- und
+      // Wasseraufnahme ein. Vorher „Phosphor-Lockout droht" schon bei 17 °C Luft und „Wurzelschäden" unter 15 °C.
+      else if (tempVal < 15 && !_ohneTempZiel) out.push({ type: 'err', text: `🌡️ ${tempVal}°C zu kalt — das Wachstum stockt. Kühlt die Wurzelzone unter 16 °C, brechen Phosphor- und Wasseraufnahme ein. Heizen.` });
+      else if (tempVal < 18 && !_ohneTempZiel) out.push({ type: 'warn', text: `🌡️ ${tempVal}°C — kühl. Fällt die Wurzelzone unter 16 °C, brechen Phosphor- und Wasseraufnahme ein (lila Stängel). Topf nicht auf kalten Boden stellen.` });
     }
   }
 
@@ -31612,7 +31618,7 @@ const LEXIKON = [
       pitfall: 'Über 2.5 im Substrat ist gefährlich — sofort mit reinem Wasser zwischen-gießen. Viele Coco/Hydro-Grower dosieren zu hart weil sie es „härter als Erde" interpretieren. Nein — die Pflanze toleriert nicht mehr, du hast nur <b>weniger Puffer</b> und musst öfter messen.' },
     { t: 'Temperatur',
       brief: 'Bestimmt Stoffwechsel-Geschwindigkeit, Wurzelaktivität und Photosynthese. Direkter Einfluss auf Wachstumstempo und Aroma.',
-      mechanism: 'Pflanzen sind <b>poikilotherm</b> — ihre Stoffwechselrate folgt der Umgebungstemperatur. Pro 10°C verdoppelt sich die Enzymaktivität ungefähr (van\'t Hoff-Regel). Aber: ab 30°C kippt der Effekt — Enzyme denaturieren, Photosynthese stagniert, Atmung steigt weiter → Pflanze verbrennt mehr Energie als sie aufbaut. Unter 18°C wird die Wurzelaktivität so langsam dass Phosphor und andere Nährstoffe nicht mehr aufgenommen werden — typisches „lila Stängel"-Bild.<br><br>Tag-Nacht-Differenz (DIF) steuert Streckenwachstum: hohe Differenz = stauchere Pflanze, niedrige Differenz = streckendes Wachstum.',
+      mechanism: 'Pflanzen sind <b>poikilotherm</b> — ihre Stoffwechselrate folgt der Umgebungstemperatur. Pro 10°C verdoppelt sich die Enzymaktivität ungefähr (van\'t Hoff-Regel). Aber: Die Photosynthese von Cannabis ist um 30 °C am höchsten (Chandra et al. 2008); darüber sinkt sie, während die Atmung weiter steigt — die Pflanze verbraucht dann mehr, als sie aufbaut. Kälte wirkt zuerst an der Wurzel: Unter 16 °C in der Wurzelzone brechen Phosphor- und Wasseraufnahme ein, lila Stängel sind dann typisch. Ein Topf auf kaltem Boden kühlt schneller als die Luft.<br><br><b>Tag-Nacht-Differenz (DIF):</b> Ist der Tag wärmer als die Nacht, strecken sich die Stängel stärker; ist er kühler, bleibt die Pflanze kompakter. Tag- und Nachttemperatur wirken dabei jede für sich (Carvalho et al. 2002, Versuche an Chrysanthemen). Wer im Stretch Höhe sparen will, hält den Unterschied klein — ein großer Unterschied macht die Pflanze nicht stauchig, sondern länger.',
       practice: '<b>Zielwerte je Phase:</b><br><br>' +
         _klimaLexTemperatur(),
       pitfall: 'Häufige Fehler:<br>• Lampen zu nah → Hitzespitze in Buds → verbrennen<br>• Im Winter zu kalt nachts → Wurzeln stehen still → P-Mangel<br>• Tagsüber 28°C plus 60% RLF = perfekt für Schimmel in der Blüte<br>• Thermometer am Boden statt am Blattdach → falsche Messwerte<br><br>Temperatur und Luftfeuchte arbeiten zusammen — siehe <b>VPD</b> für die kombinierte Logik.' },
@@ -31687,9 +31693,9 @@ const LEXIKON = [
       practice: '<b>Feminisiert Indoor:</b> 12/12-Zyklus mit absoluter Dunkelheit in den 12 Stunden aus.<br><b>Outdoor:</b> Natürlich ab Mitte August wenn Tag unter 14h fällt.<br><b>Automatics:</b> Ignorieren Phytochrom komplett, blühen altersbedingt.<br><br>Tipp: Zelt-Dichtigkeit testen — 5 Min reinstellen ohne Licht, Handy-Kamera schaut ob irgendwo Streulicht sichtbar ist.',
       pitfall: 'Schon wenige Minuten Störlicht können Pfr reaktivieren und den Blüte-Trigger verhindern oder Hermies (Zwitter) auslösen. Häufige Fehler: Netzstecker-LEDs, Stand-by-Lampen, Telefon-Displays, Straßenlaterne außen, schlecht abgedichteter Zelt-Reißverschluss.' },
     { t: 'Anthocyane (Lila-/Rot-Färbung)',
-      brief: 'Die violetten Farbstoffe in manchen Buds. Genetisch bedingt oder durch kühle Nächte triggerbar.',
-      mechanism: 'Anthocyane sind <b>wasserlösliche Pigmente</b> die die Pflanze als UV-Schutz und Kälteschutz produziert. Manche Strains (z.B. Purple Punch, Granddaddy Purple) haben das Gen für starke Produktion eingebaut. Bei niedrigen Nachttemperaturen unter 15°C wird die Chlorophyll-Produktion gedrosselt → Anthocyane werden sichtbar da sie vorher von grünem Chlorophyll überdeckt wurden.',
-      practice: '<b>Triggern</b> (bei vorhandenem genetischem Potenzial): In den letzten 2 Blüte-Wochen Nachttemperatur auf 14-16 °C fallen lassen, Tag bei 22-24 °C halten. Temperaturdifferenz ist der Schlüssel.<br><br><b>Nicht triggerbar</b>: Grüne Genetik bleibt grün. Keine Kälte-Folter an grünen Pflanzen — bringt nichts, nur Stress.',
+      brief: 'Die violetten Farbstoffe in manchen Buds. Genetisch angelegt — Kälte verstärkt sie, kostet aber Blütenmasse.',
+      mechanism: 'Anthocyane sind <b>wasserlösliche Pigmente</b> die die Pflanze als UV-Schutz und Kälteschutz produziert. Manche Strains (z.B. Purple Punch, Granddaddy Purple) haben das Gen für starke Produktion eingebaut. Bei Kälte bildet die Pflanze mehr davon, und wenn am Ende der Blüte das Chlorophyll abgebaut wird, werden sie sichtbar. In einem Versuch mit einer CBD-Sorte (30 Tage Blüte bei festen Temperaturen) bildeten die Blüten bei gleichmäßig 8–15 °C am meisten Anthocyane; ein Wechsel aus 22 °C am Tag und 4 °C färbte bei gleicher Wärmesumme weniger. Trockengewicht und CBD waren bei 22 °C am höchsten (Kim et al. 2025, J Cannabis Res).',
+      practice: '<b>Wenn du Farbe willst</b> (nur bei Sorten mit der Anlage): Gleichmäßige Kühle färbt stärker als ein großer Tag-Nacht-Unterschied. Jedes Grad weniger kostet aber Blütenmasse, und kühle Nächte heben die Luftfeuchte — der Schimmel-Deckel von ' + KLIMA_ZIEL.spaet.deckel + ' % gilt auch nachts. Ein Temperatur-Rezept, das Farbe ohne Ertragsverlust bringt, ist nicht belegt.<br><br><b>Nicht triggerbar</b>: Grüne Genetik bleibt grün. Keine Kälte-Folter an grünen Pflanzen — bringt nichts, nur Stress.',
       pitfall: 'Lila bedeutet <b>nicht automatisch stärker oder besser</b>. Es ist Mode — Cannabinoid-Gehalt hat nichts mit Farbe zu tun. Manche grüne Strains haben mehr THC als lila. Kühle Nächte über 2 Wochen können auch schimmelanfällig machen bei hoher Luftfeuchte.' },
   ]},
   { cat: '💧 Bewässerung', items: [
@@ -33272,9 +33278,9 @@ const LEXIKON = [
       practice: '<b>Diagnose:</b><br>• Blattränder rollen sich nach oben ein („Taco")<br>• Blätter hängen schlaff trotz nasser Erde<br>• Wachstum stagniert<br>• Thermometer zeigt über 28-30 °C<br><br><b>Sofortmaßnahmen:</b><br>1. <b>Abluft auf Vollast</b><br>2. Lampen-Höhe vergrößern oder dimmen<br>3. Eiswürfel-Tray vor den Zuluft-Eingang stellen (kühlt einströmende Luft)<br>4. Temporär auf <b>Nacht-Zyklus umstellen</b> wenn tagsüber zu warm (Lampe nachts an, tagsüber aus)<br>5. <b>Klimaanlage</b> im Außenraum auf 22 °C<br><br><b>Im Sommer Indoor:</b> Zelt im Keller statt Wohnzimmer, oder LEC/LED statt HPS, oder Klimaanlage einplanen.',
       pitfall: 'Häufiger Fehler: bei Hitzestress mehr gießen → Wurzeln verfaulen, weil Pflanze gar kein Wasser aufnehmen kann (Stomata zu). Erst Klima fixen, dann normales Gießen. Auch: VPD-Trick — kurzzeitig Luftfeuchte erhöhen (auf 65 %) entlastet die Pflanze, weil Transpirationsdruck sinkt.' },
     { t: 'Kältestress',
-      brief: 'Unter 18 °C wird der Stoffwechsel langsam, unter 15 °C kritisch. Phosphor-Lockout = violette Stängel.',
-      mechanism: 'Niedrige Temperaturen verlangsamen alle Stoffwechselprozesse: Wurzelaktivität, Nährstoff-Aufnahme, Photosynthese. Bei <b>unter 18 °C</b> tritt zusätzlich ein <b>temperaturbedingter Phosphor-Lockout</b> auf — die Pflanze kann P nicht mehr aufnehmen, obwohl es da ist. Sichtbares Symptom: Anthocyane werden produziert (Schutz-Pigmente) → violette/rote Stängel und Blätter.',
-      practice: '<b>Diagnose:</b><br>• Violette/rote Stängel und Blattadern<br>• Blätter hängen, langsames Wachstum<br>• Untere Blätter werden lila bis purpur<br>• Thermometer unter 18 °C, besonders nachts<br><br><b>⚠ Wichtige Unterscheidung:</b> Violette Färbung am <b>Ende der Blüte</b> kann <b>genetisch gewollt</b> sein (Anthocyan-Aktivierung bei kühlen Nächten — siehe Eintrag „Anthocyane"). In der <b>Veg-Phase oder früher Blüte</b> ist es <b>fast immer ein Warnsignal</b>.<br><br><b>Lösungen:</b><br>1. <b>Heizmatte</b> unter den Topf (5-10 € im Aquaristik-Bedarf) — Wurzelraum auf 20-22 °C<br>2. <b>Raumheizung</b> im Außenraum, Zelt indirekt aufwärmen<br>3. <b>Wassertemperatur</b> beachten — Gießwasser nicht unter 18 °C<br>4. Im Winter: Zelt isolieren (Styropor-Platten an Außenwänden)',
+      brief: 'Kälte bremst den Stoffwechsel. Kritisch wird es an der Wurzel: Unter 16 °C brechen Phosphor- und Wasseraufnahme ein — violette Stängel sind dann typisch.',
+      mechanism: 'Niedrige Temperaturen verlangsamen alle Stoffwechselprozesse: Wurzelaktivität, Nährstoff-Aufnahme, Photosynthese. Sinkt die <b>Wurzelzone unter 16 °C</b>, brechen Phosphor- und Wasseraufnahme ein — der Phosphor ist da, kommt aber nicht in die Pflanze. Ein Topf auf kaltem Boden kühlt schneller als die Luft. Sichtbares Symptom: Anthocyane werden produziert (Schutz-Pigmente) → violette/rote Stängel und Blätter.',
+      practice: '<b>Diagnose:</b><br>• Violette/rote Stängel und Blattadern<br>• Blätter hängen, langsames Wachstum<br>• Untere Blätter werden lila bis purpur<br>• Wurzelzone unter 16 °C — Topf auf kaltem Boden, kaltes Gießwasser — oder nachts deutlich kühle Luft<br><br><b>⚠ Wichtige Unterscheidung:</b> Violette Färbung am <b>Ende der Blüte</b> kann <b>genetisch gewollt</b> sein (Anthocyan-Aktivierung bei kühlen Nächten — siehe Eintrag „Anthocyane"). In der <b>Veg-Phase oder früher Blüte</b> ist es <b>fast immer ein Warnsignal</b>.<br><br><b>Lösungen:</b><br>1. <b>Heizmatte</b> unter den Topf (5-10 € im Aquaristik-Bedarf) — Wurzelraum auf 20-22 °C<br>2. <b>Raumheizung</b> im Außenraum, Zelt indirekt aufwärmen<br>3. <b>Wassertemperatur</b> beachten — Gießwasser nicht unter 18 °C<br>4. Im Winter: Zelt isolieren (Styropor-Platten an Außenwänden)',
       pitfall: 'Im Winter bei kaltem Keller wird Heizung schnell teuer. Kältester Punkt im Zelt: der Topfboden auf kaltem Boden. Heizmatte ist effizienter als Raumheizung. Auch: Wenn Zelt im unbeheizten Schuppen → erst gar nicht versuchen, Cannabis braucht Mindesttemperaturen.' },
     { t: 'Schimmel (Botrytis)',
       brief: 'Grauschimmel in dichten Blüten — der gefürchtetste Ernte-Killer. Tötet Buds in 24h. Wenn du es siehst, ist es zu spät für diesen Bud. Prävention ist die einzige verlässliche Methode.',
