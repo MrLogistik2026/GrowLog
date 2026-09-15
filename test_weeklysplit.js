@@ -77,7 +77,7 @@ const ZYKLUS = (key, bloom, intA, intB) => `(function(){
   console.log('TZ=' + (process.env.TZ || '(System)'));
   const { E, errors } = await load();
   pruef('Start ohne JS-Fehler', errors.length === 0, errors[0]);
-  for (const key of ['biobizz_official', 'biobizz_outdoor']) {
+  for (const key of ['biobizz_official']) {
     E(`loadPreset('${key}')`); await warte(30); E(`typeof _modalResolve === 'function' && _modalResolve(true)`); await warte(60);
   }
 
@@ -101,12 +101,16 @@ const ZYKLUS = (key, bloom, intA, intB) => `(function(){
     pruef(`${bloom} Blütetage: Güsse je Plan-Woche 1–9 stimmen`, r.length === 0, r.join(' · '));
   }
 
-  console.log('\nB - BioBizz Outdoor: Woche 3 ist Anzucht und wird durch das Anzucht-Intervall geteilt');
+  // (v1.5.178) Bis hier prüfte B die BioBizz-Outdoor-Vorlage (drei Anzucht-Wochen). Sie ist entfernt; derselbe
+  // Mechanismus — der Teiler folgt dem Rückgrat des Plans — wird an einer Official-Kopie mit drei Anzucht-Wochen geprüft.
+  console.log('\nB - Plan mit drei Anzucht-Wochen: Woche 3 wird durch das Anzucht-Intervall geteilt');
   {
     const r = JSON.parse(E(`(function(){
-      const dosis = (intB, w) => { const c = ${ZYKLUS('biobizz_outdoor', 63, 2, '__B__')}; return getWeekDoses(c.id, w, c); };
-      const plan = S.fertPlans.find(p => p.presetKey === 'biobizz_outdoor');
-      const fish = plan.products.find(p => /Fish/.test(p.name)) || plan.products[0];
+      const plan = S.fertPlans.find(p => p.presetKey === 'biobizz_official');
+      plan.weekPhases = plan.weekPhases.slice(); plan.weekPhases[2] = 'anzucht';
+      const dosis = (intB, w) => { const c = ${ZYKLUS('biobizz_official', 63, 2, '__B__')}; return getWeekDoses(c.id, w, c); };
+      const s3 = plan.schedule.w3 || {};
+      const fish = plan.products.find(p => (s3[p.id] || 0) > 0) || plan.products[0];
       const bloomWoche = plan.weekPhases.findIndex(ph => ph === 'bloom') + 2;
       const sb = plan.schedule['w' + bloomWoche] || {};
       const pidB = Object.keys(sb).find(k => sb[k] > 0);

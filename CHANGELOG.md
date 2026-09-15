@@ -2,6 +2,26 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-15 — v1.5.178
+
+- **Die BioBizz-Outdoor-Vorlage ist entfernt.** Patricks Entscheidung vom 15.09.2026: „Den Outdoorplan würde ich erst
+  mal rausnehmen, bis wir einen richtigen Outdoorbereich in der App einbauen. Bis dahin konzentrieren wir uns auf
+  Indoor." Die Agentin der zweiten Runde hatte keine offizielle Outdoor-Tabelle von BioBizz gefunden; die Vorlage
+  beschrieb sich selbst als „Schedule 2025 + Community-Outdoor-Praxis".
+- **Weg:** aus `FERT_PRESETS`, aus der Planwahl im Assistenten (draußen wird jetzt wie drinnen BioBizz Light
+  empfohlen) und aus dem Dünger-Bildschirm.
+- **Gespeicherte Kopien:** Eine Kopie, an der ein Zyklus oder ein Eintrag hängt, bleibt stehen — sonst zeigten
+  alte Einträge Produkte ohne Namen (Lehre aus v1.5.135). Sie bekommt den Dosis-Modus „Wochendosis" eingestempelt,
+  der bisher aus der Vorlage kam: Ohne Vorlage hätte `_doseModeFor` „je Guss" gemeldet, und die Wochendosis stünde
+  ungeteilt im Guss — bei Intervall 3 die 2,3-fache Konzentration. Unbenutzte Kopien gehen.
+- **Aufgeräumt nach der Regel „die zweite Kopie wird eine Funktion":** Das Löschen abgelöster Vorlagen-Kopien stand
+  seit v1.5.133 für die Sensi-Pläne von Hand da und wäre hier ein zweites Mal entstanden. Jetzt
+  `_vorlagenKopienAufraeumen(istKopie)`; das Sensi-Aufräumen läuft darüber und verhält sich wie vorher (geprüft:
+  unbenutzte Sensi-Kopie weg, Patricks V3.4.7 bleibt).
+- `test_vorlageoutdoor.js` (9 Prüfungen, beide Zeitzonen). Gegen den alten Stand: 3 Fehler. Umgestellt:
+  `test_duengeplaene` (Fingerabdruck), `test_feedtaganzucht` (Master statt Outdoor, die Wochendosis prüft Official),
+  `test_weeklysplit` (Teiler nach Rückgrat an einer Official-Kopie mit drei Anzucht-Wochen).
+
 ## 2026-09-15 — v1.5.177
 
 - **Ein eingetragener Drain zählte nicht, wenn die Gießmenge per „Erledigt" oder Autofill übernommen war.**

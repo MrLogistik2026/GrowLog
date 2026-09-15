@@ -88,13 +88,13 @@ const MISS = (key, anzW, bluW) => `(function(){
   const { E, errors } = await load();
   pruef('Start ohne JS-Fehler', errors.length === 0, errors[0]);
   E(`setDebugDate('2026-09-15')`);
-  for (const key of ['biobizz_official', 'biobizz_outdoor', 'biobizz_light']) {
+  for (const key of ['biobizz_official', 'biobizz_master', 'biobizz_light']) {
     E(`loadPreset('${key}')`); await warte(30);
     E(`typeof _modalResolve === 'function' && _modalResolve(true)`); await warte(60);
     E(`typeof _modalResolve === 'function' && _modalResolve(true)`); await warte(60);
   }
 
-  for (const [key, anzW, bluW] of [['biobizz_official', 2, 3], ['biobizz_outdoor', 3, 4], ['biobizz_light', 3, 4]]) {
+  for (const [key, anzW, bluW] of [['biobizz_official', 2, 3], ['biobizz_master', 3, 4], ['biobizz_light', 3, 4]]) {
     console.log(`\n${key}: Anzucht-Woche ${anzW}, Blüte-Woche ${bluW}`);
     const r = JSON.parse(E(MISS(key, anzW, bluW)));
     console.log(`    Anzucht ${r.gA} Düngergüsse f=${r.fA} · Blüte ${r.gB} f=${r.fB} · Dosis ${r.roh} → ${r.dosis} (${r.modus})`);
@@ -104,9 +104,10 @@ const MISS = (key, anzW, bluW) => `(function(){
     if (key === 'biobizz_light') {
       pruef('Light (Dosis je Guss): Anzucht-Dosis ist die Plandosis', r.dosis === r.roh, r.roh + ' → ' + r.dosis);
     }
-    if (key === 'biobizz_outdoor') {
+    // (v1.5.178) Die Outdoor-Vorlage ist entfernt; die Wochendosis prüft jetzt Official (Woche 2 ist Anzucht).
+    if (key === 'biobizz_official') {
       const soll = Math.round(r.roh / (7 / r.intA) * 100) / 100;
-      pruef(`Outdoor (Wochendosis): Anzucht-Dosis nur geteilt, nicht angehoben (${soll})`, r.dosis === soll, r.roh + ' → ' + r.dosis + ' statt ' + soll);
+      pruef(`Official (Wochendosis): Anzucht-Dosis nur geteilt, nicht angehoben (${soll})`, r.dosis === soll, r.roh + ' → ' + r.dosis + ' statt ' + soll);
     }
   }
 

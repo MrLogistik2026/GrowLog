@@ -36,7 +36,7 @@ const FINGERABDRUCK = {
   biobizz_light:       { medium: 'erde', produkte: 8,  wochen: 12, gaben: 54,  summe: 47.4 },
   biobizz_master:      { medium: 'erde', produkte: 8,  wochen: 12, gaben: 54,  summe: 88.6 },
   biobizz_official:    { medium: 'erde', produkte: 7,  wochen: 12, gaben: 56,  summe: 112 },
-  biobizz_outdoor:     { medium: 'erde', produkte: 8,  wochen: 12, gaben: 34,  summe: 100 },
+  // (v1.5.178) biobizz_outdoor entfernt — Patrick: erst wieder mit einem eigenen Outdoor-Bereich.
   canna:               { medium: 'erde', produkte: 5,  wochen: 10, gaben: 22,  summe: 67 },
   canna_coco:          { medium: 'coco', produkte: 7,  wochen: 12, gaben: 45,  summe: 91.7 },
   cup_sieger:          { medium: 'erde', produkte: 11, wochen: 12, gaben: 67,  summe: 160.55 },

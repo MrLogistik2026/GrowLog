@@ -3332,63 +3332,6 @@ const FERT_PRESETS = {
       12:{},
     },
   },
-  biobizz_outdoor: {
-    // (v1.5.93) Phasen-Rückgrat: Jede Planwoche weiß, zu welcher Phase sie gehört. Damit
-    // dehnt sich der Plan auf die tatsächliche Blütedauer, statt am Ende auf der letzten
-    // Blütewoche festzuhängen. Abgeleitet aus den Wochen-Etiketten und daraus, ab wann der
-    // Blütedünger im Wochenplan steht.
-    weekPhases: ['anzucht','anzucht','anzucht','bloom','bloom','bloom','bloom','bloom','bloom','bloom','flush','ice'],
-    name: 'BioBizz Outdoor',
-    medium: 'erde',   // organischer Erdduenger
-    subtitle: 'Offizieller Outdoor-Plan · Fish·Mix in Vegi · Soil / All-Mix · pH 6.2–6.5 · EC ~0.4→1.5',
-    doseMode: 'weekly-split',
-    bloomDaysHint: 49,
-    ecPeak: 1.5,
-    feedWaterRhythm: ARC_RHYTHM,
-    mixOrder: ['CalMag','Fish·Mix','Bio·Grow','Bio·Bloom','Root·Juice','Alg·A·Mic','Top·Max','Acti·Vera'],
-    mixInfo: 'Outdoor-Variante des BioBizz-Plans — Fish·Mix ersetzt Bio·Grow in der Vegi-Phase (laut BioBizz offizielle Empfehlung für Outdoor). Reihenfolge: 1. Root·Juice (nur Wo 1–2). 2. Fish·Mix ODER Bio·Grow (nie zusammen, beide N-lastig). 3. Bio·Bloom ab Wo 4. 4. Top·Max ab Wo 5 als Blüten-Booster. 5. Alg·A·Mic & Acti·Vera als Stress-Schutz (durchgehend möglich). pH am Ende auf 6.2–6.5 korrigieren.',
-    drainInfo: '☀️ Outdoor-Besonderheiten: Regen "verdünnt" den Plan natürlich — nach Regentagen NICHT düngen, die Erde ist feucht genug. Bei viel Regen eine Woche auslassen ist OK. Blühdauer outdoor typisch 10–12 Wochen (längerer Stretch, natürlich kürzer werdende Tage triggern Blüte). CalMag meist überflüssig wenn Regen- oder hartes Leitungswasser verwendet wird. Bei Reinsubstrat (Light-Mix) oder weichem Wasser: CalMag hinzufügen.',
-    weekFocus: {
-      1:  { phase: 'Einpflanzen', tip: 'Junge Pflanze eingewöhnen. Nur Root·Juice + wenig Alg·A·Mic. Kein Starkdünger!' },
-      2:  { phase: 'Vegi I',       tip: 'Fish·Mix startet — bodenaktivierend. Nordsee-Fisch riecht stark (darum Outdoor ideal).' },
-      3:  { phase: 'Vegi II',      tip: 'Aktives Wachstum. Fish·Mix erhöhen, Alg·A·Mic für Wetterschutz.' },
-      4:  { phase: 'Vorblüte',     tip: 'Umschalten: Fish·Mix auslaufen, Bio·Grow übernimmt. Erste Blütenansätze möglich.' },
-      5:  { phase: 'Stretch',      tip: 'Blüte läuft an. Bio·Bloom startet, Top·Max unterstützt Blütenbildung.' },
-      6:  { phase: 'Blüte I',      tip: 'Buds bilden sich. Bio·Bloom hochfahren, Bio·Grow läuft noch voll mit.' },
-      7:  { phase: 'Blüte II',     tip: 'Kerbildung. Bio·Grow zurückfahren (ab Wo 8 ganz raus), Bloom + Top·Max führen.' },
-      8:  { phase: 'Blüte III',    tip: 'Buds werden dicht. Alg·A·Mic schützt vor Herbstwetter-Stress.' },
-      9:  { phase: 'Reifung I',    tip: 'Kalte Nächte färben Trichome. Bloom-Dosis maximal.' },
-      10: { phase: 'Reifung II',   tip: 'Trichome-Check starten! Bloom reduzieren, Top·Max für finale Dichte.' },
-      11: { phase: 'Flush',        tip: 'Nur noch Wasser + eventuell Alg·A·Mic. Bei Regen natürliche Spülung.' },
-      12: { phase: 'Ernte',        tip: 'Ernte bei richtiger Trichom-Farbe. Kalte Nächte intensivieren Farben.' },
-    },
-    products: [
-      { name: 'CalMag',      unit: 'ml/L', color: '#f0d050', note: 'Calcium & Magnesium, nur bei weichem Wasser/Light-Mix: 0.5 ml/L (Blüte 0.7), zuerst ins Wasser. Bei Regen/Hartwasser weglassen.', waterDayDose: 0.3 },
-      { name: 'Fish·Mix',    unit: 'ml/L', color: '#5a88c8', note: '① Outdoor-Favorit für Vegi (ersetzt Bio·Grow, riecht intensiv)' },
-      { name: 'Bio·Grow',    unit: 'ml/L', color: '#4caf70', note: '② Wachstumsdünger (ab Vorblüte statt Fish·Mix)' },
-      { name: 'Bio·Bloom',   unit: 'ml/L', color: '#e8884a', note: '② Blütedünger (ab Wo 4)' },
-      { name: 'Root·Juice',  unit: 'ml/L', color: '#5aabf0', note: '③ Wurzelstimulator (nur Wo 1-2)' },
-      { name: 'Alg·A·Mic',   unit: 'ml/L', color: '#a0c840', note: '③ Wetter- & Stress-Schutz (durchgehend)', waterDayDose: 1 },
-      { name: 'Top·Max',     unit: 'ml/L', color: '#b06ac8', note: '④ Humin-/Fulvosäuren (Blüten-Booster)' },
-      { name: 'Acti·Vera',   unit: 'ml/L', color: '#e0a0f0', note: '③ Pflanzenenzyme (optional)' },
-    ],
-    schedule: {
-      // Wochen-Gesamtdosen für Outdoor — Fish·Mix in Vegi statt Bio·Grow.
-      // Basierend auf BioBizz 2025 Schedule + Community-Outdoor-Praxis.
-      1:  { 'Root·Juice':4, 'Alg·A·Mic':2 },
-      2:  { 'Root·Juice':4, 'Fish·Mix':2, 'Alg·A·Mic':2 },
-      3:  { 'Fish·Mix':4, 'Alg·A·Mic':2 },
-      4:  { 'Fish·Mix':2, 'Bio·Grow':2, 'Bio·Bloom':1, 'Top·Max':1, 'Alg·A·Mic':2 },
-      5:  { 'Bio·Grow':3, 'Bio·Bloom':2, 'Top·Max':2, 'Alg·A·Mic':3 },
-      6:  { 'Bio·Grow':3, 'Bio·Bloom':3, 'Top·Max':3, 'Alg·A·Mic':3 },
-      7:  { 'Bio·Grow':2, 'Bio·Bloom':4, 'Top·Max':4, 'Alg·A·Mic':3 },
-      8:  { 'Bio·Bloom':4, 'Top·Max':4, 'Alg·A·Mic':4 },
-      9:  { 'Bio·Bloom':4, 'Top·Max':4, 'Alg·A·Mic':4 },
-      10: { 'Bio·Bloom':3, 'Top·Max':4, 'Alg·A·Mic':4 },
-      11: { 'Alg·A·Mic':2 },
-      12: {},
-    },
-  },
   biobizz_official: {
     // (v1.5.93) Phasen-Rückgrat: Jede Planwoche weiß, zu welcher Phase sie gehört. Damit
     // dehnt sich der Plan auf die tatsächliche Blütedauer, statt am Ende auf der letzten
@@ -4451,7 +4394,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.177';
+const APP_VERSION = 'v1.5.178';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -5278,6 +5221,17 @@ function loadS() {
       if (typeof _planRueckgratAuffrischen === 'function') _planRueckgratAuffrischen(pl, FERT_PRESETS[pl.presetKey]);
     });
 
+    // (v1.5.178) DIE BIOBIZZ-OUTDOOR-VORLAGE IST RAUS. Patrick am 15.09.2026: „Den Outdoorplan würde ich erst mal
+    // rausnehmen, bis wir einen richtigen Outdoorbereich in der App einbauen. Bis dahin konzentrieren wir uns auf
+    // Indoor." Gespeicherte Kopien, an denen etwas hängt, bleiben — und behalten ihren Dosis-Modus, der bisher aus der
+    // Vorlage kam. Ohne Vorlage meldete _doseModeFor sonst „je Guss", und die Wochendosis stünde ungeteilt im Guss.
+    if (!S._outdoorVorlageEntfernt) {
+      const _istOutdoor = pl => !!pl && pl.presetKey === 'biobizz_outdoor';
+      (S.fertPlans || []).forEach(pl => { if (_istOutdoor(pl) && !pl.doseMode) pl.doseMode = 'weekly-split'; });
+      _vorlagenKopienAufraeumen(_istOutdoor);
+      S._outdoorVorlageEntfernt = true;
+    }
+
     // (v1.5.133) DIE SENSI-AMNESIA-PLÄNE SIND ABGELÖST. Patrick am 13.09.2026: „meine alten
     // Pläne, den Sensi Amnesia XXL Auto, bitte alle die so heißen, V6.0 und V3.4.7" — an ihre
     // Stelle tritt der Rainbow-Plan. Die Vorlage ist aus FERT_PRESETS entfernt; hier gehen die
@@ -5286,30 +5240,9 @@ function loadS() {
     // fremden Plans. Und der letzte verbliebene Plan bleibt immer.
     if (!S._sensiPlaeneAbgeloest) {
       const _istSensi = pl => !!pl && (pl.presetKey === 'sensi_amnesia_auto' || /^Sensi Amnesia XXL Auto/.test(pl.name || ''));
-      const _benutzt = new Set((S.cycles || []).map(c => c && c.fertPlanId).filter(Boolean));
-      // (v1.5.135) Auch gespeicherte Einträge zeigen auf einen Plan: Dosen, Dosis-Bezug und
-      // Misch-Häkchen liegen nach Produkt-ID ab. Patricks Zyklus hängt seit dem 03.09. an
-      // „BioBizz Official", seine Einträge aus dem Juli tragen aber die Produkte von V3.4.7 —
-      // ohne den Plan ließen sie sich keinem Produkt mehr zuordnen. v1.5.133 sah nur auf
-      // c.fertPlanId und hätte V3.4.7 deshalb gelöscht.
-      const _gespeicherteIds = new Set();
-      Object.values(S.entries || {}).forEach(e => Object.values((e && e.cycleData) || {}).forEach(cd => {
-        if (!cd) return;
-        ['doses', 'doseRef', 'mixChecks'].forEach(f => {
-          if (cd[f] && typeof cd[f] === 'object') Object.keys(cd[f]).forEach(id => _gespeicherteIds.add(id));
-        });
-      }));
-      const _inEintraegen = pl => (pl.products || []).some(pr => pr && _gespeicherteIds.has(pr.id));
-      const _weg = (S.fertPlans || []).filter(pl => _istSensi(pl) && !_benutzt.has(pl.id) && !_inEintraegen(pl));
-      if (_weg.length && _weg.length < (S.fertPlans || []).length) {
-        const _wegIds = new Set(_weg.map(pl => pl.id));
-        S.fertPlans = S.fertPlans.filter(pl => !_wegIds.has(pl.id));
-        if (_wegIds.has(S._activePlanId)) {
-          const _cAktiv = (S.cycles || []).find(c => c && c.active && !c.archived && c.fertPlanId);
-          S._activePlanId = (_cAktiv && _cAktiv.fertPlanId) || S.fertPlans[0].id;
-          if (typeof syncActivePlanToGlobals === 'function') syncActivePlanToGlobals();
-        }
-      }
+      // (v1.5.135) Auch gespeicherte Einträge zeigen auf einen Plan — die Prüfung steht seit v1.5.178 in
+      // _vorlagenKopienAufraeumen, die die Outdoor-Vorlage genauso braucht.
+      _vorlagenKopienAufraeumen(_istSensi);
       S._sensiPlaeneAbgeloest = true;
     }
 
@@ -5723,6 +5656,35 @@ function getPlanForCycle(cycOrId) {
   const c = typeof cycOrId === 'string' ? S.cycles.find(x => x.id === cycOrId) : cycOrId;
   if (!c || !c.fertPlanId) return null;
   return S.fertPlans.find(p => p.id === c.fertPlanId) || null;
+}
+
+/**
+ * (v1.5.178) Entfernt gespeicherte Kopien einer abgelösten Vorlage — aber nur die, an denen weder ein Zyklus noch ein
+ * Eintrag hängt. Einträge legen Dosen, Dosis-Bezug und Misch-Häkchen nach Produkt-ID ab (Lehre aus v1.5.135: Patricks
+ * Juli-Einträge trugen die Produkte von V3.4.7, obwohl sein Zyklus längst an „BioBizz Official" hing). Der letzte Plan
+ * bleibt immer. Zuerst für die Sensi-Pläne (v1.5.133) von Hand geschrieben, für die Outdoor-Vorlage ein zweites Mal
+ * gebraucht — deshalb jetzt eine Funktion.
+ */
+function _vorlagenKopienAufraeumen(istKopie) {
+  const benutzt = new Set((S.cycles || []).map(c => c && c.fertPlanId).filter(Boolean));
+  const gespeicherteIds = new Set();
+  Object.values(S.entries || {}).forEach(e => Object.values((e && e.cycleData) || {}).forEach(cd => {
+    if (!cd) return;
+    ['doses', 'doseRef', 'mixChecks'].forEach(f => {
+      if (cd[f] && typeof cd[f] === 'object') Object.keys(cd[f]).forEach(id => gespeicherteIds.add(id));
+    });
+  }));
+  const inEintraegen = pl => (pl.products || []).some(pr => pr && gespeicherteIds.has(pr.id));
+  const weg = (S.fertPlans || []).filter(pl => istKopie(pl) && !benutzt.has(pl.id) && !inEintraegen(pl));
+  if (!weg.length || weg.length >= (S.fertPlans || []).length) return 0;
+  const wegIds = new Set(weg.map(pl => pl.id));
+  S.fertPlans = S.fertPlans.filter(pl => !wegIds.has(pl.id));
+  if (wegIds.has(S._activePlanId)) {
+    const cAktiv = (S.cycles || []).find(c => c && c.active && !c.archived && c.fertPlanId);
+    S._activePlanId = (cAktiv && cAktiv.fertPlanId) || S.fertPlans[0].id;
+    if (typeof syncActivePlanToGlobals === 'function') syncActivePlanToGlobals();
+  }
+  return weg.length;
 }
 
 /**
@@ -19582,7 +19544,7 @@ function renderDuenger() {
     </div>
     <div style="display:flex;flex-direction:column;gap:6px">
       ${listAllPresets()
-        .filter(pre => !pre.isCustom && FERT_PRESETS[pre.key] && FERT_PRESETS[pre.key].subtitle && (SHOW_OUTDOOR || pre.key !== 'biobizz_outdoor'))
+        .filter(pre => !pre.isCustom && FERT_PRESETS[pre.key] && FERT_PRESETS[pre.key].subtitle)
         .map(pre => {
           const isActive = S.presetKey === pre.key;
           return `<button onclick="loadPreset('${pre.key}')" style="background:${isActive?'var(--green-dk)':'var(--green-bg)'};border:1px solid ${isActive?'var(--green)':'var(--green-dk)'};border-radius:10px;padding:10px 14px;cursor:pointer;font-family:var(--font);text-align:left">
@@ -23072,7 +23034,7 @@ function _wizStepFertPlan(a) {
   // Nur anzeigen wenn noch kein Plan mit diesem Preset existiert.
   const isOutdoor = a.growType === 'outdoor';
   // Indoor: Light (Empfohlen für Anfänger) → Cup-Sieger (Premium) → Master → Official
-  // Outdoor: Outdoor zuerst (passt zum Grow-Typ), dann Indoor-Alternativen
+  // Outdoor: (v1.5.178) vorerst dieselben Pläne wie drinnen — eine eigene Outdoor-Vorlage kommt mit dem Outdoor-Bereich
   // Cup-Sieger nur Indoor anbieten (49-Tage-Bloom-Plan ist Indoor-optimiert)
   // Nur Plaene anbieten, die zum gewaehlten Substrat passen (siehe
   // presetMediumMismatch). Im Assistenten wird streng gefiltert statt nur
@@ -23081,9 +23043,9 @@ function _wizStepFertPlan(a) {
   const presetKeys = med === 'coco'
     ? ['canna_coco', 'ghe_flora']
     : isOutdoor
-      ? ['biobizz_outdoor', 'biobizz_light', 'canna', 'hesi', 'plagron', 'biobizz_master', 'biobizz_official']
-      : ['biobizz_light', 'cup_sieger', 'canna', 'hesi', 'plagron', 'biobizz_master', 'biobizz_official', 'biobizz_outdoor'];
-  const recommendedKey = med === 'coco' ? 'canna_coco' : isOutdoor ? 'biobizz_outdoor' : 'biobizz_light';
+      ? ['biobizz_light', 'canna', 'hesi', 'plagron', 'biobizz_master', 'biobizz_official']
+      : ['biobizz_light', 'cup_sieger', 'canna', 'hesi', 'plagron', 'biobizz_master', 'biobizz_official'];
+  const recommendedKey = med === 'coco' ? 'canna_coco' : 'biobizz_light';
   const presetOptions = presetKeys
     .filter(key => !plans.some(p => p.presetKey === key))
     .map(key => {
@@ -23097,7 +23059,6 @@ function _wizStepFertPlan(a) {
         biobizz_light: '🌱',
         biobizz_master: '🏆',
         biobizz_official: '📋',
-        biobizz_outdoor: '☀️',
         cup_sieger: '🥇',
         canna: '🌿',
         hesi: '🔬',
@@ -23109,7 +23070,6 @@ function _wizStepFertPlan(a) {
         biobizz_light: 'Master × 50% · fehlerverzeihend für Einsteiger',
         biobizz_master: 'Premium · jedes Gießen · früher Stickstoff-Stopp',
         biobizz_official: 'Herstellerplan · automatisch verteilt',
-        biobizz_outdoor: 'Fish·Mix in Vegi · für Erdanbau im Freien',
         cup_sieger: '12 Wochen · 12 Produkte · Auto-optimiert · 49 Tage Bloom',
         canna: 'Terra Vega + Flores · Herstellerplan für Erde',
         hesi: 'TNT & Blüh Complex · Blüh Complex regelt den pH mit',
