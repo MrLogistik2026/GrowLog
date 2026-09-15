@@ -4394,7 +4394,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.178';
+const APP_VERSION = 'v1.5.179';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -10447,6 +10447,29 @@ function _planStatusLine(c, iso, nurLesen) {
 }
 
 /**
+ * (v1.5.179) Welche Mengen sich von Plan-Woche wk−1 zu wk ändern — für die Wochenfrage (Blüte) und die Hinweis-Karte bei
+ * den übrigen Wochenwechseln. Im kopierten Plan heißen die Wochen „w14“, im Preset stehen sie als Zahl.
+ */
+function _planWochenDiff(plan, wk) {
+  const sch = (w) => (plan && plan.schedule && (plan.schedule['w' + w] || plan.schedule[w] || plan.schedule[String(w)])) || {};
+  const alt = sch(wk - 1), neu = sch(wk);
+  const namen = {};
+  ((plan && plan.products) || []).forEach(pr => { namen[pr.id] = pr; });
+  return [...new Set([...Object.keys(alt), ...Object.keys(neu)])].map(k => {
+    const a = parseFloat(alt[k]) || 0, n = parseFloat(neu[k]) || 0;
+    if (Math.abs(a - n) < 0.0001) return null;
+    const pr = namen[k];
+    return { name: pr ? pr.name : k, einheit: pr ? (pr.unit || '') : '', a, n };
+  }).filter(Boolean);
+}
+
+/** (v1.5.179) Die Änderungen als eine Zeile. Zwei Nachkommastellen — _tFmt rundet auf eine und macht aus 0,75 ein 0,8. */
+function _planWochenDiffText(diff) {
+  const f = (v) => String(Math.round(v * 100) / 100).replace('.', ',');
+  return (diff || []).map(d => `${d.name} ${f(d.a)} → <b>${d.n === 0 ? 'weg' : f(d.n)}</b>${d.n === 0 ? '' : ' ' + d.einheit}`).join(' · ');
+}
+
+/**
  * (v1.5.30) DIE WOCHEN-FRAGE.
  *
  * Erscheint am Tag des Wochenwechsels (und am Tag danach, falls unbeantwortet) und
@@ -10475,6 +10498,20 @@ function _planWeekQuestion(c, iso) {
   // Düngeplan-Bildschirm aufgeschlagen ist — mit ihm fehlte der Tipp oder kam aus einem fremden Plan.
   const _f = (getPreset(plan && plan.presetKey)?.weekFocus || {})[wk];
   const fokus = (_f && typeof _f === 'object') ? [_f.phase, _f.tip].filter(Boolean).join(' — ') : (typeof _f === 'string' ? _f : null);
+  // (v1.5.179) Die Frage prüft ein Blüte-Merkmal („Werden die Blüten noch sichtbar dicker …“) und bietet an, Plan und
+  // Ernte zu verschieben. Vor der Blüte gibt es keine Blüten — bei einer Automatic kam sie trotzdem an Tag 8, 15 und 22
+  // und an Tag 85 zum Beginn des Spülens. Gefragt wird deshalb nur, wenn die alte und die neue Plan-Woche Blüte sind.
+  // Bei den übrigen Wechseln bleibt eine Hinweis-Karte mit dem Wochen-Tipp des Plans und den geänderten Mengen — ohne
+  // Frage und ohne Verschieben; Spülen und IceFlush setzt die Endspurt-Kette.
+  const _phW = (w) => (plan && Array.isArray(plan.weekPhases) && plan.weekPhases[w - 1]) || (_planWocheIstAnzucht(plan, w) ? 'anzucht' : 'bloom');
+  if (_phW(wk - 1) !== 'bloom' || _phW(wk) !== 'bloom') {
+    const _aend = _planWochenDiffText(_planWochenDiff(plan, wk));
+    if (!fokus && !_aend) return '';
+    return `<div style="background:rgba(90,171,240,0.07);border:1px solid rgba(90,171,240,0.35);border-radius:10px;padding:12px;margin:8px 0">
+    <div style="font-size:13px;font-weight:600;color:rgba(90,171,240,0.95)">🧪 Plan-Woche ${wk} beginnt</div>
+    <div style="font-size:11px;color:var(--text-sub);line-height:1.55;margin-top:4px">${fokus ? fokus + '<br>' : ''}${_aend ? 'Ab heute: ' + _aend : 'Die Mengen bleiben gleich.'}</div>
+  </div>`;
+  }
   return `<div style="background:rgba(90,171,240,0.07);border:1px solid rgba(90,171,240,0.35);border-radius:10px;padding:12px;margin:8px 0">
     <div style="font-size:13px;font-weight:600;color:rgba(90,171,240,0.95)">🧪 Woche ${wk - 1} ist durch. Weiter zu Woche ${wk}?</div>
     <div style="font-size:11px;color:var(--text-sub);line-height:1.55;margin-top:4px">${fokus ? fokus + '<br>' : ''}
@@ -10486,28 +10523,14 @@ function _planWeekQuestion(c, iso) {
       // und wohin Spülstart und Ernte wandern. Ändert sich nichts, steht auch das da —
       // dann ist die Entscheidung nämlich unkritisch, und das darf man wissen.
       // Im kopierten Plan heißen die Wochen „w14"; im Preset stehen sie als Zahl.
-      const _sch = (w) => (plan.schedule && (plan.schedule['w' + w] || plan.schedule[w] || plan.schedule[String(w)])) || {};
-      const _alt = _sch(wk - 1), _neu = _sch(wk);
-      const _namen = {};
-      (plan.products || []).forEach(pr => { _namen[pr.id] = pr; });
-      const _keys = [...new Set([...Object.keys(_alt), ...Object.keys(_neu)])];
-      const _diff = _keys.map(k => {
-        const a = parseFloat(_alt[k]) || 0, n = parseFloat(_neu[k]) || 0;
-        if (Math.abs(a - n) < 0.0001) return null;
-        const pr = _namen[k];
-        return { name: pr ? pr.name : k, einheit: pr ? (pr.unit || '') : '', a, n };
-      }).filter(Boolean);
+      const _diff = _planWochenDiff(plan, wk);
 
       const _anz = c.anzuchtDays || PHASE_DEFAULTS.anzuchtDays;
       const _hc = harvestCountdown(c, iso);
       const _ernteTag = (_hc && _hc.harvestISO) ? isoDiff(_hc.harvestISO, c.startDate) + 1 : null;
       const _spuelTag = _anz + (c.bloomDays || PHASE_DEFAULTS.bloomDays) + 1;
 
-      // Dosen brauchen zwei Nachkommastellen — _tFmt rundet auf eine und macht aus 0,75 ein 0,8.
-      const _dFmt = (v) => String(Math.round(v * 100) / 100).replace('.', ',');
-      const _weiterTxt = _diff.length
-        ? _diff.map(d => `${d.name} ${_dFmt(d.a)} → <b>${d.n === 0 ? 'weg' : _dFmt(d.n)}</b>${d.n === 0 ? '' : ' ' + d.einheit}`).join(' · ')
-        : 'Dosierung bleibt gleich — Woche ' + wk + ' hat dieselben Mengen.';
+      const _weiterTxt = _planWochenDiffText(_diff) || ('Dosierung bleibt gleich — Woche ' + wk + ' hat dieselben Mengen.');
 
       return `<div style="display:flex;flex-direction:column;gap:6px;margin-top:10px">
         <div style="background:rgba(76,175,112,0.07);border:0.5px solid rgba(76,175,112,0.3);border-radius:9px;padding:9px 11px">

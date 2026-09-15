@@ -2,6 +2,29 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-15 — v1.5.179
+
+- **Die Wochenfrage fragte nach dicker werdenden Blüten, bevor es Blüten gibt.** Befund der ersten Prüfrunde (E7),
+  gegengeprüft; in der zweiten Runde unter „braucht Patrick" geführt, seit dem 15.09.2026 zur eigenen Entscheidung
+  freigegeben. `_planWeekQuestion` meldete bei jedem Plan-Wochenwechsel „Woche N ist durch. Weiter zu Woche N+1? …
+  Werden die Blüten noch sichtbar dicker und sind die Blätter noch satt grün" und bot an, Plan und Ernte zu
+  verschieben. Nachgestellt mit BioBizz Light, Automatic, 63 Blütetage: Die Frage kam an Tag 8 und 15 (Anzucht),
+  an Tag 22 (Übergang in die Blüte) und an Tag 85 (Beginn des Spülens) — jedes Mal mit einem Kriterium, das an der
+  Pflanze nicht zu beurteilen ist.
+- **Warum das zählt:** Ein Anfänger soll ein Merkmal prüfen, das es noch nicht gibt, und darf dabei die Ernte
+  verschieben. Beim Spülen setzt die Endspurt-Kette den Termin; eine zweite Stelle, die ihn verschiebt, wäre ein
+  Widerspruch.
+- **Jetzt:** Gefragt wird nur, wenn die alte und die neue Plan-Woche laut Rückgrat Blüte sind. Bei den übrigen
+  Wechseln (Anzucht, Übergang in die Blüte, Beginn des Spülens) steht eine Hinweis-Karte „Plan-Woche N beginnt" mit
+  dem Wochen-Tipp des Plans und den geänderten Mengen — ohne Frage und ohne Verschieben.
+- **Beinahe-Fehler beim Fix, festgehalten:** Die erste Fassung ließ die Karte außerhalb der Blüte ganz weg. Damit
+  verschwand auch der Wochen-Tipp, denn die Statuszeile zeigt nur den kurzen Wochennamen — beim Rainbow-Plan in
+  Woche 4 „Erste Pistillen pro Topf notieren" und der Alfa-Boost-Hinweis. `test_wochentipp.js` hat es gefangen.
+  Die Mengen-Änderung wird jetzt an zwei Stellen gebraucht und steht deshalb in `_planWochenDiff` /
+  `_planWochenDiffText`.
+- `test_wochenfrageanzucht.js` (6 Prüfungen, beide Zeitzonen): Wochen 2, 3, 4, 5 (Gegenprobe) und 11. Gegen den
+  alten Stand: 4 Fehler.
+
 ## 2026-09-15 — v1.5.178
 
 - **Die BioBizz-Outdoor-Vorlage ist entfernt.** Patricks Entscheidung vom 15.09.2026: „Den Outdoorplan würde ich erst
