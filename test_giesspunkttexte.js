@@ -74,7 +74,8 @@ function pruef(name, bedingung, info) {
     const zeilen = src.split(/\r?\n/).map((z, i) => ({ nr: i + 1, z }))
       .filter(x => !/^\s*(\/\/|\*|\/\*)/.test(x.z) && /(~40\s?% Restgewicht|Harz-Trigger|extrem leicht)/.test(x.z));
     pruef('Kein „~40 % Restgewicht", „Harz-Trigger" oder „extrem leicht" mehr', zeilen.length === 0, zeilen.map(x => 'Zeile ' + x.nr + ': ' + x.z.trim().slice(0, 70)).join(' | '));
-    pruef('Einstellungen: Sweet Spot und Finisher aus GIESSPUNKT', /Sweet Spot bei <b>\$\{GIESSPUNKT\.erde\.von\}/.test(src) && /Finisher\) sind <b>\$\{GIESSPUNKT\.finisher\.von\}/.test(src));
+    // (v1.5.195) Bewusst angepasst: kein eigenes Finisher-Band mehr — der Einstellungstext nennt nur noch den Gießpunkt.
+    pruef('Einstellungen: Sweet Spot aus GIESSPUNKT, kein eigenes Finisher-Band', /Sweet Spot bei <b>\$\{GIESSPUNKT\.erde\.von\}/.test(src) && !/GIESSPUNKT\.finisher/.test(src));
   }
 
   console.log('\nB - Eine Quelle für Bewertung und Text');
@@ -82,7 +83,7 @@ function pruef(name, bedingung, info) {
     const r = JSON.parse(E(`(function(){ try {
       const g = GIESSPUNKT, s = (p, f) => classifyRestPct(p, f, false).status;
       return JSON.stringify({ ok: s(g.erde.von) === 'sweetSpot' && s(g.erde.bis - 0.1) === 'sweetSpot' && s(g.erde.bis) === 'approaching'
-        && s(g.erde.von - 0.1) === 'stress' && s(g.finisher.von, true) === 'finisher' && s(g.finisher.bis, true) === 'finisher', g });
+        && s(g.erde.von - 0.1) === 'stress' && s(g.erde.von, true) === 'sweetSpot' && s(g.erde.bis - 0.1, true) === 'sweetSpot' && s(g.erde.bis, true) === 'approaching', g });
     } catch (e) { return JSON.stringify({ ok: false, fehler: String(e) }); } })()`));
     pruef('classifyRestPct urteilt genau an den Grenzen aus GIESSPUNKT', r.ok, JSON.stringify(r));
   }

@@ -2,6 +2,23 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-15 — v1.5.195
+
+- **Kurz vor der Ernte schob die Hebe-Test-Bewertung die Pflanze in den Wasserstress.** In den letzten zwei Wochen
+  (Finisher) sagte `classifyRestPct` bei 25–29 % Restgewicht „Noch warten — Warten bis spürbar federleicht", während
+  dieselbe Funktion unter 25 % „Wasserstress" meldet. Bei 40–50 % hieß es „Noch warten" statt „Bald gießen". Begründet war
+  das eigene Band (30–40 %) mit einem bewusst trockenen Topf vor der Ernte; einen Mechanismus dafür gibt es nicht, ein
+  Harz-Plus durch Trockenstress ist nicht belegt (`ANBAU.md` 14, v1.5.144). Befund der Begriffe-Prüfung, gemessen.
+- **Warum das zählt:** Wer bei 27 % auf „federleicht" wartet, gießt erst im Stress — nach `ANBAU.md` 13.1 ist das kein
+  Trick, sondern Schaden an den Wurzeln, in der Phase, in der die Blüten am meisten Wasser bewegen.
+- **Jetzt:** Der Finisher hat kein eigenes Band mehr. Bis zur Ernte gilt derselbe Gießpunkt: 25–40 % „Sweet Spot — jetzt
+  gießen" (Knopf „Knapp" = 30 %), darüber „Bald gießen" bzw. „Noch feucht", unter 25 % Wasserstress. `GIESSPUNKT.finisher`,
+  `T.water.finisherReady` und `finisherWait` entfallen; der Einstellungstext sagt, dass das bis zur Ernte gilt. Die
+  Gießmenge ist davon nicht berührt — sie folgt weiter ihrem eigenen Modell bis zum Gießmengen-Umbau.
+- `test_finisherband.js` (9 Prüfungen, beide Zeitzonen): 13 Restgewicht-Werte im Finisher gegen den Normal-Modus,
+  `GIESSPUNKT`, Einstellungen, Quelltext. Gegen den alten Stand: 7 Fehler. Bewusst angepasst: `test_giesspunkttexte.js`
+  (erwartete den eigenen Finisher-Status und den Einstellungstext mit `GIESSPUNKT.finisher`).
+
 ## 2026-09-15 — v1.5.194
 
 - **Beim Trocknen und im Curing warnte der Eintrag vor Pflanzenschäden an einer geschnittenen Pflanze.**
