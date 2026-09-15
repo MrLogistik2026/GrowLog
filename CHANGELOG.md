@@ -2,6 +2,32 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-15 — v1.5.172
+
+- **Dreizehn Stellen knüpften die Ernte an eine feste Bernstein-Menge oder erklärten Bernstein zum Optimum.**
+  Befund der Prüf-Agentin zum Erntefenster (zwei Stellen), danach den ganzen Quelltext durchsucht. `ANBAU.md` 11
+  sagt: Klar ist zu früh, milchig ist der höchste THCA-Gehalt, Bernstein ist Abbau (THCA → CBNA) — die Wirkung
+  wird ruhiger, die Potenz sinkt, und wie viel davon, ist eine Zielentscheidung des Growers. Die App sagte:
+  - Erntezähler: „erste bernsteinfarbene = jetzt oder in 2–3 T. ernten", nach dem Plan-Erntetag „Trichome
+    jetzt bernsteinfarben? Zeit zum Schneiden" — obwohl Patrick sein Ziel auf 5 % gestellt hat.
+  - Lexikon: „THC-Maximum bei milchigen Trichomen + ~10 % Amber" (das Maximum ist milchig, Bernstein ist schon
+    Abbau), „Eine kleine Bernstein-Quote (5–20 %) ist erwünscht", „ab erstem Bernstein 2–7 Tage bis zur Ernte",
+    „Sativa-dominante Sorten … eher früher ernten" — beides ohne Beleg.
+  - Anleitung: „Ideal zur Ernte: 90 % milchig + max 10 % bernstein", draußen als „Typisches Ziel" sogar
+    „70 % milchig, 30 % klar" — ein Schnitt mit einem Drittel unfertiger Trichome, nach `ANBAU.md` 11 der
+    teuerste Fehler im Zyklus.
+  - Diagnose Lichtstress: „Ernten wenn ~50 % milchig".
+  - Tipp „milchig=perfekt, bernstein=couchlock", Info-Karte „meist der beste Schnittzeitpunkt", Demo-Notiz
+    „bei ~10–15 % Bernstein ernten", und in der Trichom-Karte des Einsteiger-Modus „Milchig (perfekt)" und
+    „Bernstein (spät)" (jetzt „höchster Wirkstoff" und „beginnender Abbau").
+- **Jetzt:** Überall dieselbe Aussage — milchig = höchster Wirkstoffgehalt, bernsteinfarben = beginnender Abbau,
+  wie viel Bernstein, entscheidest du. Wo die App etwas rät, ist es „kaum noch klare Trichome und dein
+  Bernstein-Ziel erreicht" (das Ziel aus den Einstellungen). Die Beschreibung der Wirkung bleibt: mehr Bernstein
+  macht sie ruhiger und senkt die Potenz. Unverändert bleibt der Herbst-Hinweis draußen (lieber etwas früher
+  bei Schimmelgefahr, `ANBAU.md` 13.5).
+- `test_bernsteintexte.js` (15 Prüfungen, beide Zeitzonen): zwölf Muster im Quelltext, dazu beide Hinweise des
+  Erntezählers mit Patricks Zyklus. Gegen den alten Stand: 13 Fehler.
+
 ## 2026-09-15 — v1.5.171
 
 - **Ein eigener Plan bekam den Dosis-Modus des gerade aufgeschlagenen Plans.** Beim Nachprüfen des

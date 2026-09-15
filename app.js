@@ -3446,7 +3446,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.171';
+const APP_VERSION = 'v1.5.172';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -5465,7 +5465,7 @@ const INFO_TERMS = {
   trichome: {
     title: 'Trichome',
     text: 'Die glitzernden Harz-Tröpfchen auf den Blüten. Ihre Farbe ist die zuverlässigste Anzeige dafür, wann geerntet werden sollte.',
-    tip: 'Mit Lupe oder Handy-Makro anschauen: <b>klar</b> = noch zu früh. <b>Milchig-trüb</b> = THC-Höhepunkt, meist der beste Schnittzeitpunkt. <b>Bernstein</b> = später, wirkt entspannter und müder. Lieber ein paar Tage Geduld als zu früh ernten.',
+    tip: 'Mit Lupe oder Handy-Makro anschauen: <b>klar</b> = noch zu früh. <b>Milchig-trüb</b> = höchster Wirkstoffgehalt. <b>Bernstein</b> = beginnender Abbau, wirkt ruhiger und müder — wie viel davon, entscheidest du. Lieber ein paar Tage Geduld als zu früh ernten.',
     lex: 'Trichom-Analyse (Ernte-Trigger)',
   },
   topping: {
@@ -6033,7 +6033,7 @@ const SYMPTOMS = [
         heading: 'Top-Buds weißlich + Trichome trüb-bräunlich',
         verdict: '⚠ Hitzeschaden zusätzlich',
         color: 'var(--orange)',
-        text: 'Bleaching + Trichome werden zu schnell amber → Pflanze ist gestresst und reift verfrüht. Ernten wenn ~50% milchig (nicht auf 30% amber warten — sonst alles übersteuert). <b>Klima-Fix:</b> Lampe höher, Belüftung verstärken, max 26°C am Canopy in mittlerer-später Blüte.',
+        text: 'Bleaching + Trichome werden zu schnell amber → Pflanze ist gestresst und reift verfrüht. Deshalb nicht früher schneiden: Klare Trichome sind unfertig, das kostet Ertrag und Wirkung. Auf viel Bernstein zu warten heißt unter Stress aber weiterer Abbau — der Hebel ist das Klima. <b>Klima-Fix:</b> Lampe höher, Belüftung verstärken, max 26°C am Canopy in mittlerer-später Blüte.',
         when: 'Bloom Wo 6+',
         lex: 'Trichom-Analyse (Ernte-Trigger)',
       },
@@ -10192,15 +10192,15 @@ function harvestCountdown(c, iso = null) {
   if (daysRemaining > uncertainty) {
     status = 'upcoming';
     label = `${daysRemaining} ±${uncertainty} T.`;
-    tooltip = `Erwartet am ~${fmtDE(harvestISO, {day:'2-digit', month:'2-digit'})}. Unsicherheit ±${uncertainty} Tage — letztendlich entscheiden die Trichome (milchig = Peak THC, bernstein = mehr Couchlock).`;
+    tooltip = `Erwartet am ~${fmtDE(harvestISO, {day:'2-digit', month:'2-digit'})}. Unsicherheit ±${uncertainty} Tage — letztendlich entscheiden die Trichome (milchig = höchster Wirkstoffgehalt, bernsteinfarben = beginnender Abbau — wie viel Bernstein, entscheidest du).`;
   } else if (daysRemaining >= -uncertainty) {
     status = 'harvest-window';
     label = daysRemaining === 0 ? 'Ernte-Tag!' : daysRemaining > 0 ? `~${daysRemaining} T.` : `heute ${Math.abs(daysRemaining)} T. über`;
-    tooltip = `Ernte-Fenster ist offen. Trichome täglich mit Lupe prüfen — milchig bedeutet Peak, erste bernsteinfarbene = jetzt oder in 2-3 T. ernten. Zu früh = weniger Wirkung, zu spät = sedativer.`;
+    tooltip = `Ernte-Fenster ist offen. Trichome täglich mit Lupe prüfen — milchig = höchster Wirkstoffgehalt, bernsteinfarben = beginnender Abbau. Geschnitten wird, wenn kaum noch klare da sind und dein Bernstein-Ziel erreicht ist. Zu früh kostet Ertrag und Wirkung, mehr Bernstein macht die Wirkung ruhiger.`;
   } else {
     status = 'overdue';
     label = `${Math.abs(daysRemaining)} T. über`;
-    tooltip = `Planmäßig bereits geerntet. Falls noch nicht passiert: Trichome jetzt bernsteinfarben? Zeit zum Schneiden.`;
+    tooltip = `Planmäßig bereits geerntet. Falls noch nicht passiert: Kaum noch klare Trichome und dein Bernstein-Ziel erreicht? Dann schneiden.`;
   }
 
   return { daysRemaining, uncertainty, harvestISO, status, label, tooltip };
@@ -17349,7 +17349,7 @@ function renderTips() {
     { icon: '💧', text: 'pH im Zulauf: Erde ' + phTargetFor('erde').label + ', Coco ' + phTargetFor('coco').label + ', Hydro ' + phTargetFor('hydro').label + '.', cat: 'Grundlagen', lex: 'pH-Wert' },
     { icon: '🌡️', text: 'Tag: 22–28°C, Nacht: 18–22°C. Max 30°C!', cat: 'Grundlagen', lex: 'VPD (Vapour Pressure Deficit)' },
     { icon: '💨', text: 'Gute Luftzirkulation = kein Schimmel.', cat: 'Grundlagen', lex: 'Schimmel (Botrytis)' },
-    { icon: '🔬', text: 'Trichome: klar=früh, milchig=perfekt, bernstein=couchlock.', cat: 'Ernte', lex: 'Trichom-Analyse (Ernte-Trigger)' },
+    { icon: '🔬', text: 'Trichome: klar = zu früh, milchig = höchster Wirkstoffgehalt, bernsteinfarben = beginnender Abbau.', cat: 'Ernte', lex: 'Trichom-Analyse (Ernte-Trigger)' },
     { icon: '✂️', text: 'Wet Trim oder Dry Trim – beide Methoden haben Vorteile.', cat: 'Ernte', lex: 'Trocknung' },
     { icon: '🍂', text: 'Trocknung: 7–14 Tage, ' + TROCKNEN_TEXT + '.', cat: 'Ernte', lex: 'Trocknung' },
     { icon: '🫙', text: 'Curing: 2+ Wochen in Gläsern, täglich öffnen.', cat: 'Nach Ernte', lex: 'Curing (Veredelung)' },
@@ -21632,7 +21632,7 @@ function welcomeStartDemo() {
     37: 'Stretch vorbei, Pflanze steht in voller Höhe. Bloom-Dünger rauf, N-Anteil halbiert.',
     43: 'Buds stacken sichtbar, Harz-Produktion läuft. Zimmer riecht intensiv.',
     52: 'Reife-Phase! Erste Amber-Trichome unter der Lupe sichtbar. Top·Max auf Max.',
-    58: 'Fast erntereif — Trichome überwiegend milchig, Bernstein nimmt zu. Jetzt täglich prüfen; bei ~10–15% Bernstein ernten (ausgewogene Wirkung, kopflastiger etwas früher).',
+    58: 'Fast erntereif — Trichome überwiegend milchig, Bernstein nimmt zu. Jetzt täglich prüfen; wie viel Bernstein es werden soll, entscheide ich (mehr Bernstein = ruhigere Wirkung, weniger Potenz).',
   };
   // (v1.5.162) Die Spül-Notiz steht am ersten echten Spültag. Vorher fest an Tag 55 — dort ist in der
   // Demo noch ein Blüte-Guss, der erste Spülgang kommt zwei Tage später.
@@ -27068,9 +27068,9 @@ function renderEntry(iso) {
         <div style="display:flex;gap:6px;margin-bottom:8px">
           <div style="flex:1;text-align:center"><div style="font-size:9px;color:var(--text-hint);margin-bottom:3px">Klar 💎${S.beginnerMode ? '<br>(zu früh)' : ''}</div>
             <input type="number" min="0" max="100" step="0.1" value="${_tFmt(trich.clear).replace(',','.')}" style="width:100%;background:var(--card2);border:0.5px solid rgba(200,200,255,0.2);border-radius:6px;padding:6px;color:#aac;font-size:14px;font-weight:600;font-family:var(--mono);text-align:center;outline:none" onchange="uTrich('${c.id}','clear',this.value)"/></div>
-          <div style="flex:1;text-align:center"><div style="font-size:9px;color:var(--text-hint);margin-bottom:3px">Milchig 🥛${S.beginnerMode ? '<br>(perfekt)' : ''}</div>
+          <div style="flex:1;text-align:center"><div style="font-size:9px;color:var(--text-hint);margin-bottom:3px">Milchig 🥛${S.beginnerMode ? '<br>(höchster Wirkstoff)' : ''}</div>
             <input type="number" min="0" max="100" step="0.1" value="${_tFmt(trich.milky).replace(',','.')}" style="width:100%;background:var(--card2);border:0.5px solid rgba(255,255,255,0.15);border-radius:6px;padding:6px;color:#eee;font-size:14px;font-weight:600;font-family:var(--mono);text-align:center;outline:none" onchange="uTrich('${c.id}','milky',this.value)"/></div>
-          <div style="flex:1;text-align:center"><div style="font-size:9px;color:var(--text-hint);margin-bottom:3px">Bernstein 🍯${S.beginnerMode ? '<br>(spät)' : ''}</div>
+          <div style="flex:1;text-align:center"><div style="font-size:9px;color:var(--text-hint);margin-bottom:3px">Bernstein 🍯${S.beginnerMode ? '<br>(beginnender Abbau)' : ''}</div>
             <input type="number" min="0" max="100" step="0.1" value="${_tFmt(trich.amber).replace(',','.')}" style="width:100%;background:var(--card2);border:0.5px solid rgba(232,136,74,0.25);border-radius:6px;padding:6px;color:var(--orange);font-size:14px;font-weight:600;font-family:var(--mono);text-align:center;outline:none" onchange="uTrich('${c.id}','amber',this.value)"/></div>
         </div>
         <div style="display:flex;height:6px;border-radius:3px;overflow:hidden">
@@ -31437,7 +31437,7 @@ const LEXIKON = [
     { t: 'Cannabinoide',
       brief: 'Die aktiven Wirkstoffe der Pflanze. Entscheiden über Wirkung — nicht Geschmack.',
       mechanism: 'Alle Cannabinoide stammen aus <b>CBGA</b> (der „Mutter-Zelle"). Je nach Genetik und Reife bildet die Pflanze sie um:<br><br><b>THC</b> (Tetrahydrocannabinol): Psychoaktiv, schmerzlindernd, appetit-steigernd.<br><b>CBD</b> (Cannabidiol): Nicht-psychoaktiv, entzündungshemmend, balanciert THC ab.<br><b>CBG</b>: Nicht-psychoaktiv, antibakteriell, wird beim Reifen großteils umgewandelt.<br><b>CBN</b>: Abbauprodukt von THC durch Oxidation → stark sedierend, schlaffördernd.',
-      practice: '<b>THC-Maximum</b> bei milchigen Trichomen + ~10% Amber.<br><b>CBN-lastig</b> (für Schlaf): 30-50% Amber Trichome, späte Ernte.<br><b>CBG-hoch</b> (selten): sehr frühe Ernte oder spezielle Genetik (z.B. „White CBG").<br><br>Wichtig: Cannabinoide sind in <b>COOH-Form (THCA, CBDA)</b> in der frischen Pflanze — erst durch Hitze (Decarboxylierung) werden sie psychoaktiv. Roh gegessen wirkt Cannabis nicht.',
+      practice: '<b>THC-Maximum</b> bei überwiegend milchigen Trichomen — Bernstein ist bereits Abbau.<br><b>CBN-lastiger</b>: mehr Bernstein, spätere Ernte — ruhigere Wirkung, weniger THC. Wie viel, ist deine Entscheidung.<br><b>CBG-hoch</b> (selten): spezielle Genetik (z.B. „White CBG").<br><br>Wichtig: Cannabinoide sind in <b>COOH-Form (THCA, CBDA)</b> in der frischen Pflanze — erst durch Hitze (Decarboxylierung) werden sie psychoaktiv. Roh gegessen wirkt Cannabis nicht.',
       pitfall: 'Amber-Trichome = mehr CBN = mehr Sedation, aber auch <b>weniger Gesamt-THC</b> (wird ja abgebaut). Wer „knock-out" will, erntet spät. Wer Wirkung will, erntet bei milchig.' },
     { t: 'Terpene (Aroma-Profile)',
       brief: 'Die flüchtigen Duftstoffe. Bestimmen Geruch, Geschmack UND Wirkungs-Richtung (Entourage-Effekt).',
@@ -32321,7 +32321,7 @@ const LEXIKON = [
       mechanism: 'Trichome sind die <b>Harz-Drüsen</b> auf den Blüten und Sugar-Leaves. In ihnen werden Cannabinoide (THC, CBD…) und Terpene synthetisiert. Die Trichome durchlaufen drei optisch unterscheidbare Reifestadien:<br><br>' +
         '<b>Klar / glasig:</b> Cannabinoid-Synthese läuft noch. THC-A-Konzentration steigt, ist aber unter dem Maximum. Zu früh geerntet = wenig Wirkung, kratziger Rauch.<br><br>' +
         '<b>Milchig / trüb (weiß):</b> Peak <b>THC-A</b>, vor der oxidativen Umwandlung. Maximale psychoaktive Potenz nach Decarboxylierung. Das ist das Haupt-Ernte-Fenster.<br><br>' +
-        '<b>Bernstein / amber:</b> THC-A oxidiert zu <b>CBN</b> (sedierend, „couch-lock"). Total-THC sinkt langsam, sedativer Charakter steigt. Eine kleine Bernstein-Quote (5–20%) ist erwünscht für ein abgerundetes Profil.<br><br>' +
+        '<b>Bernstein / amber:</b> THC-A oxidiert zu <b>CBN</b> (sedierend, „couch-lock"). Total-THC sinkt langsam, sedativer Charakter steigt. Wie viel Bernstein es sein soll, ist deine Entscheidung: mehr Bernstein = ruhigere Wirkung, weniger Potenz.<br><br>' +
         '<b>Pistillen (die orangen Härchen) sind KEIN zuverlässiger Indikator</b> — sie verfärben sich durch Berührung, Temperatur und Feuchtigkeit unabhängig vom Reifezustand der Trichome. Verlässlich ist nur die Trichom-Optik unter der Lupe.',
       practice: '<b>Werkzeuge (günstig → besser):</b><br>' +
         '• Smartphone + Makro-Aufsatz (10–30 €)<br>' +
@@ -32346,8 +32346,8 @@ const LEXIKON = [
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Sedierend / körperschwer (Indica)</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">0%</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">50–60%</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">40–50%</td></tr>' +
         '</table>' +
         '<br>' +
-        '<b>Faustregel:</b> Bei ~70% milchig erreicht — jetzt täglich prüfen, das Fenster bewegt sich schnell. Ab erstem Bernstein in den Hauptbuds ist die Reise zur Ernte 2–7 Tage entfernt, je nach Genetik.<br><br>' +
-        '<b>Sativa-dominante Sorten</b> reifen oft mit einem schmaleren Bernstein-Fenster — eher früher ernten. <b>Indica-dominante</b> oder Hybride können länger stehen.',
+        '<b>Faustregel:</b> Bei ~70% milchig erreicht — jetzt täglich prüfen, das Fenster bewegt sich schnell. Wie weit die Ernte dann noch ist, zeigt der Verlauf deiner Messungen an immer denselben Stellen — keine Faustzahl.<br><br>' +
+        'Sorten reifen verschieden schnell. Deshalb rechnet die App mit dem Tempo deiner eigenen Messungen statt mit einer Sortenregel.',
       pitfall: 'Häufige Fehler:<br>' +
         '• Auf Pistillen statt Trichome schauen → fast immer zu spät geerntet<br>' +
         '• Nur an Sugar-Leaves messen → Trichome dort reifen schneller, geben falsches Bild<br>' +
@@ -34355,7 +34355,7 @@ const HOWTO = [
     { t: 'IceFlush',
       txt: 'Crushed Ice am Topfrand verteilen (etwa 1 L je 11-L-Topf), 1–2 Tage vor der Ernte, nicht auf den Stamm. Wasser gießt du dazu keines — das Schmelzwasser zieht langsam ein, und der Topf bleibt so trocken wie nach dem Hard-Dryback. Beliebte Grower-Technik; bei Genetiken mit Anthocyan-Anlage können lila Farben entstehen. Ein Trichom-Plus ist wissenschaftlich nicht belegt.' },
     { t: 'Trichom-Check',
-      txt: 'Ab Blüte-Woche 6-7 mit einer Lupe (60x oder mehr) die Trichome an den Blüten anschauen. <b>Klar</b> = zu früh. <b>Milchig</b> = THC-Peak (euphorische Wirkung). <b>Bernstein</b> = abgebaut zu CBN (sedierend). Ideal zur Ernte: 90% milchig + max 10% bernstein. Mehr Amber = Potenz-Verlust. Im Eintrag gibt es ein Trichom-Widget mit Prozent-Schiebern um deine Beobachtung festzuhalten.' },
+      txt: 'Ab Blüte-Woche 6-7 mit einer Lupe (60x oder mehr) die Trichome an den Blüten anschauen. <b>Klar</b> = zu früh. <b>Milchig</b> = THC-Peak (euphorische Wirkung). <b>Bernstein</b> = abgebaut zu CBN (sedierend). Wie viel Bernstein es sein soll, entscheidest du — mehr Bernstein = ruhigere Wirkung, weniger Potenz. Dein Ziel legst du in den Einstellungen fest. Im Eintrag gibt es ein Trichom-Widget mit Prozent-Schiebern um deine Beobachtung festzuhalten.' },
     { t: 'Ernte',
       txt: 'Früh am Morgen ernten, bevor die Lampen angehen (maximaler Terpengehalt). Äste abschneiden, grob entblättern, dann kopfüber aufhängen. Die App wechselt automatisch in die Trocknungs-Phase.' },
     { t: 'Trocknen',
@@ -34391,7 +34391,7 @@ const HOWTO = [
     { t: 'Regen melden (Gießtag überspringen)',
       txt: 'Wenn es geregnet hat, zählt das als natürlicher Gießvorgang. Auf der <b>Dashboard-Heute-Karte</b> gibt es den <b>🌧 Regen-Button</b>. Ein Tap verschiebt den Gießtag automatisch — du musst nichts im Kalender manipulieren.<br><br><b>Wie viel Regen zählt?</b><br>• <b>&lt;5 mm:</b> Nur Oberfläche nass, normal weitergießen<br>• <b>5–15 mm:</b> Ersetzt einen Gießtag (1× Regen-Button)<br>• <b>&gt;15 mm / Starkregen:</b> Ersetzt 2–3 Tage (mehrfach tippen)<br><br><b>Alternativ:</b> Untersetzer rausstellen — Wassertiefe in mm = Regenmenge. Oder DWD/Kachelmann-App nachschauen.<br><br>Nach 5+ Tagen Dauerregen: Staunässe-Gefahr. Topf schräg stellen, ggf. unter Dach ziehen.' },
     { t: 'Trichome prüfen für Erntezeitpunkt',
-      txt: 'Das <b>entscheidende Ernte-Signal</b> bei Outdoor ist <b>nicht der Kalender</b> — es sind die Trichome (die Harzkristalle auf den Buds).<br><br><b>Werkzeug:</b> Jewelers Loupe (30-60× Lupe, 5-10€) oder USB-Mikroskop. Handykamera reicht nicht.<br><br><b>Die 3 Farbstufen:</b><br>• <b>Klar/durchsichtig:</b> Noch nicht reif. Ernte würde energiearm wirken.<br>• <b>Milchig-trüb:</b> Optimal-Punkt für <b>aktivierende</b> Wirkung (mehr THC, weniger CBN)<br>• <b>Amber/bernsteinfarben:</b> THC oxidiert zu CBN — <b>sedierende "Couch-Lock"-Wirkung</b><br><br><b>Typische Ziele:</b><br>• Aktivierend/klar: 70% milchig, 30% klar<br>• Ausgewogen: 80% milchig, 20% amber<br>• Sedierend: 60% milchig, 40% amber<br><br><b>Ab Blüte-Woche 7:</b> Alle 2-3 Tage checken. Die App erinnert dich dran.<br><br><b>Bei Herbst-Schimmelrisiko:</b> Lieber etwas früher ernten (bei 80% milchig) als perfekt aber versifft.' },
+      txt: 'Das <b>entscheidende Ernte-Signal</b> bei Outdoor ist <b>nicht der Kalender</b> — es sind die Trichome (die Harzkristalle auf den Buds).<br><br><b>Werkzeug:</b> Jewelers Loupe (30-60× Lupe, 5-10€) oder USB-Mikroskop. Handykamera reicht nicht.<br><br><b>Die 3 Farbstufen:</b><br>• <b>Klar/durchsichtig:</b> Noch nicht reif. Ernte würde energiearm wirken.<br>• <b>Milchig-trüb:</b> Optimal-Punkt für <b>aktivierende</b> Wirkung (mehr THC, weniger CBN)<br>• <b>Amber/bernsteinfarben:</b> THC oxidiert zu CBN — <b>sedierende "Couch-Lock"-Wirkung</b><br><br><b>Wie viel Bernstein?</b> Das entscheidest du: mehr Bernstein = ruhigere Wirkung, weniger Potenz. Klare Trichome sind in jedem Fall unfertig — wer bei 30 % klar schneidet, verschenkt Ertrag und Wirkung.<br><br><b>Ab Blüte-Woche 7:</b> Alle 2-3 Tage checken. Die App erinnert dich dran.<br><br><b>Bei Herbst-Schimmelrisiko:</b> Lieber etwas früher ernten (bei 80% milchig) als perfekt aber versifft.' },
   ]},
   { cat: '🛠️ Werkzeuge im Tipps-Tab', items: [
     { t: 'Grow-Lexikon',
