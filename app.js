@@ -3436,7 +3436,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.200';
+const APP_VERSION = 'v1.5.201';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -26303,7 +26303,8 @@ function renderEntry(iso) {
       // dieser Fix macht das Lade-Verhalten dazu konsistent.
       const _guideTotal = parseFloat(cd.water) || waterSug;
       const guidePerPlant = (effPlants > 1 && c.scaleByPlants) ? Math.round(_guideTotal / effPlants) : _guideTotal;
-      const guideDrain = Math.round(guidePerPlant * 0.1);
+      // (v1.5.201) Drain-Spanne aus DRAIN_ZIEL — vorher fest 10 % der Menge, während derselbe Guide „15–20 % Drain" sagte.
+      const guideDrain = `${Math.round(guidePerPlant * DRAIN_ZIEL.min / 100)}–${Math.round(guidePerPlant * DRAIN_ZIEL.max / 100)}`;
       // LERN-STATUS (v1.2.69): erklärt in einem Satz, WORAUS der Vorschlag gerade
       // entsteht — Messung, Verbrauchsmodell, Anker oder Kaltstart. Gleiche
       // Quellen wie waterSuggestion/waterBasis → Anzeige == Realität.
@@ -26768,7 +26769,7 @@ function renderEntry(iso) {
                 <div>${c.medium === 'coco' ? `<b style="color:var(--green)">③ Gießpunkt:</b> Gießen sobald der Topf merklich leichter wird (Hebe-Test „${GIESSPUNKT.coco.knopf}“, ${GIESSPUNKT.coco.von}–${GIESSPUNKT.coco.bis} % Restgewicht) — jedes Mal mit Nährlösung. (${getInt(c, p?.ph || 'bloom') <= 1 ? 'meist täglich' : '~alle ' + getInt(c, p?.ph || 'bloom') + ' Tage'})` : `<b style="color:var(--green)">③ Sweetspot:</b> Gießen im Sweet Spot bei ${GIESSPUNKT.erde.von}–${GIESSPUNKT.erde.bis} % Restgewicht (Hebe-Test „Knapp“). Obere 3–5 cm trocken. (~alle ${getInt(c, p?.ph || 'bloom')} Tage)`}</div>
                 <div style="background:rgba(240,208,80,0.06);border-radius:6px;padding:6px 8px;color:var(--yellow)">${c.medium === 'coco' ? '💡 <b>Tipp:</b> In Coco lieber etwas früher gießen als zu spät — Coco verzeiht Austrocknen schlecht. Staunässe trotzdem vermeiden, aber nie knochentrocken werden lassen.' : '💡 <b>Unsicher?</b> Lieber 1 Tag länger warten. Hängende Blätter = 2h Erholung. Staunässe-Wurzelfäule = irreversibel.'}</div>
                 <div><b style="color:var(--orange)">🧪 Mischen:</b> CalMag zuerst → umrühren → Basisdünger → Additive → pH auf ${pht.mid.toFixed(1)}</div>
-                <div><b style="color:var(--orange)">🚿 Drain:</b> 15–20% Drain bei jedem Guss. Drain-Wasser sofort entsorgen!</div>
+                <div><b style="color:var(--orange)">🚿 Drain:</b> ${DRAIN_ZIEL.min}–${DRAIN_ZIEL.max} % Drain bei jedem Guss. Drain-Wasser sofort entsorgen!</div>
               </div>
             </div>
           </div>`}`;
@@ -27983,14 +27984,14 @@ function updateCalc(cId, wk) {
       : `${Math.round(mixMl)} ml gesamt`;
   });
 
-  // Gieß-Guide live mitziehen: angezeigte Wassermenge und Drain (10% Regel) anpassen.
+  // Gieß-Guide live mitziehen: angezeigte Wassermenge und Drain-Spanne (DRAIN_ZIEL, v1.5.201) anpassen.
   // PRO PFLANZE (ml/plants) — konsistent mit der Guide-Box, die pro Pflanze anzeigt.
   // So sieht der User sofort wie sich Zielwert und Drain-Menge ändern wenn er +/− drückt.
   document.querySelectorAll(`.live-water[data-cycle="${cId}"]`).forEach(el => {
     el.textContent = Math.round(ml / plants);
   });
   document.querySelectorAll(`.live-drain[data-cycle="${cId}"]`).forEach(el => {
-    el.textContent = Math.round(ml / plants * 0.1);
+    el.textContent = `${Math.round(ml / plants * DRAIN_ZIEL.min / 100)}–${Math.round(ml / plants * DRAIN_ZIEL.max / 100)}`;
   });
   // (v1.2.75) Anrühr-Zeile im Guide (live-mix) mitziehen: gegebene Menge/Pflanze
   // × Reserve-Faktor — konsistent mit der grünen Anmisch-Box, damit beim Tippen

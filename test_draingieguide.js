@@ -1,10 +1,10 @@
 /**
- * (v1.5.174) Die Gießanleitungen nennen das Ablaufziel aus DRAIN_ZIEL.
+ * (v1.5.201) Die Drain-Menge im Gieß-Guide aus DRAIN_ZIEL.
  *
- * Seit v1.5.112 ist das Ziel 15–20 % Ablauf (ANBAU.md 5.1), seit v1.5.153 steht es an einer Stelle
- * (DRAIN_ZIEL). Zwei Anleitungen sagten weiter „Langsam gießen bis 10–15% Drain" — die Gießanleitung im
- * Eintrag sogar zwei Zeilen über ihrer eigenen Zeile „15–20% Drain bei jedem Guss". Befund der
- * Prüf-Agentin zur Gießmenge (15.09.2026).
+ * Der Fehler (Befund der Gießmengen-Prüfung, Runde 3): Der Gieß-Guide im Eintrag rechnete die Drain-Menge als 10 % der
+ * Gießmenge — beim Öffnen und live beim Tippen („2100 ml → 210 ml Drain"). Zwei Zeilen tiefer sagte dieselbe Gießanleitung
+ * „15–20% Drain bei jedem Guss", und das Drain-Ziel der App ist DRAIN_ZIEL (15–20 %, ANBAU.md 5.1). Wer der Zahl folgte,
+ * hörte bei der Hälfte des Ziels auf — und unter 10 % ist eine Drain-Messung gar keine.
  */
 const fs = require('fs');
 const path = require('path');
@@ -64,29 +64,35 @@ function pruef(name, bedingung, info) {
   console.log('TZ=' + (process.env.TZ || '(System)'));
   const { E, errors } = await load();
   pruef('Start ohne JS-Fehler', errors.length === 0, errors[0]);
-  const ziel = E('DRAIN_ZIEL.min + "–" + DRAIN_ZIEL.max + " %"');
+  E(`S.beginnerMode = false`);
 
-  console.log('\nA - Quelltext');
-  {
-    const zeilen = fs.readFileSync(path.join(__dirname, 'app.js'), 'utf8').split(/\r?\n/)
-      .map((z, i) => ({ nr: i + 1, z })).filter(x => !/^\s*(\/\/|\*|\/\*)/.test(x.z) && /10\s?[–-]\s?15\s?% Drain/.test(x.z));
-    pruef('Kein „10–15 % Drain" mehr', zeilen.length === 0, zeilen.map(x => 'Zeile ' + x.nr).join(', '));
-  }
+  const r0 = JSON.parse(E(`(function(){ const c = S.cycles[0];
+    for (let i = 40; i < 100; i++) { const d = isoPlus(c.startDate, i - 1); if (getAction(d, c) === 'giess') return JSON.stringify({ d: d, id: c.id, ziel: DRAIN_ZIEL }); }
+    return JSON.stringify({}); })()`));
+  pruef('Prüflage: Blüte-Gießtag ab Tag 40 gefunden', !!r0.d, JSON.stringify(r0));
+  const { min, max } = r0.ziel || { min: 15, max: 20 };
 
-  console.log('\nB - Gerendert');
-  {
-    const tipps = E(`(function(){ S._tipsOpen = Object.assign(S._tipsOpen || {}, { guss: true }); goTo('tips'); renderTips();
-      return document.getElementById('scr-tips').textContent.replace(/\\s+/g, ' '); })()`);
-    const t = (tipps.match(/① Vollsättigung.{0,120}/) || ['(Leitfaden nicht gefunden)'])[0];
-    pruef(`Tipps, Gieß-Leitfaden: „${ziel} unten ablaufen"`, t.includes(`bis ${ziel} unten ablaufen`), t);
+  E(`setDebugDate('${r0.d}'); openEntry('${r0.d}')`);
+  await warte(200);
+  const lese = () => JSON.parse(E(`JSON.stringify({ w: (document.querySelector('.live-water[data-cycle="${r0.id}"]') || {}).textContent || null,
+    dr: (document.querySelector('.live-drain[data-cycle="${r0.id}"]') || {}).textContent || null })`));
+  const a = lese();
+  const w = parseFloat(a.w);
+  const soll = (ml) => `${Math.round(ml * min / 100)}–${Math.round(ml * max / 100)}`;
+  pruef(`Beim Öffnen: Drain-Spanne ${min}–${max} % der angezeigten Menge statt 10 %`, isFinite(w) && a.dr === soll(w), JSON.stringify(a) + ' erwartet ' + (isFinite(w) ? soll(w) : '?'));
 
-    E(`setDebugDate('2026-08-27'); S.beginnerMode = false; openEntry('2026-08-27')`);
-    await warte(200);
-    const eintrag = E(`document.getElementById('scr-entry').textContent.replace(/\\s+/g, ' ')`);
-    const g = (eintrag.match(/① Vollsättigung:.{0,110}/) || ['(Gießanleitung nicht gefunden)'])[0];
-    pruef(`Eintrag, Gießanleitung: „${ziel} unten ablaufen", passend zur eigenen Drain-Zeile`, g.includes(`bis ${ziel} unten ablaufen`) && eintrag.includes(`${ziel} Drain bei jedem Guss`), g);   // (v1.5.201) Zeile aus DRAIN_ZIEL
-  }
+  const txt = E(`document.getElementById('scr-entry').textContent.replace(/\\s+/g, ' ')`);
+  pruef('Gießanleitung nennt das Drain-Ziel aus DRAIN_ZIEL', txt.includes(`${min}–${max} % Drain bei jedem Guss`), (txt.match(/🚿 Drain:.{0,60}/) || ['(fehlt)'])[0]);
 
+  E(`(function(){ const el = document.getElementById('water-calc-${r0.id}'); el.value = '3000'; updateCalc('${r0.id}'); })()`);
+  const b = lese();
+  pruef(`Live beim Tippen: 3000 ml → ${soll(3000)} ml Drain`, b.w === '3000' && b.dr === soll(3000), JSON.stringify(b));
+
+  const code = fs.readFileSync(path.join(__dirname, 'app.js'), 'utf8').split('\n').filter(z => !/^\s*(\/\/|\*|\/\*)/.test(z)).join('\n');
+  const alt = ['guidePerPlant * 0.1', 'ml / plants * 0.1', '15–20% Drain bei jedem Guss. Drain-Wasser'].filter(s => code.includes(s));
+  pruef('Keine feste 10-%-Drain-Rechnung mehr im Gieß-Guide', alt.length === 0, alt.join(' | '));
+
+  pruef('Keine JS-Fehler im Lauf', errors.length === 0, errors.slice(0, 2).join(' | '));
   console.log(`\nErgebnis: ${ok} OK, ${fail} Fehler`);
   process.exit(fail ? 1 : 0);
 })();

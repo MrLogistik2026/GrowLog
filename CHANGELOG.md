@@ -2,6 +2,21 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-15 — v1.5.201
+
+- **Der Gieß-Guide rechnete die Drain-Menge mit 10 %.** Beim Öffnen und live beim Tippen stand bei Patrick „1300 ml →
+  130 ml Drain", zwei Zeilen tiefer in derselben Gießanleitung „15–20% Drain bei jedem Guss" (Befund der
+  Gießmengen-Prüfung).
+- **Warum das zählt:** Wer der Zahl folgte, hörte bei der Hälfte des Ziels auf. Unter 10 % Durchfluss misst ein Drain
+  nicht die Wurzelzone, sondern eine Randfraktion (`ANBAU.md` 5.1), und die Salze, die der Drain ausspülen soll, bleiben im
+  Topf.
+- **Jetzt:** Die Drain-Zeile nennt die Spanne aus `DRAIN_ZIEL` („1300 ml → 195–260 ml Drain"), beim Öffnen und beim Tippen
+  gleich. Die Gießanleitung liest dieselbe Konstante.
+- Bewusst angepasst: `test_drainzieltexte.js` erwartete in der Gießanleitung die feste Schreibweise „15–20% Drain"; die
+  Zeile kommt jetzt aus `DRAIN_ZIEL` („15–20 % Drain").
+- `test_draingieguide.js` (7 Prüfungen, beide Zeitzonen): Spanne beim Öffnen, Gießanleitung, live bei 3000 ml
+  (450–600 ml), Quelltext. Gegen den alten Stand: 4 Fehler.
+
 ## 2026-09-15 — v1.5.200
 
 - **Coco bekam die Gießpunkt-Zahlen von Erde.** Die Hebe-Test-Vorgabe sprang am fälligen Gießtag für jedes Substrat auf
