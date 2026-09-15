@@ -2565,7 +2565,7 @@ const FERT_PRESETS = {
       8:  { phase: 'Blüte III',   tip: 'Reifung. Bio·Bloom langsam reduzieren. Top·Max maximal für Zucker-Mobilisierung.' },
       9:  { phase: 'Reifung I',   tip: 'Bio·Bloom hoch (1.8), Top·Max maximal für Dichte. Bio·Grow ist raus. Drain-EC überwachen.' },
       10: { phase: 'Reifung II',  tip: 'Bloom ausschleichen (0.6), Top·Max noch dabei. Echte Spülung ab Wo 11.' },
-      11: { phase: 'Hard Dryback', tip: 'Topf trocknen lassen auf ~35%. Vorbereitung IceFlush oder Ernte.' },
+      11: { phase: 'Hard Dryback', tip: 'Nicht mehr gießen, bis der Topf den Gießpunkt erreicht (Hebe-Test „Knapp"). Vorbereitung IceFlush oder Ernte.' },
       12: { phase: 'IceFlush/Ernte', tip: 'IceFlush mit 1L Crushed Ice/Topf. Dunkelphase 24-36h, dann Ernte.' },
     },
     products: [
@@ -3429,7 +3429,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.195';
+const APP_VERSION = 'v1.5.196';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -7469,7 +7469,7 @@ function contextFor(c, iso) {
                      (isBloom || isFlush || isIce || isHarvest);
 
   // (v1.5.28) KEIN-GIESS-FENSTER: Es gibt Tage, an denen ein federleichter Topf das ZIEL
-  // ist und kein Notfall — die letzten Spültage vor dem IceFlush (Hard-Dryback auf ~35%),
+  // ist und kein Notfall — die letzten Spültage vor dem IceFlush (Hard-Dryback bis zum Gießpunkt, v1.5.196),
   // der IceFlush selbst und der Erntetag. Ohne dieses Wissen ruft die Restgewicht-Box
   // dort "Wasserstress — sofort gießen", während direkt darüber "nicht mehr gießen" steht.
   // Genau ein Ort für die Regel, damit Banner und Status nicht auseinanderlaufen.
@@ -7629,16 +7629,20 @@ function classifyRestPct(restPct, isFinisher, isCoco, noWaterPhase) {
         text: `Topf bei ~${r}% Restgewicht. Am Erntetag wird <b>nicht mehr gegossen</b> — ein trockener Topf macht das Ernten leichter und die Blüten trocknen gleichmäßiger.` };
     }
     // hardDryback: die letzten Spültage vor dem IceFlush
-    if (p > 45) {
-      return { status: 'noWater', color: 'var(--blue)', label: 'Noch zu feucht — trocknen lassen',
-        text: `Topf bei ~${r}% Restgewicht. Vor dem IceFlush soll er auf etwa <b>35%</b> abtrocknen — also <b>jetzt nicht mehr gießen</b>, nur warten.` };
+    // (v1.5.196) Der Hard-Dryback endet am Gießpunkt (GIESSPUNKT.erde): Dort ist mehr als die Hälfte des Wassers verbraucht,
+    // und das Schmelzwasser bleibt im Topf — sein einziger belegter Zweck. Vorher „auf etwa 35 % abtrocknen" (nasser als der
+    // eigene Gießpunkt, Knopf „Knapp" = 30) und unter 30 % „Federleicht — bereit", auch unter 25 %, wo dieselbe Funktion
+    // sonst Wasserstress meldet.
+    if (p >= GIESSPUNKT.erde.bis) {
+      return { status: 'noWater', color: 'var(--blue)', label: 'Noch zu feucht — nicht gießen',
+        text: `Topf bei ~${r}% Restgewicht. Vor dem IceFlush wird nicht mehr gegossen, bis der Topf den Gießpunkt erreicht (${GIESSPUNKT.erde.von}–${GIESSPUNKT.erde.bis} %, Hebe-Test „Knapp"). Dann bleibt das Schmelzwasser im Topf.` };
     }
-    if (p >= 30) {
-      return { status: 'noWater', color: 'var(--green)', label: 'Auf dem Weg zu ~35% — nicht gießen',
-        text: `Topf bei ~${r}% Restgewicht, das passt für die Vorbereitung auf den IceFlush. <b>Nicht gießen</b> — trockenes Substrat nimmt das Schmelzwasser langsam auf, genau das ist gewollt.` };
+    if (p >= GIESSPUNKT.erde.von) {
+      return { status: 'noWater', color: 'var(--green)', label: 'Gießpunkt erreicht — bereit für den IceFlush',
+        text: `Topf bei ~${r}% Restgewicht — trocken genug, dass das Schmelzwasser im Topf bleibt. <b>Nicht mehr gießen</b>; der IceFlush ersetzt diesen Guss.` };
     }
-    return { status: 'noWater', color: 'var(--green)', label: 'Federleicht — bereit für den IceFlush',
-      text: `Topf bei ~${r}% Restgewicht. So federleicht soll er kurz vor dem IceFlush sein — <b>nicht mehr gießen</b>.` };
+    return { status: 'noWater', color: 'var(--orange)', label: 'Trockener als der Gießpunkt — Blätter prüfen',
+      text: `Topf bei ~${r}% Restgewicht, unter ${GIESSPUNKT.erde.von} %. Hängen die Blätter, ist das Wasserstress: einen kleinen Guss klares Wasser geben. Sonst nicht gießen.` };
   }
 
   // COCO: kein tiefer Dryback. Gießpunkt liegt viel höher als bei Erde — Coco wird
@@ -8724,8 +8728,8 @@ function _dryLeadInCard(c, iso) {
   const n = _daysUntilPhase(c, iso, grund, 4) || 1;
   const wann = n === 1 ? 'morgen' : `in ${n} Tagen`;
   const txt = grund === 'flush'
-    ? `Das Spülen beginnt ${wann} — und der erste Spültag ist selbst ein großer Guss. Bis dahin soll der Topf auf etwa <b>30–35 % Restgewicht</b> abtrocknen, sonst nimmt er die Spülmenge gar nicht auf. Dafür sind ${flushDryDays(c)} Tage ohne Guss eingeplant. Wird er vorher deutlich zu leicht, gieß ruhig, aber nur etwa die Hälfte.`
-    : `Der IceFlush kommt ${wann}. Bis dahin soll der Topf auf etwa 35% abtrocknen — trockenes Substrat nimmt das Schmelzwasser langsam auf, genau darum geht es.`;
+    ? `Das Spülen beginnt ${wann} — und der erste Spültag ist selbst ein großer Guss. Bis dahin soll der Topf den Gießpunkt erreichen (<b>${GIESSPUNKT.erde.von}–${GIESSPUNKT.erde.bis} % Restgewicht</b>, Hebe-Test „Knapp"), sonst nimmt er die Spülmenge gar nicht auf. Dafür sind ${flushDryDays(c)} Tage ohne Guss eingeplant. Wird er vorher deutlich zu leicht, gieß ruhig, aber nur etwa die Hälfte.`
+    : `Der IceFlush kommt ${wann}. Bis dahin wird nicht gegossen, bis der Topf den Gießpunkt erreicht (${GIESSPUNKT.erde.von}–${GIESSPUNKT.erde.bis} % Restgewicht) — dann bleibt das Schmelzwasser im Topf.`;
   return `<div style="padding:10px 12px;background:rgba(90,171,240,0.07);border:0.5px solid rgba(90,171,240,0.3);border-radius:10px;margin-bottom:8px">
     <div style="font-size:13px;font-weight:600;color:var(--blue)">💧 Heute kein Guss — mit Absicht</div>
     <div style="font-size:11px;color:var(--text-muted);line-height:1.5;margin-top:3px">${txt}</div>
@@ -25519,7 +25523,7 @@ function renderEntry(iso) {
           <span style="font-size:18px">🎯</span>
           <div style="flex:1">
             <div style="font-size:12px;font-weight:700;color:#fbbf24">Hard-Dryback-Phase · IceFlush in ${daysToIce === 0 ? 'morgen' : daysToIce + ' Tag' + (daysToIce === 1 ? '' : 'en')}</div>
-            <div style="font-size:11px;color:var(--text-sub);line-height:1.45;margin-top:2px">Ab jetzt nicht mehr gießen — Topf auf ~35% trocknen lassen. Trockenes Substrat absorbiert das Schmelzwasser langsam, optimaler Kältereiz in der Wurzelzone.</div>
+            <div style="font-size:11px;color:var(--text-sub);line-height:1.45;margin-top:2px">Ab jetzt nicht mehr gießen, bis der Topf den Gießpunkt erreicht (${GIESSPUNKT.erde.von}–${GIESSPUNKT.erde.bis} % Restgewicht, Hebe-Test „Knapp"). Dann bleibt das Schmelzwasser des IceFlush im Topf.</div>
           </div>
         </div>`;
       }
@@ -25960,14 +25964,14 @@ function renderEntry(iso) {
           }
           // IceFlush-Tag: eigener Status-Text, weist auf Hard-Dryback und Anleitung hin
           if (clf && isIceFlushToday) {
-            const dryOk = restVal <= 40;
+            const dryOk = restVal < GIESSPUNKT.erde.bis;   // (v1.5.196) Gießpunkt erreicht — dieselbe Grenze wie classifyRestPct
             clf = {
               status: 'iceflush',
               color: '#a5f3fc',
               label: dryOk ? 'IceFlush bereit — Hard Dryback erreicht' : 'IceFlush — noch zu feucht',
               text: dryOk
                 ? `Topf bei ~${Math.round(restVal)}% Restgewicht — perfekt für IceFlush. Voraussetzungs-Checkliste oben durchgehen, dann 1L Crushed Ice pro Topf am Rand verteilen.`
-                : `Topf bei ~${Math.round(restVal)}% — für IceFlush sollte er bei ~35% sein (Hard Dryback). Lieber 1–2 Tage länger trocknen lassen statt zu früh starten.`,
+                : `Topf bei ~${Math.round(restVal)}% — für den IceFlush sollte er den Gießpunkt erreicht haben (unter ${GIESSPUNKT.erde.bis} %). Lieber einen Tag warten, sonst läuft das Schmelzwasser als Drain durch.`,
             };
           }
         }
@@ -28395,7 +28399,7 @@ function _renderIceFlushPanel(c, iso) {
   const checklistItems = [
     { id: 'trichomes', label: 'Trichome 80–95% milchig · max 10% Bernstein (mit Lupe geprüft)' },
     { id: 'drain_ec',  label: 'Drain EC nach letztem Spülen ≤ 0.4 mS/cm' },
-    { id: 'dryback',   label: 'Hard Dryback erreicht: ~35% Restgewicht (Hebe-Test bestätigt)' },
+    { id: 'dryback',   label: `Hard-Dryback: Gießpunkt erreicht (${GIESSPUNKT.erde.von}–${GIESSPUNKT.erde.bis} % Restgewicht, Hebe-Test bestätigt)` },
     { id: 'ice_ready', label: `Crushed Ice bereit: ${icePerPot} ml/Topf · ${icePerPot * plants} ml gesamt für ${plants} Pflanze${plants === 1 ? '' : 'n'}` },
     { id: 'tent_dark', label: 'Zelt auf Pitch-Black geprüft — alle Lichtquellen abgeklebt' },
     { id: 'dry_tent',  label: `Trockenzelt vorbereitet: ${TROCKNEN_TEXT} · kein direkter Luftstrom` },
@@ -32580,36 +32584,33 @@ const LEXIKON = [
         '• Pflanze für Foto-Session anfassen → Trichom-Schaden, Pistillen verfärben sich<br><br>' +
         'Wichtigster Punkt: <b>Trichome entscheiden, nicht der Kalender</b>. Eine 70-Tage-Auto kann mit 60 oder 90 Tagen reif sein, je nach Bedingungen.' },
     { t: 'Hard Dryback (Ernte-Vorbereitung)',
-      brief: 'Topf 2–4 Tage vor IceFlush oder Ernte gezielt auf ~35% Restgewicht trocknen lassen. Bereitet den finalen Schritt vor und triggert leichten Stress.',
-      mechanism: 'In der Endphase der Blüte wird das normale Gieß-Intervall <b>verlängert</b>, statt regulär bei ~50% nachzugießen. Der Topf darf bis ~35% Restgewicht trocknen. Das hat zwei Effekte:<br><br>' +
-        '<b>1. Pflanzliche Stress-Antwort:</b> Leichter Trockenstress signalisiert der Pflanze „Ressourcen werden knapp". Dass sie darauf mit mehr Harz antwortet, ist eine verbreitete Annahme — <b>belastbar belegt ist sie nicht</b>, und die App verspricht dir dafür nichts. Der handfeste Nutzen steht unter Punkt 2.<br><br>' +
-        '<b>2. Vorbereitung für IceFlush:</b> Ein <b>trockenes Substrat absorbiert Schmelzwasser langsam und gleichmäßig</b>. Volles Substrat würde das Eiswasser durchspülen — die Kontaktzeit für den Kältereiz in der Wurzelzone wäre zu kurz. Hard Dryback ist also nicht nur Stress-Trick, sondern technische Voraussetzung für Iceflush.<br><br>' +
-        'Auch ohne Iceflush: Eine letzte Trocken-Phase vor der Ernte verhindert dass die Pflanze mit nassem Substrat geerntet wird — was den Trocknungsstart erschwert.',
-      practice: '<b>Wann starten:</b><br>' +
-        '• 2–4 Tage vor geplanter Ernte oder Iceflush<br>' +
-        '• Trichome sollten zu diesem Zeitpunkt 70%+ milchig sein (sonst zu früh)<br><br>' +
-        '<b>Vorbereitung:</b><br>' +
-        '• Letzter regulärer Guss noch <b>nur mit CalMag</b> (~0.2 ml/L) — keine Hauptdünger mehr<br>' +
-        '• pH wie üblich (6.2–6.4 in Erde, 5.8–6.2 in Coco)<br>' +
-        '• Bei Spülung als letztem Guss: Drain-EC kontrollieren (Ziel ≤ 0.4 mS/cm)<br><br>' +
-        '<b>Während des Drybacks:</b><br>' +
-        '• <b>Kein Wasser mehr</b> bis zum geplanten Ende-Datum<br>' +
-        '• Hebe-Test täglich, Restgewicht beobachten<br>' +
-        '• Ziel: ~35% am Tag von Iceflush bzw. Ernte<br>' +
-        '• Klima normal halten — kein zusätzlicher Stress<br><br>' +
-        '<b>Wenn Topf zu schnell zu trocken wird</b> (z.B. <30% nach 2 Tagen):<br>' +
-        '• Mini-Guss mit ~100 ml klarem Wasser pro Pflanze, dann weiter trocknen<br>' +
-        '• Lieber leicht gegossen als Wasserstress in dieser kritischen Phase<br><br>' +
-        '<b>Wenn Topf zu langsam trocknet</b> (>50% nach 4 Tagen):<br>' +
-        '• Klima zu kühl/feucht — Lüftung verstärken<br>' +
-        '• Notfalls Ernte-Zeitpunkt nach hinten schieben',
-      pitfall: '<b>Unter 30% Restgewicht:</b> echter Wasserstress, Wurzeln können absterben. Der Punkt eines „kontrollierten" Drybacks ist <b>kontrolliert</b> — kein Rekordversuch im Trocknen. 35% ist Ziel, 30% ist Untergrenze.<br><br>' +
+      brief: 'Nach dem letzten Spülgang nicht mehr gießen, bis der Topf den Gießpunkt erreicht (' + GIESSPUNKT.erde.von + '–' + GIESSPUNKT.erde.bis + ' % Restgewicht, Hebe-Test „Knapp"). Dann bleibt das Schmelzwasser des IceFlush im Topf. Ein Harz-Plus durch Trockenstress ist nicht belegt.',
+      // (v1.5.196) Vorher: „gezielt auf ~35 % trocknen lassen … triggert leichten Stress", „regulär bei ~50 % nachgießen",
+      // „35 % ist Ziel, 30 % ist Untergrenze" — nasser als der eigene Gießpunkt (Knapp = 30 %) und gegen die Stress-Grenze
+      // unter 25 %. Dazu CalMag 0,2 ml/L im letzten Guss (der letzte Guss ist ein Spülgang), Drain-EC ≤ 0,4 als Ziel, „die
+      // Kontaktzeit für den Kältereiz" und „Trichome 70 %+ milchig" — nichts davon belegt (ANBAU.md 5.1, 11, 14).
+      mechanism: 'Nach dem letzten Spülgang wird nicht mehr gegossen, bis der Topf den <b>Gießpunkt</b> erreicht — derselbe Punkt, an dem sonst gegossen wird. Dort ist mehr als die Hälfte des Wassers im Topf verbraucht.<br><br>' +
+        '<b>Der technische Zweck:</b> Das Schmelzwasser des IceFlush bleibt im Topf, statt als Drain durchzulaufen. Dafür reicht der Gießpunkt; trockener muss es nicht werden.<br><br>' +
+        '<b>Was nicht belegt ist:</b> dass leichter Trockenstress mehr Harz bringt. Die App verspricht dafür nichts. Trockener als der Gießpunkt ist kein „stärkerer Dryback", sondern Wasserstress.',
+      practice: '<b>Wann:</b><br>' +
+        '• Die Tage zwischen dem letzten Spülgang und dem IceFlush — im Endspurt eingestellt<br>' +
+        '• Nur, wenn der Trichom-Check reif zeigt; der Hard-Dryback macht die Trichome nicht reifer<br><br>' +
+        '<b>Während des Hard-Drybacks:</b><br>' +
+        '• <b>Kein Wasser</b> — der letzte Guss war der letzte Spülgang<br>' +
+        '• Hebe-Test täglich<br>' +
+        '• Ziel: Gießpunkt erreicht (' + GIESSPUNKT.erde.von + '–' + GIESSPUNKT.erde.bis + ' % Restgewicht) am Tag des IceFlush<br>' +
+        '• pH beim letzten Spülgang wie üblich (' + phTargetFor('erde').label + ' in Erde, ' + phTargetFor('coco').label + ' in Coco)<br><br>' +
+        '<b>Wenn der Topf unter ' + GIESSPUNKT.erde.von + ' % fällt und die Blätter hängen:</b><br>' +
+        '• Das ist Wasserstress: einen kleinen Guss klares Wasser geben<br><br>' +
+        '<b>Wenn der Topf am geplanten Tag noch über ' + GIESSPUNKT.erde.bis + ' % liegt:</b><br>' +
+        '• Den IceFlush im Endspurt um einen Tag verschieben — nicht mit vollem Topf ins Eis',
+      pitfall: '<b>Unter ' + GIESSPUNKT.erde.von + ' % Restgewicht</b> beginnt Wasserstress — dieselbe Grenze wie sonst. Ein Hard-Dryback ist kein Rekordversuch im Trocknen.<br><br>' +
         '<b>Häufige Fehler:</b><br>' +
-        '• Mit vollem Topf in Iceflush gehen → Eiswasser läuft durch, kein Kälteeffekt in der Wurzelzone<br>' +
-        '• Hard Dryback bei noch klaren Trichomen → Stress ohne Vorteile, die Pflanze ist nicht bereit den Effekt zu nutzen<br>' +
-        '• Vergessen dass Auto-Bewässerung läuft → kein Dryback möglich<br>' +
-        '• Bei Welkanzeichen (Blätter hängen) trotzdem warten → das ist Wasserstress, sofort abbrechen mit kleinem Guss<br><br>' +
-        'Hard Dryback ist <b>kein Pflichtschritt</b>. Wer ohne Iceflush erntet, kann auch ohne ausgeprägten Dryback einen Tag früher die Bewässerung einstellen — der Unterschied ist gering.' },
+        '• Mit vollem Topf in den IceFlush → das Schmelzwasser läuft als Drain durch<br>' +
+        '• Hard-Dryback, obwohl der Trichom-Check noch nicht reif zeigt → du erntest zu früh<br>' +
+        '• Vergessen, dass eine Auto-Bewässerung läuft → der Topf trocknet nicht ab<br>' +
+        '• Bei hängenden Blättern trotzdem warten → das ist Wasserstress, mit einem kleinen Guss abbrechen<br><br>' +
+        'Der Hard-Dryback ist <b>kein Pflichtschritt</b>. Wer ohne IceFlush erntet, braucht ihn nicht.' },
     { t: 'Dunkelphase vor der Ernte (24–72 h)',
       // (v1.5.125) `ANBAU.md` 14: „Dunkelphase 24–72 h vor der Ernte. Kein belegter
       // THC-Zuwachs. Was belegt ist: Terpene sind flüchtig und verlieren sich unter Licht
@@ -32769,8 +32770,8 @@ const LEXIKON = [
       mechanism: 'Schmelzendes Eis kühlt die Wurzelzone am Topfrand für einige Stunden ab — wie weit, hängt von Topf, Substrat und Raum ab; gemessen hat es die App nicht. Bei Genetiken mit Anthocyan-Anlage kann Kälte die lila Färbung verstärken (siehe „Anthocyane"). Das Schmelzwasser bleibt im abgetrockneten Topf: Es läuft kein Drain, also wird auch nichts ausgespült.<br><br><b>Was NICHT belegt ist:</b> Der oft genannte „letzte Trichom-Schub". Kontrollierte Vergleiche dazu gibt es nicht; die kursierenden Zahlen (5–20 % mehr Trichome) stammen aus Erfahrungsberichten, nicht aus Messungen. Wer den IceFlush machen will, soll ihn machen — die App plant ihn sauber ein. Sie verspricht dir dafür aber nichts.<br><br>Wichtig: Crushed Ice schmilzt <b>langsam und gleichmäßig</b>. Eiswürfel sind zu kompakt (lokal zu kalt), Eisblöcke zu langsam, einfach kaltes Wasser kühlt zu schnell wieder ab. Einen gemessenen Vorteil der einen oder anderen Form gibt es nicht.',
       practice: '<b>Voraussetzungen vor dem IceFlush:</b><br>' +
         '• Trichome 80–95% milchig (mit Lupe geprüft, max. 10% Bernstein)<br>' +
-        '• <b>Hard Dryback</b>: Topf 2–3 Tage vorher auf ~35% Restgewicht trocknen lassen — trockenes Substrat absorbiert das Schmelzwasser langsamer und gleichmäßiger. Volles Substrat würde das Schmelzwasser als Drain durchlaufen lassen<br>' +
-        '• Letzter regulärer Guss vor dem Dryback nur mit CalMag (0.2 ml/L), kein Vollnährstoff<br>' +
+        '• <b>Hard-Dryback</b>: nach dem letzten Spülgang nicht mehr gießen, bis der Topf den Gießpunkt erreicht (' + GIESSPUNKT.erde.von + '–' + GIESSPUNKT.erde.bis + ' % Restgewicht) — sonst läuft das Schmelzwasser als Drain durch<br>' +
+        '• Der letzte Guss vor dem Hard-Dryback ist der letzte Spülgang — kein Dünger<br>' +
         '• Drain EC vom letzten Spülen ≤ 0.4 mS/cm bestätigt (Salze raus)<br><br>' +
         '<b>Menge & Setup:</b><br>' +
         '• Etwa <b>1 Liter Crushed Ice pro Topf</b> bei 11L-Töpfen (skaliert mit Topfgröße — 8L → ~700 ml, 15L → ~1.5 L)<br>' +

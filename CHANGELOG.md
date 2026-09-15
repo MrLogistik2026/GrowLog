@@ -2,6 +2,29 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-15 — v1.5.196
+
+- **Der Hard-Dryback zielte auf ~35 % — nasser als der eigene Gießpunkt.** Hebe-Test-Bewertung, Banner und IceFlush-Status
+  im Eintrag, IceFlush-Checkliste, die Karte vor dem Spülen, der Wochen-Tipp in „BioBizz konservativ" und das Lexikon
+  nannten „auf etwa 35 % abtrocknen". Der Gießpunkt der App liegt bei 25–40 % (Knopf „Knapp" = 30 %). Gemessen: Bei 30 %
+  stand „Auf dem Weg zu ~35 % — nicht gießen", unter 30 % „Federleicht — bereit für den IceFlush", auch bei 20 %, wo
+  dieselbe Funktion sonst Wasserstress meldet. Das Lexikon setzte hinzu: „35 % ist Ziel, 30 % ist Untergrenze" und „unter
+  30 % können Wurzeln absterben" — genau Patricks Gießpunkt.
+- **Warum das zählt:** Der einzige belegte Zweck des Hard-Drybacks ist, dass das Schmelzwasser im Topf bleibt, statt als
+  Drain durchzulaufen; dafür reicht der Gießpunkt (`ANBAU.md` 14). Ein Ziel über dem Gießpunkt ist kein Dryback, und
+  „federleicht" unter 25 % ist Wasserstress (13.1) — in den Tagen vor der Ernte.
+- **Jetzt:** Eine Regel an allen Stellen, aus `GIESSPUNKT`: nicht gießen, bis der Topf den Gießpunkt erreicht; dann
+  „Gießpunkt erreicht — bereit für den IceFlush"; unter 25 % „Trockener als der Gießpunkt — Blätter prüfen", und hängen
+  sie, ein kleiner Guss. Der IceFlush-Status nennt „bereit" unter 40 % — dieselbe Grenze wie die Bewertung. Mit gestrichen,
+  weil ohne Beleg: CalMag 0,2 ml/L im letzten Guss (der letzte Guss ist ein Spülgang), Drain-EC ≤ 0,4 als Ziel im Lexikon
+  „Hard Dryback", die „Kontaktzeit für den Kältereiz", „Trichome 70 %+ milchig" und der 100-ml-Mini-Guss. Die Endspurt-Tage
+  bleiben unverändert.
+- **Was Patrick im nächsten Endspurt sieht:** Bei seinen 30 % steht „Gießpunkt erreicht — bereit für den IceFlush" statt
+  „Auf dem Weg zu ~35 %".
+- `test_harddryback.js` (16 Prüfungen, beide Zeitzonen): Bewertung bei 50, 40, 39, 30, 25, 24 und 20 %, Banner am
+  Hard-Dryback-Tag, IceFlush-Status bei 45, 40 und 38 % (bei 40 % hieß es vorher „bereit"), Checkliste, Lexikon „Hard
+  Dryback" und „IceFlush", Plan-Tipp, Quelltext. Gegen den alten Stand: 11 Fehler.
+
 ## 2026-09-15 — v1.5.195
 
 - **Kurz vor der Ernte schob die Hebe-Test-Bewertung die Pflanze in den Wasserstress.** In den letzten zwei Wochen
