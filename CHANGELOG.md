@@ -2,6 +2,29 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-15 — v1.5.169
+
+- **Der Sämlings-Start nannte feste Mengen, die an Tag 1 nicht stimmen.** Beim Abarbeiten von v1.5.168
+  gesehen. Seit v1.5.161 rechnet die App die Tag-1-Menge aus Topf und Substrat (`waterSuggestion`). Drei
+  Stellen nannten aber weiter feste Zahlen:
+  - der Assistent: „~700 ml" Sättigungsguss und „~150 ml" Erstguss,
+  - der Umschalter „Sämlings-Start" in den Einstellungen: „700ml" und „150ml",
+  - der Sämlings-Hinweis nach dem Anlegen: dieselben Zahlen, dazu „48h vor Tag 1" (alle anderen Stellen
+    sagen 24 h), „~400ml" zum Vorbefeuchten, pH 6.2–6.5 auch bei Coco und „Samen in trockene Erde".
+
+  Nachgemessen: 7 L Erde bekommt an Tag 1 450 ml, 7 L Coco 200 ml, 11 L Coco 350 ml. Der Assistent sagte
+  jedes Mal „~700 ml".
+- **Jetzt:** `_tag1MengeJeTopf(vorlage, startMethod)` rechnet über `waterSuggestion` mit einem Probe-Zyklus
+  ohne Einträge. In 20 Kombinationen (5 bis 25 L, Erde und Coco, beide Methoden) ist das genau die Zahl, die
+  ein echter Zyklus an Tag 1 nennt. Assistent, Einstellungen und Hinweis zeigen sie „je Topf", der Hinweis
+  dazu den pH aus `phTargetFor`.
+- **Vorbefeuchten ohne Zahl:** Für die ~400 ml gibt es in der App keine Rechnung. Statt einer hochgerechneten
+  Menge steht dort jetzt das Kriterium aus dem Lexikon: anfeuchten, „bis sie sich wie ein ausgewrungener
+  Schwamm anfühlt — nicht tropfend". Das Lexikon behält sein Beispiel „~400 ml (11L-Topf)".
+- `test_tag1mengen.js` (16 Prüfungen, beide Zeitzonen): Assistent für 7 L Erde, 11 L Coco und 11 L Erde gegen
+  einen echten Zyklus, der Umschalter in den Einstellungen, der Hinweis für beide Methoden, der Quelltext.
+  Gegen den alten Stand: 12 Fehler.
+
 ## 2026-09-15 — v1.5.168
 
 - **Was „Tag 1" ist, stand an jeder Stelle anders.** Offene Entscheidung aus der ersten Prüfrunde, von Patrick

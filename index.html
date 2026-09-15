@@ -4447,7 +4447,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.168';
+const APP_VERSION = 'v1.5.169';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -14119,6 +14119,27 @@ function ecUnitChip() {
 // Nährlösung senkt das Risiko für Anfänger. "Bald"-Hinweis ab Tag (Intervall − 2).
 const RES_CHANGE_DAYS = 10;
 
+/**
+ * (v1.5.169) Die Tag-1-Menge je Topf für eine Startmethode — auch für einen Zyklus, den es noch nicht gibt.
+ *
+ * Assistent, Einstellungen und der Sämlings-Hinweis nach dem Anlegen nannten fest „~700 ml“ und „150 ml“,
+ * obwohl die App an Tag 1 seit v1.5.161 aus Topf und Substrat rechnet (7 L Erde 450 ml, 11 L Coco 350 ml).
+ * Gerechnet wird über waterSuggestion mit einem Probe-Zyklus ohne Id, ohne Einträge und mit einer Pflanze —
+ * also dieselbe Zahl, die an Tag 1 auf Startseite und Karte steht. `vorlage` ist ein Zyklus oder die Antworten
+ * des Assistenten.
+ */
+function _tag1MengeJeTopf(vorlage, startMethod) {
+  const v = vorlage || {};
+  const iso = todayISO();
+  const probe = {
+    potSize: v.potSize || ((v.id && typeof getPotSize === 'function') ? getPotSize(v) : 0) || 11,
+    medium: v.medium || 'erde', seedType: v.seedType || 'auto', growType: v.growType || 'indoor',
+    startMethod: startMethod || v.startMethod || 'saturated', startDate: iso, plantCount: 1,
+  };
+  const p = phase(iso, probe);
+  return p ? waterSuggestion(probe, p, iso) : 0;
+}
+
 /** (v1.5.168) Die Keimmethode eines Zyklus — Papiertuch, solange keine gewählt ist. Keimungskarte und Sämlings-Pflege lesen hier. */
 function _keimMethode(c) {
   return (c && c.germMethod && GERM_GUIDES[c.germMethod]) ? c.germMethod : 'paper';
@@ -20759,13 +20780,13 @@ function renderSet() {
           style="flex:1;background:${sm==='saturated' ? 'var(--green-bg)' : 'var(--card2)'};border:0.5px solid ${sm==='saturated' ? 'var(--green-dk)' : 'var(--border)'};border-radius:8px;padding:10px 8px;font-size:11px;color:${sm==='saturated' ? 'var(--green)' : 'var(--text-sub)'};cursor:pointer;font-family:var(--font);text-align:center;line-height:1.3">
           <div style="font-size:16px;margin-bottom:2px">💦</div>
           <div style="font-weight:600">Vorbefeuchtet</div>
-          <div style="font-size:9px;color:var(--text-hint);font-weight:400;margin-top:2px">700ml Sättigungsguss + 7d Sprühen</div>
+          <div style="font-size:9px;color:var(--text-hint);font-weight:400;margin-top:2px">${_tag1MengeJeTopf(sel, 'saturated')} ml je Topf Sättigungsguss + 7 Tage Sprühen</div>
         </button>
         <button onclick="S.cycles.find(c=>c.id==='${sel.id}').startMethod='direct';saveS();renderSet()"
           style="flex:1;background:${sm==='direct' ? 'var(--green-bg)' : 'var(--card2)'};border:0.5px solid ${sm==='direct' ? 'var(--green-dk)' : 'var(--border)'};border-radius:8px;padding:10px 8px;font-size:11px;color:${sm==='direct' ? 'var(--green)' : 'var(--text-sub)'};cursor:pointer;font-family:var(--font);text-align:center;line-height:1.3">
           <div style="font-size:16px;margin-bottom:2px">🌱</div>
           <div style="font-weight:600">Direkt</div>
-          <div style="font-size:9px;color:var(--text-hint);font-weight:400;margin-top:2px">150ml Erstguss + kleine Tagesmengen</div>
+          <div style="font-size:9px;color:var(--text-hint);font-weight:400;margin-top:2px">${_tag1MengeJeTopf(sel, 'direct')} ml je Topf Erstguss + kleine Tagesmengen</div>
         </button>
       </div>
     </div>`;
@@ -23089,6 +23110,8 @@ function _wizStepFertPlan(a) {
 // Tag-1-Aktion (saettigung vs. giess_anz) und 7-Tage-Sprüh-Phase.
 function _wizStepStartMethod(a) {
   const current = a.startMethod || 'saturated';
+  // (v1.5.169) Mengen aus Topf und Substrat des Assistenten statt fest ~700/~150 ml.
+  const _sat = _tag1MengeJeTopf(a, 'saturated'), _dir = _tag1MengeJeTopf(a, 'direct');
 
   function card(method, icon, title, sub, body) {
     const isActive = current === method;
@@ -23115,7 +23138,7 @@ function _wizStepStartMethod(a) {
       '💦',
       'Vorbefeuchtet + Sättigungsguss',
       'Empfohlen · schützt den Sämling vor Überwässerung',
-      '<b>24h vor Tag 1:</b> Erde mit ~400 ml pH-Wasser anfeuchten, ruhen lassen.<br><b>Tag 1:</b> Sättigungsguss ~700 ml in 3 Etappen mit 15 min Pause — nie auf den Samen. Keimt er im Glas oder Tuch, setzt du ihn in den nächsten Tagen in die schon feuchte Erde.<br><b>Tag 2–8:</b> NUR sprühen — kein Gießen (Schutz vor Wurzelfäule).'
+      `<b>24h vor Tag 1:</b> Erde mit pH-Wasser anfeuchten, bis sie sich wie ein ausgewrungener Schwamm anfühlt — nicht tropfend. Ruhen lassen.<br><b>Tag 1:</b> Sättigungsguss ~${_sat} ml je Topf in 3 Etappen mit 15 min Pause — nie auf den Samen. Keimt er im Glas oder Tuch, setzt du ihn in den nächsten Tagen in die schon feuchte Erde.<br><b>Tag 2–8:</b> NUR sprühen — kein Gießen (Schutz vor Wurzelfäule).`
     )}
 
     ${card(
@@ -23123,7 +23146,7 @@ function _wizStepStartMethod(a) {
       '🌱',
       'Direkt, ohne Vorbefeuchten',
       'Einfacher & schneller · etwas mehr Risiko bei Pflegefehlern',
-      '<b>Tag 1:</b> Erde nicht vorbefeuchtet, kleiner Erstguss ~150 ml in die Mitte — dort, wo der Samen liegt oder hinkommt.<br><b>Tag 2+:</b> Normaler Anzucht-Rhythmus mit deinem Gieß-Intervall, kleine Mengen.<br>Etwas höheres Risiko bei Pflegefehlern, aber funktioniert.'
+      `<b>Tag 1:</b> Erde nicht vorbefeuchtet, kleiner Erstguss ~${_dir} ml je Topf in die Mitte — dort, wo der Samen liegt oder hinkommt.<br><b>Tag 2+:</b> Normaler Anzucht-Rhythmus mit deinem Gieß-Intervall, kleine Mengen.<br>Etwas höheres Risiko bei Pflegefehlern, aber funktioniert.`
     )}
 
     <div style="background:var(--card2);border-radius:10px;padding:10px 12px;margin:12px 0 16px;font-size:11px;color:var(--text-hint);line-height:1.4">
@@ -23737,10 +23760,13 @@ function addCyc(overrides) {
     saveS();
     setTimeout(() => {
       const sm = c.startMethod || 'saturated';
+      // (v1.5.169) Mengen und pH aus Topf und Substrat — vorher fest ~400/~700/~150 ml und pH 6.2–6.5 auch bei Coco.
+      const _phL = phTargetFor(c.medium).label;
+      const _sat = _tag1MengeJeTopf(c, 'saturated'), _dir = _tag1MengeJeTopf(c, 'direct');
       const msg = sm === 'direct' ? `Du hast 'Direkt' gewählt — Tag 1 ohne vollen Sättigungsguss, dafür kleinere Tagesgüsse.
 
 App-Plan für Sämlinge:
-• Tag 1: Samen in trockene Erde, ~150ml pH-Wasser (pH 6.2–6.5) direkt um die Pflanzstelle
+• Tag 1 (Keimstart): Erde nicht vorbefeuchtet, ~${_dir} ml pH-Wasser (pH ${_phL}) je Topf in die Mitte, wo der Samen liegt oder hinkommt
 • Tag 2–8: Bei Bedarf ~30ml pro Tag — kein striktes Sprüh-Verbot, aber dosiert. Erde sollte nie ganz austrocknen, aber auch nie pfützen
 • Tag 9+: Normaler Gießrhythmus alle 2–3 Tage, Topf-Restgewicht ~40% beim Gießzeitpunkt
 • Ab Tag 15: Tiefer trocknen lassen, Restgewicht ~30–40%
@@ -23753,9 +23779,9 @@ Achtung: Etwas höheres Pflegerisiko bei Vergessen — der Topf hat weniger Wass
 Bei Raumluft unter 65% RLF: transparente Kuppel über den Sämling stellen. Hält 80–95% Luftfeuchte und verhindert Welken. DIY: PET-Flasche umgekehrt aufstülpen. Komplette Anleitung im Lexikon → "Sämlings-Haube".` : `Du hast 'Vorbefeuchtet' (Sättigungsmethode) gewählt — ein klarer Initialguss am Tag 1, dann konsequente Ruhe.
 
 App-Plan für Sämlinge:
-• 48h vor Tag 1: Erde mit ~400ml pH-Wasser (pH 6.2–6.5) vorbefeuchten — verhindert hydrophoben Torf
-• Tag 1: Einmaliger Sättigungsguss ~700ml in 3 Etappen mit je 15min Pause (Wasser sickert besser ein, keine Pfützen)
-• Tag 2–8: KEIN weiteres Gießen — nur Sprühen (3–5 Sprühstöße auf die Oberfläche, pH 6.2–6.5, nicht auf die Keimblätter)
+• 24h vor Tag 1: Erde mit pH-Wasser (pH ${_phL}) anfeuchten, bis sie sich wie ein ausgewrungener Schwamm anfühlt — trockenes Substrat nimmt sonst schlecht Wasser an
+• Tag 1 (Keimstart): Einmaliger Sättigungsguss ~${_sat} ml je Topf in 3 Etappen mit je 15 min Pause (Wasser sickert besser ein, keine Pfützen)
+• Tag 2–8: KEIN weiteres Gießen — nur Sprühen (3–5 Sprühstöße auf die Oberfläche, pH ${_phL}, nicht auf die Keimblätter)
 • Tag 9+: Normaler Gießrhythmus alle 2–3 Tage, Topf-Restgewicht ~40% beim Gießzeitpunkt
 • Ab Tag 15: Tiefer trocknen lassen, Restgewicht ~30–40%
 
