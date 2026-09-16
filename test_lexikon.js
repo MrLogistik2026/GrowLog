@@ -339,8 +339,9 @@ function pruef(name, bedingung, info) {
       /Herstellermenge oder sanfter\?/.test(r.practice) && r.practice.includes(r.official) && r.practice.includes(r.einsteiger), r.practice.slice(0, 200));
     pruef('… ohne Tabelle fester „konservativer" Mengen und ohne feste Drain-EC-Schwelle',
       !/Konservative Praxis/.test(r.practice) && !/Drain-EC unter/.test(r.practice));
-    pruef('Maßstab ist die Pflanze: Blattspitzen in Plan-Vergleich, seiner Fehlerliste und im NPK-Eintrag',
-      /Blattspitzen/.test(r.practice) && /Blattspitzen/.test(r.pitfall) && /Blattspitzen/.test(r.npk), r.npk.slice(-300));
+    // (v1.5.250) Nach dem Gegencheck heißt es „zeigt die Pflanze": Braune Spitzen sind nur eines der Zeichen (Regel 3).
+    pruef('Maßstab ist die Pflanze: in Plan-Vergleich, seiner Fehlerliste und im NPK-Eintrag',
+      /zeigt die Pflanze/.test(r.practice) && /zeigt die Pflanze/.test(r.pitfall) && /zeigt die Pflanze/.test(r.npk), r.npk.slice(-300));
   }
 
   // (v1.5.249) Geschmack und Spülen. ANBAU.md 14: Kontrollierte Vergleiche fanden keinen belastbaren Unterschied in
@@ -362,6 +363,28 @@ function pruef(name, bedingung, info) {
       /wann Schluss ist, sagt der Plan/.test(sp.pitfall || '') && !/Drain-EC nicht gemessen/.test(sp.pitfall || ''));
     pruef('Zu langes Spülen: der belegte Grund (früher Stickstoff-Stopp kostet Blütenmasse, ANBAU.md 5)',
       /früher Stickstoff-Stopp, und der kostet Blütenmasse/.test(sp.pitfall || ''));
+  }
+
+  // (v1.5.250) Der Fach-Gegencheck der Texte aus v1.5.248 fand Überziehungen in den NEUEN Sätzen: „braune Spitzen heißen zu
+  // viel" (Trockenheit sieht nach ANBAU.md 5 genauso aus — Regel 3), „der Drain zeigt, ob sich Salz sammelt" (nur mit genug
+  // Drain, in organischer Spätblüte steigt er auch so — 5.1), „steigern, solange die Spitzen grün bleiben" (ohne Obergrenze —
+  // ein Überschuss zeigt sich auch als Mangelbild, 6.2) und eine Reaktionszeit, die ANBAU.md nicht nennt. Dazu zwei Reste der
+  // alten Haltung in anderer Schreibweise („Maximal-Werte", „30–50 % unter der Flaschenangabe").
+  console.log('');
+  console.log('N - (v1.5.250) Dosis-Texte nach dem Gegencheck');
+  {
+    const q = fs.readFileSync(path.join(__dirname, 'app.js'), 'utf8').split('\n').filter(z => !/^\s*(\/\/|\*|\/\*)/.test(z)).join('\n');
+    [/heißen: weniger/i, /heißen zu viel/i, /solange die (Blatt)?spitzen grün bleiben/i, /zeigt sich erst nach Tagen/i, /fast immer Überdüngung/i,
+      /Maximal-?Werte/i, /30–50\s?% (darunter|unter der Flaschenangabe)/i, /ab etwa der Hälfte ganz gestrichen/i, /heißt bei Bio nicht Mangel/i,
+      /zeigen (die )?Blattspitzen und (der )?Drain/i].forEach(re =>
+      pruef('Nirgends mehr: ' + re.source, !re.test(q), (q.match(new RegExp('.{0,60}' + re.source + '.{0,30}', 'i')) || [''])[0]));
+    pruef('Braune Spitzen: das Unterscheidungskriterium steht dabei (Topf feucht oder trocken, ANBAU.md 5)',
+      /Trockenheit sieht genauso aus/.test(q) && /bei feuchtem Topf sprechen für zu viel Dünger/.test(q));
+    pruef('Der Drain-EC nur mit Bedingung (genug Drain, organische Spätblüte — ANBAU.md 5.1)',
+      /wenn genug Drain kam — in Erde kann er spät in der Blüte aber auch ohne zu viel Dünger steigen/.test(q));
+    pruef('Steigern hat eine Obergrenze: die Menge des Plans', (q.match(/bis zur Menge (deines|des) Plans/g) || []).length >= 5,
+      (q.match(/bis zur Menge (deines|des) Plans/g) || []).length + ' Stellen');
+    pruef('Stickstoff-Stopp mit dem Grund aus ANBAU.md 5, nicht „ab der Hälfte gestrichen"', /ganz gestrichen, bevor die Blüte fertig ist, kostet er Blütenmasse/.test(q));
   }
 
   console.log('');

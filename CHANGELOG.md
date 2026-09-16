@@ -2,6 +2,28 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-16 — v1.5.250
+
+- **Die neuen Dosis-Texte aus v1.5.248 waren an vier Stellen zu einfach — gefunden von einem Fach-Gegencheck, bevor sie
+  hochgeladen wurden.** Ein Agent hat jede neue Aussage gegen `ANBAU.md` gehalten, nur lesend:
+  - „Braune, verbrannte Blattspitzen heißen zu viel" — nach `ANBAU.md` 5 sieht Trockenheit genauso aus, Hitze an der
+    Lampe bräunt ebenfalls (Regel 3: ein Symptom hat selten eine Ursache). Jetzt mit dem Unterscheidungskriterium aus
+    Abschnitt 5: Bei zu viel Dünger ist der Topf feucht, bei Wassermangel trocken.
+  - „Der Drain zeigt, ob sich Salz sammelt" — nur mit genug Drain, und in organischer Erde steigt der Drain-EC spät in
+    der Blüte auch ohne Überdüngung (5.1). Jetzt mit beiden Bedingungen.
+  - „Steigern, solange die Blattspitzen grün bleiben" — ohne Obergrenze; ein Überschuss zeigt sich auch als Mangelbild
+    (Kalium verdrängt Magnesium, 6.2). Jetzt: in kleinen Schritten, höchstens bis zur Menge des Plans.
+  - „Eine Änderung zeigt sich erst nach Tagen" — keine solche Angabe in `ANBAU.md`; die osmotische Umkehr bei
+    Überdüngung wirkt sofort (5). Jetzt: über die nächsten Güsse beobachten, weniger geben darf man jederzeit.
+  - „Ein niedriger EC heißt bei Bio nicht Mangel" → „nicht automatisch" (5.1); „steht nicht darin" → „kann sie nicht
+    wissen" — das BioBizz-Blatt unterscheidet sehr wohl das Substrat und nennt Cal/Mag für weiches Wasser.
+- **Zwei Reste der alten Haltung, die v1.5.248 übersehen hat**, weil sie anders geschrieben waren: „die meisten
+  Hersteller geben Maximal-Werte an. 30–50 % darunter ist sicherer" (Eintrag „Stickstoff-Mangel vs. -Überschuss") und
+  „30–50 % unter der Flaschenangabe beginnen … ab etwa der Hälfte (der Blüte) ganz gestrichen" (Eintrag „Basisdünger
+  Wachstum"). Letzteres widersprach zusätzlich `ANBAU.md` 5: Ein verfrühter Stickstoff-Stopp ist der teurere Fehler.
+- **Mitbehoben:** Der Eintrag „Braune Spitzen" begann mit „fast immer Überdüngung" — dieselbe Einursachen-Aussage.
+- `test_lexikon.js` Abschnitt N (93 Prüfungen).
+
 ## 2026-09-16 — v1.5.249
 
 - **Spülen und Düngerart versprachen einen Geschmack, den es nach der Fachgrundlage nicht belegt gibt.**
