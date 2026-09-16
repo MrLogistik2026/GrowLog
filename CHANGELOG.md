@@ -2,6 +2,18 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-16 — v1.5.219
+
+- **Die Keimphase endete im Stadium-Anzeiger an Tag 5, der Keimling kommt aber erst an Tag 4–7.** Befund der
+  Keimungs-Prüfung (Schritt 9): `stageForCycle` stufte ab Tag 6 auf „Sämling" hoch — bei einem Samen, der noch in der
+  Erde liegt. Das Stadium steuert Symbol und Beschriftung auf der Startseite; ein Anfänger liest dort „Sämling", während
+  oben steht „noch nichts zu sehen ist normal bis Tag 7". Die Grenze kommt jetzt aus `KEIMUNG.auflaufenBis` — dieselbe
+  Zahl, die Keimungskarte, Sämlings-Pflege und Lexikon nennen (keine zweite Zahl für dieselbe Sache).
+- **Der Meilenstein-Chip hieß „Erste Blätter (Cotyledons)".** „Cotyledons" ist der Fachbegriff, den ein Anfänger im
+  Notizfeld nicht schreibt — und die Keimblätter sind keine „ersten Blätter", das erste gezackte Blattpaar kommt danach.
+  Jetzt „Keimblätter offen". Damit alte Notizen weiter zählen, sucht die Prüfung auf beide Schreibweisen.
+- `test_keimung.js` um Abschnitt I erweitert (52 Prüfungen, beide Zeitzonen).
+
 ## 2026-09-16 — v1.5.218
 
 - **Tag 1 nannte einen EC-Zielwert und trug ihn als Messung ein.** Befund der Keimungs-Prüfung (Schritt 7): Startseite und

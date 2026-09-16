@@ -1923,7 +1923,10 @@ function stageForCycle(cyc, iso) {
   if (ph === 'anzucht' || ph === 'vorzucht') {
     // Subdivide germination → seedling → vegetation → pre-flower
     const dayForStage = (ph === 'vorzucht' && p.vegDay) ? p.vegDay : day;
-    if (dayForStage <= 5) return 1;                  // Keimung
+    // (v1.5.219) Die Keimung endet, wenn der Keimling die Erde durchbricht — KEIMUNG.auflaufenBis,
+    // dieselbe Zahl wie in Keimungskarte, Saemlings-Pflege und Lexikon. Vorher fest Tag 5: Der Anzeiger
+    // sagte ab Tag 6 „Saemling", waehrend der Samen noch in der Erde lag.
+    if (dayForStage <= KEIMUNG.auflaufenBis) return 1;   // Keimung
     if (dayForStage <= 14) return 2;                 // Sämling
     if (isAuto) {
       if (dayForStage <= 21) return 3;
@@ -4468,7 +4471,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.218';
+const APP_VERSION = 'v1.5.219';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -26397,9 +26400,10 @@ function getSmartQuickNotes(c, p, cd, iso) {
     if (day <= 10 && !notesAllTime.includes('Keimling sichtbar')) {
       out.push({ label: 'Keimling sichtbar', icon: '🌱', type: 'milestone' });
     }
-    // Tag 4-10: Erste Blätter
-    if (day >= 3 && day <= 10 && !notesAllTime.includes('Erste Blätter')) {
-      out.push({ label: 'Erste Blätter (Cotyledons)', icon: '🌿', type: 'milestone' });
+    // (v1.5.219) Tag 3–10: Keimblätter. Die Suche prueft beide Schreibweisen, damit schon
+    // geschriebene Notizen mit dem alten Wort weiter zaehlen und der Chip nicht wiederkommt.
+    if (day >= 3 && day <= 10 && !notesAllTime.includes('Keimblätter offen') && !notesAllTime.includes('Erste Blätter')) {
+      out.push({ label: 'Keimblätter offen', icon: '🌿', type: 'milestone' });
     }
     // Tag 7-15: Echte Blätter
     if (day >= 7 && day <= 18 && !notesAllTime.includes('Echte Blätter')) {

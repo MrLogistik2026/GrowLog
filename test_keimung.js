@@ -242,6 +242,33 @@ function pruef(name, bedingung, info) {
       /Ring um die Stelle, an der der Samen liegt/.test(h.d4.schritte) && !/Ring um den Sämling/.test(h.d4.schritte), h.d4.schritte.slice(0, 200));
   }
 
+  // (v1.5.219) Der Stadium-Anzeiger stufte ab Tag 6 auf „Sämling", obwohl der Keimling erst an Tag 4–7
+  // durchbricht. Und der Meilenstein-Chip hieß „Erste Blätter (Cotyledons)" — ein Fachbegriff, und die
+  // Keimblätter sind nicht die ersten Blätter.
+  console.log('\nI - Keimphase und Meilenstein-Chip');
+  {
+    const r9 = JSON.parse(E(`(function(){
+      S.cycles = []; S.entries = {}; S.beginnerMode = true;
+      const c = addCyc({ name: 'M', seedType: 'auto', medium: 'erde' });
+      c.startDate = '2026-06-01'; c.startMethod = 'saturated'; c.potSize = 11; saveS();
+      const stufe = (tag) => { const n = stageForCycle(c, isoPlus(c.startDate, tag - 1)); return { n, name: (typeof STAGE_NAMES !== 'undefined' && STAGE_NAMES[n]) || '' }; };
+      const chips = (tag) => { const iso = isoPlus(c.startDate, tag - 1); return getSmartQuickNotes(c, phase(iso, c), {}, iso).map(x => x.label); };
+      const chips5 = chips(5);
+      // Eine Notiz mit dem frueheren Wort: der Chip darf danach nicht wiederkommen
+      const isoAlt = isoPlus(c.startDate, 3);
+      S.entries[isoAlt] = { cycleData: { [c.id]: { notes: 'Erste Blätter (Cotyledons)' } } };
+      const chipsMitAlterNotiz = chips(5);
+      delete S.entries[isoAlt];
+      return JSON.stringify({ t5: stufe(5), t7: stufe(7), t8: stufe(8), chips5, chipsMitAlterNotiz });
+    })()`));
+    pruef('Tag 5 und Tag 7 sind noch Keimung', r9.t5.n === 1 && r9.t7.n === 1, `Tag 5 = ${r9.t5.n} ${r9.t5.name} · Tag 7 = ${r9.t7.n} ${r9.t7.name}`);
+    pruef('Tag 8 ist Sämling', r9.t8.n === 2, `Tag 8 = ${r9.t8.n} ${r9.t8.name}`);
+    pruef('Chip heißt „Keimblätter offen", nicht „Erste Blätter (Cotyledons)"',
+      r9.chips5.includes('Keimblätter offen') && !r9.chips5.some(x => /Cotyledon/.test(x)), r9.chips5.join(', '));
+    pruef('Eine Notiz mit dem früheren Wort zählt weiter — der Chip kommt nicht wieder',
+      !r9.chipsMitAlterNotiz.includes('Keimblätter offen'), r9.chipsMitAlterNotiz.join(', '));
+  }
+
   pruef('Keine JS-Fehler im Lauf', errors.length === 0, errors.slice(0, 2).join(' | '));
   console.log(`\nErgebnis: ${ok} OK, ${fail} Fehler`);
   process.exit(fail ? 1 : 0);
