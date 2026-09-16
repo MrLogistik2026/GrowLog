@@ -3467,7 +3467,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.217';
+const APP_VERSION = 'v1.5.218';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -15095,7 +15095,7 @@ function plainSentence(action, c, p, waterMl) {
   // SÄTTIGUNGSGUSS (Tag 1): klare Anleitung mit 3-Etappen-Methode
   if (action === 'saettigung') {
     const _ref = _tag1Referenz(c);
-    return `<b>Tag 1 — Sättigungsguss.</b> Misch dein Gießwasser an (${_tag1MittelText(c, todayISO())}), pH ${phTargetFor(c.medium).label}, EC ~0.6.<br>
+    return `<b>Tag 1 — Sättigungsguss.</b> Misch dein Gießwasser an (${_tag1MittelText(c, todayISO())}), pH ${phTargetFor(c.medium).label}, EC höchstens 0,6 — ohne Dünger misst du dabei nur dein Leitungswasser.<br>
 <b>3 Etappen je ~${waterMl > 0 ? Math.max(50, Math.round(_jeTopf(waterMl) / 3 / 50) * 50) : 250} ml${_n > 1 ? ' je Topf' : ''} mit 15 min Pause</b> — verhindert, dass das Wasser nur Kanäle in das trockene Substrat gräbt (Channeling). Kreisförmig von außen nach innen, nie auf den Samen.${_ref ? ' ' + _ref + '.' : ''}`;
   }
   // SPRÜH-PHASE (Tag 2–8): NICHT gießen!
@@ -15108,7 +15108,7 @@ function plainSentence(action, c, p, waterMl) {
     }
     return isOutdoor
       ? `Prüf kurz den Topf — ist er leicht, gib ${_jeTopfWort}etwa <b>${_jeTopf(waterMl)} ml</b> lauwarmes Wasser${_zusammen(waterMl)} in einem Ring um die Pflanze.`
-      : `Gib ${_wem} heute ganz vorsichtig etwa <b>${_jeTopf(waterMl)} ml</b> lauwarmes Wasser${_zusammen(waterMl)} — nicht direkt auf den Stängel, sondern drumherum.`;
+      : `Gib ${_wem} heute ganz vorsichtig etwa <b>${_jeTopf(waterMl)} ml</b> lauwarmes Wasser${_zusammen(waterMl)} — ${(p && p.day <= KEIMUNG.auflaufenBis) ? 'im Ring um die Stelle, an der der Samen liegt' : 'nicht direkt auf den Stängel, sondern drumherum'}.`;
   }
   if (action === 'giess') {
     if (isVegiOut) {
@@ -15259,9 +15259,10 @@ function getTodayAction(c, p, a, iso) {
       icon: '💦',
       color: cl.hex,
       steps: [
-        `Wasser anmischen: pH ${pht.mid.toFixed(1)}, EC ~0.6 — ${_tag1MittelText(c, iso)}`,
+        `Wasser anmischen: pH ${pht.mid.toFixed(1)}, EC höchstens 0,6 — ${_tag1MittelText(c, iso)}`,
         `<b>${satMl} ml in 3 Etappen</b> zu je ~${etappe} ml, dazwischen jeweils 15 min Pause`,
         'Kreisförmig von außen nach innen gießen — nie direkt auf den Samen',
+        'Säst du direkt in die Erde: den Samen erst nach dem letzten Durchgang legen.',
         _tag1Referenz(c),
       ].filter(Boolean),
       hint: 'Ab morgen bis Tag 8 wird nicht mehr gegossen, nur gesprüht — das ist Absicht. Der Sämling hat noch kaum Wurzeln.',
@@ -15306,7 +15307,9 @@ function getTodayAction(c, p, a, iso) {
         activeDoses.length > 0 ? `Dünger laut Plan (Woche ${fertWk}): ${activeDoses.length} Produkt${activeDoses.length === 1 ? '' : 'e'} — Mengen im Eintrag` : 'Laut Plan diese Woche kein Dünger',
       ] : [
         `Ca. <b>${waterMl} ml</b> lauwarmes Wasser (pH ${pht.mid.toFixed(1)})`,
-        p.day <= 5 ? 'Ring um den Sämling, nicht direkt drauf' : 'Radius allmählich vergrößern',
+        p.day <= KEIMUNG.auflaufenBis ? 'Ring um die Stelle, an der der Samen liegt — nicht direkt darauf'
+          : p.day <= 10 ? 'Ring um den Keimling, nicht direkt drauf'
+          : 'Radius allmählich vergrößern',
         activeDoses.length > 0 ? `Dünger laut Plan (Woche ${fertWk}): ${activeDoses.length} Produkt${activeDoses.length === 1 ? '' : 'e'} — Mengen im Eintrag` : 'Laut Plan diese Woche kein Dünger',
       ],
       hint: isVorzucht
@@ -15314,7 +15317,9 @@ function getTodayAction(c, p, a, iso) {
         : isOutdoor
         ? 'Outdoor: Regen zählt! Nach Regentag lieber 1–2 Tage warten.'
         : (p.day <= 10
-          ? 'Erde am Keimling feucht, nicht nass — der Rest des Topfs darf oben antrocknen.'
+          ? ((typeof getAction === 'function' && getAction(isoPlus(iso, -1), c) === 'sprueh')
+              ? `Noch kein Keimling zu sehen? Heute nicht gießen — nur die Stelle am Samen feucht halten und ab Tag ${KEIMUNG.nachsehenAbTag} vorsichtig nachsehen. Steht er schon: Erde am Keimling feucht, nicht nass.`
+              : 'Erde am Keimling feucht, nicht nass — der Rest des Topfs darf oben antrocknen.')
           : 'Erde leicht feucht, nicht nass. Obere 1–2 cm dürfen antrocknen.'),
     };
   }
@@ -30045,7 +30050,9 @@ function getAutoFillTemplate(c, p, a, iso) {
     const waterMl = waterSuggestion(c, p, iso);
     tpl.water = String(waterMl);
     tpl.ph = pht.mid.toFixed(1);
-    tpl.ec = '0.6';   // oberes Ende des Sämlings-Bereichs nach ANBAU.md 5 (0,4–0,6)
+    // (v1.5.218) Kein EC eintragen: Das waere ein erfundener Messwert (ANBAU.md 15 — „Messwerte werden nie
+    // geschaetzt und eingetragen"). Das Ziel „hoechstens 0,6" steht im Text daneben, als Vorgabe statt Eintrag.
+    tpl.ec = '';
     // Restgewicht nach Sättigung = 100% (das ist genau der Punkt für die Referenz)
     tpl.liftAfterPct = 100;
     // Dosen: aus dem Plan, aber vorsichtig

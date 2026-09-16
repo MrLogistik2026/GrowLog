@@ -2,6 +2,24 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-16 — v1.5.218
+
+- **Tag 1 nannte einen EC-Zielwert und trug ihn als Messung ein.** Befund der Keimungs-Prüfung (Schritt 7): Startseite und
+  Tageskarte sagten „EC ~0.6", und „Tag automatisch ausfüllen" schrieb `0.6` ins EC-Feld. Beides ist falsch herum: 0,6 ist
+  die **Obergrenze** des Sämlings-Bereichs (`ANBAU.md` 5), keine anzustrebende Zahl — und ohne Dünger misst man an Tag 1
+  nur das Leitungswasser (bei Patrick 0,22 mS/cm). Ein eingetragener Wert, den niemand gemessen hat, fließt danach als
+  Messung in Verlauf und Diagramm (`ANBAU.md` 15: „Messwerte werden nie geschätzt und eingetragen").
+- **Jetzt:** „EC höchstens 0,6 — ohne Dünger misst du dabei nur dein Leitungswasser." Das Ausfüllen lässt das EC-Feld leer.
+- **Die Reihenfolge bei Direktsaat fehlte.** Der Sättigungsguss läuft in drei Durchgängen; wer den Samen vorher legt,
+  schwemmt ihn frei oder tiefer. Neuer Schritt: „Säst du direkt in die Erde: den Samen erst nach dem letzten Durchgang legen."
+- **„Ring um den Sämling" gibt es vor dem Durchbruch nicht.** Bis Tag 7 (`KEIMUNG.auflaufenBis`) steht dort nur Erde;
+  die Anleitung nennt jetzt „die Stelle, an der der Samen liegt", danach den Keimling, später den größeren Radius.
+- **Am ersten Guss nach der Sprüh-Phase fehlte die wichtigste Bedingung** (Schritt 8): Ist an Tag 9 noch kein Keimling da,
+  ist Gießen der gefährlichste Schritt — nasse Erde ohne aufnehmende Wurzel ist die Pythium-Bedingung (`ANBAU.md` 13.1).
+  Der Hinweis erscheint genau an diesem einen Tag, erkannt daran, dass gestern noch gesprüht wurde — nicht an einer festen
+  Tagesnummer, damit er auch nach einer Verschiebung am richtigen Tag steht.
+- `test_keimung.js` um Abschnitt H erweitert (48 Prüfungen, beide Zeitzonen).
+
 ## 2026-09-16 — v1.5.217
 
 - **Der Gieß-Tipp im Eintrag folgt der Aktion und der Menge, nicht dem Tag.** Befund der Keimungs-Prüfung (Schritt 5),

@@ -206,6 +206,42 @@ function pruef(name, bedingung, info) {
       Object.entries(proMenge).map(([m, v]) => m + '→' + [...v].join('/')).join(' · '));
   }
 
+  // (v1.5.218) Tag 1 nannte „EC ~0.6" als Ziel und trug beim Ausfüllen 0.6 als Messwert ein; die
+  // Reihenfolge bei Direktsaat fehlte; „Ring um den Sämling" stand vor dem Durchbruch; und am ersten
+  // Guss nach der Sprüh-Phase fehlte der Hinweis, bei fehlendem Keimling nicht zu gießen.
+  console.log('\nH - Tag 1 und der erste Guss nach der Sprüh-Phase');
+  {
+    const h = JSON.parse(E(`(function(){
+      S.cycles = []; S.entries = {}; S.beginnerMode = true;
+      const c = addCyc({ name: 'M', seedType: 'auto', medium: 'erde' });
+      c.startDate = '2026-06-01'; c.startMethod = 'saturated'; c.potSize = 11; saveS();
+      const bei = (cyc, tag) => { const iso = isoPlus(cyc.startDate, tag - 1); setDebugDate(iso);
+        const p = phase(iso, cyc), a = getAction(iso, cyc);
+        return { a, satz: plainSentence(a, cyc, p, waterSuggestion(cyc, p)) || '',
+          karte: getTodayAction(cyc, p, a, iso) || {}, tpl: getAutoFillTemplate(cyc, p, a, iso) || {} }; };
+      const t1 = bei(c, 1), t9 = bei(c, 9), t12 = bei(c, 12);
+      S.cycles = []; S.entries = {};
+      const d = addCyc({ name: 'D', seedType: 'auto', medium: 'erde' });
+      d.startDate = '2026-06-01'; d.startMethod = 'direct'; d.potSize = 11; saveS();
+      const d4 = bei(d, 4);
+      return JSON.stringify({
+        t1: { a: t1.a, satz: t1.satz, schritte: (t1.karte.steps || []).join(' | '), ec: String(t1.tpl.ec) },
+        t9: { a: t9.a, hint: t9.karte.hint || '' },
+        t12: { a: t12.a, hint: t12.karte.hint || '' },
+        d4: { a: d4.a, schritte: (d4.karte.steps || []).join(' | ') },
+      });
+    })()`));
+    pruef('Tag 1: EC als Obergrenze mit Begründung, nicht „EC ~0.6" als Ziel',
+      /EC höchstens 0,6/.test(h.t1.satz) && /nur dein Leitungswasser/.test(h.t1.satz) && !/EC ~0\.6/.test(h.t1.satz + h.t1.schritte), h.t1.satz.slice(0, 150));
+    pruef('Tag 1: „Tag ausfüllen" trägt keinen EC ein (kein erfundener Messwert)', h.t1.ec === '', 'ec=' + h.t1.ec);
+    pruef('Tag 1: Direktsaat — Samen erst nach dem letzten Durchgang', /Säst du direkt in die Erde: den Samen erst nach dem letzten Durchgang/.test(h.t1.schritte), h.t1.schritte.slice(0, 200));
+    pruef('Tag 9 (erster Guss nach der Sprüh-Phase): ohne Keimling heute nicht gießen',
+      h.t9.a === 'giess_anz' && /Noch kein Keimling zu sehen\? Heute nicht gießen/.test(h.t9.hint) && /ab Tag 10 vorsichtig nachsehen/.test(h.t9.hint), h.t9.hint);
+    pruef('Tag 12: derselbe Satz steht nicht noch einmal', h.t12.a === 'giess_anz' && !/Noch kein Keimling zu sehen/.test(h.t12.hint), h.t12.hint);
+    pruef('Vor dem Durchbruch: „Ring um die Stelle, an der der Samen liegt" statt „Ring um den Sämling"',
+      /Ring um die Stelle, an der der Samen liegt/.test(h.d4.schritte) && !/Ring um den Sämling/.test(h.d4.schritte), h.d4.schritte.slice(0, 200));
+  }
+
   pruef('Keine JS-Fehler im Lauf', errors.length === 0, errors.slice(0, 2).join(' | '));
   console.log(`\nErgebnis: ${ok} OK, ${fail} Fehler`);
   process.exit(fail ? 1 : 0);
