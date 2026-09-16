@@ -2,6 +2,27 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-16 — v1.5.233
+
+- **Die Anfänger-Schnellhilfe riet bei Magnesium-Mangel zu Calcium.** Gefunden beim Nachsehen zu v1.5.232, sofort
+  mitbehoben. In `SYMPTOMS` — der Karten-Liste, die ein Anfänger unter „Gelbe Blätter" zuerst sieht — stand:
+  „CalMag dazu — immer zuerst ins Wasser!". Zwei Fehler in einem Satz.
+- **Erstens die Richtung.** Nach `ANBAU.md` 6.2 fehlt in der Blüte meist gar nicht Magnesium — ein Kalium-Booster
+  verdrängt es an der Wurzel, und Calcium verdrängt es zusätzlich. Genau diesen Fehler hat v1.5.107 in der
+  Diagnose-Datenbank behoben („Erst die Ursache, dann das Mittel"); die Schnellhilfe, die **vor** der Diagnose
+  gelesen wird, sagte weiter das Gegenteil. Sie nennt jetzt dieselbe Reihenfolge: Booster zurück, pH prüfen,
+  dann Bittersalz.
+- **Zweitens die Mischregel.** „Immer zuerst ins Wasser" ist falsch, sobald der Plan ein Silikat führt — Silikat
+  ist stark alkalisch und fällt mit Calcium als Calciumsilikat aus (`ANBAU.md` 10); der cup_sieger-Plan sagt an
+  eigener Stelle „Silica Force IMMER ZUERST". Das ist wörtlich der Befund aus v1.5.109 an einer Stelle, die
+  damals niemand mitgesucht hat. Die Mischreihenfolge gehört zum Plan, nicht auf eine Symptom-Karte — sie steht
+  dort jetzt gar nicht mehr, und die Tipps-Karte sagt sie seit v1.5.109 plan-abhängig richtig.
+- **Dazu die Unterscheidung, die vorher fehlte:** Der Text sagt jetzt, dass das Bild **unten** anfängt, weil die
+  Pflanze Magnesium aus alten Blättern abzieht (`ANBAU.md` 6.1). Das ist das Kriterium, das Magnesium von
+  Calcium trennt — ohne es ist die Karte nicht entscheidbar.
+- `test_naehrstoffort.js` erweitert (beide Zeitzonen): Die Schnellhilfe darf nicht mehr CalMag gegen
+  Magnesium-Mangel empfehlen, keine feste Mischreihenfolge nennen, und muss den Ort nennen.
+
 ## 2026-09-16 — v1.5.232
 
 - **Das Lexikon riet bei Kalium-Überschuss zu mehr Calcium.** Letzter Befund der Gruppe A (UEBERGABE 0n). Der

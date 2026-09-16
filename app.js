@@ -3472,7 +3472,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.232';
+const APP_VERSION = 'v1.5.233';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -5790,7 +5790,7 @@ const SYMPTOMS = [
         heading: 'Fleckig/zwischen Adern gelb, Adern grün',
         verdict: '⚠ Magnesium-Mangel',
         color: 'var(--orange)',
-        text: 'Typisches Bild: Blätter werden zwischen den Adern gelb, Adern bleiben grün (<i>Intervenalchlorose</i>). <b>Lösung:</b> CalMag dazu — immer zuerst ins Wasser!',
+        text: 'Typisches Bild: Blätter werden zwischen den Adern gelb, Adern bleiben grün (<i>Intervenalchlorose</i>) — und es fängt <b>unten</b> an, weil die Pflanze Magnesium aus alten Blättern abzieht. <b>Lösung:</b> In der Blüte fehlt meist gar nicht Magnesium: Ein Kalium-Booster (PK 13/14, MKP) verdrängt es an der Wurzel. Erst den Booster aussetzen oder reduzieren, dann den pH prüfen, und erst danach gezielt Bittersalz geben. Mehr CalMag ist hier die falsche Richtung — Calcium verdrängt Magnesium zusätzlich.',
         when: 'Alle Phasen',
         lex: 'CalMag',
       },

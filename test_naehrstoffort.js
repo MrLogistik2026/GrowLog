@@ -73,6 +73,22 @@ const { loadApp } = require('./harness.js');
   ok(w._diagWort('location', 'gibtesnicht') === 'gibtesnicht', 'Unbekannter Schluessel faellt sauber zurueck');
   ok(w._phasenWort('bloom') === 'Blüte', 'Phasenname kommt aus PN');
 
+  // (v1.5.233) Dieselbe Frage wird an zwei Orten beantwortet: in PROBLEMS (Diagnose, oben geprueft)
+  // und in SYMPTOMS — den Schnellhilfe-Karten, die ein Anfaenger ZUERST sieht. Die Karte zum
+  // Magnesium-Mangel riet zu CalMag und zu einer festen Mischreihenfolge. Beides war falsch
+  // (ANBAU.md 6.2 und 10); die Diagnose sagte seit v1.5.107 laengst das Richtige.
+  console.log('\n--- Schnellhilfe-Karten (SYMPTOMS) gegen die Diagnose ---');
+  const SYM = JSON.parse(w.eval('JSON.stringify(SYMPTOMS)'));
+  const karten = SYM.reduce((a, g) => a.concat((g.causes || []).map(c => Object.assign({ gruppe: g.id }, c))), []);
+  const mgK = karten.find(k => /Magnesium-Mangel/.test(k.verdict || ''));
+  ok(!!mgK, 'Es gibt eine Schnellhilfe-Karte "Magnesium-Mangel"');
+  ok(!!mgK && !/CalMag dazu/.test(mgK.text), 'Sie raet nicht mehr zu CalMag gegen Magnesium-Mangel');
+  ok(!!mgK && /Kalium/.test(mgK.text), 'Sie nennt Kalium als die haeufigere Ursache in der Bluete (ANBAU 6.2)');
+  ok(!!mgK && /Bittersalz/.test(mgK.text), 'Sie nennt Bittersalz als Mittel, und erst nach der Ursache');
+  ok(!!mgK && /unten/.test(mgK.text), 'Sie nennt den Ort: unten, weil Magnesium beweglich ist (ANBAU 6.1)');
+  ok(!!mgK && !/immer zuerst ins Wasser/.test(mgK.text),
+     'Keine feste Mischreihenfolge mehr auf der Karte — die gehoert zum Plan (ANBAU 10, v1.5.109)');
+
   console.log('\n' + (fail.length ? 'FEHLGESCHLAGEN: ' + fail.length : 'ALLE PRUEFUNGEN GRUEN') + '  (TZ=' + (process.env.TZ || 'System') + ')');
   process.exit(fail.length ? 1 : 0);
 })();
