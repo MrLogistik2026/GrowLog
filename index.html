@@ -3660,7 +3660,7 @@ const FERT_PRESETS = {
       8:  { phase: 'Reifung I', tip: 'A+B reduzieren. Reine Reifung.' },
       9:  { phase: 'Reifung II', tip: 'Trichome checken. CANNAZYM weiterführen.' },
       10: { phase: 'Spülung',   tip: '7 Tage spülen mit reinem CalMag-Wasser. Das Spülende setzt der Plan, nicht der Drain-EC.' },
-      11: { phase: 'Hard Dryback', tip: 'Coco trocknen lassen — geht schneller als Erde, Vorsicht.' },
+      11: { phase: 'Hard Dryback', tip: 'Nicht mehr gießen, bis der Topf den Gießpunkt erreicht (Hebe-Test „' + GIESSPUNKT.coco.knopf + '"). Coco trocknet schneller als Erde — darunter meldet die App „Zu trocken für Coco". Vorbereitung IceFlush oder Ernte.' },
       12: { phase: 'Ernte',     tip: 'Ernte beim Lichtangang. Trichom-Profil bestimmt Zeitpunkt.' },
     },
     products: [
@@ -3711,7 +3711,7 @@ const FERT_PRESETS = {
       8:  { phase: 'Reifung I', tip: 'Bloom maximal, Grow ausschleichen.' },
       9:  { phase: 'Reifung II', tip: 'Ripen startet (letzte 2 Wochen vor Spülung).' },
       10: { phase: 'Spülung',  tip: 'Reines Wasser mit pH 6.0. Salze raus.' },
-      11: { phase: 'Hard Dryback', tip: 'Trocknen lassen, Ernte vorbereiten.' },
+      11: { phase: 'Hard Dryback', tip: 'Nicht mehr gießen, bis der Topf den Gießpunkt erreicht (Hebe-Test „' + GIESSPUNKT.coco.knopf + '"). Coco trocknet schneller als Erde — darunter meldet die App „Zu trocken für Coco". Vorbereitung IceFlush oder Ernte.' },
       12: { phase: 'Ernte',    tip: 'Ernte beim Lichtangang.' },
     },
     products: [
@@ -4473,7 +4473,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.226';
+const APP_VERSION = 'v1.5.227';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,

@@ -2,6 +2,21 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-16 — v1.5.227
+
+- **Beide Coco-Pläne schickten in Woche 11 ins Trockenlaufen — vor genau dem warnt die App bei Coco.** Dritter
+  Befund der Gruppe A (UEBERGABE 0n). `canna_coco` sagte „Coco trocknen lassen — geht schneller als Erde,
+  Vorsicht", `ghe_flora` „Trocknen lassen, Ernte vorbereiten". Seit v1.5.200 hat Coco aber einen **eigenen
+  Gießpunkt** (`GIESSPUNKT.coco`, Hebe-Test „Mittel", Anker 70 %): Unter 60 % Restgewicht meldet
+  `classifyRestPct` „Zu trocken für Coco", unter 40 % Wasserstress. Coco verzeiht Austrocknen schlecht
+  (`ANBAU.md` 7.1) — und „Vorsicht" ist keine Grenze, an der man etwas ablesen kann.
+- **Die Erd-Pläne wurden bei v1.5.200 umgestellt, die Coco-Pläne nicht.** Sie sagen seither „Nicht mehr gießen,
+  bis der Topf den Gießpunkt erreicht (Hebe-Test „Knapp")". Genau diesen Satz bekommen die beiden Coco-Pläne
+  jetzt auch — mit ihrem eigenen Knopf, **interpoliert aus `GIESSPUNKT.coco.knopf`** statt geschrieben, damit er
+  der Quelle folgt. Dazu der Grund, den die App ohnehin kennt: darunter meldet sie „Zu trocken für Coco".
+- `test_duengeplantexte.js` um Abschnitt C erweitert (21 Prüfungen, beide Zeitzonen). Er prüft auch, dass der
+  Erd-Plan weiter „Knapp" sagt — die Quelle unterscheidet die beiden Substrate, nicht ein abgeschriebener Text.
+
 ## 2026-09-16 — v1.5.226
 
 - **Der Cup-Sieger-Plan kündigte ein Mittel an, das er gar nicht dosiert.** Zweiter Befund der Gruppe A (UEBERGABE 0n).

@@ -149,6 +149,25 @@ function pruef(name, bedingung, info) {
       (r.lex.match(/.{0,60}GiDeli.{0,80}/) || [''])[0]);
   }
 
+  // (v1.5.227) Seit v1.5.200 hat Coco einen eigenen Gießpunkt (Hebe-Test „Mittel"); unter 60 % Restgewicht
+  // meldet die App „Zu trocken für Coco". Die Erd-Pläne wurden damals umgestellt, die beiden Coco-Pläne nicht —
+  // sie sagten „Coco trocknen lassen — geht schneller als Erde, Vorsicht" bzw. „Trocknen lassen".
+  console.log('\nC - Die Coco-Pläne kennen den Coco-Gießpunkt');
+  {
+    const r = JSON.parse(E(`(function(){
+      const w11 = (k) => String((((FERT_PRESETS[k] || {}).weekFocus || {})[11] || {}).tip || '');
+      return JSON.stringify({ coco: w11('canna_coco'), ghe: w11('ghe_flora'), erde: w11('biobizz_konservativ'),
+        knopfCoco: GIESSPUNKT.coco.knopf, knopfErde: GIESSPUNKT.erde.knopf });
+    })()`));
+    const cocoOk = (t) => new RegExp('Hebe-Test „' + r.knopfCoco + '"').test(t) && /Zu trocken für Coco/.test(t) && !/trocknen lassen/i.test(t);
+    pruef(`canna_coco Woche 11 nennt den Coco-Gießpunkt („${r.knopfCoco}")`, cocoOk(r.coco), r.coco);
+    pruef(`ghe_flora Woche 11 ebenso`, cocoOk(r.ghe), r.ghe);
+    pruef(`Der Erd-Plan bleibt beim Erd-Gießpunkt („${r.knopfErde}") — die Quelle unterscheidet die beiden`,
+      new RegExp('Hebe-Test „' + r.knopfErde + '"').test(r.erde), r.erde);
+    pruef('Im Quelltext lädt kein Plan mehr zum Trockenlaufen ein',
+      !/Coco trocknen lassen/.test(code) && !/'Trocknen lassen, Ernte vorbereiten\.'/.test(code));
+  }
+
   pruef('Keine JS-Fehler im Lauf', errors.length === 0, errors.slice(0, 2).join(' | '));
   console.log(`\nErgebnis: ${ok} OK, ${fail} Fehler`);
   process.exit(fail ? 1 : 0);
