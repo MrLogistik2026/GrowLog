@@ -2,6 +2,26 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-16 — v1.5.235
+
+- **Es gab zwei Magnesium-Karten, und v1.5.233 hat nur die erste berichtigt.** Die zweite steht unter den
+  blass/hellgrünen Bildern und sagte weiter „CalMag dazu, immer zuerst ins Wasser."
+- **Wie das passieren konnte, und was daraus folgt:** Meine Suche lief über `karten.find(…)` — und `find`
+  liefert die **erste** Fundstelle. Gefunden hat die zweite erst die Gegenprobe über **alle** Karten
+  (`karten.some`), die für v1.5.234 dazukam. Das ist die Lehre aus v1.5.229 in neuer Form: Dort war es eine
+  andere Schreibweise, hier dieselbe Schreibweise an zweiter Stelle. **Zu jeder Text-Berichtigung gehört eine
+  Prüfung, die zählt statt zu suchen.**
+- Diese Karte war besser als die erste — sie sagte immerhin „Aber zuerst: pH prüfen" —, hatte aber denselben
+  falschen Rat: CalMag gegen Magnesium-Mangel (`ANBAU.md` 6.2, Calcium ist selbst ein Mg-Gegenspieler) und die
+  feste Mischregel (`ANBAU.md` 10). Sie nennt jetzt dieselbe nummerierte Reihenfolge wie die Diagnose:
+  pH → Kalium-Booster zurück → Bittersalz.
+- **Dazu eine feste Zahl, die nur für die Hälfte der Nutzer stimmte:** „unter 6.0 wird Magnesium blockiert" gilt
+  für Erde; in Coco führt die App 5,8–6,2, dort wäre 5,9 kein Fehler. `SYMPTOMS` sind statische Texte, in die
+  sich `phTargetFor` nicht einsetzen lässt — die Karte nennt deshalb „das Ziel deines Substrats" statt einer
+  Zahl. Dieselbe Frage wie in v1.5.231, nur ohne die Möglichkeit zu interpolieren.
+- `test_naehrstoffort.js`: Die geparkte Gegenprobe ist wieder drin und gilt jetzt für **alle** Karten — keine
+  darf eine feste Mischreihenfolge nennen, keine „CalMag dazu" gegen Magnesium raten.
+
 ## 2026-09-16 — v1.5.234
 
 - **Die Anfänger-Karte zum Calcium-Mangel schickte an das falsche Ende der Pflanze.** Sie hieß „Rost-farbene

@@ -99,6 +99,25 @@ const { loadApp } = require('./harness.js');
   ok(!!caK && /Verdunstungsstrom/.test(caK.text), 'Sie nennt den Transportweg (ANBAU 1)');
   ok(!!caK && /Umluft und Luftfeuchte pr(ü|ue)fen, dann den pH, und erst danach CalMag/.test(caK.text),
      'Reihenfolge wie in der Diagnose: erst Klima, dann pH, dann CalMag');
+  // (v1.5.235) Es gibt ZWEI Magnesium-Karten in SYMPTOMS, in verschiedenen Symptom-Gruppen.
+  // v1.5.233 hat nur die erste berichtigt, weil die Suche mit find lief — und find nimmt die erste
+  // Fundstelle. Deshalb zaehlen diese Pruefungen ueber ALLE Karten, statt eine zu suchen.
+  console.log('\n--- Gegenprobe ueber alle Karten, nicht nur die erste ---');
+  const mgAlle = karten.filter(k => /Magnesium-Mangel/.test(k.verdict || ''));
+  ok(mgAlle.length === 2, 'Es gibt zwei Magnesium-Karten (gefunden: ' + mgAlle.length + ')');
+  ok(mgAlle.length > 0 && mgAlle.every(k => /Bittersalz/.test(k.text || '')),
+     'Beide nennen Bittersalz als Mittel, nicht CalMag');
+  ok(mgAlle.length > 0 && mgAlle.every(k => /Kalium/.test(k.text || '')),
+     'Beide nennen den Kalium-Antagonismus als haeufigere Ursache (ANBAU 6.2)');
+  ok(!karten.some(k => /CalMag dazu/.test(k.text || '')),
+     'Keine Karte raet mehr "CalMag dazu" gegen Magnesium-Mangel');
+  ok(!karten.some(k => /immer zuerst ins Wasser/.test(k.text || '')),
+     'Keine einzige Karte nennt mehr eine feste Mischreihenfolge (ANBAU 10, v1.5.109)');
+  ok(!karten.some(k => /unter 6\.0 wird Magnesium blockiert/.test(k.text || '')),
+     'Keine feste pH-Zahl mehr — das Ziel haengt am Substrat (phTargetFor)');
+  ok(mgAlle.some(k => /Ziel deines Substrats/.test(k.text || '')),
+     'Stattdessen steht dort das pH-Ziel des jeweiligen Substrats');
+
   console.log('\n' + (fail.length ? 'FEHLGESCHLAGEN: ' + fail.length : 'ALLE PRUEFUNGEN GRUEN') + '  (TZ=' + (process.env.TZ || 'System') + ')');
   process.exit(fail.length ? 1 : 0);
 })();
