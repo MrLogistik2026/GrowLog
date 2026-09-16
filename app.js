@@ -3467,7 +3467,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.215';
+const APP_VERSION = 'v1.5.216';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -27693,11 +27693,15 @@ function renderEntry(iso) {
         2: _germ === 'water' ? { do: `${_gs[1]} ${_gs[2]}`, avoid: 'Den Samen länger im Wasser lassen, als oben steht — er erstickt.' }
           : _germ === 'paper' ? { do: `${_gs[2]} ${_gs[3]}`, avoid: 'Die Tücher austrocknen lassen oder die Keimwurzel anfassen.' }
           : { do: `${_gs[1]} ${_gs[2]}`, avoid: 'Erde aufgraben um zu schauen ob der Samen schon keimt.' },
-        3: { do: 'Beobachten ob Keimblätter durchbrechen. Licht bereitstellen (gedimmt!).', avoid: 'Volle Lampenpower, starkes Sprühen.' },
-        4: { do: 'Wenn Keimling sichtbar: Lampe an, ~50% Power, 30–40cm Abstand.', avoid: 'Gießkanne mit vollem Strahl — nur Sprühflasche oder dünnen Strahl.' },
-        5: { do: 'Erste echte Blätter zeigen sich bald. Weiter sprühen statt gießen.', avoid: 'Mehr Dünger, als der Plan vorsieht — der Sämling lebt noch von den Keimblättern.' },
+        3: _germ === 'paper'
+          ? { do: `Noch keine Keimwurzel? Tücher feucht halten. Ist sie ${KEIMUNG.wurzelMmVon}–${KEIMUNG.wurzelMmBis} mm lang: heute einsetzen.`, avoid: 'Warten, bis die Wurzel länger ist — je länger sie wird, desto leichter bricht sie beim Einsetzen.' }
+          : { do: 'Der Samen liegt in der Erde. Die Stelle über ihm feucht halten — zu sehen ist noch nichts, und das ist normal.', avoid: 'Zum Nachsehen ausgraben oder die Erde am Samen austrocknen lassen.' },
+        4: { do: `Keimling sichtbar? Dann Licht an, gedimmt, 30–40 cm Abstand. Noch nichts zu sehen? Normal bis Tag ${KEIMUNG.auflaufenBis}.`, avoid: 'Einen durchgebrochenen Keimling ohne Licht stehen lassen — er schießt dünn in die Höhe.' },
+        5: ((c.startMethod || 'saturated') === 'saturated')
+          ? { do: 'Keimblätter offen? Weiter nur die Stelle am Keimling besprühen — gegossen wird erst ab Tag 9.', avoid: 'Mehr Dünger, als der Plan vorsieht — der Sämling lebt noch von den Keimblättern.' }
+          : { do: 'Keimblätter offen? Gib nur die kleine Menge, die oben steht, und nur im Ring um den Keimling.', avoid: 'Mehr Dünger, als der Plan vorsieht — der Sämling lebt noch von den Keimblättern.' },
         6: { do: 'Lichtabstand prüfen: Sämling streckt sich = zu wenig Licht / zu weit weg.', avoid: 'Topf direkt unter Lampe ohne Wärme-Check.' },
-        7: { do: 'Erste richtige Blätter da! Vorsichtig stärkeres Licht, ggf. mehr Power.', avoid: 'Hektisch nachdüngen — mehr, als der Plan vorsieht, braucht er nicht.' }
+        7: { do: `Noch kein Keimling? Heute abwarten — erst ab Tag ${KEIMUNG.nachsehenAbTag} vorsichtig nachsehen. Steht er schon: als Nächstes kommt das erste gezackte Blattpaar.`, avoid: 'Nachdüngen — mehr, als der Plan vorsieht, braucht er nicht.' }
       };
       const hint = dayHints[p.day] || { do: 'Beobachten, dokumentieren, geduldig bleiben. Sämlinge wachsen langsam.', avoid: 'Mehr düngen, als der Plan vorsieht, oder umtopfen.' };
       // (v1.5.159) Die Dünger-Zeile liest den Plan dieses Zyklus. Vorher stand hier fest „Frühestens Tag 10–14,
@@ -27718,8 +27722,8 @@ function renderEntry(iso) {
         <div style="font-size:12px;color:var(--text-sub);line-height:1.5;margin-bottom:10px"><b style="color:var(--orange)">⛔ Vermeiden:</b> ${hint.avoid}</div>
         <div style="padding:8px 10px;background:rgba(0,0,0,0.2);border-radius:8px;font-size:11px;color:var(--text-sub);line-height:1.55">
           <b style="color:var(--text)">💡 Sämling-Grundregeln:</b><br>
-          • <b>Klima:</b> 22–26°C · 65–75% RLF · VPD 0.4–0.8 kPa<br>
-          • <b>Wasser:</b> Erste Tage (Keimung) mit Sprühflasche befeuchten. Sobald der Sämling steht: feine Gießkanne, dünner Strahl im Ring (~50–150 ml, steigt mit jedem Guss). Erde feucht halten, NICHT nass.<br>
+          • <b>Klima:</b> ${KLIMA_ZIEL.saemling.temp[0]}–${KLIMA_ZIEL.saemling.temp[1]} °C · ${_klimaRlfSpanne(klimaRlfFenster(KLIMA_ZIEL.saemling, NaN))} RLF · VPD ${KLIMA_ZIEL.saemling.vpd[0]}–${KLIMA_ZIEL.saemling.vpd[1]} kPa<br>
+          • <b>Wasser:</b> Bis der Keimling steht, nur die Stelle am Samen feucht halten — mit der Sprühflasche. Danach feine Gießkanne, dünner Strahl im Ring; die Menge für jeden Gießtag steht oben im Eintrag. Erde feucht halten, NICHT nass.<br>
           • <b>Dünger:</b> ${_saemDuenger}<br>
           • <b>Licht:</b> 30–50cm Abstand, 50–70% Power. Sämling streckt sich → zu wenig Licht.<br>
           • <b>pH:</b> ${phTargetFor(c.medium).label} — das Ziel für ${c.medium === 'coco' ? 'Coco' : (c.medium === 'hydro' ? 'Hydro' : 'Erde')}

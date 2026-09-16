@@ -2,6 +2,23 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-16 — v1.5.216
+
+- **Die Sämlings-Pflege beschreibt, was an diesem Tag wirklich passiert.** Befund der Keimungs-Prüfung (Schritt 4): Die Box
+  im Tageseintrag sagte an **Tag 3** „Beobachten ob Keimblätter durchbrechen" — nach `KEIMUNG` kommt der Keimling erst an
+  Tag 4–7, an Tag 3 ist nichts zu sehen. Genau das ist der Tag, an dem Anfänger nachgraben. An **Tag 5** stand „Erste echte
+  Blätter zeigen sich bald", an **Tag 7** „Erste richtige Blätter da!" — als Tatsache, während der Keimling an Tag 7 gerade
+  erst durchbricht. Wer der Box glaubt und nichts sieht, hält seinen Grow für gescheitert.
+- **Jetzt:** Tag 3 unterscheidet Papiertuch (Keimwurzel 2–5 mm → heute einsetzen) vom Samen in der Erde („zu sehen ist noch
+  nichts, und das ist normal"). Tag 4 sagt, dass bis Tag 7 nichts zu sehen normal ist. Tag 5 folgt dem Start-Weg: vorbefeuchtet wird bis Tag 9
+  gesprüht, ohne Vorbefeuchten steht die Menge oben im Eintrag. Tag 7 sagt „ab Tag 10 vorsichtig nachsehen" statt Blätter zu
+  versprechen. Alle Zahlen aus `KEIMUNG`.
+- **Zwei feste Zahlen in den Grundregeln derselben Box mitbehoben:** „65–75 % RLF" stand neben einer App, die das
+  Feuchte-Fenster seit v1.5.187 aus Temperatur und VPD rechnet (`KLIMA_ZIEL.saemling`, `klimaRlfFenster`) — eine vierte
+  Zahl für dieselbe Frage. Und „~50–150 ml, steigt mit jedem Guss" stand als Faustzahl neben der Menge, die die App seit
+  v1.5.205 aus Topf und Substrat rechnet und im selben Eintrag darüber anzeigt.
+- `test_keimung.js` um Abschnitt F erweitert (37 Prüfungen, beide Zeitzonen).
+
 ## 2026-09-16 — v1.5.215
 
 - **Der Sprüh-Auslöser fragt die Erde am Samen, nicht die obersten 1–2 cm.** Beim Nachsehen der Keimungskarte im Browser

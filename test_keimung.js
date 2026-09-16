@@ -135,6 +135,37 @@ function pruef(name, bedingung, info) {
       (code.match(/.{80}(obersten 1|obere 1-?.2 ?cm|1-2cm).{80}/g) || []).filter(t => /[Ss]prüh|besprühen/.test(t)).length === 0);
   }
 
+  // (v1.5.216) Die Sämlings-Pflege sagte an Tag 3 „Beobachten ob Keimblätter durchbrechen" (nach KEIMUNG
+  // kommt der Keimling erst Tag 4–7) und an Tag 7 „Erste richtige Blätter da!" — beides als Tatsache.
+  console.log('\nF - Sämlings-Pflege Tag 3–7');
+  {
+    const pflege = (germ, startM, tag) => JSON.parse(E(`(function(){
+      S.cycles = []; S.entries = {}; S.beginnerMode = true;
+      const c = addCyc({ name: 'Keim', seedType: 'auto', medium: 'erde' });
+      c.startDate = '2026-06-01'; c.startMethod = '${startM}'; c.potSize = 11; c.germMethod = '${germ}'; saveS();
+      const iso = isoPlus(c.startDate, ${tag - 1}); setDebugDate(iso); openEntry(iso);
+      const t = document.getElementById('scr-entry').textContent.replace(/\\s+/g, ' ');
+      const box = (t.match(/Sämlings-Pflege[^]{0,700}/) || [''])[0];
+      return JSON.stringify({ box, heute: (box.match(/✅ Heute:(.*?)⛔/) || ['', ''])[1].trim() });
+    })()`));
+    const t3direkt = pflege('direct', 'saturated', 3), t3tuch = pflege('paper', 'saturated', 3);
+    pruef('Tag 3, Direkt in Erde: „zu sehen ist noch nichts" statt „Keimblätter durchbrechen"',
+      /zu sehen ist noch nichts/.test(t3direkt.heute) && !/Keimblätter durchbrechen/.test(t3direkt.heute), t3direkt.heute);
+    pruef('Tag 3, Papiertuch: Keimwurzel 2–5 mm, heute einsetzen', /2–5 mm lang: heute einsetzen/.test(t3tuch.heute), t3tuch.heute);
+    const t4 = pflege('direct', 'saturated', 4);
+    pruef('Tag 4: noch nichts zu sehen ist normal bis Tag 7', /Normal bis Tag 7/.test(t4.heute), t4.heute);
+    const t5s = pflege('direct', 'saturated', 5), t5d = pflege('direct', 'direct', 5);
+    pruef('Tag 5, vorbefeuchtet: sprühen, gegossen wird ab Tag 9', /gegossen wird erst ab Tag 9/.test(t5s.heute), t5s.heute);
+    pruef('Tag 5, ohne Vorbefeuchten: kein „ab Tag 9", sondern die Menge von oben', !/ab Tag 9/.test(t5d.heute) && /Ring um den Keimling/.test(t5d.heute), t5d.heute);
+    const t7 = pflege('direct', 'saturated', 7);
+    pruef('Tag 7: „ab Tag 10 nachsehen" statt „Erste richtige Blätter da"',
+      /ab Tag 10 vorsichtig nachsehen/.test(t7.heute) && !/Erste richtige Blätter da/.test(t7.heute), t7.heute);
+    pruef('Grundregeln: Klima aus KLIMA_ZIEL (22–26 °C, VPD 0.4–0.8), keine feste RLF-Zahl 65–75',
+      /22–26 °C/.test(t7.box) && /VPD 0\.4–0\.8 kPa/.test(t7.box) && !/65–75% RLF/.test(t7.box), (t7.box.match(/Klima:[^•]*/) || [''])[0]);
+    pruef('Grundregeln: Wassermenge steht oben im Eintrag, nicht als Faustzahl „~50–150 ml"',
+      /die Menge für jeden Gießtag steht oben im Eintrag/.test(t7.box) && !/50–150 ml/.test(t7.box), (t7.box.match(/Wasser:[^•]*/) || [''])[0]);
+  }
+
   pruef('Keine JS-Fehler im Lauf', errors.length === 0, errors.slice(0, 2).join(' | '));
   console.log(`\nErgebnis: ${ok} OK, ${fail} Fehler`);
   process.exit(fail ? 1 : 0);
