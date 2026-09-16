@@ -3409,6 +3409,85 @@ const FERT_PRESETS = {
       12:{},
     },
   },
+  // (v1.5.240) DAS BIOBIZZ-DÜNGERSCHEMA 2026, Blatt „LIGHT·MIX oder COCO·MIX“ (DE), von biobizz.com.
+  // Patrick hat es am 16.09.2026 geschickt: „Danach können wir uns richten.“
+  //
+  // Abgelesen aus der PDF — die Zahlen liegen dort als Vektorgrafik, nicht als Text; gerendert und in
+  // voller Auflösung Zelle für Zelle gelesen. ZWEITE ABSCHRIFT (UEBERGABE 0k): Patricks Bild des Schemas
+  // 2020, Spalte Light·Mix, am selben Tag unabhängig abgeschrieben — 46 der 47 Gaben gleich.
+  // Die eine Abweichung ist echt: Root·Juice steht 2026 auch unter „Wachstum“ (4), genauso auf der
+  // All·Mix-Seite 2026 und im All·Mix-Blatt 2024. test_biobizzschema.js hält beide Abschriften fest.
+  //
+  // Spalten → Plan-Wochen: Vermehrung = 1, Wachstum = 2 (laut Blatt „beliebig verlängerbar“ — die App
+  // verteilt beide auf die echte Anzucht), Blühwoche 1–8 = 3–10, „Wasser“ = 11, „Ernte“ = 12.
+  //
+  // „Dosis = ml/L“ ist eine Konzentration im Gießwasser, keine Wochenmenge: je Guss, und mit
+  // feedDayBasis — die App rechnet diese Zahlen nie hoch, auch nicht, wenn ein Wasser-Tag dazukommt.
+  // Wasser-Tage sieht das Blatt nicht vor. Eine EC-Spitze nennt es nicht, deshalb steht keine da.
+  //
+  // BEWUSST NICHT im Wochenplan (für den Nutzer erklärt im drainInfo):
+  //   · CalMag — das Blatt nennt es nur „bei weichem oder RO-Wasser“, ohne Menge.
+  //   · Microbes — Pulver in g/L, einmal pro Woche; eine Gabe, die nicht jeden Guss kommt, kennt der Plan nicht.
+  //   · Fish·Mix — steht mit denselben Mengen wie Bio·Grow da, ohne „oder“; das Fish·Mix-Datenblatt (2021)
+  //     nennt es einen Ersatz für Bio·Grow in der Wachstumsphase. Weniger Dünger ist die sichere Seite (ANBAU 15).
+  //   · Alg·A·Mic — steht 2026 nicht mehr in der Gieß-Tabelle, nur noch als Blattdünger bis Blühwoche 2.
+  biobizz_official_2026: {
+    name: 'BioBizz Official 2026',
+    medium: 'erde',   // Light·Mix
+    subtitle: 'BioBizz-Düngerschema 2026 für Light·Mix · jeder Guss mit Dünger · Mengen je Liter Gießwasser',
+    doseMode: 'per-watering',
+    feedDayBasis: true,
+    bloomDaysHint: 56,
+    weekPhases: ['anzucht','anzucht','bloom','bloom','bloom','bloom','bloom','bloom','bloom','bloom','flush','ice'],
+    feedWaterRhythm: { '1':'F', '2':'F', '3':'F', '4':'F', '5':'F', '6':'F', '7':'F', '8':'F', '9':'F', '10':'F', '11':'W', '12':'-' },
+    mixOrder: ['Root·Juice','Bio·Grow','Bio·Bloom','Top·Max','Bio·Heaven','Acti·Vera'],
+    mixInfo: 'Jede Zahl gilt je Liter Gießwasser und für jeden Guss — die App teilt nichts auf und rechnet nichts hoch. Bei weichem Wasser zuerst Cal/Mag, dann Root·Juice (nur Vermehrung und Wachstum), Bio·Grow, Bio·Bloom, Top·Max, Bio·Heaven und Acti·Vera. Jedes Mittel ganz einrühren, bevor das nächste kommt. Zum Schluss den pH auf ' + phTargetFor('erde').labelComma + ' einstellen, 5 Minuten warten, nachmessen. Nicht auf Vorrat mischen.',
+    drainInfo: 'Quelle: BioBizz-Düngerschema 2026, Blatt „Light·Mix oder Coco·Mix“ (biobizz.com). Jede Menge gilt bei jedem Guss; Wasser-Tage sieht das Schema nicht vor. Gießt du doch einmal nur Wasser, bleibt die Menge am nächsten Düngetag, wie sie ist — die App holt nichts nach. '
+      + 'Vier Dinge aus dem Schema stehen bewusst nicht im Wochenplan. Cal/Mag nennt BioBizz nur für weiches oder Osmose-Wasser und ohne Menge: Liegt dein Leitungswasser unter etwa 8 °dH — dein EC-Gerät zeigt im puren Wasser dann rund 0,3 mS/cm oder weniger —, nimm es dazu; wie viel, steht auf der Flasche, und es kommt als Erstes ins Wasser. '
+      + 'Microbes kommt als Pulver nur einmal pro Woche dazu; eine Gabe, die nicht bei jedem Guss kommt, kennt der Wochenplan nicht. '
+      + 'Fish·Mix steht mit denselben Mengen wie Bio·Grow da, ohne zu sagen, ob zusätzlich oder statt — das Fish·Mix-Datenblatt nennt es einen Ersatz für Bio·Grow in der Wachstumsphase. Die Vorlage führt nur Bio·Grow: Bei Unsicherheit ist weniger Dünger die sichere Seite. '
+      + 'Alg·A·Mic steht 2026 nicht mehr in der Gieß-Tabelle, nur noch als Blattdünger bis zur zweiten Blühwoche.',
+    weekFocus: (function () {
+      const PH = phTargetFor('erde').labelComma;
+      return {
+        1:  { phase: 'Vermehrung',  tip: 'Schema-Spalte „Vermehrung“: Root·Juice, Bio·Heaven und Acti·Vera — noch kein Bio·Grow, Light·Mix ist vorgedüngt. pH ' + PH + '.' },
+        2:  { phase: 'Wachstum',    tip: 'Schema-Spalte „Wachstum“ — laut BioBizz beliebig verlängerbar; die App verteilt Vermehrung und Wachstum auf deine Anzuchtdauer. Bio·Grow kommt dazu. pH ' + PH + '.' },
+        3:  { phase: 'Blühwoche 1', tip: 'Schema „WO 1“: Bio·Bloom und Top·Max starten, Root·Juice ist vorbei. pH ' + PH + '.' },
+        4:  { phase: 'Blühwoche 2', tip: 'Schema „WO 2“: Bio·Bloom steigt. pH ' + PH + '.' },
+        5:  { phase: 'Blühwoche 3', tip: 'Schema „WO 3“: Bio·Grow, Bio·Heaven und Acti·Vera steigen. pH ' + PH + '.' },
+        6:  { phase: 'Blühwoche 4', tip: 'Schema „WO 4“: Bio·Bloom, Bio·Heaven und Acti·Vera steigen. pH ' + PH + '.' },
+        7:  { phase: 'Blühwoche 5', tip: 'Schema „WO 5“: Bio·Grow erreicht seinen Höchstwert. pH ' + PH + '.' },
+        8:  { phase: 'Blühwoche 6', tip: 'Schema „WO 6“: Top·Max springt nach oben — ab jetzt steht jedes Mittel auf seinem Höchstwert. pH ' + PH + '.' },
+        9:  { phase: 'Blühwoche 7', tip: 'Schema „WO 7“: dieselben Mengen wie in Blühwoche 6. pH ' + PH + '.' },
+        10: { phase: 'Blühwoche 8', tip: 'Schema „WO 8“: die letzte Woche mit Dünger. pH ' + PH + '.' },
+        11: { phase: 'Wasser',      tip: 'Schema „WO 9“: nur noch Wasser auf pH ' + PH + ', kein Dünger.' },
+        12: { phase: 'Ernte',       tip: 'Schema „WO 10“: Ernte. Wann genau, sagen die Trichome, nicht die Woche.' },
+      };
+    })(),
+    products: [
+      { name: 'Root·Juice', unit: 'ml/L', color: '#5aabf0', note: 'Wurzelstimulator. Laut Schema nur in Vermehrung und Wachstum.' },
+      { name: 'Bio·Grow',   unit: 'ml/L', color: '#4caf70', note: 'Wachstumsdünger. Laut Schema ab dem Wachstum bis Blühwoche 8 — BioBizz: auch Nahrung für das Bodenleben, deshalb durch die Blüte.' },
+      { name: 'Bio·Bloom',  unit: 'ml/L', color: '#e8884a', note: 'Blütedünger. Ab Blühwoche 1.' },
+      { name: 'Top·Max',    unit: 'ml/L', color: '#b06ac8', note: 'Blüte-Zusatz. Ab Blühwoche 1, ab Blühwoche 6 höher.' },
+      { name: 'Bio·Heaven', unit: 'ml/L', color: '#5adada', note: 'Zusatz. Von der Vermehrung bis Blühwoche 8, steigt mit der Blüte.' },
+      { name: 'Acti·Vera',  unit: 'ml/L', color: '#e0a0f0', note: 'Zusatz. Von der Vermehrung bis Blühwoche 8, steigt mit der Blüte.' },
+    ],
+    schedule: {
+      // ml je Liter Gießwasser, bei jedem Guss. Die Spalte des Schemas steht dahinter.
+      1:  {'Root·Juice':4, 'Bio·Heaven':2, 'Acti·Vera':2},                                   // Vermehrung
+      2:  {'Root·Juice':4, 'Bio·Grow':2, 'Bio·Heaven':2, 'Acti·Vera':2},                     // Wachstum
+      3:  {'Bio·Grow':2, 'Bio·Bloom':1, 'Top·Max':1, 'Bio·Heaven':2, 'Acti·Vera':2},          // WO 1
+      4:  {'Bio·Grow':2, 'Bio·Bloom':2, 'Top·Max':1, 'Bio·Heaven':2, 'Acti·Vera':2},          // WO 2
+      5:  {'Bio·Grow':3, 'Bio·Bloom':2, 'Top·Max':1, 'Bio·Heaven':3, 'Acti·Vera':3},          // WO 3
+      6:  {'Bio·Grow':3, 'Bio·Bloom':3, 'Top·Max':1, 'Bio·Heaven':4, 'Acti·Vera':4},          // WO 4
+      7:  {'Bio·Grow':4, 'Bio·Bloom':3, 'Top·Max':1, 'Bio·Heaven':4, 'Acti·Vera':4},          // WO 5
+      8:  {'Bio·Grow':4, 'Bio·Bloom':4, 'Top·Max':4, 'Bio·Heaven':5, 'Acti·Vera':5},          // WO 6
+      9:  {'Bio·Grow':4, 'Bio·Bloom':4, 'Top·Max':4, 'Bio·Heaven':5, 'Acti·Vera':5},          // WO 7
+      10: {'Bio·Grow':4, 'Bio·Bloom':4, 'Top·Max':4, 'Bio·Heaven':5, 'Acti·Vera':5},          // WO 8
+      11: {},                                                                                 // WO 9 · Wasser
+      12: {},                                                                                 // WO 10 · Ernte
+    },
+  },
   biobizz_official: {
     // (v1.5.93) Phasen-Rückgrat: Jede Planwoche weiß, zu welcher Phase sie gehört. Damit
     // dehnt sich der Plan auf die tatsächliche Blütedauer, statt am Ende auf der letzten
@@ -3417,7 +3496,12 @@ const FERT_PRESETS = {
     weekPhases: ['anzucht','anzucht','bloom','bloom','bloom','bloom','bloom','bloom','bloom','bloom','flush','ice'],
     name: 'BioBizz Official',
     medium: 'erde',   // organischer Erdduenger
-    subtitle: 'Offizieller Herstellerplan 2025 · Light-Mix · für Anfänger · EC ~0.4→1.6',
+    // (v1.5.240) ABGELÖST durch `biobizz_official_2026`. Diese Fassung wich an 52 von 54 Gaben vom
+    // Herstellerschema ab (UEBERGABE 0n·C). Sie bleibt nur, weil gespeicherte Kopien Modus, EC-Spitze
+    // und Feed-Tag-Regel live von hier lesen — ohne sie rechneten laufende Grows still anders.
+    // Nicht mehr wählbar; der Untertitel erscheint nur noch über solchen Kopien.
+    abgeloest: 'biobizz_official_2026',
+    subtitle: 'Frühere Fassung der App · Wochenmengen, auf die Güsse verteilt · weicht vom BioBizz-Schema ab — die korrigierte Vorlage heißt „BioBizz Official 2026“',
     doseMode: 'weekly-split',
     bloomDaysHint: 49,
     ecPeak: 1.6,
@@ -4476,7 +4560,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.239';
+const APP_VERSION = 'v1.5.240';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -10202,7 +10286,7 @@ function isGiessTag(iso, c) {
 /**
  * Get planned doses for a given week, with optional mode-aware scaling.
  *
- * When the active preset has doseMode='weekly-split' (Biobizz Official,
+ * When the active preset has doseMode='weekly-split' (gespeicherte Kopien der früheren BioBizz-Official-Fassung,
  * where the schedule values represent TOTAL weekly doses), the returned
  * doses are divided by the expected watering frequency so the user can
  * fertilize on every watering day without overdosing.
@@ -20457,7 +20541,7 @@ function renderDuenger() {
     </div>
     <div style="display:flex;flex-direction:column;gap:6px">
       ${listAllPresets()
-        .filter(pre => !pre.isCustom && FERT_PRESETS[pre.key] && FERT_PRESETS[pre.key].subtitle)
+        .filter(pre => !pre.isCustom && FERT_PRESETS[pre.key] && FERT_PRESETS[pre.key].subtitle && !FERT_PRESETS[pre.key].abgeloest)
         .map(pre => {
           const isActive = S.presetKey === pre.key;
           return `<button onclick="loadPreset('${pre.key}')" style="background:${isActive?'var(--green-dk)':'var(--green-bg)'};border:1px solid ${isActive?'var(--green)':'var(--green-dk)'};border-radius:10px;padding:10px 14px;cursor:pointer;font-family:var(--font);text-align:left">
@@ -23954,8 +24038,8 @@ function _wizStepFertPlan(a) {
   const presetKeys = med === 'coco'
     ? ['canna_coco', 'ghe_flora']
     : isOutdoor
-      ? ['biobizz_light', 'canna', 'hesi', 'plagron', 'biobizz_master', 'biobizz_official']
-      : ['biobizz_light', 'cup_sieger', 'canna', 'hesi', 'plagron', 'biobizz_master', 'biobizz_official'];
+      ? ['biobizz_light', 'canna', 'hesi', 'plagron', 'biobizz_master', 'biobizz_official_2026']
+      : ['biobizz_light', 'cup_sieger', 'canna', 'hesi', 'plagron', 'biobizz_master', 'biobizz_official_2026'];
   const recommendedKey = med === 'coco' ? 'canna_coco' : 'biobizz_light';
   const presetOptions = presetKeys
     .filter(key => !plans.some(p => p.presetKey === key))
@@ -23969,7 +24053,7 @@ function _wizStepFertPlan(a) {
       const icon = {
         biobizz_light: '🌱',
         biobizz_master: '🏆',
-        biobizz_official: '📋',
+        biobizz_official_2026: '📋',
         cup_sieger: '🥇',
         canna: '🌿',
         hesi: '🔬',
@@ -23980,7 +24064,7 @@ function _wizStepFertPlan(a) {
       const summary = {
         biobizz_light: 'Master × 50% · fehlerverzeihend für Einsteiger',
         biobizz_master: 'Premium · jedes Gießen · früher Stickstoff-Stopp',
-        biobizz_official: 'Herstellerplan · automatisch verteilt',
+        biobizz_official_2026: 'BioBizz-Schema 2026 · jeder Guss mit Dünger',
         cup_sieger: '12 Wochen · 11 Produkte · Auto-optimiert · 49 Tage Bloom',
         canna: 'Terra Vega + Flores · Herstellerplan für Erde',
         hesi: 'TNT & Blüh Complex · Blüh Complex regelt den pH mit',

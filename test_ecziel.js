@@ -108,7 +108,9 @@ const ANLEGEN = `
   const vorlagen = JSON.parse(E(`JSON.stringify(Object.keys(FERT_PRESETS).filter(k => !FERT_PRESETS[k].ecTargets && Array.isArray(FERT_PRESETS[k].weekPhases)))`));
   // (v1.5.185) Seit v1.5.178 zehn: Die BioBizz-Outdoor-Vorlage ist entfernt. Der Test lief beim Ausliefern von v1.5.178
   // nicht mit und fiel seitdem um; die Zahl ist die einzige Änderung.
-  pruef('10 Vorlagen ohne eigene EC-Ziele, alle mit Rückgrat', vorlagen.length === 10, vorlagen.join(', '));
+  // (v1.5.240) Elf: BioBizz Official 2026 ist dazugekommen — das Schema nennt keine EC-Werte, also führt die
+  // Vorlage auch keine. Die abgelöste Fassung bleibt für gespeicherte Kopien und zählt weiter mit.
+  pruef('11 Vorlagen ohne eigene EC-Ziele, alle mit Rückgrat', vorlagen.length === 11, vorlagen.join(', '));
   for (const key of vorlagen) {
     const r = JSON.parse(E(`(function(){
       const probleme = [];

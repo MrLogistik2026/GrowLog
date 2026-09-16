@@ -2,6 +2,57 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-16 — v1.5.240
+
+- **„BioBizz Official" folgt jetzt dem Herstellerschema — dem aktuellen von 2026.** Patrick hat das Blatt von
+  biobizz.com geschickt: „Das ist der Plan von der offiziellen Homepage. Danach können wir uns richten." Die
+  bisherige Vorlage lieferte an 52 von 54 Gaben nicht, was das Schema sagt (UEBERGABE 0n·C): Bio·Heaven fehlte
+  ganz, Top·Max und Acti·Vera standen pauschal auf 1 statt 1→4 bzw. 2→5, CalMag auf 1–2 — und der
+  Wochendosis-Modus teilte Konzentrationen je Liter Gießwasser noch einmal durch die Güsse der Woche. In
+  Blühwoche 6 kamen bei Patricks Zyklus so Bio·Bloom 1,33 und Top·Max 0,33 ml/L an; das Schema sagt 4 und 4.
+- **Die PDF war lesbar, nur nicht als Text.** Die Zahlen liegen als Vektorgrafik darin; `pdftotext` (steckt in
+  Git für Windows) fand nur die Überschriften. Gerendert mit pdf.js in einer lokalen Seite und in voller
+  Auflösung abgelesen. Das Blatt hat zwei Seiten, „All·Mix" und „Light·Mix oder Coco·Mix" — genommen ist die
+  zweite, Patricks Substrat. All·Mix und Light·Mix unterscheiden sich nur bei Bio·Grow.
+- **Zweite Abschrift (UEBERGABE 0k):** Patricks Bild des Schemas 2020, vorher am selben Tag unabhängig
+  abgeschrieben. Von den 47 Gaben stimmen 46 überein; die eine Abweichung ist eine echte Änderung — Root·Juice
+  steht 2026 auch unter „Wachstum", genauso auf der All·Mix-Seite 2026 und im All·Mix-Blatt 2024. Beim Schreiben
+  stand im Code zuerst „49 von 50 Zellen gleich" — falsch gezählt; richtig sind 59 von 60 Zellen oder 46 von 47
+  Gaben, und der Test zählt jetzt selbst.
+- **Je Guss, nie hochgerechnet.** „Dosis = ml/L" ist eine Konzentration im Gießwasser. Die Vorlage läuft
+  `per-watering` mit `feedDayBasis`: Jeder Guss bekommt genau die Zahl aus dem Blatt, und schiebt jemand einen
+  Wasser-Tag ein, bekommt der nächste Düngetag trotzdem nicht mehr, als der Hersteller vorsieht. Wasser-Tage
+  sieht das Schema nicht vor; der App-eigene Rhythmus mit einem Drittel Wasser-Tagen in der Blüte (`ARC_RHYTHM`)
+  gilt für diese Vorlage nicht. Eine EC-Spitze nennt das Blatt nicht, also steht keine da.
+- **Vier Dinge aus dem Blatt stehen bewusst nicht im Wochenplan, und die Vorlage sagt dem Nutzer warum.**
+  *Cal/Mag* nennt BioBizz 2026 nur „bei weichem oder RO-Wasser" und ohne Menge — Hinweis mit der prüfbaren
+  Bedingung aus v1.5.239 (unter 8 °dH bzw. 0,3 mS/cm), Menge nach Flasche. *Microbes* ist ein Pulver für einmal
+  pro Woche; eine Gabe mit eigener Häufigkeit kennt der Wochenplan nicht. *Fish·Mix* steht mit denselben Mengen
+  wie Bio·Grow da, ohne „oder"; das Fish·Mix-Datenblatt (2021) nennt es einen Ersatz für Bio·Grow in der
+  Wachstumsphase, die Produktseite sagt dazu nichts — bei dieser Unsicherheit ist weniger Dünger die sichere
+  Seite (`ANBAU.md` 15). *Alg·A·Mic* steht 2026 nur noch als Blattdünger im Blatt.
+- **Wochen-Namen wie im Blatt** — Vermehrung, Wachstum, Blühwoche 1–8, Wasser, Ernte —, damit sich App und Blatt
+  nebeneinanderlegen lassen: App-Woche 3 ist „WO 1" im Schema, und genau darüber stolpert man sonst. Was ein
+  Wochen-Tipp über die Mengen sagt („Bio·Bloom steigt"), prüft der Test an den Zahlen.
+- **Warum eine neue Vorlage, statt die alte zu ändern:** Gespeicherte Plankopien tragen Dosen und Rhythmus selbst,
+  lesen Modus, EC-Spitze und Feed-Tag-Regel aber live aus der Vorlage (`_doseModeFor`, `_wochenVerteilung`,
+  `feedDayCompFactor`). An Ort und Stelle geändert, hätte jeder, der den alten Plan schon nutzt, still die
+  Wochenmengen ungeteilt in jeden Guss bekommen — CalMag 2 ml/L je Guss —, und „Vorlage laden" hätte zur alten
+  Kopie gewechselt, statt die korrigierte anzulegen. Die alte Fassung bleibt deshalb unter ihrem Schlüssel, ist
+  nicht mehr wählbar (`abgeloest`) und sagt über solchen Kopien jetzt: „weicht vom BioBizz-Schema ab — die
+  korrigierte Vorlage heißt ‚BioBizz Official 2026'". Nachgemessen: Patricks Plan und frisch geladene alte Kopien
+  liefern vor und nach dem Umbau byte-gleiche Dosen (Intervall 2–4, 49–105 Blütetage).
+- `test_biobizzschema.js` neu (56 Prüfungen, beide Zeitzonen): alle 60 Zellen gegen das Blatt, beide
+  Abschriften gegeneinander, jeder Guss bei 42–105 Blütetagen und Intervall 2–4 mit und ohne Wasser-Tage,
+  Vorlagen-Liste und Assistent, die Texte samt Wochen-Tipps, und Patricks unveränderte Dosen.
+  `test_duengeplaene.js` trägt den Fingerabdruck der neuen Vorlage (6 Produkte, 47 Gaben, Summe 144),
+  `test_ecziel.js` zählt 11 Vorlagen ohne eigene EC-Ziele. Breiter Lauf über alle 37 Tests, die Düngepläne
+  berühren, in beiden Zeitzonen: 72 von 74 grün — rot war `test_vorlageoutdoor.js`, und zwar schon seit
+  v1.5.237 (eigener Eintrag darunter).
+- **Im Browser mit Patricks Daten durchgeklickt:** Vorlagen-Liste, Kopf über seinem alten Plan, Laden der neuen
+  Vorlage (legt an, wechselt nicht, sein geernteter Zyklus bleibt am alten Plan), Plan-Blatt, und im Tageseintrag
+  die Mischliste mit „4 ml/L × 15 L = 60 ml". Danach auf seine Sicherung zurückgesetzt.
+
 ## 2026-09-16 — Testkorrektur zu v1.5.237 (ohne Versionssprung, die App ist unverändert)
 
 - **`test_vorlageoutdoor.js` war seit v1.5.237 rot, und es ist niemandem aufgefallen.** Die Prüfung „rechnet

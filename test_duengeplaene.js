@@ -35,7 +35,11 @@ const FINGERABDRUCK = {
   biobizz_konservativ: { medium: 'erde', produkte: 9,  wochen: 12, gaben: 55,  summe: 255.4 },
   biobizz_light:       { medium: 'erde', produkte: 8,  wochen: 12, gaben: 54,  summe: 47.4 },
   biobizz_master:      { medium: 'erde', produkte: 8,  wochen: 12, gaben: 54,  summe: 88.6 },
+  // (v1.5.240) biobizz_official ist abgelöst, bleibt aber für gespeicherte Kopien — unverändert.
   biobizz_official:    { medium: 'erde', produkte: 7,  wochen: 12, gaben: 56,  summe: 112 },
+  // (v1.5.240) Aus dem BioBizz-Düngerschema 2026 (Light·Mix oder Coco·Mix), gegen das Schema 2020
+  // abgeglichen; Zelle für Zelle in test_biobizzschema.js. 3 + 4 + 8×5 Gaben, Summe 144 ml/L.
+  biobizz_official_2026: { medium: 'erde', produkte: 6,  wochen: 12, gaben: 47,  summe: 144 },
   // (v1.5.178) biobizz_outdoor entfernt — Patrick: erst wieder mit einem eigenen Outdoor-Bereich.
   canna:               { medium: 'erde', produkte: 5,  wochen: 10, gaben: 22,  summe: 67 },
   canna_coco:          { medium: 'coco', produkte: 7,  wochen: 12, gaben: 45,  summe: 91.7 },
