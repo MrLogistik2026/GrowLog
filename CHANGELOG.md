@@ -2,6 +2,26 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-16 — v1.5.236
+
+- **Fünf von elf Vorlagen hatten gar keinen Wochen-Tipp** — darunter **BioBizz Light, den der Assistent
+  Einsteigern empfiehlt**, dazu BioBizz Official, Plagron, CANNA und Hesi. Gezählt statt gesucht (Lehre aus
+  v1.5.235): rainbow_auto führt 12 Wochen, biobizz_konservativ, CANNA Coco und GHE je 6, **biobizz_master nur
+  3 von 12**. Der gemeldete Befund nannte zwei Pläne; es waren fünf.
+- **Was fehlte:** Ohne `weekFocus` zeigt die Statuszeile im Eintrag nur „Woche 5", die Karte am Wochenwechsel
+  nur die geänderten Mengen, und das Plan-Blatt nichts. Kein Fehler im Ablauf — aber die Führung fehlt genau
+  dort, wo sie am nötigsten ist.
+- **Nicht gebaut: 60 von Hand geschriebene Texte.** Die bräuchten Herstellerwissen, das hier niemand hat
+  (`ANBAU.md`: über Pflanzen wird nicht geschätzt), und wären beim nächsten Plan wieder nachzuziehen.
+  Stattdessen **ein Mechanismus**: `_planWochenFokus(plan, wk)` leitet den Tipp aus dem ab, was die App über
+  diese Plan-Woche ohnehin weiß — Phase aus dem Rückgrat (`weekPhases`), pH-Ziel aus `phTargetFor(medium)`,
+  Drain-Spanne aus `DRAIN_ZIEL`. **Kein einziger neuer Zahlenwert.** Ein eigener `weekFocus` gewinnt immer,
+  und die drei Lesestellen fragen jetzt dieselbe Funktion statt je eigen `getPreset(...).weekFocus`.
+- Das füllt zugleich die 9 fehlenden Wochen von biobizz_master und jeden künftigen Plan ohne eigene Tipps.
+  Abgeleitete Tipps tragen `_abgeleitet: true`, damit das Plan-Blatt seine eigenen Wochen-Namen behält.
+- `test_wochentipp.js` um Abschnitt E erweitert (27 Prüfungen, beide Zeitzonen): abgeleitete Phase je Woche,
+  pH aus der Quelle, Drain aus der Quelle, und der Vorrang des eigenen Tipps.
+
 ## 2026-09-16 — v1.5.235
 
 - **Es gab zwei Magnesium-Karten, und v1.5.233 hat nur die erste berichtigt.** Die zweite steht unter den

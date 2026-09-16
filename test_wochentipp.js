@@ -154,6 +154,47 @@ function pruef(name, bedingung, info) {
   pruef('Tagebuch-Export: Run 02 mit Rainbow', exp.exportRun02 === 'Rainbow Düngeplan (v1.0)', exp.exportRun02);
   pruef('PDF-Bericht liest nicht mehr den aufgeschlagenen Plan', exp.pdfLiestGlobal === false);
 
+  // (v1.5.236) Fünf der elf Vorlagen führen kein weekFocus — darunter BioBizz Light, den der Assistent
+  // Einsteigern empfiehlt. Der Tipp fiel dort ersatzlos weg. _planWochenFokus leitet ihn aus dem ab, was
+  // die App über die Woche ohnehin weiß; ein eigener Tipp des Plans hat Vorrang.
+  console.log('\nE - Pläne ohne eigenen Wochen-Tipp bekommen einen abgeleiteten');
+  const abg = JSON.parse(E(`(function(){
+    const p = FERT_PRESETS.biobizz_light;
+    const plan = { presetKey: 'biobizz_light', medium: p.medium, weekPhases: p.weekPhases, schedule: p.schedule, products: p.products };
+    return JSON.stringify({
+      ohneEigene: Object.keys(p.weekFocus || {}).length,
+      w2: _planWochenFokus(plan, 2), w5: _planWochenFokus(plan, 5),
+      w11: _planWochenFokus(plan, 11), w12: _planWochenFokus(plan, 12),
+      eigen: _planWochenFokus({ presetKey: 'rainbow_auto' }, 4),
+      ph: phTargetFor(p.medium || 'erde').labelComma, dmin: DRAIN_ZIEL.min, dmax: DRAIN_ZIEL.max,
+      ohneTipp: FERT_PRESETS ? Object.keys(FERT_PRESETS).filter(k => !Object.keys(FERT_PRESETS[k].weekFocus || {}).length) : []
+    });
+  })()`));
+  pruef('BioBizz Light hat wirklich keinen eigenen Wochen-Tipp', abg.ohneEigene === 0, abg.ohneEigene);
+  pruef('Betroffen waren fünf Vorlagen, nicht zwei', abg.ohneTipp.length === 5, abg.ohneTipp.join(', '));
+  pruef('Woche 2 wird als Anzucht geführt', abg.w2 && abg.w2.phase === 'Anzucht', JSON.stringify(abg.w2));
+  pruef('Woche 5 ist Blüte und nennt die Drain-Spanne aus DRAIN_ZIEL',
+    !!abg.w5 && abg.w5.phase === 'Blüte' && abg.w5.tip.includes(abg.dmin + '–' + abg.dmax + ' %'), JSON.stringify(abg.w5));
+  pruef('Der pH kommt aus phTargetFor, nicht aus einer festen Zahl',
+    !!abg.w5 && abg.w5.tip.includes(abg.ph), abg.ph + ' | ' + (abg.w5 && abg.w5.tip));
+  pruef('Woche 11 ist Spülen, Woche 12 IceFlush',
+    !!abg.w11 && abg.w11.phase === 'Spülen' && !!abg.w12 && abg.w12.phase === 'IceFlush',
+    JSON.stringify([abg.w11, abg.w12]));
+  pruef('Ein eigener Tipp des Plans hat Vorrang', !!abg.eigen && /Stretch/.test(abg.eigen.phase), JSON.stringify(abg.eigen).slice(0, 120));
+  pruef('Abgeleitete Tipps sind als solche gekennzeichnet, eigene nicht',
+    !!abg.w5 && abg.w5._abgeleitet === true && !(abg.eigen && abg.eigen._abgeleitet));
+
+  // Beim Einbau war zuerst die FALSCHE der beiden Wochen-Ansichten verdrahtet: `weekPlan` (der alte
+  // Akkordeon-Editor) wird seit v1.5.52 gebaut, aber nie ausgegeben — im DOM stehen 0 Elemente mit
+  // .wk-accordion. Gerendert wird _planSheet. Beide enthalten dieselbe Zeile, sie unterscheiden sich
+  // nur in der Einrückung. Gefunden hat es nur die Sichtprüfung im Browser, während die Tests grün
+  // waren — diese zwei Prüfungen halten es fest (v1.5.189: vor einem Fix an einer Anzeige die
+  // Aufrufer suchen).
+  pruef('Das lebende Plan-Blatt liest den abgeleiteten Tipp',
+    E('typeof _planSheet === "function" && _planSheet.toString().includes("_planWochenFokus")') === true);
+  pruef('Der tote Akkordeon-Editor wurde nicht verdrahtet',
+    E('renderDuenger.toString().includes("_planWochenFokus")') === false);
+
   console.log(`\nErgebnis: ${ok} OK, ${fail} Fehler`);
   process.exit(fail ? 1 : 0);
 })();

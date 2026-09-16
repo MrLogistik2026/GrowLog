@@ -4473,7 +4473,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.235';
+const APP_VERSION = 'v1.5.236';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -10256,6 +10256,41 @@ function _planWocheIstAnzucht(plan, w) {
 }
 
 /**
+ * (v1.5.236) Der Wochen-Tipp — aus dem Plan, und wenn der keinen hat, aus dem Zustand.
+ *
+ * Fünf der elf Vorlagen führen kein `weekFocus` (darunter BioBizz Light, den der Assistent
+ * Einsteigern empfiehlt), biobizz_master nur für 3 von 12 Wochen. Dort fiel der Tipp bisher
+ * ersatzlos weg. Statt ihn für jede Vorlage von Hand zu schreiben — das bräuchte Herstellerwissen
+ * und wäre beim nächsten Plan wieder nachzuziehen — wird er abgeleitet aus dem, was die App über
+ * diese Plan-Woche ohnehin weiß: Phase aus dem Rückgrat (`weekPhases`), pH-Ziel aus
+ * `phTargetFor(medium)`, Drain-Spanne aus `DRAIN_ZIEL`. Keine neue Zahl, keine neue Einstellung.
+ *
+ * Ein eigener `weekFocus` gewinnt immer. Abgeleitete Tipps tragen `_abgeleitet: true` — das
+ * Plan-Blatt behält damit seine eigenen Wochen-Namen in der Kopfzeile.
+ */
+function _planWochenFokus(plan, wk) {
+  const eigen = (getPreset(plan && plan.presetKey)?.weekFocus || {})[wk]
+    || ((plan && plan.weekFocus) || {})[wk];
+  if (eigen) return (typeof eigen === 'object') ? eigen : { phase: String(eigen), tip: '' };
+  if (!plan || !(wk > 0)) return null;
+  const ph = (Array.isArray(plan.weekPhases) && plan.weekPhases[wk - 1])
+    || (_planWocheIstAnzucht(plan, wk) ? 'anzucht' : 'bloom');
+  const med = plan.medium || 'erde';
+  const NAME = { anzucht: 'Anzucht', bloom: 'Blüte', flush: 'Spülen', ice: 'IceFlush' };
+  const SATZ = {
+    anzucht: 'Wenig Dünger, wenig Wasser — die Wurzel ist noch klein, und vorgedüngte Erde trägt die ersten Wochen mit.',
+    bloom: 'Drain ' + DRAIN_ZIEL.min + '–' + DRAIN_ZIEL.max + ' % bei jedem Gießen, den Drain sofort entsorgen.',
+    flush: 'Nur noch Wasser auf pH, kein Dünger mehr.',
+    ice: 'Eis anlegen, kein Wasser dazugießen.',
+  };
+  return {
+    phase: NAME[ph] || ('Woche ' + wk),
+    tip: ('pH ' + phTargetFor(med).labelComma + ' (' + mediumName(med) + '). ' + (SATZ[ph] || '')).trim(),
+    _abgeleitet: true,
+  };
+}
+
+/**
  * (v1.5.171) Die Vorlage eines Plans — nur über dessen eigenen presetKey. Ohne Plan (Aufruf ohne Zyklus) gilt
  * wie bisher der aufgeschlagene Plan. Ein eigener Plan ohne Vorlage hat keine: Er darf weder Modus noch
  * EC-Spitze eines anderen Plans erben.
@@ -10532,7 +10567,7 @@ function _planStatusLine(c, iso, nurLesen) {
   // weekFocus liefert ein Objekt { phase, tip } — nur die kurze Phasen-Bezeichnung nutzen.
   // (v1.5.136) Der Tipp gehört zum Plan DES ZYKLUS. S.presetKey ist der Plan, der gerade im
   // Düngeplan-Bildschirm aufgeschlagen ist — mit ihm fehlte der Tipp oder kam aus einem fremden Plan.
-  const _f = (getPreset(plan && plan.presetKey)?.weekFocus || {})[wk];
+  const _f = _planWochenFokus(plan, wk);
   const foc = (_f && typeof _f === 'object') ? _f.phase : (typeof _f === 'string' ? _f : null);
   // (v1.5.33) Erntefenster statt Erntetag — solange die Schätzung unscharf ist, wird das
   // auch so angezeigt. Ein einzelner Tag hier wäre eine Behauptung, die die App nicht halten kann.
@@ -10603,7 +10638,7 @@ function _planWeekQuestion(c, iso) {
 
   // (v1.5.136) Der Tipp gehört zum Plan DES ZYKLUS. S.presetKey ist der Plan, der gerade im
   // Düngeplan-Bildschirm aufgeschlagen ist — mit ihm fehlte der Tipp oder kam aus einem fremden Plan.
-  const _f = (getPreset(plan && plan.presetKey)?.weekFocus || {})[wk];
+  const _f = _planWochenFokus(plan, wk);
   const fokus = (_f && typeof _f === 'object') ? [_f.phase, _f.tip].filter(Boolean).join(' — ') : (typeof _f === 'string' ? _f : null);
   // (v1.5.179) Die Frage prüft ein Blüte-Merkmal („Werden die Blüten noch sichtbar dicker …“) und bietet an, Plan und
   // Ernte zu verschieben. Vor der Blüte gibt es keine Blüten — bei einer Automatic kam sie trotzdem an Tag 8, 15 und 22
@@ -20231,7 +20266,7 @@ function _planSheet(c, prods, weekNames, activeFocus) {
   const zeilen = sichtbar.map(w => {
     const sch = S.weekSchedule['global_w' + w] || {};
     const ist = jetzt === w;
-    const focus = activeFocus?.[w] || null;
+    const focus = activeFocus?.[w] || _planWochenFokus(plan, w);
     const phTag = plan && plan.weekPhases ? plan.weekPhases[w - 1] : null;
     const phName = { anzucht: 'Anzucht', bloom: 'Blüte', flush: 'Spülen', ice: 'IceFlush' }[phTag] || '';
     const zellen = prods.map(p => {
@@ -20252,8 +20287,10 @@ function _planSheet(c, prods, weekNames, activeFocus) {
       </td>${zellen}</tr>`;
   }).join('');
 
-  const hinweis = jetzt && sichtbar.includes(jetzt) && activeFocus?.[jetzt]?.tip
-    ? `<div style="font-size:11px;color:var(--yellow);line-height:1.5;background:rgba(240,208,80,0.06);border-left:2px solid var(--yellow);border-radius:0 8px 8px 0;padding:8px 10px;margin-top:10px">💡 <b>Woche ${jetzt}:</b> ${activeFocus[jetzt].tip}</div>`
+  // (v1.5.236) Hat der Plan keinen eigenen Wochen-Tipp, kommt der abgeleitete — sonst stand hier nichts.
+  const _fokusJetzt = (jetzt && sichtbar.includes(jetzt)) ? (activeFocus?.[jetzt] || _planWochenFokus(plan, jetzt)) : null;
+  const hinweis = (_fokusJetzt && _fokusJetzt.tip)
+    ? `<div style="font-size:11px;color:var(--yellow);line-height:1.5;background:rgba(240,208,80,0.06);border-left:2px solid var(--yellow);border-radius:0 8px 8px 0;padding:8px 10px;margin-top:10px">💡 <b>Woche ${jetzt}:</b> ${_fokusJetzt.tip}</div>`
     : '';
 
   const mix = (S.mixOrder && S.mixOrder.length) ? `<div style="margin-top:12px">
