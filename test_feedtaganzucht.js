@@ -106,8 +106,18 @@ const MISS = (key, anzW, bluW) => `(function(){
     }
     // (v1.5.178) Die Outdoor-Vorlage ist entfernt; die Wochendosis prüft jetzt Official (Woche 2 ist Anzucht).
     if (key === 'biobizz_official') {
-      const soll = Math.round(r.roh / (7 / r.intA) * 100) / 100;
-      pruef(`Official (Wochendosis): Anzucht-Dosis nur geteilt, nicht angehoben (${soll})`, r.dosis === soll, r.roh + ' → ' + r.dosis + ' statt ' + soll);
+      // (v1.5.237) Der Teiler sind die echten Güsse der PLAN-Woche statt `7 / Intervall` — die
+      // Kalenderwoche stimmte fast nie (Plan-Wochen sind gemessen 5 bis 14 Tage lang). Geteilt wird
+      // hier durch `total`, nicht durch `feed`: In der Anzucht bleibt der Wasser-Tag-Ausgleich
+      // bewusst aus (v1.5.170), die Wochenmenge verteilt sich also auf ALLE Güsse der Woche.
+      // Damit ist die Dosis sogar niedriger als vorher — die sichere Richtung (ANBAU.md 15).
+      const totalA = parseInt(String(r.gA).split('/')[1], 10);
+      const soll = Math.round(r.roh / totalA * 100) / 100;
+      pruef(`Official (Wochendosis): Anzucht-Dosis nur geteilt, nicht angehoben (${soll} bei ${r.gA} Güssen)`,
+        r.dosis === soll, r.roh + ' → ' + r.dosis + ' statt ' + soll);
+      pruef('… und damit niedriger als mit Ausgleich (der hier bewusst ausbleibt)',
+        r.dosis <= Math.round(r.roh / parseInt(String(r.gA).split('/')[0], 10) * 100) / 100 + 0.0001,
+        r.dosis + ' gegen ' + Math.round(r.roh / parseInt(String(r.gA).split('/')[0], 10) * 100) / 100);
     }
   }
 

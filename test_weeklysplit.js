@@ -120,8 +120,125 @@ const ZYKLUS = (key, bloom, intA, intB) => `(function(){
     console.log(`    ${r.name}: Woche 3 (${r.phase3}) roh ${r.roh3} → bei Blüte-Intervall 3: ${r.w3_b3}, bei 5: ${r.w3_b5} · Woche ${r.bw} (Blüte): ${r.wb_b3} / ${r.wb_b5}`);
     pruef('Prüflage: Woche 3 ist laut Plan Anzucht', r.phase3 === 'anzucht', r.phase3);
     pruef('Woche 3 hängt nicht am Blüte-Intervall', r.w3_b3 === r.w3_b5 && r.w3_b3 > 0, r.w3_b3 + ' / ' + r.w3_b5);
-    pruef('… und ist durch das Anzucht-Intervall geteilt (roh × 2/7)', Math.abs(r.w3_b3 - Math.round(r.roh3 / (7 / 2) * 100) / 100) < 0.011, r.w3_b3 + ' statt ' + (Math.round(r.roh3 / (7 / 2) * 100) / 100));
+    // (v1.5.237) Bis hierher erwartete diese Prüfung `roh / (7/2)` — also die Teilung durch eine
+    // KALENDERwoche. Genau die war der Fehler: Plan-Wochen sind gemessen 5 bis 14 Tage lang, und
+    // geliefert wurden dadurch 0 bis 216 % der Wochenmenge. Geteilt wird jetzt durch die echten
+    // Güsse der Plan-Woche — hier durch `total`, weil Woche 3 in dieser Prüflage Anzucht ist und
+    // der Wasser-Tag-Ausgleich dort bewusst ausbleibt (v1.5.170).
+    const cnt3 = JSON.parse(E(`(function(){ const c = ${ZYKLUS('biobizz_official', 63, 2, 3)}; return JSON.stringify(weekGussCounts(c, 3)); })()`));
+    const sollW3 = Math.round(r.roh3 / cnt3.total * 100) / 100;
+    pruef(`… und ist durch die echten Güsse der Plan-Woche geteilt (${cnt3.feed}/${cnt3.total} → ${sollW3})`,
+      Math.abs(r.w3_b3 - sollW3) < 0.011, r.w3_b3 + ' statt ' + sollW3);
     pruef('Gegenprobe: eine Blüte-Woche hängt am Blüte-Intervall', r.wb_b3 !== r.wb_b5, r.wb_b3 + ' / ' + r.wb_b5);
+  }
+
+  // (v1.5.237) DIE WOCHENMENGE MUSS ANKOMMEN — das ist das ganze Versprechen dieses Modus.
+  //
+  // Vorher wurde durch `7 / Intervall` geteilt (Kalenderwoche) und danach mit `total / feed`
+  // multipliziert, das über die gedehnte Plan-Woche zählt. Gemessen kamen 0 % bis 216 % der
+  // gespeicherten Wochenmenge an. Geprüft wird hier nicht die Formel, sondern das Ergebnis:
+  // Dosis je Düngerguss × Zahl der Düngergüsse muss die Wochenmenge ergeben.
+  console.log('\nC - Die gespeicherte Wochenmenge kommt an');
+  {
+    const r = JSON.parse(E(`(function(){
+      const plan = S.fertPlans.find(p => p.presetKey === 'biobizz_official');
+      const preset = FERT_PRESETS.biobizz_official;
+      const cap = EC_FEED_CEILING / parseFloat(preset.ecPeak);
+      const raus = [];
+      [42, 85, 105].forEach(bloom => {
+        S.cycles = []; S.entries = {};
+        const c = addCyc({ name: 'W', seedType: 'auto', medium: 'erde' });
+        c.startDate = '2026-03-01'; c.fertPlanId = plan.id; c.bloomDays = bloom;
+        c.anzuchtDays = 21; c.intAnzucht = 3; c.intBloom = 3;
+        S._activePlanId = plan.id; syncActivePlanToGlobals(); saveS();
+        for (let wk = 1; wk <= 9; wk++) {
+          const roh = plan.schedule['w' + wk] || {};
+          Object.keys(roh).forEach(pid => {
+            const rw = parseFloat(roh[pid]);
+            if (!(rw > 0)) return;
+            const dos = getWeekDoses(c.id, wk, c)[pid] || 0;
+            const cnt = weekGussCounts(c, wk);
+            const gedeckelt = cnt.feed > 0 && (cnt.total / cnt.feed) > cap + 0.0001;
+            raus.push({ bloom, wk, rw, dos, feed: cnt.feed, total: cnt.total, gedeckelt,
+              geliefert: Math.round(dos * cnt.feed * 1000) / 1000,
+              erwartetGedeckelt: Math.round(rw / Math.max(cnt.total, 1) * cap * 100) / 100 });
+          });
+        }
+      });
+      return JSON.stringify({ cap: Math.round(cap * 1000) / 1000, raus });
+    })()`));
+
+    // Drei Lagen sind zu unterscheiden, und die erste Fassung dieses Abschnitts tat es nicht:
+    //  · total = 0 — die Güsse dieser Plan-Woche sind gar nicht bekannt. Dann wird bewusst NICHT
+    //    geteilt, sondern die Plan-Menge unverändert gezeigt, statt eine Zahl zu erfinden.
+    //  · feed = 0 bei total > 0 — die Woche besteht nur aus Wasser-Tagen: Dosis 0.
+    //  · sonst: die Wochenmenge muss ankommen.
+    const ohneRaster = r.raus.filter(x => x.total <= 0);
+    const ohneFeed = r.raus.filter(x => x.feed === 0 && x.total > 0);
+    const gedeckelt = r.raus.filter(x => x.gedeckelt && x.feed > 0);
+    const normal = r.raus.filter(x => !x.gedeckelt && x.feed > 0);
+    console.log(`    ${r.raus.length} Fälle: ${normal.length} normal · ${gedeckelt.length} durch die EC-Decke begrenzt (${r.cap}) · ${ohneFeed.length} nur Wasser-Tage · ${ohneRaster.length} ohne bekanntes Raster`);
+    pruef('Ohne bekanntes Wochen-Raster bleibt die Plan-Menge unverändert stehen',
+      ohneRaster.every(x => Math.abs(x.dos - x.rw) < 0.0001),
+      ohneRaster.slice(0, 2).map(x => `${x.bloom}d W${x.wk}: ${x.dos} statt ${x.rw}`).join(' · '));
+
+    const daneben = normal.filter(x => Math.abs(x.geliefert - x.rw) > 0.005 * x.feed + 0.0011);
+    pruef(`Die Wochenmenge kommt in allen ${normal.length} ungedeckelten Fällen an`,
+      daneben.length === 0,
+      daneben.slice(0, 3).map(x => `${x.bloom}d W${x.wk}: ${x.geliefert} statt ${x.rw} (${x.feed}/${x.total})`).join(' · '));
+
+    const schlimmster = normal.reduce((a, x) => {
+      const p = x.rw > 0 ? Math.abs(x.geliefert / x.rw - 1) : 0;
+      return p > a.p ? { p, x } : a;
+    }, { p: 0, x: null });
+    pruef('Die größte Abweichung liegt unter 2 % (Rundung auf zwei Nachkommastellen)',
+      schlimmster.p < 0.02, schlimmster.x ? `${Math.round(schlimmster.p * 1000) / 10} % bei ${schlimmster.x.bloom}d W${schlimmster.x.wk}` : '–');
+
+    pruef('Eine Plan-Woche ohne Düngerguss ergibt Dosis 0, nicht unendlich',
+      ohneFeed.every(x => x.dos === 0 && isFinite(x.dos)),
+      ohneFeed.slice(0, 2).map(x => `${x.bloom}d W${x.wk}: ${x.dos}`).join(' · '));
+
+    pruef('Wo die EC-Decke greift, ist die Dosis genau der gedeckelte Wert (kein stiller Rest)',
+      gedeckelt.every(x => Math.abs(x.dos - x.erwartetGedeckelt) < 0.011),
+      gedeckelt.slice(0, 3).map(x => `${x.bloom}d W${x.wk}: ${x.dos} statt ${x.erwartetGedeckelt}`).join(' · '));
+
+    pruef('Und dann kommt weniger an als die Wochenmenge — bewusst, nie mehr',
+      gedeckelt.every(x => x.geliefert <= x.rw + 0.0011),
+      gedeckelt.slice(0, 2).map(x => `${x.bloom}d W${x.wk}: ${x.geliefert} > ${x.rw}`).join(' · '));
+
+    pruef('Kein einziger Fall liefert mehr als die Wochenmenge',
+      r.raus.every(x => x.geliefert <= x.rw + 0.005 * Math.max(x.feed, 1) + 0.0011),
+      r.raus.filter(x => x.geliefert > x.rw + 0.005 * Math.max(x.feed, 1) + 0.0011).slice(0, 3)
+        .map(x => `${x.bloom}d W${x.wk}: ${x.geliefert} statt ${x.rw}`).join(' · '));
+  }
+
+  console.log('\nD - Per-Gieß-Pläne bleiben unberührt');
+  {
+    // `loadPreset` ist asynchron und kann zurückfragen (Substrat-Wechsel, „Plan existiert bereits").
+    // Ohne `await` und ohne Stub stand der Plan noch nicht, wenn die Prüfung lief — dieselbe Falle
+    // wie in test_duengeplantexte.js Abschnitt F.
+    await E(`(async () => {
+      window.customConfirm = () => Promise.resolve(true);
+      window.toast = () => {}; window.vibrate = () => {};
+      await loadPreset('plagron');
+    })()`);
+    await warte(150);
+    E(`typeof _modalResolve === 'function' && _modalResolve(true)`);
+    await warte(80);
+    const r = JSON.parse(E(`(function(){
+      const plan = S.fertPlans.find(p => p.presetKey === 'plagron');
+      if (!plan) return JSON.stringify({ fehlt: true });
+      S.cycles = []; S.entries = {};
+      const c = addCyc({ name: 'P', seedType: 'auto', medium: 'erde' });
+      c.startDate = '2026-03-01'; c.fertPlanId = plan.id; c.bloomDays = 63;
+      c.anzuchtDays = 21; c.intAnzucht = 3; c.intBloom = 3;
+      S._activePlanId = plan.id; syncActivePlanToGlobals(); saveS();
+      const roh = plan.schedule.w5 || {};
+      const pid = Object.keys(roh).find(k => parseFloat(roh[k]) > 0);
+      return JSON.stringify({ modus: _doseModeFor(plan), roh: parseFloat(roh[pid]), dos: getWeekDoses(c.id, 5, c)[pid] });
+    })()`));
+    pruef('Plagron läuft als Per-Gieß-Plan', !r.fehlt && r.modus !== 'weekly-split', r.modus);
+    pruef('Seine Dosis ist unverändert die Plan-Dosis, nicht geteilt', r.dos === r.roh, r.dos + ' statt ' + r.roh);
   }
 
   pruef('Keine JS-Fehler', errors.length === 0, errors[0]);

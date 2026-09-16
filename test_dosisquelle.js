@@ -159,18 +159,24 @@ const AUFBAU = `(function(){
     const roh = E("JSON.stringify((getPlanForCycle(S.cycles.find(c=>c.active)).schedule||{}).w6 || {})");
     const doses = E("JSON.stringify(getWeekDoses(S.cycles.find(c=>c.active).id, 6, S.cycles.find(c=>c.active)))");
     const rohO = JSON.parse(roh), dosO = JSON.parse(doses);
-    const iv = E("S.cycles.find(c=>c.active).intBloom || 3");
-    const proWoche = 7 / iv;
+    // (v1.5.237) Geteilt wird durch die echten Duengerguesse dieser PLAN-Woche, nicht durch
+    // 7/Intervall. Die Kalenderwoche stimmte fast nie: Plan-Wochen sind gemessen 5 bis 14 Tage
+    // lang, und geliefert wurden dadurch 0 bis 216 Prozent der eingestellten Wochenmenge.
+    // Geprueft wird deshalb nicht mehr die Formel, sondern das Ergebnis.
+    const cnt = JSON.parse(E("JSON.stringify(weekGussCounts(S.cycles.find(c=>c.active), 6))"));
     const pid = Object.keys(rohO)[0];
     pruef('Wochenplan fuer Woche 6 ist nicht leer', pid !== undefined, 'keys=' + Object.keys(rohO).join(','));
-    if (pid !== undefined) {
-      const erwartet = Math.round((rohO[pid] / proWoche) * 100) / 100;
-      // Die Feed-Tag-Kompensation kann zusaetzlich anheben - deshalb >= statt ==
+    pruef('Pruefflage: Woche 6 hat Duengerguesse (' + cnt.feed + '/' + cnt.total + ')', cnt.feed > 0, JSON.stringify(cnt));
+    if (pid !== undefined && cnt.feed > 0) {
       pruef('Tagesdosis ist kleiner als die Wochendosis', dosO[pid] < rohO[pid],
         'woche=' + rohO[pid] + ' tag=' + dosO[pid]);
-      pruef('Tagesdosis liegt in der Groessenordnung Wochendosis/' + proWoche.toFixed(2),
-        dosO[pid] >= erwartet * 0.95 && dosO[pid] <= erwartet * 2.5,
-        'erwartet ~' + erwartet + ', bekommen ' + dosO[pid]);
+      const ohneDeckel = Math.round((rohO[pid] / cnt.feed) * 100) / 100;
+      pruef('Tagesdosis ist hoechstens Wochendosis/Duengerguesse (' + ohneDeckel + ')',
+        dosO[pid] <= ohneDeckel + 0.011, 'dosis=' + dosO[pid] + ' max=' + ohneDeckel);
+      const geliefert = Math.round(dosO[pid] * cnt.feed * 1000) / 1000;
+      pruef('Dosis mal Duengerguesse ueberschreitet die Wochenmenge nicht',
+        geliefert <= rohO[pid] + 0.005 * cnt.feed + 0.001,
+        'geliefert=' + geliefert + ' woche=' + rohO[pid]);
     }
   }
 

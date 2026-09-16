@@ -3472,7 +3472,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.236';
+const APP_VERSION = 'v1.5.237';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -9245,6 +9245,56 @@ function weekGussCounts(c, w) {
 }
 
 /**
+ * (v1.5.237) WIE SICH DIE WOCHENMENGE AUF DIE DÜNGERGÜSSE VERTEILT — eine Quelle für die
+ * Rechnung und für die Erklärung im Tageseintrag.
+ *
+ * Vorher teilte `getWeekDoses` durch `7 / Intervall` (eine KALENDERwoche) und multiplizierte
+ * danach mit `total / feed` aus `weekGussCounts`, das über die PLAN-Woche zählt — und die dehnt
+ * `planWeekBounds` auf die echte Zyklusdauer, gemessen 5 bis 14 Tage. Zwei Wochenlängen in einer
+ * Rechnung: Geliefert wurden zwischen 0 % und 216 % der eingestellten Wochenmenge.
+ *
+ * `faktor` ist der Aufschlag gegenüber einer Woche, in der jeder Guss Dünger bekäme. Ohne Deckel
+ * ist `raw/total · faktor` exakt `raw/feed` — die Wochenmenge kommt an. Der Deckel
+ * (`EC_FEED_CEILING / ecPeak`) begrenzt die Konzentration je Guss; dann kommt bewusst weniger an
+ * (`ANBAU.md` 5 und 15: Überdüngung ist der teurere Fehler), und `gedeckelt` sagt es der Anzeige.
+ *
+ * Gibt null zurück, wenn die Güsse dieser Plan-Woche nicht bekannt sind — dann wird nichts
+ * geteilt und die Plan-Menge unverändert gezeigt, statt eine Zahl zu erfinden.
+ */
+function _wochenVerteilung(c, w, plan, preset) {
+  if (!c || !(w > 0)) return null;
+  const cnt = (typeof weekGussCounts === 'function') ? weekGussCounts(c, w) : null;
+  if (!cnt || cnt.total <= 0) return null;
+  const _ep = parseFloat(preset && preset.ecPeak);
+  const deckel = (_ep > 0) ? (EC_FEED_CEILING / _ep) : Infinity;
+  const roh = cnt.feed > 0 ? (cnt.total / cnt.feed) : 0;
+  // DIESELBEN AUSNAHMEN WIE `feedDayCompFactor` — sonst repariert der neue Teiler eine Rechenregel
+  // und zerstört dabei eine Schutzregel. Gefunden hat das `test_feedtaganzucht.js`:
+  //  · `feedDayBasis` (Cup-Sieger): die Dosen SIND schon Feed-Tag-Dosen, nichts zu verteilen.
+  //  · Anzucht (v1.5.170): Ein Sämling reagiert auf Konzentration am empfindlichsten
+  //    (`ANBAU.md` 13.2), und bei der Düngermenge ist weniger die sichere Seite (15).
+  //  · ab Plan-Woche 10 (Reifung, Spülen): dort will man weniger, nicht mehr.
+  //  · Plan ohne geprüfte EC-Spitze: ohne Decke kein Aufschlag.
+  //
+  // Der Teiler selbst bleibt in JEDEM Fall der richtige: die Güsse dieser Plan-Woche. Ohne
+  // Ausgleich verteilt sich die Wochenmenge gleichmäßig auf alle Güsse (raw/total) statt nur
+  // auf die Dünge-Tage (raw/feed).
+  const ohneAusgleich = !!(preset && preset.feedDayBasis)
+    || _planWocheIstAnzucht(plan, w)
+    || !(w >= 1 && w <= 9)
+    || !(_ep > 0);
+  return {
+    feed: cnt.feed,
+    total: cnt.total,
+    roh,
+    deckel,
+    ohneAusgleich,
+    faktor: cnt.feed <= 0 ? 0 : (ohneAusgleich ? 1 : Math.min(roh, deckel)),
+    gedeckelt: !ohneAusgleich && cnt.feed > 0 && roh > deckel + 0.0001,
+  };
+}
+
+/**
  * (v1.5.170) Gehört Plan-Woche w zur Anzucht? Die Phase steht im Rückgrat des Plans (weekPhases, v1.5.51);
  * ohne Rückgrat gelten wie bisher Woche 1–2. Eine Quelle für den Teiler in getWeekDoses (v1.5.163) und den
  * Anzucht-Ausschluss in feedDayCompFactor.
@@ -9891,18 +9941,24 @@ function getWeekDoses(cId, w, c) {
   if (mode !== 'weekly-split' || !c) {
     out = { ...raw };
   } else {
-    // (v1.5.163) Welches Gießintervall gilt, sagt die Phase der Plan-Woche (plan.weekPhases). Die feste
-    // Grenze „Woche 1–2 Anzucht“ passte nur zufällig zu BioBizz Official; BioBizz Outdoor führt drei
-    // Anzucht-Wochen, und dessen Woche 3 wurde durch das Blüte-Intervall geteilt.
-    const iv = _planWocheIstAnzucht(plan, w) ? (c.intAnzucht || RI.anzucht) : (c.intBloom || RI.bloom);
-    const wateringsPerWeek = 7 / iv;
-    if (wateringsPerWeek <= 0) {
+    // (v1.5.237) Der Teiler sind die ECHTEN Düngergüsse dieser Plan-Woche, nicht 7/Intervall.
+    // Begründung und Messung stehen bei _wochenVerteilung. Nachgemessen an BioBizz Official:
+    // vorher 0–216 % der eingestellten Wochenmenge, jetzt 100 % (bis 101,3 % durch die Rundung).
+    const _v = _wochenVerteilung(c, w, plan, preset);
+    if (!_v) {
+      // Güsse dieser Plan-Woche unbekannt (Plan-Blatt ohne Zyklus, Woche außerhalb des Rasters):
+      // die Plan-Menge unverändert zeigen statt eine Zahl zu erfinden.
       out = { ...raw };
+    } else if (_v.feed <= 0) {
+      // Die ganze Plan-Woche besteht aus Wasser-Tagen. Es gibt keinen Guss, auf den sich die
+      // Wochenmenge verteilen ließe — also auch keine Dosis. Vorher fiel die Menge ersatzlos aus.
+      out = {};
+      Object.keys(raw).forEach(pid => { out[pid] = 0; });
     } else {
       out = {};
       Object.entries(raw).forEach(([pid, val]) => {
-        // Round to 2 decimals to keep display clean (0.8/2.33 = 0.343 → 0.34)
-        out[pid] = Math.round((val / wateringsPerWeek) * 100) / 100;
+        // Zwei Nachkommastellen, damit die Anzeige lesbar bleibt (2 / 3 = 0,667 → 0,67).
+        out[pid] = Math.round((val / _v.total) * _v.faktor * 100) / 100;
       });
     }
   }
@@ -9910,7 +9966,10 @@ function getWeekDoses(cId, w, c) {
   // so anheben, dass die Wochenmenge gleich bleibt. Cup-Sieger & ungeprüfte Pläne →
   // Faktor 1 (siehe feedDayCompFactor). Sitzt hier zentral, damit Plan-Ansicht und
   // Tages-Guss konsistent dieselbe (kompensierte) Dosis zeigen.
-  if (c) {
+  // (v1.5.237) NUR NOCH FÜR per-watering. Bei weekly-split steckt der Wasser-Tag-Ausgleich seit
+  // dieser Version im Teiler selbst (_wochenVerteilung); ein zweiter Faktor hier wäre genau die
+  // Doppelrechnung, die zwischen 0 % und 216 % der Wochenmenge geliefert hat.
+  if (c && mode !== 'weekly-split') {
     const f = feedDayCompFactor(c, w, preset);
     if (f !== 1) {
       Object.keys(out).forEach(pid => {
@@ -25990,14 +26049,25 @@ function renderEntry(iso) {
       const _cfPreset = (_cfPlan && _cfPlan.presetKey && typeof getPreset === 'function') ? getPreset(_cfPlan.presetKey) : null;
       const _cfType = (p && typeof getFeedWaterEffective === 'function') ? getFeedWaterEffective(c, p, iso, cd) : 'water';
       if (_cfPreset && a === 'giess' && _cfType !== 'water') {
-        const _cf = feedDayCompFactor(c, wk, _cfPreset);
+        // (v1.5.237) Der Faktor kommt aus derselben Quelle wie die Dosis. Vorher rechnete das
+        // Banner ihn selbst noch einmal aus; seit der Teiler bei weekly-split die Verteilung
+        // enthält, beschriebe feedDayCompFactor dort eine Zahl, die zur gezeigten Dosis nicht
+        // mehr passt. Für per-watering bleibt alles wie bisher.
+        const _cfWeekly = (typeof _doseModeFor === 'function') && _doseModeFor(_cfPlan) === 'weekly-split';
+        const _cfV = _cfWeekly ? _wochenVerteilung(c, wk, _cfPlan, _cfPreset) : null;
+        const _cf = _cfWeekly ? (_cfV ? _cfV.faktor : 1) : feedDayCompFactor(c, wk, _cfPreset);
         if (_cf > 1.001) {
           const _cfStr = ('×' + _cf.toFixed(1)).replace('.', ',');
+          // Greift die EC-Decke, bleibt die Wochenmenge NICHT gleich — dann kommt weniger an.
+          // Das wird gesagt, nicht verschwiegen (ANBAU.md 15: lieber weniger Dünger, aber ehrlich).
+          const _cfSatz = (_cfV && _cfV.gedeckelt)
+            ? 'Mehr geht diese Woche nicht: Die ganze Wochenmenge auf so wenige Düngergüsse verteilt läge über der EC-Grenze deines Plans. Es kommt deshalb etwas weniger an als geplant — das ist die sichere Seite.'
+            : 'Höher als im Plan, weil die Wasser-Tage dazwischen kaum Dünger bekommen — die Wochenmenge bleibt gleich.';
           compFactorBanner = `<div style="background:linear-gradient(135deg,rgba(96,165,250,0.08),rgba(96,165,250,0.04));border:1px solid rgba(96,165,250,0.3);border-radius:10px;padding:10px 12px;margin-bottom:8px;display:flex;align-items:center;gap:10px">
             <span style="font-size:18px">💧</span>
             <div style="flex:1">
               <div style="font-size:12px;font-weight:700;color:var(--blue)">Feed-Tag-Dosis ${_cfStr}${infoBtn('feedcomp')}</div>
-              <div style="font-size:11px;color:var(--text-sub);line-height:1.45;margin-top:2px">Höher als im Plan, weil die Wasser-Tage dazwischen kaum Dünger bekommen — die Wochenmenge bleibt gleich.</div>
+              <div style="font-size:11px;color:var(--text-sub);line-height:1.45;margin-top:2px">${_cfSatz}</div>
             </div>
           </div>`;
         }

@@ -2,6 +2,38 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-16 — v1.5.237
+
+- **Der Wochendosis-Modus lieferte zwischen 0 % und 216 % der eingestellten Wochenmenge.** Patricks Entscheidung
+  vom 16.09.2026: „Genau das müssen wir dringend verhindern. Es dürfen keine Rechenfehler vorkommen. Repariere es
+  erst mal bevor wir etwas abschaffen."
+- **Nachgemessen** an BioBizz Official, Gießintervall 3, Plan-Wochen 1–9 (Skript im Scratchpad, `split/messung.js`):
+
+  | Blütetage | gelieferte Wochenmenge |
+  |---|---|
+  | 42 | 0 % · 42,7 % · 43 % · 58,7 % · 59 % · 86 % · 170,7 % |
+  | 85 | 43 % · 117,3 % · 118 % · 170 % · 172,5 % |
+  | 105 | 43 % · 118 % · 170 % · 177 % · **216 %** |
+
+  Eine Plan-Woche bekam **gar nichts**: Ihr einziger Guss war ein Wasser-Tag, die Wochenmenge fiel ersatzlos aus.
+- **Ursache — zwei verschiedene Wochenlängen in einer Rechnung.** `getWeekDoses` teilte durch `7 / Intervall`,
+  also durch eine **Kalender**woche. Danach multiplizierte `feedDayCompFactor` mit `total / feed`, und
+  `weekGussCounts` zählt über die **Plan**-Woche, die `planWeekBounds` auf die echte Zyklusdauer dehnt —
+  gemessen 5 bis 14 Tage. Je Guss kam `raw · Intervall/7 · total/feed` heraus; geliefert wurde
+  `raw · Intervall · total / 7` statt `raw`.
+- **Der Teiler sind jetzt die echten Düngergüsse dieser Plan-Woche.** Gemessen nach dem Fix: **100 %** in jeder
+  Woche (bis 101,3 %, das ist die Rundung auf zwei Nachkommastellen). Die Feed-Tag-Kompensation entfällt für
+  diesen Modus — sie steckt im Teiler; ein zweiter Faktor wäre genau die Doppelrechnung. **Für per-watering-Pläne
+  ändert sich nichts**, dort läuft `feedDayCompFactor` unverändert weiter.
+- **Zwei Sonderfälle, beide vorher still:** Eine Plan-Woche ohne einen einzigen Düngerguss ergibt jetzt Dosis 0
+  statt einer Division durch null. Und greift die EC-Decke des Plans (`EC_FEED_CEILING / ecPeak`), kommt bewusst
+  weniger als die Wochenmenge an — nach `ANBAU.md` 5 und 15 ist Überdüngung der teurere Fehler. **Beides ist
+  noch nicht sichtbar; das ist der nächste Schritt.**
+- **Für dein Handy heißt das:** Die angezeigten Mengen deines BioBizz-Plans ändern sich mit diesem Update —
+  nach oben, wo bisher zu wenig ankam, und nach unten, wo es zu viel war. Der Plan selbst ist unverändert.
+- `test_weeklysplit.js` erweitert (18 Prüfungen, beide Zeitzonen): Die gelieferte Wochenmenge wird über drei
+  Zyklus-Längen und alle Plan-Wochen gegen die gespeicherte gehalten.
+
 ## 2026-09-16 — v1.5.236
 
 - **Fünf von elf Vorlagen hatten gar keinen Wochen-Tipp** — darunter **BioBizz Light, den der Assistent
