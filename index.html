@@ -4473,7 +4473,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.229';
+const APP_VERSION = 'v1.5.230';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -20258,6 +20258,7 @@ function _planSheet(c, prods, weekNames, activeFocus) {
 
   const mix = (S.mixOrder && S.mixOrder.length) ? `<div style="margin-top:12px">
       <div class="sect-head">Mischreihenfolge</div>
+      ${S.mixInfo ? `<div style="font-size:11px;color:var(--text-muted);line-height:1.55;margin:4px 0 8px">${S.mixInfo}</div>` : ''}
       <div style="display:flex;flex-direction:column;gap:3px;margin-top:6px">
         ${S.mixOrder.map((n, i) => {
           const pr = S.products.find(x => x.name === n);

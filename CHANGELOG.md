@@ -2,6 +2,29 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-16 — v1.5.230
+
+- **Die Misch-Info wurde seit v1.5.52 nirgends angezeigt.** Gefunden beim Nachsehen der eigenen Korrektur aus
+  v1.5.229: Der berichtigte Satz stand im Zustand (`S.mixInfo`, 563 Zeichen), aber in keinem Bildschirm.
+- **Ursache — zwei Renderer für dieselbe Sache.** Der sichtbare (`const mix`, ausgegeben über `${mix}`) zeigt nur
+  die nummerierte Liste. Der andere (`mixHTML`) zeigt zusätzlich `S.mixInfo` — und wird **nirgends ausgegeben**:
+  ein einziger Treffer im ganzen Quelltext, seine eigene Definition. Der Kommentar über dem Bildschirm erklärt,
+  wie es dazu kam: Beim Umbau zum „Düngeplan als Blatt" (v1.5.52) hatte der alte Bildschirm „Mischreihenfolge
+  **doppelt**" — beim Zusammenstreichen blieb der Renderer **mit** der Info liegen und der **ohne** sie sichtbar.
+- **Was dadurch unsichtbar war:** jede Misch-Info aller elf Vorlagen. Darunter „Silica Force IMMER ZUERST ins
+  Wasser, 2 Min ruhen lassen (sonst Ausfällung)" im Cup-Sieger-Plan — also genau die Warnung, die eine
+  Calciumsilikat-Ausfällung verhindert (`ANBAU.md` 10) —, die CANNA-Coco-Regel „immer A vor B, niemals zusammen
+  ins Konzentrat" und der Satz, den v1.5.229 gerade berichtigt hatte.
+- **Jetzt** steht die Misch-Info im sichtbaren Block, direkt unter der Überschrift und über der nummerierten Liste.
+- **Das tote `mixHTML` bleibt vorerst stehen** — Aufräumen gehört nicht in einen Fehlerfix (`CLAUDE.md`). Es steht
+  jetzt auf der Aufräum-Liste in der Übergabe, zusammen mit `weekPlan` und `stepMixDose`.
+- **Die Lehre ist nicht neu, sie ist die aus v1.5.189** („`buildChartsSection` wird nirgends aufgerufen"): **Vor
+  einem Fix an einer Anzeige die Aufrufer suchen.** Fünf Textkorrekturen dieser Reihe (v1.5.225–229) betrafen
+  Stellen, von denen eine gar nicht sichtbar war — aufgefallen ist es erst, weil die Browser-Prüfung den Text
+  nicht fand und ich dem nachgegangen bin, statt es als Anzeigedetail abzuhaken.
+- `test_duengeplantexte.js` um Abschnitt F erweitert (49 Prüfungen, beide Zeitzonen) — er lädt die Vorlage,
+  rendert den Bildschirm und sucht die Warnung im tatsächlichen Text.
+
 ## 2026-09-16 — v1.5.229
 
 - **Der konservative BioBizz-Plan erklärte die Ausfällung genau verkehrt herum.** Fünfter Befund der Gruppe A

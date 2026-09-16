@@ -236,6 +236,36 @@ function pruef(name, bedingung, info) {
     pruef('Im Quelltext steht die umgedrehte Begründung nirgends mehr', !/verhindert Phosphat-Ausfällung/.test(code));
   }
 
+  // (v1.5.230) Die Misch-Info stand seit v1.5.52 in keinem Bildschirm: Es gibt zwei Renderer für die
+  // Mischreihenfolge, und der sichtbare zeigte nur die nummerierte Liste. Gefunden beim Nachsehen der
+  // eigenen Korrektur aus v1.5.229 — der Satz war im Zustand, aber nirgends zu lesen.
+  console.log('\nF - Die Misch-Info steht auch wirklich auf dem Bildschirm');
+  {
+    // Eigener, sauberer Ausgangszustand. Die Abschnitte davor fassen S an, und `loadPreset` hat mehrere
+    // frühe Rückwege: Substrat-Abgleich mit Rückfrage (presetMediumMismatch → customConfirm) und
+    // „Plan existiert bereits". Erbt der Abschnitt den Zustand, lädt er still den falschen Plan —
+    // genau das ist beim ersten Lauf passiert (S.mixInfo blieb leer, die Liste begann mit CalMag).
+    await E(`(async () => {
+      window.customConfirm = () => Promise.resolve(true); window.toast = () => {}; window.vibrate = () => {};
+      S.cycles = []; S.entries = {}; S.fertPlans = []; S._activePlanId = null; saveS();
+      await loadPreset('cup_sieger');
+    })()`);
+    await new Promise(r => setTimeout(r, 400));
+    const r = JSON.parse(E(`(function(){
+      goTo('duenger');
+      const t = document.getElementById('scr-duenger').textContent.replace(/\\s+/g, ' ');
+      return JSON.stringify({ presetKey: S.presetKey || '', imZustand: String(S.mixInfo || '').length,
+        silica: /Silica Force IMMER ZUERST/.test(t),
+        mischliste: /Mischreihenfolge/.test(t),
+        ausschnitt: (t.match(/Mischreihenfolge.{0,120}/) || [''])[0] });
+    })()`));
+    pruef('Prüflage: der Cup-Sieger-Plan ist wirklich geladen', r.presetKey === 'cup_sieger', 'presetKey=' + r.presetKey);
+    pruef('Prüflage: der Plan hat eine Misch-Info im Zustand', r.imZustand > 100, 'Länge ' + r.imZustand);
+    pruef('Die Mischreihenfolge wird angezeigt', r.mischliste === true);
+    pruef('Und die Misch-Info steht dabei — samt der Warnung „Silica Force IMMER ZUERST"',
+      r.silica === true, r.ausschnitt);
+  }
+
   pruef('Keine JS-Fehler im Lauf', errors.length === 0, errors.slice(0, 2).join(' | '));
   console.log(`\nErgebnis: ${ok} OK, ${fail} Fehler`);
   process.exit(fail ? 1 : 0);
