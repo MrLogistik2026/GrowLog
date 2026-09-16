@@ -393,6 +393,27 @@ function pruef(name, bedingung, info) {
       drei.every(k => /vor die Basisdünger/.test(r.d[k]) && !/als Erstes ins Wasser/.test(r.d[k])));
   }
 
+  // (v1.5.242 ff.) Anleitung und Lexikon beschreiben die Vorlagen so, wie sie heute sind. Nach v1.5.240 stand in der
+  // Anleitung weiter „Official 2025 … die App teilt automatisch durch deine Gießtage" und „Wochendosis-Modus (Official)
+  // … durch ca. 2.3 Güsse" — v1.5.240 hatte nach „BioBizz Official" gesucht, die Anleitung schreibt nur „Official".
+  console.log('\nK - Anleitung und Lexikon beschreiben die Vorlagen, wie sie sind');
+  {
+    const r = JSON.parse(E(`(function(){
+      const items = HOWTO.flatMap(k => k.items || []);
+      const txt = (t) => ((items.find(i => i.t === t) || {}).txt) || '';
+      const waehlbar = Object.keys(FERT_PRESETS).filter(k => FERT_PRESETS[k].subtitle && !FERT_PRESETS[k].abgeloest);
+      return JSON.stringify({ wahl: txt('Master, Light oder Official?'), modus: txt('Per-Gieß vs. Wochen-Modus'),
+        laden: txt('Plan laden'), modi: waehlbar.map(k => [k, _doseModeFor({ presetKey: k })]) });
+    })()`));
+    pruef('„Master, Light oder Official?" beschreibt Official 2026 je Guss',
+      /Official 2026/.test(r.wahl) && /Jeder Guss/.test(r.wahl) && !/2025|Wochen-Gesamtdosen|teilt automatisch/.test(r.wahl), r.wahl.slice(-260));
+    pruef('„Per-Gieß vs. Wochen-Modus" nennt Official nicht mehr als Wochendosis-Plan, keine 2,3 Güsse',
+      !/\(Official\)/.test(r.modus) && !/2\.3 Güsse/.test(r.modus) && /älteren gespeicherten Plänen/.test(r.modus), r.modus);
+    pruef('… und was er behauptet, stimmt: jede wählbare Vorlage rechnet je Guss',
+      r.modi.length > 0 && r.modi.every(([, m]) => m === 'per-watering'), r.modi.filter(([, m]) => m !== 'per-watering').map(([k]) => k).join(', '));
+    // K-ENDE
+  }
+
   pruef('Keine JS-Fehler im Lauf', errors.length === 0, errors.slice(0, 2).join(' | '));
   console.log(`\nErgebnis: ${ok} OK, ${fail} Fehler`);
   process.exit(fail ? 1 : 0);

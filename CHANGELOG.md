@@ -2,6 +2,19 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-16 — v1.5.242
+
+- **Die Anleitung beschrieb BioBizz Official noch als Wochendosis-Plan.** „Master, Light oder Official?" sagte
+  „Official 2025: … mit Wochen-Gesamtdosen — die App teilt automatisch durch die Anzahl deiner Gießtage pro Woche",
+  „Per-Gieß vs. Wochen-Modus" sagte „Wochendosis-Modus (Official) … bei Intervall 3 also durch ca. 2.3 Güsse/Woche".
+  Seit v1.5.240 rechnet Official je Guss nach dem Blatt 2026, und die 2,3 stimmten schon seit v1.5.237 nicht mehr —
+  die App teilt durch die echten Düngergüsse der Plan-Woche.
+- **Übersehen, weil v1.5.240 nach „BioBizz Official" gesucht hat** — die Anleitung schreibt nur „Official".
+  Aufgefallen beim Nachsehen, wo Fish·Mix sonst noch vorkommt.
+- Beide Einträge sagen jetzt, was ist: Official 2026 je Guss, mit den Wochen-Namen des Blatts; den Wochendosis-Modus
+  gibt es nur noch in älteren gespeicherten Plänen. `test_duengeplantexte.js` Abschnitt K prüft die Texte und dass
+  ihre Behauptung stimmt: Jede wählbare Vorlage rechnet je Guss (84 Prüfungen).
+
 ## 2026-09-16 — v1.5.241
 
 - **Fish·Mix: nie zusammen mit Bio·Grow.** Patrick am 16.09.2026 auf die offene Frage aus v1.5.240: „Ich nutze
