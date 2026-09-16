@@ -4471,7 +4471,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.223';
+const APP_VERSION = 'v1.5.224';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -23205,7 +23205,6 @@ function welcomeStartDemo() {
     seedType: 'auto',
     startDate: demoStartISO,
     potSize: 11,
-    germMethod: 'direct',
     fertPlanId: S.fertPlans?.[0]?.id || null,
   });
 
@@ -23223,6 +23222,9 @@ function welcomeStartDemo() {
     cycRef.iceDays = 2;
     cycRef.harvestDays = 1;
     cycRef.dryDays = 7;
+    // (v1.5.224) addCyc baut sein Objekt aus einer festen Feldliste und kennt germMethod nicht —
+    // im Aufruf war die Zeile wirkungslos. Der Demo keimt direkt in der Erde, wie die Karte empfiehlt.
+    cycRef.germMethod = 'direct';
   }
 
   // === REALISTISCHE GIESS-HISTORIE über 60 Tage ===
@@ -23249,24 +23251,20 @@ function welcomeStartDemo() {
 
   // Wassermenge basiert auf Action-Typ + Tag in Phase. Werte für 11L-Stofftopf
   // Indoor — entsprechen 5-25% Topfvolumen je nach Pflanzengröße.
-  const waterForAction = (action, dayNum, p) => {
+  const waterForAction = (action, dayNum, iso) => {
     if (action === 'saettigung') {
       return 700; // Sättigungsguss Tag 1: ~6% des Topfvolumens
     }
     if (action === 'sprueh') {
-      // Sprüh-Mengen werden nur an einzelnen Doku-Tagen geschrieben (siehe unten)
-      // Hier die Mengen für jene Tage, wenn ein Eintrag entsteht:
-      if (dayNum <= 4)  return 30;   // erste Sprühgabe
-      if (dayNum <= 7)  return 60;   // Keimling steht
-      return 100;                    // Übergang zu echten Güssen
+      // (v1.5.224) An Spruehtagen wird nicht gegossen — hier standen 30–100 ml als Gießmenge,
+      // waehrend die App an denselben Tagen seit v1.5.217 gar keine Menge zeigt.
+      return 0;
     }
     if (action === 'giess_anz') {
-      // Anzucht-Güsse: ansteigend von Tag 9 → 21 (Übergang zu Bloom)
-      if (dayNum <= 9)  return 250;  // erster regulärer Guss
-      if (dayNum <= 12) return 400;  // zweiter Guss
-      if (dayNum <= 15) return 700;  // Wurzelsystem etabliert
-      if (dayNum <= 18) return 1000; // vor Topping kräftig
-      return 1200;                   // Tag 21 letzter vor Bloom
+      // (v1.5.224) Menge aus derselben Rechnung wie im Tageseintrag statt einer eigenen Treppe
+      // 250/400/700/1000/1200, die neben dem Vorschlag der App stand und ihm widersprach.
+      const _p = iso ? phase(iso, cycRef) : null;
+      return Math.round(waterSuggestion(cycRef, _p, iso) || 0);
     }
     if (action === 'giess') {
       // Bloom-Güsse: dayInPhase = dayNum - 21
@@ -23328,7 +23326,7 @@ function welcomeStartDemo() {
     const cd = ent.cycleData[cycleId];
 
     // Wassermenge: kleine Werte exakt, ab 200ml auf 50er gerundet
-    const w = waterForAction(action, dayNum, null);
+    const w = waterForAction(action, dayNum, iso);
     cd.water = String(w < 200 ? w : Math.round(w / 50) * 50);
     cd.ph = String(phForDay(dayNum));
     // (v1.5.164) An Spül- und IceFlush-Tagen nur Wasser. Die Kurve darunter ging an den ersten Spültagen
@@ -23359,20 +23357,28 @@ function welcomeStartDemo() {
         if (weekSched[prodId] > 0) cd.mixChecks[prodId] = true;
       });
     }
-    // Runoff pH/EC für realistische Drift-Visualisierung
-    const inputPh = parseFloat(cd.ph);
-    if (!isNaN(inputPh)) {
-      const phDrift = ((dayNum * 13) % 5 - 2) * 0.05;
-      cd.runoffPh = (inputPh + phDrift - 0.05).toFixed(1);
-    }
-    const inputEc = parseFloat(cd.ec);
-    if (!isNaN(inputEc) && inputEc > 0) {
-      const ecDrift = ((dayNum * 7) % 4 - 1) * 0.1;
-      cd.runoffEc = Math.max(0.1, inputEc + ecDrift + 0.1).toFixed(1);
-    }
+    // (v1.5.224) Ablauf gibt es nur, wo gegossen wurde. An Sprüh-Tagen läuft nichts aus dem Topf —
+    // vorher schrieb die Demo dort trotzdem Drain-pH und -EC. Solange daneben eine erfundene Gießmenge
+    // stand, fiel es nicht auf; ohne sie wäre es genau die Messung, die die App seit v1.5.150 als
+    // „nicht bewertet" zurückweist — und die der Neuling als allererste Messung zu sehen bekäme.
+    const _gegossen = parseFloat(cd.water) > 0;
+    if (_gegossen) {
+      // Runoff pH/EC für realistische Drift-Visualisierung
+      const inputPh = parseFloat(cd.ph);
+      if (!isNaN(inputPh)) {
+        const phDrift = ((dayNum * 13) % 5 - 2) * 0.05;
+        cd.runoffPh = (inputPh + phDrift - 0.05).toFixed(1);
+      }
+      const inputEc = parseFloat(cd.ec);
+      if (!isNaN(inputEc) && inputEc > 0) {
+        const ecDrift = ((dayNum * 7) % 4 - 1) * 0.1;
+        cd.runoffEc = Math.max(0.1, inputEc + ecDrift + 0.1).toFixed(1);
+      }
     // (v1.5.162) Ablaufmenge dazu, 18 % der Gießmenge. Ohne Menge ist eine Ablaufmessung seit v1.5.150
     // „nicht bewertet“ — die Demo zeigte dem Neuling als erste Messung überhaupt eine, die nichts taugt.
-    if ((cd.runoffPh || cd.runoffEc) && parseFloat(cd.water) > 0) cd.drainMl = String(Math.round(parseFloat(cd.water) * 0.18));
+      // (v1.5.162) Ablaufmenge dazu, 18 % der Gießmenge.
+      if (cd.runoffPh || cd.runoffEc) cd.drainMl = String(Math.round(parseFloat(cd.water) * 0.18));
+    }
   }
 
   // === MEILENSTEIN-NOTIZEN ===
@@ -23385,10 +23391,10 @@ function welcomeStartDemo() {
   // reinen Beobachtungs-Eintrag ohne Wasserwerte — das ist normal und
   // gewollt für Doku-Zwecke.
   const notes = {
-    1:  'Samen in vorbefeuchtete Erde gesetzt + Sättigungsguss ~700ml am Topfrand. Ab jetzt 7 Tage nur Sprühflasche.',
-    4:  'Erste Keimung sichtbar! Kleines Köpfchen drückt durch die Erde. Sprühgabe ~30ml direkt am Sämling.',
-    7:  'Erstes Blattpaar komplett ausgebildet. Pflanze steht stabil — letzter Sprüh-Tag, ab morgen normaler Rhythmus.',
-    9:  'Erster regulärer Guss (~250ml im Ring um den Sämling). Wurzeln sind etabliert genug für richtiges Gießen.',
+    1:  'Erde 24 h vorher angefeuchtet, dann der Sättigungsguss in drei Durchgängen — den Samen danach 0,5–1 cm tief gesetzt. Bis Tag 8 wird nur die Stelle am Samen besprüht.',
+    4:  'Der Keimling durchbricht die Erde, die Keimblätter sind noch geschlossen. Nur 3–5 Sprühstöße auf die Stelle am Keimling.',
+    7:  'Keimblätter offen, das erste gezackte Blattpaar spitzt. Morgen noch sprühen, ab Tag 9 wird gegossen.',
+    9:  'Erster regulärer Guss, im Ring um den Keimling. Die Menge schlägt die App aus Topf und Phase vor.',
     14: '2 Wochen — 4. Nodium zeigt sich. Root·Juice ausgeschlichen. Buschiges Wachstum.',
     18: 'Vor dem Topping nochmal kräftig gegossen. Turgordruck muss stimmen für sauberen Schnitt.',
     22: '✂️ Getoppt über dem 5. Nodium. Sauberer Schnitt, Pflanze war gut hydriert. 2 Tage Topping-Pause.',

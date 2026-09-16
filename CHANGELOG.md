@@ -2,6 +2,29 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-16 — v1.5.224
+
+- **Der Demo-Zyklus führte einen anderen Grow vor, als die App beschreibt.** Befund der Keimungs-Prüfung (Schritt 16) —
+  und er wiegt schwerer als er aussieht: Der Demo ist für viele der **erste** Eindruck davon, wie ein Zyklus aussieht.
+  - **An Sprüh-Tagen standen 30–100 ml als Gießmenge** im Eintrag, während die App an genau diesen Tagen seit v1.5.217
+    bewusst **keine** Menge zeigt. Jetzt 0 — kein Guss.
+  - **Die Anzucht-Güsse kamen aus einer eigenen Treppe** (250/400/700/1000/1200 ml). Sie standen neben dem Vorschlag,
+    den die App aus Topf, Substrat und Phase rechnet, und widersprachen ihm. Jetzt dieselbe Rechnung (`waterSuggestion`).
+  - **Die Notizen erzählten einen anderen Verlauf:** „Ab jetzt 7 Tage nur Sprühflasche" (es sind Tag 2–8), eine
+    Sprühgabe in Millilitern, und an Tag 7 „Erstes Blattpaar komplett ausgebildet" — der Keimling bricht an Tag 4–7
+    gerade erst durch (`KEIMUNG`). Die Notizen an Tag 1, 4, 7 und 9 folgen jetzt demselben Ablauf wie die Karten.
+- **Zwei Folgefehler, die erst der neue Test gefunden hat:**
+  - **Richtigstellung zu v1.5.214:** Dort steht, der Demo-Zyklus keime „ebenfalls direkt in der Erde". Das stimmte
+    nicht — `addCyc` baut sein Objekt aus einer festen Feldliste und kennt `germMethod` gar nicht, die Zeile im
+    Aufruf war wirkungslos. Der Demo setzt das Feld jetzt dort, wo er auch seine anderen Sonderwerte setzt.
+  - **Der Demo schrieb Drain-pH und -EC auch an Tagen ohne Guss.** Solange daneben eine erfundene Gießmenge stand,
+    fiel es nicht auf. Ohne sie wäre daraus genau die Messung geworden, die die App seit v1.5.150 als „nicht
+    bewertet" zurückweist — und die ein Neuling als allererste Ablaufmessung zu sehen bekäme. Jetzt gibt es Ablauf
+    nur dort, wo gegossen wurde; aus einem Topf, auf den man sprüht, läuft nichts heraus.
+- `test_keimung.js` um Abschnitt N erweitert (87 Prüfungen, beide Zeitzonen) — er legt den Demo-Zyklus an und
+  vergleicht seine Einträge mit dem, was die App für denselben Tag vorschlägt. `test_demozyklus.js` bleibt
+  unverändert und war es, der den zweiten Fehler gemeldet hat.
+
 ## 2026-09-16 — v1.5.223
 
 - **Der Hilfe-Text ließ offen, was Tag 1 ist.** Befund der Keimungs-Prüfung (Schritt 14): „Startdatum: der Tag an dem du
