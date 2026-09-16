@@ -2,6 +2,23 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-16 — v1.5.251
+
+- **Die Vorlage „BioBizz konservativ" redete an ihrem eigenen Wochenplan vorbei.** Die Wochen-Tipps sagten in Woche 4
+  „Top·Max kommt rein" (im Plan erst ab Woche 5), in Woche 5 „Bio·Bloom auf 1.5" (Plan: 1.2), in Woche 6
+  „Stickstoff-Cutoff! Bio·Grow ganz raus" (Plan: 0.3 ml/L, zum letzten Mal 0.2 in Woche 7) und in Woche 8 „Bio·Bloom
+  langsam reduzieren" (Plan: unverändert 1.8). Die Ablauf-Info versprach „Stickstoff-Cutoff in Wo 6, harte Spülung in
+  Wo 8" — gespült wird ab Woche 11, Woche 8 und 9 sind volle Blütedüngung. Wer den Tipps folgte, mischte etwas anderes,
+  als die Mischliste daneben zeigte.
+- **Gefunden vom Fach-Gegencheck** an der Stelle, die v1.5.248 geändert hatte: Deren neuer Satz „bewusst unter den
+  Mengen der BioBizz-Tabelle" stimmte für Top·Max nicht (Blühwoche 3–5: 2–3 ml/L, im Blatt 1). Jetzt steht dort, was
+  stimmt: Bio·Grow und Bio·Bloom bleiben darunter.
+- Die Texte folgen dem Plan, **die Mengen bleiben unverändert**. Weg sind auch „bei EC-Aufbau eine Woche pausieren"
+  (eine Woche Pause ist ein Stickstoff-Stopp, `ANBAU.md` 5; der Drain-EC braucht eine gültige Messung, 5.1) und
+  „Alfa Boost … für Blütenbildung" (Wirkungszusage).
+- `test_duengeplantexte.js` Abschnitt N prüft jeden geänderten Tipp gegen die Zahlen im Wochenplan und die Aussage
+  „unter der BioBizz-Tabelle" gegen das Blatt 2026 (103 Prüfungen).
+
 ## 2026-09-16 — v1.5.250
 
 - **Die neuen Dosis-Texte aus v1.5.248 waren an vier Stellen zu einfach — gefunden von einem Fach-Gegencheck, bevor sie

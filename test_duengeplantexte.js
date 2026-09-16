@@ -456,6 +456,30 @@ function pruef(name, bedingung, info) {
     // K-ENDE
   }
 
+  // (v1.5.251) „BioBizz konservativ": Die Wochen-Tipps und die Ablauf-Info widersprachen dem eigenen Wochenplan — „Bio·Grow
+  // ganz raus" in Woche 6 bei 0,3 ml/L im Plan, „Top·Max kommt rein" in Woche 4 ohne Top·Max, „Bio·Bloom langsam
+  // reduzieren" in Woche 8 bei unveränderten 1,8, „harte Spülung in Wo 8" bei voller Blütedüngung bis Woche 9. Und die
+  // Aussage aus v1.5.248 „bewusst unter den Mengen der BioBizz-Tabelle" stimmte für Top·Max nicht. Geprüft wird gegen die
+  // Zahlen selbst, damit ein Tipp nicht wieder an seinem Plan vorbeiredet.
+  console.log('\nN - Die konservative Vorlage sagt, was ihr Wochenplan tut');
+  {
+    const r = JSON.parse(E('JSON.stringify({ k: FERT_PRESETS.biobizz_konservativ, o: FERT_PRESETS.biobizz_official_2026.schedule })'));
+    const s = r.k.schedule, tip = (w) => ((r.k.weekFocus || {})[w] || {}).tip || '';
+    pruef('Woche 4: Bio·Bloom startet, Top·Max noch nicht', /Bio·Bloom startet \(0\.6/.test(tip(4)) && s[4]['Bio·Bloom'] === 0.6 && !s[4]['Top·Max'] && !/Top·Max/.test(tip(4)), tip(4));
+    pruef('Woche 5: Bio·Bloom 1.2, Top·Max kommt dazu', /1\.2 ml\/L, Top·Max kommt dazu/.test(tip(5)) && s[5]['Bio·Bloom'] === 1.2 && s[5]['Top·Max'] > 0 && !s[4]['Top·Max'], tip(5));
+    pruef('Woche 6: Bio·Grow wird ausgeschlichen, nicht „ganz raus"', /\(0\.3 ml\/L\)/.test(tip(6)) && s[6]['Bio·Grow'] === 0.3 && s[6]['Bio·Bloom'] === 1.5 && s[6]['Top·Max'] === 2, tip(6));
+    pruef('Woche 7: Höchstwert Bio·Bloom, letzter Bio·Grow', /1\.8 ml\/L/.test(tip(7)) && /\(0\.2 ml\/L\)/.test(tip(7)) && s[7]['Bio·Bloom'] === 1.8 && s[7]['Bio·Grow'] === 0.2 && !s[8]['Bio·Grow'], tip(7));
+    pruef('Woche 8: Bio·Bloom bleibt, statt „langsam reduzieren"', !/reduzieren/.test(tip(8)) && s[8]['Bio·Bloom'] === 1.8 && s[8]['Top·Max'] === 3, tip(8));
+    pruef('Ablauf-Info ohne „Cutoff in Wo 6" und „harte Spülung in Wo 8"', !/Wo 6|Wo 8|eine Woche pausieren/.test(r.k.drainInfo) && /bis Woche 7 ausgeschlichen/.test(r.k.drainInfo)
+      && /in Woche 10 zurückgenommen/.test(r.k.drainInfo) && s[10]['Bio·Bloom'] < s[9]['Bio·Bloom'] && r.k.weekPhases[10] === 'flush', r.k.drainInfo);
+    // „Bio·Grow und Bio·Bloom bleiben unter den Mengen der BioBizz-Tabelle": Blühwoche k ist hier Plan-Woche k+3, im Blatt k+2.
+    const grow = Object.values(s).map(w => w['Bio·Grow'] || 0).filter(v => v > 0);
+    const growBlatt = Object.values(r.o).map(w => w['Bio·Grow'] || 0).filter(v => v > 0);
+    const bloomUnter = [1, 2, 3, 4, 5, 6, 7].every(k => !(s[k + 3] || {})['Bio·Bloom'] || s[k + 3]['Bio·Bloom'] < ((r.o[k + 2] || {})['Bio·Bloom'] || 0));
+    pruef('… und „unter den Mengen der BioBizz-Tabelle" stimmt für Bio·Grow und Bio·Bloom', Math.max(...grow) < Math.min(...growBlatt) && bloomUnter);
+    pruef('… Top·Max wird nicht mehr mitbehauptet (es liegt in Blühwoche 3–5 über dem Blatt)', !/Top·Max/.test(r.k.drainInfo.split('.')[0]) && s[6]['Top·Max'] > r.o[5]['Top·Max']);
+  }
+
   pruef('Keine JS-Fehler im Lauf', errors.length === 0, errors.slice(0, 2).join(' | '));
   console.log(`\nErgebnis: ${ok} OK, ${fail} Fehler`);
   process.exit(fail ? 1 : 0);

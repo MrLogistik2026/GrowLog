@@ -3683,16 +3683,16 @@ const FERT_PRESETS = {
     feedWaterRhythm: ARC_RHYTHM,
     mixOrder: ['CalMag','Epsom','POWHUMUS','Aloe Vera','Bio·Grow','Bio·Bloom','Advanced Amino','Alfa Boost','Top·Max'],
     mixInfo: 'Konservative BioBizz-Variante mit zusätzlichen Bodenbiom-Bausteinen (POWHUMUS, Aloe Vera). Reihenfolge: 1. CalMag zuerst und vollständig einrühren — Calcium fällt mit Phosphaten und Sulfaten aus, deshalb muss es im ganzen Wasser verteilt sein, bevor etwas anderes dazukommt. 2. Epsom-Salz direkt danach, bei Mg-Bedarf (auch ein Sulfat). 3. POWHUMUS und Aloe Vera als Konzentrate (Huminsäuren + Polysaccharide). 4. Basisdünger (Bio·Grow / Bio·Bloom). 5. Aminosäuren (Advanced Amino, Alfa Boost). 6. Top·Max als Chelator zuletzt. pH am Ende auf 6.2–6.4 korrigieren.',
-    drainInfo: '🌱 Konservativ dosiert: bewusst unter den Mengen der BioBizz-Tabelle. Bio-Grow startet niedrig (0.5 ml/L) und wird auf 0.8 ml/L gesteigert, dann ausgeschlichen. Bio-Bloom langsam hochfahren bis 1.8 ml/L. Bei weichem Wasser CalMag durchgehend. Drain bei jedem Gießen prüfen — bei EC-Aufbau eine Woche pausieren. Stickstoff-Cutoff in Wo 6, harte Spülung in Wo 8.',
+    drainInfo: '🌱 Konservativ dosiert: Bio·Grow und Bio·Bloom bleiben unter den Mengen der BioBizz-Tabelle. Bio·Grow startet niedrig (0.5 ml/L), steigt auf 0.8 ml/L und wird bis Woche 7 ausgeschlichen. Bio·Bloom steigt langsam bis 1.8 ml/L und wird in Woche 10 zurückgenommen. Bei weichem Wasser CalMag durchgehend. Ob die Menge passt, zeigt die Pflanze — braune Spitzen bei feuchtem Topf sprechen für zu viel. Gespült wird ab Woche 11.',
     weekFocus: {
       1:  { phase: 'Anzucht',     tip: 'Sämlings-Phase. Nur sehr leichte Düngung mit POWHUMUS und Aloe Vera als Bodenbiom-Anreger. Light-Mix hat Vordünger.' },
       2:  { phase: 'Vegi I',      tip: 'Etablierung. Bio·Grow startet ganz niedrig, langsam steigern. Aloe Vera als sanfter Stimulator weiter dabei.' },
       3:  { phase: 'Vegi II',     tip: 'Topping/LST-Fenster. Bio·Grow auf Maximum (0.8 ml/L). Advanced Amino unterstützt Stress-Erholung.' },
-      4:  { phase: 'Stretch I',   tip: 'Bio·Bloom startet, Top·Max kommt rein. Alfa Boost ab jetzt für Blütenbildung.' },
-      5:  { phase: 'Stretch II',  tip: 'Maximales Wachstum. Bio·Bloom hochfahren auf 1.5 ml/L. Bio·Grow leicht reduzieren.' },
-      6:  { phase: 'Blüte I',     tip: 'Stickstoff-Cutoff! Bio·Grow ganz raus. Bio·Bloom auf 1.8 ml/L.' },
-      7:  { phase: 'Blüte II',    tip: 'Buds füllen. Bio·Bloom maximal, Top·Max weiter. Drain-EC weiterhin überwachen.' },
-      8:  { phase: 'Blüte III',   tip: 'Reifung. Bio·Bloom langsam reduzieren. Top·Max weiter.' },
+      4:  { phase: 'Stretch I',   tip: 'Bio·Bloom startet (0.6 ml/L), Bio·Grow geht leicht zurück. Alfa Boost ab jetzt dabei.' },
+      5:  { phase: 'Stretch II',  tip: 'Maximales Wachstum. Bio·Bloom steigt auf 1.2 ml/L, Top·Max kommt dazu. Bio·Grow leicht reduziert.' },
+      6:  { phase: 'Blüte I',     tip: 'Bio·Grow wird ausgeschlichen (0.3 ml/L). Bio·Bloom auf 1.5 ml/L, Top·Max auf 2.' },
+      7:  { phase: 'Blüte II',    tip: 'Buds füllen. Bio·Bloom auf dem Höchstwert (1.8 ml/L), Top·Max auf 3. Bio·Grow zum letzten Mal (0.2 ml/L).' },
+      8:  { phase: 'Blüte III',   tip: 'Reifung. Bio·Grow ist raus, Bio·Bloom bleibt auf 1.8 ml/L, Top·Max auf 3.' },
       9:  { phase: 'Reifung I',   tip: 'Bio·Bloom hoch (1.8), Top·Max weiter. Bio·Grow ist raus. Drain-EC überwachen.' },
       10: { phase: 'Reifung II',  tip: 'Bloom ausschleichen (0.6), Top·Max noch dabei. Echte Spülung ab Wo 11.' },
       11: { phase: 'Hard Dryback', tip: 'Nicht mehr gießen, bis der Topf den Gießpunkt erreicht (Hebe-Test „Knapp"). Vorbereitung IceFlush oder Ernte.' },
@@ -4577,7 +4577,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.250';
+const APP_VERSION = 'v1.5.251';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
