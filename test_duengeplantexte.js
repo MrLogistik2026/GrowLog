@@ -168,6 +168,45 @@ function pruef(name, bedingung, info) {
       !/Coco trocknen lassen/.test(code) && !/'Trocknen lassen, Ernte vorbereiten\.'/.test(code));
   }
 
+  // (v1.5.228) Wirkungszusagen in den Plänen — dieselbe Arbeit wie v1.5.172 und v1.5.192, nur waren die
+  // Vorlagen damals nicht Prüfgegenstand. Regel: Die Handlung bleibt (sie ist Patricks Planung), die
+  // versprochene Wirkung geht raus. Belegtes darf bleiben — Seneszenz etwa steht in ANBAU.md 6.4.
+  console.log('\nD - Keine Wirkungszusagen in den Düngeplänen');
+  {
+    const r = JSON.parse(E(`(function(){
+      const texte = [];
+      Object.entries(FERT_PRESETS).forEach(([k, p]) => {
+        Object.values(p.weekFocus || {}).forEach(w => texte.push(k + ' :: ' + String((w && w.tip) || '')));
+        texte.push(k + ' :: ' + String(p.drainInfo || '') + ' ' + String(p.mixInfo || '') + ' ' + String(p.subtitle || ''));
+        (p.products || []).forEach(pr => texte.push(k + ' :: ' + String(pr.note || '')));
+      });
+      const alle = texte.join(' | ');
+      const w = (k, n) => String((((FERT_PRESETS[k] || {}).weekFocus || {})[n] || {}).tip || '');
+      return JSON.stringify({ alle,
+        masterW9: w('biobizz_master', 9), masterW10: w('biobizz_master', 10),
+        konsW9: w('biobizz_konservativ', 9), konsW12: w('biobizz_konservativ', 12),
+        cupW10: String((((FERT_PRESETS.cup_sieger || {}).weekFocus || {})['10'] || {}).tip || ''),
+        ripen: ((FERT_PRESETS.ghe_flora.products || []).find(x => /Ripen/.test(x.name)) || {}).note || '' });
+    })()`));
+    const verboten = ['trichomreiche Blüten', 'Trichom-Push', 'steinhart', 'Herbst-Stress',
+      'Sonnensegeln leersaugen', 'Trichom-Produktion startet', 'Zucker-Mobilisierung',
+      'Top·Max für Dichte', 'Top·Max maximal für Dichte', 'Reifebeschleuniger', 'Pitch-Black Tag 3-4'];
+    verboten.forEach(v => pruef('Keine Zusage mehr: „' + v + '"', !r.alle.includes(v),
+      (r.alle.split(' | ').find(t => t.includes(v)) || '').slice(0, 140)));
+    pruef('Die Handlung bleibt stehen (Master Wo 9 nennt weiter P/K und den N-Stopp)',
+      /P\/K/.test(r.masterW9) && /kein Stickstoff/.test(r.masterW9), r.masterW9);
+    pruef('Belegtes darf bleiben: Master Wo 10 beschreibt die Seneszenz statt sie zu bebildern',
+      /gleichmäßig von unten nach oben vergilben/.test(r.masterW10), r.masterW10);
+    pruef('Konservativ Wo 9 behält seine Dosis-Angaben', /1\.8/.test(r.konsW9) && /Bio·Grow ist raus/.test(r.konsW9), r.konsW9);
+    pruef('IceFlush trägt denselben ehrlichen Satz wie der Rest der App',
+      /ein Trichom-Plus ist nicht belegt/.test(r.konsW12), r.konsW12);
+    pruef('Cup-Sieger Wo 10 ohne die Zwischen-Dunkelphase, Handlung bleibt',
+      /Bloom stark reduzieren/.test(r.cupW10) && !/Pitch-Black/.test(r.cupW10), r.cupW10);
+    pruef('Ripen wird beschrieben statt versprochen', /Stickstoffarm, P\/K-betont/.test(r.ripen), r.ripen);
+    pruef('Auch der Erklärtext zur Planwahl verspricht nichts mehr',
+      !/trichomreiche Blüten ohne blättrige Buds/.test(code) && /im vegetativen Modus/.test(code));
+  }
+
   pruef('Keine JS-Fehler im Lauf', errors.length === 0, errors.slice(0, 2).join(' | '));
   console.log(`\nErgebnis: ${ok} OK, ${fail} Fehler`);
   process.exit(fail ? 1 : 0);

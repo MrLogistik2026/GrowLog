@@ -2,6 +2,31 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-16 — v1.5.228
+
+- **Die Düngepläne versprachen Wirkungen, die nicht belegt sind.** Vierter Befund der Gruppe A (UEBERGABE 0n) —
+  und dieselbe Arbeit, die v1.5.172 (Bernstein) und v1.5.192 (IceFlush, Dunkelphase) schon einmal gemacht haben.
+  Die Vorlagen waren damals nur nicht Prüfgegenstand. **Zwölf Stellen**, mehr als die acht, die die Prüfung
+  gemeldet hatte: Der konservative Plan trägt die Zusage in **vier** Wochen statt zwei, und der Erklärtext zur
+  Planwahl wiederholt sie außerhalb der Pläne.
+- **Die Regel wie immer: Die Handlung bleibt, die versprochene Wirkung geht raus.** Der Stickstoff-Stopp, die
+  Top·Max-Gaben und die Dosen sind Patricks Planung und stehen unverändert da. Gestrichen sind:
+  „für dichte, **trichomreiche Blüten**" (Master-Ablaufinfo und Planwahl-Text), „**Trichom-Push** … für
+  **steinhart** dichte Blüten", „Herbst-Stress einleiten", „die Nährstoffe aus den **Sonnensegeln leersaugen**",
+  „**Trichom-Produktion startet**", dreimal „Top·Max **für Dichte**" bzw. „für **Zucker-Mobilisierung**",
+  „**Reifebeschleuniger**" und die Zwischen-Dunkelphase „24h Pitch-Black Tag 3-4 einbauen!".
+- **Belegtes bleibt und wird sauber benannt:** Master Woche 10 beschreibt jetzt die **Seneszenz** — dass die
+  unteren Blätter gleichmäßig von unten nach oben vergilben, ist normal, die Pflanze verlagert Stickstoff in die
+  Blüten (`ANBAU.md` 6.4). Der Planwahl-Text nennt den belegten Grund für den N-Stopp: Viel Stickstoff hält die
+  Pflanze im vegetativen Modus, die Blüten bleiben lockerer und blattreicher (`ANBAU.md` 5).
+- **Der IceFlush im konservativen Plan** trägt jetzt denselben ehrlichen Satz wie der Rest der App seit v1.5.143:
+  „Beliebte Grower-Technik — ein Trichom-Plus ist nicht belegt."
+- **Die Zwischen-Dunkelphase ist ersatzlos raus.** Sie ist weder belegt (`ANBAU.md` 14 kennt nur die Dunkelphase
+  **vor** der Ernte, und auch dort ohne THC-Zuwachs) noch Teil des Phasenmodells der App — ein Nutzer hätte sie
+  von Hand einbauen müssen, ohne dass Kalender, Karten oder Eintrag davon wüssten.
+- `test_duengeplantexte.js` um Abschnitt D erweitert (39 Prüfungen, beide Zeitzonen). Er durchsucht **alle elf
+  Vorlagen** — Wochen-Tipps, Ablauf- und Misch-Info, Untertitel und Produktnotizen — nach der ganzen Liste.
+
 ## 2026-09-16 — v1.5.227
 
 - **Beide Coco-Pläne schickten in Woche 11 ins Trockenlaufen — vor genau dem warnt die App bei Coco.** Dritter
