@@ -4468,7 +4468,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.213';
+const APP_VERSION = 'v1.5.214';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -14897,7 +14897,12 @@ function _tag1MengeJeTopf(vorlage, startMethod) {
 
 /** (v1.5.168) Die Keimmethode eines Zyklus — Papiertuch, solange keine gewählt ist. Keimungskarte und Sämlings-Pflege lesen hier. */
 function _keimMethode(c) {
-  return (c && c.germMethod && GERM_GUIDES[c.germMethod]) ? c.germMethod : 'paper';
+  // (v1.5.214) Vorgabe ist „Direkt in Erde". Der Samen kommt sofort in den Endtopf: kein Umsetzen,
+  // keine Wurzel, die dabei bricht. Nach ANBAU.md 7.4 gehoert bei Automatics jeder verlorene Tag
+  // dauerhaft verloren, und die Keimwurzel ist nach dem Durchbruch nicht mehr austrocknungsfest
+  // (Pereira et al. 2018). Vorher stand hier „Papiertuch" — der Weg mit den meisten Handgriffen
+  // und dem einzigen Schritt, an dem ein Anfaenger die Wurzel zerstoeren kann.
+  return (c && c.germMethod && GERM_GUIDES[c.germMethod]) ? c.germMethod : 'direct';
 }
 
 // Keimmethoden-Anleitungen — methoden-spezifische Schritte für die Keimphase.
@@ -23172,6 +23177,7 @@ function welcomeStartDemo() {
     seedType: 'auto',
     startDate: demoStartISO,
     potSize: 11,
+    germMethod: 'direct',
     fertPlanId: S.fertPlans?.[0]?.id || null,
   });
 
@@ -27140,13 +27146,13 @@ function renderEntry(iso) {
         <div style="display:flex;gap:6px;margin-bottom:10px">
           ${['water', 'paper', 'direct'].map(m => {
             const g = GERM_GUIDES[m], on = germSel === m;
-            return `<button onclick="setGermMethod('${c.id}','${m}')" style="flex:1;background:${on ? 'rgba(76,175,112,0.15)' : 'var(--card2)'};border:1.5px solid ${on ? 'var(--green)' : 'var(--border)'};border-radius:9px;padding:8px 4px;font-size:11px;color:${on ? 'var(--green)' : 'var(--text)'};font-weight:${on ? '700' : '500'};cursor:pointer;font-family:var(--font);line-height:1.3">${g.icon}<br>${g.label}</button>`;
+            return `<button onclick="setGermMethod('${c.id}','${m}')" style="flex:1;background:${on ? 'rgba(76,175,112,0.15)' : 'var(--card2)'};border:1.5px solid ${on ? 'var(--green)' : 'var(--border)'};border-radius:9px;padding:8px 4px;font-size:11px;color:${on ? 'var(--green)' : 'var(--text)'};font-weight:${on ? '700' : '500'};cursor:pointer;font-family:var(--font);line-height:1.3">${g.icon}<br>${g.label}${m === 'direct' ? '<br><span style="font-size:9px;font-weight:600;opacity:0.75">empfohlen</span>' : ''}</button>`;
           }).join('')}
         </div>
         <ol style="margin:0;padding-left:18px;font-size:11px;color:var(--text-sub);line-height:1.6">
           ${GERM_GUIDES[germSel].steps.map(s => `<li>${s}</li>`).join('')}
         </ol>
-        <div style="background:rgba(90,171,240,0.06);border-radius:8px;padding:8px 10px;margin-top:10px;font-size:10px;color:var(--text-hint);line-height:1.45">💡 Immer: sauber arbeiten (Hände waschen), den Samen nicht quetschen. Bis der Keimling da ist — warm, feucht, dunkel.</div>
+        <div style="background:rgba(90,171,240,0.06);border-radius:8px;padding:8px 10px;margin-top:10px;font-size:10px;color:var(--text-hint);line-height:1.45">💡 Immer: sauber arbeiten (Hände waschen), den Samen nicht quetschen. Bis der Keimling da ist: ${KLIMA_ZIEL.saemling.temp[0]}–${KLIMA_ZIEL.saemling.temp[1]} °C, feucht, nicht nass. Licht braucht der Samen nicht — der Keimling ab dem Moment, in dem er die Erde durchbricht.</div>
       </div>` : '';
 
     if (isWaterDay) {

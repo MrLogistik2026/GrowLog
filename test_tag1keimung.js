@@ -98,18 +98,19 @@ const text = (html) => String(html).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' '
       openEntry(iso);
       const t = document.getElementById('scr-entry').textContent.replace(/\\s+/g, ' ');
       const h = t.match(/✅ Heute:(.*?)⛔ Vermeiden:(.*?)💡/) || ['', '', ''];
-      return JSON.stringify({ a: getAction(iso, c), heute: h[1].trim(), vermeiden: h[2].trim(), steps: GERM_GUIDES[${m ? `'${m}'` : "'paper'"}].steps, karte: /Keimung — wie keimst du/.test(t) });
+      return JSON.stringify({ a: getAction(iso, c), heute: h[1].trim(), vermeiden: h[2].trim(), steps: GERM_GUIDES[${m ? `'${m}'` : "'direct'"}].steps, karte: /Keimung — wie keimst du/.test(t) });
     })()`;
     for (const m of ['paper', 'water', 'direct', null]) {
       const r1 = JSON.parse(E(LAGE(m, 1)));
-      const name = m || 'keine Wahl (Papiertuch wie die Karte)';
+      // (v1.5.214) Ohne eigene Wahl gilt „Direkt in Erde" — vorher stand hier das Papiertuch.
+      const name = m || 'keine Wahl (Direkt in Erde wie die Karte)';
       pruef(`${name}, Tag 1: „Keimstart" + erster Schritt der Karte, kein „einpflanzen"`,
         r1.a === 'saettigung' && r1.karte && /Keimstart/.test(r1.heute) && r1.heute.includes(r1.steps[0]) && !/einpflanzen/i.test(r1.heute),
         r1.heute);
       pruef(`${name}, Tag 1: Vermeiden ist ein echter Fehler, nicht „Kontrolliertes Gießen"`,
         !/Kontrolliertes Gießen/.test(r1.vermeiden) && r1.vermeiden.length > 10, r1.vermeiden);
       const r2 = JSON.parse(E(LAGE(m, 2)));
-      const erwartet = (m === 'paper' || m === null) ? r2.steps[2] : r2.steps[1];
+      const erwartet = (m === 'paper') ? r2.steps[2] : r2.steps[1];
       pruef(`${name}, Tag 2: Schritt der Karte (${(erwartet || '').slice(0, 30)}…), weiter nur Sprühen`,
         r2.a === 'sprueh' && r2.heute.includes(erwartet), r2.heute);
     }
@@ -134,7 +135,8 @@ const text = (html) => String(html).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' '
     const src = fs.readFileSync(path.join(__dirname, 'app.js'), 'utf8');
     const alt = src.match(/Tag des Einpflanzens|Einpflanztag|Pflanztag|Startdatum \(Tag 1\)</g) || [];
     pruef('Quelltext: keine Stelle nennt Tag 1 noch Einpflanz- oder Pflanztag', alt.length === 0, alt.join(' | '));
-    pruef('Eine Quelle für die Keimmethode (_keimMethode)', /function _keimMethode\(/.test(src) && !/c\.germMethod && GERM_GUIDES\[c\.germMethod\]\) \? c\.germMethod : 'paper'/.test(src.replace(/function _keimMethode[\s\S]*?\n\}/, '')));
+    pruef('Eine Quelle für die Keimmethode (_keimMethode)', /function _keimMethode\(/.test(src) && !/c\.germMethod && GERM_GUIDES\[c\.germMethod\]\) \? c\.germMethod : 'direct'/.test(src.replace(/function _keimMethode[\s\S]*?\n\}/, '')));
+    pruef('Vorgabe ist „Direkt in Erde", und die Karte sagt es', /c\.germMethod : 'direct'/.test(src) && /'direct' \? '<br><span[^>]*>empfohlen</.test(src));
   }
 
   console.log(`\nErgebnis: ${ok} OK, ${fail} Fehler`);

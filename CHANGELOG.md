@@ -2,6 +2,23 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-16 — v1.5.214
+
+- **„Direkt in Erde" ist die vorgewählte Keimmethode.** Befund der Keimungs-Prüfung (Schritt 3): Wer nichts auswählte, bekam
+  in der Keimungskarte und in der Sämlings-Pflege das **Papiertuch** vorgeschlagen — den Weg mit den meisten Handgriffen und
+  dem einzigen Schritt, an dem ein Anfänger die Keimwurzel zerstören kann. Nach `ANBAU.md` 7.4 gehört der Samen direkt in den
+  Endtopf: Jeder Umsetzvorgang kostet Tage, und bei Automatics ist ein verlorener Tag dauerhaft verloren. Die Keimwurzel ist
+  nach dem Durchbruch nicht mehr austrocknungsfest (Pereira et al. 2018) — sie anzufassen ist der teuerste Handgriff der
+  ersten Woche. `ANWEISUNG.md`: Vorgaben sind konservativ-sicher.
+- **Jetzt:** `_keimMethode` gibt ohne eigene Wahl `'direct'` zurück; die Karte beschriftet diesen Knopf mit „empfohlen".
+  Die anderen beiden Wege bleiben eine Berührung weit entfernt und ändern nichts an ihren Schritten.
+- **Die Fußzeile der Karte stimmte nicht mehr.** Sie sagte „Bis der Keimling da ist — warm, feucht, dunkel". „Dunkel" gilt für
+  Glas und Tuch, nicht für einen Samen in der Erde, der unter der Lampe steht; und der Keimling braucht Licht ab dem Moment,
+  in dem er durchbricht (`ANBAU.md` 8). Jetzt: Temperatur aus `KLIMA_ZIEL.saemling`, „feucht, nicht nass", und der Satz zum
+  Licht. Der Demo-Zyklus keimt ebenfalls direkt in der Erde — seine Notiz an Tag 1 sprach ohnehin vom Samen in der Erde.
+- **Tests bewusst nachgezogen:** `test_tag1keimung.js` prüfte „keine Wahl" gegen die Papiertuch-Schritte. Der Abschnitt läuft
+  jetzt gegen „Direkt in Erde", und eine neue Prüfung hält die Vorgabe samt Beschriftung fest (26 Prüfungen, beide Zeitzonen).
+
 ## 2026-09-15 — v1.5.213
 
 - **Keimung: eine Zahlenbasis statt widersprüchlicher Angaben.** Befund der Keimungs-Prüfung (Schritte 1, 2, 10, 11), offen seit
