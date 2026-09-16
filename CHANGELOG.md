@@ -2,6 +2,35 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-16 — v1.5.229
+
+- **Der konservative BioBizz-Plan erklärte die Ausfällung genau verkehrt herum.** Fünfter Befund der Gruppe A
+  (UEBERGABE 0n). In der Misch-Info stand: „1. CalMag zuerst (**verhindert Phosphat-Ausfällung**)." Nach
+  `ANBAU.md` 10 ist Ca²⁺ + PO₄³⁻ aber **genau die Paarung, die ausfällt** — Calciumphosphat, und Phosphor wie
+  Calcium sind damit für die Pflanze verloren. Ein Anfänger lernte dort das Gegenteil dessen, was im Kanister
+  passiert.
+- **Die Reihenfolge selbst war richtig, nur ihr Grund war falsch.** Jetzt steht er sauber da: CalMag zuerst und
+  vollständig einrühren, damit es im ganzen Wasser verteilt ist, **bevor** phosphat- und sulfathaltige Mittel
+  dazukommen — Fällungen laufen lokal an der Eintropfstelle ab, auch wenn die Endkonzentration unkritisch wäre.
+- **Derselbe Satz stand ein zweites Mal — im Lexikon**, im Eintrag „Mischreihenfolge" unter „Die universelle
+  Reihenfolge": „3. CalMag (Ca vor allem anderen, verhindert Phosphat-Ausfällung)". Also ausgerechnet an der
+  Stelle, an der ein Anfänger die Regel selbst nachschlägt. Gefunden hat ihn die Wache des Patch-Skripts,
+  nachdem die Plan-Stelle schon korrigiert war — **eine Quelltext-Suche findet nur, wonach sie sucht** (dieselbe
+  Lehre wie v1.5.198 und v1.5.210). Beide Stellen erklären es jetzt gleich.
+- **Das Bittersalz stand viel zu spät.** Epsom (Magnesiumsulfat) lag an Position 8, **hinter** den Basisdüngern.
+  `ANBAU.md` 10 ordnet Sulfate direkt hinter die Calcium-/Magnesium-Produkte, weil Ca²⁺ + SO₄²⁻ als Gips
+  ausfällt. Patricks eigener Rainbow-Plan macht es richtig vor. Epsom steht jetzt an Position 2, die Nummern im
+  Text folgen der Liste.
+- **Bewusst nicht angefasst:** Top·Max an letzter Stelle. Ob Huminstoff-Fertigprodukte dort bleiben dürfen, ist
+  eine offene Frage der Prüfung (0n, Gruppe B) — beim Licht (`ANBAU.md` 8.1) war schon einmal die App richtig
+  und das Dokument zu grob. Ebenso bleibt die feste pH-Zahl in derselben Misch-Info stehen; sie gehört in den
+  eigenen Befund „feste Zahlen statt Quelle".
+- **Was für diese ganze Reihe gilt** (v1.5.225–229): Geändert werden die **Vorlagen**. Eine bereits gespeicherte
+  Plankopie auf dem Handy ist ein Schnappschuss und behält ihren alten Text — außer dort, wo eine eigene
+  Reparatur läuft (v1.5.225, `_mykoMixFix`, weil dort eine Wurzelimpfung im Gießwasser gelandet wäre). Ob die
+  übrigen Textänderungen eine Auffrischung für gespeicherte Kopien bekommen sollen, ist Patricks Entscheidung.
+- `test_duengeplantexte.js` um Abschnitt E erweitert (45 Prüfungen, beide Zeitzonen).
+
 ## 2026-09-16 — v1.5.228
 
 - **Die Düngepläne versprachen Wirkungen, die nicht belegt sind.** Vierter Befund der Gruppe A (UEBERGABE 0n) —

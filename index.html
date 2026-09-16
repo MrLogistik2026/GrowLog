@@ -3593,8 +3593,8 @@ const FERT_PRESETS = {
     bloomDaysHint: 49,
     ecPeak: 1.2,
     feedWaterRhythm: ARC_RHYTHM,
-    mixOrder: ['CalMag','POWHUMUS','Aloe Vera','Bio·Grow','Bio·Bloom','Advanced Amino','Alfa Boost','Epsom','Top·Max'],
-    mixInfo: 'Konservative BioBizz-Variante mit zusätzlichen Bodenbiom-Bausteinen (POWHUMUS, Aloe Vera). Reihenfolge: 1. CalMag zuerst (verhindert Phosphat-Ausfällung). 2. POWHUMUS und Aloe Vera als Konzentrate (Huminsäuren + Polysaccharide). 3. Basisdünger (Bio·Grow / Bio·Bloom). 4. Aminosäuren (Advanced Amino, Alfa Boost). 5. Epsom-Salz bei Mg-Bedarf. 6. Top·Max als Chelator zuletzt. pH am Ende auf 6.2–6.4 korrigieren.',
+    mixOrder: ['CalMag','Epsom','POWHUMUS','Aloe Vera','Bio·Grow','Bio·Bloom','Advanced Amino','Alfa Boost','Top·Max'],
+    mixInfo: 'Konservative BioBizz-Variante mit zusätzlichen Bodenbiom-Bausteinen (POWHUMUS, Aloe Vera). Reihenfolge: 1. CalMag zuerst und vollständig einrühren — Calcium fällt mit Phosphaten und Sulfaten aus, deshalb muss es im ganzen Wasser verteilt sein, bevor etwas anderes dazukommt. 2. Epsom-Salz direkt danach, bei Mg-Bedarf (auch ein Sulfat). 3. POWHUMUS und Aloe Vera als Konzentrate (Huminsäuren + Polysaccharide). 4. Basisdünger (Bio·Grow / Bio·Bloom). 5. Aminosäuren (Advanced Amino, Alfa Boost). 6. Top·Max als Chelator zuletzt. pH am Ende auf 6.2–6.4 korrigieren.',
     drainInfo: '🌱 Konservativ dosiert: Hersteller-Maxima werden bewusst nicht ausgereizt. Bio-Grow startet niedrig (0.5 ml/L) und wird auf 0.8 ml/L gesteigert, dann ausgeschlichen. Bio-Bloom langsam hochfahren bis 1.8 ml/L. Bei weichem Wasser CalMag durchgehend. Drain bei jedem Gießen prüfen — bei EC-Aufbau eine Woche pausieren. Stickstoff-Cutoff in Wo 6, harte Spülung in Wo 8.',
     weekFocus: {
       1:  { phase: 'Anzucht',     tip: 'Sämlings-Phase. Nur sehr leichte Düngung mit POWHUMUS und Aloe Vera als Bodenbiom-Anreger. Light-Mix hat Vordünger.' },
@@ -4473,7 +4473,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.228';
+const APP_VERSION = 'v1.5.229';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -33348,7 +33348,7 @@ const LEXIKON = [
     { t: 'Mischreihenfolge',
       brief: 'Die Reihenfolge in der Dünger ins Wasser kommen — entscheidend für Wirksamkeit. Falsch = weiße Flocken und halbes Produkt wirkungslos.',
       mechanism: 'Bestimmte Nährstoffe <b>reagieren chemisch miteinander</b> wenn sie gleichzeitig in konzentrierter Form zusammenkommen. Klassische Ausfällungen: Ca²⁺ + PO₄³⁻ → Calciumphosphat (weiß, unlöslich). Die Reihenfolge lässt jedes Produkt erst <b>im verdünnten Zustand</b> sich verteilen bevor das nächste kommt.',
-      practice: '<b>Die universelle Reihenfolge:</b><br>1. <b>Wasser</b> (idealerweise RO, sonst Leitungswasser)<br>2. <b>Silizium</b> (falls benutzt — muss ganz vorne sein, sonst flockt es)<br>3. <b>CalMag</b> (Ca vor allem anderen, verhindert Phosphat-Ausfällung)<br>4. <b>Basisdünger</b> (Bio·Grow, Bio·Bloom oder NPK-Mineral)<br>5. <b>Bio-Additive</b> (Root·Juice, Bio·Heaven, Alg·A·Mic, Acti·Vera)<br>6. <b>Humin-/Fulvosäuren</b> (Top·Max — immer zuletzt, verschieben pH stark)<br>7. <b>pH-Korrektur</b> auf Ziel-pH einstellen<br><br><b>Zwischen jedem Schritt kurz umrühren</b>, nicht einfach alles reinschütten.',
+      practice: '<b>Die universelle Reihenfolge:</b><br>1. <b>Wasser</b> (idealerweise RO, sonst Leitungswasser)<br>2. <b>Silizium</b> (falls benutzt — muss ganz vorne sein, sonst flockt es)<br>3. <b>CalMag</b> (Calcium vor allem anderen — es fällt mit Phosphaten und Sulfaten aus, deshalb muss es verteilt sein, bevor die dazukommen)<br>4. <b>Basisdünger</b> (Bio·Grow, Bio·Bloom oder NPK-Mineral)<br>5. <b>Bio-Additive</b> (Root·Juice, Bio·Heaven, Alg·A·Mic, Acti·Vera)<br>6. <b>Humin-/Fulvosäuren</b> (Top·Max — immer zuletzt, verschieben pH stark)<br>7. <b>pH-Korrektur</b> auf Ziel-pH einstellen<br><br><b>Zwischen jedem Schritt kurz umrühren</b>, nicht einfach alles reinschütten.',
       pitfall: 'Wenn CalMag zu spät kommt: weiße Schlieren oder Flocken im Dünger = Ca ist verloren. Wenn Top·Max vor pH-Einstellung kommt ist OK — wenn pH-Einstellung vor Top·Max, ist die pH-Messung gleich wieder daneben.' },
     { t: 'Bio vs. Mineralisch',
       brief: 'Zwei komplett verschiedene Dünger-Philosophien. Bio füttert das Bodenleben, Mineralisch direkt die Pflanze. Die Wahl entscheidet über Setup, Substrat und Workflow.',

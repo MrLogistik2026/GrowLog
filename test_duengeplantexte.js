@@ -207,6 +207,35 @@ function pruef(name, bedingung, info) {
       !/trichomreiche Blüten ohne blättrige Buds/.test(code) && /im vegetativen Modus/.test(code));
   }
 
+  // (v1.5.229) Der konservative Plan erklärte die Ausfällung verkehrt herum („CalMag zuerst verhindert
+  // Phosphat-Ausfällung") — nach ANBAU.md 10 ist Ca²⁺ + PO₄³⁻ genau die Paarung, die ausfällt. Und Epsom
+  // (Magnesiumsulfat) stand hinter den Basisdüngern, obwohl Sulfate direkt hinter die Ca/Mg-Produkte gehören.
+  console.log('\nE - Mischreihenfolge: richtiger Grund, Sulfat an der richtigen Stelle');
+  {
+    const r = JSON.parse(E(`(function(){
+      const p = FERT_PRESETS.biobizz_konservativ;
+      const mo = p.mixOrder || [];
+      return JSON.stringify({ mixOrder: mo, mixInfo: p.mixInfo || '',
+        idxCalMag: mo.indexOf('CalMag'), idxEpsom: mo.indexOf('Epsom'),
+        idxBasis: Math.min(...['Bio·Grow', 'Bio·Bloom'].map(n => mo.indexOf(n)).filter(i => i >= 0)) });
+    })()`));
+    pruef('Epsom steht direkt hinter CalMag', r.idxCalMag === 0 && r.idxEpsom === 1, r.mixOrder.join(' · '));
+    pruef('… und damit vor den Basisdüngern (ANBAU.md 10: Sulfate nach Ca/Mg)',
+      r.idxEpsom < r.idxBasis, `Epsom ${r.idxEpsom} · Basis ${r.idxBasis}`);
+    pruef('Der Grund ist nicht mehr umgedreht',
+      !/verhindert Phosphat-Ausfällung/.test(r.mixInfo) && /Calcium fällt mit Phosphaten und Sulfaten aus/.test(r.mixInfo),
+      (r.mixInfo.match(/Reihenfolge:[^.]*\./) || [''])[0]);
+    pruef('Die Nummern im Text folgen der Liste (CalMag 1., Epsom 2.)',
+      /1\. CalMag zuerst/.test(r.mixInfo) && /2\. Epsom-Salz direkt danach/.test(r.mixInfo));
+    // Die zweite Fundstelle war das Lexikon „Mischreihenfolge / universelle Reihenfolge" — also genau der
+    // Ort, an dem ein Anfänger die Regel nachschlägt. Gefunden hat sie erst die Wache des Patch-Skripts.
+    const lex = E(`JSON.stringify(LEXIKON.flatMap(k => k.items || []).filter(i => /universelle Reihenfolge/.test(JSON.stringify(i))))`);
+    pruef('Auch das Lexikon erklärt den Mechanismus richtig herum',
+      !/verhindert Phosphat-Ausfällung/.test(lex) && /fällt mit Phosphaten und Sulfaten aus/.test(lex),
+      (String(lex).match(/.{0,70}CalMag.{0,90}/) || [''])[0]);
+    pruef('Im Quelltext steht die umgedrehte Begründung nirgends mehr', !/verhindert Phosphat-Ausfällung/.test(code));
+  }
+
   pruef('Keine JS-Fehler im Lauf', errors.length === 0, errors.slice(0, 2).join(' | '));
   console.log(`\nErgebnis: ${ok} OK, ${fail} Fehler`);
   process.exit(fail ? 1 : 0);
