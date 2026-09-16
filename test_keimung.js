@@ -104,6 +104,37 @@ function pruef(name, bedingung, info) {
     [/Pflicht für 70–80% RLF/, '„Haube Pflicht für 70–80 %"'],
   ].forEach(([re, name]) => pruef('Nirgends: ' + name, !re.test(code)));
 
+  // (v1.5.215) Der Sprüh-Auslöser: Der Samen liegt 0,5–1 cm tief. „Sobald die obersten 1–2 cm trocken sind"
+  // heißt, dass der Samen selbst schon trocken liegt — und stand als Karte direkt unter der Keimungskarte,
+  // die seit v1.5.213 „wird sie dort oben hell" sagt. Zwei Auslöser für dieselbe Handlung, untereinander.
+  console.log('\nE - Der Sprüh-Auslöser steht an der Erde am Samen');
+  {
+    const spr = JSON.parse(E(`(function(){
+      S.cycles = []; S.entries = {}; S.beginnerMode = true;
+      const c = addCyc({ name: 'Keim', seedType: 'auto', medium: 'erde' });
+      c.startDate = '2026-06-01'; c.startMethod = 'saturated'; c.potSize = 11; saveS();
+      const tag = (n) => { const iso = isoPlus(c.startDate, n - 1); const p = phase(iso, c); const a = getAction(iso, c); return { iso, p, a }; };
+      const t3 = tag(3), t9 = tag(9), t15 = tag(15);
+      setDebugDate(t3.iso);
+      return JSON.stringify({
+        a3: t3.a,
+        satz: plainSentence(t3.a, c, t3.p, waterSuggestion(c, t3.p)),
+        schritte: getTodayAction(c, t3.p, t3.a, t3.iso).steps.join(' | '),
+        platzhalter: getAutoFillTemplate(c, t3.p, t3.a, t3.iso).notePlaceholder || '',
+        a9: t9.a, hinweis9: getTodayAction(c, t9.p, t9.a, t9.iso).hint,
+        a15: t15.a, hinweis15: getTodayAction(c, t15.p, t15.a, t15.iso).hint,
+      });
+    })()`));
+    pruef('Tag 3 ist ein Sprüh-Tag, Tag 9 und 15 sind Anzucht-Güsse', spr.a3 === 'sprueh' && spr.a9 === 'giess_anz' && spr.a15 === 'giess_anz', spr.a3 + ' / ' + spr.a9 + ' / ' + spr.a15);
+    pruef('Satz auf der Startseite nennt die Stelle, nicht die Tiefe', /Erde direkt am Samen oder am Keimling oben hell wird/.test(spr.satz) && !/1–2 cm|1-2cm/.test(spr.satz), spr.satz.slice(0, 140));
+    pruef('Schritt der Tageskarte ebenso', /Erde direkt über dem Samen oder um den Keimling hell/.test(spr.schritte) && !/obersten 1/.test(spr.schritte), spr.schritte.slice(0, 140));
+    pruef('Vorschlagstext beim Ausfüllen ebenso', /Erde am Samen oder Keimling, sobald sie dort oben hell wird/.test(spr.platzhalter), spr.platzhalter.slice(0, 140));
+    pruef('Tag 9 (Sämling steht noch): „Erde am Keimling feucht"', /Erde am Keimling feucht/.test(spr.hinweis9), spr.hinweis9);
+    pruef('Tag 15 (kein Sämling mehr): wieder der Topf-Hinweis', /Obere 1–2 cm dürfen antrocknen/.test(spr.hinweis15), spr.hinweis15);
+    pruef('Nirgends im Quelltext ein Sprüh-Text mit „obere 1–2 cm"',
+      (code.match(/.{80}(obersten 1|obere 1-?.2 ?cm|1-2cm).{80}/g) || []).filter(t => /[Ss]prüh|besprühen/.test(t)).length === 0);
+  }
+
   pruef('Keine JS-Fehler im Lauf', errors.length === 0, errors.slice(0, 2).join(' | '));
   console.log(`\nErgebnis: ${ok} OK, ${fail} Fehler`);
   process.exit(fail ? 1 : 0);

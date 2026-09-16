@@ -3467,7 +3467,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.214';
+const APP_VERSION = 'v1.5.215';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -15085,7 +15085,7 @@ function plainSentence(action, c, p, waterMl) {
   }
   // SPRÜH-PHASE (Tag 2–8): NICHT gießen!
   if (action === 'sprueh') {
-    return `<b>Heute nur sprühen, nicht gießen!</b> Sobald die obersten 1–2 cm Erde trocken/heller wirken: 3–5 Sprühstöße pH-Wasser auf die Oberfläche. Eine durchnässte Erde ohne aktive Wurzel ist ein Schimmelparadies — der häufigste Anfänger-Killer.`;
+    return `<b>Heute nur sprühen, nicht gießen!</b> Sobald die Erde direkt am Samen oder am Keimling oben hell wird: 3–5 Sprühstöße pH-Wasser genau auf diese Stelle. Eine durchnässte Erde ohne aktive Wurzel ist ein Schimmelparadies — der häufigste Anfänger-Killer.`;
   }
   if (action === 'giess_anz') {
     if (isVorzucht) {
@@ -15263,7 +15263,10 @@ function getTodayAction(c, p, a, iso) {
       icon: '🫧',
       color: cl.hex,
       steps: [
-        'Erst schauen: sind die obersten 1–2 cm Erde trocken und heller? Dann sprühen.',
+        // (v1.5.215) Der Samen liegt 0,5–1 cm tief (KEIMUNG). Wer wartet, bis 1–2 cm trocken sind,
+        // wartet, bis der Samen selbst trocken liegt — und die Keimwurzel ist nach dem Durchbruch
+        // nicht mehr austrocknungsfest (Pereira et al. 2018). Gefragt ist die Stelle, nicht die Tiefe.
+        'Erst schauen: wird die Erde direkt über dem Samen oder um den Keimling hell? Dann sprühen.',
         `3–5 Sprühstöße pH-Wasser (pH ${pht.mid.toFixed(1)}) auf die Erdoberfläche — nicht auf die Keimblätter`,
         'Heute kein Gießen und kein Hebe-Test: Sprühen ändert das Topfgewicht nicht messbar',
       ],
@@ -15295,7 +15298,9 @@ function getTodayAction(c, p, a, iso) {
         ? 'Pflanze noch drinnen — wetterunabhängig gießen. Sie wird dann abgehärtet bevor sie raus kommt.'
         : isOutdoor
         ? 'Outdoor: Regen zählt! Nach Regentag lieber 1–2 Tage warten.'
-        : 'Erde leicht feucht, nicht nass. Obere 1-2cm dürfen antrocknen.',
+        : (p.day <= 10
+          ? 'Erde am Keimling feucht, nicht nass — der Rest des Topfs darf oben antrocknen.'
+          : 'Erde leicht feucht, nicht nass. Obere 1–2 cm dürfen antrocknen.'),
     };
   }
   if (a === 'giess') {
@@ -25973,7 +25978,7 @@ function renderEntry(iso) {
               const _proTopf = _n > 0 ? Math.round(waterSug / _n / 10) * 10 : waterSug;
               return `<div style="font-size:11px;color:var(--text-muted);line-height:1.4;margin-top:2px">~1 L Crushed Ice pro Topf am RAND verteilen (nicht Mitte) — schmilzt zu etwa <b>${_proTopf} ml je Topf</b>${_n > 1 ? `, zusammen ~${waterSug} ml für ${_n} Töpfe` : ''}. 4–6h schmelzen, dann Licht AUS.</div>`;
             })() : ''}
-            ${a === 'sprueh' ? `<div style="font-size:11px;color:var(--text-muted);line-height:1.4;margin-top:2px">3–5 Sprühstöße auf die Oberfläche, sobald obere 1–2 cm trocken wirken.</div>` : ''}
+            ${a === 'sprueh' ? `<div style="font-size:11px;color:var(--text-muted);line-height:1.4;margin-top:2px">3–5 Sprühstöße auf die Erde am Samen oder Keimling, sobald sie dort oben hell wird.</div>` : ''}
             ${a === 'saettigung' ? `<div style="font-size:11px;color:var(--text-muted);line-height:1.4;margin-top:2px">3 Etappen je ~${Math.max(50, Math.round(waterSug / Math.max(1, getEffectivePlantCount(c, iso)) / 3 / 50) * 50)} ml${getEffectivePlantCount(c, iso) > 1 ? ' je Topf' : ''} mit 15 min Pause — ${_tag1MittelText(c, iso)}.</div>` : ''}
             ${(a === 'giess' || a === 'giess_anz') ? `<div style="font-size:10px;color:${cl.hex};opacity:0.85;margin-top:3px">👆 Tippen: Guss eintragen oder Menge anpassen</div>` : ''}
           </div>
@@ -30045,7 +30050,7 @@ function getAutoFillTemplate(c, p, a, iso) {
     tpl._allDosesZero = true;
     // liftAfterPct NICHT auf 100 setzen — Sprühen ändert Topfgewicht nicht messbar.
     // User soll heute überhaupt keinen Hebe-Test machen.
-    tpl.notePlaceholder = 'Nur Besprühen: 3–5 Sprühstöße pH-Wasser auf die Oberfläche, sobald obere 1–2cm trocken/hell sind. KEIN Gießen — Pythium-Risiko ohne aktive Wurzel.';
+    tpl.notePlaceholder = 'Nur Besprühen: 3–5 Sprühstöße pH-Wasser auf die Erde am Samen oder Keimling, sobald sie dort oben hell wird. KEIN Gießen — Pythium-Risiko ohne aktive Wurzel.';
     tpl._actionType = 'spray';
     return tpl;
   }
@@ -32847,7 +32852,7 @@ const LEXIKON = [
         '<table style="width:100%;border-collapse:collapse;font-size:13px;margin-top:6px">' +
         '<tr style="background:rgba(255,255,255,0.04)"><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)" colspan="2"><b>Werte Tag 1–7</b></td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Methode</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Sprühflasche auf Oberfläche</td></tr>' +
-        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Wann besprühen</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Wenn die obersten 1–2 cm trocken und hell wirken</td></tr>' +
+        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Wann besprühen</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Wenn die Erde direkt am Samen oder Keimling oben hell wird</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Menge</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">3–5 Sprühstöße über dem Samen</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Wasser-pH</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">6.2–6.4 für Erde</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Temperatur</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">24–26°C</td></tr>' +

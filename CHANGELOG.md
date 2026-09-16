@@ -2,6 +2,23 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-16 — v1.5.215
+
+- **Der Sprüh-Auslöser fragt die Erde am Samen, nicht die obersten 1–2 cm.** Beim Nachsehen der Keimungskarte im Browser
+  (v1.5.214) standen zwei Auslöser für dieselbe Handlung direkt untereinander: Die Keimungskarte sagt seit v1.5.213 „Die Erde
+  direkt am Samen feucht, nicht nass: Wird sie dort oben hell, 3–5 Sprühstöße", die Karte darunter „3–5 Sprühstöße auf die
+  Oberfläche, sobald obere 1–2 cm trocken wirken". Auch Startseite, Tageskarte, Ausfüllen-Vorschlag und das Lexikon nannten
+  die Tiefe.
+- **Warum die Tiefe die falsche Frage ist:** Der Samen liegt 0,5–1 cm tief (`KEIMUNG`). Sind die obersten 1–2 cm trocken,
+  liegt der Samen selbst schon trocken — und die Keimwurzel ist nach dem Durchbruch nicht mehr austrocknungsfest (Pereira et
+  al. 2018). Gefragt ist die Stelle, an der der Samen liegt, nicht eine Tiefe. Zu sehen ist sie: trockene Erde wird hell.
+- **Sechs Stellen** sagen jetzt dasselbe (`plainSentence`, `getTodayAction`, Tageseintrag, `getAutoFillTemplate`, Lexikon
+  „Sämlingsphase"). Dazu der Hinweis am Anzucht-Gießtag: Solange der Sämling steht (Tag 1–10, dieselbe Grenze wie
+  `isSeedling` im Tageseintrag), heißt er „Erde am Keimling feucht, nicht nass — der Rest des Topfs darf oben antrocknen";
+  danach wieder der Topf-Hinweis.
+- `test_keimung.js` um Abschnitt E erweitert (29 Prüfungen, beide Zeitzonen) — er prüft die vier Funktionen und sucht die
+  alte Schwelle in jeder Schreibweise im Umfeld eines Sprüh-Textes.
+
 ## 2026-09-16 — v1.5.214
 
 - **„Direkt in Erde" ist die vorgewählte Keimmethode.** Befund der Keimungs-Prüfung (Schritt 3): Wer nichts auswählte, bekam
