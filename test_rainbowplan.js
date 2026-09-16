@@ -162,7 +162,11 @@ const ZYKLUS = (bluete) => `(function(){
   });
   pruef('EC-Korridore Woche 1–12 wie auf dem Blatt', ecAbw.length === 0, ecAbw.join(' | '));
   pruef('Woche 13: das Blatt nennt keinen EC-Korridor, also auch der Plan nicht', !pr.ecTargets[13]);
-  pruef('Spülen: Ziel Drain-EC höchstens 0,5', pr.ecTargets[14] && pr.ecTargets[14].max === 0.5);
+  // (v1.5.238) Der Wert stimmt und bleibt — nur der Name war falsch: `ecTargets` ist der
+  // GIESSWASSER-EC-Korridor (`getEcTarget`), nicht der Drain-EC. 0,2–0,5 deckt sich mit
+  // `ANBAU.md` 5 („Spülen 0,2–0,4"). Der Wochen-Tipp nannte dieselbe Zahl als Drain-EC-Ziel —
+  // die Verwechslung stand im Plan, nicht im Feld.
+  pruef('Spülen: Gießwasser-EC-Korridor bis 0,5', pr.ecTargets[14] && pr.ecTargets[14].max === 0.5);
 
   // Die drei Stellen ohne feste Zahl sind sichtbar gemacht, nicht erfunden
   const tips = pr.weekFocus;
@@ -173,7 +177,16 @@ const ZYKLUS = (bluete) => `(function(){
     /Etikett/.test(pr.products.find(p => p.name === 'Alfa Boost').note));
   pruef('Bio-Bloom: Ceiling-Hinweis am Produkt', /Ceiling/.test(pr.products.find(p => p.name === 'Bio-Bloom').note));
   pruef('N-Stopp nur per Trigger (Woche 12)', /70–80 % milchig/.test(tips[12].tip));
-  pruef('Ernte-Trigger vom Blatt (90 % milchig · 5–8 % Bernstein)', /90 % milchig · 5–8 % Bernstein/.test(tips[15].tip));
+  // (v1.5.238) Bis hierher pinnte diese Prüfung den festen Ernte-Trigger des Blatts
+  // („90 % milchig · 5–8 % Bernstein · unter 5 % klar"). Der ist raus: Patrick am 16.09.2026 —
+  // das Bernstein-Ziel ist Nutzersache („manche ernten bei 15 % für den Couch Lock"), die App
+  // führt dafür `c.targetAmber`. „Unter 5 % klar" war zudem strenger als die eigene Freigabe
+  // `RIPE_CLEAR_DONE` = 10. Der Plan verweist jetzt auf das eingestellte Ziel.
+  pruef('Ernte-Trigger nennt das eingestellte Bernstein-Ziel, keine feste Spanne',
+    /eingestellte[ms] Bernstein-Ziel/.test(tips[15].tip) && !/\d+\s*[–-]\s*\d+\s*% Bernstein/.test(tips[15].tip),
+    tips[15].tip.slice(0, 120));
+  pruef('… und sagt weiterhin, wo gemessen wird (Kelche, nicht Zuckerblätter)',
+    /Kelchen/.test(tips[15].tip) && /Griffelbräunung ist kein Reifezeichen/.test(tips[15].tip));
   pruef('Untertitel: „Trigger schlägt Kalender"', /Trigger schlägt Kalender/.test(pr.subtitle));
 
   // ------------------------------------------------------------------------------------

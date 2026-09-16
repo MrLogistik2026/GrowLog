@@ -2,6 +2,50 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-16 — v1.5.238
+
+- **Der Rainbow-Plan widersprach der App an vier Stellen** — Patricks eigenes Blatt, 1:1 übernommen, während
+  die App inzwischen eigene Regeln dafür hat. Seine Ansage vom 16.09.2026: „anhand deiner Analysen und
+  Sichtweisen abwägen was für die User am Sinnvollsten ist." Ein Fachagent hat jeden Punkt gegen Code und
+  `ANBAU.md` gehalten, ich habe die Fundstellen selbst nachgesehen.
+- **1 · „Ziel Drain-EC höchstens 0,5" (Woche 14) ist raus.** Seit v1.5.211 setzt die App kein Spülende mehr
+  über einen Drain-EC-Wert: In Erde steigt er nach dem Spülen durch Mineralisierung wieder an (`ANBAU.md` 5.1).
+  Dazu kam beim Nachsehen heraus, dass `analyzeRunoff` seinen Parameter `ecTarget` **gar nicht liest** — die
+  Zahl hatte nie eine Wirkung. Der Wert selbst war nur falsch beschriftet: `ecTargets[14]` ist der
+  **Gießwasser**-EC-Korridor 0,2–0,5 und deckt sich mit `ANBAU.md` 5. Das Feld bleibt, der Satz sagt es jetzt.
+- **2 · Der feste Ernte-Trigger ist raus** („90 % milchig · 5–8 % Bernstein · unter 5 % klar", Woche 15; „über
+  10 % Bernstein sofort schneiden", Woche 13). Patrick am 16.09.2026: Das Bernstein-Ziel ist Nutzersache —
+  „manche ernten bei 15 % für den Couch Lock". Die App führt dafür `c.targetAmber` (0–60 %, Vorgabe 5).
+  „Unter 5 % klar" war zudem **strenger als die eigene Freigabe** (`RIPE_CLEAR_DONE` = 10): Der Plan ließ
+  länger warten, als die App für nötig hält. Beide Stellen nennen jetzt das eingestellte Ziel.
+- **3 · „Hard Dryback 25–30 %" und die Restgewicht-Gates sind raus** (zehn Wochen-Tipps und die Ablauf-Info).
+  Die App führt `GIESSPUNKT` (Erde 25–40, Anker 30); bei 38 % sagte sie „bereit für den IceFlush", der Plan
+  sagte weitertrocknen — bei 26 % sagte der Plan „im Ziel", eine Zeile über der Wasserstress-Grenze. Die
+  Wochen-Gates (40/35/30) waren für sich nicht falsch, beschrieben aber einen **gleitenden** Gießpunkt, und
+  `ANBAU.md` 1.2 sagt wörtlich: „Der Gießpunkt selbst gleitet nicht." Gegossen wird nach dem Hebe-Test.
+- **4 · Das Nacht-Klima ist raus** („Nacht-RLF max. 55 %", „Nachtabsenkung auf 19 °C"). Die 55 % waren eine
+  dritte RLF-Zahl neben dem Schimmel-Deckel 65/60 aus `KLIMA_ZIEL` — und strenger als dieser. Die
+  Nachtabsenkung widerspricht `ANBAU.md` 2.2 direkt: Trockengewicht und CBD waren bei 22 °C am höchsten
+  (Kim et al. 2025), Kühle kostet Blütenmasse; kühle Nächte für Dichte oder Harz stehen in `ANBAU.md` 14
+  unter „nicht belegt". **Die Handlungen bleiben:** Entfeuchtung nachts, zur kühlsten Stunde messen, die
+  Wurzelzone nicht unter 16 °C.
+- **Warum alle vier durchgerutscht sind — derselbe Grund wie in UEBERGABE 0n·D:** v1.5.172 (Bernstein),
+  v1.5.191 (Nacht/Temperatur), v1.5.196 (Hard-Dryback) und v1.5.211 (Drain-EC) haben je ihre Texte bereinigt,
+  und **jede dieser vier Runden hat genau den Befund im Rainbow-Plan stehen lassen, den sie anderswo behoben
+  hat.** Die Wächter-Tests greifen nicht, weil sie auf Schreibweisen prüfen („~35 %", „milchig, X % klar"),
+  die der Plan anders schreibt. Deshalb stehen die neuen Wächter in `test_duengeplantexte.js` (72 Prüfungen,
+  beide Zeitzonen) — der einzigen Datei, die über **alle** `FERT_PRESETS` läuft.
+- **Nicht angefasst:** die Dosis-Matrix des Blatts (`BLATT` in `test_rainbowplan.js` bleibt unberührt) und die
+  festen pH-Zahlen der Wochen-Tipps — die gehören zum offenen Sammelpunkt „35 feste pH-Ziele" in Abschnitt 10.
+- **Dazu, ohne Versionssprung (die App ist unverändert): `ANBAU.md` 4 trennt Coco und Hydro.** Der offene Punkt
+  aus Abschnitt 0f ist damit entschieden — Patrick am 16.09.2026: „Trenne das gerne wenn du es für nötig hältst."
+  Das Dokument warf beide in eine Zeile mit 5,5–6,0; das ist die Angabe für **reine Hydrokultur**, auf Coco mit
+  übertragen. `phTargetFor` führt längst zwei Werte (Coco 5,8–6,2, Hydro 5,5–6,0). Begründet ist der Abstand
+  mit der Austauschkapazität: Coco ist inert, aber **nicht bindungsfrei** — es bindet Calcium und Kalium und gibt
+  Natrium ab (`ANBAU.md` 7.1), der etwas höhere pH hält Ca und Mg trotz dieser Konkurrenz verfügbar. **Die App
+  bleibt unverändert, sie war richtig** — dasselbe Muster wie bei der Lichtsättigung (8.1), wo ebenfalls das
+  Dokument angepasst wurde und nicht der Code.
+
 ## 2026-09-16 — v1.5.237
 
 - **Der Wochendosis-Modus lieferte zwischen 0 % und 216 % der eingestellten Wochenmenge.** Patricks Entscheidung

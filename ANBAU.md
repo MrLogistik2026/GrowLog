@@ -334,7 +334,15 @@ unverfügbar sein („Lockout").
 | Substrat | pH | Warum |
 |---|---|---|
 | Erde / Torf, gekalkt | 6,0–6,5 | Beste Gesamtverfügbarkeit; Bodenleben arbeitet hier |
-| Coco / Hydro | 5,5–6,0 | Inertes Substrat ohne Puffer, direkte Ionenaufnahme |
+| Coco | 5,8–6,2 | Inert, aber **nicht bindungsfrei**: Coco bindet Calcium und Kalium und gibt dafür Natrium ab (7.1). Etwas höher als Hydro, damit Ca und Mg trotz dieser Konkurrenz verfügbar bleiben |
+| Hydro | 5,5–6,0 | Kein Substrat, keine Bindung — direkte Ionenaufnahme; in diesem Bereich bleiben auch die Mikronährstoffe am besten löslich |
+
+**Coco und Hydro standen hier bis zum 16.09.2026 in einer Zeile mit 5,5–6,0.** Das war die Angabe für
+reine Hydrokultur, auf Coco mit übertragen — während GrowSmart in `phTargetFor` längst zwei Werte
+führt. Getrennt wurde nach demselben Muster wie bei der Lichtsättigung (8.1): Wo App und Dokument
+auseinanderlaufen, wird geprüft, welches von beiden den Mechanismus richtig abbildet, statt eines
+davon anzugleichen. Beide Korridore sind Konvention aus der Praxis, keine gemessenen Grenzen — die
+Begründung für den Abstand ist die Austauschkapazität von Coco (7.1), nicht eine Messreihe.
 
 **Nie unter 6,0 in organischen Substraten.** Nicht wegen der Nährstoffchemie — dort wäre 5,8 noch
 tolerabel — sondern weil Nitrifikanten und die übrige Mikroflora bei niedrigem pH in der

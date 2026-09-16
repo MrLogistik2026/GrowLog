@@ -323,6 +323,39 @@ function pruef(name, bedingung, info) {
       /Dann diesen zuerst aussetzen, nicht zusätzlich düngen/.test(HTML));
   }
 
+  // (v1.5.238) Vier Befunde aus dem Rainbow-Plan, die v1.5.172 (Bernstein), v1.5.191 (Nacht-Klima),
+  // v1.5.196 (Hard-Dryback) und v1.5.211 (Drain-EC) anderswo längst behoben hatten — und die genau
+  // deshalb stehen geblieben sind, weil `FERT_PRESETS` in keiner dieser Runden Prüfgegenstand war
+  // (UEBERGABE 0n·D). Die Wächter laufen hier über ALLE Vorlagen, nicht über eine.
+  console.log('\nI - Kein Plan-Text widerspricht den Regeln der App');
+  {
+    const texte = JSON.parse(E(`(function(){
+      const t = {};
+      Object.entries(FERT_PRESETS).forEach(([k, p]) => {
+        t[k] = [p.name, p.subtitle, p.mixInfo, p.drainInfo,
+          ...Object.values(p.weekFocus || {}).map(w => w ? ((w.phase || '') + ' ' + (w.tip || '')) : '')].join(' ~ ');
+      });
+      return JSON.stringify(t);
+    })()`));
+    const alle = Object.entries(texte);
+    const trifft = (re) => alle.filter(([, t]) => re.test(t)).map(([k]) => k);
+    const keiner = (name, re) => { const w = trifft(re); pruef(name, w.length === 0, w.join(', ')); };
+
+    keiner('Keine Vorlage setzt das Spülende über einen Drain-EC-Wert (v1.5.211)', /Ziel Drain-EC|Drain-EC (höchstens|unter)\s*[0-9]/i);
+    keiner('Keine Vorlage nennt eine feste Bernstein-Spanne als Ernte-Trigger (v1.5.172)', /\d+\s*[–-]\s*\d+\s*% Bernstein/);
+    keiner('Keine Vorlage schneidet ab einem festen Bernstein-Anteil (v1.5.172)', /Über \d+\s*% Bernstein/i);
+    keiner('Keine Vorlage verlangt einen festen Klar-Anteil vor der Ernte', /unter \d+\s*% klar/i);
+    keiner('Keine Vorlage nennt ein eigenes Hard-Dryback-Ziel neben GIESSPUNKT (v1.5.196)', /Hard Dryback \d/i);
+    keiner('Keine Vorlage führt gleitende Restgewicht-Gates (ANBAU 1.2: der Gießpunkt gleitet nicht)', /Gate \d+\s*%/i);
+    keiner('Keine Vorlage nennt ein eigenes Nacht-Klima neben KLIMA_ZIEL (v1.5.191)', /Nacht-RLF|Nachtabsenkung/i);
+
+    pruef('Der Rainbow-Plan verweist stattdessen auf den Gießpunkt',
+      (texte.rainbow_auto.match(/Gießpunkt/g) || []).length >= 3,
+      (texte.rainbow_auto.match(/Gießpunkt/g) || []).length + ' Erwähnungen');
+    pruef('… und auf das eingestellte Bernstein-Ziel des Nutzers',
+      /dein(em)? eingestellte[ms] Bernstein-Ziel/.test(texte.rainbow_auto));
+  }
+
   pruef('Keine JS-Fehler im Lauf', errors.length === 0, errors.slice(0, 2).join(' | '));
   console.log(`\nErgebnis: ${ok} OK, ${fail} Fehler`);
   process.exit(fail ? 1 : 0);
