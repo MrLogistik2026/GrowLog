@@ -94,11 +94,19 @@ function pruef(name, bedingung, info) {
       const p = S.fertPlans.find(x => x.id === 'fp_out_benutzt');
       const c = S.cycles.find(x => x.id === 'zyk_out');
       const d = (p && c) ? getWeekDoses(c.id, 5, c) : {};
-      return JSON.stringify({ da: !!p, modus: p && p.doseMode, dosis: d['fp_out_benutzt_p1'], frei: !!S.fertPlans.find(x => x.id === 'fp_out_frei'),
+      return JSON.stringify({ da: !!p, modus: p && p.doseMode, dosis: d['fp_out_benutzt_p1'], guesse: (p && c) ? weekGussCounts(c, 5) : null, frei: !!S.fertPlans.find(x => x.id === 'fp_out_frei'),
         sensiFrei: !!S.fertPlans.find(x => x.id === 'fp_sensi_frei'), v347: !!S.fertPlans.find(x => /V3\\.4\\.7/.test(x.name || '')) });
     })()`));
     pruef('Kopie mit Zyklus bleibt und behält den Modus „Wochendosis"', r.da && r.modus === 'weekly-split', JSON.stringify(r));
-    pruef('… und rechnet unverändert: 4 ml/L Wochendosis bei Intervall 3 → 1,71 je Guss', r.dosis === 1.71, 'Dosis ' + r.dosis);
+    // (Testkorrektur nach v1.5.237) Hier stand „4 ml/L bei Intervall 3 → 1,71 je Guss" — das ist 4 × 3/7, die Formel,
+    // die v1.5.237 ersetzt hat: Sie lieferte über die gedehnte Plan-Woche bis zu 216 % der Wochenmenge. Seitdem teilt
+    // die App durch die echten Düngergüsse der Plan-Woche. Der Test lief beim Ausliefern von v1.5.237 nicht mit und
+    // war bis v1.5.240 rot. Geprüft wird jetzt, was „rechnet mit der Wochendosis" heißt: geteilt statt ungeteilt, und
+    // über die Güsse der Woche kommt die Wochenmenge an.
+    const wochenmenge = (r.guesse && r.guesse.feed > 0) ? Math.round(r.dosis * r.guesse.feed * 100) / 100 : null;
+    pruef('… und rechnet mit der Wochendosis: geteilt, und über die Güsse der Plan-Woche kommen die 4 ml/L an',
+      r.dosis > 0 && r.dosis < 4 && wochenmenge !== null && Math.abs(wochenmenge - 4) <= 0.05,
+      'Dosis ' + r.dosis + ' × ' + (r.guesse && r.guesse.feed) + ' Güsse = ' + wochenmenge);
     pruef('Unbenutzte Outdoor-Kopie ist entfernt', !r.frei, JSON.stringify(r));
     pruef('Sensi-Aufräumen wie vorher: unbenutzte Sensi-Kopie weg', !r.sensiFrei, JSON.stringify(r));
     pruef('… Patricks V3.4.7 (steckt in seinen Einträgen) bleibt', r.v347, JSON.stringify(r));

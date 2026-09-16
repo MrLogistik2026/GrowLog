@@ -2,6 +2,22 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-16 — Testkorrektur zu v1.5.237 (ohne Versionssprung, die App ist unverändert)
+
+- **`test_vorlageoutdoor.js` war seit v1.5.237 rot, und es ist niemandem aufgefallen.** Die Prüfung „rechnet
+  unverändert: 4 ml/L Wochendosis bei Intervall 3 → 1,71 je Guss" hielt die Formel fest, die v1.5.237 bewusst
+  ersetzt hat: 4 × 3/7, der Teiler einer Kalenderwoche, der über die gedehnte Plan-Woche bis zu 216 % der
+  Wochenmenge lieferte. Seitdem kommt dort 1 ml/L je Guss an — über die 4 Güsse der Plan-Woche genau die
+  Wochenmenge. Die App rechnet richtig; der Test erwartete den Fehler.
+- **Nachgewiesen statt vermutet:** derselbe Test gegen die hochgeladenen Stände — grün auf v1.5.236, rot auf
+  v1.5.237 und v1.5.239.
+- **Warum es durchrutschte:** Der Lauf für v1.5.237 nahm die Tests, die `weekly-split` beim Namen prüfen. Dieser
+  prüft den Modus über eine gespeicherte Outdoor-Kopie und fiel durch das Raster. Gefunden hat ihn erst der breite
+  Lauf über alle 37 Tests, die Düngepläne berühren (gemacht für v1.5.240).
+- Die Prüfung sagt jetzt, was „rechnet mit der Wochendosis" heißt, statt eine Zahl festzuhalten: geteilt statt
+  ungeteilt, und Dosis × Düngergüsse der Plan-Woche ergibt die 4 ml/L. Grün in beiden Zeitzonen, gegen v1.5.239
+  und gegen den Stand von v1.5.240.
+
 ## 2026-09-16 — v1.5.239
 
 - **Plagron Terra, CANNA Terra und Hesi führen kein Calcium/Magnesium — und sagten es nirgends.** Alle acht

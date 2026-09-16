@@ -1723,6 +1723,13 @@ Magnesium-Karte in `SYMPTOMS`; es gab zwei davon, und die zweite fiel erst auf, 
 mit `karten.some(…)` über **alle** Karten lief (v1.5.235). Eine Text-Berichtigung braucht deshalb eine
 Prüfung, die zählt statt zu suchen — `!liste.some(schlecht)`, nicht `liste.find(...)`.
 
+**Wer eine Rechenregel ändert, sucht jeden Test, der ihr Ergebnis als Zahl festhält — nicht nur die, die sie
+beim Namen nennen.** v1.5.237 änderte den Teiler von `weekly-split`; `test_vorlageoutdoor.js` erwartete weiter
+1,71 (= 4 × 3/7), lief beim Ausliefern nicht mit und blieb rot, bis ihn am 16.09.2026 ein breiter Lauf fand.
+Bei Änderungen an Dosis-Rechnung oder Vorlagen diesen Lauf nehmen:
+`grep -l -E "FERT_PRESETS|loadPreset|biobizz|presetKey|_wizStepFertPlan|renderDuenger|getWeekDoses|fertPlans" test_*.js`
+(37 Dateien am 16.09.2026, zusammen rund 12 Minuten für beide Zeitzonen).
+
 **`test_leerzustand.js` ist die Ausnahme von der Sicherungs-Regel:** Es lädt Patricks
 Sicherung bewusst **nicht**, weil der leere Speicher der Prüfgegenstand ist. Wer den
 Erstlauf prüft, darf keine Daten voraussetzen.
