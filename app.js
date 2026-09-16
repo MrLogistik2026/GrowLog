@@ -3472,7 +3472,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.233';
+const APP_VERSION = 'v1.5.234';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -5906,10 +5906,10 @@ const SYMPTOMS = [
     subtitle: 'Braune, schwarze oder rostige Punkte',
     causes: [
       {
-        heading: 'Rost-farbene Flecken, oft zuerst unten',
+        heading: 'Rost-farbene Flecken, zuerst oben an jungen Blättern',
         verdict: '⚠ Calcium-Mangel',
         color: 'var(--orange)',
-        text: 'Typische rostbraune Flecken durch Ca-Mangel. <b>Lösung:</b> CalMag erhöhen — immer zuerst ins Wasser, vor allen anderen Düngern.',
+        text: 'Calcium kann die Pflanze nicht umlagern — der Mangel zeigt sich deshalb <b>oben</b> an jungen Blättern und Triebspitzen. Sitzen die Flecken <b>unten</b> zwischen grün bleibenden Adern, ist es Magnesium, nicht Calcium. <b>Lösung:</b> Calcium kommt nur mit dem Verdunstungsstrom ins Blatt. Steht die Luft oder ist sie zu feucht, kommt es oben nicht an, obwohl genug im Topf ist — deshalb zuerst Umluft und Luftfeuchte prüfen, dann den pH, und erst danach CalMag erhöhen.',
         when: 'Alle Phasen',
         lex: 'CalMag',
       },

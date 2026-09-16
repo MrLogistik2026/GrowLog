@@ -89,6 +89,16 @@ const { loadApp } = require('./harness.js');
   ok(!!mgK && !/immer zuerst ins Wasser/.test(mgK.text),
      'Keine feste Mischreihenfolge mehr auf der Karte — die gehoert zum Plan (ANBAU 10, v1.5.109)');
 
+  // (v1.5.234) Dieselbe Prüfung für die Calcium-Karte. Sie hieß „oft zuerst unten" und widersprach damit
+  // ca_deficiency (location: newLeaves, seit v1.5.107) — und sie steht VOR der Diagnose.
+  const caK = karten.find(k => /Calcium-Mangel/.test(k.verdict || ''));
+  ok(!!caK, 'Es gibt eine Schnellhilfe-Karte "Calcium-Mangel"');
+  ok(!!caK && !/oft zuerst unten/.test(caK.heading || ''), 'Ihre Ueberschrift schickt nicht mehr nach unten');
+  ok(!!caK && /oben/.test(caK.text), 'Sie nennt den Ort oben — Calcium ist unbeweglich (ANBAU 6.1)');
+  ok(!!caK && /Magnesium, nicht Calcium/.test(caK.text), 'Sie liefert die Abgrenzung zu Magnesium mit');
+  ok(!!caK && /Verdunstungsstrom/.test(caK.text), 'Sie nennt den Transportweg (ANBAU 1)');
+  ok(!!caK && /Umluft und Luftfeuchte pr(ü|ue)fen, dann den pH, und erst danach CalMag/.test(caK.text),
+     'Reihenfolge wie in der Diagnose: erst Klima, dann pH, dann CalMag');
   console.log('\n' + (fail.length ? 'FEHLGESCHLAGEN: ' + fail.length : 'ALLE PRUEFUNGEN GRUEN') + '  (TZ=' + (process.env.TZ || 'System') + ')');
   process.exit(fail.length ? 1 : 0);
 })();

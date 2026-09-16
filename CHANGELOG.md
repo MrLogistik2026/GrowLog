@@ -2,6 +2,26 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-16 — v1.5.234
+
+- **Die Anfänger-Karte zum Calcium-Mangel schickte an das falsche Ende der Pflanze.** Sie hieß „Rost-farbene
+  Flecken, **oft zuerst unten**" und stellte die Diagnose Calcium-Mangel. Calcium ist im Phloem praktisch
+  immobil — die Pflanze kann es nach dem Einbau nicht umlagern, der Mangel erscheint deshalb immer zuerst an den
+  **jüngsten** Geweben (`ANBAU.md` 1 und 6.1). Rostflecken, die unten anfangen, sind das Magnesium-Bild.
+- **Die Karte führte damit genau in die Verwechslung, die v1.5.107 in der Diagnose aufgelöst hat** — und sie
+  steht vor der Diagnose: Ein Anfänger sieht die Schnellhilfe zuerst. `ca_deficiency` führt seit v1.5.107
+  `location: ['newLeaves']`; die Karte sagte das Gegenteil. Überschrift und Text nennen jetzt den Ort oben und
+  liefern die Abgrenzung mit: unten zwischen grün bleibenden Adern ist es Magnesium.
+- **Auch der Rat war falsch herum.** „CalMag erhöhen — immer zuerst ins Wasser, vor allen anderen Düngern."
+  Calcium kommt nur mit dem Verdunstungsstrom ins Blatt (`ANBAU.md` 1): Steht die Luft oder ist sie zu feucht,
+  fehlt es oben, obwohl genug im Topf ist — mehr düngen hilft dann nicht. Die Karte nennt jetzt dieselbe
+  Reihenfolge wie die Diagnose: erst Umluft und Luftfeuchte, dann pH, dann CalMag.
+- **Und die feste Mischregel ist weg**, wie in v1.5.233: „immer zuerst ins Wasser" ist falsch, sobald der Plan
+  ein Silikat führt (`ANBAU.md` 10, v1.5.109). Damit steht auf keiner Schnellhilfe-Karte mehr eine
+  Mischreihenfolge — die gehört zum Plan, und die Tipps-Karte liest sie von dort.
+- `test_naehrstoffort.js` erweitert (beide Zeitzonen), darunter die Gegenprobe über **alle** Karten: keine
+  einzige darf eine feste Mischreihenfolge nennen.
+
 ## 2026-09-16 — v1.5.233
 
 - **Die Anfänger-Schnellhilfe riet bei Magnesium-Mangel zu Calcium.** Gefunden beim Nachsehen zu v1.5.232, sofort
