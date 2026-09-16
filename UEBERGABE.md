@@ -164,6 +164,83 @@ sehen, ob die Sprungmarken im Alltag reichen, bevor Blöcke verschoben werden.
 
 ---
 
+## 0n · Dritte Agenten-Runde (16.09.2026) — die elf Düngeplan-Vorlagen
+
+Patrick am 16.09.2026: „Gerne kannst du die anderen Pläne gleich mit überprüfen oder überprüfen lassen." Drei Prüfer,
+je ein Ausschnitt, **kein Code geändert** — nur Befunde mit Zeilennummer. Auflagen: keine Dosis anfassen, keine Zahl
+ohne Beleg aus dem Projekt, Hersteller-PDFs sind auf diesem Laptop nicht lesbar und offene Fragen bleiben offen.
+**Ergebnis: 70 Befunde, 30 offene Fragen.** Rohdaten: `scratchpad/agenten4/plaene_{unvollstaendig,biobizz,rest}.json`
+im Sitzungsordner (vergänglich — das Folgende ist die dauerhafte Fassung).
+
+**Selbst nachgemessen, nicht nur berichtet:**
+- **Plagron Green Sensation** steht in `mixOrder` (2503) und `mixInfo` (2504) an **letzter** Stelle, während der
+  eigene Lexikon-Eintrag „Silizium (Silica)" (32625) genau dieses Produkt namentlich führt („Plagron Green Sensation
+  (enthält Silizium)") und sagt: „**Immer als Erstes ins Wasser**". Nach `ANBAU.md` 10 fällt Silikat mit Calcium und
+  Phosphat aus. Die App widerspricht sich hier selbst — eine der beiden Stellen ist falsch.
+- **Acti·Vera in `biobizz_official`**: Düngetag **0,43–0,59 ml/L**, Wasser-Tag **1,0** (gemessen bei Intervall 3,
+  Wochen 2/5/7/8). Dieselbe Zahl, zwei Bedeutungen — am Wasser-Tag bekommt die Pflanze rund doppelt so viel wie am
+  Düngetag. Der Feed-Tag-Ausgleich gleicht das nicht aus.
+
+### A · Ohne Rückfrage behebbar (App widerspricht sich selbst)
+
+| Plan | Zeile | Was |
+|---|---|---|
+| cup_sieger | 2751 | `mixOrder` führt „Mykorrhiza HomeGrow24" als Mischschritt, Produktnotiz (2815) und `mixInfo` sagen „TROCKEN an die Wurzel, NIE ins Gießwasser". Das Plan-Blatt rendert `mixOrder` als nummerierte Schritte — wer folgt, rührt die Wurzelimpfung ins Wasser. |
+| cup_sieger | 2781/2785/2789 | Drei Wochen-Tipps kündigen MKP an, das im `schedule` nicht mehr vorkommt und das `mixInfo` selbst als „gestrichen" führt. Produkt steht ohne Dosis in der Liste (2809), das Lexikon zeigt darauf (32521). |
+| cup_sieger | 2745 | Untertitel nennt „12 Produkte" — es sind 11. |
+| canna_coco / ghe_flora | 2662 / 2713 | Woche 11 „Coco trocknen lassen" bzw. „Trocknen lassen" — seit v1.5.200 hat Coco einen eigenen Gießpunkt, unter 60 % Restgewicht meldet die App „Zu trocken für Coco". Die Erd-Pläne sind längst umgestellt, die Coco-Pläne hat v1.5.200 nicht mitgenommen. |
+| biobizz_konservativ | 2596 | `mixInfo`: „CalMag zuerst (verhindert Phosphat-Ausfällung)" — dreht den Mechanismus um. Nach `ANBAU.md` 10 ist Ca²⁺ + PO₄³⁻ genau die Paarung, die **ausfällt**. Ein Anfänger lernt dort das Gegenteil. |
+| biobizz_konservativ | 2595 | Epsom steht an Position 8 **nach** den Basisdüngern; `rainbow_auto` führt es nach `ANBAU.md` 10 direkt hinter CalMag. |
+| biobizz_master | 2371, 2380–2384 | Wirkungszusagen: „für dichte, trichomreiche Blüten", „Trichom-Push … steinhart dichte Blüten", „Herbst-Stress einleiten", „Nährstoffe aus den Sonnensegeln leersaugen". Handlung behalten, Zusage streichen (`ANBAU.md` 14) — dieselbe Arbeit wie v1.5.172/192. |
+| biobizz_konservativ | 2604, 2610 | „Trichom-Produktion startet", „Top·Max maximal für Dichte"; IceFlush ohne den Ehrlichkeits-Satz aus `ANBAU.md` 14. |
+| cup_sieger | 2793 | „24h Pitch-Black Tag 3-4 einbauen!" — Zwischen-Dunkelphase ohne Beleg. |
+| ghe_flora | 2722 | „Reifebeschleuniger" als Wirkungszusage ohne Quelle. |
+| feste Zahlen statt Quelle | master 2370/2371, light 2467, konservativ 2597, official 2426, canna_coco 2649/2650, ghe_flora 2700/2701/2712, plagron 2504, canna 2530 | pH, Drain-Ziel und Gießpunkt stehen als feste Zahlen neben `phTargetFor`, `DRAIN_ZIEL`, `T.drainRegelKurz()` und `giesspunktFor`. Dieselbe Fehlerklasse wie v1.5.216/221 — `canna_coco` (2650) macht es bei DRAIN_ZIEL bereits richtig vor. |
+| biobizz_light | 2452–2493 | Kein `weekFocus` — ausgerechnet der Plan, den der Assistent Einsteigern empfiehlt (22842), führt ohne ein einziges Wochenwort durch den Zyklus, während der Profi-Plan zwölf Tipps hat. |
+| Wochenplan-Editor | 19462 | Beschriftet **jede** Tabelle mit „Dosis pro Woche", auch bei den sieben `per-watering`-Plänen. Das ist der Nährboden, auf dem der weekly-split-Befund unbemerkt bleiben konnte. Überschrift aus `_doseModeFor(plan)` ableiten. |
+| Lexikon | 32277 | „K-Booster und CalMag immer parallel skalieren" — `ANBAU.md` 6.2 und der eigene Diagnosetext (1242) sagen das Gegenteil: zusätzliches Ca/Mg verschiebt das Verhältnis erneut. |
+
+### B · Braucht Patricks Entscheidung
+
+- **`weekly-split` hält sein Versprechen nicht.** Geteilt wird durch das nominelle 7/Intervall (9846), die Feed-Tage
+  werden aber über die **gedehnte** Plan-Woche gezählt und wieder hochskaliert (9207). Gemessen vom Prüfer: Bio·Grow
+  liefert 59 % bis 214 % der gespeicherten Wochenmenge, und bei 42 Blütetagen fällt Plan-Woche 7 **ganz** aus (der
+  einzige Gießtag dort ist ein Wasser-Tag). *(Diese Spanne habe ich nicht selbst nachgerechnet — der Teiler und der
+  Acti·Vera-Fall oben sind gemessen.)* Frage: Modus reparieren (Teiler = tatsächliche Feed-Tage) oder abschaffen?
+- **`plagron`, `canna`, `hesi` haben kein `doseMode`** und laufen still auf dem Rückfall `per-watering` (9255).
+  Der Bildschirm behauptet dem Nutzer „Volle Dosis jeden Gießtag" (19399). Blütewoche bei Intervall 3: 5,0 ml/L je Guss
+  gegen 2,14 im Wochenmodus — Faktor 2,33. Die Entscheidung gehört mit der BioBizz-Frage in einen Zug.
+- **Kein Ca/Mg in diesen drei Plänen, aber je ein PK-Booster.** Alle acht anderen führen CalMag als Produkt ①.
+  `ANBAU.md` 3: bei weichem Wasser ist Cal/Mag Grundversorgung. Produkt aufnehmen (Umbau) oder Hinweis genügt?
+- **Rainbow (dein Blatt, deshalb deine Entscheidung):** Woche 14 „Ziel Drain-EC höchstens 0,5" (2314, steht seit
+  v1.5.211 offen) · Ernte-Trigger „5–8 % Bernstein · unter 5 % klar" (2315) gegen `_targetAmber` und
+  `RIPE_CLEAR_DONE` = 10 · Restgewicht-Gates und „Hard Dryback 25–30 %" (2347) gegen `GIESSPUNKT` · Nacht-Klima
+  (2306/2310), obwohl die Klima-Tabelle des Blatts bewusst draußen bleiben sollte (0k).
+- **Alfa Boost** fehlt weiter die Etikett-Dosis — vier Wochen-Tipps fordern ein Mittel an, das in Wochenblatt und
+  Mischliste nicht auftaucht (0k).
+- **Coco-pH** 5,8–6,2 (App) gegen 5,5–6,0 (`ANBAU.md` 4): steht seit 0f offen, beide Coco-Pläne schreiben es fest.
+
+### C · Blockiert — nur mit den Hersteller-Unterlagen zu klären
+
+Ob die **Dosen** von BioBizz, Plagron Terra, CANNA Terra, Hesi, CANNA Coco und GHE Flora den Herstellerangaben
+entsprechen, ist offen: Die PDFs lassen sich auf diesem Laptop nicht öffnen (wie in 0m.4). Keiner der drei Prüfer hat
+eine Dosis vorgeschlagen. Dazu gehören: Top·Max läuft in den vier BioBizz-Plänen um **Faktor 7** auseinander,
+Bio·Bloom springt in `official` von 1 auf 4, CalMag steht zwischen 0,3 und 2,0, POWHUMUS 10 ml/L und Aloe 25 ml/L
+ohne Konzentrationsangabe. **Die Bitte an Patrick bleibt: die Light-Mix-Spalte des Schemas 2025 einmal selbst ansehen.**
+
+### D · Die Ursache hinter der Hälfte der Befunde
+
+**Die Düngeplan-Vorlagen waren in keiner der Text-Prüfungen Prüfgegenstand** — nicht in v1.5.125 (Lexikon), nicht in
+v1.5.172 (Bernstein), v1.5.190 (Klima), v1.5.192 (IceFlush/Dunkelphase) und v1.5.210 (Drain-EC). Jede dieser Runden
+hat ihre Texte bereinigt und `FERT_PRESETS` ausgelassen. Daher stammen alle Text-Befunde oben.
+**Konsequenz:** Der Wächter-Test aus der Begriffe-Prüfung (Schritt 18 dort) muss `FERT_PRESETS` mitdurchsuchen,
+sonst wiederholt sich das bei der nächsten Runde.
+
+**Wer Dosen, Produktzahl, Wochenzahl oder Gaben ändert, zieht den Fingerabdruck in `test_duengeplaene.js` mit**
+(Zeile 34–39; canna 40, hesi 44, plagron 45) — sonst fällt der Test um.
+
+---
+
 ## 0m · Zweite Agenten-Runde (15.09.2026) — vier Designfragen, Antworten offen
 
 Patrick am 14.09.2026: offene Fragen „aus Sicht eines Anfängers und eines Profis" von Agenten prüfen lassen, „immer auf
@@ -297,7 +374,7 @@ das erst das Nachmessen im Browser; der jsdom-Test prüft es seitdem mit.
 
 **Als Nächstes, in dieser Reihenfolge** (Patricks Auftrag vom 15.09.2026: selbst entscheiden, wissenschaftlich begründet):
 1. **Erntefenster:** drei Messpunkte (Headbud, Mitte, unten), gemittelt; der Erntepunkt folgt dem **eingestellten** Bernstein-Ziel (`c.targetAmber`, Vorgabe 5 %, frei bis 60 % — Patrick am 16.09.2026: „Userabhängig … manche ernten bei 15 % für den Couch Lock"), auch wenn noch klare Köpfe da sind (Befunde und Patricks Antwort in 0m.2). Plan der Prüfung: `scratchpad/agenten2/ergebnis_erntefenster_Vorschlagen.json` unter `umsetzung` (9 Schritte). Schritt 1 ist erledigt (v1.5.212); als Nächstes Schritt 2 — Rechenwerte kennzeichnen (`q`: gezählt, bestätigt, gerechnet) und aus Prognose und Freigabe halten.
-2. **Düngepläne:** BioBizz-Schema nachschlagen, Wasser-Tage als Wahl des Nutzers, Herstellerpläne nach Genetik und Dauer (0m.4).
+2. **Düngepläne:** 70 Befunde aus der dritten Agenten-Runde stehen in **Abschnitt 0n** — zuerst Gruppe A (die App widerspricht sich selbst, ohne Rückfrage behebbar), dann Patricks Entscheidungen aus Gruppe B. Die Dosen selbst bleiben blockiert, solange die Hersteller-PDFs nicht lesbar sind (0m.4, 0n·C).
 3. **Begriffe-Prüfung, Schritte 8–24** (`scratchpad/agenten3/begriffe2.json` unter `umsetzung`): Wirkungszusagen und Dosen in Texten, ein Wächter-Test für verbotene Formen, zuletzt die Umbenennungen (Runoff/Ablauf → Drain, Input → Gießwasser).
 
 **Offen** (Umbauten; Patricks Auftrag vom 15.09.2026: selbst entscheiden, wissenschaftlich begründet): Erntefenster und weekly-split — die Befunde stehen in Abschnitt 0m · (älter, dort aufgegangen:) welche Erntezahl vorne steht (Kopfzeile und Startseite rechnen das Erntefenster nur aus dem Bernstein-Tempo: bei Patrick am 03.09. „Ernte Tag 118–158“ aus Bernstein 4,1 → 4,0 %, während die Trichom-Karte „erntereif um Tag 113“ sagt; `harvestWindow` gegen `_ripeWindow` — soll das Reifefenster vorne stehen und ein Bernstein-Fenster über 20 Tage gar nicht als Erntetag erscheinen?) · Pflanzenzahl im Assistenten.
