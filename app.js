@@ -3576,7 +3576,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.246';
+const APP_VERSION = 'v1.5.247';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -32587,7 +32587,7 @@ const LEXIKON = [
         '<b>Mineral-Dünger-Linien (Beispiele):</b><br>' +
         '• <b>Canna</b> — Coco A+B, Terra Vega/Flores, Hydro A+B, Boost. Sehr verbreitet, präzise.<br>' +
         '• <b>GHE / Terra Aquatica</b> — Flora-Serie (Micro/Grow/Bloom), 3-Komponenten-System<br>' +
-        '• <b>Hesi Mineral / Hesi TNT</b> — deutsche Marke, gute Qualität<br>' +
+        '• <b>Hesi Mineral / Hesi TNT</b> — niederländische Marke<br>' +
         '• <b>Advanced Nutrients</b> — pH-perfect-System, automatische pH-Stabilisierung<br><br>' +
         '<b>Hybrid-Ansatz:</b><br>' +
         'Praktisch sehr verbreitet ist die Kombination aus mineralischer Basis + biologischen Additiven (Enzyme, Humin-Säuren, Mykorrhiza, Trichoderma). Das gibt Präzision der mineralischen Steuerung plus Bodenleben-Vorteile (Pufferung, bessere Aromen).<br><br>' +

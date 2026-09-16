@@ -449,6 +449,10 @@ function pruef(name, bedingung, info) {
     pruef('… und das stimmt mit dem Master-Plan: Bio·Grow in Woche 7 halb so viel wie in Woche 6, ab Woche 8 keiner',
       master[7]['Bio·Grow'] === master[6]['Bio·Grow'] / 2 && [8, 9, 10, 11, 12].every(w => !(master[w] || {})['Bio·Grow']));
     pruef('Hesi ist eine niederländische Marke, keine deutsche', !/Deutsche Marke/.test(lex.text) && /Niederländische Marke/.test(lex.text));
+    // (v1.5.247) Die Prüfung oben suchte nur im Plan-Vergleich und mit großem „D". Im Eintrag „Bio vs. Mineralisch" stand
+    // „Hesi … deutsche Marke" weiter. Deshalb jetzt über den ganzen Quelltext, ohne Groß- und Kleinschreibung.
+    pruef('Nirgends im Quelltext mehr „deutsche Marke" (auch kleingeschrieben)', !/deutsche Marke/i.test(code),
+      (code.match(/.{0,60}deutsche Marke.{0,20}/i) || [''])[0]);
     // K-ENDE
   }
 

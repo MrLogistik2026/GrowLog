@@ -2,6 +2,15 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-16 — v1.5.247
+
+- **„Hesi … deutsche Marke" stand zweimal im Lexikon; v1.5.246 hat nur eine Stelle berichtigt.** Im Eintrag „Bio vs.
+  Mineralisch" hieß es weiter „Hesi Mineral / Hesi TNT — deutsche Marke, gute Qualität". Hesi ist eine niederländische
+  Marke (HESI Plantenvoeding B.V., Kerkrade). Die Suche für v1.5.246 unterschied Groß- und Kleinschreibung und schaute
+  nur in den Eintrag, der gerade angefasst wurde; aufgefallen ist die zweite Stelle beim Lesen für den nächsten Block.
+- „gute Qualität" fällt mit weg — eine Bewertung ohne Beleg.
+- `test_duengeplantexte.js` prüft jetzt den ganzen Quelltext, ohne Groß- und Kleinschreibung (95 Prüfungen).
+
 ## 2026-09-16 — v1.5.246
 
 - **Zwei Angaben im Lexikon-Vergleich der Düngelinien stimmten nicht.** „BioBizz Master: … hoher Ertrag,
