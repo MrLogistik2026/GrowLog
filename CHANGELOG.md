@@ -2,6 +2,17 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-16 — v1.5.245
+
+- **Assistent und Lexikon empfahlen Einsteigern verschiedene Vorlagen.** Der Assistent markiert „BioBizz Light" als
+  „Empfohlen", die Empfehlungs-Tabelle im Lexikon nannte für „Anfänger Indoor (Erde)" „BioBizz konservativ". Zwei
+  Antworten auf dieselbe Frage — beim Überfliegen gewinnt die, die man zuletzt gelesen hat.
+- **Eine Quelle:** `EINSTEIGER_VORLAGE` (Erde: BioBizz Light, Coco: CANNA Coco A+B). Assistent und Lexikon-Tabelle
+  lesen beide dort. Warum Light: der Master-Plan zur Hälfte, und bei der Düngermenge ist weniger die sichere Seite
+  (`ANBAU.md` 15); der Assistent empfahl ihn schon, die Lexikon-Zeile war die Ausnahme.
+- `test_duengeplantexte.js` Abschnitt K: Der „Empfohlen"-Knopf des Assistenten (Erde und Coco) und die Lexikon-Zeile
+  nennen dieselbe Vorlage wie `EINSTEIGER_VORLAGE` (91 Prüfungen).
+
 ## 2026-09-16 — v1.5.244
 
 - **Das Lexikon bot eine Vorlage an, die es seit v1.5.178 nicht mehr gibt.** Der Eintrag „Düngepläne

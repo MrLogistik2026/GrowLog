@@ -428,6 +428,19 @@ function pruef(name, bedingung, info) {
       lex.liste.join(', ') + ' | ' + lex.namen.join(', '));
     pruef('… und genau die, die der Düngeplan zum Laden anbietet', JSON.stringify(lex.imDuenger) === JSON.stringify(lex.waehlbar),
       lex.imDuenger.join(', ') + ' | ' + lex.waehlbar.join(', '));
+    const empf = JSON.parse(E(`(function(){
+      S.fertPlans = [];
+      const knopf = (html) => { const i = html.indexOf('>Empfohlen<'); if (i < 0) return null;
+        const a = html.lastIndexOf("_wizAnswer('fertPresetKey','", i); return a < 0 ? null : html.slice(a + 28, html.indexOf("'", a + 28)); };
+      const e = LEXIKON.flatMap(k => k.items || []).find(i => i.t === 'Düngepläne (Hersteller-Vergleich)') || {};
+      const zeile = ((e.practice || '').match(/Anfänger Indoor \\(Erde\\)<\\/td><td[^>]*>([^<]+)</) || [])[1] || '';
+      return JSON.stringify({ erde: knopf(_wizStepFertPlan({ medium: 'erde', growType: 'indoor' })),
+        coco: knopf(_wizStepFertPlan({ medium: 'coco', growType: 'indoor' })), soll: EINSTEIGER_VORLAGE, zeile,
+        name: FERT_PRESETS[EINSTEIGER_VORLAGE.erde].name });
+    })()`));
+    pruef('Der Assistent empfiehlt, was EINSTEIGER_VORLAGE sagt — Erde und Coco',
+      empf.erde === empf.soll.erde && empf.coco === empf.soll.coco, JSON.stringify(empf));
+    pruef('… und das Lexikon empfiehlt Einsteigern dieselbe Vorlage', empf.zeile === empf.name, empf.zeile + ' ≠ ' + empf.name);
     // K-ENDE
   }
 

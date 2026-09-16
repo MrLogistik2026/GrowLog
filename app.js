@@ -3008,6 +3008,12 @@ const FERT_PRESETS = {
     },
 };
 
+// (v1.5.245) Welche Vorlage die App Einsteigern empfiehlt — eine Quelle für den Assistenten und das Lexikon.
+// Vorher empfahl der Assistent „BioBizz Light", die Empfehlungs-Tabelle im Lexikon „BioBizz konservativ": zwei
+// Antworten auf dieselbe Frage. Light ist der Master-Plan zur Hälfte, und bei der Düngermenge ist weniger die
+// sichere Seite (ANBAU.md 15).
+const EINSTEIGER_VORLAGE = { erde: 'biobizz_light', coco: 'canna_coco' };
+
 // =====================================================================
 //  [SEKTION]: CUSTOM DÜNGER-PRESETS (Phase 4 Schritt 5)
 // =====================================================================
@@ -3570,7 +3576,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.244';
+const APP_VERSION = 'v1.5.245';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -23050,7 +23056,7 @@ function _wizStepFertPlan(a) {
     : isOutdoor
       ? ['biobizz_light', 'canna', 'hesi', 'plagron', 'biobizz_master', 'biobizz_official_2026']
       : ['biobizz_light', 'cup_sieger', 'canna', 'hesi', 'plagron', 'biobizz_master', 'biobizz_official_2026'];
-  const recommendedKey = med === 'coco' ? 'canna_coco' : 'biobizz_light';
+  const recommendedKey = med === 'coco' ? EINSTEIGER_VORLAGE.coco : EINSTEIGER_VORLAGE.erde;
   const presetOptions = presetKeys
     .filter(key => !plans.some(p => p.presetKey === key))
     .map(key => {
@@ -32647,7 +32653,8 @@ const LEXIKON = [
         '<b>Empfehlungs-Matrix:</b><br>' +
         '<table style="width:100%;border-collapse:collapse;font-size:13px;margin-top:6px">' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Setup</b></td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Empfohlene Vorlage</b></td></tr>' +
-        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Anfänger Indoor (Erde)</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">BioBizz konservativ</td></tr>' +
+        // (v1.5.245) Dieselbe Empfehlung wie der Assistent — vorher stand hier „BioBizz konservativ", dort „BioBizz Light".
+        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Anfänger Indoor (Erde)</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">' + FERT_PRESETS[EINSTEIGER_VORLAGE.erde].name + '</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Erfahrener Indoor (Erde)</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">BioBizz Master oder CANNA Terra</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Coco-Anbau</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">CANNA Coco A+B</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Hydro/Universal</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">GHE Flora-Serie</td></tr>' +
