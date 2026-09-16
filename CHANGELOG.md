@@ -2,6 +2,25 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-16 — v1.5.252
+
+- **Die Spül- und Reifetexte aus v1.5.249 nach dem Fach-Gegencheck genauer.** „Zu lange spülen (>14 Tage in Erde) → das
+  ist ein früher Stickstoff-Stopp" setzte eine Grenze, die `ANBAU.md` nicht zieht, und übersah, dass Erde weiter
+  nachliefert (5.1) — Spülen ist dort kein vollständiger Stickstoff-Stopp. Jetzt: Je länger nur Wasser kommt, desto eher
+  fehlt Stickstoff, den die Pflanze bis zuletzt für Blütenmasse braucht (5); ab wann das schadet, ist nicht belegt —
+  bleib bei den Spültagen deines Plans. „In Erde steigt er nach dem Spülen wieder" → „kann wieder steigen": bei echter
+  Anreicherung bleibt er unten (5.1). Der Satz stand seit v1.5.211 an fünf Stellen — im Eintrag „Spülung" (dreimal), in
+  einer Tabelle zu Zwischenspülungen und in Woche 14 des Rainbow-Plans; alle fünf sind gleich geändert, sonst wäre die
+  App uneins. Das Ergebnis bleibt dasselbe: Wann Schluss ist, sagt der Plan, nicht ein Drain-EC-Wert.
+- **Keine erfundenen Zahlen:** Der Info-Text „Flush" nannte „pH auf etwa 6.2" für jedes Substrat, der Silizium-Eintrag
+  „hebt den pH oft um 0.5–1.0 Punkte" — `ANBAU.md` 10 nennt für Kaliumsilikat keine Zahl, und wie weit der pH steigt,
+  hängt an der Alkalinität des Wassers (3). Und „Bodenleben-Vorteile (Pufferung)": Den Puffer liefert die
+  Austauschkapazität des Substrats (7.1), nicht Bodenleben oder Zusätze — das Beispiel darunter steht obendrein in Coco.
+- **Zwei Reste im Eintrag „Reife (Seneszenz)", die v1.5.249 übersehen hat:** „24–48 h vor Ernte Lampe aus (Dunkelheit
+  triggert finale Trichom-Reife)" — nach `ANBAU.md` 14 kein belegter Zuwachs; belegt ist, dass ein kühler, dunkler
+  Schnitt die Terpene schont. Und „zu früh ernten = weniger THC, kratziger Rauch" → weniger Wirkung und Ertrag (11).
+- `test_lexikon.js` Abschnitt O, Abschnitt M angepasst (101 Prüfungen).
+
 ## 2026-09-16 — v1.5.251
 
 - **Die Vorlage „BioBizz konservativ" redete an ihrem eigenen Wochenplan vorbei.** Die Wochen-Tipps sagten in Woche 4

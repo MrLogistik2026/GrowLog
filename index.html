@@ -3312,7 +3312,7 @@ const FERT_PRESETS = {
       11: { phase: 'Reifung · Seneszenz',      tip: 'pH 6,25. Alg-A-Mic auf 3 ml/L. Vergilbung gleichmäßig von unten nach oben bei laufender Blütenentwicklung ist Seneszenz — nicht andüngen. Steigender Drain-EC bei mindestens 20 % Durchfluss und ohne Spitzenbrand ist Mineralisierung, keine Überdüngung. Erreicht eine Sorte den N-Stopp-Trigger und die andere nicht: zwei Ansätze nacheinander mischen.' },
       12: { phase: 'Taper · N-Stopp bei Trigger', tip: 'pH 6,25. Silica zum letzten Mal. N-Stopp NUR bei 70–80 % milchigen Trichomen, pro Pflanze — bei 60 % läuft Bio-Grow mit 0,3 weiter, auch bis Woche 14. Bio-Bloom bleibt oben und wird erst 7 Tage nach dem N-Stopp reduziert.' },
       13: { phase: 'Finish · Rampe',           tip: 'Nach dem N-Stopp 7 Tage Bio-Bloom + Basis, dann die Rampe: Bio-Bloom 0,5 · CalMag 0,5 · Epsom 0,2. Vor dem Spülen nicht tiefer abtrocknen lassen als bis zum Gießpunkt. Trichome nicht im Fenster → Feed aus Woche 11/12 läuft weiter. Liegt der Bernstein-Anteil über deinem eingestellten Ziel → sofort schneiden, IceFlush entfällt.' },
-      14: { phase: 'Spülen',                   tip: 'Nur pH-Wasser 6,3, Gießwasser-EC 0,2–0,5, maximal 2 Spülgänge. Der Spülstart liegt 7–10 Tage vor dem Schnitt, nicht vor einem Datum. Wann Schluss ist, sagt der Plan — nicht ein Drain-EC-Wert: In Erde steigt er nach dem Spülen wieder an, weil das Substrat nachliefert. Danach nicht mehr gießen, bis der Topf den Gießpunkt erreicht.' },
+      14: { phase: 'Spülen',                   tip: 'Nur pH-Wasser 6,3, Gießwasser-EC 0,2–0,5, maximal 2 Spülgänge. Der Spülstart liegt 7–10 Tage vor dem Schnitt, nicht vor einem Datum. Wann Schluss ist, sagt der Plan — nicht ein Drain-EC-Wert: In Erde kann er nach dem Spülen wieder ansteigen, weil das Substrat nachliefert. Danach nicht mehr gießen, bis der Topf den Gießpunkt erreicht.' },
       15: { phase: 'IceFlush + Ernte',         tip: 'Nicht mehr gießen, bis der Topf den Gießpunkt erreicht — dann bleibt das Schmelzwasser im Topf. 1 L Crushed Ice pro Topf an den Rand, 4–6 h. Dunkelphase 24–36 h — reguläres Licht-aus nutzen, Zeitschaltuhr trennen. Schnitt vor Lichtstart unter Grünlicht, Frischgewicht pro Topf. Ernte-Trigger: kaum noch klare Trichome und dein eingestelltes Bernstein-Ziel erreicht — wie viel Bernstein du willst, entscheidest du selbst (Vorgabe 5 %; mehr macht die Wirkung ruhiger und senkt die Potenz). Gemessen wird auf den Kelchen, nicht auf Zuckerblättern. Griffelbräunung ist kein Reifezeichen.' },
     },
     products: [
@@ -4577,7 +4577,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.251';
+const APP_VERSION = 'v1.5.252';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -6749,7 +6749,7 @@ const INFO_TERMS = {
   flush: {
     title: 'Flush (Spülung)',
     text: 'In den letzten 1–2 Wochen vor der Ernte gibst du nur noch Wasser, keinen Dünger mehr. Das senkt die Salze im Substrat. Weit verbreitet und unschädlich — dass die Blüten danach anders schmecken, ließ sich in Vergleichen allerdings nicht nachweisen.',
-    tip: 'pH auf etwa 6.2 einstellen und mit reichlich Wasser durchspülen.',
+    tip: 'pH auf das Ziel deines Substrats einstellen und mit reichlich Wasser durchspülen.',
     lex: 'Spülung (Final-Flush)',
   },
   defoliation: {
@@ -33591,7 +33591,7 @@ const LEXIKON = [
         '• <b>Hesi Mineral / Hesi TNT</b> — niederländische Marke<br>' +
         '• <b>Advanced Nutrients</b> — pH-perfect-System, automatische pH-Stabilisierung<br><br>' +
         '<b>Hybrid-Ansatz:</b><br>' +
-        'Praktisch sehr verbreitet ist die Kombination aus mineralischer Basis + biologischen Additiven (Enzyme, Humin-Säuren, Mykorrhiza, Trichoderma). Das gibt Präzision der mineralischen Steuerung plus Bodenleben-Vorteile (Pufferung).<br><br>' +
+        'Praktisch sehr verbreitet ist die Kombination aus mineralischer Basis + biologischen Additiven (Enzyme, Humin-Säuren, Mykorrhiza, Trichoderma). Das verbindet die Steuerbarkeit mineralischer Dünger mit biologischen Zusätzen.<br><br>' +
         'Beispiel-Hybrid: Canna Coco A+B (Mineral) + Cannazym (Enzyme, organisch) + Mykorrhiza-Pulver beim Einpflanzen + Top-Max (Humin-Säuren, organisch).<br><br>' +
         '<b>Empfehlungs-Matrix:</b><br>' +
         '<table style="width:100%;border-collapse:collapse;font-size:13px;margin-top:6px">' +
@@ -33673,7 +33673,7 @@ const LEXIKON = [
       brief: 'Stabilisiert Zellwände und dicke Stämme. Oft vergessener Dünger mit sichtbarem Effekt.',
       mechanism: 'Silizium wird als Kieselsäure aufgenommen und <b>in die Zellwände eingebaut</b>. Das gibt der Pflanze einen physischen Panzer — dickere Stängel, härtere Blätter. Auch: Silizium-arme Pflanzen wachsen zwar, knicken aber unter schweren Blüten leichter um.',
       practice: '<b>Wann sinnvoll:</b><br>• Anzucht + frühe Vegi (für starke Struktur)<br>• Bei Hitze-Stress (Si erhöht Hitze-Toleranz)<br>• Bei LED-Anbau mit hoher Lichtintensität<br>• Wenn Schädlinge wie Raupen angreifen (härtere Blätter = weniger Fraß)<br><br><b>Produkte:</b> Advanced Nutrients Rhino Skin, Plagron Silic Power, BAC Kiezelzuur.<br><br><b>Kritische Reihenfolge:</b> Silizium <b>zuerst</b> ins Wasser, <b>vor</b> CalMag. Sonst flockt es mit Ca aus und ist verloren.',
-      pitfall: 'Dass Silizium in der späten Blüte die Blüten verhärtet oder kratziger schmecken lässt, ist nicht belegt. Wichtig dagegen: Si hebt den pH stark an (oft um 0.5-1.0 Punkte), immer nach Zugabe neu messen.' },
+      pitfall: 'Dass Silizium in der späten Blüte die Blüten verhärtet oder kratziger schmecken lässt, ist nicht belegt. Wichtig dagegen: Kaliumsilikat hebt den pH deutlich an — nach der Zugabe immer neu messen.' },
     { t: 'Humin- & Fulvosäuren (Chelatoren)',
       brief: 'Organische Transporter die Nährstoffe wie Klauen umhüllen und leichter in die Wurzel lassen.',
       mechanism: 'Humin- und Fulvosäuren sind <b>natürliche organische Verbindungen</b> aus zersetztem Pflanzenmaterial. Sie <b>binden Nährstoff-Ionen</b> (besonders Mikronährstoffe wie Fe, Mn, Zn) und transportieren sie aktiv durch die Zellmembranen der Wurzeln (<i>Chelatbildung</i>). Ohne Chelatoren bleiben viele Mikronährstoffe im Substrat „gefangen".',
@@ -34178,8 +34178,8 @@ const LEXIKON = [
     { t: 'Reife (Seneszenz)',
       brief: 'Die letzte Phase. Pflanze baut sich selbst ab um die letzten Nährstoffe in die Blüten zu schicken.',
       mechanism: 'Programmiertes Sterben. Pflanze stellt die Nährstoffaufnahme ein (oder wird durch Flushen aktiv dazu gezwungen). Sie greift auf <b>Reserven aus den eigenen Blättern</b> zurück — Stickstoff, Magnesium, Kalium werden aus den Blättern in die reifenden Blüten umgeleitet. Chlorophyll wird abgebaut → grüne Farbe verschwindet → die <b>verborgenen Anthocyane</b> (lila/rot) und Carotinoide (gelb) werden sichtbar.',
-      practice: '<b>Sichtbare Zeichen:</b><br>• Untere Blätter werden gelb<br>• Ganze Pflanze farbenfroh: gelb, orange, lila, braun<br>• Stigmen werden orange/braun und ziehen sich zurück<br>• Trichome werden milchig, dann teils amber<br>• Pflanze duftet intensiver als je zuvor<br><br><b>Was tun:</b><br>• Nicht in Panik düngen — Vergilbung ist gewollt!<br>• Spülen (nur Wasser) je nach Substrat 1-2 Wochen vor Ernte (Erde) bzw. 3-7 Tage (Coco)<br>• Trichome regelmäßig mit Lupe oder Smartphone-Mikroskop checken<br>• 24-48 h vor Ernte: Lampe aus (Dunkelheit triggert finale Trichom-Reife)',
-      pitfall: 'Anfänger sehen die gelbe Pflanze und panisch düngen → bringt nichts mehr (Pflanze nimmt nichts auf), nur Salze im Substrat. Geduld haben: gelb + violett + braun = Pflanze macht ihren Job. Ungeduld = zu früh ernten = weniger THC, „kratziger" Rauch durch unfertige Cannabinoid-Synthese.' },
+      practice: '<b>Sichtbare Zeichen:</b><br>• Untere Blätter werden gelb<br>• Ganze Pflanze farbenfroh: gelb, orange, lila, braun<br>• Stigmen werden orange/braun und ziehen sich zurück<br>• Trichome werden milchig, dann teils amber<br>• Pflanze duftet intensiver als je zuvor<br><br><b>Was tun:</b><br>• Nicht in Panik düngen — Vergilbung ist gewollt!<br>• Spülen (nur Wasser) je nach Substrat 1-2 Wochen vor Ernte (Erde) bzw. 3-7 Tage (Coco)<br>• Trichome regelmäßig mit Lupe oder Smartphone-Mikroskop checken<br>• 24-48 h vor der Ernte Lampe aus ist beliebt — ein Plus an Trichomen oder THC ist nicht belegt; ein kühler, dunkler Schnitt schont die Terpene',
+      pitfall: 'Anfänger sehen die gelbe Pflanze und panisch düngen → bringt nichts mehr (Pflanze nimmt nichts auf), nur Salze im Substrat. Geduld haben: gelb + violett + braun = Pflanze macht ihren Job. Ungeduld = zu früh ernten = weniger Wirkung und weniger Ertrag.' },
   ]},
   { cat: '🔬 Ernte', items: [
     { t: 'Trichom-Analyse (Ernte-Trigger)',
@@ -34357,7 +34357,7 @@ const LEXIKON = [
       mechanism: 'Wenn die Düngung gestoppt wird, beginnt die Pflanze ihre <b>internen Reserven</b> zu verbrauchen — gespeicherte Nährstoffe in Blättern und im Substrat werden mobilisiert und in die Blüten umgeleitet. Gleichzeitig spült das klare Wasser <b>angesammelte Salze</b> aus dem Substrat. Drei Effekte:<br><br>' +
         '<b>1. Weniger Salz im Substrat.</b> Das klare Wasser trägt angesammelte Salze aus — das ist messbar am fallenden Drain-EC. <b>Der oft genannte Schritt weiter — salzfreie Buds, weiße statt schwarzer Asche, runderer Rauch — ist dagegen nicht belegt:</b> Kontrollierte Vergleiche zwischen gespülten und ungespülten Pflanzen fanden keinen belastbaren Unterschied in Geschmack, Aschequalität oder Analytik. Kratziger Rauch entsteht vor allem durch zu schnelles Trocknen und fehlendes Curing (siehe dort).<br><br>' +
         '<b>2. Die Vergilbung kommt ohnehin.</b> Während der Spülung verbraucht die Pflanze ihre Stickstoff-Reserven, die Blätter werden gelb, dann lila/braun. Das sieht nach Wirkung aus, ist aber <b>überwiegend natürliche Seneszenz</b> — sie läuft in der Spätblüte auch ohne Spülung ab (siehe „Seneszenz"). Ein Grund zum Nachdüngen ist es in beiden Fällen nicht.<br><br>' +
-        '<b>3. Der Drain-EC fällt beim Spülen.</b> Unter den EC deines Gießwassers kann er nicht fallen, und in Erde steigt er danach wieder, weil die Erde Nährstoffe nachliefert. Ein Spülende setzt deshalb der Plan, nicht eine Drain-EC-Zahl.',
+        '<b>3. Der Drain-EC fällt beim Spülen.</b> Unter den EC deines Gießwassers kann er nicht fallen, und in Erde kann er danach wieder steigen, weil die Erde Nährstoffe nachliefert. Ein Spülende setzt deshalb der Plan, nicht eine Drain-EC-Zahl.',
       practice: '<b>Dauer je nach Substrat:</b><br>' +
         '<table style="width:100%;border-collapse:collapse;font-size:13px;margin-top:6px">' +
         '<tr style="background:rgba(255,255,255,0.04)"><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Substrat</b></td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Spül-Dauer</b></td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Begründung</b></td></tr>' +
@@ -34372,7 +34372,7 @@ const LEXIKON = [
         '2. <b>Klares Wasser, pH-eingestellt:</b> ' + phTargetFor('erde').label + ' für Erde, ' + phTargetFor('coco').label + ' für Coco, ' + phTargetFor('hydro').label + ' für Hydro<br>' +
         '3. <b>Erste 2–3 Güsse:</b> normale Wassermenge — kein extra Spül-Volumen, das spült nur die obere Substrat-Schicht durch<br>' +
         '4. <b>Mittlere Phase (Tag 4–8):</b> 1× größerer Durchspülgang — etwa 2× Topfvolumen Wasser durchlaufen lassen, Drain auffangen<br>' +
-        '5. <b>Drain-EC</b> fällt nach diesem großen Spülgang. Unter den EC deines Gießwassers kann er nicht fallen, und in Erde steigt er danach wieder — <b>das Spülende setzt der Plan</b>, keine Drain-EC-Zahl<br>' +
+        '5. <b>Drain-EC</b> fällt nach diesem großen Spülgang. Unter den EC deines Gießwassers kann er nicht fallen, und in Erde kann er danach wieder steigen — <b>das Spülende setzt der Plan</b>, keine Drain-EC-Zahl<br>' +
         '6. <b>Letzter Guss vor Hard Dryback / Ernte:</b> bei manchen Protokollen mit nur CalMag (~0.2 ml/L) — kein voller Dünger mehr, aber Erhalt der Mineral-Versorgung<br><br>' +
         '<b>Visuelle Indikatoren für gut gespülte Pflanze:</b><br>' +
         '• Untere Blätter werden gelb und welken<br>' +
@@ -34382,10 +34382,10 @@ const LEXIKON = [
         '• Pflanze duftet intensiver als zuvor<br><br>' +
         '<b>Klima während der Spülung:</b> wie in der späten Blüte — ' + _klimaLexZeile('spuelen', 24) + '. Spülen ändert am Klima nichts.',
       pitfall: '<b>Häufige Fehler:</b><br>' +
-        '• <b>Zu lange spülen</b> (>14 Tage in Erde) → das ist ein früher Stickstoff-Stopp, und der kostet Blütenmasse: Die Pflanze baut bis zuletzt auf<br>' +
+        '• <b>Zu lange spülen</b> → je länger nur Wasser kommt, desto eher fehlt Stickstoff, den die Pflanze bis zuletzt für Blütenmasse braucht. Ab wann das schadet, ist nicht belegt — bleib bei den Spültagen deines Plans<br>' +
         '• <b>Spülen gegen schwarze Asche oder kratzigen Rauch</b> → dafür gibt es keinen belastbaren Beleg (siehe oben); belegt ist nur, dass es Salze im Substrat senkt<br>' +
         '• <b>Bei Living Soil trotzdem spülen</b> → zerstört das mikrobielle Gleichgewicht, kein Vorteil<br>' +
-        '• <b>Das Spülende am Drain-EC festmachen</b> → in Erde steigt er nach dem Spülen wieder, weil das Substrat nachliefert; wann Schluss ist, sagt der Plan<br>' +
+        '• <b>Das Spülende am Drain-EC festmachen</b> → in Erde kann er nach dem Spülen wieder steigen, weil das Substrat nachliefert; wann Schluss ist, sagt der Plan<br>' +
         '• <b>Mit pH-Wasser <5.5 oder >7.0 spülen</b> → kann Wurzelschäden verursachen<br>' +
         '• <b>Während der Spülung „nochmal nachdüngen"</b> weil Pflanze gelb wird → die Vergilbung ist gewollt!<br><br>' +
         '<b>Mythos „Spülung ist immer nötig"</b>: Bei <b>biologischem Anbau</b> oder Living Soil sind die Nährstoffe in organischer Form gebunden — sie werden über Mikroben langsam freigesetzt. Salzakkumulation findet kaum statt, Spülung würde das Bodenleben mehr schaden als helfen. Faustregel: Wenn dein Wasser nach normalem Gießen den Drain-Topf nicht versalzen austreten lässt, brauchst du wahrscheinlich nicht zu spülen. EC vom Drain regelmäßig messen → eigene Daten statt Foren-Faustregeln.<br><br>' +
@@ -35098,7 +35098,7 @@ const LEXIKON = [
         '<b>Behandlung:</b><br>' +
         '<table style="width:100%;border-collapse:collapse;font-size:13px;margin-top:6px">' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Bei N-Mangel</b></td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">N-Komponente leicht erhöhen (z.B. Bio-Grow oder Equivalent), pH auf 6.2–6.4 prüfen, in 3–5 Tagen Besserung sichtbar</td></tr>' +
-        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Bei N-Überschuss</b></td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Mit klarem Wasser spülen (2× Topfvolumen), Dünger reduzieren, einige Tage warten<br>Bei sehr starkem Befall: eine Zwischenspülung mit klarem Wasser — ihr Ende setzt kein Drain-EC-Wert, in Erde steigt er danach wieder</td></tr>' +
+        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Bei N-Überschuss</b></td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Mit klarem Wasser spülen (2× Topfvolumen), Dünger reduzieren, einige Tage warten<br>Bei sehr starkem Befall: eine Zwischenspülung mit klarem Wasser — ihr Ende setzt kein Drain-EC-Wert, in Erde kann er danach wieder steigen</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Bei Lockout-Verdacht</b></td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">pH korrigieren, mit pH-eingestelltem Wasser spülen, 2 Tage warten, dann halbe Dosis Dünger</td></tr>' +
         '</table>' +
         '<br>' +

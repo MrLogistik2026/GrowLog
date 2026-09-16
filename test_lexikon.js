@@ -361,8 +361,10 @@ function pruef(name, bedingung, info) {
       /nicht nachweisen/.test(sp.brief || '') && !/schwarze Asche, kratziger|bitterer Geschmack/.test(sp.pitfall || ''), (sp.pitfall || '').slice(0, 300));
     pruef('… und das Spülende setzt der Plan, nicht ein Drain-EC-Wert (v1.5.211)',
       /wann Schluss ist, sagt der Plan/.test(sp.pitfall || '') && !/Drain-EC nicht gemessen/.test(sp.pitfall || ''));
-    pruef('Zu langes Spülen: der belegte Grund (früher Stickstoff-Stopp kostet Blütenmasse, ANBAU.md 5)',
-      /früher Stickstoff-Stopp, und der kostet Blütenmasse/.test(sp.pitfall || ''));
+    // (v1.5.252) Nach dem Gegencheck: Eine feste 14-Tage-Grenze steht nicht in ANBAU.md, und in Erde liefert das Substrat
+    // weiter nach (5.1) — Spülen ist dort kein vollständiger Stickstoff-Stopp. Der Mechanismus aus 5 bleibt, ohne Grenze.
+    pruef('Zu langes Spülen: der Mechanismus aus ANBAU.md 5, ohne erfundene Grenze',
+      /desto eher fehlt Stickstoff/.test(sp.pitfall || '') && /Ab wann das schadet, ist nicht belegt/.test(sp.pitfall || '') && !/14 Tage/.test(sp.pitfall || ''));
   }
 
   // (v1.5.250) Der Fach-Gegencheck der Texte aus v1.5.248 fand Überziehungen in den NEUEN Sätzen: „braune Spitzen heißen zu
@@ -385,6 +387,21 @@ function pruef(name, bedingung, info) {
     pruef('Steigern hat eine Obergrenze: die Menge des Plans', (q.match(/bis zur Menge (deines|des) Plans/g) || []).length >= 5,
       (q.match(/bis zur Menge (deines|des) Plans/g) || []).length + ' Stellen');
     pruef('Stickstoff-Stopp mit dem Grund aus ANBAU.md 5, nicht „ab der Hälfte gestrichen"', /ganz gestrichen, bevor die Blüte fertig ist, kostet er Blütenmasse/.test(q));
+  }
+
+  // (v1.5.252) Nach dem Gegencheck: Spül- und Reifetexte ohne erfundene Grenzen und Zahlen, und zwei Reste der Aussagen, die
+  // v1.5.249 anderswo gestrichen hatte — im Eintrag „Reife (Seneszenz)".
+  console.log('');
+  console.log('O - (v1.5.252) Spülen und Reife nach dem Gegencheck');
+  {
+    const q = fs.readFileSync(path.join(__dirname, 'app.js'), 'utf8').split('\n').filter(z => !/^\s*(\/\/|\*|\/\*)/.test(z)).join('\n');
+    [/triggert finale Trichom-Reife/i, /kratziger" Rauch/i, /oft um 0\.5-1\.0 Punkte/i, /Bodenleben-Vorteile \(Pufferung\)/i,
+      /pH auf etwa 6\.2 einstellen und mit reichlich/i, /steigt er (nach dem Spülen|danach) wieder/i].forEach(re =>
+      pruef('Nirgends mehr: ' + re.source, !re.test(q), (q.match(new RegExp('.{0,60}' + re.source + '.{0,30}', 'i')) || [''])[0]));
+    pruef('Dunkelphase vor der Ernte: kein Trichom-Versprechen, der belegte Grund (Terpene, ANBAU.md 14)',
+      /ein Plus an Trichomen oder THC ist nicht belegt; ein kühler, dunkler Schnitt schont die Terpene/.test(q));
+    pruef('Spülende: an allen fünf Stellen „kann" wieder steigen (bei echter Anreicherung bleibt er unten, ANBAU.md 5.1)',
+      (q.match(/kann er (nach dem Spülen|danach) wieder (an)?steigen/gi) || []).length === 5, (q.match(/kann er (nach dem Spülen|danach) wieder (an)?steigen/gi) || []).length + ' Stellen');
   }
 
   console.log('');
