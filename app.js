@@ -3472,7 +3472,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.231';
+const APP_VERSION = 'v1.5.232';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -32291,7 +32291,7 @@ const LEXIKON = [
         '• Beide werden in vielen Substraten und Dünger-Linien systematisch <b>unterversorgt</b><br>' +
         '• Eine getrennte Dosierung wäre praktisch unmöglich — daher die Kombi-Produkte<br><br>' +
         '<b>Antagonismus mit Kalium (kritisch):</b><br>' +
-        'Hohe K-Konzentrationen blockieren die Aufnahme von Ca und Mg. Häufiger Anfänger-Fehler: in der Mittelblüte mit K-Boostern arbeiten ohne CalMag entsprechend hochzuziehen → vermeintlicher CalMag-Mangel obwohl Dünger gegeben wird. Lösung: K-Booster und CalMag immer parallel skalieren.',
+        'Hohe K-Konzentrationen blockieren die Aufnahme von Ca und Mg. Häufiger Anfänger-Fehler: in der Mittelblüte mit K-Boostern arbeiten und den vermeintlichen CalMag-Mangel mit noch mehr CalMag beantworten. Das verschiebt das Verhältnis weiter — Calcium ist selbst ein Magnesium-Gegenspieler. Reihenfolge: erst den Blüte-Booster (PK 13/14, MKP) aussetzen oder reduzieren, dann den pH prüfen, und erst danach gezielt Magnesium (Bittersalz) geben.',
       practice: '<b>Wasserwerte als Entscheidungs-Grundlage:</b><br>' +
         '<table style="width:100%;border-collapse:collapse;font-size:13px;margin-top:6px">' +
         '<tr style="background:rgba(255,255,255,0.04)"><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Wasser-Härte</b></td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Ca-Gehalt</b></td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>CalMag-Bedarf</b></td></tr>' +
@@ -32329,7 +32329,7 @@ const LEXIKON = [
       pitfall: '<b>Häufige Fehler:</b><br>' +
         '• <b>CalMag zu spät zugegeben</b> → weiße Flocken im Düngerwasser. Ca ist verloren, obwohl bezahlt. Reihenfolge ist Pflicht.<br>' +
         '• <b>CalMag mit Bittersalz ersetzen</b> als Spartipp → Bittersalz ist nur Magnesiumsulfat, also nur Mg, kein Ca. Ergebnis: weiterer Ca-Mangel<br>' +
-        '• <b>K-Booster ohne CalMag-Erhöhung</b> in Mittelblüte → vermeintlicher CalMag-Mangel obwohl gegeben<br>' +
+        '• <b>Mg-Mangel der Mittelblüte mit mehr CalMag beantwortet</b> → meist verdrängt der K-Booster das Magnesium, und Calcium verdrängt es zusätzlich. Erst den Booster zurücknehmen, dann pH prüfen, dann gezielt Bittersalz<br>' +
         '• <b>Hartes Leitungswasser + zusätzlich CalMag</b> → Überdosierung, Ca-Überschuss blockiert Mg/K. Wasserhärte vorher prüfen.<br>' +
         '• <b>Symptom-Bekämpfung statt Ursachen-Suche</b> — bei Mangel-Symptomen pH messen bevor mehr CalMag gegeben wird (Lockout häufiger als Mangel)<br>' +
         '• <b>Bei Coco kein CalMag</b> → garantierter Mangel innerhalb 1–2 Wochen<br>' +

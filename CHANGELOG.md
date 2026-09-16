@@ -2,6 +2,24 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-16 — v1.5.232
+
+- **Das Lexikon riet bei Kalium-Überschuss zu mehr Calcium.** Letzter Befund der Gruppe A (UEBERGABE 0n). Der
+  CalMag-Eintrag beschreibt den Mechanismus richtig — „Hohe K-Konzentrationen blockieren die Aufnahme von Ca und
+  Mg" — und zog daraus den falschen Schluss: „K-Booster und CalMag immer parallel skalieren."
+- **Warum das schadet:** Nach `ANBAU.md` 6.2 ist Calcium selbst ein Magnesium-Gegenspieler. Wer auf einen
+  K-bedingten Mg-Mangel mit mehr CalMag antwortet, verschiebt das Verhältnis ein zweites Mal in dieselbe Richtung
+  und behandelt ein Verfügbarkeits- als Mengenproblem. Das Dokument sagt es wörtlich: „Ein zusätzliches Mg
+  gleichzeitig zu geben ist kein sauberer Ersatz — es verschiebt das Verhältnis erneut."
+- **Die App wusste es an anderer Stelle längst besser.** Der Magnesium-Diagnosetext nennt seit v1.5.107 die
+  Reihenfolge: erst den Blüte-Booster (PK 13/14, MKP) aussetzen, dann den pH prüfen, dann erst Bittersalz. Das
+  Lexikon sagte das Gegenteil — **dieselbe Frage, zwei Orte, gegenläufiger Rat**, und der teurere stand im
+  Lexikon. Das ist das Muster aus Abschnitt 0h (IceFlush: Karte ehrlich, Lexikon nicht) zum zweiten Mal.
+- Der Eintrag nennt jetzt dieselbe Reihenfolge wie die Diagnose und sagt dazu, warum mehr CalMag hier die falsche
+  Richtung ist. Der Mechanismus-Satz bleibt unverändert — er war richtig.
+- `test_duengeplantexte.js` um Abschnitt H erweitert (63 Prüfungen, beide Zeitzonen): Der alte Rat darf
+  nirgends mehr im ausgelieferten Quelltext stehen, und Lexikon und Diagnose müssen dieselbe Reihenfolge nennen.
+
 ## 2026-09-16 — v1.5.231
 
 - **Die Plan-Texte führten eigene pH- und Drain-Zahlen neben den Quellen der App.** Sechster Befund der Gruppe A

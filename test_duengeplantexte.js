@@ -301,6 +301,28 @@ function pruef(name, bedingung, info) {
       r.texte.ghe_flora.includes('In Erde gehört der pH auf ' + r.erdeK) && !/6,2–6,5/.test(r.texte.ghe_flora));
   }
 
+  // (v1.5.232) Der CalMag-Eintrag riet bei Kalium-Überschuss zu mehr Calcium. Nach ANBAU.md 6.2 ist
+  // Calcium selbst ein Magnesium-Gegenspieler — der Rat verschiebt das Verhältnis ein zweites Mal in
+  // dieselbe Richtung. Geprüft wird der ganze ausgelieferte Quelltext (HTML), nicht nur die
+  // Datenstruktur: die Lehre aus v1.5.126, wo eine LEXIKON-Suche den Text im Code übersah.
+  console.log('\nH - Lexikon und Diagnose raten bei K-Überschuss dasselbe');
+  {
+    pruef('Der Rat „K-Booster und CalMag immer parallel skalieren" steht nirgends mehr',
+      !/parallel skalieren/.test(HTML));
+    pruef('Auch die zweite Stelle in „Häufige Fehler" ist weg',
+      !/K-Booster ohne CalMag-Erhöhung/.test(HTML));
+    pruef('Der Eintrag nennt die Reihenfolge der Diagnose: erst den Blüte-Booster aussetzen',
+      /erst den Blüte-Booster \(PK 13\/14, MKP\) aussetzen oder reduzieren/.test(HTML));
+    pruef('Und begründet, warum mehr CalMag die falsche Richtung ist',
+      /Calcium ist selbst ein Magnesium-Gegenspieler/.test(HTML));
+    pruef('Die Fehler-Liste desselben Eintrags nennt dieselbe Reihenfolge',
+      /Erst den Booster zurücknehmen, dann pH prüfen, dann gezielt Bittersalz/.test(HTML));
+    pruef('Der Mechanismus-Satz ist unverändert geblieben — er war richtig',
+      /Hohe K-Konzentrationen blockieren die Aufnahme von Ca und Mg/.test(HTML));
+    pruef('Die Magnesium-Diagnose sagt weiterhin dasselbe (seit v1.5.107)',
+      /Dann diesen zuerst aussetzen, nicht zusätzlich düngen/.test(HTML));
+  }
+
   pruef('Keine JS-Fehler im Lauf', errors.length === 0, errors.slice(0, 2).join(' | '));
   console.log(`\nErgebnis: ${ok} OK, ${fail} Fehler`);
   process.exit(fail ? 1 : 0);
