@@ -2,6 +2,21 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-16 — v1.5.223
+
+- **Der Hilfe-Text ließ offen, was Tag 1 ist.** Befund der Keimungs-Prüfung (Schritt 14): „Startdatum: der Tag an dem du
+  gekeimt **oder** den Samen eingepflanzt hast." Das sind bei der Papiertuch-Methode bis zu sieben Tage Unterschied — und
+  seit v1.5.168 ist Tag 1 überall der **Keimstart**. Wer hier das Einpflanzdatum einträgt, verschiebt den ganzen Zyklus.
+  Jetzt: „dein Keimstart — der Tag, an dem der Samen ins Wasserglas, ins feuchte Tuch oder in die Erde kommt."
+- **„Direkt" hieß zweierlei** (Schritt 15): Seit v1.5.214 ist „Direkt in Erde" die empfohlene **Keimmethode**. Derselbe
+  Knopfname stand im Assistenten und in den Einstellungen für die **Start-Methode** — ob die Erde vorher angefeuchtet
+  wurde. Zwei verschiedene Fragen, ein Wort, direkt nebeneinander im selben Zyklus. Die Start-Methode heißt jetzt
+  „Ohne Vorbefeuchten".
+- **Dazu im Assistenten:** die Reihenfolge bei Direktsaat (Samen erst nach dem letzten Durchgang legen, wie seit v1.5.218
+  auf der Startseite) und der Grund für die Sprüh-Phase statt „Tag 2–8: NUR sprühen".
+- `test_keimung.js` um Abschnitt M erweitert (80 Prüfungen). **Test bewusst nachgezogen:** `test_tag1keimung.js`
+  prüfte auf „Direkt, ohne Vorbefeuchten" und liest jetzt „Ohne Vorbefeuchten" (26). Beide Zeitzonen.
+
 ## 2026-09-16 — v1.5.222
 
 - **„Pythium etabliert sich in 24 Stunden — dann ist der Sämling tot."** Befund der Keimungs-Prüfung (Schritt 13): Diese

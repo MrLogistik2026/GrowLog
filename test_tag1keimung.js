@@ -76,7 +76,8 @@ const text = (html) => String(html).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' '
     pruef('„Schon vorgezogen": Text nennt drei Wochen zurück, der Code rechnet 21 Tage', /drei Wochen zurück/.test(t) && tage === 21, 'Tage=' + tage);
     const s = text(E('_wizStepStartMethod({})'));
     pruef('Sämlings-Start: „Tag 1 ist dein Keimstart" und „24h vor Tag 1"', /Tag 1 ist dein Keimstart/.test(s) && /24h vor Tag 1/.test(s), s.slice(0, 160));
-    pruef('„Direkt": kein „Samen in trockene Erde" mehr', !/Samen in trockene Erde/.test(s) && /Direkt, ohne Vorbefeuchten/.test(s), s.slice(s.indexOf('Direkt'), s.indexOf('Direkt') + 140));
+    // (v1.5.223) Der Knopf heißt „Ohne Vorbefeuchten" — „Direkt" gehört seit v1.5.214 der Keimmethode.
+    pruef('Ohne Vorbefeuchten: kein „Samen in trockene Erde" mehr', !/Samen in trockene Erde/.test(s) && /Ohne Vorbefeuchten/.test(s), s.slice(s.indexOf('Ohne Vorbefeuchten'), s.indexOf('Ohne Vorbefeuchten') + 140));
   }
 
   console.log('\nB - Die Anleitung legt den Zyklus am Keimstart an');

@@ -349,6 +349,61 @@ function pruef(name, bedingung, info) {
       !/tödlich binnen 24h/.test(code) && !/zu nass \+ zu warm/.test(code));
   }
 
+  // (v1.5.223) Der Hilfe-Text ließ offen, was Tag 1 ist („gekeimt oder eingepflanzt" — bei der
+  // Papiertuch-Methode bis zu sieben Tage auseinander). Und „Direkt" hieß zweierlei: die empfohlene
+  // Keimmethode (v1.5.214) und die Start-Methode ohne Vorbefeuchten.
+  console.log('\nM - Startdatum und Start-Methode');
+  {
+    const w = JSON.parse(E(`(function(){
+      const text = (h) => String(h || '').replace(/<[^>]+>/g, ' ').replace(/\\s+/g, ' ');
+      return JSON.stringify({ wiz: text(_wizStepStartMethod({})), hilfe: JSON.stringify(typeof HOWTO !== 'undefined' ? HOWTO : '') });
+    })()`));
+    pruef('Assistent: Knopf heißt „Ohne Vorbefeuchten", nicht „Direkt, ohne Vorbefeuchten"',
+      /Ohne Vorbefeuchten/.test(w.wiz) && !/Direkt, ohne Vorbefeuchten/.test(w.wiz), w.wiz.slice(0, 160));
+    pruef('Assistent: Direktsaat erst nach dem letzten Durchgang säen',
+      /Säst du direkt in die Erde, legst du den Samen erst nach dem letzten Durchgang/.test(w.wiz));
+    pruef('Assistent: Sprüh-Phase mit Grund statt „NUR sprühen"',
+      /nur die Erde am Samen besprühen/.test(w.wiz) && !/NUR sprühen/.test(w.wiz));
+    pruef('Hilfe-Text: Startdatum ist der Keimstart, nicht „gekeimt oder eingepflanzt"',
+      /Startdatum: dein Keimstart/.test(code) && !/eingepflanzt hast/.test(code));
+    pruef('Einstellungen: Knopf „Ohne Vorbefeuchten" statt „Direkt"',
+      /">Ohne Vorbefeuchten<\/div>/.test(code) && !/">Direkt<\/div>/.test(code));
+  }
+
+  // (v1.5.224) Der Demo-Zyklus trug an Sprüh-Tagen 30–100 ml als Gießmenge ein (die App zeigt dort seit
+  // v1.5.217 keine Menge), hatte eine eigene Mengen-Treppe für die Anzucht-Güsse und erzählte in den
+  // Notizen einen anderen Verlauf, als die App ihn beschreibt.
+  console.log('\nN - Demo-Zyklus');
+  {
+    const dz = JSON.parse(E(`(function(){
+      S.cycles = []; S.entries = {}; S.beginnerMode = true;
+      welcomeStartDemo();
+      const c = (S.cycles || []).find(x => isDemoCycle(x));
+      if (!c) return JSON.stringify({ fehlt: true });
+      const tag = (n) => { const iso = isoPlus(c.startDate, n - 1);
+        const cd = (S.entries[iso] && S.entries[iso].cycleData && S.entries[iso].cycleData[c.id]) || null;
+        return cd ? { water: String(cd.water), notes: String(cd.notes || ''), a: getAction(iso, c) } : null; };
+      const iso9 = isoPlus(c.startDate, 8);
+      const roh = Math.round(waterSuggestion(c, phase(iso9, c), iso9) || 0);
+      return JSON.stringify({ t1: tag(1), t4: tag(4), t7: tag(7), t9: tag(9),
+        soll9: String(roh < 200 ? roh : Math.round(roh / 50) * 50), germ: c.germMethod || '' });
+    })()`));
+    pruef('Demo-Zyklus wird angelegt', !dz.fehlt && dz.t1 && dz.t4 && dz.t9, JSON.stringify(dz).slice(0, 100));
+    if (!dz.fehlt) {
+      pruef('Demo keimt direkt in Erde (wie die Empfehlung seit v1.5.214)', dz.germ === 'direct', dz.germ);
+      pruef('Sprüh-Tage tragen keine Gießmenge ein (Tag 4 und 7)',
+        dz.t4.a === 'sprueh' && dz.t4.water === '0' && dz.t7.a === 'sprueh' && dz.t7.water === '0',
+        `Tag4=${dz.t4.water} (${dz.t4.a}) · Tag7=${dz.t7.water} (${dz.t7.a})`);
+      pruef('Anzucht-Guss an Tag 9 nimmt die Menge der App, keine eigene Treppe',
+        dz.t9.a === 'giess_anz' && dz.t9.water === dz.soll9, `Demo=${dz.t9.water} · App=${dz.soll9}`);
+      pruef('Notiz Tag 1: Sättigungsguss, Samen danach gesetzt, bis Tag 8 nur sprühen',
+        /Bis Tag 8 wird nur die Stelle am Samen besprüht/.test(dz.t1.notes) && !/Ab jetzt 7 Tage nur Sprühflasche/.test(dz.t1.notes), dz.t1.notes);
+      pruef('Notiz Tag 4: Keimling durchbricht, Keimblätter noch zu', /Der Keimling durchbricht die Erde/.test(dz.t4.notes), dz.t4.notes);
+      pruef('Notiz Tag 7: Keimblätter offen statt „erstes Blattpaar komplett ausgebildet"',
+        /Keimblätter offen/.test(dz.t7.notes) && !/Erstes Blattpaar komplett/.test(dz.t7.notes), dz.t7.notes);
+    }
+  }
+
   pruef('Keine JS-Fehler im Lauf', errors.length === 0, errors.slice(0, 2).join(' | '));
   console.log(`\nErgebnis: ${ok} OK, ${fail} Fehler`);
   process.exit(fail ? 1 : 0);

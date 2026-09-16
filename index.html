@@ -4471,7 +4471,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.222';
+const APP_VERSION = 'v1.5.223';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -21595,7 +21595,7 @@ function renderSet() {
         <button onclick="S.cycles.find(c=>c.id==='${sel.id}').startMethod='direct';saveS();renderSet()"
           style="flex:1;background:${sm==='direct' ? 'var(--green-bg)' : 'var(--card2)'};border:0.5px solid ${sm==='direct' ? 'var(--green-dk)' : 'var(--border)'};border-radius:8px;padding:10px 8px;font-size:11px;color:${sm==='direct' ? 'var(--green)' : 'var(--text-sub)'};cursor:pointer;font-family:var(--font);text-align:center;line-height:1.3">
           <div style="font-size:16px;margin-bottom:2px">🌱</div>
-          <div style="font-weight:600">Direkt</div>
+          <div style="font-weight:600">Ohne Vorbefeuchten</div>
           <div style="font-size:9px;color:var(--text-hint);font-weight:400;margin-top:2px">${_tag1MengeJeTopf(sel, 'direct')} ml je Topf Erstguss + kleine Tagesmengen</div>
         </button>
       </div>
@@ -23937,13 +23937,13 @@ function _wizStepStartMethod(a) {
       '💦',
       'Vorbefeuchtet + Sättigungsguss',
       'Empfohlen · schützt den Sämling vor Überwässerung',
-      `<b>24h vor Tag 1:</b> Erde mit pH-Wasser anfeuchten, bis sie sich wie ein ausgewrungener Schwamm anfühlt — nicht tropfend. Ruhen lassen.<br><b>Tag 1:</b> Sättigungsguss ~${_sat} ml je Topf in 3 Etappen mit 15 min Pause — nie auf den Samen. Keimt er im Glas oder Tuch, setzt du ihn in den nächsten Tagen in die schon feuchte Erde.<br><b>Tag 2–8:</b> NUR sprühen — kein Gießen (Schutz vor Wurzelfäule).`
+      `<b>24h vor Tag 1:</b> Erde mit pH-Wasser anfeuchten, bis sie sich wie ein ausgewrungener Schwamm anfühlt — nicht tropfend. Ruhen lassen.<br><b>Tag 1:</b> Sättigungsguss ~${_sat} ml je Topf in 3 Etappen mit 15 min Pause — nie auf den Samen. Säst du direkt in die Erde, legst du den Samen erst nach dem letzten Durchgang. Keimt er im Glas oder Tuch, setzt du ihn in den nächsten Tagen in die schon feuchte Erde.<br><b>Tag 2–8:</b> nur die Erde am Samen besprühen, kein Gießen — nasse Erde ohne aufnehmende Wurzel ist die Bedingung, unter der Pythium keimende Samen befällt.`
     )}
 
     ${card(
       'direct',
       '🌱',
-      'Direkt, ohne Vorbefeuchten',
+      'Ohne Vorbefeuchten',
       'Einfacher & schneller · etwas mehr Risiko bei Pflegefehlern',
       `<b>Tag 1:</b> Erde nicht vorbefeuchtet, kleiner Erstguss ~${_dir} ml je Topf in die Mitte — dort, wo der Samen liegt oder hinkommt.<br><b>Tag 2+:</b> Normaler Anzucht-Rhythmus mit deinem Gieß-Intervall, kleine Mengen.<br>Etwas höheres Risiko bei Pflegefehlern, aber funktioniert.`
     )}
@@ -35962,7 +35962,7 @@ const HOWTO = [
   ]},
   { cat: '🌱 Ersten Zyklus anlegen', items: [
     { t: 'Neuen Zyklus erstellen',
-      txt: '<b>Einstellungen → + Neu.</b> Gib einen Namen ein (z.B. den Strain-Namen), wähle eine Farbe und ein Symbol — das hilft später im Kalender die Zyklen zu unterscheiden. Samentyp auswählen: <b>⚡ Automatic</b> blüht von selbst nach ca. 3 Wochen, <b>♀ Feminisiert</b> braucht einen Licht-Umschaltpunkt. Startdatum: der Tag an dem du gekeimt oder den Samen eingepflanzt hast.' },
+      txt: '<b>Einstellungen → + Neu.</b> Gib einen Namen ein (z.B. den Strain-Namen), wähle eine Farbe und ein Symbol — das hilft später im Kalender die Zyklen zu unterscheiden. Samentyp auswählen: <b>⚡ Automatic</b> blüht von selbst nach ca. 3 Wochen, <b>♀ Feminisiert</b> braucht einen Licht-Umschaltpunkt. Startdatum: dein Keimstart — der Tag, an dem der Samen ins Wasserglas, ins feuchte Tuch oder in die Erde kommt. Das ist Tag 1.' },
     { t: 'Phasendauern verstehen',
       txt: 'Die Default-Werte passen für einen typischen Autoflower-Zyklus: 21 Tage Anzucht → 60 Tage Blüte → 8 Tage Spülen → 2 Tage IceFlush → 1 Tag Ernte → 7 Tage Trocknen. Im Einsteiger-Modus siehst du nur Anzucht + Blüte, der Rest ist versteckt bis die Phase erreicht wird. Wenn dein Strain anders drauf ist (z.B. Photoperiode oder bekannt schneller blühend), passe die Tage an.' },
     { t: 'Gießintervall',
