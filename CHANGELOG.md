@@ -2,6 +2,22 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-16 — v1.5.217
+
+- **Der Gieß-Tipp im Eintrag folgt der Aktion und der Menge, nicht dem Tag.** Befund der Keimungs-Prüfung (Schritt 5),
+  nachgemessen über Tag 1–12 in beiden Start-Wegen. Drei Fehler in einer Zeile:
+  - **Tag 1** zeigte „~700 ml/Pflanze" und darunter „Keimphase: Sprühflasche oder ganz feiner Strahl" — während die
+    Sättigungsguss-Anleitung daneben „3 Etappen je ~250 ml mit 15 Minuten Pause" sagt. 700 ml passen in keine Sprühflasche.
+  - **An den Sprüh-Tagen 6–8** stand eine Box „Empfohlene Gießmenge (falls heute) ~0 ml/Pflanze", an Tag 7 und 8 mit dem
+    Zusatz „für diese Menge keine Sprühflasche" — eine Empfehlung über null Milliliter.
+  - **Dieselbe Menge bekam verschiedene Tipps:** 35 ml hießen an Tag 4 „Sprühflasche", an Tag 8 „Gießkanne".
+- **Jetzt** entscheidet `_saemlingGiessTipp(aktion, mlJePflanze)` an beiden Stellen: Sättigungsguss → drei Durchgänge mit
+  der Brause; Sprüh-Tag → 3–5 Sprühstöße an der Erde am Samen (wie seit v1.5.215) und **keine** Mengen-Box; sonst
+  entscheidet die Menge — bis 50 ml Messbecher oder ganz feiner Strahl, darüber die feine Gießkanne im Ring.
+  Die Sprühflasche gehört damit nur noch auf Sprüh-Tage: Für 35 ml wären es rund 35 Stöße.
+- `test_keimung.js` um Abschnitt G erweitert (42 Prüfungen, beide Zeitzonen) — er prüft auch, dass dieselbe Menge an
+  jedem Tag denselben Tipp bekommt.
+
 ## 2026-09-16 — v1.5.216
 
 - **Die Sämlings-Pflege beschreibt, was an diesem Tag wirklich passiert.** Befund der Keimungs-Prüfung (Schritt 4): Die Box

@@ -166,6 +166,46 @@ function pruef(name, bedingung, info) {
       /die Menge für jeden Gießtag steht oben im Eintrag/.test(t7.box) && !/50–150 ml/.test(t7.box), (t7.box.match(/Wasser:[^•]*/) || [''])[0]);
   }
 
+  // (v1.5.217) Gemessen vor dem Patch: Tag 1 „~700 ml/Pflanze" mit „Keimphase: Sprühflasche"; an den
+  // Sprüh-Tagen 6–8 eine Box „Empfohlene Gießmenge ~0 ml/Pflanze"; 35 ml hießen an Tag 4 „Sprühflasche"
+  // und an Tag 8 „Gießkanne". Der Tipp hängt jetzt an Aktion und Menge (_saemlingGiessTipp).
+  console.log('\nG - Der Gieß-Tipp folgt Aktion und Menge');
+  {
+    const reihe = (startM) => JSON.parse(E(`(function(){
+      S.cycles = []; S.entries = {}; S.beginnerMode = true;
+      const c = addCyc({ name: 'M', seedType: 'auto', medium: 'erde' });
+      c.startDate = '2026-06-01'; c.startMethod = '${startM}'; c.potSize = 11; saveS();
+      const out = [];
+      for (let tag = 1; tag <= 10; tag++) {
+        const iso = isoPlus(c.startDate, tag - 1); setDebugDate(iso); openEntry(iso);
+        const t = document.getElementById('scr-entry').textContent.replace(/\\s+/g, ' ');
+        const box = (t.match(/Empfohlene Gießmenge[^]{0,300}/) || [''])[0];
+        out.push({ tag, a: getAction(iso, c), box, ml: Number((box.match(/~(\\d+) ml\\/Pflanze/) || [])[1] || -1) });
+      }
+      return JSON.stringify(out);
+    })()`));
+    const sat = reihe('saturated'), dir = reihe('direct');
+    const t1 = sat.find(x => x.tag === 1);
+    pruef('Tag 1 (Sättigungsguss, ~700 ml): drei Durchgänge mit der Brause, kein „Sprühflasche"',
+      t1.a === 'saettigung' && t1.ml > 300 && /3 Durchgänge mit 15 Minuten Pause/.test(t1.box) && !/Sprühflasche/.test(t1.box), t1.ml + ' ml · ' + t1.box.slice(0, 130));
+    const spruehBoxen = sat.filter(x => x.a === 'sprueh' && x.box);
+    pruef('An Sprüh-Tagen steht keine Box „Empfohlene Gießmenge ~0 ml"', spruehBoxen.length === 0,
+      spruehBoxen.map(x => 'Tag ' + x.tag + ': ' + x.ml + ' ml').join(', '));
+    // Gleiche Menge, gleicher Tipp — unabhängig vom Tag. Vorher schieden sich 35 ml an Tag 4 und Tag 8.
+    const mitMenge = dir.filter(x => x.box && x.ml > 0 && !/Sättigungsguss|Sprühstöße/.test(x.box));
+    const klein = mitMenge.filter(x => x.ml <= 50), gross = mitMenge.filter(x => x.ml > 50);
+    pruef('Kleine Mengen (≤ 50 ml): Messbecher oder feiner Strahl, nie die Gießkanne',
+      klein.length > 0 && klein.every(x => /Messbecher oder ganz feinem Strahl/.test(x.box)),
+      klein.map(x => 'Tag ' + x.tag + '=' + x.ml).join(', '));
+    pruef('Größere Mengen (> 50 ml): feine Gießkanne im Ring',
+      gross.length > 0 && gross.every(x => /Feine Gießkanne, dünner Strahl im Ring/.test(x.box)),
+      gross.map(x => 'Tag ' + x.tag + '=' + x.ml).join(', '));
+    const proMenge = {};
+    mitMenge.forEach(x => { const k = x.ml + ''; (proMenge[k] = proMenge[k] || new Set()).add(/Messbecher/.test(x.box) ? 'klein' : 'gross'); });
+    pruef('Dieselbe Menge bekommt an jedem Tag denselben Tipp', Object.values(proMenge).every(v => v.size === 1),
+      Object.entries(proMenge).map(([m, v]) => m + '→' + [...v].join('/')).join(' · '));
+  }
+
   pruef('Keine JS-Fehler im Lauf', errors.length === 0, errors.slice(0, 2).join(' | '));
   console.log(`\nErgebnis: ${ok} OK, ${fail} Fehler`);
   process.exit(fail ? 1 : 0);

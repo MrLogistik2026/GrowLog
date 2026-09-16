@@ -3467,7 +3467,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.216';
+const APP_VERSION = 'v1.5.217';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -13895,6 +13895,21 @@ function _tag1MengeJeTopf(vorlage, startMethod) {
 }
 
 /** (v1.5.168) Die Keimmethode eines Zyklus — Papiertuch, solange keine gewählt ist. Keimungskarte und Sämlings-Pflege lesen hier. */
+/**
+ * (v1.5.217) Der Gieß-Tipp fuer Saemlingstage. Er haengt an der Aktion und an der Menge, nicht am Tag:
+ * Am Saettigungsguss sind es 3 Durchgaenge mit der Brause, an Spruehtagen 3–5 Spruehstoesse an der Erde
+ * am Samen (v1.5.215), und sonst entscheidet die Menge, ob Messbecher oder Gießkanne das Werkzeug ist.
+ * Vorher entschied der Tag — dieselben 35 ml hießen an Tag 4 Sprühflasche und an Tag 8 Gießkanne,
+ * und der Saettigungsguss mit 700 ml stand unter dem Sprühflaschen-Tipp der Keimphase.
+ */
+function _saemlingGiessTipp(aktion, mlJePflanze) {
+  if (aktion === 'saettigung') return 'Sättigungsguss: feine Brause, 3 Durchgänge mit 15 Minuten Pause, kreisförmig von außen — nie auf den Samen.';
+  if (aktion === 'sprueh') return 'Heute nur 3–5 Sprühstöße auf die Erde am Samen oder Keimling — kein Gießen.';
+  const ml = parseFloat(mlJePflanze);
+  if (ml > 0 && ml <= 50) return 'So wenig gießt du am genauesten mit einem Messbecher oder ganz feinem Strahl, im Ring um den Keimling — die Gießkanne ist dafür zu grob.';
+  return 'Feine Gießkanne, dünner Strahl im Ring um den Keimling — nicht auf ihn. Erde feucht, nicht nass.';
+}
+
 function _keimMethode(c) {
   // (v1.5.214) Vorgabe ist „Direkt in Erde". Der Samen kommt sofort in den Endtopf: kein Umsetzen,
   // keine Wurzel, die dabei bricht. Nach ANBAU.md 7.4 gehoert bei Automatics jeder verlorene Tag
@@ -26609,9 +26624,7 @@ function renderEntry(iso) {
             ~${perPlantSugWD} ml/Pflanze${effPlants > 1 ? ` <span style="color:var(--text-muted);font-weight:400;font-size:12px">(${totalSugWD} ml total)</span>` : ''}
           </div>
           <div style="font-size:10px;color:var(--text-muted);margin-top:3px;line-height:1.4">
-            ${p.day <= 6
-              ? 'Keimphase: Sprühflasche oder ganz feiner Strahl. Erde nur feucht halten, nicht nass.'
-              : 'Junger Sämling: feine Gießkanne mit dünnem Strahl, im Ring um die Pflanze (für diese Menge keine Sprühflasche). Erde feucht, nicht nass.'}
+            ${_saemlingGiessTipp(a, perPlantSugWD)}
           </div>
         </div>`;
       } else {
@@ -27398,7 +27411,10 @@ function renderEntry(iso) {
       const perPlantSug = Math.round(totalSug / effPlantsHint);
       // Aktueller Trocknungs-Stand prüfen — wenn noch feucht, kein Hinweis
       const dryStatus = (typeof intervalDryDefault === 'function') ? intervalDryDefault(c, iso) : { pct: null };
-      const showHint = (dryStatus && dryStatus.pct !== null && dryStatus.pct < 60);
+      // (v1.5.217) An Sprüh-Tagen wird nicht gegossen — gemessen stand hier „Empfohlene Gießmenge ~0 ml/Pflanze",
+      // an Tag 7 und 8 sogar mit dem Zusatz „für diese Menge keine Sprühflasche".
+      const _aHint = (typeof getAction === 'function') ? getAction(iso, c) : null;
+      const showHint = (dryStatus && dryStatus.pct !== null && dryStatus.pct < 60) && _aHint !== 'sprueh';
 
       // POLISH: Nächster geplanter Gießtag — sucht max 30 Tage in die Zukunft.
       // Hilft dem User direkt einzuordnen wann er zu tun hat, ohne zum Kalender zu wechseln.
@@ -27452,9 +27468,7 @@ function renderEntry(iso) {
         </div>
         <div style="font-size:10px;color:var(--text-muted);margin-top:3px;line-height:1.4">
           ${p.ph === 'anzucht' && p.day <= 10
-            ? (p.day <= 6
-                ? 'Keimphase: Sprühflasche oder ganz feiner Strahl. Erde nur feucht halten, nicht nass.'
-                : 'Junger Sämling: feine Gießkanne mit dünnem Strahl, im Ring um die Pflanze (für diese Menge keine Sprühflasche). Erde feucht, nicht nass.')
+            ? _saemlingGiessTipp(_aHint, perPlantSug)
             : `Topf ${getPotSize(c)}L · ${getInt(c, p?.ph || 'bloom')}d Intervall · smarte Empfehlung`}
         </div>
       </div>` : '';
