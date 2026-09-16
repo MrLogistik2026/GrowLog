@@ -3470,7 +3470,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.221';
+const APP_VERSION = 'v1.5.222';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -6236,7 +6236,7 @@ const SYMPTOMS = [
         heading: 'Stängel am Boden dünn/eingeschnürt, Keimling knickt um',
         verdict: '⚠⚠ Umfallkrankheit (Damping-off)',
         color: 'var(--red)',
-        text: 'Ein Pilz befällt den Stängel genau dort, wo er die Erde berührt — er wird dünn, glasig und knickt um. Meist tödlich für den Keimling, ausgelöst durch <b>zu viel Nässe + zu wenig Luft</b>. <b>Vorbeugen/stoppen:</b> deutlich weniger gießen (Oberfläche antrocknen lassen), für leichte Luftbewegung sorgen, nicht zu warm-feucht halten, niemals düngen. Saubere Anzucht-Erde verwenden.',
+        text: 'Ein Pilz befällt den Stängel genau dort, wo er die Erde berührt — er wird dünn, glasig und knickt um. Meist tödlich für den Keimling, ausgelöst durch <b>zu viel Nässe + zu wenig Luft</b>. <b>Vorbeugen/stoppen:</b> deutlich weniger gießen (Oberfläche antrocknen lassen), für leichte Luftbewegung sorgen, die Wurzelzone nicht über 26 °C kommen lassen, niemals düngen. Saubere Anzucht-Erde verwenden.',
         when: 'Anzucht Tag 1–14',
         lex: 'Umfallkrankheit (Damping-off)',
       },
@@ -23587,7 +23587,7 @@ App-Plan für Sämlinge:
 • Ab Tag ${DRAIN_AB_TAG}: gießen, wenn der Topf den Gießpunkt erreicht (${_gp})
 
 Warum kein Gießen Tag 2–8?
-Sämlings-Wurzeln reichen wenige Zentimeter. Voll durchnässte Erde ohne aktive Wurzel = Pythium-Risiko (Wurzelfäule, oft tödlich binnen 24h). Der einmalige Sättigungsguss am Tag 1 stellt die Erde ein — danach trinkt der Sämling aus der oberen Schicht, gesprüht reicht.
+Sämlings-Wurzeln reichen wenige Zentimeter. Voll durchnässte Erde ohne aufnehmende Wurzel ist genau die Bedingung, unter der Pythium keimende Samen befällt (Wurzelfäule, für den Keimling meist tödlich). Der einmalige Sättigungsguss am Tag 1 stellt die Erde ein — danach trinkt der Sämling aus der oberen Schicht, gesprüht reicht.
 
 💡 Tipp: Sämlings-Haube
 Bei Raumluft unter 65% RLF: transparente Kuppel über den Sämling stellen. Hebt die Luftfeuchte über dem Topf und verhindert Welken — Lüftungsschlitze offen lassen, sonst schlägt sich Wasser nieder. DIY: PET-Flasche umgekehrt aufstülpen. Komplette Anleitung im Lexikon → "Sämlings-Haube".`;
@@ -32875,7 +32875,7 @@ const LEXIKON = [
         'Sie reagiert in dieser Phase extrem empfindlich auf:<br>' +
         '• <b>Salz</b> (Dünger zu früh = Verbrennungen am Keimblatt-Rand)<br>' +
         '• <b>Trockenheit</b> (Wurzeln noch flach, kein Reserve-Sog möglich)<br>' +
-        '• <b>Übergiessen</b> (Wurzel-Sauerstoffmangel → Pythium binnen 24 h)<br>' +
+        '• <b>Übergiessen</b> (verdrängte Luft in der Wurzelzone → absterbende Wurzelspitzen → Pythium)<br>' +
         '• <b>Klimasprünge</b> (Transpirationssystem noch nicht ausgereift)',
       practice: '<b>Tag 2–8: Nur Besprühen, kein Gießen</b><br>' +
         '<table style="width:100%;border-collapse:collapse;font-size:13px;margin-top:6px">' +
@@ -32917,7 +32917,7 @@ const LEXIKON = [
         '• <b>POWHUMUS / Humins-Stoffe:</b> Sehr milde, ab Tag 1 möglich (10 ml/L)<br>' +
         '• <b>Aloe Vera:</b> Mild, ab Tag 1 möglich (25 ml/L im Sprühwasser)<br>' +
         '• <b>Voller Bio-Dünger (Bio-Grow / Bloom etc.):</b> Frühestens ab Woche 2 mit halber Dosis (~0.5 ml/L)',
-      pitfall: '<b>Damping-Off (umkippender Pilz-Sämling)</b> ist Sämlings-Killer Nr. 1. Stiel an der Basis wird dünn und braun, Sämling fällt um. Ursache fast immer: zu nass + zu warm + keine Luftbewegung. Behebung: Substrat antrocknen lassen, Haube ab, sanften Lüfter dazustellen.<br><br>' +
+      pitfall: '<b>Damping-Off (umkippender Pilz-Sämling)</b> ist Sämlings-Killer Nr. 1. Stiel an der Basis wird dünn und braun, Sämling fällt um. Ursache fast immer: zu nass und stehende Luft; über 26 °C in der Wurzelzone steigt der Druck zusätzlich. Behebung: Substrat antrocknen lassen, Haube ab, sanften Lüfter dazustellen.<br><br>' +
         '<b>Häufige Sämlingsfehler — Symptom-Tabelle:</b><br>' +
         '<table style="width:100%;border-collapse:collapse;font-size:13px;margin-top:6px">' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)" width="40%"><b>Symptom</b></td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Ursache & Lösung</b></td></tr>' +
@@ -33588,7 +33588,7 @@ const LEXIKON = [
         '<b>Paradoxes Hauptsymptom:</b> Pflanze welkt obwohl die Erde durchnässt ist. Die zerstörten Wurzeln können <b>kein Wasser mehr aufnehmen</b>. Anfänger gießen darauf hin „nach" weil sie Welke = Trockenheit interpretieren — und machen es schlimmer.<br><br>' +
         '<b>Ursache fast immer:</b> Übergiessen. Die Wurzeln brauchen <b>Sauerstoff</b> in den Bodenporen. Wenn die Poren dauerhaft mit Wasser gefüllt sind, ersticken die Wurzeln, schwächeln, werden anfällig — und Pythium-Sporen die in jedem Substrat dormant sind erwachen.<br><br>' +
         '<b>Bei Hydro-Systemen:</b> Wassertemperatur über 22°C bedeutet drastisch weniger gelöster Sauerstoff im Wasser → Pythium-Boom. Hydro-Wassertemperatur ist der wichtigste Hebel.<br><br>' +
-        '<b>Bei Sämlingen:</b> Pythium kann sich in <b>24 Stunden</b> in überfeuchtem Substrat etablieren — dann ist der Sämling tot. Das ist der Hauptgrund warum Tag 1–7 nicht gegossen werden darf, nur sprühen.',
+        '<b>Bei Sämlingen:</b> In nasser Erde ohne aufnehmende Wurzel findet Pythium ideale Bedingungen und befällt keimende Samen schnell — die Umfallkrankheit ist dann kaum noch aufzuhalten. Das ist der Grund, warum nach dem Start-Guss bis Tag 9 nicht gegossen, sondern gesprüht wird.',
       practice: '<b>Diagnose:</b><br>' +
         '<table style="width:100%;border-collapse:collapse;font-size:13px;margin-top:6px">' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)" width="40%"><b>Indikator</b></td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Beschreibung</b></td></tr>' +
@@ -33613,7 +33613,7 @@ const LEXIKON = [
         '• <b>Wassertemperatur</b> 18–22°C, niemals kaltes Leitungswasser direkt<br>' +
         '• <b>Luftbewegung</b> auch am Substrat — kein Stagnieren<br>' +
         '• <b>Mykorrhiza und Trichoderma</b> präventiv einsetzen — die Konkurrenz im Substrat verhindert dass Pythium dominant wird<br>' +
-        '• <b>Bei Sämlingen:</b> niemals gießen in Woche 1, nur sprühen',
+        '• <b>Bei Sämlingen:</b> nach dem Start-Guss bis Tag 9 nicht gießen, nur sprühen',
       pitfall: '<b>Bei schwerem Befall meist nicht mehr zu retten</b> — die Wurzeln sind zu weit zerstört. Lehre: Prävention ist entscheidend, vor allem strikter Dryback.<br><br>' +
         '<b>Häufige Fehler:</b><br>' +
         '• <b>Welke = mehr gießen</b>: klassischer Anfänger-Fehler. Bei Pythium ist mehr Wasser tödlich.<br>' +

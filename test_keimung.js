@@ -325,6 +325,30 @@ function pruef(name, bedingung, info) {
     pruef('Auch im Quelltext keine alte Sämlings-PPFD-Zahl mehr', !/200–400 PPFD am Sämling|Sämling 200 PPFD/.test(code));
   }
 
+  // (v1.5.222) „Pythium etabliert sich in 24 Stunden — dann ist der Sämling tot" stand an drei Stellen.
+  // Belegt ist der Mechanismus (ANBAU.md 1), nicht die Frist. Dazu riet die Diagnose „nicht zu warm-feucht
+  // halten", während KLIMA_ZIEL.saemling für dieselbe Pflanze 22–26 °C vorgibt.
+  console.log('\nL - Pythium ohne Stoppuhr');
+  {
+    const py = JSON.parse(E(`(function(){
+      const items = LEXIKON.flatMap(k => k.items || []);
+      const wf = items.find(i => /^Wurzelfäule \\(Pythium\\)/.test(i.t)) || {};
+      const sp = items.find(i => /^Sämlingsphase/.test(i.t)) || {};
+      return JSON.stringify({ wf: JSON.stringify(wf), sp: JSON.stringify(sp) });
+    })()`));
+    pruef('Lexikon „Wurzelfäule (Pythium)" gefunden', py.wf.length > 200, py.wf.slice(0, 60));
+    pruef('Keine 24-Stunden-Zusage mehr, stattdessen der Mechanismus',
+      !/dann ist der Sämling tot/.test(py.wf) && /ideale Bedingungen/.test(py.wf), (py.wf.match(/.{0,60}24 Stunden.{0,40}/) || [''])[0]);
+    pruef('Sprüh-Phase richtig benannt: nach dem Start-Guss bis Tag 9',
+      /nach dem Start-Guss bis Tag 9/.test(py.wf) && !/Tag 1–7 nicht gegossen/.test(py.wf));
+    pruef('Lexikon „Sämlingsphase": verdrängte Luft statt „Pythium binnen 24 h"',
+      /verdrängte Luft in der Wurzelzone/.test(py.sp) && !/Pythium binnen 24 h/.test(py.sp));
+    pruef('Diagnose nennt die Wurzelzone statt „nicht zu warm-feucht halten"',
+      /die Wurzelzone nicht über 26 °C kommen lassen/.test(code) && !/nicht zu warm-feucht halten/.test(code));
+    pruef('Quelltext ohne „tödlich binnen 24h" und ohne „zu nass + zu warm"',
+      !/tödlich binnen 24h/.test(code) && !/zu nass \+ zu warm/.test(code));
+  }
+
   pruef('Keine JS-Fehler im Lauf', errors.length === 0, errors.slice(0, 2).join(' | '));
   console.log(`\nErgebnis: ${ok} OK, ${fail} Fehler`);
   process.exit(fail ? 1 : 0);

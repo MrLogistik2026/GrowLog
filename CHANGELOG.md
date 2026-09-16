@@ -2,6 +2,23 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-16 — v1.5.222
+
+- **„Pythium etabliert sich in 24 Stunden — dann ist der Sämling tot."** Befund der Keimungs-Prüfung (Schritt 13): Diese
+  Stoppuhr-Aussage stand an drei Stellen (Lexikon „Wurzelfäule (Pythium)", Sämlings-Protokoll im Assistenten, Lexikon
+  „Sämlingsphase"). Belegt ist der **Mechanismus**, nicht die Frist: Nasse Erde verdrängt die Luft im Porenraum, die
+  Wurzelspitzen sterben ab, und Oomyceten wie *Pythium* finden ideale Bedingungen (`ANBAU.md` 1). Jetzt sagen alle drei
+  dasselbe — dass nasse Erde ohne aufnehmende Wurzel die Bedingung ist und die Umfallkrankheit dann kaum aufzuhalten,
+  ohne eine Zahl zu erfinden.
+- **Ein Rat, der dem eigenen Klimaziel widersprach:** Die Diagnose „Sämling kippt um" empfahl „nicht zu warm-feucht
+  halten", der Lexikon-Eintrag nannte „zu nass + **zu warm**" als Ursache — während `KLIMA_ZIEL.saemling` für genau
+  diese Pflanze 22–26 °C vorgibt. Ein Anfänger, der dem folgt, stellt seinen Sämling kalt. Gefährlich ist die **Nässe**;
+  über 26 °C in der Wurzelzone sinkt zusätzlich der gelöste Sauerstoff und der Druck steigt (`ANBAU.md` 7.3). Genau das
+  steht jetzt da.
+- **„Tag 1–7 darf nicht gegossen werden"** → nach dem Start-Guss bis Tag 9. An Tag 1 wird sehr wohl gegossen, das ist
+  der Sättigungsguss; die Sprüh-Phase liegt auf Tag 2–8.
+- `test_keimung.js` um Abschnitt L erweitert (75 Prüfungen, beide Zeitzonen).
+
 ## 2026-09-16 — v1.5.221
 
 - **Der Lexikon-Eintrag „Sämlingsphase" führte eine eigene Zahlentabelle** — genau der Fehler aus Abschnitt 1 der
