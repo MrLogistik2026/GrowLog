@@ -1457,7 +1457,7 @@ const PROBLEMS = [
     },
     description: 'Pflanze streckt sich extrem (lange Internodien zwischen den Blattetagen), Stamm wird dünn und kippt fast um. Blätter generell hellgrün-blass. In der Blüte: kleine luftige Buds statt dichter Cola. Lampe zu schwach, zu weit weg oder Lichtperiode unzureichend.',
     context: { phase: ['anzucht', 'vegi', 'bloom'] },
-    action: 'Lampe NÄHER (Handtest!) oder Dimmer auf 100%. Faustformeln am Canopy: Sämling 200 PPFD, Vegi 400–600, Bloom 600–900. Bei alten/schwachen LEDs über 2 Jahren: Output prüfen, ggf. ersetzen. Notlösung: Pflanze tiefer eingraben (kann am Stiel Wurzeln bilden).',
+    action: 'Lampe NÄHER (Handtest!) oder Dimmer auf 100%. Faustformeln am Canopy: Sämling 150–300, Vegi 400–600, Bloom 600–900. Bei alten/schwachen LEDs über 2 Jahren: Output prüfen, ggf. ersetzen. Notlösung: Pflanze tiefer eingraben (kann am Stiel Wurzeln bilden).',
     lexiconKey: 'light_deficiency',
   },
   {
@@ -3470,7 +3470,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.220';
+const APP_VERSION = 'v1.5.221';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -6004,7 +6004,7 @@ const SYMPTOMS = [
         heading: 'Hellgrün, dünn, hoher Stamm — Pflanze schaut nach Licht',
         verdict: '⚠ Lichtmangel / Etiolierung',
         color: 'var(--orange)',
-        text: 'Klassisches „Streck-mich-zur-Lampe"-Bild: lange Internodien (Abstand zwischen Blättern), dünner Stiel, Pflanze fällt fast um. Zu wenig Licht. <b>Lösung:</b> Lampe näher (Handtest!) oder DLI/PPFD erhöhen. <b>Faustformel:</b> Sämling 200 PPFD, Vegi 400–600, Bloom 600–900 am Canopy. Bei Notlösung: Pflanze tiefer in Topf eingraben (kann an verholztem Stamm Wurzeln bilden).',
+        text: 'Klassisches „Streck-mich-zur-Lampe"-Bild: lange Internodien (Abstand zwischen Blättern), dünner Stiel, Pflanze fällt fast um. Zu wenig Licht. <b>Lösung:</b> Lampe näher (Handtest!) oder DLI/PPFD erhöhen. <b>Faustformel:</b> Sämling 150–300, Vegi 400–600, Bloom 600–900 am Canopy. Bei Notlösung: Pflanze tiefer in Topf eingraben (kann an verholztem Stamm Wurzeln bilden).',
         when: 'Indoor, schwache Lampe',
         lex: 'PPFD & DLI (Licht-Matrix)',
       },
@@ -32870,31 +32870,31 @@ const LEXIKON = [
         '<b>Auto-Grower-Falle:</b> Zu kleiner Anzuchttopf → später umtopfen wollen → 5–10 Tage Wachstumsverlust. Bei Autos ist diese Zeit verloren. Direkt in den Endbehälter.' },
     { t: 'Sämlingsphase',
       brief: 'Die ersten 1–3 Wochen nach Keimung. Pflanze winzig aber empfindlich — wenig hilft mehr als viel. Tag 1–7 ist die kritische Phase.',
-      mechanism: 'Vom Aufgang der Keimblätter (Kotyledonen) bis zu den ersten echten 3-Finger-Blättern. Das Wurzelsystem ist <b>noch nicht etabliert</b> — die Pflanze lebt von den Reserven im Samen + minimaler Aufnahme über die Keimblätter und die direkte Bodenoberfläche.<br><br>' +
+      mechanism: 'Vom Aufgang der Keimblätter (Kotyledonen) bis zu den ersten echten 3-Finger-Blättern. Das Wurzelsystem ist <b>noch nicht etabliert</b> — die Pflanze lebt von den Reserven im Samen, während die Keimblätter bereits Photosynthese betreiben. Wasser nimmt sie über die Wurzel auf, nicht über die Keimblätter.<br><br>' +
         'In Tag 1–7 funktioniert <b>Topfgewicht-Dryback noch nicht</b>: ohne aktive Transpiration läuft Verdunstung anders ab als bei einer Pflanze mit Blattwerk. Tageswerte zur Wassermenge geben falsche Signale. Erst wenn die ersten echten Blätter da sind und die Pflanze aktiv transpiriert, greift das normale Hebe-Test/Dryback-System.<br><br>' +
         'Sie reagiert in dieser Phase extrem empfindlich auf:<br>' +
         '• <b>Salz</b> (Dünger zu früh = Verbrennungen am Keimblatt-Rand)<br>' +
         '• <b>Trockenheit</b> (Wurzeln noch flach, kein Reserve-Sog möglich)<br>' +
         '• <b>Übergiessen</b> (Wurzel-Sauerstoffmangel → Pythium binnen 24 h)<br>' +
         '• <b>Klimasprünge</b> (Transpirationssystem noch nicht ausgereift)',
-      practice: '<b>Tag 1–7: Nur Besprühen, kein Gießen</b><br>' +
+      practice: '<b>Tag 2–8: Nur Besprühen, kein Gießen</b><br>' +
         '<table style="width:100%;border-collapse:collapse;font-size:13px;margin-top:6px">' +
-        '<tr style="background:rgba(255,255,255,0.04)"><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)" colspan="2"><b>Werte Tag 1–7</b></td></tr>' +
+        '<tr style="background:rgba(255,255,255,0.04)"><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)" colspan="2"><b>Werte Tag 2–8</b></td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Methode</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Sprühflasche auf Oberfläche</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Wann besprühen</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Wenn die Erde direkt am Samen oder Keimling oben hell wird</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Menge</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">3–5 Sprühstöße über dem Samen</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Wasser-pH</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">6.2–6.4 für Erde</td></tr>' +
-        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Temperatur</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">24–26°C</td></tr>' +
-        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">RLF Ziel</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">70% — Haube hilft die Feuchte zu halten</td></tr>' +
+        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Temperatur</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">' + KLIMA_ZIEL.saemling.temp[0] + '–' + KLIMA_ZIEL.saemling.temp[1] + ' °C</td></tr>' +
+        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">RLF Ziel</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">' + _klimaRlfSpanne(klimaRlfFenster(KLIMA_ZIEL.saemling, NaN)) + ' — die Haube hilft, sie zu halten</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Haube lüften</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">1× täglich 2–3 Min</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Licht</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">18/6 oder 20/4 · gedimmt 50–60% Leistung</td></tr>' +
-        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">PPFD-Ziel</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">200–400 PPFD am Sämling</td></tr>' +
+        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">PPFD-Ziel</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">150–300 µmol/m²/s am Sämling</td></tr>' +
         '</table>' +
         '<br>' +
-        '<b>Optionale milde Stimulation:</b> Aloe Vera-Konzentrat (~25 ml/L) im Sprühwasser in den ersten 5–7 Tagen. Salicylsäure und Polysaccharide unterstützen Wurzelbildung. Kein Pflicht-Schritt.<br><br>' +
+        '<b>Optionale Zugabe:</b> Manche geben Aloe-Vera-Konzentrat (~25 ml/L) ins Sprühwasser. Eine bessere Wurzelbildung ist dafür nicht belegt; schaden tut es in dieser Dosis nicht. Kein Pflicht-Schritt.<br><br>' +
         '<b>Was du beobachten willst:</b><br>' +
         '• ✅ Keimblätter stehen aufrecht und hellgrün → alles gut<br>' +
-        '• ✅ Nach 3–5 Tagen erste echte Blattspitze sichtbar → auf Kurs<br>' +
+        '• ✅ Nach dem Durchbruch öffnen sich die Keimblätter, danach kommt das erste gezackte Blattpaar → auf Kurs<br>' +
         '• ⚠️ Keimblätter hängen → zu trocken, sofort leicht besprühen<br>' +
         '• 🚨 Stiel wird dünn und braun an der Basis → <b>Damping-Off</b>! Haube sofort weg, Lüfter an, trockener lassen<br>' +
         '• 🚨 Gelbe Keimblätter → zu nass ODER zu wenig Licht<br><br>' +
@@ -32903,11 +32903,11 @@ const LEXIKON = [
         '<tr style="background:rgba(255,255,255,0.04)"><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)" colspan="2"><b>Werte Tag 7–14</b></td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Übergang ab</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Sobald erste echte Blätter sichtbar</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Restgewicht</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Noch kein Gießpunkt: Der Topf wiegt vor allem Substrat ohne Wurzeln, der Hebe-Test zeigt nur, ob er noch nass ist. Gegossen wird an den Gießtagen der App, mit ihrer Gießmenge — den Gießpunkt gibt es ab Tag ' + DRAIN_AB_TAG + '</td></tr>' +
-        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Erster richtiger Guss</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">200–300 ml pro Topf</td></tr>' +
-        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Haube</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Täglich länger offen, ab Tag 10 weg</td></tr>' +
+        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Erster richtiger Guss</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Die Menge steht im Tageseintrag — sie kommt aus Topf und Substrat</td></tr>' +
+        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Haube</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Täglich länger offen, spätestens mit dem ersten gezackten Blattpaar weg</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Licht hochdrehen</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Auf 70–80% Leistung</td></tr>' +
-        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Temperatur</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">24–26°C</td></tr>' +
-        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">RLF senken</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Von 70% auf ~65%</td></tr>' +
+        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Temperatur</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">' + KLIMA_ZIEL.saemling.temp[0] + '–' + KLIMA_ZIEL.saemling.temp[1] + ' °C</td></tr>' +
+        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">RLF senken</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">' + _klimaRlfSpanne(klimaRlfFenster(KLIMA_ZIEL.saemling, NaN)) + ' → ' + _klimaRlfSpanne(klimaRlfFenster(KLIMA_ZIEL.anzucht, NaN)) + '</td></tr>' +
         '</table>' +
         '<br>' +
         'Wichtig: Haube nicht schlagartig abnehmen — schrittweise über 2–3 Tage. Zu schnelle RLF-Änderung stresst die Pflanze die noch kein ausgereiftes Transpirationssystem hat.<br><br>' +

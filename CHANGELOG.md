@@ -2,6 +2,29 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-16 — v1.5.221
+
+- **Der Lexikon-Eintrag „Sämlingsphase" führte eine eigene Zahlentabelle** — genau der Fehler aus Abschnitt 1 der
+  Übergabe, nur innerhalb eines Eintrags. Behoben (Keimungs-Prüfung, Rest von Schritt 12):
+  - **Temperatur 24–26 °C** an zwei Stellen → aus `KLIMA_ZIEL.saemling` (22–26 °C), dieselbe Quelle wie Klima-Pille,
+    Zielzeile und Sämlings-Pflege seit v1.5.187.
+  - **„RLF 70 %"** und **„von 70 % auf ~65 %"** → das Feuchte-Fenster wird gerechnet (`klimaRlfFenster`), wie überall
+    sonst in der App. Drei Zahlen für dieselbe Frage waren es vorher.
+  - **„200–400 PPFD am Sämling"** → 150–300 µmol/m²/s nach `ANBAU.md` 8; 200–400 ist der Anzucht-Wert. Dieselbe
+    Korrektur in der Lichtbrand-Handlung („Sämling 200 PPFD").
+  - **„Tag 1–7: Nur Besprühen"** → Tag 2–8. Tag 1 ist der Sättigungsguss, an dem sehr wohl gegossen wird.
+  - **„Erster richtiger Guss: 200–300 ml pro Topf"** → die Menge kommt seit v1.5.205 aus Topf und Substrat und steht
+    im Tageseintrag. **„Haube ab Tag 10 weg"** → wie seit v1.5.220: spätestens mit dem ersten gezackten Blattpaar.
+- **Zwei fachliche Fehler im selben Eintrag:**
+  - „Die Pflanze lebt von den Reserven im Samen + **minimaler Aufnahme über die Keimblätter**" — Keimblätter nehmen
+    kein Wasser auf, sie betreiben Photosynthese. Wasser kommt über die Wurzel (`ANBAU.md` 1).
+  - „**Nach 3–5 Tagen** erste echte Blattspitze sichtbar" — nach dem Durchbruch (Tag 4–7) öffnen sich zuerst die
+    Keimblätter; das erste gezackte Blattpaar kommt danach.
+- **Eine unbelegte Wirkungszusage gestrichen** (`ANBAU.md` 14): „Salicylsäure und Polysaccharide unterstützen
+  Wurzelbildung" beim Aloe-Sprühwasser. Die Zugabe bleibt beschrieben, jetzt mit „nicht belegt" — wie beim IceFlush.
+  Der Produktname „Aloe Vera-Konzentrat" in der Düngerliste ist davon nicht betroffen.
+- `test_keimung.js` um Abschnitt K erweitert (69 Prüfungen, beide Zeitzonen).
+
 ## 2026-09-16 — v1.5.220
 
 - **Die Sämlings-Haube versprach genau den Zustand, vor dem sie an anderer Stelle warnt.** Befund der Keimungs-Prüfung

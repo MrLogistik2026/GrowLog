@@ -297,6 +297,34 @@ function pruef(name, bedingung, info) {
       !/80–95% Luftfeuchte|80–95% RLF/.test(code));
   }
 
+  // (v1.5.221) Der Lexikon-Eintrag „Sämlingsphase" führte eigene feste Zahlen: 24–26 °C (KLIMA_ZIEL sagt
+  // 22–26), „RLF 70 %" (die App rechnet das Fenster seit v1.5.187), „200–400 PPFD" (ANBAU.md 8 nennt für
+  // den Sämling 150–300), „Tag 1–7: nur Besprühen" (Tag 1 ist der Sättigungsguss), dazu eine unbelegte
+  // Wirkungszusage zu Aloe und die falsche Aussage, die Keimblätter nähmen Wasser auf.
+  console.log('\nK - Lexikon „Sämlingsphase"');
+  {
+    const sp = JSON.parse(E(`(function(){
+      const e = LEXIKON.flatMap(k => k.items || []).find(i => /^Sämlingsphase/.test(i.t)) || {};
+      return JSON.stringify({ txt: JSON.stringify(e),
+        rlfSoll: _klimaRlfSpanne(klimaRlfFenster(KLIMA_ZIEL.saemling, NaN)),
+        tempSoll: KLIMA_ZIEL.saemling.temp[0] + '–' + KLIMA_ZIEL.saemling.temp[1] + ' °C' });
+    })()`));
+    pruef('Eintrag „Sämlingsphase" gefunden', sp.txt.length > 500, sp.txt.slice(0, 60));
+    pruef(`Temperatur aus KLIMA_ZIEL (${sp.tempSoll}), nicht fest 24–26°C`,
+      sp.txt.includes(sp.tempSoll) && !/24–26°C/.test(sp.txt), (sp.txt.match(/.{0,30}24–26.{0,20}/) || [''])[0]);
+    pruef(`Feuchte-Fenster gerechnet (${sp.rlfSoll}), nicht fest „70 %"`,
+      sp.txt.includes(sp.rlfSoll) && !/70% — Haube/.test(sp.txt), sp.rlfSoll);
+    pruef('Licht 150–300 µmol/m²/s statt 200–400 PPFD (ANBAU.md 8)',
+      /150–300 µmol/.test(sp.txt) && !/200–400 PPFD/.test(sp.txt));
+    pruef('Sprühphase Tag 2–8 — Tag 1 ist der Sättigungsguss', /Tag 2–8: Nur Besprühen/.test(sp.txt) && !/Tag 1–7: Nur Besprühen/.test(sp.txt));
+    pruef('Keimblätter betreiben Photosynthese, Wasser kommt über die Wurzel',
+      /Wasser nimmt sie über die Wurzel auf/.test(sp.txt) && !/Aufnahme über die Keimblätter/.test(sp.txt));
+    pruef('Keine Zeitzusage „nach 3–5 Tagen erste echte Blattspitze"', !/Nach 3–5 Tagen erste echte/.test(sp.txt));
+    pruef('Aloe ohne Wirkungszusage (ANBAU.md 14)', /nicht belegt/.test(sp.txt) && !/unterstützen Wurzelbildung/.test(sp.txt));
+    pruef('Gießmenge und Haube wie im Rest der App', /Die Menge steht im Tageseintrag/.test(sp.txt) && !/ab Tag 10 weg/.test(sp.txt));
+    pruef('Auch im Quelltext keine alte Sämlings-PPFD-Zahl mehr', !/200–400 PPFD am Sämling|Sämling 200 PPFD/.test(code));
+  }
+
   pruef('Keine JS-Fehler im Lauf', errors.length === 0, errors.slice(0, 2).join(' | '));
   console.log(`\nErgebnis: ${ok} OK, ${fail} Fehler`);
   process.exit(fail ? 1 : 0);
