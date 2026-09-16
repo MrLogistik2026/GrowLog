@@ -3560,7 +3560,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.242';
+const APP_VERSION = 'v1.5.243';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -35189,7 +35189,7 @@ const HOWTO = [
     { t: 'Master, Light oder Official?',
       txt: '<b>🏆 Master:</b> Premium, jedes Gießen volle Dosis. Früher & härter Stickstoff-Stopp (Wo 7 halbiert, Wo 8 komplett gestoppt) — viel Stickstoff hält die Pflanze im vegetativen Modus, die Blüten bleiben dann lockerer und blattreicher. Das ist der Standard-Plan für Erfahrene.<br><br><b>🌱 Light:</b> Master × 50%. Für Einsteiger oder empfindliche Genetiken. <b>Wichtig:</b> CalMag bleibt voll (nicht halbiert) weil LED-Licht den Bedarf nicht senkt.<br><br><b>📋 Official 2026:</b> Das BioBizz-Düngerschema 2026 für Light·Mix, Zahl für Zahl: Jeder Guss bekommt die Menge je Liter aus dem Blatt — nichts wird geteilt oder hochgerechnet. Die Wochen heißen wie im Blatt (Vermehrung, Wachstum, Blühwoche 1–8), so kannst du App und Blatt nebeneinanderlegen.' },
     { t: 'Plan laden',
-      txt: '<b>Einstellungen → Dünger & Wochenplan → Button deiner Wahl antippen.</b> Ein Bestätigungsdialog warnt dass deine aktuellen Dünger-Einstellungen überschrieben werden. Danach siehst du in der Mischreihenfolge welche Produkte gebraucht werden und den Wochenplan mit den Dosen pro Liter.' },
+      txt: '<b>Einstellungen → Dünger & Wochenplan → „Plan wechseln · Vorlage laden“ → Vorlage antippen.</b> Die App legt daraus einen neuen Plan an, deine bestehenden Pläne bleiben erhalten — hast du dieselbe Vorlage schon, wechselt sie nur dorthin. Passt die Vorlage nicht zu deinem Substrat, fragt sie vorher nach. Ein aktiver Zyklus, der noch gedüngt wird, bekommt den neuen Plan; ab dem Spülen behält er seinen. Danach siehst du in der Mischreihenfolge, welche Produkte gebraucht werden, und den Wochenplan mit den Mengen je Liter.' },
     { t: 'Dosen anpassen',
       txt: 'Im Wochenplan-Editor kannst du jede Woche einzeln tunen. Die Änderungen gelten nur für den <b>aktuell gewählten Zyklus</b> wenn du unten einen Zyklus ausgewählt hast, sonst global für alle neuen Zyklen. Die ±-Buttons ändern den Wert in 0.1-ml/L-Schritten.' },
     { t: 'Per-Gieß vs. Wochen-Modus',

@@ -2,6 +2,16 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-16 — v1.5.243
+
+- **„Plan laden" in der Anleitung warnte vor etwas, das nicht passiert.** Dort stand: „Ein Bestätigungsdialog warnt
+  dass deine aktuellen Dünger-Einstellungen überschrieben werden." Seit es mehrere Pläne gibt, legt „Vorlage laden"
+  einen neuen Plan an, und der Dialog selbst sagt „Deine bestehenden Pläne bleiben erhalten". Wer der Anleitung
+  glaubte, lud aus Sorge um seine Einstellungen womöglich gar keine Vorlage.
+- Der Eintrag nennt jetzt den Weg über „Plan wechseln · Vorlage laden", dass bestehende Pläne bleiben, dass bei
+  derselben Vorlage nur gewechselt wird, die Rückfrage bei unpassendem Substrat und dass ein laufender Zyklus ab dem
+  Spülen seinen Plan behält (v1.5.134). `test_duengeplantexte.js` Abschnitt K (86 Prüfungen).
+
 ## 2026-09-16 — v1.5.242
 
 - **Die Anleitung beschrieb BioBizz Official noch als Wochendosis-Plan.** „Master, Light oder Official?" sagte

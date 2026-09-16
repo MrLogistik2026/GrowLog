@@ -411,6 +411,9 @@ function pruef(name, bedingung, info) {
       !/\(Official\)/.test(r.modus) && !/2\.3 Güsse/.test(r.modus) && /älteren gespeicherten Plänen/.test(r.modus), r.modus);
     pruef('… und was er behauptet, stimmt: jede wählbare Vorlage rechnet je Guss',
       r.modi.length > 0 && r.modi.every(([, m]) => m === 'per-watering'), r.modi.filter(([, m]) => m !== 'per-watering').map(([k]) => k).join(', '));
+    pruef('„Plan laden" warnt nicht mehr vor Überschreiben — bestehende Pläne bleiben',
+      !/überschrieben/.test(r.laden) && /bestehenden Pläne bleiben erhalten/.test(r.laden), r.laden.slice(0, 200));
+    pruef('… so sagt es auch der Dialog beim Laden', /Deine bestehenden Pläne bleiben erhalten/.test(code));
     // K-ENDE
   }
 
