@@ -123,6 +123,32 @@ function pruef(name, bedingung, info) {
     }
   }
 
+  // (v1.5.226) MKP wurde mit V3.4 aus dem Plan genommen (mixInfo: „MKP ist gestrichen"). Drei Wochen-Tipps
+  // kündigten es trotzdem weiter an, zwei Untertitel zählten ein Produkt zu viel, und das Lexikon behauptete,
+  // es laufe „in Woche 7-9". Das Produkt selbst bleibt — in einer gespeicherten Plankopie kann eine eigene
+  // Dosis stehen, und die zu entfernen wäre Datenverlust (v1.5.135).
+  console.log('\nB - Der Plan kündigt nichts an, was er nicht dosiert');
+  {
+    const r = JSON.parse(E(`(function(){
+      const p = FERT_PRESETS.cup_sieger;
+      const tipps = Object.values(p.weekFocus || {}).map(w => String((w && w.tip) || '')).join(' | ');
+      const mkpDosen = Object.values(p.schedule || {}).filter(w => Object.keys(w || {}).some(k => /MKP/i.test(k))).length;
+      const lex = JSON.stringify((LEXIKON.flatMap(k => k.items || []).find(i => /^MKP/.test(i.t))) || {});
+      return JSON.stringify({ subtitle: p.subtitle || '', tipps, mkpDosen, lex,
+        produkte: (p.products || []).length,
+        mkpProdukt: (p.products || []).some(x => /MKP/i.test(x.name)) });
+    })()`));
+    pruef('Kein Wochen-Tipp kündigt MKP an', !/MKP/.test(r.tipps), (r.tipps.match(/[^|]*MKP[^|]*/) || [''])[0]);
+    pruef('Der Plan dosiert MKP auch wirklich nirgends', r.mkpDosen === 0, 'Wochen mit MKP-Dosis: ' + r.mkpDosen);
+    pruef('Das Produkt bleibt erhalten (eine eigene Dosis darf man eintragen)', r.mkpProdukt === true);
+    pruef('Untertitel nennt 11 Produkte — so viele sind es', /11 Produkte/.test(r.subtitle) && r.produkte === 11,
+      r.subtitle + ' · tatsächlich ' + r.produkte);
+    pruef('Auch der Untertitel im Assistenten nennt 11', !/12 Wochen · 12 Produkte/.test(code));
+    pruef('Lexikon behauptet keine MKP-Dosis in Woche 7-9 mehr',
+      !/GiDeli MKP in Woche 7-9/.test(r.lex) && /in keiner Woche mit einer Dosis/.test(r.lex),
+      (r.lex.match(/.{0,60}GiDeli.{0,80}/) || [''])[0]);
+  }
+
   pruef('Keine JS-Fehler im Lauf', errors.length === 0, errors.slice(0, 2).join(' | '));
   console.log(`\nErgebnis: ${ok} OK, ${fail} Fehler`);
   process.exit(fail ? 1 : 0);

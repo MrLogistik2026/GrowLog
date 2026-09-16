@@ -2742,7 +2742,7 @@ const FERT_PRESETS = {
       weekPhases: ['anzucht','anzucht','anzucht','bloom','bloom','bloom','bloom','bloom','bloom','bloom','flush','ice'],
       name: 'Cup-Sieger-Plan (Premium)',
       medium: 'erde',   // Light-Mix
-      subtitle: '12 Wochen · 12 Produkte · EC 0.4→2.3 · Auto-optimiert · 49 Tage Bloom',
+      subtitle: '12 Wochen · 11 Produkte · EC 0.4→2.3 · Auto-optimiert · 49 Tage Bloom',
       feedDayBasis: true,
       doseMode: 'per-watering',
       bloomDaysHint: 49,
@@ -2780,15 +2780,15 @@ const FERT_PRESETS = {
           },
           "7": {
               "phase": "Swelling I",
-              "tip": "MKP startet für Bud-Härtung. Letzte Amino & Alfa Boost."
+              "tip": "Bio-Bloom trägt jetzt die Blüte. Letzte Gabe Amino und Alfa Boost."
           },
           "8": {
               "phase": "Swelling II",
-              "tip": "MKP auf Peak. N-Mikrodosis hält Bud-Building aktiv."
+              "tip": "Bio-Bloom auf Peak. Die kleine Stickstoff-Restgabe hält den Aufbau am Laufen."
           },
           "9": {
               "phase": "Ripening I",
-              "tip": "Jetzt erst N-Stop. Trichome täglich Lupe. Letztes MKP + Silica."
+              "tip": "Jetzt erst der Stickstoff-Stopp. Trichome täglich mit der Lupe. Letzte Silica-Gabe."
           },
           "10": {
               "phase": "Ripening II",
@@ -3472,7 +3472,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.225';
+const APP_VERSION = 'v1.5.226';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -22880,7 +22880,7 @@ function _wizStepFertPlan(a) {
         biobizz_light: 'Master × 50% · fehlerverzeihend für Einsteiger',
         biobizz_master: 'Premium · jedes Gießen · früher Stickstoff-Stopp',
         biobizz_official: 'Herstellerplan · automatisch verteilt',
-        cup_sieger: '12 Wochen · 12 Produkte · Auto-optimiert · 49 Tage Bloom',
+        cup_sieger: '12 Wochen · 11 Produkte · Auto-optimiert · 49 Tage Bloom',
         canna: 'Terra Vega + Flores · Herstellerplan für Erde',
         hesi: 'TNT & Blüh Complex · Blüh Complex regelt den pH mit',
         plagron: 'Terra Grow + Bloom · mineralisch, für Erde',
@@ -32534,7 +32534,7 @@ const LEXIKON = [
     { t: 'MKP (Mono-Kalium-Phosphat)',
       brief: 'Ein reiner P-K-Booster (Phosphor + Kalium, 0-52-34) für den Blüte-Höhepunkt. Macht die Buds dichter — kurz und präzise eingesetzt.',
       mechanism: 'In der mittleren bis späten Blüte will die Pflanze viel <b>Phosphor (P) und Kalium (K)</b> für Bud- und Harzbildung, aber wenig Stickstoff (N). MKP (KH₂PO₄) liefert genau P+K mit <b>null N</b> — so kann man die Blüte pushen, ohne die Pflanze blättrig zu halten. Sehr konzentriert, darum winzige Dosen.',
-      practice: 'Nur in den Bud-Mast-Wochen (grob Blüte-Woche 7-9, Peak Woche 8). In warmem Wasser <b>vorlösen</b>. Sehr niedrig dosieren (z.B. 0.2-0.3 g/L). <b>EC im Auge behalten</b> — MKP hebt ihn schnell. In deinem Plan ist das die GiDeli MKP in Woche 7-9.',
+      practice: 'Nur in den Bud-Mast-Wochen (grob Blüte-Woche 7-9, Peak Woche 8). In warmem Wasser <b>vorlösen</b>. Sehr niedrig dosieren (z.B. 0.2-0.3 g/L). <b>EC im Auge behalten</b> — MKP hebt ihn schnell. Im Cup-Sieger-Plan ist GiDeli MKP als Produkt angelegt, steht seit dem V3.4-Stand aber in keiner Woche mit einer Dosis — wer es fahren will, trägt sie selbst ein.',
       pitfall: 'Überdosis verbrennt schnell (P/K-Lockout, braune Spitzen) und verdrängt andere Nährstoffe. Nicht in Vegi oder Früh-Blüte einsetzen. <b>Nach dem Anmischen immer EC messen.</b>' },
     { t: 'Nährstoff-Lockout',
       brief: 'Nährstoffe sind da — aber die Pflanze kommt nicht dran. Das unsichtbare Problem hinter vielen scheinbaren „Mängeln". 60–70% aller Mangel-Symptome sind in Wahrheit Lockouts.',

@@ -2,6 +2,25 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-16 — v1.5.226
+
+- **Der Cup-Sieger-Plan kündigte ein Mittel an, das er gar nicht dosiert.** Zweiter Befund der Gruppe A (UEBERGABE 0n).
+  MKP wurde mit dem V3.4-Stand bewusst aus dem Plan genommen — die Misch-Info sagt es selbst („MKP ist gestrichen"),
+  und in keiner der zwölf Wochen steht eine MKP-Dosis. Drei Wochen-Tipps kündigten es trotzdem weiter an:
+  „MKP startet für Bud-Härtung" (Wo 7), „MKP auf Peak" (Wo 8), „Letztes MKP + Silica" (Wo 9). Wer dem folgt, sucht in
+  der Mischliste ein Produkt, das dort nie auftaucht.
+- **Jetzt** beschreiben die drei Tipps, was der Plan in diesen Wochen wirklich fährt (Bio·Bloom trägt, die kleine
+  Stickstoff-Restgabe, die letzte Silica-Gabe) — ohne neue Wirkungszusagen (`ANBAU.md` 14).
+- **Das Produkt bleibt im Plan.** In einer gespeicherten Plankopie kann eine selbst eingetragene MKP-Dosis stehen;
+  sie zu entfernen wäre Datenverlust (die Lehre aus v1.5.135). Damit bleiben Produktzahl, Gaben und Summe gleich —
+  der Fingerabdruck in `test_duengeplaene.js` ist unberührt.
+- **Zwei Untertitel zählten falsch:** „12 Wochen · **12 Produkte**" in der Vorlage und im Assistenten — es sind 11.
+- **Das Lexikon zeigte auf eine Dosis, die es nicht gibt:** „In deinem Plan ist das die GiDeli MKP in Woche 7-9."
+  Jetzt steht dort, dass das Produkt angelegt ist, aber seit V3.4 in keiner Woche eine Dosis trägt — wer es fahren
+  will, trägt sie selbst ein. Der generische Beispiel-Satz im Eintrag „PK-Booster" nennt GiDeli MKP weiter neben
+  anderen Herstellern; das ist eine Produktnennung, keine Aussage über den Plan, und bleibt.
+- `test_duengeplantexte.js` um Abschnitt B erweitert (17 Prüfungen, beide Zeitzonen).
+
 ## 2026-09-16 — v1.5.225
 
 - **Der Cup-Sieger-Plan führte Mykorrhiza-Pulver als Schritt 10 seiner Mischanleitung.** Erster Befund der Gruppe A
