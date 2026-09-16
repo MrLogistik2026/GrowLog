@@ -232,13 +232,55 @@ im Sitzungsordner (vergänglich — das Folgende ist die dauerhafte Fassung).
   Mischliste nicht auftaucht (0k).
 - **Coco-pH** 5,8–6,2 (App) gegen 5,5–6,0 (`ANBAU.md` 4): steht seit 0f offen, beide Coco-Pläne schreiben es fest.
 
-### C · Blockiert — nur mit den Hersteller-Unterlagen zu klären
+### C · Nicht mehr blockiert — Patrick hat das Schema geliefert (16.09.2026)
 
-Ob die **Dosen** von BioBizz, Plagron Terra, CANNA Terra, Hesi, CANNA Coco und GHE Flora den Herstellerangaben
-entsprechen, ist offen: Die PDFs lassen sich auf diesem Laptop nicht öffnen (wie in 0m.4). Keiner der drei Prüfer hat
-eine Dosis vorgeschlagen. Dazu gehören: Top·Max läuft in den vier BioBizz-Plänen um **Faktor 7** auseinander,
-Bio·Bloom springt in `official` von 1 auf 4, CalMag steht zwischen 0,3 und 2,0, POWHUMUS 10 ml/L und Aloe 25 ml/L
-ohne Konzentrationsangabe. **Die Bitte an Patrick bleibt: die Light-Mix-Spalte des Schemas 2025 einmal selbst ansehen.**
+Patrick hat das **BioBizz Düngerschema 2020 (DE)** als Bild geschickt und die **Alfa-Boost-Herstellerinformation**
+als PDF. Damit ist der Vergleich erstmals möglich. Messskript: `scratchpad/biobizz/vergleich.js` (Sitzungsordner,
+vergänglich — die Zahlen stehen deshalb hier).
+
+**Was gemessen wurde** (Spalte Light·Mix/Coco·Mix gegen `biobizz_official`, Zyklus wie Patricks: 85 Blütetage,
+Intervall 3): **52 von 54 Gaben liegen unter 90 % der Herstellerangabe**, keine einzige darüber.
+
+| | Schema (ml/L je Guss) | kommt in der App an |
+|---|---|---|
+| Bio·Heaven, WK1–10 | 2 → 5 | **0 %** — das Produkt fehlt in der Vorlage ganz |
+| Acti·Vera, WK6–10 | 4 → 5 | 5–12 % |
+| Top·Max, ab WK8 | 4 | 6–12 % |
+| Bio·Bloom, WK6 | 3 | 11 % |
+| Bio·Grow, WK9–10 | 4 | **0 %** — fehlt |
+| CalMag, WK1 | 0,3 | **333 %** |
+
+**Zwei getrennte Ursachen, beide belegt:**
+1. **Die Plan-Zahlen weichen schon vom Schema ab** — unabhängig von jeder Rechnung. Bio·Heaven fehlt, Acti·Vera und
+   Top·Max stehen pauschal auf 1 statt 2→5 bzw. 1→4, CalMag steht auf 1–2 statt 0,3–0,8.
+2. **Der Modus ist strukturell falsch.** Das Schema sagt in jeder Zelle „<n> ml/L **Wasser**" und im Kopf „2–3 mal
+   pro Woche wässern" — das sind Konzentrationen **je Guss**. `biobizz_official` läuft als `weekly-split` und teilt
+   sie zusätzlich durch die Düngergüsse der Plan-Woche. Das bestätigt den Verdacht aus 0m.4 mit dem Original.
+
+**Der Untertitel ist damit eine Falschaussage:** „Offizieller Herstellerplan 2025 · Light-Mix". Er ist an 52 von
+54 Stellen keiner. (Zu prüfen bleibt, ob das Schema **2025** von dem hier verglichenen **2020** abweicht — Patrick
+hat die 2020er Fassung geschickt.)
+
+**Abschrift:** Die Schema-Zahlen stehen als erste Abschrift oben in `scratchpad/biobizz/vergleich.js`. Nach der
+Projektregel (0k) geht **keine Dosis ohne zweite Abschrift** in die App — Patricks Gegenprüfung steht aus.
+
+**Alfa Boost — „n. Label" ist aufgelöst, aber anders als erwartet.** Die Herstellerinformation (27 Seiten, per
+zlib aus den PDF-Streams gelesen; `pdftoppm` fehlt auf diesem Laptop) enthält in 214.000 Zeichen **keine einzige
+Mengenangabe** — kein ml, kein Mischverhältnis, keine Dosiertabelle. Belegt ist dagegen die *Häufigkeit* und der
+Umgang, wörtlich:
+- „muss AlfaBoost … sowohl bei organischer, als auch mineralischer Düngung **bei jedem Gießvorgang** ausgebracht
+  werden"
+- „einmal wöchentliches Besprühen … **bis zur dritten Blütewoche** tropfnass, anschließend nur noch ganz fein"
+  (die Begrenzung ist eine Schimmel-Vorsicht des Herstellers, kein Wirkungsargument)
+- nach der Ernte, vor dem Aufhängen, fein besprühen → bessere Lagerfähigkeit
+- **„Auf den EC-Wert hat Alfa Boost keinen nennenswerten Einfluss"** — es ist ein Zusatz, kein Dünger
+- **senkt den pH des Gießwassers** („sehr niedriger pH-Wert")
+- ersetzt Mikroorganismen- und Enzympräparate; auf Hydro/Aero keine organischen Flüssigdünger dazu
+
+**Konsequenz für die App:** Eine Dosis kann nicht eingetragen werden, weil der Hersteller keine nennt — das ist
+jetzt belegt und keine Lücke mehr. Was die App abbilden kann, ist die Häufigkeit („bei jedem Gießvorgang"), der
+pH-Effekt (gehört in die Mischreihenfolge: senkt, also nach ihm den pH einstellen) und die Sprüh-Anwendung. Ob
+auf der Flaschenrückseite eine Menge steht, weiß nur Patrick.
 
 ### D · Die Ursache hinter der Hälfte der Befunde
 
