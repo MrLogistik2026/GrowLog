@@ -269,6 +269,34 @@ function pruef(name, bedingung, info) {
       !r9.chipsMitAlterNotiz.includes('Keimblätter offen'), r9.chipsMitAlterNotiz.join(', '));
   }
 
+  // (v1.5.220) Die Haube versprach „80–95 % Luftfeuchte" — bei 24 °C und 2 K Blattabzug liegt das
+  // Blatt-VPD ab etwa 89 % bei null, dann kondensiert Wasser auf den Keimblättern. Genau das nannte
+  // derselbe Eintrag zwei Absätze weiter als Anfängerfehler. Dazu drei verschiedene Zeitpläne.
+  console.log('\nJ - Sämlings-Haube');
+  {
+    const hb = JSON.parse(E(`(function(){
+      S.cycles = []; S.entries = {}; S.beginnerMode = true;
+      const c = addCyc({ name: 'M', seedType: 'auto', medium: 'erde' });
+      c.startDate = '2026-06-01'; c.startMethod = 'saturated'; c.potSize = 11; saveS();
+      const fit = (tag) => JSON.stringify(_trainingFit(c, isoPlus(c.startDate, tag - 1), 'haube'));
+      const lex = JSON.stringify(LEXIKON.flatMap(k => k.items || []).filter(i => /^Sämlings-Haube/.test(i.t)));
+      return JSON.stringify({ t5: fit(5), t20: fit(20), lex, kurz: JSON.stringify(T.training && T.training.haube || {}) });
+    })()`));
+    pruef('Lexikon „Sämlings-Haube" gefunden', hb.lex.length > 200, hb.lex.slice(0, 80));
+    pruef('Kein „80–95" mehr in der Haube — weder Kurztext noch Lexikon',
+      !/80–95/.test(hb.lex) && !/80–95/.test(hb.kurz), (hb.lex.match(/.{0,50}80–95.{0,40}/) || [''])[0]);
+    pruef('Der Eintrag sagt, warum nicht: über 90 % schlägt sich Wasser nieder, Schlitze offen lassen',
+      /über 90 %/.test(hb.lex) && /Lüftungsschlitze offen/.test(hb.lex));
+    pruef('Zeitplan folgt der Pflanze: bis zum Durchbruch, dann abgewöhnen, spätestens beim ersten Blattpaar',
+      /Bis der Keimling durchbricht/.test(hb.lex) && /ersten gezackten Blattpaar/.test(hb.lex) && !/Tag-für-Tag/.test(hb.lex));
+    pruef('Tag 5: Haube passt, Begründung nennt den Keimling statt „die ersten 7–10 Tage"',
+      /Bis der Keimling steht/.test(hb.t5) && !/7–10 Tage/.test(hb.t5), hb.t5.slice(0, 160));
+    pruef('Tag 20: weiterhin „zu spät", Rat nennt den Keimling und behält „Schimmel"',
+      /spaet/.test(hb.t20) && /Sobald der Keimling steht/.test(hb.t20) && /Schimmel/.test(hb.t20) && !/Tag 10–14/.test(hb.t20), hb.t20.slice(0, 200));
+    pruef('Auch im Quelltext steht nirgends mehr „80–95% Luftfeuchte" oder „80–95% RLF"',
+      !/80–95% Luftfeuchte|80–95% RLF/.test(code));
+  }
+
   pruef('Keine JS-Fehler im Lauf', errors.length === 0, errors.slice(0, 2).join(' | '));
   console.log(`\nErgebnis: ${ok} OK, ${fail} Fehler`);
   process.exit(fail ? 1 : 0);

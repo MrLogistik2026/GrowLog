@@ -2,6 +2,22 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-16 — v1.5.220
+
+- **Die Sämlings-Haube versprach genau den Zustand, vor dem sie an anderer Stelle warnt.** Befund der Keimungs-Prüfung
+  (Schritt 12): An fünf Stellen stand „hält 80–95 % Luftfeuchte" — als Zweck der Haube. Bei 24 °C und 2 K Blattabzug
+  liegt das Blatt-VPD ab etwa 89 % RLF bei null: Dann **kondensiert Wasser auf den Keimblättern** (`ANBAU.md` 2.2,
+  in der App seit v1.5.101 eine eigene rote Warnstufe). Der Eintrag selbst nannte „Tropfen auf Keimblättern" zwei
+  Absätze weiter als Anfängerfehler. Jetzt beschreibt der Text, was die Haube wirklich tut — sie hebt die Feuchte —,
+  und sagt dazu, dass die Lüftungsschlitze offen bleiben, damit sie nicht über 90 % steigt.
+- **Drei verschiedene Zeitpläne für dieselbe Haube:** „die ersten 7–10 Tage" (Trainings-Kurztext), „ab etwa Tag 10–14"
+  (`_trainingFit`) und „Tag 1–7 / Tag 8–10 / Tag 11–14" (Lexikon). Maßgeblich ist nicht der Kalender, sondern die
+  Pflanze: Solange der Keimling nicht steht, kann er nicht transpirieren; sobald er steht, braucht er die Übung.
+  Alle Stellen sagen das jetzt gleich — drauf bis zum Durchbruch, danach lüften und über zwei bis drei Tage abnehmen,
+  spätestens mit dem ersten gezackten Blattpaar weg.
+- `test_keimung.js` um Abschnitt J erweitert (59 Prüfungen, beide Zeitzonen). `test_training.js` bleibt unverändert
+  grün — die Begründung „zu lange darunter … anfällig für Schimmel" steht weiter dort.
+
 ## 2026-09-16 — v1.5.219
 
 - **Die Keimphase endete im Stadium-Anzeiger an Tag 5, der Keimling kommt aber erst an Tag 4–7.** Befund der
