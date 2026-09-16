@@ -356,6 +356,43 @@ function pruef(name, bedingung, info) {
       /dein(em)? eingestellte[ms] Bernstein-Ziel/.test(texte.rainbow_auto));
   }
 
+  // (v1.5.239) Drei Vorlagen führen kein Calcium/Magnesium — und sagten es nirgends. Gebaut wurde
+  // der Hinweis, nicht das Produkt: Ein Produkt ohne Dosis hätte ±-Knöpfe in der Mischliste, und ein
+  // Anfänger dreht die 0 hoch — die erfundene Dosis durch die Hintertür. Geprüft wird deshalb auch,
+  // dass im Hinweis selbst keine Dosis steht.
+  console.log('\nJ - Pläne ohne Calcium/Magnesium sagen es');
+  {
+    const r = JSON.parse(E(`(function(){
+      const d = {}, hatProdukt = {};
+      Object.entries(FERT_PRESETS).forEach(([k, p]) => {
+        d[k] = p.drainInfo || '';
+        hatProdukt[k] = (p.products || []).some(pr => /CalMag|Cal-?Mag/i.test(pr.name));
+      });
+      return JSON.stringify({ d, hatProdukt, ohneInfo: Object.keys(FERT_PRESETS).filter(k => !(FERT_PRESETS[k].drainInfo || '').length) });
+    })()`));
+    const drei = ['plagron', 'canna', 'hesi'];
+
+    pruef('Die drei Pläne führen wirklich kein Cal/Mag-Produkt',
+      drei.every(k => !r.hatProdukt[k]), drei.filter(k => r.hatProdukt[k]).join(', '));
+    pruef('Keine Vorlage ist mehr ganz ohne Ablauf-Info (waren dieselben drei)',
+      r.ohneInfo.length === 0, r.ohneInfo.join(', '));
+    pruef('Alle drei sagen, dass kein Calcium/Magnesium-Mittel dabei ist',
+      drei.every(k => /kein Calcium\/Magnesium-Mittel/.test(r.d[k])));
+    pruef('Die Bedingung ist mit dem eigenen Gerät prüfbar (8 °dH bzw. 0,3 mS/cm)',
+      drei.every(k => /8 °dH/.test(r.d[k]) && /0,3 mS\/cm/.test(r.d[k])));
+    pruef('Keine Dosis im Hinweis — die App nennt an vier Stellen vier verschiedene',
+      drei.every(k => !/\d+\s*(ml|g)\s*\/\s*L/.test(r.d[k])),
+      drei.filter(k => /\d+\s*(ml|g)\s*\/\s*L/.test(r.d[k])).join(', '));
+    pruef('Reihenfolge wie in Diagnose und Lexikon: erst Booster, dann pH, dann Bittersalz',
+      drei.every(k => /setz erst den Booster aus, prüf dann den pH, und gib erst danach gezielt Bittersalz/.test(r.d[k])));
+    pruef('… samt Warnung, dass mehr Cal/Mag es verschlimmert (ANBAU 6.2)',
+      drei.every(k => /noch mehr Cal\/Mag verschiebt das Verhältnis nur weiter/.test(r.d[k])));
+    pruef('Jeder Plan nennt seinen eigenen Booster',
+      /Green Sensation/.test(r.d.plagron) && /PK 13\/14/.test(r.d.canna) && /Phosphor Plus/.test(r.d.hesi));
+    pruef('Die Mischreihenfolge steht als „vor die Basisdünger", nicht als „als Erstes"',
+      drei.every(k => /vor die Basisdünger/.test(r.d[k]) && !/als Erstes ins Wasser/.test(r.d[k])));
+  }
+
   pruef('Keine JS-Fehler im Lauf', errors.length === 0, errors.slice(0, 2).join(' | '));
   console.log(`\nErgebnis: ${ok} OK, ${fail} Fehler`);
   process.exit(fail ? 1 : 0);

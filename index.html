@@ -3501,6 +3501,7 @@ const FERT_PRESETS = {
     name: 'Plagron Terra',
     medium: 'erde',   // Terra-Linie
     subtitle: 'Mineralisch · Terra Grow + Terra Bloom · 10 Wochen',
+    drainInfo: 'Dieser Plan führt kein Calcium/Magnesium-Mittel: Gekalkte Erde bringt beides von Haus aus mit — im Dolomitkalk stecken Calcium und Magnesium —, hartes Leitungswasser zusätzlich. Bei weichem Wasser fällt der zweite Teil weg: unter etwa 8 °dH, dein EC-Gerät zeigt im puren Leitungswasser dann rund 0,3 mS/cm oder weniger. Nimm dann ein Cal/Mag-Mittel dazu; wie viel, steht auf der Flasche deines Produkts — dieser Plan gibt dafür keine Zahl vor. Es gehört früh ins Gießwasser, vor die Basisdünger, sonst fällt das Calcium mit Phosphaten und Sulfaten als weiße Flocken aus und ist verloren. Die Zeile „Mischen" im Tageseintrag beginnt weiter mit dem Basisdünger — sie kennt nur die Produkte, die im Plan stehen. Mit dem Blüte-Booster Green Sensation steigt außerdem der Kalium-Anteil, und viel Kalium bremst die Aufnahme von Magnesium und Calcium an der Wurzel: Werden die unteren und mittleren Blätter zwischen den grünen Adern gelb, setz erst den Booster aus, prüf dann den pH, und gib erst danach gezielt Bittersalz — noch mehr Cal/Mag verschiebt das Verhältnis nur weiter. Ausführlich im Lexikon unter „CalMag".',
     mixOrder: ['Terra Grow','Terra Bloom','Power Roots','Pure Zym','Green Sensation'],
     mixInfo: '1. Basisdünger zuerst (mineralisch, löst sich sofort). 2. Wurzelstimulator & Enzyme (biologisch aktiv, ins stabile Milieu). 3. Green Sensation zuletzt (PK-Booster mit Chelat-Wirkung). pH ' + phTargetFor('erde').label + '.',
     products: [
@@ -3527,6 +3528,7 @@ const FERT_PRESETS = {
     name: 'CANNA Terra',
     medium: 'erde',   // Terra-Linie
     subtitle: 'Mineralisch · Terra Vega + Terra Flores · 10 Wochen',
+    drainInfo: 'Dieser Plan führt kein Calcium/Magnesium-Mittel: Gekalkte Erde bringt beides von Haus aus mit — im Dolomitkalk stecken Calcium und Magnesium —, hartes Leitungswasser zusätzlich. Bei weichem Wasser fällt der zweite Teil weg: unter etwa 8 °dH, dein EC-Gerät zeigt im puren Leitungswasser dann rund 0,3 mS/cm oder weniger. Nimm dann ein Cal/Mag-Mittel dazu; wie viel, steht auf der Flasche deines Produkts — dieser Plan gibt dafür keine Zahl vor. Es gehört früh ins Gießwasser, vor die Basisdünger, sonst fällt das Calcium mit Phosphaten und Sulfaten als weiße Flocken aus und ist verloren. Die Zeile „Mischen" im Tageseintrag beginnt weiter mit dem Basisdünger — sie kennt nur die Produkte, die im Plan stehen. Mit dem Blüte-Booster PK 13/14 steigt außerdem der Kalium-Anteil, und viel Kalium bremst die Aufnahme von Magnesium und Calcium an der Wurzel: Werden die unteren und mittleren Blätter zwischen den grünen Adern gelb, setz erst den Booster aus, prüf dann den pH, und gib erst danach gezielt Bittersalz — noch mehr Cal/Mag verschiebt das Verhältnis nur weiter. Ausführlich im Lexikon unter „CalMag".',
     mixOrder: ['CANNA Terra Vega','CANNA Terra Flores','PK 13/14','RHIZOTONIC','CANNAZYM'],
     mixInfo: '1. Basisdünger zuerst (Vega oder Flores je nach Phase). 2. PK 13/14 nur Wo 4-6 der Blüte (Phosphor/Kalium-Booster). 3. RHIZOTONIC & CANNAZYM zuletzt (biologische Additive ins stabile Milieu). pH ' + phTargetFor('erde').label + '.',
     products: [
@@ -3557,6 +3559,7 @@ const FERT_PRESETS = {
     name: 'Hesi (Erde)',
     medium: 'erde',
     subtitle: 'TNT Complex + Blüh Complex · 10 Wochen',
+    drainInfo: 'Dieser Plan führt kein Calcium/Magnesium-Mittel: Gekalkte Erde bringt beides von Haus aus mit — im Dolomitkalk stecken Calcium und Magnesium —, hartes Leitungswasser zusätzlich. Bei weichem Wasser fällt der zweite Teil weg: unter etwa 8 °dH, dein EC-Gerät zeigt im puren Leitungswasser dann rund 0,3 mS/cm oder weniger. Nimm dann ein Cal/Mag-Mittel dazu; wie viel, steht auf der Flasche deines Produkts — dieser Plan gibt dafür keine Zahl vor. Es gehört früh ins Gießwasser, vor die Basisdünger, sonst fällt das Calcium mit Phosphaten und Sulfaten als weiße Flocken aus und ist verloren. Die Zeile „Mischen" im Tageseintrag beginnt weiter mit dem Basisdünger — sie kennt nur die Produkte, die im Plan stehen. Mit dem PK-Booster Phosphor Plus steigt außerdem der Kalium-Anteil, und viel Kalium bremst die Aufnahme von Magnesium und Calcium an der Wurzel: Werden die unteren und mittleren Blätter zwischen den grünen Adern gelb, setz erst den Booster aus, prüf dann den pH, und gib erst danach gezielt Bittersalz — noch mehr Cal/Mag verschiebt das Verhältnis nur weiter. Ausführlich im Lexikon unter „CalMag".',
     mixOrder: ['TNT Complex','Blüh Complex','Phosphor Plus','Wurzel Complex','PowerZyme','Boost','SuperVit'],
     mixInfo: '1. Basisdünger zuerst (TNT oder Blüh Complex – stärkste pH/EC-Veränderung). 2. PK-Booster (Phosphor Plus). 3. Bio-Additive (Wurzel Complex, PowerZyme, Boost). 4. SuperVit ganz zuletzt (hochkonzentriert, 1 Tropfen/4L!). pH reguliert sich meist durch Blüh Complex.',
     products: [
@@ -4473,7 +4476,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.238';
+const APP_VERSION = 'v1.5.239';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,

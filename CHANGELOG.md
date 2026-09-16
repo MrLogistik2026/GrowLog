@@ -2,6 +2,45 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-16 — v1.5.239
+
+- **Plagron Terra, CANNA Terra und Hesi führen kein Calcium/Magnesium — und sagten es nirgends.** Alle acht
+  anderen Vorlagen haben CalMag als Produkt ①; diese drei haben stattdessen je einen PK-Booster. Patricks
+  Auftrag vom 16.09.2026: „Bau es bitte nach deinem Vorschlag … Du kannst ja nochmal diesen Part durchgehen und
+  bewerten lassen ob der Hinweis auch reicht und eine gute Handhabung gewährleistet." Ein Fachagent hat genau
+  das geprüft.
+- **Beim Nachsehen kam heraus, dass es nicht drei Pläne mit einer Lücke sind, sondern die drei am wenigsten
+  gepflegten Vorlagen:** Es sind exakt dieselben drei, denen auch `doseMode`, `weekFocus` **und** `drainInfo`
+  fehlen. In keinem der drei Blöcke kam das Wort „Calcium", „Magnesium" oder „CalMag" überhaupt vor.
+- **Fachlich:** Gekalkte Erde bringt beides selbst mit — Dolomitkalk ist CaMg(CO₃)₂ (`ANBAU.md` 4.1), deshalb
+  kippt ein Erd-Grow ohne Cal/Mag nicht sofort. Scharf wird es mit dem Booster: K⁺ verdrängt Mg²⁺ und Ca²⁺ an
+  denselben Aufnahmestellen (6.2), und alle drei Pläne führen einen. Sichtbar wird zuerst **Magnesium, und zwar
+  unten** (6.1) — genau das Bild, das zu „mehr CalMag" verleitet und dadurch schlimmer wird. Bei weichem Wasser
+  fällt zusätzlich die zweite stille Quelle weg (3).
+- **Gebaut wurde der Hinweis, nicht das Produkt.** Ein Produkt ohne Dosis nach Alfa-Boost-Muster wurde geprüft
+  und verworfen: Dort besitzt Patrick das Mittel und nur die Etikett-Zahl fehlt — hier wäre es ein Mittel, das
+  der Hersteller in seiner Linie gar nicht führt. Vor allem aber hat **jede Zeile der Mischliste ±-Knöpfe**: Ein
+  Anfänger dreht die 0 hoch, auf eine Zahl, die niemand geprüft hat. Das wäre die erfundene Dosis durch die
+  Hintertür. Dazu steht die Produktzahl im Fingerabdruck von `test_duengeplaene.js` — den einen Test, der
+  Dosierungen schützt, für eine Textänderung anzufassen, ist genau der Lärm, den er verhindern soll.
+- **Der Hinweis nennt keine Dosis** — die App führt an vier Stellen vier verschiedene CalMag-Mengen (0,3–0,5 ·
+  0,3–0,4 · 0,2–1 · 1–2 ml/L), eine fünfte wäre der nächste Widerspruch; das steht als eigener Punkt in der
+  Übergabe. Die Bedingung ist stattdessen **prüfbar mit dem Gerät, das ohnehin da ist**: unter etwa 8 °dH bzw.
+  rund 0,3 mS/cm im puren Leitungswasser — beide Zahlen stehen bereits im Lexikon der App.
+- **Mischreihenfolge bewusst als „früh, vor die Basisdünger" formuliert**, nicht als „als Erstes": Green
+  Sensation enthält laut eigenem Lexikon Silizium und steht trotzdem hinten in `mixOrder` — dieser Widerspruch
+  ist ein offener Befund aus 0n und wird hier nicht mit angefasst. Dazu der ehrliche Satz, dass die Zeile
+  „Mischen" im Tageseintrag weiter mit dem Basisdünger beginnt: Sie kennt nur Produkte, die im Plan stehen.
+- **Was der Hinweis nicht erreicht:** schon gespeicherte Plankopien. Die tragen ihren eigenen Schnappschuss —
+  derselbe offene Punkt wie bei v1.5.229. Die generische Lösung (Regel statt Text, wie die CalMag-Zeile, die
+  die Mischliste bei Coco schon selbst einblendet) scheitert heute daran, dass die App die **Wasserhärte nicht
+  kennt**: Sie müsste fragen — ein neuer Regler, das Gegenteil von „Regeln ersetzen Regler" — oder
+  bedingungslos warnen, was bei hartem Wasser ein Fehlalarm wäre (`ANBAU.md` 15). Steht als Umbau-Vorschlag
+  in der Übergabe.
+- `test_duengeplantexte.js` erweitert (81 Prüfungen, beide Zeitzonen): Die drei Pläne müssen den Hinweis
+  führen, er darf keine Dosis nennen, und die Reihenfolge Booster → pH → Bittersalz muss mit der Diagnose
+  übereinstimmen.
+
 ## 2026-09-16 — v1.5.238
 
 - **Der Rainbow-Plan widersprach der App an vier Stellen** — Patricks eigenes Blatt, 1:1 übernommen, während
