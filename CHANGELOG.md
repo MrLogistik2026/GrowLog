@@ -2,6 +2,29 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-16 — v1.5.248
+
+- **Wie die App über Herstellermengen spricht — eine Haltung statt neun Behauptungen.** Patrick am 16.09.2026 zum
+  Vorschlag, das als eigenen Durchgang zu machen: „Ja, ich denke das klingt sinnvoll." Lexikon, Tipps und die Vorlage
+  „BioBizz konservativ" sagten ohne Beleg: Herstellertabellen seien „Maximalwerte", „50–70 % der Empfehlung" seien
+  robuster, wer sie übernimmt, habe ein „garantiertes Salzaufbau-Risiko", und „immer mit halber Dosis starten". Eine
+  Stelle behauptete zugleich das Gegenteil — Bio brauche „das 1.5–2-fache der Maximalwerte". Im Plan-Vergleich passte
+  die eigene Tabelle nicht einmal zur Prozentzahl (Bio·Grow 2–4 → 0,5–0,8 ml/L sind 20–25 %) und nannte eine feste
+  Drain-EC-Schwelle „unter 1.8" (Fehlerklasse v1.5.209/210). Seit v1.5.240 führt die App eine Vorlage mit den
+  Herstellermengen — die Texte widersprachen ihr.
+- **Die Haltung jetzt, aus der Fachgrundlage:** Die Tabelle ist die Empfehlung des Herstellers für seine Produkte; ob
+  sie zu Topf, Wasser und Licht passt, zeigt die Pflanze — braune, verbrannte Blattspitzen heißen zu viel (`ANBAU.md`
+  5), das Blatt ist die höhere Instanz (6.3), und der Drain zeigt, ob sich Salz sammelt (5.1). Bei Unsicherheit
+  sanfter starten und steigern, solange die Spitzen grün bleiben — weniger Dünger ist die sichere Seite (15). Die App
+  führt beides: Herstellervorlagen und sanftere für den Einstieg.
+- **Die Bio-Stelle sagt jetzt, was belegt ist:** Der EC erfasst organisch gebundene Nährstoffe nur zum Teil
+  (`ANBAU.md` 5), ein niedriger EC heißt bei Bio deshalb nicht Mangel. Die „3–7 Tage", nach denen sich eine
+  Änderung zeige, fallen weg; es bleibt, nicht am selben Tag nachzujustieren.
+- **Bewusst nicht angefasst:** „halbe Dosis" als Wiedereinstieg nach dem Spülen oder bei Lockout-Verdacht — eine
+  Praxisregel, keine Aussage über Herstellertabellen. Dosen der Vorlagen unverändert.
+- `test_lexikon.js` Abschnitt L: keine der alten Formulierungen mehr im ganzen Quelltext, beide Wege im
+  Plan-Vergleich, Blattspitzen als Maßstab (63 Prüfungen).
+
 ## 2026-09-16 — v1.5.247
 
 - **„Hesi … deutsche Marke" stand zweimal im Lexikon; v1.5.246 hat nur eine Stelle berichtigt.** Im Eintrag „Bio vs.

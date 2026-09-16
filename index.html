@@ -3683,7 +3683,7 @@ const FERT_PRESETS = {
     feedWaterRhythm: ARC_RHYTHM,
     mixOrder: ['CalMag','Epsom','POWHUMUS','Aloe Vera','Bio·Grow','Bio·Bloom','Advanced Amino','Alfa Boost','Top·Max'],
     mixInfo: 'Konservative BioBizz-Variante mit zusätzlichen Bodenbiom-Bausteinen (POWHUMUS, Aloe Vera). Reihenfolge: 1. CalMag zuerst und vollständig einrühren — Calcium fällt mit Phosphaten und Sulfaten aus, deshalb muss es im ganzen Wasser verteilt sein, bevor etwas anderes dazukommt. 2. Epsom-Salz direkt danach, bei Mg-Bedarf (auch ein Sulfat). 3. POWHUMUS und Aloe Vera als Konzentrate (Huminsäuren + Polysaccharide). 4. Basisdünger (Bio·Grow / Bio·Bloom). 5. Aminosäuren (Advanced Amino, Alfa Boost). 6. Top·Max als Chelator zuletzt. pH am Ende auf 6.2–6.4 korrigieren.',
-    drainInfo: '🌱 Konservativ dosiert: Hersteller-Maxima werden bewusst nicht ausgereizt. Bio-Grow startet niedrig (0.5 ml/L) und wird auf 0.8 ml/L gesteigert, dann ausgeschlichen. Bio-Bloom langsam hochfahren bis 1.8 ml/L. Bei weichem Wasser CalMag durchgehend. Drain bei jedem Gießen prüfen — bei EC-Aufbau eine Woche pausieren. Stickstoff-Cutoff in Wo 6, harte Spülung in Wo 8.',
+    drainInfo: '🌱 Konservativ dosiert: bewusst unter den Mengen der BioBizz-Tabelle. Bio-Grow startet niedrig (0.5 ml/L) und wird auf 0.8 ml/L gesteigert, dann ausgeschlichen. Bio-Bloom langsam hochfahren bis 1.8 ml/L. Bei weichem Wasser CalMag durchgehend. Drain bei jedem Gießen prüfen — bei EC-Aufbau eine Woche pausieren. Stickstoff-Cutoff in Wo 6, harte Spülung in Wo 8.',
     weekFocus: {
       1:  { phase: 'Anzucht',     tip: 'Sämlings-Phase. Nur sehr leichte Düngung mit POWHUMUS und Aloe Vera als Bodenbiom-Anreger. Light-Mix hat Vordünger.' },
       2:  { phase: 'Vegi I',      tip: 'Etablierung. Bio·Grow startet ganz niedrig, langsam steigern. Aloe Vera als sanfter Stimulator weiter dabei.' },
@@ -4577,7 +4577,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.247';
+const APP_VERSION = 'v1.5.248';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -19330,7 +19330,7 @@ function renderTips() {
     { icon: '✂️', text: 'Wet Trim oder Dry Trim – beide Methoden haben Vorteile.', cat: 'Ernte', lex: 'Trocknung' },
     { icon: '🍂', text: 'Trocknung: 7–14 Tage, ' + TROCKNEN_TEXT + '.', cat: 'Ernte', lex: 'Trocknung' },
     { icon: '🫙', text: 'Curing: 2+ Wochen in Gläsern, täglich öffnen.', cat: 'Nach Ernte', lex: 'Curing (Veredelung)' },
-    { icon: '🧪', text: 'Immer mit halber Dosis starten!', cat: 'Nährstoffe', lex: 'NPK' },
+    { icon: '🧪', text: 'Unsicher bei der Menge? Sanfter starten und steigern, solange die Blattspitzen grün bleiben.', cat: 'Nährstoffe', lex: 'NPK' },
     { icon: '☘️', text: 'Gelbe untere Blätter in Blüte = normal.', cat: 'Nährstoffe', lex: 'Nährstoffmangel' },
     { icon: '🌙', text: 'Dunkelphase heilig! Kein Licht = kein Zwittern.', cat: 'Blüte', lex: 'Lichtzyklen' },
     { icon: '🐛', text: 'Blattunterseiten kontrollieren – Schädlinge!', cat: 'Pflanzenschutz', lex: 'Spinnmilben (Tetranychidae)' },
@@ -33490,9 +33490,9 @@ const LEXIKON = [
         '• <b>Zu viel N in Blüte</b> → Pflanze macht Blätter statt Buds. Blätter dunkelgrün und glänzend, Buds bleiben schmächtig. N runter ab Streckung.<br>' +
         '• <b>P-Überschuss</b> → blockiert Eisen, Zink, Mangan-Aufnahme. Antagonist zu Mikronährstoffen.<br>' +
         '• <b>K-Überschuss</b> → blockiert Calcium und Magnesium. Häufige Ursache für „CalMag-Mangel" obwohl genug zugegeben wird.<br>' +
-        '• <b>Mineral-Dünger nach Maximalwerten dosiert</b> → fast immer zu hoch. Hersteller-Maxima sind aggressiv. Mit 50–70% der Empfehlung starten.<br>' +
+        '• <b>Die Menge nur nach der Flasche gewählt</b> → ob sie passt, zeigen die Blattspitzen und der Drain, nicht das Etikett. Braune, verbrannte Spitzen heißen: weniger.<br>' +
         '• <b>Bio und Mineral verwechselt</b> — die Verhältnisse sehen ähnlich aus, aber Bio wirkt zeitverzögert über Bodenleben, Mineral direkt. Nicht die gleiche Rezeptur fahren.<br><br>' +
-        '<b>Goldene Regel:</b> Mit halber Dosis starten und langsam hochtasten. Symptome erscheinen 3–7 Tage nach der Düngerverschiebung — nie panisch nachjustieren am gleichen Tag, sonst überschießt man immer.' },
+        '<b>Goldene Regel:</b> Bist du unsicher, starte sanfter und steigere, solange die Blattspitzen grün bleiben. Eine Änderung zeigt sich erst nach Tagen — nicht am selben Tag nachjustieren, sonst schießt man über.' },
     { t: 'CalMag',
       brief: 'Calcium + Magnesium — der „vergessene Dünger". Besonders kritisch bei LED, Coco und weichem Wasser. Wird oft falsch ergänzt — Reihenfolge entscheidet.',
       mechanism: '<b>Calcium (Ca):</b> Baut Zellwände, ist Signalstoff für Wurzelspitzen-Wachstum, stabilisiert Pflanzenzell-Membranen. <b>Immobil</b> in der Pflanze — einmal eingelagert, bleibt es dort. Mangel zeigt sich daher immer an <b>neuen Trieben</b> (verkrüppelte Spitzen, braune Flecken auf jungen Blättern).<br><br>' +
@@ -33608,7 +33608,7 @@ const LEXIKON = [
         '• <b>Bio + harte chemische Fungizide</b> → kill der Mykorrhiza und der Bodenmikroben, Bio-Wirkung tot<br>' +
         '• <b>Hybrid ohne Plan</b> → wer einfach Bio-Dünger und Mineral-Dünger zusammenmischt riskiert Wechselwirkungen und unkontrollierte EC-Werte<br><br>' +
         '<b>Häufige Fehler:</b><br>' +
-        '• <b>Bio nach Mineral-Logik dosieren</b> — Bio braucht oft das 1.5–2-fache der „Maximalwerte", weil ein Teil noch im Bodenleben gepuffert ist<br>' +
+        '• <b>Bio nach Mineral-Logik steuern</b> — der EC erfasst organisch gebundene Nährstoffe nur zum Teil, ein niedriger EC heißt bei Bio nicht Mangel. Maßstab sind Blatt und Wachstum<br>' +
         '• <b>Mineral nach Bio-Logik</b> — wer nach Bio-Praxis großzügig dosiert wird sofort Burn sehen<br>' +
         '• <b>Spülung bei Bio</b> als Standardprozedur → spült das Bodenleben mit raus<br>' +
         '• <b>Keine Spülung bei Mineral</b> → garantiert kratziger, schwerer Geschmack<br>' +
@@ -33636,14 +33636,12 @@ const LEXIKON = [
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Hesi (Erde)</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Erde</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Niederländische Marke, Erd-Linie mit TNT Complex und Blüh Complex</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">In der App-Vorlage ohne Calcium/Magnesium-Mittel — bei weichem Wasser dazunehmen</td></tr>' +
         '</table>' +
         '<br>' +
-        '<b>Hersteller-Empfehlung vs konservative Dosierung:</b><br>' +
-        'Hersteller geben oft <b>Maximalwerte</b> in ihren Tabellen an — diese sind in der Praxis aggressiv und führen schnell zu Salzaufbau und Lockout. Eine konservative Dosierung mit 50–70% der Hersteller-Empfehlung ist für die meisten Setups robuster:<br><br>' +
-        '<table style="width:100%;border-collapse:collapse;font-size:13px;margin-top:6px">' +
-        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Hersteller-Empfehlung</b></td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Konservative Praxis</b></td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Begründung</b></td></tr>' +
-        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Bio·Grow 2-4 ml/L</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Bio·Grow 0.5-0.8 ml/L</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Light-Mix hat Vordüngung — nicht zusätzlich überfüttern</td></tr>' +
-        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Bio·Bloom 2-4 ml/L</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Bio·Bloom 0.6-1.8 ml/L</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Schrittweise Steigerung, EC-Kontrolle</td></tr>' +
-        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">CANNA Coco A+B 4 ml/L</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">CANNA Coco A+B 1.5-3.5 ml/L</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Drain-EC unter 1.8 mS/cm halten</td></tr>' +
-        '</table>' +
+        '<b>Herstellermenge oder sanfter?</b><br>' +
+        // (v1.5.248) Vorher: „Hersteller geben oft Maximalwerte an … 50–70 % sind robuster" samt einer Tabelle, deren Zahlen
+        // nicht einmal zur Prozentzahl passten (Bio·Grow 2–4 → 0,5–0,8 ml/L sind 20–25 %), dazu eine feste Drain-EC-Schwelle.
+        // Ohne Beleg — und seit v1.5.240 führt die App eine Vorlage mit den Herstellermengen. Die Haltung jetzt aus ANBAU.md
+        // 5 (Überdüngung zeigt sich an den Blattspitzen), 6.3 (das Blatt ist die höhere Instanz) und 15 (bei Unsicherheit weniger).
+        'Die Tabelle eines Herstellers ist seine Empfehlung für seine Produkte — ob sie zu deinem Topf, deinem Wasser und deinem Licht passt, steht nicht darin. Das zeigt die Pflanze: Braune, verbrannte Blattspitzen heißen zu viel, und der Drain zeigt, ob sich Salz im Topf sammelt. Die App führt deshalb beides — Vorlagen mit den Mengen des Herstellers (etwa ' + FERT_PRESETS.biobizz_official_2026.name + ') und sanftere für den Einstieg (' + FERT_PRESETS[EINSTEIGER_VORLAGE.erde].name + '). Bist du unsicher, starte sanfter und steigere, solange die Blattspitzen grün bleiben: Weniger Dünger ist die sichere Seite.<br>' +
         '<br>' +
         '<b>Verfügbare Vorlagen in der App:</b><br>' +
         'Im Düngeplan unter „Plan wechseln · Vorlage laden“. Jede ist ein vollständiger Plan über mehrere Wochen, den du danach anpassen kannst:<br>' +
@@ -33664,7 +33662,7 @@ const LEXIKON = [
         '</table>',
       pitfall: '<b>Häufige Fehler bei der Plan-Wahl:</b><br>' +
         '• <b>Marken mischen</b> innerhalb einer Linie — Hersteller-Linien sind aufeinander abgestimmt, beliebige Kombinationen führen zu Wechselwirkungen<br>' +
-        '• <b>Hersteller-Maxima blind übernehmen</b> → fast immer zu hoch dosiert, garantiertes Salzaufbau-Risiko. Mit halber Dosis starten, langsam hochtasten.<br>' +
+        '• <b>Herstellermengen übernehmen, ohne auf die Pflanze zu schauen</b> → ob sie passen, zeigen Blattspitzen und Drain, nicht die Tabelle. Im Zweifel sanfter starten und steigern, solange die Spitzen grün bleiben.<br>' +
         '• <b>Coco-Plan in Erde verwendet</b> → Erde hat eigene Pufferung und Bodenleben, Coco-Mineral-Pläne ignorieren das. EC explodiert.<br>' +
         '• <b>Erde-Plan in Coco</b> → Coco ist inert, organische Bestandteile finden keinen Abnehmer. Pflanze hungert trotz Düngung.<br>' +
         '• <b>Plan ändern mitten im Zyklus</b> → Pflanze braucht Anpassungszeit. Wenn doch nötig: schrittweise umstellen über 1-2 Wochen.<br>' +
@@ -35122,7 +35120,7 @@ const LEXIKON = [
         '• <b>Mehr Dünger als Erste-Hilfe</b> → bei Lockout oder Überschuss tödlich<br>' +
         '• <b>Phase ignoriert</b> → in Spätblüte gelben untere Blätter natürlicherweise (Stickstoff-Translokation in Buds), das ist kein Mangel<br>' +
         '• <b>Nur ein Indikator betrachtet</b> — Blattfarbe allein reicht nicht, immer Position auf der Pflanze (oben/unten) und Verteilung berücksichtigen<br>' +
-        '• <b>Hersteller-Maximaldosis verwendet</b> → in den meisten Setups führt das zu langsamer Salzakkumulation und späterem Lockout<br>' +
+        '• <b>Die Menge nie an die Pflanze angepasst</b> → ob sie passt, zeigen Blattspitzen und Drain, nicht die Flasche. Braune Spitzen heißen: weniger<br>' +
         '• <b>Nach Spülung sofort wieder volle Dosis</b> → Pflanze braucht 2–3 Tage Erholung, halbe Dosis als erste Wieder-Düngung<br><br>' +
         '<b>Goldene Regel:</b> Wenn unsicher zwischen Mangel und Überschuss → erst <b>spülen</b>. Eine Spülung schadet bei Mangel kaum, kann aber bei Überschuss die Pflanze retten. Im Zweifel ist Spülung die sicherere Wahl.' },
   ]},
@@ -35173,7 +35171,7 @@ const LEXIKON = [
       txt: '<b>Braune, trockene Blattspitzen sind fast immer Überdüngung</b> („Nährstoff-Burn") — zu viel Dünger, die Spitzen verbrennen zuerst.<br><br>' +
         'Erste Hilfe (konservativ): beim nächsten Guss die Düngermenge <b>halbieren</b>, oder einmal mit klarem, pH-eingestelltem Wasser durchspülen. Schon verbrannte Spitzen werden nicht wieder grün — es geht darum, dass es nicht weiter wandert.<br><br>' +
         '<b>➤ Verbrennen dagegen ganze obere Blätter direkt unter der Lampe</b> (gelb-braun, knistrig-trocken): dann ist es Lichtbrand — Lampe höher hängen. Handtest: Hand 10 Sekunden auf Bud-Höhe gut aushaltbar = Abstand passt.<br><br>' +
-        'Vorbeugen: lieber unter- als überdosieren — in Erde reicht oft die halbe Herstellerangabe. Genaue Ursache → <b>Pflanzen-Doktor</b> im Tab „Tipps".' },
+        'Vorbeugen: Bei Unsicherheit lieber weniger als mehr — und steigern, solange die Spitzen grün bleiben. Genaue Ursache → <b>Pflanzen-Doktor</b> im Tab „Tipps".' },
     { t: 'Hängende Blätter (schlaff / welk)',
       txt: '<b>Hängende Blätter heißen: zu viel ODER zu wenig Wasser</b> — beides sieht ähnlich aus, der Fix ist aber entgegengesetzt. Der Topf verrät, was los ist.<br><br>' +
         '<b>➤ Erde nass, Topf schwer, Blätter dick und schlaff:</b> Überwässerung — die Wurzeln ersticken. Nicht gießen, warten bis der Topf spürbar leichter ist (Restgewicht).<br><br>' +

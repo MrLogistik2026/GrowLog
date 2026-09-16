@@ -317,6 +317,32 @@ function pruef(name, bedingung, info) {
       /Schimmel/.test(text(/^VPD/)), text(/^VPD/).slice(-400));
   }
 
+  // (v1.5.248) Wie die App über Herstellermengen spricht. Neun Stellen sagten ohne Beleg, Herstellertabellen seien
+  // „Maximalwerte", „50–70 %" davon robuster, „garantiertes Salzaufbau-Risiko" — und eine davon zugleich, Bio brauche
+  // „das 1.5–2-fache der Maximalwerte". Seit v1.5.240 führt die App eine Vorlage mit den Herstellermengen.
+  // Die Haltung jetzt: Ob eine Menge passt, zeigt die Pflanze (ANBAU.md 5, 6.3); bei Unsicherheit weniger (15).
+  console.log('');
+  console.log('L - (v1.5.248) Herstellermengen: eine Haltung aus der Fachgrundlage');
+  {
+    const q = fs.readFileSync(path.join(__dirname, 'app.js'), 'utf8').split('\n').filter(z => !/^\s*(\/\/|\*|\/\*)/.test(z)).join('\n');
+    [/Hersteller-Maxima/i, /Maximalwerte/i, /Maximaldosis/i, /50–70\s?% der/i, /halbe Herstellerangabe/i, /Immer mit halber Dosis/i,
+      /1\.5–2-fache/i, /garantiertes Salzaufbau/i].forEach(re =>
+      pruef('Nirgends mehr als Tatsache: ' + re.source, !re.test(q), (q.match(new RegExp('.{0,60}' + re.source + '.{0,30}', 'i')) || [''])[0]));
+    const r = JSON.parse(E(`(function(){
+      const items = LEXIKON.flatMap(k => k.items || []);
+      const e = items.find(i => i.t === 'Düngepläne (Hersteller-Vergleich)') || {};
+      const npk = items.find(i => i.t === 'NPK') || items.find(i => /^NPK/.test(i.t)) || {};
+      return JSON.stringify({ practice: e.practice || '', pitfall: e.pitfall || '', npk: npk.pitfall || '',
+        official: FERT_PRESETS.biobizz_official_2026.name, einsteiger: FERT_PRESETS[EINSTEIGER_VORLAGE.erde].name });
+    })()`));
+    pruef('Der Plan-Vergleich nennt beide Wege: Herstellermengen und die sanftere Einsteiger-Vorlage',
+      /Herstellermenge oder sanfter\?/.test(r.practice) && r.practice.includes(r.official) && r.practice.includes(r.einsteiger), r.practice.slice(0, 200));
+    pruef('… ohne Tabelle fester „konservativer" Mengen und ohne feste Drain-EC-Schwelle',
+      !/Konservative Praxis/.test(r.practice) && !/Drain-EC unter/.test(r.practice));
+    pruef('Maßstab ist die Pflanze: Blattspitzen in Plan-Vergleich, seiner Fehlerliste und im NPK-Eintrag',
+      /Blattspitzen/.test(r.practice) && /Blattspitzen/.test(r.pitfall) && /Blattspitzen/.test(r.npk), r.npk.slice(-300));
+  }
+
   console.log('');
   console.log(`Ergebnis: ${ok} OK, ${fail} Fehler`);
   process.exit(fail ? 1 : 0);
