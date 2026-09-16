@@ -414,6 +414,20 @@ function pruef(name, bedingung, info) {
     pruef('„Plan laden" warnt nicht mehr vor Überschreiben — bestehende Pläne bleiben',
       !/überschrieben/.test(r.laden) && /bestehenden Pläne bleiben erhalten/.test(r.laden), r.laden.slice(0, 200));
     pruef('… so sagt es auch der Dialog beim Laden', /Deine bestehenden Pläne bleiben erhalten/.test(code));
+    const lex = JSON.parse(E(`(function(){
+      const e = LEXIKON.flatMap(k => k.items || []).find(i => i.t === 'Düngepläne (Hersteller-Vergleich)') || {};
+      const waehlbar = Object.keys(FERT_PRESETS).filter(_vorlageWaehlbar);
+      const liste = ((e.practice || '').match(/• <b>[^<]+<\\/b> · für /g) || []).map(z => z.slice(5, z.indexOf('</b>')));
+      renderDuenger();
+      const dueng = document.getElementById('scr-duenger').innerHTML;
+      return JSON.stringify({ text: (e.practice || '') + ' ' + (e.pitfall || ''), namen: waehlbar.map(k => FERT_PRESETS[k].name), liste,
+        waehlbar, imDuenger: Object.keys(FERT_PRESETS).filter(k => dueng.includes("loadPreset('" + k + "')")) });
+    })()`));
+    pruef('Das Lexikon nennt die entfernte Outdoor-Vorlage nicht mehr (seit v1.5.178 weg)', !/BioBizz Outdoor/.test(lex.text));
+    pruef('Seine Vorlagen-Liste ist genau die wählbare', lex.liste.length > 0 && JSON.stringify(lex.liste) === JSON.stringify(lex.namen),
+      lex.liste.join(', ') + ' | ' + lex.namen.join(', '));
+    pruef('… und genau die, die der Düngeplan zum Laden anbietet', JSON.stringify(lex.imDuenger) === JSON.stringify(lex.waehlbar),
+      lex.imDuenger.join(', ') + ' | ' + lex.waehlbar.join(', '));
     // K-ENDE
   }
 

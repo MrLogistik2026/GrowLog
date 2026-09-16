@@ -4060,6 +4060,16 @@ function listAllPresets() {
   return result;
 }
 
+/**
+ * (v1.5.244) Ist eine Vorlage wählbar? Sichtbar sind Vorlagen mit Beschreibung, die nicht abgelöst sind (v1.5.240).
+ * Eine Regel für die Vorlagen-Liste im Düngeplan und die Liste im Lexikon — die dortige, von Hand geschriebene
+ * nannte noch die seit v1.5.178 entfernte Outdoor-Vorlage.
+ */
+function _vorlageWaehlbar(key) {
+  const p = FERT_PRESETS[key];
+  return !!(p && p.subtitle && !p.abgeloest);
+}
+
 const MEDIUM_NAMEN = { erde: 'Erde', coco: 'Coco', hydro: 'Hydro' };
 function mediumName(m) { return MEDIUM_NAMEN[m] || m || 'Erde'; }
 
@@ -4561,7 +4571,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.243';
+const APP_VERSION = 'v1.5.244';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -20542,7 +20552,7 @@ function renderDuenger() {
     </div>
     <div style="display:flex;flex-direction:column;gap:6px">
       ${listAllPresets()
-        .filter(pre => !pre.isCustom && FERT_PRESETS[pre.key] && FERT_PRESETS[pre.key].subtitle && !FERT_PRESETS[pre.key].abgeloest)
+        .filter(pre => !pre.isCustom && _vorlageWaehlbar(pre.key))
         .map(pre => {
           const isActive = S.presetKey === pre.key;
           return `<button onclick="loadPreset('${pre.key}')" style="background:${isActive?'var(--green-dk)':'var(--green-bg)'};border:1px solid ${isActive?'var(--green)':'var(--green-dk)'};border-radius:10px;padding:10px 14px;cursor:pointer;font-family:var(--font);text-align:left">
@@ -33613,7 +33623,6 @@ const LEXIKON = [
         '<tr style="background:rgba(255,255,255,0.04)"><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Plan</b></td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Substrat</b></td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Stärken</b></td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Schwächen</b></td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">BioBizz Master (Premium)</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Light-Mix</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Aggressiv-präzise, hoher Ertrag, terpenreich</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Anspruchsvoll für Anfänger, knappes Stickstoff-Cutoff</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">BioBizz konservativ</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Light-Mix / All-Mix</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Anfängerfreundlich, sehr fehlertolerant, mit Bodenbiom-Bausteinen</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Etwas niedrigerer Spitzenertrag</td></tr>' +
-        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">BioBizz Outdoor</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">All-Mix / Beet</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Wetter-tolerant, Fish·Mix als Vegi-Basis</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Stark riechender Fish·Mix nicht für Indoor</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">CANNA Terra</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Erde</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Klassisch, sehr gut dokumentiert</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Nicht für Coco geeignet</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">CANNA Coco A+B</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Coco</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Industriestandard für Coco, präzise EC-Steuerung</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">A+B nie zusammen ins Konzentrat → erfordert Sorgfalt</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">GHE Flora-Serie</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Universal (Hydro/Coco/Erde)</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Vielseitig, anpassbares NPK-Verhältnis</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">3 Flaschen statt 2, etwas komplexer</td></tr>' +
@@ -33631,15 +33640,11 @@ const LEXIKON = [
         '</table>' +
         '<br>' +
         '<b>Verfügbare Vorlagen in der App:</b><br>' +
-        'In der App findest du im Düngeplan-Wizard mehrere fertige Vorlagen die du als Startpunkt verwenden kannst. Sie sind als <b>vollständige Mehrere-Wochen-Schemata</b> hinterlegt — du wählst eine Vorlage und kannst sie dann individuell anpassen. Die Vorlagen sind:<br>' +
-        '• <b>BioBizz Master:</b> aggressiv-präzise Variante für erfahrene Grower<br>' +
-        '• <b>BioBizz konservativ:</b> sanftere Dosierung mit zusätzlichen Bodenbiom-Bausteinen<br>' +
-        '• <b>BioBizz Outdoor:</b> spezielle Outdoor-Variante mit Fish·Mix<br>' +
-        '• <b>BioBizz Light-Mix:</b> Standard-Plan für Light-Mix-Substrat<br>' +
-        '• <b>CANNA Terra:</b> Mineral-Plan für Erde<br>' +
-        '• <b>CANNA Coco A+B:</b> Mineral-Plan für Coco-Substrat<br>' +
-        '• <b>GHE Flora-Serie:</b> 3-Komponenten-System, universell für Hydro/Coco/Erde<br>' +
-        '• <b>Plagron / Hesi:</b> alternative Mineral-Linien<br><br>' +
+        'Im Düngeplan unter „Plan wechseln · Vorlage laden“. Jede ist ein vollständiger Plan über mehrere Wochen, den du danach anpassen kannst:<br>' +
+        // (v1.5.244) Aus FERT_PRESETS statt von Hand: Die Liste nannte die seit v1.5.178 entfernte Outdoor-Vorlage und
+        // kannte Rainbow, Cup-Sieger, Light und Official nicht. Dieselbe Regel wie die Vorlagen-Liste im Düngeplan.
+        Object.keys(FERT_PRESETS).filter(_vorlageWaehlbar)
+          .map(k => '• <b>' + FERT_PRESETS[k].name + '</b> · für ' + mediumName(FERT_PRESETS[k].medium)).join('<br>') + '<br><br>' +
         '<b>Empfehlungs-Matrix:</b><br>' +
         '<table style="width:100%;border-collapse:collapse;font-size:13px;margin-top:6px">' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Setup</b></td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Empfohlene Vorlage</b></td></tr>' +
@@ -33647,7 +33652,7 @@ const LEXIKON = [
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Erfahrener Indoor (Erde)</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">BioBizz Master oder CANNA Terra</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Coco-Anbau</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">CANNA Coco A+B</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Hydro/Universal</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">GHE Flora-Serie</td></tr>' +
-        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Outdoor</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">BioBizz Outdoor</td></tr>' +
+        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Outdoor</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Noch keine eigene Vorlage — vorerst dieselben wie drinnen, bis die App einen Outdoor-Bereich hat</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Living Soil</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Eigener minimaler Plan oder gar keine Düngung</td></tr>' +
         '</table>',
       pitfall: '<b>Häufige Fehler bei der Plan-Wahl:</b><br>' +

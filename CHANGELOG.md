@@ -2,6 +2,19 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-16 — v1.5.244
+
+- **Das Lexikon bot eine Vorlage an, die es seit v1.5.178 nicht mehr gibt.** Der Eintrag „Düngepläne
+  (Hersteller-Vergleich)" führte „BioBizz Outdoor" dreimal: in der Vergleichstabelle, unter „Verfügbare Vorlagen in
+  der App" („spezielle Outdoor-Variante mit Fish·Mix") und als Empfehlung für Outdoor. Die von Hand geschriebene
+  Liste kannte dafür Rainbow, Cup-Sieger, BioBizz Light und Official nicht und nannte eine Vorlage „BioBizz
+  Light-Mix", die nie so hieß.
+- **Die Liste kommt jetzt aus derselben Regel wie die Vorlagen-Liste im Düngeplan** (`_vorlageWaehlbar`: mit
+  Beschreibung, nicht abgelöst) und kann nicht mehr veralten. Für Outdoor sagt die Empfehlung, was gilt: noch keine
+  eigene Vorlage, vorerst dieselben wie drinnen.
+- `test_duengeplantexte.js` Abschnitt K: keine Outdoor-Vorlage im Eintrag, die Liste ist genau die wählbare und genau
+  die, die der Düngeplan zum Laden anbietet (89 Prüfungen).
+
 ## 2026-09-16 — v1.5.243
 
 - **„Plan laden" in der Anleitung warnte vor etwas, das nicht passiert.** Dort stand: „Ein Bestätigungsdialog warnt
