@@ -2,6 +2,15 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-16 — v1.5.241
+
+- **Fish·Mix: nie zusammen mit Bio·Grow.** Patrick am 16.09.2026 auf die offene Frage aus v1.5.240: „Ich nutze
+  persönlich kein Fishmix, dies soll man auch nicht zusammen Düngen. Fishmix ist eher für outdoor." Der Hinweis über
+  dem Plan-Blatt von BioBizz Official 2026 ließ die Frage bisher offen („ob zusätzlich oder statt"). Jetzt sagt er:
+  eine Alternative zu Bio·Grow, keine Ergänzung — nie beide zusammen; Fish·Mix wird eher draußen verwendet, drinnen
+  führt die Vorlage Bio·Grow. Das Fish·Mix-Datenblatt (2021) nennt es ebenso einen Ersatz für Bio·Grow.
+- Dosen und Produkte unverändert. `test_biobizzschema.js` prüft den Satz mit (57 Prüfungen).
+
 ## 2026-09-16 — v1.5.240
 
 - **„BioBizz Official" folgt jetzt dem Herstellerschema — dem aktuellen von 2026.** Patrick hat das Blatt von

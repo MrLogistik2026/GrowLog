@@ -3428,8 +3428,9 @@ const FERT_PRESETS = {
   // BEWUSST NICHT im Wochenplan (für den Nutzer erklärt im drainInfo):
   //   · CalMag — das Blatt nennt es nur „bei weichem oder RO-Wasser“, ohne Menge.
   //   · Microbes — Pulver in g/L, einmal pro Woche; eine Gabe, die nicht jeden Guss kommt, kennt der Plan nicht.
-  //   · Fish·Mix — steht mit denselben Mengen wie Bio·Grow da, ohne „oder“; das Fish·Mix-Datenblatt (2021)
-  //     nennt es einen Ersatz für Bio·Grow in der Wachstumsphase. Weniger Dünger ist die sichere Seite (ANBAU 15).
+  //   · Fish·Mix — steht mit denselben Mengen wie Bio·Grow da, ist aber eine Alternative, keine Ergänzung.
+  //     Patrick am 16.09.2026: „dies soll man auch nicht zusammen Düngen. Fishmix ist eher für outdoor.“
+  //     Das Fish·Mix-Datenblatt (2021) nennt es ebenso einen Ersatz für Bio·Grow (v1.5.241).
   //   · Alg·A·Mic — steht 2026 nicht mehr in der Gieß-Tabelle, nur noch als Blattdünger bis Blühwoche 2.
   biobizz_official_2026: {
     name: 'BioBizz Official 2026',
@@ -3445,7 +3446,7 @@ const FERT_PRESETS = {
     drainInfo: 'Quelle: BioBizz-Düngerschema 2026, Blatt „Light·Mix oder Coco·Mix“ (biobizz.com). Jede Menge gilt bei jedem Guss; Wasser-Tage sieht das Schema nicht vor. Gießt du doch einmal nur Wasser, bleibt die Menge am nächsten Düngetag, wie sie ist — die App holt nichts nach. '
       + 'Vier Dinge aus dem Schema stehen bewusst nicht im Wochenplan. Cal/Mag nennt BioBizz nur für weiches oder Osmose-Wasser und ohne Menge: Liegt dein Leitungswasser unter etwa 8 °dH — dein EC-Gerät zeigt im puren Wasser dann rund 0,3 mS/cm oder weniger —, nimm es dazu; wie viel, steht auf der Flasche, und es kommt als Erstes ins Wasser. '
       + 'Microbes kommt als Pulver nur einmal pro Woche dazu; eine Gabe, die nicht bei jedem Guss kommt, kennt der Wochenplan nicht. '
-      + 'Fish·Mix steht mit denselben Mengen wie Bio·Grow da, ohne zu sagen, ob zusätzlich oder statt — das Fish·Mix-Datenblatt nennt es einen Ersatz für Bio·Grow in der Wachstumsphase. Die Vorlage führt nur Bio·Grow: Bei Unsicherheit ist weniger Dünger die sichere Seite. '
+      + 'Fish·Mix steht mit denselben Mengen wie Bio·Grow im Schema, ist aber eine Alternative dazu und keine Ergänzung: Gib nie beide zusammen — auch das Fish·Mix-Datenblatt nennt es einen Ersatz für Bio·Grow. Fish·Mix wird eher draußen verwendet; drinnen führt die Vorlage Bio·Grow. '
       + 'Alg·A·Mic steht 2026 nicht mehr in der Gieß-Tabelle, nur noch als Blattdünger bis zur zweiten Blühwoche.',
     weekFocus: (function () {
       const PH = phTargetFor('erde').labelComma;
@@ -4560,7 +4561,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.240';
+const APP_VERSION = 'v1.5.241';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,

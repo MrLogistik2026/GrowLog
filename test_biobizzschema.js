@@ -144,7 +144,7 @@ function pruef(name, bedingung, info) {
     pruef('… und zwar die belegte: Root·Juice unter „Wachstum" (2020 nicht, 2026 mit 4)',
       unterschiede[0] === 'Root·Juice Spalte 2: 2020 0, 2026 4', unterschiede[0]);
     pruef('Die Vorlage hat so viele Gaben, wie das Blatt Zellen mit Dosis hat', gaben === 47, 'gaben=' + gaben);
-    pruef('Fish·Mix steht im Blatt mit denselben Mengen wie Bio·Grow (daher die Frage „zusätzlich oder statt")',
+    pruef('Fish·Mix steht im Blatt mit denselben Mengen wie Bio·Grow — als Alternative, nicht zusätzlich',
       JSON.stringify(BLATT_2026_NICHT_IM_PLAN['Fish·Mix']) === JSON.stringify(BLATT_2026['Bio·Grow']));
   }
 
@@ -248,6 +248,10 @@ function pruef(name, bedingung, info) {
     pruef('… ohne eine Cal/Mag-Menge — die steht auf der Flasche', !/\d+[.,]?\d*\s*(ml|g)\s*\/\s*L/.test(p.drainInfo) && /steht auf der Flasche/.test(p.drainInfo));
     pruef('Sie erklärt, warum Microbes, Fish·Mix und Alg·A·Mic nicht im Wochenplan stehen',
       /Microbes/.test(p.drainInfo) && /Fish·Mix/.test(p.drainInfo) && /Alg·A·Mic/.test(p.drainInfo));
+    // (v1.5.241) Patrick am 16.09.2026: „Ich nutze persönlich kein Fishmix, dies soll man auch nicht zusammen Düngen.
+    // Fishmix ist eher für outdoor." Der Hinweis sagt das jetzt, statt die Frage offenzulassen.
+    pruef('Fish·Mix: eine Alternative zu Bio·Grow — nie beide zusammen, keine offene Frage mehr',
+      /nie beide zusammen/.test(p.drainInfo) && !/ob zusätzlich oder statt/.test(p.drainInfo) && /eher draußen/.test(p.drainInfo));
     pruef('Keine Behauptung mehr, die App verteile eine Wochendosis', !/Wochendosis|verteilt/.test(p.drainInfo + p.mixInfo));
     pruef('Misch-Info nimmt das pH-Ziel aus phTargetFor (' + pre.ph + ')', p.mixInfo.includes('pH auf ' + pre.ph));
 
