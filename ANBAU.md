@@ -1019,3 +1019,52 @@ ist wissenschaftlich allerdings nicht belegt" ist die richtige Formulierung.
   `showInfoPopover`). Wer VPD zum ersten Mal liest, muss ohne Bildschirmwechsel weiterkommen.
 - **Wo die Datenlage dünn ist, sagt die App das.** Ein ehrliches „nicht belegt" kostet nichts und
   ist der einzige Grund, warum den belegten Aussagen zu trauen ist.
+
+---
+
+## 16 · Keimung: vom Samen zum Keimling
+
+Dieser Abschnitt fehlte, während die App an sieben Stellen Zahlen zur Keimung nannte — und sie widersprachen sich
+(Keimwurzel beim Einsetzen 2–3 mm, 2–5 mm oder 0,5–1 cm; Wasserglas 32 oder 48 Stunden; Keimling nach 3–7, 5–10 Tagen
+oder „Tag 3–5"). Er hält fest, was belegt ist und was Konvention.
+
+**Der Ablauf.** Der trockene Samen nimmt Wasser auf und quillt, der Stoffwechsel springt an, die Keimwurzel (Radicula)
+durchbricht die Schale. Erst danach schiebt der Keimling die Keimblätter durch die Erde. Bis dahin lebt er
+ausschließlich von den Reserven im Samen; die Keimblätter betreiben ab dem Durchbruch Photosynthese, **Wasser nimmt die
+Pflanze über die Wurzel auf** — nicht über die Keimblätter.
+
+**Zahlen mit Quelle:**
+
+| Größe | Wert | Beleg |
+|---|---|---|
+| Keimwurzel sichtbar | bei 22–26 °C im Median nach 23–37 h | Geneve et al. 2022, Crops 2:415 (geprüft am Abstract) |
+| Auflaufen aus 1 cm Tiefe | 3,3–3,9 Tage | Lisson et al. 2000, Aust J Exp Agric 40:405 (geprüft am Abstract) |
+| nach dem Durchbruch | nicht mehr austrocknungsfest | Pereira et al. 2018 |
+| Keimtemperatur | 19–30 °C gut; darunter deutlich langsamer, darüber schlechter | Geneve et al. 2022 |
+
+**Sauerstoff ist die Begrenzung, nicht das Wasser.** Der keimende Samen veratmet. Unter Wasser fehlt ihm der Sauerstoff
+— deshalb im Wasserglas höchstens 12–24 Stunden, danach heraus, auch ohne sichtbare Wurzel. Dasselbe gilt in der Erde:
+Nasse Erde ohne aufnehmende Wurzel ist genau die Bedingung, unter der Oomyceten wie *Pythium* keimende Samen befallen
+(1, 13.1). Eine Frist dafür gibt es nicht — die verbreitete Angabe „in 24 Stunden tot" ist nicht belegt (14).
+
+**Tiefe 0,5–1 cm, nie tiefer als 2 cm.** Der Keimling schiebt sich mit den Reserven des Samens nach oben; jeder
+zusätzliche Zentimeter kostet davon. Zu flach ist der andere Fehler: Der Samen trocknet aus, bevor die Wurzel greift.
+
+**Warum direkt in den Endtopf.** Nach 7.4 kostet jeder Umsetzvorgang Tage, und bei Automatics ist ein verlorener Tag
+dauerhaft verloren. Dazu kommt der einzige Handgriff, bei dem ein Anfänger die Keimwurzel zerstören kann: das Umsetzen
+selbst. Papiertuch und Wasserglas bleiben möglich — sie zeigen früher, ob ein Samen überhaupt keimt.
+
+**Das Klima ist das des Sämlings** (2.2): 22–26 °C, VPD 0,4–0,8 kPa, die Luftfeuchte folgt daraus. Eine Haube hebt die
+Feuchte; **ganz geschlossen steigt sie über 90 %**, dann liegt das Blatt-VPD bei null und Wasser schlägt sich auf den
+Keimblättern nieder — die Eintrittsbedingung für Pilze, nicht das Ziel. Lüftungsschlitze offen lassen.
+
+**Licht** braucht der Samen nicht, der Keimling ab dem Moment des Durchbruchs: 150–300 µmol/m²/s (8).
+
+**Was Konvention ist, nicht Messung:** die Spanne Tag 4–7 fürs Auflaufen (das obere Ende, weil zu früh nachsehen mehr
+kostet als zu spät, 15), „nach 7 Tagen ohne Keimwurzel keimt der Samen wahrscheinlich nicht mehr", und „erst ab Tag 10
+vorsichtig nachsehen". Alle drei sind Planungswerte, keine Naturkonstanten.
+
+**Nicht belegt** (14): pH-Korrektur im Keimwasser, Keimraten je Methode, Aloe oder andere Zusätze als Keim-Booster,
+und die Haube als Pflicht.
+
+In GrowSmart: `KEIMUNG`, `GERM_GUIDES`, `_keimMethode` (seit v1.5.213/214).

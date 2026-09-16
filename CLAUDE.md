@@ -14,12 +14,12 @@ geladen werden. Wer hier etwas sucht, findet es dort:
 
 @START-HIER.md
 
-**`ANBAU.md` ist das Fachwissen hinter der App**, in 15 Abschnitten: Wasserhaushalt und
+**`ANBAU.md` ist das Fachwissen hinter der App**, in 16 Abschnitten: Wasserhaushalt und
 Transpirationssog · VPD samt seiner Grenzen · Wasserqualität und Alkalinität · pH und
 Nährstoffverfügbarkeit · EC und osmotischer Druck · Nährstoff-Mobilität und Antagonismen ·
 Substrat, Sauerstoff und Volumen · Licht · Genetik · Lösungschemie · Trichomreife ·
 Trocknen und Fermentieren · die tödlichen Fehler mit ihrem Mechanismus · was **nicht belegt**
-ist · und was daraus für Entscheidungen in dieser App folgt.
+ist · was daraus für Entscheidungen in dieser App folgt · und die Keimung vom Samen bis zum Keimling.
 
 Der Zweck: **Über Pflanzen wird nicht geschätzt.** Jede Zahl in dieser App — jede Gießmenge,
 jeder EC-Zielwert, jede Warnung, jeder erklärende Satz — muss sich auf einen Mechanismus

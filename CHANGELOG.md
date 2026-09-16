@@ -2,6 +2,22 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-16 — ANBAU.md 16 (ohne Versionssprung)
+
+- **`ANBAU.md` bekommt Abschnitt 16 „Keimung: vom Samen zum Keimling".** Letzter Punkt der Keimungs-Prüfung
+  (Schritt 17) — und der eigentliche Grund für die ganze Reihe v1.5.213–224: Zur Keimung sagte das Fachdokument
+  **nichts**, während die App an sieben Stellen Zahlen dazu nannte. Genau so entstehen widersprüchliche Angaben, weil
+  jede Stelle ihre eigene Quelle erfindet.
+- **Im Abschnitt steht, was belegt ist und was Konvention:** Keimwurzel bei 22–26 °C im Median nach 23–37 h (Geneve et
+  al. 2022), Auflaufen aus 1 cm nach 3,3–3,9 Tagen (Lisson et al. 2000), nach dem Durchbruch nicht mehr
+  austrocknungsfest (Pereira et al. 2018) — und als ausgewiesene **Konvention** die Planungswerte Tag 4–7, „nach 7 Tagen
+  ohne Wurzel wird es nichts mehr" und „ab Tag 10 nachsehen". Dazu der Sauerstoff als eigentliche Begrenzung, die
+  Saattiefe, warum direkt in den Endtopf gesät wird, das Sämlingsklima samt Haube und das Licht.
+- **Nummern 1–15 sind unverändert** — der Code zitiert 1.1, 1.2, 2.2, 5.1, 7.3, 7.4, 13.1, 13.2, 13.5, 14 und 15.
+  `CLAUDE.md` nennt jetzt 16 statt 15 Abschnitte.
+- **Kein Versionssprung:** `app.js` ist unverändert, auf dem Handy ändert sich dadurch nichts. Die App bleibt bei
+  v1.5.224.
+
 ## 2026-09-16 — v1.5.224
 
 - **Der Demo-Zyklus führte einen anderen Grow vor, als die App beschreibt.** Befund der Keimungs-Prüfung (Schritt 16) —
