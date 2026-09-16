@@ -266,6 +266,41 @@ function pruef(name, bedingung, info) {
       r.silica === true, r.ausschnitt);
   }
 
+  // (v1.5.231) Feste pH- und Drain-Zahlen in den Plan-Texten — dieselbe Fehlerklasse wie v1.5.216/221.
+  // Zwei davon waren nicht nur fest, sondern falsch: Plagron und CANNA Terra sind Erd-Pläne und nannten
+  // „pH 5.5–6.5"; unter 6,0 bricht in organischem Substrat die Mikroflora ein (ANBAU.md 4).
+  console.log('\nG - pH und Drain kommen aus der Quelle, nicht aus dem Text');
+  {
+    const r = JSON.parse(E(`(function(){
+      const texte = {};
+      Object.entries(FERT_PRESETS).forEach(([k, p]) => {
+        texte[k] = [p.subtitle, p.mixInfo, p.drainInfo,
+          ...Object.values(p.weekFocus || {}).map(w => (w && w.tip) || '')].join(' ~ ');
+      });
+      return JSON.stringify({ texte,
+        erde: phTargetFor('erde').label, erdeK: phTargetFor('erde').labelComma,
+        coco: phTargetFor('coco').label, cocoK: phTargetFor('coco').labelComma,
+        cocoMid: phTargetFor('coco').mid.toFixed(1),
+        drainMin: DRAIN_ZIEL.min, drainMax: DRAIN_ZIEL.max });
+    })()`));
+    const alle = Object.values(r.texte).join(' | ');
+    pruef(`Keine Vorlage schreibt mehr „pH 5.5–6.5" (Erde ist ${r.erde})`, !/pH 5\.5–6\.5/.test(alle),
+      (Object.entries(r.texte).find(([, t]) => /pH 5\.5–6\.5/.test(t)) || [''])[0]);
+    pruef(`Plagron und CANNA Terra nennen jetzt das Erd-Ziel (${r.erde})`,
+      r.texte.plagron.includes('pH ' + r.erde) && r.texte.canna.includes('pH ' + r.erde));
+    pruef(`Master-Untertitel nennt die Spanne statt „pH 6.2"`,
+      r.texte.biobizz_master.includes('pH ' + r.erde) && !/pH 6\.2 ·/.test(r.texte.biobizz_master));
+    pruef(`Drain-Spanne aus DRAIN_ZIEL (${r.drainMin}–${r.drainMax} %) in Master und Light`,
+      r.texte.biobizz_master.includes(r.drainMin + '–' + r.drainMax + ' % Drain')
+      && r.texte.biobizz_light.includes('Drain immer ' + r.drainMin + '–' + r.drainMax + ' %'));
+    pruef(`Beide Coco-Pläne nennen das Coco-Ziel (${r.coco} bzw. ${r.cocoK})`,
+      r.texte.canna_coco.includes('pH ' + r.coco) && r.texte.ghe_flora.includes('pH ' + r.cocoK));
+    pruef(`ghe_flora Woche 10 nimmt die Mitte des Coco-Ziels (${r.cocoMid})`,
+      r.texte.ghe_flora.includes('Reines Wasser mit pH ' + r.cocoMid));
+    pruef('ghe_flora nennt für Erde das Erd-Ziel, nicht eine eigene Spanne',
+      r.texte.ghe_flora.includes('In Erde gehört der pH auf ' + r.erdeK) && !/6,2–6,5/.test(r.texte.ghe_flora));
+  }
+
   pruef('Keine JS-Fehler im Lauf', errors.length === 0, errors.slice(0, 2).join(' | '));
   console.log(`\nErgebnis: ${ok} OK, ${fail} Fehler`);
   process.exit(fail ? 1 : 0);

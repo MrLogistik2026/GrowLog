@@ -2,6 +2,27 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-16 — v1.5.231
+
+- **Die Plan-Texte führten eigene pH- und Drain-Zahlen neben den Quellen der App.** Sechster Befund der Gruppe A
+  (UEBERGABE 0n) — dieselbe Fehlerklasse wie v1.5.216 und v1.5.221: zwei Zahlen für dieselbe Frage, und beim
+  Überfliegen gewinnt die, die zufällig danebensteht. Zehn Stellen in sechs Vorlagen lesen jetzt
+  `phTargetFor(medium)` und `DRAIN_ZIEL`. Die CANNA-Coco-Vorlage macht das bei `DRAIN_ZIEL` seit v1.5.201
+  vor — sie war das Vorbild.
+- **Zwei der Zahlen waren nicht nur fest, sondern falsch:** Plagron Terra und CANNA Terra sind **Erd**-Pläne und
+  nannten „pH 5.5–6.5". Nach `ANBAU.md` 4 gehört Erde auf 6,0–6,5, und die App führt 6,2–6,4 — **unter 6,0
+  bricht in organischem Substrat die Mikroflora ein**, und mit ihr die Nährstofffreisetzung. Ein Anfänger, der
+  seinen Erd-Plan auf 5,5 einstellt, schaltet genau das ab, wovon der Plan lebt.
+- **Betroffen waren außerdem:** der Master-Untertitel („pH 6.2"), die Drain-Spannen in Master und Light
+  („15–20 %"), beide Coco-Untertitel, die GHE-Misch-Info, die GHE-Ablaufinfo (sie nannte für Erde „6,2–6,5",
+  die App führt 6,2–6,4) und der GHE-Spültipp („pH 6.0").
+- **Nicht entschieden, bewusst:** Der offene Punkt aus Abschnitt 0f — App führt Coco mit 5,8–6,2, `ANBAU.md` 4
+  nennt „Coco / Hydro" gemeinsam mit 5,5–6,0 — bleibt offen. Indem die Texte jetzt `phTargetFor` lesen, folgen
+  sie automatisch dem, was dort entschieden wird, statt eine dritte Zahl zu setzen.
+- `test_duengeplantexte.js` um Abschnitt G erweitert (56 Prüfungen, beide Zeitzonen). Er vergleicht die Texte
+  **aller elf Vorlagen** gegen die Werte, die `phTargetFor` und `DRAIN_ZIEL` gerade liefern — ändert sich die
+  Quelle, ändert sich die Erwartung mit.
+
 ## 2026-09-16 — v1.5.230
 
 - **Die Misch-Info wurde seit v1.5.52 nirgends angezeigt.** Gefunden beim Nachsehen der eigenen Korrektur aus

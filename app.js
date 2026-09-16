@@ -2361,14 +2361,14 @@ const FERT_PRESETS = {
     weekPhases: ['anzucht','anzucht','anzucht','bloom','bloom','bloom','bloom','bloom','bloom','bloom','flush','ice'],
     name: 'BioBizz Master (Premium)',
     medium: 'erde',   // organischer Erdduenger
-    subtitle: '11L Stofftöpfe · Light-Mix · LED · jedes Gießen · pH 6.2 · EC ~0.4→1.4 · 49d Bloom',
+    subtitle: '11L Stofftöpfe · Light-Mix · LED · jedes Gießen · pH ' + phTargetFor('erde').label + ' · EC ~0.4→1.4 · 49d Bloom',
     doseMode: 'per-watering',
     bloomDaysHint: 49,
     ecPeak: 1.4,
     feedWaterRhythm: ARC_RHYTHM,
     mixOrder: ['CalMag','Bio·Grow','Bio·Bloom','Root·Juice','Bio·Heaven','Alg·A·Mic','Acti·Vera','Top·Max'],
     mixInfo: '1. CalMag zuerst ins Wasser, umrühren. 2. Basisdünger (Bio·Grow/Bio·Bloom). 3. Bio-Additive (Root·Juice, Bio·Heaven, Alg·A·Mic, Acti·Vera). 4. Top·Max zuletzt (Humin-/Fulvosäuren als Chelator). pH am Ende auf 6.2 korrigieren.',
-    drainInfo: '⚠️ Premium-Plan: Bewusst früher & härter Stickstoff-Cutoff (Wo 7 halbiert, Wo 8 hart auf 0) um blättrige Buds zu vermeiden. Ab Wo 8 nur noch P/K + Top·Max. Bei jedem Gießen 15–20% Drain, Drain sofort entsorgen.',
+    drainInfo: '⚠️ Premium-Plan: Bewusst früher & härter Stickstoff-Cutoff (Wo 7 halbiert, Wo 8 hart auf 0) um blättrige Buds zu vermeiden. Ab Wo 8 nur noch P/K + Top·Max. Bei jedem Gießen ' + DRAIN_ZIEL.min + '–' + DRAIN_ZIEL.max + ' % Drain, Drain sofort entsorgen.',
     weekFocus: {
       1:  { phase: 'Keimung',     tip: 'Wurzel-Taxis. Kein Stickstoff! Energie kommt aus dem Keimblatt. Nur kleine Ringbewässerung.' },
       2:  { phase: 'Vegi I',      tip: 'Etablierung. Grow-Start für erste Blätter, Root·Juice ausschleichen, Alg·A·Mic als LED-Schutz dazu.' },
@@ -2464,7 +2464,7 @@ const FERT_PRESETS = {
     feedWaterRhythm: ARC_RHYTHM,
     mixOrder: ['CalMag','Bio·Grow','Bio·Bloom','Root·Juice','Bio·Heaven','Alg·A·Mic','Acti·Vera','Top·Max'],
     mixInfo: 'Halbierte Dosen vom Master-Plan — mit einer Ausnahme: CalMag ist nicht reduziert, weil unter LED der Bedarf gleich hoch ist. Jedes Gießen düngen. Gut für Einsteiger, empfindliche Genetiken, oder wenn der Master-Plan zu stark ist.',
-    drainInfo: '⚠️ Wenn Pflanze gesund aussieht und kräftig wächst: kann über die Zeit Richtung Master-Dosen erhöht werden. Drain immer 15–20%, Drain sofort entsorgen.',
+    drainInfo: '⚠️ Wenn Pflanze gesund aussieht und kräftig wächst: kann über die Zeit Richtung Master-Dosen erhöht werden. Drain immer ' + DRAIN_ZIEL.min + '–' + DRAIN_ZIEL.max + ' %, Drain sofort entsorgen.',
     products: [
       { name: 'CalMag',      unit: 'ml/L', color: '#f0d050', note: '① Calcium & Magnesium (immer zuerst!)', waterDayDose: 0.3 },
       { name: 'Bio·Grow',    unit: 'ml/L', color: '#4caf70', note: '② Wachstumsdünger (organisch, NPK)' },
@@ -2501,7 +2501,7 @@ const FERT_PRESETS = {
     medium: 'erde',   // Terra-Linie
     subtitle: 'Mineralisch · Terra Grow + Terra Bloom · 10 Wochen',
     mixOrder: ['Terra Grow','Terra Bloom','Power Roots','Pure Zym','Green Sensation'],
-    mixInfo: '1. Basisdünger zuerst (mineralisch, löst sich sofort). 2. Wurzelstimulator & Enzyme (biologisch aktiv, ins stabile Milieu). 3. Green Sensation zuletzt (PK-Booster mit Chelat-Wirkung). pH 5.5–6.5.',
+    mixInfo: '1. Basisdünger zuerst (mineralisch, löst sich sofort). 2. Wurzelstimulator & Enzyme (biologisch aktiv, ins stabile Milieu). 3. Green Sensation zuletzt (PK-Booster mit Chelat-Wirkung). pH ' + phTargetFor('erde').label + '.',
     products: [
       { name: 'Terra Grow',      unit: 'ml/L', color: '#4caf70', note: '① Wachstumsdünger (mineralisch)' },
       { name: 'Terra Bloom',     unit: 'ml/L', color: '#e8884a', note: '① Blütedünger (mineralisch)' },
@@ -2527,7 +2527,7 @@ const FERT_PRESETS = {
     medium: 'erde',   // Terra-Linie
     subtitle: 'Mineralisch · Terra Vega + Terra Flores · 10 Wochen',
     mixOrder: ['CANNA Terra Vega','CANNA Terra Flores','PK 13/14','RHIZOTONIC','CANNAZYM'],
-    mixInfo: '1. Basisdünger zuerst (Vega oder Flores je nach Phase). 2. PK 13/14 nur Wo 4-6 der Blüte (Phosphor/Kalium-Booster). 3. RHIZOTONIC & CANNAZYM zuletzt (biologische Additive ins stabile Milieu). pH 5.5–6.5.',
+    mixInfo: '1. Basisdünger zuerst (Vega oder Flores je nach Phase). 2. PK 13/14 nur Wo 4-6 der Blüte (Phosphor/Kalium-Booster). 3. RHIZOTONIC & CANNAZYM zuletzt (biologische Additive ins stabile Milieu). pH ' + phTargetFor('erde').label + '.',
     products: [
       { name: 'CANNA Terra Vega',   unit: 'ml/L', color: '#4caf70', note: '① Wachstumsdünger (NPK-Basis)' },
       { name: 'CANNA Terra Flores', unit: 'ml/L', color: '#e8884a', note: '① Blütedünger (NPK-Basis)' },
@@ -2643,7 +2643,7 @@ const FERT_PRESETS = {
     weekPhases: ['anzucht','anzucht','anzucht','bloom','bloom','bloom','bloom','bloom','bloom','flush','flush','ice'],
     name: 'CANNA Coco A+B',
     medium: 'coco',   // inertes Substrat, pH 5,8-6,2, CalMag Pflicht
-    subtitle: 'Coco-Substrat · Mineral · 2-Komponenten-System · pH 5.8–6.2',
+    subtitle: 'Coco-Substrat · Mineral · 2-Komponenten-System · pH ' + phTargetFor('coco').label,
     doseMode: 'per-watering',
     mixOrder: ['CalMag','CANNA Coco A','CANNA Coco B','RHIZOTONIC','CANNAZYM','CANNABOOST','PK 13/14'],
     mixInfo: 'Mineral-Plan für Coco-Substrat. Reihenfolge: 1. CalMag zuerst (Coco bindet Ca, daher Pflicht). 2. CANNA Coco A vollständig auflösen. 3. CANNA Coco B (immer A vor B, niemals zusammen ins Konzentrat — sonst Ausfällung!). 4. RHIZOTONIC für Wurzeln. 5. CANNAZYM (Enzyme). 6. CANNABOOST in Blüte. 7. PK 13/14 nur Wo 5-7. pH am Ende auf 5.8–6.2 (NICHT 6.2–6.4 wie Erde!).',
@@ -2694,11 +2694,11 @@ const FERT_PRESETS = {
     weekPhases: ['anzucht','anzucht','anzucht','bloom','bloom','bloom','bloom','bloom','bloom','flush','flush','ice'],
     name: 'GHE Flora-Serie (3-Komponenten)',
     medium: 'coco',   // pH-Fuehrung 5,8-6,2 — bewusst nicht fuer Erde freigegeben
-    subtitle: 'Mineral · Micro + Grow + Bloom · pH 5,8–6,2',
+    subtitle: 'Mineral · Micro + Grow + Bloom · pH ' + phTargetFor('coco').labelComma,
     doseMode: 'per-watering',
     mixOrder: ['CalMag','FloraMicro','FloraGrow','FloraBloom','Diamond Nectar','Ripen'],
-    mixInfo: '3-Komponenten-System (Universal-Mineral-Linie). Reihenfolge GANZ WICHTIG: 1. CalMag zuerst. 2. FloraMicro zuerst nach CalMag (Mikronährstoffe + Calcium-Komplex). 3. FloraGrow. 4. FloraBloom. 5. Diamond Nectar (Huminsäuren) als Additiv. 6. Ripen nur in den letzten 2 Wochen. Niemals FloraGrow/FloraBloom vor FloraMicro mischen — sonst Ausfällung. pH 5.8–6.2.',
-    drainInfo: '🧪 Die Flora-Serie selbst läuft in Hydro, Coco und Erde — dieser Plan hier ist auf Coco ausgelegt und führt den pH auf 5,8–6,2. In Erde gehört der pH auf 6,2–6,5; nimm dort einen der Erd-Pläne. Verhältnis Micro/Grow/Bloom ändern für Phase: Vegi 3-2-1, Übergang 2-2-2, Blüte 1-2-3 oder 1-3-2. Immer in dieser Reihenfolge mischen. Drain-EC checken — bei zu hoch: weniger A/B/C, gleiche Verhältnis.',
+    mixInfo: '3-Komponenten-System (Universal-Mineral-Linie). Reihenfolge GANZ WICHTIG: 1. CalMag zuerst. 2. FloraMicro zuerst nach CalMag (Mikronährstoffe + Calcium-Komplex). 3. FloraGrow. 4. FloraBloom. 5. Diamond Nectar (Huminsäuren) als Additiv. 6. Ripen nur in den letzten 2 Wochen. Niemals FloraGrow/FloraBloom vor FloraMicro mischen — sonst Ausfällung. pH ' + phTargetFor('coco').label + '.',
+    drainInfo: '🧪 Die Flora-Serie selbst läuft in Hydro, Coco und Erde — dieser Plan hier ist auf Coco ausgelegt und führt den pH auf ' + phTargetFor('coco').labelComma + '. In Erde gehört der pH auf ' + phTargetFor('erde').labelComma + '; nimm dort einen der Erd-Pläne. Verhältnis Micro/Grow/Bloom ändern für Phase: Vegi 3-2-1, Übergang 2-2-2, Blüte 1-2-3 oder 1-3-2. Immer in dieser Reihenfolge mischen. Drain-EC checken — bei zu hoch: weniger A/B/C, gleiche Verhältnis.',
     weekFocus: {
       1:  { phase: 'Anzucht',  tip: 'Sehr niedrige EC. Nur CalMag + Micro + minimal Grow.' },
       2:  { phase: 'Vegi I',   tip: 'Vegi-Verhältnis 3-2-1 (Micro-Grow-Bloom). Diamond Nectar dazu.' },
@@ -2709,7 +2709,7 @@ const FERT_PRESETS = {
       7:  { phase: 'Blüte III', tip: 'Maximum halten. Drain-EC weiter checken.' },
       8:  { phase: 'Reifung I', tip: 'Bloom maximal, Grow ausschleichen.' },
       9:  { phase: 'Reifung II', tip: 'Ripen startet (letzte 2 Wochen vor Spülung).' },
-      10: { phase: 'Spülung',  tip: 'Reines Wasser mit pH 6.0. Salze raus.' },
+      10: { phase: 'Spülung',  tip: 'Reines Wasser mit pH ' + phTargetFor('coco').mid.toFixed(1) + '. Salze raus.' },
       11: { phase: 'Hard Dryback', tip: 'Nicht mehr gießen, bis der Topf den Gießpunkt erreicht (Hebe-Test „' + GIESSPUNKT.coco.knopf + '"). Coco trocknet schneller als Erde — darunter meldet die App „Zu trocken für Coco". Vorbereitung IceFlush oder Ernte.' },
       12: { phase: 'Ernte',    tip: 'Ernte beim Lichtangang.' },
     },
@@ -3472,7 +3472,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.230';
+const APP_VERSION = 'v1.5.231';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
