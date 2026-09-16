@@ -1755,8 +1755,11 @@ beim Namen nennen.** v1.5.237 änderte den Teiler von `weekly-split`; `test_vorl
 1,71 (= 4 × 3/7), lief beim Ausliefern nicht mit und blieb rot, bis ihn am 16.09.2026 ein breiter Lauf fand.
 Bei Änderungen an Dosis-Rechnung oder Vorlagen diesen Lauf nehmen:
 `grep -l -E "FERT_PRESETS|loadPreset|biobizz|presetKey|_wizStepFertPlan|renderDuenger|getWeekDoses|fertPlans" test_*.js`
-(37 Dateien am 16.09.2026). Gemessen **rund 130 Minuten** für beide Zeitzonen, während nebenher der Browser lief —
-also im Hintergrund starten. *(Hier stand zuerst „rund 12 Minuten" — geschätzt statt gemessen.)*
+(37 Dateien am 16.09.2026). Gemessen **rund 5½ Minuten** für beide Zeitzonen — 74 Läufe, Zeitstempel der
+Task-Ausgabe 13:42:12 bis 13:47:42. *(Hier stand erst „rund 12 Minuten", geschätzt, und danach „rund 130 Minuten",
+falsch gemessen: Ich hatte die Erstellzeit der Protokolldatei genommen, und die Datei gab es schon — beim Überschreiben
+mit `Set-Content` behält Windows die alte Erstellzeit. Laufzeiten deshalb mit `Get-Date` an Anfang und Ende ins
+Protokoll schreiben, nie aus Dateizeiten ablesen.)*
 
 **Wer einen Plan umbaut, sucht auch nach seinem Kurznamen.** v1.5.240 suchte nach „BioBizz Official" und übersah die
 Anleitung, die nur „Official" schreibt — dort stand danach weiter „Wochendosis-Modus (Official)" (behoben in
