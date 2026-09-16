@@ -2,6 +2,29 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-16 — v1.5.249
+
+- **Spülen und Düngerart versprachen einen Geschmack, den es nach der Fachgrundlage nicht belegt gibt.**
+  `ANBAU.md` 14: Kontrollierte Vergleiche fanden keinen belastbaren Unterschied in Geschmack, Aschequalität oder
+  Analytik zwischen gespülten und ungespülten Pflanzen. v1.5.125 hatte den Kurztext des Lexikon-Eintrags „Spülung"
+  entsprechend berichtigt — seine eigene Fehlerliste sagte darunter weiter „zu kurz spülen → schwarze Asche, kratziger
+  Rauch" und „gar nicht spülen → bitterer Geschmack". Dazu zwölf weitere Stellen: der Info-Text „Flush" („für einen
+  saubereren, weicheren Geschmack", „ohne Flush schmecken die Blüten oft kratzig"), die Spülanleitung am Spültag
+  („→ sauberer Geschmack"), die NPK-Tabelle, im Eintrag „Bio vs. Mineralisch" Geschmacksprofil („Bio terpenreicher,
+  Mineral flacher"), „Spülung Pflicht für sauberen Geschmack", „keine Spülung bei Mineral → garantiert kratziger
+  Geschmack", „bessere Aromen" und die Empfehlung „geschmacksfokussiert → Bio", dazu Silizium („schmeckt kratziger")
+  und der Trichom-Eintrag („zu früh geerntet = kratziger Rauch").
+- **Jetzt steht dort, was belegt ist:** Spülen senkt die Salze im Substrat; ein Geschmacksunterschied ließ sich nicht
+  nachweisen. Für den Geschmack zählt nach der Fachgrundlage das sorgfältige Trocknen und Fermentieren (`ANBAU.md`
+  12) — bei beiden Düngerarten. Zu früh geerntet heißt: weniger Wirkung und Ertrag (11). Die Praxis des Spülens bleibt
+  vollständig beschrieben, sie verspricht nur nichts mehr.
+- **Mitbehoben, gleiche Fehlerklasse wie v1.5.211:** Die Fehlerliste im Spülung-Eintrag sagte „Drain-EC nicht gemessen
+  → man weiß nicht, ob fertig". Seit v1.5.211 setzt der Plan das Spülende, weil der Drain-EC in Erde nach dem Spülen
+  wieder steigt (`ANBAU.md` 5.1). Und „zu lange spülen → Trichom-Produktion stoppt, Trichome werden grau-glasig"
+  nennt jetzt den belegten Grund: Das ist ein früher Stickstoff-Stopp, und der kostet Blütenmasse (5).
+- `test_lexikon.js` Abschnitt M: keine der alten Aussagen mehr im ganzen Quelltext, der Spülung-Eintrag stimmt mit
+  seinem Kurztext und mit v1.5.211 überein (79 Prüfungen).
+
 ## 2026-09-16 — v1.5.248
 
 - **Wie die App über Herstellermengen spricht — eine Haltung statt neun Behauptungen.** Patrick am 16.09.2026 zum

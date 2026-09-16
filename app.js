@@ -3576,7 +3576,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.248';
+const APP_VERSION = 'v1.5.249';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -5747,8 +5747,8 @@ const INFO_TERMS = {
   },
   flush: {
     title: 'Flush (Spülung)',
-    text: 'In den letzten 1–2 Wochen vor der Ernte gibst du nur noch Wasser, keinen Dünger mehr. Das spült eingelagerte Salze aus — für einen saubereren, weicheren Geschmack.',
-    tip: 'pH auf etwa 6.2 einstellen und mit reichlich Wasser durchspülen. Ohne Flush schmecken die Blüten oft kratzig. (Bei reinem Bio-Anbau ist ein harter Flush weniger nötig — die lebendige Erde puffert das ab.)',
+    text: 'In den letzten 1–2 Wochen vor der Ernte gibst du nur noch Wasser, keinen Dünger mehr. Das senkt die Salze im Substrat. Weit verbreitet und unschädlich — dass die Blüten danach anders schmecken, ließ sich in Vergleichen allerdings nicht nachweisen.',
+    tip: 'pH auf etwa 6.2 einstellen und mit reichlich Wasser durchspülen.',
     lex: 'Spülung (Final-Flush)',
   },
   defoliation: {
@@ -15584,7 +15584,7 @@ function getTodayAction(c, p, a, iso) {
         '<b>KEIN Dünger</b> — nur klares Wasser!',
         'Bis viel Drain unten durchläuft (durchspülen)',
       ],
-      hint: 'Pflanze baut Nährstoffreste ab → sauberer Geschmack',
+      hint: 'Senkt die Salze im Substrat — ein Geschmacksvorteil ist nicht belegt',
     };
   }
   if (a === 'ice') {
@@ -32477,7 +32477,7 @@ const LEXIKON = [
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Frühe Blüte (Wo 1–3)</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">N reduzieren, P+K hoch (2-4-4)</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Pflanze investiert in Blüten statt Blätter</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Mittlere Blüte (Wo 4–6)</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">P-K-lastig (1-3-4 bis 1-4-5)</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Buds füllen, K für Zuckereinlagerung und Trichom-Bildung</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Späte Blüte (Wo 7+)</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Sehr K-lastig (0-2-4)</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">N runter (Vergilbung gewollt), K für finalen Reife-Push</td></tr>' +
-        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Spülung</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">0-0-0 (nur Wasser)</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Salze auswaschen, sauberer Geschmack</td></tr>' +
+        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Spülung</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">0-0-0 (nur Wasser)</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Salze auswaschen — ein Geschmacksvorteil ist nicht belegt</td></tr>' +
         '</table>' +
         '<br>' +
         '<b>Etiketten lesen:</b> Die drei Zahlen auf jeder Düngerflasche sind die <b>Prozente</b> N, P, K. Eine Flasche mit „6-2-3" enthält 6% Stickstoff, 2% Phosphor, 3% Kalium. Bio-Dünger haben oft niedrigere Prozente (Bio-Grow: 4-3-6) als Mineral-Dünger (Canna A+B: 5-2-6 + 1-4-4) — das heißt nicht „weniger wirksam", sondern andere Form (organisch gebunden vs sofort verfügbar).<br><br>' +
@@ -32575,8 +32575,8 @@ const LEXIKON = [
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Präzise Steuerung</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Kaum möglich</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Voll steuerbar</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Substrat</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Lebende Erde, All-Mix, Light-Mix</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Coco, Hydro, inerte Substrate</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">EC-Steuerung</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Schwer messbar</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Klar messbar im Drain</td></tr>' +
-        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Geschmack-Profil</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Komplex, runder, terpenreicher</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Klar, etwas „flacher"</td></tr>' +
-        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Spülung</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Oft nicht nötig</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Pflicht für sauberen Geschmack</td></tr>' +
+        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Geschmack-Profil</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Kein belegter Unterschied</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Kein belegter Unterschied</td></tr>' +
+        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Spülung</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Für den Geschmack nicht nötig — ein Vorteil ist nicht belegt</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Senkt angesammelte Salze — ein Geschmacksvorteil ist nicht belegt</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Anfänger-Tauglichkeit</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Sehr gut</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Anspruchsvoller</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Maximaler Ertrag</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Etwas niedriger</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Höher (theoretisch)</td></tr>' +
         '</table>',
@@ -32590,7 +32590,7 @@ const LEXIKON = [
         '• <b>Hesi Mineral / Hesi TNT</b> — niederländische Marke<br>' +
         '• <b>Advanced Nutrients</b> — pH-perfect-System, automatische pH-Stabilisierung<br><br>' +
         '<b>Hybrid-Ansatz:</b><br>' +
-        'Praktisch sehr verbreitet ist die Kombination aus mineralischer Basis + biologischen Additiven (Enzyme, Humin-Säuren, Mykorrhiza, Trichoderma). Das gibt Präzision der mineralischen Steuerung plus Bodenleben-Vorteile (Pufferung, bessere Aromen).<br><br>' +
+        'Praktisch sehr verbreitet ist die Kombination aus mineralischer Basis + biologischen Additiven (Enzyme, Humin-Säuren, Mykorrhiza, Trichoderma). Das gibt Präzision der mineralischen Steuerung plus Bodenleben-Vorteile (Pufferung).<br><br>' +
         'Beispiel-Hybrid: Canna Coco A+B (Mineral) + Cannazym (Enzyme, organisch) + Mykorrhiza-Pulver beim Einpflanzen + Top-Max (Humin-Säuren, organisch).<br><br>' +
         '<b>Empfehlungs-Matrix:</b><br>' +
         '<table style="width:100%;border-collapse:collapse;font-size:13px;margin-top:6px">' +
@@ -32599,7 +32599,7 @@ const LEXIKON = [
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Mittelmäßige Erfahrung</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Bio in Light-Mix mit besserer Kontrolle</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Erfahrener Grower</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Hybrid: Mineral + Bio-Additive</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Power-User, Maximalertrag</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Mineralisch in Coco oder Hydro</td></tr>' +
-        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Geschmacks-Fokussiert</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Bio mit Long-Cure</td></tr>' +
+        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Geschmacks-Fokussiert</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Sorgfältig trocknen und fermentieren — das zählt bei beiden Düngerarten</td></tr>' +
         '</table>',
       pitfall: '<b>Inkompatible Mischungen:</b><br>' +
         '• <b>Bio-Dünger in Coco</b> → Bodenleben fehlt, Bio-Wirkung halbiert. Coco ist inert. Funktioniert teilweise, aber Vorteile von Bio gehen verloren.<br>' +
@@ -32610,7 +32610,7 @@ const LEXIKON = [
         '• <b>Bio nach Mineral-Logik steuern</b> — der EC erfasst organisch gebundene Nährstoffe nur zum Teil, ein niedriger EC heißt bei Bio nicht Mangel. Maßstab sind Blatt und Wachstum<br>' +
         '• <b>Mineral nach Bio-Logik</b> — wer nach Bio-Praxis großzügig dosiert wird sofort Burn sehen<br>' +
         '• <b>Spülung bei Bio</b> als Standardprozedur → spült das Bodenleben mit raus<br>' +
-        '• <b>Keine Spülung bei Mineral</b> → garantiert kratziger, schwerer Geschmack<br>' +
+        '• <b>Spülen als Geschmacks-Garantie</b> → belegt ist nur, dass es Salze im Substrat senkt; ein Unterschied in Geschmack oder Asche ließ sich nicht nachweisen<br>' +
         '• <b>Marken mischen</b> innerhalb einer Linie — die Hersteller-Linien sind aufeinander abgestimmt. Canna Coco A+B funktioniert mit Canna-Boostern, nicht beliebig kombinierbar mit BioBizz<br><br>' +
         '<b>Goldene Regel:</b> Eine Philosophie wählen und konsequent durchziehen. Hybrid-Ansätze nur mit klarem Plan und ausreichend Erfahrung. Im Zweifel als Anfänger: Bio in All-Mix.' },
     { t: 'Düngepläne (Hersteller-Vergleich)',
@@ -32672,7 +32672,7 @@ const LEXIKON = [
       brief: 'Stabilisiert Zellwände und dicke Stämme. Oft vergessener Dünger mit sichtbarem Effekt.',
       mechanism: 'Silizium wird als Kieselsäure aufgenommen und <b>in die Zellwände eingebaut</b>. Das gibt der Pflanze einen physischen Panzer — dickere Stängel, härtere Blätter. Auch: Silizium-arme Pflanzen wachsen zwar, knicken aber unter schweren Blüten leichter um.',
       practice: '<b>Wann sinnvoll:</b><br>• Anzucht + frühe Vegi (für starke Struktur)<br>• Bei Hitze-Stress (Si erhöht Hitze-Toleranz)<br>• Bei LED-Anbau mit hoher Lichtintensität<br>• Wenn Schädlinge wie Raupen angreifen (härtere Blätter = weniger Fraß)<br><br><b>Produkte:</b> Advanced Nutrients Rhino Skin, Plagron Silic Power, BAC Kiezelzuur.<br><br><b>Kritische Reihenfolge:</b> Silizium <b>zuerst</b> ins Wasser, <b>vor</b> CalMag. Sonst flockt es mit Ca aus und ist verloren.',
-      pitfall: 'In der späten Blüte (letzten 2 Wochen) Si reduzieren — verhärtet Blüten optisch, schmeckt dann kratziger. Auch: Si hebt den pH stark an (oft um 0.5-1.0 Punkte), immer nach Zugabe neu messen.' },
+      pitfall: 'Dass Silizium in der späten Blüte die Blüten verhärtet oder kratziger schmecken lässt, ist nicht belegt. Wichtig dagegen: Si hebt den pH stark an (oft um 0.5-1.0 Punkte), immer nach Zugabe neu messen.' },
     { t: 'Humin- & Fulvosäuren (Chelatoren)',
       brief: 'Organische Transporter die Nährstoffe wie Klauen umhüllen und leichter in die Wurzel lassen.',
       mechanism: 'Humin- und Fulvosäuren sind <b>natürliche organische Verbindungen</b> aus zersetztem Pflanzenmaterial. Sie <b>binden Nährstoff-Ionen</b> (besonders Mikronährstoffe wie Fe, Mn, Zn) und transportieren sie aktiv durch die Zellmembranen der Wurzeln (<i>Chelatbildung</i>). Ohne Chelatoren bleiben viele Mikronährstoffe im Substrat „gefangen".',
@@ -33184,7 +33184,7 @@ const LEXIKON = [
     { t: 'Trichom-Analyse (Ernte-Trigger)',
       brief: 'Die einzig zuverlässige Methode, den Erntezeitpunkt zu bestimmen. Mit Lupe oder Smartphone-Mikroskop direkt am Hauptbud.',
       mechanism: 'Trichome sind die <b>Harz-Drüsen</b> auf den Blüten und Sugar-Leaves. In ihnen werden Cannabinoide (THC, CBD…) und Terpene synthetisiert. Die Trichome durchlaufen drei optisch unterscheidbare Reifestadien:<br><br>' +
-        '<b>Klar / glasig:</b> Cannabinoid-Synthese läuft noch. THC-A-Konzentration steigt, ist aber unter dem Maximum. Zu früh geerntet = wenig Wirkung, kratziger Rauch.<br><br>' +
+        '<b>Klar / glasig:</b> Cannabinoid-Synthese läuft noch. THC-A-Konzentration steigt, ist aber unter dem Maximum. Zu früh geerntet = weniger Wirkung und weniger Ertrag.<br><br>' +
         '<b>Milchig / trüb (weiß):</b> Peak <b>THC-A</b>, vor der oxidativen Umwandlung. Maximale psychoaktive Potenz nach Decarboxylierung. Das ist das Haupt-Ernte-Fenster.<br><br>' +
         '<b>Bernstein / amber:</b> THC-A oxidiert zu <b>CBN</b> (sedierend, „couch-lock"). Total-THC sinkt langsam, sedativer Charakter steigt. Wie viel Bernstein es sein soll, ist deine Entscheidung: mehr Bernstein = ruhigere Wirkung, weniger Potenz.<br><br>' +
         '<b>Pistillen (die orangen Härchen) sind KEIN zuverlässiger Indikator</b> — sie verfärben sich durch Berührung, Temperatur und Feuchtigkeit unabhängig vom Reifezustand der Trichome. Verlässlich ist nur die Trichom-Optik unter der Lupe.',
@@ -33381,11 +33381,10 @@ const LEXIKON = [
         '• Pflanze duftet intensiver als zuvor<br><br>' +
         '<b>Klima während der Spülung:</b> wie in der späten Blüte — ' + _klimaLexZeile('spuelen', 24) + '. Spülen ändert am Klima nichts.',
       pitfall: '<b>Häufige Fehler:</b><br>' +
-        '• <b>Zu lange spülen</b> (>14 Tage in Erde) → Pflanze leidet zu früh, Trichom-Produktion stoppt, Trichome werden grau-glasig<br>' +
-        '• <b>Zu kurz spülen</b> (<5 Tage in Erde) → Salze bleiben drin, schwarze Asche, kratziger Rauch<br>' +
-        '• <b>Gar nicht spülen</b> (außer bei Living Soil) → bitterer Geschmack, harte Aufnahme<br>' +
+        '• <b>Zu lange spülen</b> (>14 Tage in Erde) → das ist ein früher Stickstoff-Stopp, und der kostet Blütenmasse: Die Pflanze baut bis zuletzt auf<br>' +
+        '• <b>Spülen gegen schwarze Asche oder kratzigen Rauch</b> → dafür gibt es keinen belastbaren Beleg (siehe oben); belegt ist nur, dass es Salze im Substrat senkt<br>' +
         '• <b>Bei Living Soil trotzdem spülen</b> → zerstört das mikrobielle Gleichgewicht, kein Vorteil<br>' +
-        '• <b>Drain-EC nicht gemessen</b> → man weiß nicht ob fertig oder nicht<br>' +
+        '• <b>Das Spülende am Drain-EC festmachen</b> → in Erde steigt er nach dem Spülen wieder, weil das Substrat nachliefert; wann Schluss ist, sagt der Plan<br>' +
         '• <b>Mit pH-Wasser <5.5 oder >7.0 spülen</b> → kann Wurzelschäden verursachen<br>' +
         '• <b>Während der Spülung „nochmal nachdüngen"</b> weil Pflanze gelb wird → die Vergilbung ist gewollt!<br><br>' +
         '<b>Mythos „Spülung ist immer nötig"</b>: Bei <b>biologischem Anbau</b> oder Living Soil sind die Nährstoffe in organischer Form gebunden — sie werden über Mikroben langsam freigesetzt. Salzakkumulation findet kaum statt, Spülung würde das Bodenleben mehr schaden als helfen. Faustregel: Wenn dein Wasser nach normalem Gießen den Drain-Topf nicht versalzen austreten lässt, brauchst du wahrscheinlich nicht zu spülen. EC vom Drain regelmäßig messen → eigene Daten statt Foren-Faustregeln.<br><br>' +

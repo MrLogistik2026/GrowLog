@@ -343,6 +343,27 @@ function pruef(name, bedingung, info) {
       /Blattspitzen/.test(r.practice) && /Blattspitzen/.test(r.pitfall) && /Blattspitzen/.test(r.npk), r.npk.slice(-300));
   }
 
+  // (v1.5.249) Geschmack und Spülen. ANBAU.md 14: Kontrollierte Vergleiche fanden keinen belastbaren Unterschied in
+  // Geschmack, Aschequalität oder Analytik. v1.5.125 hatte den Kurztext des Spülung-Eintrags berichtigt — seine eigene
+  // Fehlerliste sagte weiter „schwarze Asche, kratziger Rauch", dazu 12 weitere Stellen in Info-Texten, Spülanleitung,
+  // NPK-, Bio/Mineral-, Silizium- und Trichom-Eintrag. Und der Spülung-Eintrag setzte das Spülende noch am Drain-EC (v1.5.211).
+  console.log('');
+  console.log('M - (v1.5.249) Geschmack und Spülen: nichts versprechen, was ANBAU.md 14 nicht trägt');
+  {
+    const q = fs.readFileSync(path.join(__dirname, 'app.js'), 'utf8').split('\n').filter(z => !/^\s*(\/\/|\*|\/\*)/.test(z)).join('\n');
+    [/saubereren, weicheren Geschmack/i, /schmecken die Blüten oft kratzig/i, /sauberer Geschmack/i, /terpenreicher/i, /bessere Aromen/i,
+      /Pflicht für sauberen Geschmack/i, /garantiert kratziger/i, /Asche, kratziger Rauch/i, /Wirkung, kratziger Rauch/i, /bitterer Geschmack/i, /Trichom-Produktion stoppt/i,
+      /schmeckt dann kratziger/i, /Bio mit Long-Cure/i].forEach(re =>
+      pruef('Nirgends mehr als Tatsache: ' + re.source, !re.test(q), (q.match(new RegExp('.{0,60}' + re.source + '.{0,30}', 'i')) || [''])[0]));
+    const sp = JSON.parse(E(`JSON.stringify(LEXIKON.flatMap(k => k.items || []).find(i => i.t === 'Spülung (Final-Flush)') || {})`));
+    pruef('Der Spülung-Eintrag widerspricht seinem eigenen Kurztext nicht mehr',
+      /nicht nachweisen/.test(sp.brief || '') && !/schwarze Asche, kratziger|bitterer Geschmack/.test(sp.pitfall || ''), (sp.pitfall || '').slice(0, 300));
+    pruef('… und das Spülende setzt der Plan, nicht ein Drain-EC-Wert (v1.5.211)',
+      /wann Schluss ist, sagt der Plan/.test(sp.pitfall || '') && !/Drain-EC nicht gemessen/.test(sp.pitfall || ''));
+    pruef('Zu langes Spülen: der belegte Grund (früher Stickstoff-Stopp kostet Blütenmasse, ANBAU.md 5)',
+      /früher Stickstoff-Stopp, und der kostet Blütenmasse/.test(sp.pitfall || ''));
+  }
+
   console.log('');
   console.log(`Ergebnis: ${ok} OK, ${fail} Fehler`);
   process.exit(fail ? 1 : 0);
