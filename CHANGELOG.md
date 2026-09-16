@@ -2,6 +2,31 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-16 — v1.5.225
+
+- **Der Cup-Sieger-Plan führte Mykorrhiza-Pulver als Schritt 10 seiner Mischanleitung.** Erster Befund der Gruppe A
+  aus der Plan-Prüfung (UEBERGABE 0n). Der Düngeplan-Bildschirm rendert `mixOrder` als **nummerierte
+  Mischreihenfolge** — während die Produktnotiz daneben sagt: „TROCKEN an die Wurzel, NIE ins Gießwasser!" und die
+  Misch-Info es ebenfalls richtig erklärt. Wer der Liste folgt, rührt die Wurzelimpfung ins Gießwasser; dort
+  erreichen die Sporen die Wurzelzone nicht, und die Impfung ist wirkungslos.
+- **Der Fix musste an drei Stellen greifen, nicht an einer:**
+  1. die Vorlage `FERT_PRESETS.cup_sieger.mixOrder`,
+  2. `V34_MIXORDER` — die V3.4-Migration schreibt dieselbe Liste in **jeden gespeicherten** Cup-Sieger-Plan,
+  3. eine eigene einmalige Reparatur (`_mykoMixFix`) für Pläne, die diese Migration schon hinter sich haben:
+     `_v34SchedMigrated` ist dort längst `true` und lässt sie nie wieder laufen. Genau diese Falle steht als
+     Lehre aus v1.1.30/31 im Code daneben. Die Reparatur entfernt **nur** diesen einen Eintrag aus `mixOrder`;
+     Produkte, Dosen und alles Übrige bleiben unberührt.
+- **Das Produkt bleibt im Plan**, mit seiner Anwendung — es verschwindet nur aus der Mischliste. Dosen, Produktzahl
+  und Gaben ändern sich nicht, der Fingerabdruck in `test_duengeplaene.js` bleibt damit gültig.
+- **Aus dem eigenen Abbruch gelernt:** Meine erste Wache verlangte, der Produktname dürfe nur noch **einmal** im
+  Code stehen — und brach ab. Richtig sind **zwei** Vorkommen, beide als Produkt: in der Vorlage und in der
+  Migration v1.1.18, die das Produkt von „HomeGrow24 Granulat" umbenannt hat, weil es damals fälschlich als
+  Gießwasser-Dünger in Woche 4 stand. Die Wache war falsch, nicht der Code; sie prüft jetzt das Richtige —
+  dass der Name **nirgends in einer Mischliste** steht.
+- `test_duengeplantexte.js` neu (11 Prüfungen, beide Zeitzonen). Diese Datei füllt eine Lücke: Die
+  Düngeplan-Vorlagen waren in **keiner** der Text-Prüfungen v1.5.125, .172, .190, .192 und .210 Prüfgegenstand —
+  daher stammt die Hälfte der 70 Befunde aus 0n. Sie wächst mit jedem abgearbeiteten Befund der Gruppe A.
+
 ## 2026-09-16 — ANBAU.md 16 (ohne Versionssprung)
 
 - **`ANBAU.md` bekommt Abschnitt 16 „Keimung: vom Samen zum Keimling".** Letzter Punkt der Keimungs-Prüfung

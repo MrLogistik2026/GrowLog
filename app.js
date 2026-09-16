@@ -2746,9 +2746,11 @@ const FERT_PRESETS = {
       feedDayBasis: true,
       doseMode: 'per-watering',
       bloomDaysHint: 49,
+      // (v1.5.225) Mykorrhiza steht bewusst NICHT in dieser Liste: Sie ist die nummerierte Mischanleitung,
+      // und das Pulver gehoert trocken an die Wurzel (Produktnotiz und mixInfo sagen es beide).
       mixOrder: ['Silica Force', 'CalMag', 'Epsom Salz', 'POWHUMUS (Konz.A)',
                  'Bio-Grow', 'Bio-Bloom', 'Acti-Vera', 'Alfa Boost',
-                 'Advanced Amino', 'Mykorrhiza HomeGrow24'],
+                 'Advanced Amino'],
       mixInfo: 'Silica Force IMMER ZUERST ins Wasser, 2 Min ruhen lassen (sonst Ausfällung). Dann der Reihe nach: CalMag, Epsom Salz, POWHUMUS, Bio-Grow/Bio-Bloom, Acti-Vera (flüssig direkt aus der Flasche), Alfa Boost (schütteln!), Advanced Amino (strikt nur per Einwegspritze 0.2 ml/L! niemals schätzen). EC messen, pH zuletzt auf 6.2-6.4 (Erde) korrigieren. MKP ist gestrichen — damit auch kein MKP+Silica-pH-Selbstausgleich mehr, pH-Down wie gewohnt einstellen. POWHUMUS läuft durchgehend mit 10 ml/L (auch an Wasser-Tagen), nur in der letzten Blütewoche (Wo 10) auf 5 ml/L reduziert zum Ausklingen. Mykorrhiza HomeGrow24 gehört NICHT in die Mischung: trocken ans Pflanzloch (Tag 0) + Refresher rund um FIM.',
       drainInfo: '⚠️ Premium Cup-Plan: Strenge EC-Kontrolle. Drain-EC prüfen: ' + T.drainRegelKurz() + '. Bleibt er über mehrere Güsse darüber, 1-2 Water-Days einlegen. Mykorrhiza-freundlich durch moderate EC und Pause-Tage. Wo 11 nur Wasser (Flush), Wo 12 Ice-Wasser (1L crushed ice, 4-6h Schmelzzeit, 24-36h Dunkelphase vor Ernte).',
       weekFocus: {
@@ -3470,7 +3472,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.224';
+const APP_VERSION = 'v1.5.225';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -4656,7 +4658,8 @@ function loadS() {
       '10': { 'CalMag': 0.3, 'POWHUMUS (Konz.A)': 6.25, 'Bio-Bloom': 0.5, 'Acti-Vera': 4 },
       '11': {}, '12': {}
     };
-    const V34_MIXORDER = ['Silica Force', 'CalMag', 'Epsom Salz', 'POWHUMUS (Konz.A)', 'Bio-Grow', 'Bio-Bloom', 'Acti-Vera', 'Alfa Boost', 'Advanced Amino', 'Mykorrhiza HomeGrow24'];
+    // (v1.5.225) ohne Mykorrhiza — das Pulver gehoert trocken an die Wurzel, nicht in die Mischanleitung.
+    const V34_MIXORDER = ['Silica Force', 'CalMag', 'Epsom Salz', 'POWHUMUS (Konz.A)', 'Bio-Grow', 'Bio-Bloom', 'Acti-Vera', 'Alfa Boost', 'Advanced Amino'];
     (S.fertPlans || []).forEach(plan => {
       if (plan.presetKey !== 'cup_sieger' || !plan.products) return;
       const nameToId = {};
@@ -4677,6 +4680,19 @@ function loadS() {
       }
     });
     S._v34SchedMigrated = true;
+    if (typeof syncActivePlanToGlobals === 'function') syncActivePlanToGlobals();
+  }
+
+  // MYKORRHIZA-MISCHLISTE (v1.5.225, einmalig): Das Pulver stand in der nummerierten Mischanleitung
+  // jedes cup_sieger-Plans, obwohl es trocken an die Wurzel gehoert (Produktnotiz: „NIE ins Gießwasser").
+  // Die V3.4-Migration hat es dort hineingeschrieben und laeuft wegen _v34SchedMigrated nicht erneut —
+  // deshalb ein eigenes Flag. Entfernt genau diesen Eintrag, laesst Dosen und Produkte unberuehrt.
+  if (!S._mykoMixFix) {
+    (S.fertPlans || []).forEach(plan => {
+      if (plan.presetKey !== 'cup_sieger' || !Array.isArray(plan.mixOrder)) return;
+      plan.mixOrder = plan.mixOrder.filter(n => !/Mykorrhiza/i.test(String(n)));
+    });
+    S._mykoMixFix = true;
     if (typeof syncActivePlanToGlobals === 'function') syncActivePlanToGlobals();
   }
 
