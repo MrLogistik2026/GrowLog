@@ -441,6 +441,14 @@ function pruef(name, bedingung, info) {
     pruef('Der Assistent empfiehlt, was EINSTEIGER_VORLAGE sagt — Erde und Coco',
       empf.erde === empf.soll.erde && empf.coco === empf.soll.coco, JSON.stringify(empf));
     pruef('… und das Lexikon empfiehlt Einsteigern dieselbe Vorlage', empf.zeile === empf.name, empf.zeile + ' ≠ ' + empf.name);
+    // (v1.5.246) Die Vergleichstabelle war in keiner Text-Prüfung: v1.5.228 nahm die Wirkungszusagen aus den Vorlagen,
+    // nicht aus ihrer Beschreibung im Lexikon. Und Hesi (Kerkrade) ist eine niederländische Marke.
+    const master = JSON.parse(E('JSON.stringify(FERT_PRESETS.biobizz_master.schedule)'));
+    pruef('Plan-Vergleich: keine Wirkungszusage „terpenreich" beim Master-Plan, sondern was er tut',
+      !/hoher Ertrag, terpenreich/.test(lex.text) && /Woche 7 halbiert, ab Woche 8 keiner/.test(lex.text));
+    pruef('… und das stimmt mit dem Master-Plan: Bio·Grow in Woche 7 halb so viel wie in Woche 6, ab Woche 8 keiner',
+      master[7]['Bio·Grow'] === master[6]['Bio·Grow'] / 2 && [8, 9, 10, 11, 12].every(w => !(master[w] || {})['Bio·Grow']));
+    pruef('Hesi ist eine niederländische Marke, keine deutsche', !/Deutsche Marke/.test(lex.text) && /Niederländische Marke/.test(lex.text));
     // K-ENDE
   }
 

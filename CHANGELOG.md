@@ -2,6 +2,20 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-16 — v1.5.246
+
+- **Zwei Angaben im Lexikon-Vergleich der Düngelinien stimmten nicht.** „BioBizz Master: … hoher Ertrag,
+  terpenreich" ist eine Wirkungszusage, wie v1.5.228 sie aus den Vorlagen genommen hat — ihre Beschreibung im Lexikon
+  war dabei nicht Prüfgegenstand. Jetzt steht dort, was der Plan tut (Woche 7 Stickstoff halbiert, ab Woche 8 keiner),
+  und als Schwäche das Belegte: Zu früh gestoppter Stickstoff kostet Blütenmasse (`ANBAU.md` 5).
+- **„Hesi: Deutsche Marke"** — Hesi ist eine niederländische Marke (HESI Plantenvoeding B.V., Kerkrade, hesi.nl).
+  Die Schwäche „etwas weniger international etabliert" war ohne Beleg; dort steht jetzt, was die App-Vorlage
+  tatsächlich betrifft: kein Calcium/Magnesium-Mittel, bei weichem Wasser dazunehmen (v1.5.239).
+- **Bewusst nicht mit angefasst:** die Haltung zu Herstellermengen im selben Eintrag („Maximalwerte", „50–70 %",
+  „garantiertes Salzaufbau-Risiko"). Sie steht an neun Stellen der App und bekommt einen eigenen Durchgang — an einer
+  Stelle geändert, widerspräche sich die App danach selbst (Übergabe, Abschnitt 10).
+- `test_duengeplantexte.js` Abschnitt K prüft beide Zeilen, die Master-Zeile gegen den Plan selbst (94 Prüfungen).
+
 ## 2026-09-16 — v1.5.245
 
 - **Assistent und Lexikon empfahlen Einsteigern verschiedene Vorlagen.** Der Assistent markiert „BioBizz Light" als
