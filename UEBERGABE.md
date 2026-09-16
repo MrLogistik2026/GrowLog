@@ -207,6 +207,20 @@ Gießen) — dann ist S gemessen statt angenommen. Dazu in den Einstellungen die
   rät — und wenn sich das Ziel nicht vorhersagen lässt: Ernte nach Plan, sobald Klar weg ist? (e) Umbau: vorne der
   Plan-Erntetag mit Freigabe-Wort, die Spanne nur noch in der Trichom-Karte, „min. X d" entfällt — einverstanden?
 
+- **Patricks Antwort auf (d), 16.09.2026 — das Bernstein-Ziel ist Nutzersache.** Wörtlich: „Bitte vergiss beim
+  Erntefenster nicht, dass dies Userabhängig ist. Manche möchten lieber einen Couch Lock und ernten zb. bei 15%
+  Bernstein." **Die App kann das bereits:** `c.targetAmber` (0–60 %, Schnellwahl 3/5/10/15, Vorgabe
+  `TRICH_TARGET_DEFAULT` = 5 %), dazu `_amberEffectHint` mit der Wirkung je Stufe. Für den Umbau heißt das:
+  `erntefenster(c, iso)` rechnet gegen **dieses** Ziel, nie gegen feste 5–8 %. Die Freigabe „nicht mehr zu früh"
+  bleibt an Klar ≤ 10 % (`RIPE_CLEAR_DONE`) hängen — das ist die Untergrenze, die vor dem teuersten Fehler schützt
+  (`ANBAU.md` 11); das Bernstein-Ziel verschiebt nur den Erntetag nach hinten. Schritt 3 des Prüfplans („Editor mit
+  5–8 %") darf das vorhandene Feld also **nicht** ersetzen oder verengen.
+- **Dabei aufgefallen, zu entscheiden (nicht gebaut, weil Umbau):** Der Ernteziel-Block in den Einstellungen steht
+  hinter `!S.beginnerMode` — er ist im Einsteiger-Modus **unsichtbar**. Wer als Anfänger einen Couch Lock will, kann
+  das Ziel gar nicht setzen und bekommt still 5 %. Nach `ANWEISUNG.md` („Der Profi verliert nichts", jede
+  Vereinfachung braucht den Weg zum vollen Umfang) gehört die Frage auch dort hin — sie ist eine Geschmacksfrage,
+  keine Fachfrage, und genau deshalb für den Anfänger relevant.
+
 ### 0m.3 · VPD und Luftfeuchte
 
 **Entschieden (Patrick, 15.09.2026): Option B.** Umgesetzt in v1.5.186 (kein Klima im Auto-Fill) und v1.5.187 (eine
@@ -282,7 +296,7 @@ Wiederholung repariert und dafür auf dem Handy eine Düngermenge weiterlaufen l
 das erst das Nachmessen im Browser; der jsdom-Test prüft es seitdem mit.
 
 **Als Nächstes, in dieser Reihenfolge** (Patricks Auftrag vom 15.09.2026: selbst entscheiden, wissenschaftlich begründet):
-1. **Erntefenster:** drei Messpunkte (Headbud, Mitte, unten), gemittelt; Ernte bei 5–8 % Bernstein, auch wenn noch klare Köpfe da sind, einstellbar (Befunde in 0m.2). Plan der Prüfung: `scratchpad/agenten2/ergebnis_erntefenster_Vorschlagen.json` unter `umsetzung` (9 Schritte). Schritt 1 ist erledigt (v1.5.212); als Nächstes Schritt 2 — Rechenwerte kennzeichnen (`q`: gezählt, bestätigt, gerechnet) und aus Prognose und Freigabe halten.
+1. **Erntefenster:** drei Messpunkte (Headbud, Mitte, unten), gemittelt; der Erntepunkt folgt dem **eingestellten** Bernstein-Ziel (`c.targetAmber`, Vorgabe 5 %, frei bis 60 % — Patrick am 16.09.2026: „Userabhängig … manche ernten bei 15 % für den Couch Lock"), auch wenn noch klare Köpfe da sind (Befunde und Patricks Antwort in 0m.2). Plan der Prüfung: `scratchpad/agenten2/ergebnis_erntefenster_Vorschlagen.json` unter `umsetzung` (9 Schritte). Schritt 1 ist erledigt (v1.5.212); als Nächstes Schritt 2 — Rechenwerte kennzeichnen (`q`: gezählt, bestätigt, gerechnet) und aus Prognose und Freigabe halten.
 2. **Düngepläne:** BioBizz-Schema nachschlagen, Wasser-Tage als Wahl des Nutzers, Herstellerpläne nach Genetik und Dauer (0m.4).
 3. **Begriffe-Prüfung, Schritte 8–24** (`scratchpad/agenten3/begriffe2.json` unter `umsetzung`): Wirkungszusagen und Dosen in Texten, ein Wächter-Test für verbotene Formen, zuletzt die Umbenennungen (Runoff/Ablauf → Drain, Input → Gießwasser).
 
