@@ -2,6 +2,21 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-17 — v1.5.276
+
+- **Hinweis vor dem IceFlush und Tipp in der IceFlush-Phase sprachen noch von Eiswasser** (Bewertung vom 17.09.2026, Hebel 1
+  #17, an v1.5.271 gemessen und gegengeprüft). Drei, zwei und einen Tag vorher stand auf der Startseite „In 2 Tagen:
+  IceFlush. Eiskaltes Wasser zum Abschluss …", und der Tipp lautete an allen drei Tagen der IceFlush-Phase „Eiswasser
+  (<10°C)" — auch in der Dunkelphase, in der gar nichts gegossen wird. Startseite, Tageskarte und Eintrag sagen seit
+  v1.5.111/143 „Crushed Ice an den Topfrand, Wasser gießt du keines dazu".
+- **Jetzt:** Der Hinweis sagt „Crushed Ice bereitlegen — es kommt an den Topfrand, nicht auf den Stamm, und Wasser gießt du
+  keines dazu", mit dem Satz, dass ein Trichom-Plus nicht belegt ist (`ANBAU.md` 14). Der Tipp folgt der Aktion: am
+  IceFlush-Tag Eis an den Topfrand, an den Tagen danach „Dunkelphase: kein Wasser, Luftfeuchte höchstens 60 %" — der Deckel
+  aus `KLIMA_ZIEL.dunkel` (`ANBAU.md` 2.2), ohne Wirkstoff-Versprechen für die Dunkelheit (14).
+- Der Wächter in `test_iceflushtexte.js` sucht jetzt jedes „eiskaltes Wasser" und „Eiswasser" im Quelltext; einzige
+  Ausnahme ist die Zuordnung alter Notizen „Eiswasser gegeben" zum Lexikon.
+- `test_iceflushtexte.js` Abschnitt H: Hinweis 1–3 Tage vorher, Tipp am IceFlush-Tag und in der Dunkelphase, Wächter.
+
 ## 2026-09-17 — v1.5.275
 
 - **Der Eintrag nannte am IceFlush-Tag „Nur eiskaltes Wasser"** (beim Nachmessen von Hebel 1 #17 gefunden, von einem

@@ -227,6 +227,49 @@ const EISTAG = (pflanzen) => `(function(){
       !/Kein Guss — Crushed Ice/.test(spuel.text) && !/eiskaltes Wasser/i.test(spuel.text) && /Nur klares Wasser/.test(spuel.text), spuel.a + ' / ' + spuel.ph);
   }
 
+  console.log('\nH - Hinweis vor dem IceFlush und Tipp in der IceFlush-Phase (v1.5.276)');
+  {
+    const r = JSON.parse(E(`(function(){
+      S.cycles = []; S.entries = {}; S.beginnerMode = true;
+      const c = addCyc({ name: 'Eistipp', seedType: 'auto', medium: 'erde' });
+      c.potSize = 11; c.plantCount = 1;
+      let eisTag = null;
+      for (let d = 60; d <= 120; d++) {
+        c.startDate = isoPlus(todayISO(), -(d - 1));
+        const p0 = phase(todayISO(), c);
+        if (p0 && p0.ph === 'ice' && getAction(todayISO(), c) === 'ice') { eisTag = d; break; }
+      }
+      if (!eisTag) return JSON.stringify({ fehlt: true });
+      const eisStart = c.startDate;
+      const aufTag = (tag) => { c.startDate = isoPlus(todayISO(), -(tag - 1)); saveS(); return phase(todayISO(), c); };
+      const vorher = [];
+      for (const v of [1, 2, 3]) { aufTag(eisTag - v); vorher.push(getAlerts(c).map(x => x.text).join(' | ')); }
+      const tipps = [];
+      for (const n of [0, 1, 2]) { const p = aufTag(eisTag + n); const t = getSmartTip(c, p); tipps.push({ ph: p.ph, iceDay: p.iceDay || null, a: getAction(todayISO(), c), text: t ? t.text : '', lex: t ? t.lex : '' }); }
+      c.startDate = eisStart;
+      return JSON.stringify({ vorher, tipps });
+    })()`));
+    pruef('IceFlush-Tag gefunden', !r.fehlt);
+    if (!r.fehlt) {
+      const hinweise = r.vorher.join(' || ');
+      pruef('1–3 Tage vorher: „Crushed Ice bereitlegen … Wasser gießt du keines dazu", kein „Eiskaltes Wasser"',
+        /IceFlush.{0,20}Crushed Ice bereitlegen/.test(hinweise) && /Wasser gießt du keines dazu/.test(hinweise) && !/Eiskaltes Wasser/.test(hinweise), hinweise.slice(0, 300));
+      const t0 = r.tipps[0];
+      pruef('IceFlush-Tag: Tipp „Crushed Ice an den Topfrand, kein Wasser dazu"', t0.a === 'ice' && /Crushed Ice an den Topfrand, kein Wasser dazu/.test(t0.text) && t0.lex === 'IceFlush', JSON.stringify(t0));
+      const dunkel = r.tipps.slice(1).filter(t => t.ph === 'ice');
+      pruef('Dunkelphase: Tipp „Dunkelphase: kein Wasser, Luftfeuchte höchstens 60 %"', dunkel.length > 0 && dunkel.every(t => /Dunkelphase: kein Wasser, Luftfeuchte höchstens 60 %/.test(t.text)), JSON.stringify(dunkel));
+      pruef('Kein Tipp nennt noch „Eiswasser"', r.tipps.every(t => !/Eiswasser/.test(t.text)), JSON.stringify(r.tipps.map(t => t.text)));
+    }
+  }
+  {
+    // Wächter über den ganzen Quelltext. Ausnahmen per Inhalt: die Zuordnung alter Notizen „Eiswasser gegeben" (Nutzertext).
+    const quelle = fs.readFileSync(path.join(__dirname, 'app.js'), 'utf8').split('\n')
+      .map((z, i) => ({ nr: i + 1, z })).filter(x => !/^\s*(\/\/|\*|\/\*)/.test(x.z));
+    const ausnahme = (z) => /'Eiswasser gegeben'/.test(z);
+    const treffer = quelle.filter(x => (/eiskalte[snm]? Wasser/i.test(x.z) || /Eiswasser/.test(x.z)) && !ausnahme(x.z)).map(x => 'Zeile ' + x.nr + ': ' + x.z.trim().slice(0, 60));
+    pruef('Nirgends mehr „eiskaltes Wasser" oder „Eiswasser" (außer alten Notiz-Texten)', treffer.length === 0, treffer.join(' | '));
+  }
+
   console.log(`\nErgebnis: ${ok} OK, ${fail} Fehler`);
   process.exit(fail ? 1 : 0);
 })();

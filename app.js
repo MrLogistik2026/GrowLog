@@ -219,7 +219,8 @@ const T = {
       `${_inNTagen(daysUntil)}: <b>Spülphase</b> beginnt. Ab dann nur noch klares Wasser ohne Dünger. Vorbereiten: pH-eingestelltes Wasser${spuelTage ? (spuelTage === 1 ? ' für den Spültag' : ` für die ${spuelTage} Spültage`) : ''}.`,
 
     toIceSoon: ({ daysUntil }) =>
-      `${_inNTagen(daysUntil)}: <b>IceFlush</b>. Eiskaltes Wasser zum Abschluss — eine beliebte Grower-Technik (ein Trichom-Plus ist wissenschaftlich allerdings nicht belegt).`,
+      // (v1.5.276) Eis an den Topfrand, kein Wasser — wie Startseite, Tageskarte und Eintrag seit v1.5.111/143.
+      `${_inNTagen(daysUntil)}: <b>IceFlush</b>. Crushed Ice bereitlegen — es kommt an den Topfrand, nicht auf den Stamm, und Wasser gießt du keines dazu. Eine beliebte Grower-Technik; ein Trichom-Plus ist wissenschaftlich nicht belegt.`,
 
     // (v1.5.97) Wenn die eigene Trichom-Messung einen späteren Tag nennt als der Plan, darf
     // hier nicht zum Schneiden aufgefordert werden. Der Plan-Tag stammt aus einer
@@ -3591,7 +3592,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.275';
+const APP_VERSION = 'v1.5.276';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -15293,6 +15294,9 @@ function getSmartTip(c, p) {
     return ht[p.week ? `${p.ph}_${p.week}` : p.ph]
         || { text: 'Tank pflegen: pH 5.5–6.0, EC prüfen, Wassertemp unter 22 °C, alle 7–14 Tage wechseln.' };
   }
+  // (v1.5.276) In der IceFlush-Phase folgt der Tipp der Aktion (UEBERGABE 0j): am IceFlush-Tag Eis an den Topfrand, an den
+  // Tagen danach die Dunkelphase. Vorher stand an allen drei Tagen „Eiswasser (<10°C)".
+  const _aIce = (p.ph === 'ice' && c && c.startDate && p.day) ? getAction(isoPlus(c.startDate, p.day - 1), c) : null;
   const tips = {
     'anzucht_1': { text: 'Erde feucht halten, kein Dünger.', lex: 'Restgewicht (Dryback · Trocken-Nass-Zyklus)' },
     'anzucht_2': { text: 'Leichter Dünger (25-50%) möglich.', lex: 'NPK' },
@@ -15303,7 +15307,9 @@ function getSmartTip(c, p) {
     'bloom_7':   { text: 'Trichome kontrollieren – Lupe!', lex: 'Trichom-Analyse (Ernte-Trigger)' },
     'bloom_9':   { text: 'Letzte Woche vor Spülung.', lex: 'Spülung (Final-Flush)' },
     'flush':     { text: 'Nur klares Wasser. pH ' + phTargetFor(c && c.medium).label + '.', lex: 'Spülung (Final-Flush)' },
-    'ice':       { text: 'Eiswasser (<10°C). Beliebte Technik, Wirkung unbelegt.', lex: 'IceFlush' },
+    'ice':       _aIce === 'ice'
+      ? { text: 'Crushed Ice an den Topfrand, kein Wasser dazu. Beliebte Technik, Wirkung unbelegt.', lex: 'IceFlush' }
+      : { text: 'Dunkelphase: kein Wasser, Luftfeuchte höchstens ' + KLIMA_ZIEL.dunkel.deckel + ' %. Ein Wirkstoff-Schub durch die Dunkelheit ist nicht belegt.', lex: 'Dunkelphase vor der Ernte (24–72 h)' },
     'harvest':   { text: _ernteTipp(c), lex: 'Trichom-Analyse (Ernte-Trigger)' },
     'dry':       { text: TROCKNEN_TEXT + '. Nicht zu schnell!', lex: 'Trocknung' },
     'cure':      { text: 'In Gläsern reifen. Erste 2 Wochen täglich kurz öffnen (burpen), Glas-RLF 58–62%. Je länger, desto besser.', lex: 'Curing (Veredelung)' },
