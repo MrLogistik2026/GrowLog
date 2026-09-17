@@ -181,6 +181,23 @@ const EISTAG = (pflanzen) => `(function(){
     pruef('Nirgends mehr „maximaler Terpengehalt"', !/maximaler Terpengehalt/i.test(quelle));
   }
 
+  // (v1.5.263) Checkliste vor dem IceFlush, Lexikon und Erntetag-Karte nannten „max. 10 % Bernstein" als feste Grenze. Das
+  // Bernstein-Ziel stellt jeder selbst ein (`c.targetAmber`, Patrick am 16.09.2026: „manche ernten bei 15 % für den Couch
+  // Lock"); v1.5.172 hat feste Bernstein-Mengen aus allen anderen Texten genommen. Die Untergrenze bleibt: klar höchstens
+  // RIPE_CLEAR_DONE (ANBAU.md 11).
+  console.log('\nF - (v1.5.263) Das eigene Bernstein-Ziel statt „max. 10 %"');
+  if (!eisProfi.fehlt) {
+    const soll = 'klar höchstens ' + eisProfi.klar + ' %, Bernstein nahe an deinem Ziel (' + eisProfi.amber + ' %)';
+    pruef('Checkliste: ' + soll, eisProfi.panel.includes(soll) && eisProfi.amber === 15, (eisProfi.panel.match(/.{0,30}Trichome.{0,90}/) || [''])[0]);
+    pruef('Erntetag-Karte: dieselbe Regel', eisProfi.ernteSteps.includes(soll), eisProfi.ernteSteps);
+  }
+  {
+    const quelle = fs.readFileSync(path.join(__dirname, 'app.js'), 'utf8').split('\n').filter(z => !/^\s*(\/\/|\*|\/\*)/.test(z)).join('\n');
+    pruef('Nirgends mehr „max. 10 % Bernstein" oder „90 % milchig"', !/max\.? ?10\s?% (B|b)ernstein/.test(quelle) && !/9\d\s?% milchig/.test(quelle),
+      (quelle.match(/.{0,40}(max\.? ?10\s?% (B|b)ernstein|9\d\s?% milchig).{0,20}/) || [''])[0]);
+    pruef('Lexikon IceFlush: Bernstein nahe an deinem eingestellten Ziel', /Bernstein nahe an deinem eingestellten Ziel/.test(quelle));
+  }
+
   console.log(`\nErgebnis: ${ok} OK, ${fail} Fehler`);
   process.exit(fail ? 1 : 0);
 })();

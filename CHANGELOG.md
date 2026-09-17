@@ -2,6 +2,16 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-17 — v1.5.263
+
+- **Drei Stellen nannten eine feste Bernstein-Grenze:** die Checkliste vor dem IceFlush („Trichome 80–95 % milchig · max
+  10 % Bernstein"), der Lexikon-Eintrag „IceFlush" und die Erntetag-Karte („90 % milchig + max 10 % bernstein"). Das
+  Bernstein-Ziel stellt jeder selbst ein (`c.targetAmber`) — Patrick am 16.09.2026: manche ernten für den Couch Lock bei
+  15 %. v1.5.172 hat feste Bernstein-Mengen aus den übrigen Texten genommen; diese drei waren nicht dabei. Jetzt: klar
+  höchstens `RIPE_CLEAR_DONE` %, Bernstein nahe am eigenen Ziel. Dazu „lieber warten, bis 80–90 % milchig sind" im
+  Trichom-Hinweis → bis kaum noch klare Köpfe da sind, dieselbe Regel wie „erntereif" (v1.5.173).
+- `test_iceflushtexte.js` Abschnitt F (28 Prüfungen im Lauf).
+
 ## 2026-09-17 — v1.5.262
 
 - **Die IceFlush-Anleitung nannte den falschen Erntetag.** Sie sagte „Licht ausschalten → 24–36 h Dunkelphase" und
