@@ -2,6 +2,20 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-17 — v1.5.285
+
+- **Am feuchten Gießtag nannte der Eintrag trotzdem eine Menge** (beim Prüfen von v1.5.284 im Browser gefunden). Über dem
+  Status „Gießtag — der Topf ist noch feucht: heute nicht gießen" stand „Lern-Status: ~500 ml aus deinem heutigen Hebe-Test.
+  Höchstens ~3750 ml …", im Gieß-Guide „Anrühren: ~550 ml" und im Feld der Vorschlag 500. Beim vollen Topf passiert das nicht,
+  weil dort die Gießmenge selbst 0 ist (Quelle „voll"); v1.5.284 hatte „noch feucht" an den Anzeigen eingehängt, nicht an der
+  Menge.
+- **Jetzt** liefert `gussMengeJePflanze` bei „noch feucht" dasselbe wie beim vollen Topf: Menge 0, Quelle „feucht", und der
+  Lern-Status sagt „Der Topf ist noch feucht — heute nicht gießen." Damit folgt jede Anzeige, die ihre Menge aus der Gießmenge
+  liest, derselben Antwort — auch die, die v1.5.284 nicht einzeln aufgezählt hatte. Ein Mechanismus statt weiterer
+  Sonderfälle (`ANWEISUNG.md`).
+- `test_giesspunktmenge.js` (14 Prüfungen): Hebe-Test 90 % ohne Menge in Lern-Status, Gieß-Guide, Karte und Satz;
+  Gegenproben „Mittel", „Voll", heute schon gegossen, einmal ausgelassen.
+
 ## 2026-09-17 — v1.5.284
 
 - **Am Gießtag folgte die Startseite dem Kalender, auch wenn die Messung belegte, dass der Topf noch hält** (Bewertung vom

@@ -4593,7 +4593,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.284';
+const APP_VERSION = 'v1.5.285';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -13507,6 +13507,12 @@ function gussMengeJePflanze(c, p, iso) {
   const dz = DRAIN_ZIEL.mid / 100;
   const restH = restgewichtHeute(c, iso);
   if (restH != null && restH >= 95) return { m: 0, quelle: 'voll', V: 0, kap: 0, kapQuelle: null, K: 0, klima: 1, basis: null, restHeute: restH };
+  // (v1.5.285) Auch „noch feucht" (giessenLautMessung): Menge 0 wie beim vollen Topf. Vorher nannten Lern-Status, Gieß-Guide und
+  // Feld-Vorschlag im Eintrag „~500 ml", während der Status darüber „heute nicht gießen" sagte — eine Quelle für jede Menge.
+  if (restH != null) {
+    const _gmM = giessenLautMessung(c, iso);
+    if (_gmM && _gmM.grund === 'feucht') return { m: 0, quelle: 'feucht', V: 0, kap: 0, kapQuelle: null, K: 0, klima: 1, basis: null, restHeute: restH };
+  }
   const { kap, quelle: kapQuelle } = wasserKapazitaet(c, iso);
   const V = nachfuellGrenze(c, iso, restH);
   const K = startkurve(c, p.day, iso, p.ph);
@@ -13547,6 +13553,7 @@ function _gussQuelleTeil(g) {
     case 'alt': return 'aus deinen letzten Güssen';
     case 'korridor': return 'Startwert in deinem eigenen Korridor';
     case 'voll': return 'der Topf ist noch voll';
+    case 'feucht': return 'der Topf ist noch feucht';
     default: return 'Startwert aus Topfgröße und Wachstum';
   }
 }
@@ -13597,6 +13604,7 @@ function _gussIstStart(g) { return !!(g && (g.quelle === 'start' || g.quelle ===
 function _gussLernSatz(c, iso, g) {
   if (!g) return '';
   if (g.quelle === 'voll') return 'Der Topf ist noch voll — heute nicht gießen.';
+  if (g.quelle === 'feucht') return 'Der Topf ist noch feucht — heute nicht gießen.';
   const n = getEffectivePlantCount(c, iso);
   const einheit = (c.scaleByPlants && n > 1) ? ' ml/Pflanze' : ' ml';
   const dMin = Math.round(g.m * DRAIN_ZIEL.min / 100), dMax = Math.round(g.m * DRAIN_ZIEL.max / 100);
