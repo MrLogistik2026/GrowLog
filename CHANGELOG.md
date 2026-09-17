@@ -2,6 +2,24 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-17 — v1.5.272
+
+- **Voller Topf am Spültag: Die Startseite sagte weiter „0 ml"** (Lücke in v1.5.267, beim Durchgehen der Bewertung gefunden,
+  Hebel 1 #7). v1.5.267 erkannte den vollen Topf nur über die Gießmenge aus dem Topf (`gussMengeJePflanze`) — die rechnet für
+  Erde und Coco drinnen in Blüte und Anzucht ab Tag 22. Am Spültag, drinnen wie draußen, läuft die Menge über den älteren
+  Rechenweg, der bei vollem Topf ebenfalls 0 liefert. Die Startseite sagte dort „Heute nur klares Wasser ohne Dünger — davon
+  ungefähr **0 ml**. Das spült die letzten Nährsalze aus der Erde" und „Ca. 0 ml reines Wasser … Bis viel Drain unten
+  durchläuft", während der Eintrag „Topf ist voll — heute nicht gießen" meldete.
+- **Jetzt dieselbe Aussage wie am Gießtag:** „Dein Topf ist heute noch voll … Heute nicht gießen, auch nicht zum Spülen", die
+  Karte „Spültag — der Topf ist noch voll". Wer mit der Waage arbeitet, liest „die Waage zeigt ihn satt" statt Hebe-Test.
+- **Eine Grenze statt zwei Kopien:** Die Bedingung des älteren Rechenwegs (Hebe-Test ≥ 95 %, Waage ≥ 97 % des vollen
+  Gewichts) steht jetzt in `_altWegVoll`; `waterSuggestion` und `_topfVollHeute` fragen beide diese Funktion. Die Menge selbst
+  ist unverändert. Die Outdoor-Zweige im Gieß-Satz sind mit abgedeckt; geplante Gießtage gibt es draußen in der Blüte aber
+  nicht (manueller Outdoor-Modus), geprüft ist deshalb der Outdoor-Spültag.
+- **Offen, bewusst nicht hier:** Hebe-Test und Waage führen zwei verschiedene „voll"-Grenzen (`restgewichtHeute` rechnet die
+  Waage in Restgewicht um, der ältere Weg vergleicht mit 97 % des vollen Gewichts).
+- `test_topfvoll.js` Abschnitte G–I: Spültag voll und knapp, Spültag draußen voll, Quelltext.
+
 ## 2026-09-17 — v1.5.271
 
 - **Am IceFlush und in der Dunkelphase zeigte die Zyklus-Karte das Stadium „Trocknung"** (beim Bau von v1.5.269 gesehen).

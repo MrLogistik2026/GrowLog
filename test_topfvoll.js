@@ -125,6 +125,47 @@ const GIESSTAG = (opt) => `(function(){
   const f = lauf({ einsteiger: false, heute: { restPct: 100 } });
   if (!f.fehlt) pruef('Profi-Startseite: Karte „noch voll", kein „0 ml"', /der Topf ist noch voll/.test(f.dash) && !nullMl.test(f.dash), (f.dash.match(/.{0,50}(^|[^\d.,])0 ml.{0,30}/) || [''])[0]);
 
+  console.log('\nG - Spültag, Hebe-Test „Voll" (v1.5.272)');
+  const spuelVorlage = "p0.ph === 'bloom' && getAction(todayISO(), c) === 'giess'";
+  const spuel = (opt) => {
+    const code = GIESSTAG(opt);
+    if (!code.includes(spuelVorlage)) return { fehlt: true, grund: 'Vorlage im Test geändert' };
+    return JSON.parse(E(code.replace(spuelVorlage, "getAction(todayISO(), c) === 'spuelen'")));
+  };
+  {
+    const g = spuel({ heute: { restPct: 100 } });
+    pruef('Spültag gefunden', !g.fehlt, JSON.stringify(g).slice(0, 80));
+    if (!g.fehlt) {
+      pruef('Topf gilt als voll (älterer Rechenweg)', g.voll === true);
+      pruef('Satz: „Heute nicht gießen, auch nicht zum Spülen", kein „0 ml"', /Heute nicht gießen, auch nicht zum Spülen/.test(g.satz) && !nullMl.test(g.satz), g.satz);
+      pruef('Karte: „Spültag — der Topf ist noch voll"', g.titel === '🚿 Spültag — der Topf ist noch voll', g.titel + ' · ' + g.schritte);
+      pruef('Startseite ohne „0 ml", Eintrag sagt „Topf ist voll"', !nullMl.test(g.dash) && /Topf ist voll/.test(g.eintrag), (g.dash.match(/.{0,50}(^|[^\d.,])0 ml.{0,30}/) || [''])[0]);
+    }
+    const g2 = spuel({ heute: { restPct: 30 } });
+    if (!g2.fehlt) {
+      const ml = parseInt((g2.satz.match(/ungefähr <b>(\d+) ml/) || [])[1], 10);
+      pruef('Spültag mit Hebe-Test „Knapp": normale Spülmenge', g2.voll === false && g2.titel === '🚿 Heute: Spültag' && ml > 0, g2.titel + ' · ' + ml);
+    }
+  }
+
+  console.log('\nH - Draußen, Spültag, Hebe-Test „Voll" (v1.5.272)');
+  {
+    // Draußen gibt es in der Blüte keine geplanten Gießtage (manueller Outdoor-Modus) — Spültage schon.
+    const h = spuel({ growType: 'outdoor', heute: { restPct: 100 } });
+    pruef('Draußen: Spültag gefunden', !h.fehlt, JSON.stringify(h).slice(0, 80));
+    if (!h.fehlt) {
+      pruef('Draußen: Topf gilt als voll', h.voll === true);
+      pruef('Draußen: Satz und Karte ohne „0 ml"', /Heute nicht gießen, auch nicht zum Spülen/.test(h.satz) && !nullMl.test(h.satz) && h.titel === '🚿 Spültag — der Topf ist noch voll' && !nullMl.test(h.dash), h.titel + ' · ' + h.satz);
+    }
+  }
+
+  console.log('\nI - Quelltext (v1.5.272)');
+  {
+    const q = fs.readFileSync(path.join(__dirname, 'app.js'), 'utf8');
+    const ws = q.slice(q.indexOf('function waterSuggestion('), q.indexOf('function waterSuggestion(') + 60000);
+    pruef('waterSuggestion fragt dieselbe Grenze wie die Anzeige (_altWegVoll)', /_altWegVoll\(c, p, isoForVpd\)/.test(ws) && !/rpF >= 95\) return 0/.test(ws));
+  }
+
   pruef('Keine JS-Fehler im Lauf', errors.length === 0, errors.slice(0, 2).join(' | '));
   console.log(`\nErgebnis: ${ok} OK, ${fail} Fehler`);
   process.exit(fail ? 1 : 0);

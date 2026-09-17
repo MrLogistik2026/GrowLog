@@ -3591,7 +3591,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.271';
+const APP_VERSION = 'v1.5.272';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -12449,10 +12449,28 @@ function _gussQuelleTeil(g) {
     default: return 'Startwert aus Topfgröße und Wachstum';
   }
 }
-/** (v1.5.267) Sagt der Hebe-Test (oder die Waage) von heute „Voll"? Dieselbe Grenze wie die Gießmenge (Quelle 'voll'). */
+/** (v1.5.267) Sagt der Hebe-Test (oder die Waage) von heute „Voll"? Dieselbe Grenze wie die Gießmenge (Quelle 'voll').
+ *  (v1.5.272) Auch dort, wo die Menge noch über den älteren Rechenweg läuft — Spülen, Outdoor, Anzucht ab Tag 22 draußen:
+ *  dessen Grenze steht jetzt in _altWegVoll, und waterSuggestion fragt dieselbe Funktion. Vorher sagte die Startseite an
+ *  einem Spültag mit vollem Topf „ungefähr 0 ml … Das spült die letzten Nährsalze aus der Erde". */
 function _topfVollHeute(c, p, iso) {
   const g = gussMengeJePflanze(c, p, iso);
-  return !!(g && g.quelle === 'voll');
+  if (g) return g.quelle === 'voll';
+  return _altWegVoll(c, p, iso);
+}
+/** (v1.5.272) Grenze des älteren Rechenwegs in waterSuggestion (seit v1.4.20): Hebe-Test ≥ 95 % oder Waage ≥ 97 % des vollen
+ *  Gewichts, nicht in Anzucht, Vorzucht und Hydro. Aus waterSuggestion herausgelöst, damit Anzeige und Menge dieselbe Frage stellen. */
+function _altWegVoll(c, p, iso) {
+  if (!p || !c || p.ph === 'anzucht' || p.ph === 'vorzucht' || c.medium === 'hydro') return false;
+  const cdF = S.entries && S.entries[iso] && S.entries[iso].cycleData && S.entries[iso].cycleData[c.id];
+  if (!cdF) return false;
+  const rpF = (cdF.restPct != null && cdF.restPct !== '') ? parseFloat(cdF.restPct) : null;
+  if (rpF != null && isFinite(rpF) && rpF >= 95) return true;
+  if (c.weightMode === 'scale' && c.saturatedWeight && cdF.weightG != null && cdF.weightG !== '') {
+    const wgF = parseFloat(cdF.weightG);
+    if (isFinite(wgF) && wgF >= c.saturatedWeight * 0.97) return true;
+  }
+  return false;
 }
 function _gussIstStart(g) { return !!(g && (g.quelle === 'start' || g.quelle === 'korridor')); }
 function _gussLernSatz(c, iso, g) {
@@ -12630,17 +12648,7 @@ function waterSuggestion(c, p, iso) {
   // ── MENGE: das EINE Modell (v1.4.20) ─────────────────────────────────────────
   // Frisch gegossen / voll gemessen → heute nicht gießen (0). Explizites Signal (Voll-Tap
   // oder Waage ~satt); die Anzeige übersetzt 0 in „Topf voll, warte". Nicht in Anzucht/Hydro.
-  if (p && p.ph !== 'anzucht' && p.ph !== 'vorzucht' && c && c.medium !== 'hydro') {
-    const cdF = S.entries?.[isoForVpd]?.cycleData?.[c.id];
-    if (cdF) {
-      const rpF = (cdF.restPct != null && cdF.restPct !== '') ? parseFloat(cdF.restPct) : null;
-      if (rpF != null && isFinite(rpF) && rpF >= 95) return 0;
-      if (c.weightMode === 'scale' && c.saturatedWeight && cdF.weightG != null && cdF.weightG !== '') {
-        const wgF = parseFloat(cdF.weightG);
-        if (isFinite(wgF) && wgF >= c.saturatedWeight * 0.97) return 0;
-      }
-    }
-  }
+  if (_altWegVoll(c, p, isoForVpd)) return 0;   // (v1.5.272) dieselbe Grenze wie die Anzeige (_topfVollHeute)
 
   // GUSSMENGE = Tagesbedarf D × Gieß-Intervall — gleichbleibend pro Wachstumsstand, steigt
   // mit dem Wachstum (D wächst, sobald der Dryback tiefer wird). KEIN Tag-zu-Tag-Sprung mehr:
@@ -15371,8 +15379,9 @@ function plainSentence(action, c, p, waterMl) {
   // (v1.5.267) Gießtag mit vollem Topf: Der Hebe-Test von heute sagt „Voll", die Menge ist deshalb 0 (gussMengeJePflanze,
   // Quelle 'voll'). Der Satz sagte trotzdem „Gib deiner Pflanze heute etwa 0 ml … bis unten etwas herausläuft", während der
   // Eintrag darunter „Topf ist voll — heute nicht gießen" meldete. Der Hebe-Test schlägt das Gießintervall (ANBAU.md 15).
-  if ((action === 'giess' || action === 'giess_anz') && !(waterMl > 0) && _topfVollHeute(c, p, todayISO())) {
-    return `Dein Topf ist heute noch voll — der Hebe-Test sagt „Voll". <b>Heute nicht gießen.</b> Heb ihn morgen wieder an: Gegossen wird, sobald er „${giesspunktFor(c).knopf}" zeigt.`;
+  // (v1.5.272) Auch am Spültag und draußen — dort sagte der Satz bei vollem Topf „ungefähr 0 ml" bzw. „gieß etwa 0 ml".
+  if ((action === 'giess' || action === 'giess_anz' || action === 'spuelen') && !(waterMl > 0) && _topfVollHeute(c, p, todayISO())) {
+    return `Dein Topf ist heute noch voll — ${c.weightMode === 'scale' ? 'die Waage zeigt ihn satt' : 'der Hebe-Test sagt „Voll"'}. <b>Heute nicht gießen${action === 'spuelen' ? ', auch nicht zum Spülen' : ''}.</b> Heb ihn morgen wieder an: Gegossen wird, sobald er „${giesspunktFor(c).knopf}" zeigt.`;
   }
   if (action === 'giess_anz') {
     if (isVorzucht) {
@@ -15570,13 +15579,14 @@ function getTodayAction(c, p, a, iso) {
 
   // (v1.5.267) Gießtag mit vollem Topf (Hebe-Test von heute „Voll"): Die Karte sagte „Ca. 0 ml Wasser, bis 15–20 % unten
   // ablaufen". Ohne eigenen eingetragenen Guss gilt jetzt, was der Eintrag sagt — heute nicht gießen.
-  if ((a === 'giess' || a === 'giess_anz') && !_savedWater && !(waterMl > 0) && _topfVollHeute(c, p, iso)) {
+  // (v1.5.272) Auch am Spültag und draußen: Die Karte sagte „Ca. 0 ml reines Wasser … Bis viel Drain unten durchläuft".
+  if ((a === 'giess' || a === 'giess_anz' || a === 'spuelen') && !_savedWater && !(waterMl > 0) && _topfVollHeute(c, p, iso)) {
     return {
-      title: '💧 Gießtag — der Topf ist noch voll',
-      icon: '💧',
+      title: a === 'spuelen' ? '🚿 Spültag — der Topf ist noch voll' : '💧 Gießtag — der Topf ist noch voll',
+      icon: a === 'spuelen' ? '🚿' : '💧',
       color: cl.hex,
       steps: [
-        'Dein Hebe-Test heute: „Voll" — <b>heute nicht gießen</b>',
+        `${c.weightMode === 'scale' ? 'Deine Waage heute: satt' : 'Dein Hebe-Test heute: „Voll"'} — <b>heute nicht gießen</b>`,
         `Morgen wieder anheben: Gegossen wird, sobald er „${giesspunktFor(c).knopf}" zeigt`,
       ],
       hint: 'Ein voller Topf nimmt nichts mehr auf. Was du jetzt gießt, läuft unten wieder heraus — und ein Topf, der nie abtrocknet, nimmt den Wurzeln die Luft.',
