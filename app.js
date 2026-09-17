@@ -3592,7 +3592,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.282';
+const APP_VERSION = 'v1.5.283';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -19245,7 +19245,15 @@ function renderGussplan() {
       <div style="width:46px;font-size:12px;color:${_istHeute ? 'var(--green)' : 'var(--text)'};font-weight:700">Tag ${s.tag}</div>
       <div style="flex:1;min-width:0">
         <div style="font-size:11px;color:var(--text-muted)">${dateLabel}${_istHeute ? ' · heute' : ''}</div>
-        ${s.kind === 'ice' ? '<div style="font-size:10px;color:var(--text-hint)">Crushed Ice, kein Guss</div>' : (_ml ? `<div style="font-size:10px;color:var(--text-hint)">etwa ${_mlTxt(_ml)}</div>` : '')}
+        ${_vorbei ? (() => {
+          // (v1.5.283) Vergangene Güsse zeigen, was eingetragen wurde — vorher die heute nachgerechnete Menge (bei Patrick 15 von
+          // 29 Güssen mehr als 5 % daneben, höchstens 33 %). Ein übernommener App-Vorschlag ist als solcher gekennzeichnet.
+          const _cdS = S.entries[s.iso] && S.entries[s.iso].cycleData && S.entries[s.iso].cycleData[c.id];
+          const _w = _cdS ? parseFloat(_cdS.water) : NaN;
+          const _txt = _w > 0 ? `gegossen ${Math.round(_w)} ml${_cdS._suggested && _cdS._suggested.water ? ' · Vorschlag übernommen' : ''}`
+            : (s.kind === 'ice' ? 'Crushed Ice, kein Guss' : 'nicht eingetragen');
+          return `<div style="font-size:10px;color:var(--text-hint)">${_txt}</div>`;
+        })() : (s.kind === 'ice' ? '<div style="font-size:10px;color:var(--text-hint)">Crushed Ice, kein Guss</div>' : (_ml ? `<div style="font-size:10px;color:var(--text-hint)">etwa ${_mlTxt(_ml)}</div>` : ''))}
       </div>
       ${control}
     </div>`;

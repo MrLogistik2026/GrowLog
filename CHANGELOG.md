@@ -2,6 +2,17 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-17 — v1.5.283
+
+- **Die Liste im Gieß-Fahrplan zeigte bei vergangenen Güssen eine nachgerechnete Menge** (Bewertung vom 17.09.2026, Hebel 1
+  #14 Teil 2, an v1.5.271 gemessen und gegengeprüft). Unter „Tag 24" stand „etwa 3000 ml · 600 ml × 5 Pflanzen", eingetragen
+  waren 3500 ml; bei Patrick lagen 15 von 29 vergangenen Güssen mehr als 5 % neben der eingetragenen Menge, höchstens 33 %.
+  Die Zeile rechnete den Vorschlag für diesen Tag neu (`waterSuggestion`), statt zu lesen, was gegossen wurde.
+- **Jetzt** steht bei vergangenen Tagen die eingetragene Menge — „gegossen 3500 ml" —, bei einem übernommenen App-Vorschlag
+  mit „· Vorschlag übernommen", ohne Eintrag „nicht eingetragen", am IceFlush „Crushed Ice, kein Guss". Kommende Güsse zeigen
+  weiter die geschätzte Menge. Ein Messwert wird nie als Schätzung und eine Schätzung nie als Messung gezeigt (`ANBAU.md` 15).
+- `test_fahrplanvergangen.js` (6 Prüfungen): Patricks Sicherung am 04.09., jede vergangene Zeile gegen den Eintrag.
+
 ## 2026-09-17 — v1.5.282
 
 - **Der Hinweis „Ernte ca." widersprach den Kacheln daneben** (Bewertung vom 17.09.2026, Hebel 1 #15, an v1.5.271 gemessen und
