@@ -30,6 +30,96 @@ werden. Wer hier etwas über Pflanzen entscheidet, liest dort nach, statt zu sch
 
 ---
 
+## 0o · Bewertung vom 17.09.2026 — Referenz für die nächsten Versionen
+
+Patrick am 17.09.2026: „Ich hätte gerne eine Einschätzung und Bewertung wie die App funktioniert … in einer 1–10 Skala
+… Das nehmen wir dann als Referenz um die App noch besser zu gestalten." Bewertet ist **v1.5.263**.
+
+**Ergebnis: 6,4 von 10** — aus Anfänger-Sicht 6,2, aus Profi-Sicht 6,6. Urteil: Der Rechenkern (Gießmenge, Klima,
+Drain-Bewertung) ist fachlich stark, aber die Bildschirme davor tragen ihn noch nicht — die Startseite folgt bei Ernte
+und vollem Topf dem Kalender statt der eigenen Messung, der Gießtag ist für Anfänger zu dicht, Einstellungen verschieben
+die Kette ohne Vorschau, und ein beschädigter Speicher kann still den ganzen Grow löschen.
+
+**Übersichtsseite mit Begründungen, Belegen, Einzelnoten, allen Hebeln und Fehlern:**
+https://claude.ai/artifact/ELunakGnB2x3bSxTtdFZ1A (privat; zum Teilen über das Menü der Seite).
+
+**So entstanden die Noten:** Fünf Agenten mit je einer Sicht (Anfänger, Profi, Fachwissen, Technik, Stimmigkeit) haben
+unabhängig bewertet, jede Note mit Beleg — Messung in jsdom (mit Patricks Daten oder leerem Speicher), Code-Stelle oder
+Abschnitt aus `ANBAU.md`. Ein sechster Agent hat als Skeptiker kalibriert, doppelte Befunde zusammengelegt und die
+schweren Fehler am Code nachgeprüft. Bekannte offene Punkte zählen voll; ein Bereich mit offenem Hauptproblem bekommt
+keine 8. Gewichtet nach der Mission: H1, H4, F1, F3 dreifach; T3–T7, S1–S3 einfach; der Rest zweifach. Unsicherheit etwa
+±0,3 je Kategorie, wo nur eine Sicht gemessen hat eher ±0,5. Rohdaten (vergänglich): `scratchpad/bewertung/` im
+Sitzungsordner (`final.json`, je Sicht eine Datei, `auftrag.md` mit Skala und Regeln — für die nächste Runde wiederverwendbar).
+
+**Daraus zu lernen:** Claudes eigene Noten, vorab und ohne Messung geschrieben, lagen fast überall über denen der
+messenden Agenten (Intelligenz 8,3 gegen 7,5, Tests 7,8 gegen 6,6, Offline/Handy 7,5 gegen 6,5). Wer die eigene Arbeit
+aus dem Gedächtnis bewertet, bewertet die Absicht, nicht den Stand. Für die nächste Bewertung: messen, dann benoten.
+
+| ID | Kategorie | Note | Anfänger | Profi |
+|---|---|---|---|---|
+| H1 | Handhabung für Anfänger | **6,2** | 6,2 | – |
+| H2 | Handhabung für Profis | **6,6** | – | 6,6 |
+| H3 | Erstkontakt: Willkommen, Assistent, Demo-Zyklus | **6,5** | 6,5 | – |
+| H4 | Tägliche Nutzung am Gießtag | **6,7** | 6,4 | 7,1 |
+| H5 | Übersichtlichkeit und Informationsdichte | **6,0** | 5,8 | 6,6 |
+| H6 | Einstellungen und ihre Kopplung an Plan und Kalender | **5,0** | 4,7 | 5,4 |
+| I1 | Intelligenz der App („Regeln statt Regler") | **7,2** | 7,3 | 7,1 |
+| I2 | Gießmenge und Gießzeitpunkt | **7,6** | 7,5 | 7,7 |
+| I3 | Düngung und Düngeplan-Vorlagen | **6,4** | 6,5 | 6,3 |
+| I4 | Klima und VPD | **8,0** | 8,1 | 7,9 |
+| I5 | Ernte, Trichome, Erntefenster | **5,2** | 4,8 | 5,5 |
+| I6 | Diagnose und Erste Hilfe | **6,0** | 5,7 | 6,4 |
+| F1 | Fachliche Richtigkeit von Zahlen und Texten | **6,5** | 6,3 | 6,8 |
+| F2 | Ehrlichkeit: Belegtes von Unbelegtem getrennt | **6,9** | – | – |
+| F3 | Schutz vor tödlichen Anfängerfehlern | **6,6** | 6,5 | 6,9 |
+| F4 | Lexikon und Lernwert | **6,9** | 6,6 | 7,1 |
+| F5 | Verständlichkeit der Sprache | **6,2** | 6,0 | – |
+| K1 | Konsistenz: eine Quelle je Zahl | **6,1** | 5,8 | 6,5 |
+| T1 | Stabilität und Fehlerfreiheit | **7,5** | – | – |
+| T2 | Datensicherheit und Datenschutz | **6,3** | 5,9 | 6,7 |
+| T3 | Offline/PWA und Handy-Tauglichkeit | **6,6** | – | – |
+| T4 | Geschwindigkeit | **7,3** | – | – |
+| T5 | Barrierefreiheit | **3,6** | – | – |
+| T6 | Wartbarkeit und Zukunftssicherheit | **5,6** | – | – |
+| T7 | Tests und Qualitätssicherung | **6,7** | – | – |
+| S1 | Coco und Hydro | **5,5** | 5,1 | 5,7 |
+| S2 | Outdoor | **4,3** | 4,2 | 4,4 |
+| S3 | Design und Optik | **6,0** | – | – |
+
+**Die zehn größten Hebel** (Nutzen für Anfänger und Profi im Verhältnis zum Aufwand; Rang 11–19 auf der Übersichtsseite):
+
+1. **Fehler — Startseite an die eigene Messung koppeln.** `plainSentence` (app.js ~15348) und die Erntetag-Karte
+   (~15605) befehlen am Plan-Erntetag „Schneide die Pflanze ab" ohne Blick auf die Trichom-Messung; bei vollem Topf
+   (Hebe-Test „Voll") sagen Satz und Karte „etwa 0 ml … bis unten etwas herausläuft" (~15336, ~15568), der Eintrag
+   dagegen „heute nicht gießen" (~26222). Betrifft F3, I5, H4.
+2. **Fehler — Nachschlagetexte an `ANBAU.md` angleichen, mit Wächter-Test.** Drain-pH-Soll 6,0–6,5 in Erde und
+   Lockout-Spülung (~34065, ~32790, ~34045, Infotext ~5661) gegen 4.1; Mg-Zeile mit CalMag (~34046) gegen 6.2;
+   Luftfeuchte 60–65 % bei Spinnmilben und Hitze ohne Blüte-Grenze (~1512, ~5727, ~33725, ~33904) gegen den Deckel;
+   Sämlings-EC „SOFORT spülen" (~14369) gegen 13.1; Diagnose ausgebleichte Blütenspitzen → „Lampe näher" (~1446).
+3. **Fehler — Speicher-Störfälle abfangen.** `loadS` verschluckt unlesbares JSON (~4185) und versucht die Tageskopie
+   nicht; `_autoBackup` (~5240) ersetzt die Kopie danach durch den leeren Stand — gemessen: stiller Totalverlust. Dazu
+   `cycles: null` bricht den Start ab, `importData` (~25358) nimmt jede JSON-Datei und fährt keine Migrationen. Tests fehlen.
+4. **Umbau — Erntefenster als eine Quelle** nach Prüfplan 0m.2; darin ein Fehler: Ein höheres Bernstein-Ziel ergibt ein
+   *früheres* Fenster (Rückfall von `harvestWindow` auf die Samentüte, ~10339).
+5. **Umbau — Vorschau vor dem Sichern** (Abschnitt 1, Schritt 1). Darin ein Fehler: Der Block „Damit ergibt sich"
+   rechnet beim Tippen nicht nach (`dd`, ~21540).
+6. **Umbau — Gießtag-Eintrag im Einsteiger-Modus entschlacken** (Abschnitt 1): Einsteiger spart dort 3 Felder, 0 Knöpfe.
+7. **Fehler — Assistent:** kein ⓘ auf neun Bildschirmen, obwohl das Willkommen sie verspricht; „5 einfache Fragen" bei
+   acht; „Feminisiert" als photoperiodisch erklärt (~22857). Ob Samentüten-Wochen einen Puffer bekommen, entscheidet Patrick.
+8. **Fehler — Düngeplan-Vorlagen fertig prüfen** (0n): Plagron, CANNA, Hesi ohne geklärten Dosis-Modus, Green Sensation,
+   Produktnotizen mit Wirkungsversprechen, EC im Wachstum an drei Stellen verschieden.
+9. **Umbau — Lesbarkeit auf dem Handy:** Zoom-Sperre (head.html:5), Hinweisfarben 2,2:1 statt 4,5:1, 80 % des Textes
+   ≤ 11 px, helles Thema mit harten dunklen Flächen. Hebt die schwächste Note (T5 3,6) am stärksten.
+10. **Fehler — Begriffe-Prüfung Schritte 8–24:** „Dryback" 35×, „Grow" 8×, „Runoff" 14× sichtbar, Dezimalpunkt und -komma gemischt.
+
+**Reihenfolge ab jetzt:** Die Fehler aus den Hebeln 1–3 werden als Nächstes behoben, je mit eigener Version und Test —
+sie gehen vor die Liste „Als Nächstes" in Abschnitt 0l. Die Umbauten 4–6 und 9 entscheidet Patrick.
+
+**Bei der nächsten Bewertung** dieselbe Skala, dieselben Kategorie-IDs und dieselben Regeln aus `auftrag.md` nehmen und
+die Noten gegen diese Tabelle stellen.
+
+---
+
 ## 0 · Am 06.09.2026 behoben — Meldungen von Patrick
 
 ### Die Gießmenge stellt niemand mehr von Hand ein (v1.5.112)
@@ -452,6 +542,8 @@ unter dem Zeiger liegt; ein Fingerdruck bleibt bei dem Element, auf dem er began
 nicht mehr im Dokument ist, und dann kommt `touchend` am document nie an. Der erste Fix hätte die
 Wiederholung repariert und dafür auf dem Handy eine Düngermenge weiterlaufen lassen. Gefunden hat
 das erst das Nachmessen im Browser; der jsdom-Test prüft es seitdem mit.
+
+**Vorrang seit 17.09.2026:** die Fehler aus den Hebeln 1–3 der Bewertung (Abschnitt 0o). Danach:
 
 **Als Nächstes, in dieser Reihenfolge** (Patricks Auftrag vom 15.09.2026: selbst entscheiden, wissenschaftlich begründet):
 1. **Erntefenster:** drei Messpunkte (Headbud, Mitte, unten), gemittelt; der Erntepunkt folgt dem **eingestellten** Bernstein-Ziel (`c.targetAmber`, Vorgabe 5 %, frei bis 60 % — Patrick am 16.09.2026: „Userabhängig … manche ernten bei 15 % für den Couch Lock"), auch wenn noch klare Köpfe da sind (Befunde und Patricks Antwort in 0m.2). Plan der Prüfung: `scratchpad/agenten2/ergebnis_erntefenster_Vorschlagen.json` unter `umsetzung` (9 Schritte). Schritt 1 ist erledigt (v1.5.212); als Nächstes Schritt 2 — Rechenwerte kennzeichnen (`q`: gezählt, bestätigt, gerechnet) und aus Prognose und Freigabe halten.
@@ -1292,8 +1384,9 @@ Abschnitt 0c. Was bleibt: Am Gießtag hat der Einsteiger 26 Felder gegen 29 beim
 **genauso viele Knöpfe** (53), an normalen Tagen sogar einen mehr. Der Vorschlag aus
 Abschnitt 1 (Aufgabenzeile oben, Rest hinter „Mehr eintragen ▾") steht weiter offen.
 
-**Der Gieß-Fahrplan bleibt in beiden Modi zeichengleich** (6866 Zeichen, 21 Knöpfe,
-9 Felder). Unverändert gegenüber der letzten Messung.
+**Der Gieß-Fahrplan ist seit v1.5.113 im Einsteiger-Modus entschlackt** — am 17.09.2026 gemessen (jsdom, Tag 104):
+Einsteiger 916 Zeichen, 2 Knöpfe, 0 Felder; Profi 2743 Zeichen, 21 Knöpfe, 9 Felder. *(Hier stand bis zur Bewertung
+vom 17.09.2026 noch „in beiden Modi zeichengleich (6866 Zeichen …)“ — veraltet seit v1.5.113.)*
 
 **Der Düngeplan hat im Einsteiger-Modus einen Knopf mehr** als im Profi-Modus. Der Grund
 ist jetzt bekannt: Es ist „Alle 12 Wochen zeigen" — im Einsteiger-Modus wird die
