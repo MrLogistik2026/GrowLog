@@ -122,6 +122,45 @@ const EISTAG = (pflanzen) => `(function(){
     });
   }
 
+  // (v1.5.261) Am IceFlush-Tag stand im Eintrag „~1 L Crushed Ice pro Topf" fest, während der Kasten darunter, die Anleitung
+  // und der Einsteiger-Satz die Menge aus der Topfgröße rechnen (1 L je 11-L-Topf). Beim 15-L-Topf standen „~1 L" und
+  // „1364 ml" auf demselben Bildschirm. Gefunden beim Fach-Gegencheck der IceFlush-Texte.
+  const EIS15 = (beginner) => `(function(){
+    S.cycles = []; S.entries = {}; S.beginnerMode = ${beginner};
+    const c = addCyc({ name: 'Eis15', seedType: 'auto', medium: 'erde' });
+    c.potSize = 15; c.plantCount = 2; c.targetAmber = 15;
+    for (let d = 70; d <= 130; d++) {
+      c.startDate = isoPlus(todayISO(), -(d - 1));
+      if (getAction(todayISO(), c) === 'ice') {
+        saveS();
+        const iso = todayISO();
+        openEntry(iso);
+        const eintrag = document.getElementById('scr-entry').textContent.replace(/\\s+/g, ' ');
+        const panel = _renderIceFlushPanel(c, iso).replace(/<[^>]+>/g, ' ').replace(/\\s+/g, ' ');
+        const st = endspurtState(c, iso);
+        const ernteIso = isoPlus(c.startDate, st.ernteTag - 1);
+        const ernteKarte = getTodayAction(c, phase(ernteIso, c), 'ernte', ernteIso);
+        return JSON.stringify({ eis: Math.round(getPotSize(c) / 11 * 1000), eintrag, panel, ernteTag: st.ernteTag,
+          bis: isoDiff(ernteIso, iso), datum: fmtDE(ernteIso, { weekday: 'long', day: '2-digit', month: '2-digit' }),
+          amber: _targetAmber(c), klar: RIPE_CLEAR_DONE, ernteSteps: ernteKarte ? (ernteKarte.steps || []).join(' | ') : '' });
+      }
+    }
+    return JSON.stringify({ fehlt: true });
+  })()`;
+  const eisProfi = JSON.parse(E(EIS15(false)));
+  const eisEinst = JSON.parse(E(EIS15(true)));
+
+  console.log('\nD - (v1.5.261) Die Eismenge im Eintrag folgt der Topfgröße');
+  pruef('IceFlush-Tag mit 15-L-Topf gefunden', !eisProfi.fehlt && !eisEinst.fehlt, JSON.stringify(eisProfi).slice(0, 80));
+  if (!eisProfi.fehlt && !eisEinst.fehlt) {
+    const soll = '~' + eisProfi.eis + ' ml Crushed Ice pro Topf';
+    pruef('Kein festes „~1 L Crushed Ice pro Topf" mehr im Eintrag (beide Modi)', !/~1 L Crushed Ice pro Topf/.test(eisProfi.eintrag + eisEinst.eintrag));
+    pruef('Die Karte nennt ' + soll, eisProfi.eintrag.includes(soll) || eisEinst.eintrag.includes(soll),
+      (eisProfi.eintrag.match(/.{0,40}Crushed Ice pro Topf.{0,60}/) || [''])[0]);
+    const mengen = (eisProfi.eintrag.match(/(\d+) ml Crushed Ice/g) || []).map(s => parseInt(s, 10));
+    pruef('Alle Eismengen je Topf im Eintrag sind dieselbe Zahl', mengen.length > 0 && mengen.every(m => m === eisProfi.eis || m === eisProfi.eis * 2), mengen.join(', '));
+  }
+
   console.log(`\nErgebnis: ${ok} OK, ${fail} Fehler`);
   process.exit(fail ? 1 : 0);
 })();

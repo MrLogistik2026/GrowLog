@@ -4577,7 +4577,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.260';
+const APP_VERSION = 'v1.5.261';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -27235,7 +27235,7 @@ function renderEntry(iso) {
             ${a === 'ice' ? (() => {
               const _n = getEffectivePlantCount(c, iso);
               const _proTopf = _n > 0 ? Math.round(waterSug / _n / 10) * 10 : waterSug;
-              return `<div style="font-size:11px;color:var(--text-muted);line-height:1.4;margin-top:2px">~1 L Crushed Ice pro Topf am RAND verteilen (nicht Mitte) — schmilzt zu etwa <b>${_proTopf} ml je Topf</b>${_n > 1 ? `, zusammen ~${waterSug} ml für ${_n} Töpfe` : ''}. 4–6h schmelzen, dann Licht AUS.</div>`;
+              return `<div style="font-size:11px;color:var(--text-muted);line-height:1.4;margin-top:2px">~${Math.round(getPotSize(c) / 11 * 1000)} ml Crushed Ice pro Topf am RAND verteilen (nicht Mitte) — schmilzt zu etwa <b>${_proTopf} ml je Topf</b>${_n > 1 ? `, zusammen ~${waterSug} ml für ${_n} Töpfe` : ''}. 4–6h schmelzen, dann Licht AUS.</div>`;
             })() : ''}
             ${a === 'sprueh' ? `<div style="font-size:11px;color:var(--text-muted);line-height:1.4;margin-top:2px">3–5 Sprühstöße auf die Erde am Samen oder Keimling, sobald sie dort oben hell wird.</div>` : ''}
             ${a === 'saettigung' ? `<div style="font-size:11px;color:var(--text-muted);line-height:1.4;margin-top:2px">3 Etappen je ~${Math.max(50, Math.round(waterSug / Math.max(1, getEffectivePlantCount(c, iso)) / 3 / 50) * 50)} ml${getEffectivePlantCount(c, iso) > 1 ? ' je Topf' : ''} mit 15 min Pause — ${_tag1MittelText(c, iso)}.</div>` : ''}

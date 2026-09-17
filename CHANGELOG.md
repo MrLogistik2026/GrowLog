@@ -2,6 +2,13 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-17 — v1.5.261
+
+- **Am IceFlush-Tag standen zwei Eismengen auf demselben Bildschirm.** Die Karte an der Gießmenge sagte fest „~1 L
+  Crushed Ice pro Topf", der Kasten darunter, die Anleitung und der Einsteiger-Satz rechnen die Menge aus der Topfgröße
+  (1 L je 11-L-Topf). Beim 15-L-Topf stand „~1 L" über „1364 ml". Jetzt rechnet die Karte genauso.
+- Gefunden beim Fach-Gegencheck der IceFlush-Texte. `test_iceflushtexte.js` Abschnitt D (17 Prüfungen im Lauf).
+
 ## 2026-09-17 — v1.5.260
 
 - **„Symptom-Diagnose-Baum": „60–70 % aller scheinbaren Mangelerscheinungen sind in Wahrheit pH-Lockouts oder
