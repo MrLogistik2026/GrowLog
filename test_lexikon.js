@@ -563,6 +563,31 @@ function pruef(name, bedingung, info) {
     pruef('Der Eintrag bleibt ausführlich (Praxis bleibt beschrieben)', sp.length > 3000, 'zeichen=' + sp.length);
   }
 
+  // (v1.5.259) Drei IceFlush-Texte versprachen noch, was ANBAU.md 14 nicht trägt: Der Infotext zum Fachbegriff riet, mit
+  // eiskaltem Wasser zu gießen, „der Kältereiz kann die Harz- und Trichom-Bildung anregen" — die App legt am IceFlush-Tag
+  // Crushed Ice an den Topfrand, ohne Wasser (v1.5.111/143). Die Anleitungskarte nannte „8–12 °C Wurzelzone", die niemand
+  // gemessen hat, und sagte zu, der IceFlush schade „zumindest nicht". Der Eintrag „Wurzelschnitt" führte Hard Dryback,
+  // IceFlush und Dunkelphase als „Stress-Boost … gut dokumentiert".
+  console.log('');
+  console.log('V - (v1.5.259) IceFlush und „Stress-Boost" ohne Zusagen');
+  {
+    const q = fs.readFileSync(path.join(__dirname, 'app.js'), 'utf8').split('\n').filter(z => !/^\s*(\/\/|\*|\/\*)/.test(z)).join('\n');
+    [/Premium-Kniff/i, /mit eiskaltem Wasser gießen/i, /Kältereiz kann/i, /Wasser unter <b>10 °C/i, /Kältereiz \(8–12/i, /8–12\s?°C Wurzelzone/i,
+      /zumindest nicht schadet/i, /Stress-Boost/i, /reversibel und gut dokumentiert/i, /IceFlush \(Kältereiz\)/i].forEach(re =>
+      pruef('Nirgends mehr: ' + re.source, !re.test(q), (q.match(new RegExp('.{0,60}' + re.source + '.{0,30}', 'i')) || [''])[0]));
+    const info = JSON.parse(E('JSON.stringify(INFO_TERMS.iceflush)'));
+    pruef('Infotext: Crushed Ice an den Topfrand, kein Wasser, kein Harz-Versprechen (14)',
+      /Crushed Ice an den Topfrand legen, nicht auf den Stamm, kein Wasser dazugießen/.test(info.text) && /Ein Plus an Harz oder Trichomen ist nicht belegt/.test(info.text), info.text);
+    pruef('… Tipp: am IceFlush-Tag des Plans, Menge aus dem Eintrag, vorher bis zum Gießpunkt (1.2)',
+      /am IceFlush-Tag deines Plans/.test(info.tip) && /wie viel, steht an dem Tag im Eintrag/.test(info.tip) && /bis der Topf den Gießpunkt erreicht/.test(info.tip), info.tip);
+    const qq = q.replace(/\s+/g, ' ');
+    pruef('Anleitungskarte: Temperatur ungemessen, Trichom-Plus nicht belegt (7.3, 14)',
+      /Wie kalt die Wurzelzone dabei wird, hängt von Topf, Substrat und Raum ab — gemessen hat es die App nicht/.test(qq) && /Ein Trichom-Plus wird oft berichtet, ist aber <b>nicht belegt<\/b>\. Die Anleitung unten zeigt die Schritte/.test(qq));
+    const ws = text(/^Wurzelschnitt \(Splitting\)$/);
+    pruef('Wurzelschnitt: die drei Alternativen ohne Wirkungsversprechen (14)',
+      /Wer am Ende trotzdem etwas ausprobieren will/.test(ws) && /Ein Plus an Harz oder Wirkung ist bei keinem belegt/.test(ws) && /Splitting dagegen ist eine offene Wunde/.test(ws), ws.slice(-420));
+  }
+
   console.log('');
   console.log(`Ergebnis: ${ok} OK, ${fail} Fehler`);
   process.exit(fail ? 1 : 0);

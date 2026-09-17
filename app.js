@@ -3576,7 +3576,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.258';
+const APP_VERSION = 'v1.5.259';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -5663,8 +5663,8 @@ const INFO_TERMS = {
   },
   iceflush: {
     title: 'IceFlush',
-    text: 'Ein Premium-Kniff für die allerletzte Woche vor der Ernte: mit eiskaltem Wasser gießen. Der kurze Kältereiz kann die Harz- und Trichom-Bildung anregen.',
-    tip: 'Nur 1–2 Mal in der Spülphase, Wasser unter <b>10 °C</b>. Kein Muss — für Einsteiger Kür, nicht Pflicht. Outdoor weglassen (Temperatur dort nicht kontrollierbar).',
+    text: 'Eine beliebte Grower-Technik kurz vor der Ernte: Crushed Ice an den Topfrand legen, nicht auf den Stamm, kein Wasser dazugießen. Ein Plus an Harz oder Trichomen ist nicht belegt — die App plant den Schritt ein, verspricht aber nichts.',
+    tip: 'Einmal, am IceFlush-Tag deines Plans: Crushed Ice am Topfrand verteilen, kein Wasser dazu — wie viel, steht an dem Tag im Eintrag. Vorher nicht mehr gießen, bis der Topf den Gießpunkt erreicht. Kein Muss — Kür, nicht Pflicht. Outdoor weglassen.',
     lex: 'IceFlush',
   },
   cupniveau: {
@@ -29104,9 +29104,10 @@ function _renderIceFlushPanel(c, iso) {
         <span style="font-size:13px;font-weight:700;color:#a5f3fc">IceFlush-Anleitung · Premium</span>
       </div>
       <div style="font-size:11px;color:var(--text-muted);line-height:1.55;margin-bottom:10px">
-        Kältereiz (8–12°C Wurzelzone) in den letzten 24–36 h. Ein Trichom-Plus wird oft
-        berichtet, ist aber <b>nicht belegt</b> — die Anleitung unten sorgt dafür, dass der
-        IceFlush deiner Pflanze zumindest nicht schadet.
+        Crushed Ice am Topfrand, am IceFlush-Tag deines Plans. Wie kalt die Wurzelzone dabei wird, hängt von
+        Topf, Substrat und Raum ab — gemessen hat es die App nicht. Ein Trichom-Plus wird oft berichtet, ist aber
+        <b>nicht belegt</b>. Die Anleitung unten zeigt die Schritte: Topf vorher bis zum Gießpunkt abtrocknen lassen,
+        Eis nur an den Rand, kein Wasser dazu.
       </div>
 
       <details ${allChecked ? '' : 'open'} style="margin-bottom:10px">
@@ -33454,11 +33455,11 @@ const LEXIKON = [
         '• <b>Bei Autoflowern:</b> Pflanze hat keine Reserven mehr für eine Stress-Antwort, sie verkraftet es einfach nicht<br>' +
         '• <b>Bei zu früh angesetztem Splitting</b> (>72 h vor Ernte): Pflanze geht ein bevor Ernte möglich<br><br>' +
         '<b>Empfehlung:</b> <b>Nicht als Standard-Methode</b>. Wer experimentieren will: 1 von mehreren Pflanzen splitten, andere normal lassen, Ergebnisse separat trocknen und vergleichen — eigene Daten sammeln statt Foren-Mythen vertrauen. Bei einer einzigen wertvollen Pflanze: Finger weg.<br><br>' +
-        '<b>Sicherere Alternativen für Stress-Boost am Ende:</b><br>' +
-        '• Hard Dryback (kontrollierter Trockenstress)<br>' +
-        '• IceFlush (Kältereiz)<br>' +
+        '<b>Wer am Ende trotzdem etwas ausprobieren will:</b><br>' +
+        '• Hard Dryback (nicht gießen, bis der Topf den Gießpunkt erreicht — nicht tiefer)<br>' +
+        '• IceFlush (Crushed Ice am Topfrand)<br>' +
         '• Dunkelphase 24–36 h<br>' +
-        'Diese drei sind reversibel und gut dokumentiert — Splitting ist es nicht.' },
+        'Alle drei kommen ohne Schnitt aus und lassen sich sauber einplanen. Ein Plus an Harz oder Wirkung ist bei keinem belegt. Splitting dagegen ist eine offene Wunde.' },
   ]},
   { cat: '🍂 Nach der Ernte', items: [
     { t: 'Erntetag — Schnitttechnik',

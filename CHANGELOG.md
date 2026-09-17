@@ -2,6 +2,18 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-17 — v1.5.259
+
+- **Drei IceFlush-Texte versprachen, was `ANBAU.md` 14 nicht trägt.** Der Infotext zum Fachbegriff empfahl „mit
+  eiskaltem Wasser gießen", „Wasser unter 10 °C", und „der kurze Kältereiz kann die Harz- und Trichom-Bildung anregen".
+  Die App legt am IceFlush-Tag seit v1.5.111/143 Crushed Ice an den Topfrand, ohne Wasser — zusätzliches Wasser macht
+  den Hard-Dryback zunichte, und kaltes Gießwasser bremst die Aufnahme der Wurzel (7.3). Jetzt sagt der Infotext, was
+  die App tut, und dass ein Plus an Harz nicht belegt ist.
+- Die Anleitungskarte am IceFlush-Tag nannte „Kältereiz (8–12 °C Wurzelzone)" — gemessen hat das die App nicht, der
+  Lexikon-Eintrag sagt es selbst — und sagte zu, der IceFlush schade „zumindest nicht". Der Eintrag „Wurzelschnitt"
+  führte Hard Dryback, IceFlush und Dunkelphase als „Stress-Boost … reversibel und gut dokumentiert".
+- `test_lexikon.js` Abschnitt V (219 Prüfungen im Lauf).
+
 ## 2026-09-17 — v1.5.258
 
 - **Der Eintrag „Spülung (Final-Flush)" hatte noch unbelegte Aussagen zu Living Soil und Coco:** „Bei Living Soil
