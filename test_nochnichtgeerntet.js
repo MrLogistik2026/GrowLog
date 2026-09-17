@@ -197,6 +197,40 @@ const BLICK = `window._blick = function (c) {
   const i2 = lauf({ nach: 2, setup: "const x = eintrag(1); x.water = '1500'; x._suggested = { water: true };" });
   if (!i2.fehlt) pruef('Vorgeschlagene Menge ohne eigene Eingabe: kein Beleg', i2.steht === null, JSON.stringify(i2.steht));
 
+  console.log('\nJ - Klima einer stehenden Pflanze nach dem Plan-Erntetag (v1.5.266)');
+  {
+    const klima = (opt) => {
+      const l = lauf(opt);
+      if (l.fehlt) return { fehlt: true };
+      return JSON.parse(E(`(function(){
+        const c = S.cycles[0], heute = todayISO(), p = phase(heute, c);
+        const st = klimaStatus(24, 68, p, c);
+        const warn = getEntryWarnings({}, p, { temp: '33', humidity: '75' }, c, heute).map(x => x.text).join(' | ');
+        const ziel = getPhaseTargets(p);
+        const e = S.entries[heute] || (S.entries[heute] = {});
+        e.temp = '24'; e.humidity = '68'; saveS();
+        openEntry(heute);
+        const eb = document.getElementById('entry-body');
+        return JSON.stringify({ stufe: klimaStufe(p), s: st ? st.s : null, deckel: st ? st.ziel.deckel : null, warn,
+          zielLabel: ziel ? ziel.label : null, json: JSON.stringify(p), eintrag: eb ? eb.textContent.replace(/\\s+/g, ' ') : '' });
+      })()`));
+    };
+    const j = klima({ nach: 2, setup: "eintrag(1).water = '1500';" });
+    if (!j.fehlt) {
+      pruef('Stufe „späte Blüte" statt keiner', j.stufe === 'spaet' && j.zielLabel === 'Späte Blüte', j.stufe + ' / ' + j.zielLabel);
+      pruef('68 % bei 24 °C: über dem Schimmel-Deckel von 60 %', j.s === 'schimmel' && j.deckel === 60, j.s);
+      pruef('33 °C: Hitze-Warnung wie in der Blüte, nicht still wie beim Trocknen', /zu heiß/.test(j.warn), j.warn);
+      pruef('Eintrag nennt die späte Blüte, nicht das Trockenklima', /Späte Blüte/.test(j.eintrag) && !/Trocknen: 18–20/.test(j.eintrag));
+      pruef('Phase als JSON unverändert (ernteOffen nicht aufzählbar)', !/ernteOffen/.test(j.json), j.json);
+    }
+    const j2 = klima({ nach: 2 });
+    if (!j2.fehlt) {
+      pruef('Ohne Beleg: keine Blüte-Stufe, keine Hitze-Warnung wie bisher', j2.stufe === null && j2.s === null && !/zu heiß/.test(j2.warn), j2.stufe + ' / ' + j2.warn);
+    }
+    const j3 = klima({ nach: 0 });
+    if (!j3.fehlt) pruef('Plan-Erntetag bleibt Stufe „Ernte" (Deckel 60 %)', j3.stufe === 'ernte' && j3.deckel === 60, j3.stufe);
+  }
+
   pruef('Keine JS-Fehler im Lauf', errors.length === 0, errors.slice(0, 2).join(' | '));
   console.log(`\nErgebnis: ${ok} OK, ${fail} Fehler`);
   process.exit(fail ? 1 : 0);

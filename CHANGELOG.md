@@ -2,6 +2,23 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-17 — v1.5.266
+
+- **Das Klima bewertete eine stehende Pflanze nach dem Plan-Erntetag gar nicht** (beim Bau von v1.5.265 gefunden).
+  `klimaStufe(p)` kennt für Trocknen und Curing keine Stufe. Stand die Pflanze noch, weil die Trichome nicht reif waren, bekam
+  sie bei 24 °C und 68 % Luftfeuchte keine Schimmel-Warnung, die Zielzeilen im Eintrag nannten das Trockenklima (18–20 °C,
+  55–62 %), und bei 33 °C schwieg die Hitze-Warnung („beim Trocknen ist die Pflanze geschnitten", v1.5.194). Reife, dichte
+  Blüten sind genau der Fall, für den der Deckel von 60 % da ist (`ANBAU.md` 13.5).
+- **Jetzt gilt für sie die späte Blüte:** VPD 1,2–1,5 kPa, 22–26 °C, höchstens 60 % RLF — dieselben Zahlen wie beim Spülen
+  und am IceFlush-Tag (`ANBAU.md` 2.2). Der Plan-Erntetag selbst bleibt Stufe „Ernte" (Deckel 60 %, kein Band), weil dort vor
+  dem Lichtangang geschnitten wird.
+- **Wie die Stellen davon erfahren:** `klimaStufe`, `getPhaseTargets` und `vpdZone` bekommen nur die Phase, nicht den Zyklus.
+  Statt allen den Zyklus nachzureichen, trägt das Phasen-Objekt von Ernte, Trocknen und Curing jetzt `ernteOffen`
+  (`_mitErnteOffen`): erst beim Lesen berechnet, und nicht aufzählbar, damit JSON und Kopien der Phase gleich bleiben.
+  Ohne Beleg fürs Stehen ändert sich nichts — Patricks Sicherung zeigt nach seinem Erntetag weiter das Trockenklima.
+- `test_nochnichtgeerntet.js` Abschnitt J: Stufe, Deckel, Hitze-Warnung, Zielzeile im Eintrag, Phase als JSON, ohne Beleg
+  und am Plan-Erntetag.
+
 ## 2026-09-17 — v1.5.265
 
 - **Nach dem Plan-Erntetag hielt die App eine stehende Pflanze für geerntet** (Bewertung vom 17.09.2026, Hebel 1; eine

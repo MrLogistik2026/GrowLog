@@ -4577,7 +4577,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.265';
+const APP_VERSION = 'v1.5.266';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -8283,7 +8283,7 @@ function phase(iso, c) {
   if (!c) return null;
   // Datum-basierte Phase (Outdoor-Photoperiode oder Indoor mit explizitem bloomStartDate)
   const dated = _datebasedPhase(iso, c);
-  if (dated) return dated;
+  if (dated) return _mitErnteOffen(dated, iso, c);   // (v1.5.266) ernteOffen am Phasen-Objekt
 
   if (!c.startDate) return null;
 
@@ -8319,9 +8319,10 @@ function phase(iso, c) {
   if (diff < f)  return { ph: 'flush',   day: diff + 1, week: null, total: dr, pct: Math.round(diff / dr * 100) };
   // (v1.5.188) iceDay 1 ist der IceFlush-Tag, ab 2 die Dunkelphase (klimaStufe).
   if (diff < ic) return { ph: 'ice',     day: diff + 1, week: null, iceDay: diff - f + 1, total: dr, pct: Math.round(diff / dr * 100) };
-  if (diff < h)  return { ph: 'harvest', day: diff + 1, week: null, total: dr, pct: Math.round(diff / dr * 100) };
-  if (diff < dr) return { ph: 'dry',     day: diff + 1, week: null, total: dr, pct: Math.round(diff / dr * 100) };
-  if (diff < cu) return { ph: 'cure',    day: diff + 1, week: null, cureDay: diff - dr + 1, cureTotal: (c.cureDays || PHASE_DEFAULTS.cureDays), total: dr, pct: 100 };
+  // (v1.5.266) Ernte, Trocknen und Curing tragen ernteOffen — erst beim Lesen berechnet, siehe _mitErnteOffen.
+  if (diff < h)  return _mitErnteOffen({ ph: 'harvest', day: diff + 1, week: null, total: dr, pct: Math.round(diff / dr * 100) }, iso, c);
+  if (diff < dr) return _mitErnteOffen({ ph: 'dry',     day: diff + 1, week: null, total: dr, pct: Math.round(diff / dr * 100) }, iso, c);
+  if (diff < cu) return _mitErnteOffen({ ph: 'cure',    day: diff + 1, week: null, cureDay: diff - dr + 1, cureTotal: (c.cureDays || PHASE_DEFAULTS.cureDays), total: dr, pct: 100 }, iso, c);
   return null;
 }
 
@@ -14662,6 +14663,10 @@ function klimaStufe(p) {
   if (ph === 'flush') return 'spuelen';
   if (ph === 'ice') return (p.iceDay || 1) > 1 ? 'dunkel' : 'ice';   // (v1.5.188) nach dem IceFlush-Tag: Licht aus
   if (ph === 'harvest') return 'ernte';
+  // (v1.5.266) Steht die Pflanze nach dem Plan-Erntetag noch (ernteOffen), gilt das Klima der späten Blüte mit dem
+  // Schimmel-Deckel von 60 % (ANBAU.md 2.2, 13.5). Vorher gab es für Trocknen und Curing keine Stufe: Eine reife, stehende
+  // Pflanze bekam bei 70 % Luftfeuchte keine Warnung, und die Zielzeilen nannten das Trockenklima.
+  if ((ph === 'dry' || ph === 'cure') && p.ernteOffen) return 'spaet';
   return null;
 }
 
@@ -15748,7 +15753,7 @@ function getEntryWarnings(cd, p, e, c, iso) {
       // mehr. Die Temperatur bewertet dort die Zielzeile im Umgebungsblock (Trocknen 18–20 °C, TROCKNEN_KLIMA). Vorher kam bei
       // 17 °C im Trockenraum „Fällt die Wurzelzone unter 16 °C …", bei 30 °C „Stoffwechsel bremst. Ziel: 22–28 °C bei Licht an"
       // und bei 33 °C „Hitzestress (Taco-Blätter)". In Dunkelphase und am Erntetag gilt über 32 °C der Terpen-Hinweis.
-      const _geschnitten = !!(p && (p.ph === 'dry' || p.ph === 'cure'));
+      const _geschnitten = !!(p && (p.ph === 'dry' || p.ph === 'cure') && !p.ernteOffen);   // (v1.5.266) steht die Pflanze noch, bleiben die Warnungen
       if (_geschnitten) { /* keine Pflanzen-Warnung — siehe Zielzeile */ }
       else if (tempVal > 32 && !_ohneTempZiel) out.push({ type: 'err', text: `🌡️ ${tempVal}°C zu heiß! Hitzestress (Taco-Blätter). Lüftung erhöhen.` });
       else if (tempVal > 29) out.push({ type: tempVal > 32 ? 'err' : 'warn', text: _ohneTempZiel
@@ -15772,8 +15777,8 @@ function getEntryWarnings(cd, p, e, c, iso) {
       // (v1.5.187) Schimmel- und Trockengrenzen bewertet der Umgebungsblock (klimaStatus, KLIMA_ZIEL). Hier stand „über 80 %"
       // unabhängig von der Phase und „über 70" als Warnung — beim Sämling unter der Haube neben „Sämling ✓". Es bleibt der
       // Gerätehinweis: Aktivkohlefilter verlieren in feuchter Luft an Wirkung.
-      if (rhVal > 70 && klimaStufe(p) !== 'saemling' && p && p.ph !== 'dry' && p.ph !== 'cure') out.push({ type: 'info', text: `💨 ${rhVal} % RLF — über 70 % kann der Aktivkohlefilter feucht werden und Geruch durchlassen.` });
-      else if (rhVal < 30 && p && p.ph !== 'dry' && p.ph !== 'cure') out.push({ type: 'warn', text: `💨 ${rhVal}% RLF sehr niedrig — Pflanze schließt Stomata.` });
+      if (rhVal > 70 && klimaStufe(p) !== 'saemling' && p && (p.ernteOffen || (p.ph !== 'dry' && p.ph !== 'cure'))) out.push({ type: 'info', text: `💨 ${rhVal} % RLF — über 70 % kann der Aktivkohlefilter feucht werden und Geruch durchlassen.` });
+      else if (rhVal < 30 && p && (p.ernteOffen || (p.ph !== 'dry' && p.ph !== 'cure'))) out.push({ type: 'warn', text: `💨 ${rhVal}% RLF sehr niedrig — Pflanze schließt Stomata.` });
     }
   }
 
@@ -32362,6 +32367,23 @@ function _stehtNochNachPlan(c, iso) {
   }
   if (!steht || (schnitt && schnitt >= steht)) return null;
   return { ernteISO, seitTagen: isoDiff(iso, ernteISO) };
+}
+
+/**
+ * (v1.5.266) Hängt an ein Phasen-Objekt für Ernte, Trocknen und Curing die Eigenschaft ernteOffen — erst beim Lesen berechnet
+ * und nicht aufzählbar, damit JSON und Kopien bleiben wie bisher. So kennen Stellen, die nur die Phase bekommen (klimaStufe
+ * und damit Zielzeilen, VPD-Etikett und Luftfeuchte-Warnung, dazu die Eintragswarnungen), die offene Ernte, ohne dass jede
+ * den Zyklus mitgereicht bekommt.
+ */
+function _mitErnteOffen(p, iso, c) {
+  if (p && c && (p.ph === 'harvest' || p.ph === 'dry' || p.ph === 'cure')) {
+    let wert;
+    Object.defineProperty(p, 'ernteOffen', {
+      enumerable: false, configurable: true,
+      get() { if (wert === undefined) wert = ernteOffen(c, iso, p); return wert; },
+    });
+  }
+  return p;
 }
 
 /**
