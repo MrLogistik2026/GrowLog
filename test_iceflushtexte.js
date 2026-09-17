@@ -199,6 +199,34 @@ const EISTAG = (pflanzen) => `(function(){
     pruef('Lexikon IceFlush: Bernstein nahe an deinem eingestellten Ziel', /Bernstein nahe an deinem eingestellten Ziel/.test(quelle));
   }
 
+  console.log('\nG - Eintrag: Hinweis über den Zusätzen am IceFlush-Tag und in der Spülphase (v1.5.275)');
+  {
+    const eintragAm = (bedingung, heute) => JSON.parse(E(`(function(){
+      S.cycles = []; S.entries = {}; S.beginnerMode = false;
+      const c = addCyc({ name: 'Hinweis', seedType: 'auto', medium: 'erde' });
+      c.potSize = 11; c.plantCount = 1;
+      let gefunden = false;
+      for (let d = 60; d <= 120; d++) {
+        c.startDate = isoPlus(todayISO(), -(d - 1));
+        const p0 = phase(todayISO(), c), a0 = getAction(todayISO(), c);
+        if (p0 && (${bedingung})) { gefunden = true; break; }
+      }
+      if (!gefunden) return JSON.stringify({ fehlt: true });
+      S.entries[todayISO()] = { cycleData: { [c.id]: ${JSON.stringify(heute || {})} } };
+      saveS();
+      openEntry(todayISO());
+      const eb = document.getElementById('entry-body');
+      return JSON.stringify({ a: getAction(todayISO(), c), ph: phase(todayISO(), c).ph, text: eb ? eb.textContent.replace(/\\s+/g, ' ') : '' });
+    })()`));
+    const eis = eintragAm("a0 === 'ice'");
+    pruef('IceFlush-Tag gefunden', !eis.fehlt, JSON.stringify(eis).slice(0, 80));
+    if (!eis.fehlt) pruef('IceFlush-Tag: „Kein Guss — Crushed Ice an den Topfrand", kein „eiskaltes Wasser"',
+      /Kein Guss — Crushed Ice an den Topfrand, kein Wasser und kein Dünger dazu/.test(eis.text) && !/eiskaltes Wasser/i.test(eis.text), (eis.text.match(/.{0,40}(Kein Guss|eiskaltes).{0,60}/) || [''])[0]);
+    const spuel = eintragAm("p0.ph === 'flush' && !a0", { water: '2000' });
+    if (!spuel.fehlt) pruef('Spülphase ohne Aktion mit eingetragenem Wasser: „Nur klares Wasser", kein „Kein Guss"',
+      !/Kein Guss — Crushed Ice/.test(spuel.text) && !/eiskaltes Wasser/i.test(spuel.text) && /Nur klares Wasser/.test(spuel.text), spuel.a + ' / ' + spuel.ph);
+  }
+
   console.log(`\nErgebnis: ${ok} OK, ${fail} Fehler`);
   process.exit(fail ? 1 : 0);
 })();

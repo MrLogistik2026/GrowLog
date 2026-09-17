@@ -2,6 +2,17 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-17 — v1.5.275
+
+- **Der Eintrag nannte am IceFlush-Tag „Nur eiskaltes Wasser"** (beim Nachmessen von Hebel 1 #17 gefunden, von einem
+  zweiten Agenten gegengeprüft). Direkt unter dem Kasten „Crushed Ice heute … Wasser gießt du keines dazu" (seit v1.5.111)
+  stand über den Zusätzen „🧊 Nur eiskaltes Wasser – kein Basisdünger!". Die Bedingung dafür war verkehrt herum
+  (`a === 'spuelen' ? Spülen : Eis`): Auch an Tagen der Spülphase ohne Aktion, an denen Wasser eingetragen war, stand
+  „eiskaltes Wasser".
+- **Jetzt:** Eis nur am IceFlush-Tag selbst — „Kein Guss — Crushed Ice an den Topfrand, kein Wasser und kein Dünger dazu" —,
+  sonst „Nur klares Wasser". Ein Trichom-Versprechen gibt es an keiner der beiden Stellen (`ANBAU.md` 14).
+- `test_iceflushtexte.js` Abschnitt G: IceFlush-Tag und Spülphasen-Tag mit eingetragenem Wasser.
+
 ## 2026-09-17 — v1.5.274
 
 - **Der Gieß-Fahrplan sagte „Nächster Guss · heute" nach dem Guss und bei vollem Topf** (Bewertung vom 17.09.2026, Hebel 1

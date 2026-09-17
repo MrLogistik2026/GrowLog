@@ -4592,7 +4592,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.274';
+const APP_VERSION = 'v1.5.275';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -28576,9 +28576,11 @@ function renderEntry(iso) {
 
       } else {
         // Flush/Ice: "Nur klares Wasser" hint + Zusätze-Eingabe (user can still log products they use)
+        // (v1.5.275) Eis nur am IceFlush-Tag selbst (Aktion 'ice'). Vorher stand dort „Nur eiskaltes Wasser" direkt unter dem
+        // Kasten „Crushed Ice heute … Wasser gießt du keines dazu", und an Spültagen ohne Aktion mit eingetragenem Wasser auch.
         const additivesInfo = isFlushType
           ? `<div style="background:${cl.hex}08;border:0.5px solid ${cl.hex}22;border-radius:10px;padding:10px 12px;font-size:12px;color:${cl.hex}99;margin-bottom:6px">
-              ${a === 'spuelen' ? '🚿 Nur klares Wasser – kein Basisdünger!' : '🧊 Nur eiskaltes Wasser – kein Basisdünger!'}
+              ${a === 'ice' ? '🧊 Kein Guss — Crushed Ice an den Topfrand, kein Wasser und kein Dünger dazu' : '🚿 Nur klares Wasser – kein Basisdünger!'}
             </div>`
           : '';
 
