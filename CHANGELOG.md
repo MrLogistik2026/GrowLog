@@ -2,6 +2,19 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-17 — v1.5.277
+
+- **Der Gieß-Fahrplan zeigte am IceFlush eine Gießmenge** (Bewertung vom 17.09.2026, Hebel 1 #14 Teil 1, an v1.5.271
+  gemessen und gegengeprüft). Die Karte „Nächster Guss" sagte „🧊 IceFlush · etwa 700 ml", mit drei Pflanzen „etwa 2100 ml ·
+  700 ml je Pflanze × 3 Pflanzen" — bei Patrick am 04.09. genau so. Das ist das Schmelzwasser aus dem Eis, keine Menge zum
+  Gießen; Startseite, Tageskarte und Eintrag sagen seit v1.5.111/143 „Crushed Ice an den Topfrand, Wasser gießt du keines
+  dazu".
+- **Jetzt:** „🧊 IceFlush · etwa 1000 ml Crushed Ice je Topf an den Rand — kein Wasser dazu", mit derselben Formel wie die
+  Tageskarte (1 L je 11-L-Topf, v1.5.261); in der Liste steht beim IceFlush „Crushed Ice, kein Guss" statt einer Menge.
+- **Noch offen, eigene Version:** Die Liste zeigt bei vergangenen Güssen die nachgerechnete Menge statt der eingetragenen
+  (#14 Teil 2).
+- `test_fahrplaneis.js` (8 Prüfungen): heute und morgen IceFlush, eine und drei Pflanzen, 11- und 15-L-Topf.
+
 ## 2026-09-17 — v1.5.276
 
 - **Hinweis vor dem IceFlush und Tipp in der IceFlush-Phase sprachen noch von Eiswasser** (Bewertung vom 17.09.2026, Hebel 1

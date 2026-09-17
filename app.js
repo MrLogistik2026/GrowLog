@@ -3592,7 +3592,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.276';
+const APP_VERSION = 'v1.5.277';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -19095,6 +19095,8 @@ function renderGussplan() {
   // „17800 ml", die man nicht nachrechnen kann, ist selbst ein Fehler — man weiß nicht, ob
   // die Pflanzenzahl oder der Mengen-Korridor dahintersteckt.
   const _mlFor = (st) => {
+    // (v1.5.277) Am IceFlush wird nicht gegossen — die Menge dort ist Schmelzwasser, keine Gießmenge (siehe art und Listenzeile).
+    if (st.kind === 'ice') return null;
     try {
       const pp = phase(st.iso, c);
       const v = waterSuggestion(c, pp, st.iso);
@@ -19118,7 +19120,7 @@ function renderGussplan() {
     const eff = (_naechster.vorBluete || typeof getFeedWaterEffective !== 'function')
       ? _naechster.type
       : getFeedWaterEffective(c, phase(_naechster.iso, c), _naechster.iso, cd);
-    const art = _naechster.kind === 'ice' ? '🧊 IceFlush'
+    const art = _naechster.kind === 'ice' ? `🧊 IceFlush · etwa <b>${Math.round(getPotSize(c) / 11 * 1000)} ml Crushed Ice</b> je Topf an den Rand — kein Wasser dazu`
       : _naechster.kind === 'flush' ? '💧 Spülen (nur Wasser)'
       : _naechster.kind === 'saettigung' ? '💦 Sättigungsguss'
       : _naechster.kind === 'anzucht' ? '🌱 Anzucht-Guss'
@@ -19222,7 +19224,7 @@ function renderGussplan() {
       <div style="width:46px;font-size:12px;color:${_istHeute ? 'var(--green)' : 'var(--text)'};font-weight:700">Tag ${s.tag}</div>
       <div style="flex:1;min-width:0">
         <div style="font-size:11px;color:var(--text-muted)">${dateLabel}${_istHeute ? ' · heute' : ''}</div>
-        ${_ml ? `<div style="font-size:10px;color:var(--text-hint)">etwa ${_mlTxt(_ml)}</div>` : ''}
+        ${s.kind === 'ice' ? '<div style="font-size:10px;color:var(--text-hint)">Crushed Ice, kein Guss</div>' : (_ml ? `<div style="font-size:10px;color:var(--text-hint)">etwa ${_mlTxt(_ml)}</div>` : '')}
       </div>
       ${control}
     </div>`;
