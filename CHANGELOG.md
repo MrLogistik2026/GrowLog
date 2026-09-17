@@ -2,6 +2,19 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-17 — v1.5.286
+
+- **Der Gieß-Guide im Eintrag rechnete mit 0 ml, wenn heute nicht gegossen wird** (beim Prüfen von v1.5.285 im Browser gefunden,
+  besteht seit v1.5.267). Unter „Topf ist voll — heute nicht gießen" stand im Kasten daneben „Anrühren: ~0 ml (+10 % Reserve)",
+  „~0 ml → 0–0 ml Drain" und „Drain entsorgen!", in der aufklappbaren Gießanleitung „bis 15–20 % unten ablaufen (~0 ml)" — eine
+  Anleitung für einen Guss, den es nicht gibt. Seit v1.5.285 kam dasselbe
+  am feuchten Tag.
+- **Jetzt** sagt der Guide an solchen Tagen „Heute kein Guss — der Topf ist noch voll" bzw. „… noch feucht", aus derselben
+  Gießmenge (Quelle „voll"/„feucht"). Trägt jemand trotzdem einen Guss ein, zeigt der Guide wie bisher diesen Guss mit Drain. Die Gießanleitung nennt ohne
+  Menge keine Klammer.
+- `test_guidekeinguss.js` (13 Prüfungen): voller und feuchter Topf in beiden Modi ohne 0-ml-Zeilen; Gegenproben „Mittel",
+  eingetragener Guss am vollen Tag, ohne Hebe-Test.
+
 ## 2026-09-17 — v1.5.285
 
 - **Am feuchten Gießtag nannte der Eintrag trotzdem eine Menge** (beim Prüfen von v1.5.284 im Browser gefunden). Über dem

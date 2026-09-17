@@ -3592,7 +3592,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.285';
+const APP_VERSION = 'v1.5.286';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -27248,6 +27248,10 @@ function renderEntry(iso) {
       const guidePerPlant = (effPlants > 1 && c.scaleByPlants) ? Math.round(_guideTotal / effPlants) : _guideTotal;
       // (v1.5.201) Drain-Spanne aus DRAIN_ZIEL — vorher fest 10 % der Menge, während derselbe Guide „15–20 % Drain" sagte.
       const guideDrain = `${Math.round(guidePerPlant * DRAIN_ZIEL.min / 100)}–${Math.round(guidePerPlant * DRAIN_ZIEL.max / 100)}`;
+      // (v1.5.286) Ist die Menge 0, weil der Topf voll oder noch feucht ist, nennt der Guide keine Zahlen. Seit v1.5.267 stand dort
+      // am vollen Tag „Anrühren: ~0 ml" und „~0 ml → 0–0 ml Drain", unter „Topf ist voll — heute nicht gießen".
+      const _gGuide = gussMengeJePflanze(c, p, iso);
+      const _keinGuss = !(_guideTotal > 0) && !!(_gGuide && (_gGuide.quelle === 'voll' || _gGuide.quelle === 'feucht'));
       // LERN-STATUS (v1.2.69): erklärt in einem Satz, WORAUS der Vorschlag gerade
       // entsteht — Messung, Verbrauchsmodell, Anker oder Kaltstart. Gleiche
       // Quellen wie waterSuggestion/waterBasis → Anzeige == Realität.
@@ -27368,11 +27372,13 @@ function renderEntry(iso) {
               // ohne erkennbare Verbindung (1000 vs 1050). live-mix läuft beim Tippen
               // mit (siehe updateCalc), damit alles konsistent verknüpft bleibt.
               const _rfG = (typeof reserveFactor === 'function') ? reserveFactor(c) : 1;
-              if (_rfG <= 1.0001) return '';
+              if (_keinGuss || _rfG <= 1.0001) return '';
               const _perUnit = (effPlants > 1 && c.scaleByPlants) ? '/Pfl.' : '';
               return `<div style="font-size:10px;color:var(--text-sub);line-height:1.4"><span style="color:var(--green)">●</span> Anrühren: ~<span class="live-mix" data-cycle="${c.id}">${Math.round(guidePerPlant * _rfG)}</span> ml${_perUnit} <span style="color:var(--text-hint)">(+${Math.round((_rfG - 1) * 100)}% Reserve)</span></div>`;
             })()}
-            ${showDrain
+            ${_keinGuss
+              ? `<div style="font-size:10px;color:var(--text-sub);line-height:1.4"><span style="color:var(--blue)">●</span> Heute kein Guss — der Topf ist noch ${_gGuide.quelle === 'voll' ? 'voll' : 'feucht'}</div>`
+              : showDrain
               ? `<div style="font-size:10px;color:var(--text-sub);line-height:1.4"><span style="color:var(--green)">●</span> ~<span class="live-water" data-cycle="${c.id}">${guidePerPlant}</span> ml${effPlants > 1 && c.scaleByPlants ? '/Pfl.' : ''} → <span class="live-drain" data-cycle="${c.id}">${guideDrain}</span> ml Drain</div>
                  <div style="font-size:10px;color:var(--text-sub);line-height:1.4"><span style="color:var(--orange)">●</span> Drain entsorgen!</div>`
               : `<div style="font-size:10px;color:var(--text-sub);line-height:1.4"><span style="color:var(--green)">●</span> ~<span class="live-water" data-cycle="${c.id}">${guidePerPlant}</span> ml${effPlants > 1 && c.scaleByPlants ? '/Pfl.' : ''} · kein Drain</div>
@@ -27726,7 +27732,7 @@ function renderEntry(iso) {
             <div style="display:none;padding:0 12px 10px">
               <div style="display:flex;flex-direction:column;gap:6px;font-size:10px;color:var(--text-sub);line-height:1.5">
                 <div style="background:rgba(224,96,96,0.06);border-radius:6px;padding:6px 8px;color:var(--red)">⚠️ <b>Regel Nr. 1:</b> Nach Topfgewicht gießen, nicht nach Kalender!</div>
-                <div><b style="color:var(--blue)">① Vollsättigung:</b> Langsam gießen, bis ${DRAIN_ZIEL.min}–${DRAIN_ZIEL.max} % unten ablaufen (~${waterSug} ml). Topfgewicht merken = 100% Referenz.</div>
+                <div><b style="color:var(--blue)">① Vollsättigung:</b> Langsam gießen, bis ${DRAIN_ZIEL.min}–${DRAIN_ZIEL.max} % unten ablaufen${waterSug > 0 ? ` (~${waterSug} ml)` : ''}. Topfgewicht merken = 100% Referenz.</div>
                 <div>${c.medium === 'coco' ? '<b style="color:var(--teal)">② Feucht halten:</b> Coco nie ganz austrocknen lassen — nur leicht abtrocknen, dann wieder gießen. Die Wurzeln mögen es gleichmäßig feucht.' : '<b style="color:var(--teal)">② Rücktrocknung:</b> Finger weg! Trocknung zieht O₂ in die Wurzelzone = Motor für Wachstum.'}</div>
                 <div>${c.medium === 'coco' ? `<b style="color:var(--green)">③ Gießpunkt:</b> Gießen sobald der Topf merklich leichter wird (Hebe-Test „${GIESSPUNKT.coco.knopf}“, ${GIESSPUNKT.coco.von}–${GIESSPUNKT.coco.bis} % Restgewicht) — jedes Mal mit Nährlösung. (${getInt(c, p?.ph || 'bloom') <= 1 ? 'meist täglich' : '~alle ' + getInt(c, p?.ph || 'bloom') + ' Tage'})` : `<b style="color:var(--green)">③ Sweetspot:</b> Gießen im Sweet Spot bei ${GIESSPUNKT.erde.von}–${GIESSPUNKT.erde.bis} % Restgewicht (Hebe-Test „Knapp“). Obere 3–5 cm trocken. (~alle ${getInt(c, p?.ph || 'bloom')} Tage)`}</div>
                 <div style="background:rgba(240,208,80,0.06);border-radius:6px;padding:6px 8px;color:var(--yellow)">${c.medium === 'coco' ? '💡 <b>Tipp:</b> In Coco lieber etwas früher gießen als zu spät — Coco verzeiht Austrocknen schlecht. Staunässe trotzdem vermeiden, aber nie knochentrocken werden lassen.' : '💡 <b>Unsicher?</b> Morgen wieder anheben — nicht warten, bis die Blätter hängen: Dann steht die Photosynthese schon. Nass macht zu häufiges Gießen oder Wasser im Untersetzer, nicht eine volle Menge mit Drain.'}</div>
