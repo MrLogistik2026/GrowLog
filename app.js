@@ -3576,7 +3576,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.267';
+const APP_VERSION = 'v1.5.268';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -28168,7 +28168,8 @@ function renderEntry(iso) {
           trich.milky >= 50 ? '<div style="font-size:11px;color:var(--yellow);margin-top:6px;text-align:center">⏳ Fast bereit</div>' : 
           '<div style="font-size:11px;color:var(--text-muted);margin-top:6px;text-align:center">Noch zu viel klar — Geduld!</div>'}
         ${(() => {
-          const _tp = _trichPlanNote(c, iso, trich, _prevTrich ? isoDiff(iso, _prevTrich.iso) : 0);
+          // (v1.5.268) Nur eine echte Messung, von heute oder übernommen — nicht die Vorgabe 70/25/5 ohne Messung.
+          const _tp = _trichPlanNote(c, iso, (cd.trichomes || _prevTrich) ? trich : null, _prevTrich ? isoDiff(iso, _prevTrich.iso) : 0);
           if (!_tp) return '';
           const _col = (_tp.sev === 'wait' || _tp.sev === 'stale') ? 'var(--yellow)' : 'rgba(90,171,240,0.9)';
           let _out = `<div style="font-size:10px;color:var(--text-hint);margin-top:6px;text-align:center;line-height:1.45">📅 Plan: ${_tp.planLine}</div>`;
@@ -31878,7 +31879,8 @@ function _trichChartSVG(c, iso) {
 }
 
 function _trichPlanNote(c, iso, trich, ageDays) {
-  if (!c || !c.startDate || !iso || !trich) return null;
+  // (v1.5.268) Ohne Messung (trich null) bleibt die Plan-Zeile — ein Urteil über die Trichome gibt es dann nicht.
+  if (!c || !c.startDate || !iso) return null;
   const hc = harvestCountdown(c, iso);
   if (!hc || !hc.harvestISO) return null;
   const anzucht = anzuchtLenFor(c);
@@ -31888,11 +31890,11 @@ function _trichPlanNote(c, iso, trich, ageDays) {
   const dToFlush = flushDay - today;
   const harvestDay = isoDiff(hc.harvestISO, c.startDate) + 1;
   const dToHarvest = hc.daysRemaining;
-  const milky = parseFloat(trich.milky) || 0;
-  const amber = parseFloat(trich.amber) || 0;
-  const ripe = milky >= 60 && amber >= 10;
-  const nearly = !ripe && milky >= 50;
-  const early = !ripe && !nearly;
+  // (v1.5.268) „Zu früh" hängt an derselben Grenze wie Trichom-Karte und Ernte-Freigabe: mehr als RIPE_CLEAR_DONE % klar.
+  // Vorher: milchig unter 50 % und Bernstein unter 10 % — bei 5 % klar, 45 % milchig und 50 % Bernstein hieß es „noch
+  // überwiegend klar", und ohne jede Messung urteilte der Satz über die Vorgabe 70/25/5 im Eingabefeld.
+  const klar = trich ? parseFloat(trich.clear) : NaN;
+  const early = isFinite(klar) && klar > RIPE_CLEAR_DONE;
 
   const planLine = (dToFlush > 0 ? `Spülen ab Tag ${flushDay} (in ${dToFlush} T.) · ` : '')
     + `Ernte Tag ${harvestDay}`
@@ -31908,7 +31910,7 @@ function _trichPlanNote(c, iso, trich, ageDays) {
   let advice = '', sev = 'plain';
   if (early && dToHarvest <= 7) {
     sev = 'wait';
-    advice = 'Die Trichome sind noch überwiegend klar. <b>Zu früh geerntet kostet Wirkung</b> — lieber warten, bis kaum noch klare Köpfe da sind (höchstens ' + RIPE_CLEAR_DONE + ' % klar), auch wenn der Plan schon durch ist. Das Datum ist nur ein Gerüst.'
+    advice = 'Noch ' + _tFmt(klar) + ' % der Köpfe sind klar. <b>Zu früh geerntet kostet Wirkung</b> — lieber warten, bis kaum noch klare Köpfe da sind (höchstens ' + RIPE_CLEAR_DONE + ' % klar), auch wenn der Plan schon durch ist. Das Datum ist nur ein Gerüst.'
       + (_stale ? ` Schau vorher frisch nach — dieser Stand ist ${ageDays} Tage alt.` : '');
   }
   // (v1.5.32) Die frühere „Trichome sind weiter als der Plan"-Regel ist ersatzlos raus.

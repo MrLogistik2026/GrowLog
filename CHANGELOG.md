@@ -2,6 +2,20 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-17 — v1.5.268
+
+- **Die Trichom-Karte urteilte ohne Messung** (beim Prüfen von v1.5.266 in der Vorschau gesehen). Unter der Plan-Zeile stand
+  „Die Trichome sind noch überwiegend klar. Zu früh geerntet kostet Wirkung …" — auch wenn an keinem Tag Trichome eingetragen
+  waren. `_trichPlanNote` bekam die Werte aus dem Eingabefeld, und dort steht ohne Messung die Vorgabe 70/25/5. v1.5.212 hatte
+  das Urteil darüber („Noch zu viel klar — Geduld!") schon an eine Messung von heute gebunden, diesen zweiten Satz nicht.
+  Eine Aussage über die Pflanze ohne Messung ist keine Messung (`ANBAU.md`, Regel 2).
+- **Dazu die Grenze:** „Zu früh" hing an „milchig unter 50 % und Bernstein unter 10 %". Bei 5 % klar, 45 % milchig und 50 %
+  Bernstein hieß es „noch überwiegend klar". Jetzt gilt dieselbe Grenze wie in Trichom-Karte und Ernte-Freigabe: mehr als
+  `RIPE_CLEAR_DONE` (10 %) klar, und der Satz nennt die gemessene Zahl („Noch 30 % der Köpfe sind klar").
+- Ohne Messung bleibt die Plan-Zeile („📅 Plan: Ernte Tag 116 (in 3 T.)"); eine übernommene Messung zählt weiter, mit ihrem
+  Alter.
+- `test_trichurteil.js` (9 Prüfungen): ohne Messung, 30 % klar, kaum klar mit viel Bernstein, übernommene Messung, Quelltext.
+
 ## 2026-09-17 — v1.5.267
 
 - **Gießtag mit vollem Topf: Die Startseite sagte „etwa 0 ml"** (Bewertung vom 17.09.2026, Hebel 1). Zeigte
