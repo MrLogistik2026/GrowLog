@@ -2,6 +2,30 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-17 — v1.5.253
+
+- **Die Mobilität der Nährstoffe stand an drei Stellen anders als in `ANBAU.md` 6.1.** Die Tabelle im Eintrag „NPK", die
+  Liste in „Makro- vs. Mikronährstoffe" und „Nährstoffmangel" führten Schwefel und Zink als unbeweglich, Bor und Kupfer
+  fehlten. Nach 6.1 sind Schwefel, Chlor und Zink teilmobil (mittlere Etage, oft uneindeutig), unbeweglich sind Calcium,
+  Bor, Eisen, Mangan und Kupfer. Wer nach „oben oder unten?" sucht — die Erstfrage aus 6.1 —, braucht die richtige Liste.
+  Unter beiden Listen steht jetzt die Einschränkung aus 6.1: Vergilbung von unten ist in der späten Blüte meist Seneszenz.
+- **Der NPK-Eintrag versprach Wirkungen, die nicht belegt sind:** „Das P ist das, was Blüten dicht macht", „K ist das, was
+  Buds aromatisch und ölig macht", „K für Zuckereinlagerung und Trichom-Bildung", „K für finalen Reife-Push". Jetzt steht
+  dort, woran die Nährstoffe beteiligt sind — und bei Kalium, dass ein Überschuss Magnesium und Calcium verdrängt (6.2).
+- **„Späte Blüte: sehr K-lastig (0-2-4)"** hieß Stickstoff auf null. Nach `ANBAU.md` 5 ist ein verfrühter Stickstoff-Stopp
+  der teurere Fehler: Die Pflanze baut bis zuletzt Blütenmasse auf. Jetzt: insgesamt weniger, Stickstoff zurückgenommen,
+  aber nicht zu früh ganz gestrichen. „P-Überschuss blockiert Eisen, Zink, Mangan" → verdrängt Zink und Eisen (6.2).
+- „Mg-Mangel bei LED-Anbau mit weichem Wasser fast Standard" → die belegte Bedingung allein: Bei weichem Wasser sind
+  Calcium und Magnesium knapp (`ANBAU.md` 3). „Lockout häufiger als Mangel" stand an drei Stellen (Makro/Mikro, CalMag,
+  Überdüngung) — eine Häufigkeit, die niemand gezählt hat; belegt ist, dass ein falscher pH dasselbe Bild erzeugt (13.3).
+  Bei Calcium kommt vor dem pH das Klima: Calcium kommt nur mit dem Verdunstungsstrom ins Blatt (1). Im Eintrag
+  „Überdüngung" stand dabei „**pH prüfen**" mit Sternchen, die das Lexikon wörtlich anzeigte.
+- Braune Spitzen und die späte Vergilbung bekommen ihr Unterscheidungskriterium (Regel 3): bei feuchtem Topf eher zu viel
+  Dünger, bei trockenem eher Wassermangel, unter der Lampe eher Hitze; Seneszenz läuft langsam und gleichmäßig von unten,
+  ein Mangel schnell, fleckig oder etagenweise (6.4).
+- Die Ersatztexte hat vor dem Einbau ein Agent gegen `ANBAU.md` gehalten (Lehre aus v1.5.250). `test_lexikon.js`
+  Abschnitt P (127 Prüfungen im Lauf).
+
 ## 2026-09-16 — v1.5.252
 
 - **Die Spül- und Reifetexte aus v1.5.249 nach dem Fach-Gegencheck genauer.** „Zu lange spülen (>14 Tage in Erde) → das

@@ -404,6 +404,40 @@ function pruef(name, bedingung, info) {
       (q.match(/kann er (nach dem Spülen|danach) wieder (an)?steigen/gi) || []).length === 5, (q.match(/kann er (nach dem Spülen|danach) wieder (an)?steigen/gi) || []).length + ' Stellen');
   }
 
+  // (v1.5.253) Die Mobilität stand an drei Stellen anders als in ANBAU.md 6.1 — Schwefel und Zink als unbeweglich, Bor und
+  // Kupfer fehlten —, und der NPK-Eintrag versprach Wirkungen („P macht Blüten dicht", „K macht Buds aromatisch und ölig",
+  // „K für Trichom-Bildung und Reife-Push"), die nirgends belegt sind. Dazu „0-2-4" in der späten Blüte: Stickstoff auf null
+  // ist der teurere Fehler (ANBAU.md 5).
+  console.log('');
+  console.log('P - (v1.5.253) Mobilität nach ANBAU.md 6.1, NPK ohne Wirkungszusagen');
+  {
+    const q = fs.readFileSync(path.join(__dirname, 'app.js'), 'utf8').split('\n').filter(z => !/^\s*(\/\/|\*|\/\*)/.test(z)).join('\n');
+    [/dicht macht/i, /aromatisch und ölig/i, /Zuckereinlagerung/i, /Reife-Push/i, /explosive Streckung/i, /Ca, Fe, S, Mn, Zn/, /\(Ca, Fe, S\)/,
+      /Mangan-Aufnahme/i, /Mg-Mangel bei LED/i, /K-lastig \(0-2-4\)/, /Lockout häufiger als Mangel/i, /Gelbe Blattspitzen oben = Ca/i,
+      /investiert in Blüten statt Blätter/i, /\*\*pH prüfen\*\*/].forEach(re =>
+      pruef('Nirgends mehr: ' + re.source, !re.test(q), (q.match(new RegExp('.{0,60}' + re.source + '.{0,30}', 'i')) || [''])[0]));
+    const npk = text(/^NPK$/), mm = text(/^Makro- vs\. Mikronährstoffe/), nm = text(/^Nährstoffmangel$/);
+    const tab = npk.slice(npk.indexOf('Mobilität-Übersicht'), npk.indexOf('Mobilität-Übersicht') + 400);
+    pruef('NPK-Tabelle: N, P, K, Mg, Mo mobil · S, Cl, Zn teilmobil · Ca, B, Fe, Mn, Cu immobil (6.1)',
+      /N, P, K, Mg, Mo Mobil/.test(tab) && /S, Cl, Zn Teilmobil/.test(tab) && /Ca, B, Fe, Mn, Cu Immobil/.test(tab), tab);
+    pruef('Makro/Mikro: dieselben drei Listen', /Mobil \(N, P, K, Mg, Mo\)/.test(mm) && /Teilmobil \(S, Cl, Zn\)/.test(mm) && /Immobil \(Ca, B, Fe, Mn, Cu\)/.test(mm), mm.slice(0, 500));
+    pruef('Nährstoffmangel: Immobile ohne Schwefel, Schwefel und Zink dazwischen', /Immobile \(Ca, B, Fe, Mn, Cu\)/.test(nm) && /Schwefel und Zink liegen dazwischen/.test(nm), nm.slice(0, 400));
+    const sen = /Vergilbung von unten ist in der späten Blüte meist normale Seneszenz, kein Mangel — sie läuft langsam und gleichmäßig von unten nach oben\. Geht es schnell, fleckig oder etagenweise, spricht das eher für einen Mangel/;
+    pruef('Seneszenz mit Gegenkriterium bei allen drei Listen (6.1, 6.4, Regel 3)', sen.test(npk) && sen.test(mm) && sen.test(nm));
+    pruef('Frühe Blüte: noch Streckungswachstum, Stickstoff nicht zurücknehmen (2.2, 5)', /Noch starkes Streckungswachstum — die Pflanze braucht weiter Stickstoff/.test(npk));
+    pruef('Makro/Mikro: Eisen und Calcium am jungen Blatt, braune Spitzen mit Unterscheidung (4, 5, Regel 3)',
+      /Junge Blätter oben hellgelb mit grünen Adern = eher Eisen/.test(mm) && /Gelbe oder braune Spitzen sind ein anderes Bild: bei feuchtem Topf eher zu viel Dünger/.test(mm));
+    pruef('Calcium-„Mangel": zuerst Umluft und Luftfeuchte, dann pH (1)', /Calcium-„Mangel" zuerst Umluft und Luftfeuchte prüfen/.test(mm));
+    pruef('Späte Blüte: weniger, aber Stickstoff nicht zu früh ganz streichen (5)',
+      /Insgesamt weniger, Stickstoff-Anteil zurückgenommen/.test(npk) && /nicht zu früh ganz streichen, die Pflanze baut bis zuletzt Blütenmasse auf/.test(npk));
+    pruef('Zu viel N: Wachstumsmodus, lockere Blüten — und nicht zu früh streichen (5)',
+      /Zu viel N in der Blüte → die Pflanze bleibt im Wachstumsmodus, die Blüten bleiben locker und blattreich/.test(npk) && /das kostet Blütenmasse/.test(npk));
+    pruef('P-Überschuss verdrängt Zink und Eisen (6.2)', /P-Überschuss → verdrängt Zink und Eisen/.test(npk));
+    pruef('Kalium: beteiligt, nicht „macht die Buds" — und der Überschuss verdrängt Mg und Ca (6.2)',
+      /am Zuckertransport in der Pflanze beteiligt/.test(npk) && /verdrängt Magnesium und Calcium an der Wurzel/.test(npk));
+    pruef('CalMag von Anfang an nur mit der Bedingung weiches Wasser (3)', /Bei weichem Wasser sind Calcium und Magnesium knapp/.test(mm));
+  }
+
   console.log('');
   console.log(`Ergebnis: ${ok} OK, ${fail} Fehler`);
   process.exit(fail ? 1 : 0);
