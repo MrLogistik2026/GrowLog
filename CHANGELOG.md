@@ -2,6 +2,25 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-17 — v1.5.270
+
+- **Jeder neu angelegte Zyklus bekam beim ersten Neustart still drei Tage mehr bis zur Ernte** (beim Prüfen von v1.5.269 in
+  der Vorschau gefunden: Nach dem Neuladen stand der Test-Zyklus im IceFlush statt zwei Tage nach dem Plan-Erntetag). `addCyc`
+  legte `flushDays: 8` an, aber kein `flushWetDays`. Die Umstellung aus v1.5.75 läuft bei jedem Start und behandelt einen
+  Zyklus ohne `flushWetDays` als Altbestand: Sie las die 8 als Spültage und hängte 3 Tage Hard-Dryback an — Spülen 8 → 11
+  Tage; Hard-Dryback, IceFlush, Ernte und Trocknen rückten drei Tage nach hinten. Am Tag des Anlegens zeigte die App die eine
+  Kette, ab dem nächsten Öffnen eine andere, ohne dass jemand etwas eingestellt hatte. Beim Demo-Zyklus dasselbe (5 → 8).
+- **Jetzt** schreibt `addCyc` Spültage und Dryback so fest, wie die App sie beim Anlegen liest (`flushWetDays(c)`: 5 + 3), der
+  Demo-Zyklus 2 + 3. Die Umstellung für echten Altbestand bleibt unverändert.
+- **Dasselbe in klein, beim Test gefunden:** Auch mit fester Spülphase rückte der Erntetag beim ersten Neustart noch um bis zu
+  einen Gießabstand (gemessen 93 → 95). Der App-Start rastet den Spülstart auf den Gießrhythmus ein (`_snapFlushToRhythm`,
+  v1.5.80) — beim Anlegen tat das niemand. Jetzt rasten `addCyc` und der Demo-Zyklus gleich beim Anlegen ein; der Start findet
+  danach nichts mehr zu tun.
+- **Nicht rückwirkend repariert:** Ein seit v1.5.75 angelegter und einmal neu geöffneter Zyklus steht bereits auf 8 Spültagen.
+  Von einer bewusst gewählten 8 ist das nicht zu unterscheiden. Wer in dieser Zeit einen Zyklus angelegt hat, sieht im
+  Gieß-Fahrplan unter „Termine bis zur Ernte" nach — 5 Spültage sind die Vorgabe. Patricks Run 01 stammt aus der Zeit davor.
+- `test_zyklusneustart.js` (9 Prüfungen): neuer Zyklus und Demo-Zyklus vor und nach einem Neustart, Altbestand.
+
 ## 2026-09-17 — v1.5.269
 
 - **Eine stehende Pflanze hieß weiter „Trocknen"** (Nachtrag zu v1.5.265). Über der Karte „Nach dem Plan-Erntetag — noch nicht

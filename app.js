@@ -3588,7 +3588,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.269';
+const APP_VERSION = 'v1.5.270';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -22567,9 +22567,11 @@ function welcomeStartDemo() {
     cycRef.anzuchtDays = 21;
     cycRef.bloomDays = 35;
     cycRef.flushDays = 5;
+    cycRef.flushWetDays = Math.max(1, cycRef.flushDays - iceDryDays(cycRef));   // (v1.5.270) sonst beim Neustart 5 Spültage + 3 Dryback
     cycRef.iceDays = 2;
     cycRef.harvestDays = 1;
     cycRef.dryDays = 7;
+    if (typeof _snapFlushToRhythm === 'function') { try { _snapFlushToRhythm(cycRef); } catch (e) {} }   // (v1.5.270) wie beim App-Start
     // (v1.5.224) addCyc baut sein Objekt aus einer festen Feldliste und kennt germMethod nicht —
     // im Aufruf war die Zeile wirkungslos. Der Demo keimt direkt in der Erde, wie die Karte empfiehlt.
     cycRef.germMethod = 'direct';
@@ -23884,7 +23886,15 @@ function addCyc(overrides) {
   };
   // Pot size: if wizard supplied one, save globally (TODO: per-cycle field in later iteration)
   if (o.potSize) S.potSize = o.potSize;
+  // (v1.5.270) Spültage und Hard-Dryback getrennt festschreiben. Ohne `flushWetDays` las die Umstellung aus v1.5.75 beim
+  // nächsten Start die Gesamtdauer (8 Tage) als Spültage und hängte 3 Tage Dryback an: Jeder neue Zyklus bekam beim ersten
+  // Neustart still drei Tage mehr bis zur Ernte. flushWetDays(c) liest die Gesamtdauer als Summe — genau das bleibt stehen.
+  c.iceDryDays = iceDryDays(c);
+  c.flushWetDays = flushWetDays(c);
   S.cycles.push(c);
+  // (v1.5.270) Den Spülstart schon jetzt auf den Gießrhythmus einrasten, wie es der App-Start ohnehin tut (v1.5.80) — sonst
+  // zeigte der neue Zyklus heute einen anderen Erntetag als ab dem nächsten Öffnen.
+  if (typeof _snapFlushToRhythm === 'function') { try { _snapFlushToRhythm(c); } catch (e) {} }
   selId = c.id;
   draft = { ...c };
   saveS();

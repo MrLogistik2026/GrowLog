@@ -69,7 +69,7 @@ const ANLEGEN = (growType, weg, tage) => `(function(){
   const st = endspurtState(c, c.startDate);
   let aktion = null;
   for (let i = 0; i < 220; i++) { if (getAction(isoPlus(c.startDate, i), c) === 'ernte') { aktion = i + 1; break; } }
-  return JSON.stringify({ bloomDays: c.bloomDays, ernte: st && st.ernteTag, aktion });
+  return JSON.stringify({ bloomDays: c.bloomDays, ernte: st && st.ernteTag, aktion, iv: st && st.iv });
 })()`;
 
 (async () => {
@@ -88,7 +88,9 @@ const ANLEGEN = (growType, weg, tage) => `(function(){
     const wochen = JSON.parse(E(ANLEGEN(growType, 'wochen', tage)));
     console.log('    Chip: Blüte ' + chip.bloomDays + ' Tage, Ernte Tag ' + chip.ernte + ' · Wochen: Blüte ' + wochen.bloomDays + ' Tage, Ernte Tag ' + wochen.ernte);
     pruef(growType + ': Chip und Wochen-Eingabe legen denselben Erntetag an', chip.ernte === wochen.ernte, chip.ernte + ' / ' + wochen.ernte);
-    pruef(growType + ': Erntetag = Planzahl der Sorte (' + tage + ')', chip.ernte === tage, chip.ernte);
+    // (v1.5.270) Der Spülstart rastet schon beim Anlegen auf den Gießrhythmus ein, wie beim App-Start seit v1.5.80 — nie früher,
+    // höchstens einen Gießabstand später. Vorher sprang der Erntetag erst beim nächsten Öffnen um dieselben Tage.
+    pruef(growType + ': Erntetag = Planzahl der Sorte (' + tage + '), eingerastet höchstens einen Gießabstand später', chip.ernte >= tage && chip.ernte - tage <= chip.iv, chip.ernte + ' (Abstand ' + chip.iv + ')');
     pruef(growType + ': Endspurt und Kalender sagen dasselbe', chip.ernte === chip.aktion, chip.ernte + ' / ' + chip.aktion);
   }
 
