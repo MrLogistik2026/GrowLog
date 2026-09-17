@@ -4593,7 +4593,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.286';
+const APP_VERSION = 'v1.5.287';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -11750,14 +11750,14 @@ function calcStreak(c) {
   // Daher: Wenn heute Gießtag und heute LEER ist, einfach überspringen und ab
   // gestern zählen. Wurde heute schon gegossen, zählt der Tag mit.
   let startOffset = 0;
-  if (isGiessTag(today, c)) {
+  if (gussFaellig(c, today)) {   // (v1.5.287) ein gemessen ausgelassener Guss ist nicht offen
     const todayCd = S.entries[today]?.cycleData?.[c.id];
     const todayDone = todayCd && (todayCd.water || todayCd._doneTodo);
     if (!todayDone) startOffset = 1;  // heute nicht zählen, ab gestern starten
   }
   for (let i = startOffset; i < 90 + startOffset; i++) {
     const iso = isoPlus(today, -i);
-    if (isGiessTag(iso, c)) {
+    if (gussFaellig(c, iso)) {   // (v1.5.287) voll oder feucht gemessen: kein Gießtag, bricht die Serie nicht
       // Ein Gießtag zählt für den Streak wenn:
       // - Wassermenge eingetragen wurde, ODER
       // - Der User "Erledigt" auf dem Dashboard geklickt hat (_doneTodo)
@@ -13133,6 +13133,18 @@ function _nichtGiessenWorte(c, iso, gm) {
   };
 }
 
+/**
+ * (v1.5.287) Ist der Guss an diesem Tag fällig? Ein Kalender-Gießtag, außer am IceFlush (dort wird nicht gegossen) und außer die
+ * Messung des Tages sagt „nicht gießen" (giessenLautMessung: voll oder feucht). Für Nachholen, „überfällig", die Zählung
+ * fehlender Gießtage und die Serie — dort galt ein gemessen ausgelassener Guss als verpasst.
+ * Nie aus getAction, isGiessTag oder nextGiessTag aufrufen: giessenLautMessung fragt beide.
+ */
+function gussFaellig(c, iso) {
+  if (!isGiessTag(iso, c) || getAction(iso, c) === 'ice') return false;
+  const gm = giessenLautMessung(c, iso);
+  return !(gm && gm.giessen === false);
+}
+
 function drybackForecast(c, p, iso) {
   if (!c || !p) return null;
   // (v1.5.206) Eine Antwort auf „wann": Fällt der heute gemessene Topf bis morgen unter die Untergrenze des Gießpunkts
@@ -14156,6 +14168,9 @@ function getCatchupCandidates(c) {
     const cd = S.entries[iso]?.cycleData?.[c.id];
     const hasWater = cd && cd.water && parseFloat(cd.water) > 0;
     if (hasWater) continue;
+    // (v1.5.287) Voll oder feucht gemessen, oder IceFlush: nichts zu gießen, also nichts nachzuholen. Vorher bot der Assistent
+    // „~0 ml, pH 6.4" an und trug nie gemessene Werte ein (ANBAU.md 15).
+    if (!gussFaellig(c, iso)) continue;
     // Phase-Day für Anzeige
     const p = phase(iso, c);
     candidates.push({
@@ -14387,7 +14402,8 @@ function getAlerts(c) {
 
   // Overdue check
   const waterDates = Object.keys(S.entries)
-    .filter(d => d <= today && S.entries[d]?.cycleData?.[c.id]?.water)
+    // (v1.5.287) Nur echte Güsse: „Erledigt" an einem vollen Tag schreibt 0 — das zählte hier als letzter Guss.
+    .filter(d => d <= today && _gussZahl(S.entries[d]?.cycleData?.[c.id]?.water) > 0)
     .sort();
   const lastW = waterDates[waterDates.length - 1];
   // (v1.5.180) Überfällig ist ein GEPLANTER Guss, der verstrichen ist — nicht „lange nicht gegossen". Bisher zählte nur
@@ -14401,7 +14417,7 @@ function getAlerts(c) {
     let verpasst = null;
     for (let d = 1; d <= days - 2; d++) {
       const dIso = isoPlus(lastW, d);
-      if (isGiessTag(dIso, c)) { verpasst = dIso; break; }
+      if (gussFaellig(c, dIso)) { verpasst = dIso; break; }   // (v1.5.287) nicht bei vollem oder feuchtem Topf, nicht am IceFlush
     }
     if (verpasst) {
       out.push({ icon: '⚠️', text: `Gießen überfällig! Geplant war der ${fmtDE(verpasst, { day: '2-digit', month: '2-digit' })} (vor ${isoDiff(today, verpasst)} Tagen), der letzte Guss ist ${days} Tage her.`, type: 'warn' });
@@ -25305,7 +25321,8 @@ function countMissingPastWateringDays(c) {
   for (let i = 0; i < 200 && iter < today; i++) {
     const a = getAction(iter, c);
     // (v1.5.154) isGiessTag statt eigener Liste — die kannte den Sättigungsguss an Tag 1 nicht.
-    if (isGiessTag(iter, c)) {
+    // (v1.5.287) gussFaellig: Ein gemessen ausgelassener Guss fehlt nicht, und am IceFlush wird nicht gegossen.
+    if (gussFaellig(c, iter)) {
       const existing = S.entries[iter]?.cycleData?.[c.id];
       const hasData = existing && (existing.water || existing.ph || (existing.doses && Object.values(existing.doses).some(v => v > 0)));
       if (!hasData) count++;
@@ -25337,7 +25354,8 @@ async function backfillPast(id) {
   for (let i = 0; i < 200 && iter < today; i++) {
     const a = getAction(iter, c);
     // (v1.5.154) isGiessTag statt eigener Liste — die kannte den Sättigungsguss an Tag 1 nicht.
-    if (isGiessTag(iter, c)) {
+    // (v1.5.287) Dieselbe Regel wie die Zählung: Kein Guss mit Plan-Dosen an einem gemessen ausgelassenen Tag.
+    if (gussFaellig(c, iter)) {
       const existing = S.entries[iter]?.cycleData?.[c.id];
       const hasData = existing && (existing.water || existing.ph || (existing.doses && Object.values(existing.doses).some(v => v > 0)));
       if (!hasData) {

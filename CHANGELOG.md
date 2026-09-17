@@ -2,6 +2,24 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-17 — v1.5.287
+
+- **Ein wegen vollem oder feuchtem Topf ausgelassener Guss galt als verpasst** (Bewertung vom 17.09.2026, Hebel 1 #10, an
+  v1.5.271 gemessen und gegengeprüft). Hebe-Test „Voll" an einem Gießtag, richtig nicht gegossen: am Folgetag „1 Aktion
+  verpasst", ab dem zweiten Tag „Gießen überfällig! Geplant war der 15.07.", und der Nachhol-Assistent bot „~0 ml, pH 6.4"
+  zum Übernehmen an — Werte, die nie gemessen wurden (`ANBAU.md` 15). Die Einstellungen zählten den Tag als fehlend, „Auto-
+  eintragen" hätte dort einen Guss mit Plan-Dosen geschrieben, und die Serie brach. Seit v1.5.284 sagt die App dasselbe auch
+  bei „noch feucht". Am IceFlush ohne Eintrag kam dasselbe („~2100 ml" nachholen,
+  in der Dunkelphase „überfällig"), obwohl dort nicht gegossen wird.
+- **Jetzt** fragen Nachholen, „überfällig", die Zählung fehlender Gießtage samt „Auto-eintragen" und die Serie
+  `gussFaellig(c, iso)`: ein Kalender-Gießtag, nicht der IceFlush, und die Messung des Tages sagt nicht „nicht gießen".
+  Ohne Messung, mit „Mittel" oder „Bald" (dort sagt die App seit v1.5.284 weiter „gießen") bleibt ein ausgelassener Gießtag
+  verpasst wie bisher. Dazu zählt „überfällig" einen Eintrag
+  mit 0 ml nicht mehr als letzten Guss („Erledigt" an einem vollen Tag schreibt 0) — dieselbe Regel wie Nachholen und der
+  Rhythmus-Anker.
+- `test_giesspunktkalender.js` (29 Prüfungen): Gießtag mit „Voll" (95 und 90 %) an vier Folgetagen, Gegenproben ohne
+  Messung, mit „Mittel" und „Bald", 0 ml als Nicht-Guss, Patricks Sicherung mit IceFlush.
+
 ## 2026-09-17 — v1.5.286
 
 - **Der Gieß-Guide im Eintrag rechnete mit 0 ml, wenn heute nicht gegossen wird** (beim Prüfen von v1.5.285 im Browser gefunden,
