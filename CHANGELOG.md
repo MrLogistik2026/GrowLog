@@ -2,6 +2,26 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-17 — v1.5.273
+
+- **Ein eingetragener Guss zählte auf der Startseite nicht als erledigt** (Bewertung vom 17.09.2026, Hebel 1 #8, von einem
+  Agenten an v1.5.271 gemessen und von einem zweiten unabhängig nachgemessen). „Erledigt" galt nur mit dem Haken. Wer die
+  Menge im Eintrag eingetragen hatte, sah weiter die volle Gießtag-Karte — mit der eingetragenen Menge („Ca. 1500 ml") und
+  darüber den neu gerechneten Einsteiger-Satz („Gib deiner Pflanze heute etwa 3500 ml"). Zwei Zahlen in einer Karte, beide
+  fordern zum Gießen auf; ein zweiter Guss am selben Tag ist das zu häufige Gießen aus `ANBAU.md` 1.1 und 13.1. In Patricks
+  Sicherung betraf das 13 von 37 Gießtagen.
+- **Jetzt:** Eine Menge über 0 zählt als erledigt, wie schon in der Serie (`calcStreak`). Die Startseite zeigt die kompakte
+  Karte „Heute erledigt · 1500 ml eingetragen"; „Rückgängig" gibt es nur für den Haken, die Menge ändert man im Eintrag.
+  Wasser „0" von Hand zählt nicht.
+- **Eine Antwort für alle Stellen:** `_gussHeuteErledigt(c, iso)` — gegossen (Menge), voll (Hebe-Test oder Waage, nicht am
+  Eistag) oder erledigt (Haken ohne Menge). Die Reihenfolge ist Absicht: „Erledigt" an einem vollen Tag schreibt water '0'
+  und den Haken, das ist kein Guss. Der Gieß-Fahrplan fragt dieselbe Funktion ab der nächsten Version.
+- **Nebenwirkung, bewusst:** Der Zweig in `getTodayAction`, der die eingetragene Menge zeigt (v1.1.135), ist an Gießtagen auf
+  der Startseite kaum noch erreichbar — er bleibt, als offener Aufräumpunkt.
+- `test_gussheuteerledigt.js` (17 Prüfungen): Gießtag mit und ohne Haken, Spültag, Anzucht, Sättigungsguss, Wasser „0",
+  voller Topf mit und ohne Haken, offener Tag mit einer Menge in Satz und Karte, Patricks Sicherung an allen Gießtagen mit
+  Menge ohne Haken.
+
 ## 2026-09-17 — v1.5.272
 
 - **Voller Topf am Spültag: Die Startseite sagte weiter „0 ml"** (Lücke in v1.5.267, beim Durchgehen der Bewertung gefunden,

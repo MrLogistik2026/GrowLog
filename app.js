@@ -3591,7 +3591,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.272';
+const APP_VERSION = 'v1.5.273';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -12472,6 +12472,21 @@ function _altWegVoll(c, p, iso) {
   }
   return false;
 }
+/**
+ * (v1.5.273) Ist der geplante Guss von heute schon beantwortet? Eine Antwort für Startseite und Gieß-Fahrplan.
+ * null = offen · gegossen (Wasser eingetragen) · voll (Hebe-Test oder Waage, nicht am Eistag) · erledigt (Haken ohne Menge).
+ * Die Menge geht vor dem vollen Topf, der vor dem Haken: „Erledigt" an einem vollen Tag schreibt water '0' und den Haken —
+ * das ist kein Guss. Dieselbe Regel wie calcStreak (water || _doneTodo), nur mit dem vollen Topf dazwischen.
+ */
+function _gussHeuteErledigt(c, iso) {
+  if (!c || !c.startDate || !iso || !isGiessTag(iso, c)) return null;
+  const cd = _gussCd(c, iso);
+  const w = cd ? _gussZahl(cd.water) : null;
+  if (w != null && w > 0) return { status: 'gegossen', ml: Math.round(w) };
+  if (getAction(iso, c) !== 'ice' && _topfVollHeute(c, phase(iso, c), iso)) return { status: 'voll' };
+  if (cd && cd._doneTodo) return { status: 'erledigt' };
+  return null;
+}
 function _gussIstStart(g) { return !!(g && (g.quelle === 'start' || g.quelle === 'korridor')); }
 function _gussLernSatz(c, iso, g) {
   if (!g) return '';
@@ -16182,17 +16197,22 @@ function renderDash() {
     // "Erledigt"-Status: Timestamp als Schlüssel für schnelles Feedback
     const doneTs = S.entries[today]?.cycleData?.[c.id]?._doneTodo;
     const doneTime = doneTs ? new Date(doneTs).toLocaleTimeString('de-DE', { hour:'2-digit', minute:'2-digit' }) : null;
+    // (v1.5.273) Ein eingetragener Guss zählt als erledigt, auch ohne Haken. Vorher blieb die volle Karte stehen: „Ca. 1500 ml"
+    // aus dem Eintrag, darüber der Satz „Gib … etwa 3500 ml" neu gerechnet — zwei Zahlen, beide fordern zum Gießen auf.
+    // Bei Patrick 13 von 37 Gießtagen. Rückgängig gibt es nur für den Haken; die Menge ändert man im Eintrag.
+    const _erlH = _gussHeuteErledigt(c, today);
+    const _eingetragenH = (!doneTs && _erlH && _erlH.status === 'gegossen') ? _erlH : null;
 
-    if (doneTs) {
+    if (doneTs || _eingetragenH) {
       // Compact "✓ Erledigt" mode
       return `<div style="background:linear-gradient(135deg,rgba(76,175,112,0.1),rgba(76,175,112,0.04));border:1px solid rgba(76,175,112,0.4);border-radius:14px;padding:12px 16px;cursor:pointer" onclick="entryFrom='dash';openEntry('${today}')">
         <div style="display:flex;align-items:center;gap:10px">
           <span style="font-size:22px">✓</span>
           <div style="flex:1">
-            <div style="font-size:13px;font-weight:700;color:var(--green)">Heute erledigt · <span onclick="event.stopPropagation();editDoneTime('${c.id}','${today}')" title="Uhrzeit ändern" style="border-bottom:1px dashed rgba(76,175,112,0.6);cursor:pointer">${doneTime} ✎</span></div>
+            <div style="font-size:13px;font-weight:700;color:var(--green)">Heute erledigt · ${doneTs ? `<span onclick="event.stopPropagation();editDoneTime('${c.id}','${today}')" title="Uhrzeit ändern" style="border-bottom:1px dashed rgba(76,175,112,0.6);cursor:pointer">${doneTime} ✎</span>` : `${_eingetragenH.ml} ml eingetragen`}</div>
             <div style="font-size:11px;color:var(--text-muted)">${sym(c)} ${c.name} · ${td.title.replace(/^[^\w]*/,'').replace(/^Heute: /,'')}</div>
           </div>
-          <button onclick="event.stopPropagation();markTodayUndone('${c.id}','${today}')" style="background:none;border:none;color:var(--text-hint);font-size:11px;cursor:pointer;padding:4px 8px;font-family:var(--font)">↺ Rückgängig</button>
+          ${doneTs ? `<button onclick="event.stopPropagation();markTodayUndone('${c.id}','${today}')" style="background:none;border:none;color:var(--text-hint);font-size:11px;cursor:pointer;padding:4px 8px;font-family:var(--font)">↺ Rückgängig</button>` : ''}
         </div>
       </div>`;
     }
