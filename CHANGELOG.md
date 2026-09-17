@@ -2,6 +2,16 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-17 — v1.5.257
+
+- **„Outdoor-Gießen: Grundregeln" begründete den lockeren pH mit „Bodenleben puffert".** Der Eintrag handelt von Töpfen,
+  dort gibt es keinen gewachsenen Boden, und ohne bekannte Karbonathärte sagt der Roh-pH des Wassers nichts
+  (`ANBAU.md` 3). Jetzt: Wichtiger als der pH des Wassers ist seine Karbonathärte; hebt Wasser mit hoher Karbonathärte
+  den pH im Topf mit der Zeit, auf das Erd-Ziel aus `phTargetFor` einstellen (3, 4.1).
+- **„Menge: 20–30 % des Topfvolumens"** ist die Faustregel, die `ANBAU.md` 14 als unbelegt führt: Wie viel in den Topf
+  passt, hängt daran, wie trocken er war (1.1). Jetzt: gießen, bis leichter Drain kommt.
+- `test_lexikon.js` Abschnitt T (185 Prüfungen im Lauf).
+
 ## 2026-09-17 — v1.5.256
 
 - **Das Lexikon empfahl Anfängern „Bio in All-Mix" — die Vorlagen der App rechnen aber mit Light-Mix.** Im Eintrag

@@ -3576,7 +3576,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.256';
+const APP_VERSION = 'v1.5.257';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -32448,7 +32448,7 @@ const LEXIKON = [
     { t: '☀️ Outdoor-Gießen: Grundregeln',
       brief: 'Outdoor folgt keinem Kalender — das Wetter bestimmt. Die goldene Regel: Topf anheben, nicht nach Plan gießen.',
       mechanism: 'Outdoor-Bedingungen schwanken täglich: Sonne, Wind, Luftfeuchte, Regen, Temperatur. Jede dieser Variablen verändert Wasser-Verbrauch der Pflanze. Ein Kalender-basierter Plan kann das nie erfassen — einzige verlässliche Methode ist der <b>Topf-Gewichts-Test</b>.',
-      practice: '<b>Die goldene Regel — Topf anheben statt nach Plan gießen:</b><br>• <b>Leicht</b> → gießen<br>• <b>Schwer</b> → warten, auch wenn „heute Gießtag wäre"<br>• Obere 3-5 cm trocken, darunter feucht → normal, warten<br><br><b>Menge:</b> 20-30 % des Topfvolumens bis leichter Drain. 50-L-Topf → 10-15 L pro Guss wenn nötig.<br><br><b>Timing:</b> Früh morgens oder abends. Nie in praller Mittagssonne — Wasser verdunstet sofort, Tropfen auf heißen Blättern = Linseneffekt = Verbrennungen.<br><br><b>Wasser:</b> Leitungswasser meist OK. pH 6,0-7,0 reicht (nicht auf 6,4 exakt wie Indoor — Bodenleben puffert).<br><br><b>Nach Regen:</b> 2+ Tage Pause. Bei Starkregen 3-4 Tage. Immer Topf fühlen.',
+      practice: '<b>Die goldene Regel — Topf anheben statt nach Plan gießen:</b><br>• <b>Leicht</b> → gießen<br>• <b>Schwer</b> → warten, auch wenn „heute Gießtag wäre"<br>• Obere 3-5 cm trocken, darunter feucht → normal, warten<br><br><b>Menge:</b> gießen, bis Drain kommt — Ziel ' + DRAIN_ZIEL.min + '–' + DRAIN_ZIEL.max + ' % der Gießmenge. Wie viel das ist, hängt davon ab, wie trocken der Topf war — ein fester Anteil des Topfvolumens passt nicht.<br><br><b>Timing:</b> Früh morgens oder abends. Nie in praller Mittagssonne — Wasser verdunstet sofort, Tropfen auf heißen Blättern = Linseneffekt = Verbrennungen.<br><br><b>Wasser:</b> Leitungswasser meist OK. Wichtiger als sein pH ist seine Karbonathärte — sie steht oft in der Wasseranalyse deines Versorgers, manchmal nur die Gesamthärte. Wasser mit niedriger Karbonathärte ändert am pH gekalkter Erde wenig; Wasser mit hoher Karbonathärte hebt den pH im Topf mit der Zeit. Ist sie hoch oder kennst du sie nicht, stell den pH wie drinnen auf ' + phTargetFor('erde').label + ' ein.<br><br><b>Nach Regen:</b> 2+ Tage Pause. Bei Starkregen 3-4 Tage. Immer Topf fühlen.',
       pitfall: 'Alles nach Kalender gießen bei Outdoor ist der häufigste Fehler — führt zu Überwässerung in Regenperioden und Unterwässerung in Hitzewellen. Und: bei Tröpfchen-Bewässerung regelmäßig checken ob die noch funktioniert, Schläuche verstopfen leicht.' },
     { t: '🌧 Outdoor: Regenmanagement',
       brief: 'Regen ist gratis-Gießen — aber nur wenn die Menge stimmt. Leichter Regen zählt nicht.',

@@ -515,6 +515,24 @@ function pruef(name, bedingung, info) {
     pruef('Hersteller-Vergleich: konservativ für Light-Mix, wie die Vorlage selbst', /BioBizz konservativ Light-Mix Anfängerfreundlich/.test(dp) && !/BioBizz konservativ Light-Mix \/ All-Mix/.test(dp) && /Light-Mix/.test(r.kons), r.kons);
   }
 
+  // (v1.5.257) „Outdoor-Gießen" behandelt Töpfe und begründete den lockeren pH mit „Bodenleben puffert" — im Topf gibt es
+  // keinen gewachsenen Boden, und ohne bekannte Karbonathärte sagt der Roh-pH nichts (ANBAU.md 3). Die Menge stand als fester
+  // Anteil des Topfvolumens da, was 14 als unbelegt führt: Wie viel in den Topf passt, hängt daran, wie trocken er war (1.1).
+  console.log('');
+  console.log('T - (v1.5.257) Outdoor-Gießen: Karbonathärte statt Bodenleben, Menge aus dem Topf');
+  {
+    const q = fs.readFileSync(path.join(__dirname, 'app.js'), 'utf8').split('\n').filter(z => !/^\s*(\/\/|\*|\/\*)/.test(z)).join('\n');
+    [/Bodenleben puffert/i, /20-30 % des Topfvolumens/i, /10-15 L pro Guss/i].forEach(re =>
+      pruef('Nirgends mehr: ' + re.source, !re.test(q), (q.match(new RegExp('.{0,60}' + re.source + '.{0,30}', 'i')) || [''])[0]));
+    const og = text(/^☀️ Outdoor-Gießen/);
+    const r = JSON.parse(E('JSON.stringify({ ph: phTargetFor("erde").label, von: DRAIN_ZIEL.min, bis: DRAIN_ZIEL.max })'));
+    pruef('Wasser: Karbonathärte entscheidet, unbekannt oder hoch → pH-Ziel aus phTargetFor (3, 4.1)',
+      /Wichtiger als sein pH ist seine Karbonathärte/.test(og) && /Wasser mit niedriger Karbonathärte ändert am pH gekalkter Erde wenig/.test(og)
+      && og.includes('Ist sie hoch oder kennst du sie nicht, stell den pH wie drinnen auf ' + r.ph + ' ein'), og.slice(og.indexOf('Wasser:'), og.indexOf('Wasser:') + 420));
+    pruef('Menge: bis zum Drain-Ziel aus DRAIN_ZIEL, abhängig davon, wie trocken der Topf war (1.1, 5.1, 14)',
+      og.includes('gießen, bis Drain kommt — Ziel ' + r.von + '–' + r.bis + ' % der Gießmenge. Wie viel das ist, hängt davon ab, wie trocken der Topf war'), og.slice(og.indexOf('Menge:'), og.indexOf('Menge:') + 220));
+  }
+
   console.log('');
   console.log(`Ergebnis: ${ok} OK, ${fail} Fehler`);
   process.exit(fail ? 1 : 0);
