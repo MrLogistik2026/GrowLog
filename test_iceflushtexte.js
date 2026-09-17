@@ -189,7 +189,8 @@ const EISTAG = (pflanzen) => `(function(){
   if (!eisProfi.fehlt) {
     const soll = 'klar höchstens ' + eisProfi.klar + ' %, Bernstein nahe an deinem Ziel (' + eisProfi.amber + ' %)';
     pruef('Checkliste: ' + soll, eisProfi.panel.includes(soll) && eisProfi.amber === 15, (eisProfi.panel.match(/.{0,30}Trichome.{0,90}/) || [''])[0]);
-    pruef('Erntetag-Karte: dieselbe Regel', eisProfi.ernteSteps.includes(soll), eisProfi.ernteSteps);
+    // (v1.5.264) Ohne Trichom-Messung sagt die Erntetag-Karte „erst Trichome prüfen" und nennt die Klar-Grenze als Schritt.
+    pruef('Erntetag-Karte: dieselbe Klar-Grenze, ohne feste Bernstein-Menge', eisProfi.ernteSteps.includes('Höchstens ' + eisProfi.klar + ' % klar') && !/max\.? ?10\s?% (B|b)ernstein/.test(eisProfi.ernteSteps), eisProfi.ernteSteps);
   }
   {
     const quelle = fs.readFileSync(path.join(__dirname, 'app.js'), 'utf8').split('\n').filter(z => !/^\s*(\/\/|\*|\/\*)/.test(z)).join('\n');

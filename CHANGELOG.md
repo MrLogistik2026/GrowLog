@@ -2,6 +2,29 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-17 — v1.5.264
+
+- **Die Startseite befahl am Plan-Erntetag das Schneiden, ohne die Trichome zu lesen** (Bewertung vom 17.09.2026, Hebel 1,
+  am Code bestätigt, Schwere hoch). Satz und Tageskarte sagten „Heute ist Erntetag! Schneide die Pflanze ab" — gemessen auch
+  bei einer Messung von heute mit 30 % klar, bei einer 6 Tage alten Messung und ganz ohne Messung. Der Eintrag sagte am
+  selben Tag „Noch zu viel klar — Geduld!". Zu früh ernten ist der eine Fehler, der sich nicht zurückholen lässt
+  (`ANBAU.md` 11), und Trichome schlagen den Plan-Erntetag (15).
+- **Jetzt eine Regel für alle Übersichten:** `ernteFreigabe(c, iso)` liest die letzte Trichom-Messung mit Klar-Wert und
+  urteilt wie die Trichom-Karte — höchstens `TRICH_FRISCH_TAGE` (3) Tage alt, reif ab Klar ≤ `RIPE_CLEAR_DONE`. Das eigene
+  Bernstein-Ziel entscheidet nur „jetzt oder später", nie „zu früh" (Patrick am 16.09.2026). Vier Zustände:
+  reif mit erreichtem Ziel → „Heute: Ernte!" wie bisher; reif ohne Ziel → „Ernte möglich", Warten für mehr Bernstein
+  erklärt; noch nicht reif → „noch nicht schneiden", mit dem gemessenen Stand und — wo die Prognose frisch ist — dem Tag,
+  ab dem es reicht; ohne oder mit veralteter Messung → „erst Trichome prüfen". Ohne Freigabe steht auf der Karte statt
+  „Erledigt" der Knopf „Trichome eintragen", der direkt zur Trichom-Karte springt. Bis zur Reife: gießen, sobald der
+  Hebe-Test den Gießpunkt des Substrats zeigt (Erde „Knapp", Coco „Mittel"), nur klares Wasser.
+- Der Tipp „Ernten! Dunkel stellen, schneiden." und der Hinweis „Ernte naht!" folgen derselben Freigabe; der Hinweis
+  springt ohne Freigabe zur Trichom-Karte.
+- **Neu: `node testlauf.js`** (auch `npm test`) — alle Testdateien in beiden Zeitzonen, parallel, mit einem Befehl. Prüft
+  vorher, ob die Zeitzone unter Windows wirklich greift, und zählt Fehlerzeilen mit Groß-/Kleinschreibung, damit
+  „Laufzeitfehler: keine" nicht als Fehler gilt (Hebel 12).
+- `test_erntefreigabe.js` (28 Prüfungen): alle vier Zustände, eine Messung nur mit Bernstein, Coco, Profi-Modus, Quelltext.
+  `test_iceflushtexte.js` Abschnitt F prüft die Erntetag-Karte jetzt auf die Klar-Grenze statt auf den alten Satz.
+
 ## 2026-09-17 — v1.5.263
 
 - **Drei Stellen nannten eine feste Bernstein-Grenze:** die Checkliste vor dem IceFlush („Trichome 80–95 % milchig · max

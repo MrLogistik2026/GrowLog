@@ -4577,7 +4577,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.263';
+const APP_VERSION = 'v1.5.264';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -14269,7 +14269,11 @@ function getAlerts(c) {
     if (bluetestufe(p) === 'spaet') out.push({ icon: '🔬', text: `Blütewoche ${p.week} – Trichome checken!`, type: 'tip', action: 'trichome', cId: c.id });
   }
   if (p.ph === 'ice' || p.ph === 'harvest') {
-    out.push({ icon: '✂️', text: 'Ernte naht!', type: 'success' });
+    // (v1.5.264) „Ernte naht!" stand auch direkt über „Deine Trichome sagen aber: noch nicht" — jetzt nach ernteFreigabe.
+    const _ef = ernteFreigabe(c, todayISO());
+    if (_ef.status === 'reif') out.push({ icon: '✂️', text: 'Ernte naht — deine Trichome sind reif', type: 'success' });
+    else if (_ef.status === 'nochNicht') out.push({ icon: '🔬', text: `Trichome noch nicht reif (${_tFmt(_ef.klar)} % klar) — noch nicht schneiden`, type: 'tip', action: 'trichome', cId: c.id });
+    else out.push({ icon: '🔬', text: 'Vor der Ernte: Trichome prüfen', type: 'tip', action: 'trichome', cId: c.id });
   }
 
   // OUTDOOR HITZESTRESS — biophysikalisch fundierter Check.
@@ -16194,6 +16198,14 @@ function ring(pct, color, sz = 56) {
   </div>`;
 }
 
+/** (v1.5.264) Tipp in der Erntephase — „Ernten! … schneiden." nur mit reifen Trichomen (ernteFreigabe). */
+function _ernteTipp(c) {
+  const f = ernteFreigabe(c, todayISO());
+  if (f.status === 'reif') return 'Trichome reif — vor dem Lichtangang schneiden, dann dunkel hängen.';
+  if (f.status === 'nochNicht') return `Plan-Erntetag, aber noch ${_tFmt(f.klar)} % klar — noch nicht schneiden, täglich messen.`;
+  return `Plan-Erntetag: erst Trichome prüfen — geschnitten wird ab höchstens ${RIPE_CLEAR_DONE} % klar.`;
+}
+
 function getSmartTip(c, p) {
   if (!p) return null;
   // (v1.4.55) Curing-Burp-Erinnerung, tag-bewusst und medium-neutral: die ersten 14 Tage
@@ -16215,7 +16227,7 @@ function getSmartTip(c, p) {
       'bloom_1': { text: 'Blüte gestartet! PK erhöhen, EC im Tank anheben.', lex: 'NPK' },
       'bloom_7': { text: 'Trichome kontrollieren – Lupe!', lex: 'Trichom-Analyse (Ernte-Trigger)' },
       'flush':   { text: 'Tank auf klares pH-Wasser (5.5–6.0) wechseln.', lex: 'Spülung (Final-Flush)' },
-      'harvest': { text: 'Ernten! Dunkel stellen, schneiden.', lex: 'Trichom-Analyse (Ernte-Trigger)' },
+      'harvest': { text: _ernteTipp(c), lex: 'Trichom-Analyse (Ernte-Trigger)' },
       'dry':     { text: TROCKNEN_TEXT + '. Nicht zu schnell!', lex: 'Trocknung' },
       'cure':    { text: 'In Gläsern reifen, täglich burpen, Glas-RLF 58–62%.', lex: 'Curing (Veredelung)' },
     };
@@ -16233,7 +16245,7 @@ function getSmartTip(c, p) {
     'bloom_9':   { text: 'Letzte Woche vor Spülung.', lex: 'Spülung (Final-Flush)' },
     'flush':     { text: 'Nur klares Wasser. pH ' + phTargetFor(c && c.medium).label + '.', lex: 'Spülung (Final-Flush)' },
     'ice':       { text: 'Eiswasser (<10°C). Beliebte Technik, Wirkung unbelegt.', lex: 'IceFlush' },
-    'harvest':   { text: 'Ernten! Dunkel stellen, schneiden.', lex: 'Trichom-Analyse (Ernte-Trigger)' },
+    'harvest':   { text: _ernteTipp(c), lex: 'Trichom-Analyse (Ernte-Trigger)' },
     'dry':       { text: TROCKNEN_TEXT + '. Nicht zu schnell!', lex: 'Trocknung' },
     'cure':      { text: 'In Gläsern reifen. Erste 2 Wochen täglich kurz öffnen (burpen), Glas-RLF 58–62%. Je länger, desto besser.', lex: 'Curing (Veredelung)' },
   };
@@ -16347,7 +16359,8 @@ function plainSentence(action, c, p, waterMl) {
     return `Heute ist IceFlush: Leg ${_jeTopfWort}etwa <b>${_eisJeTopf} ml Crushed Ice</b> an den Topfrand, nicht auf den Stamm${_n > 1 ? ` (zusammen ${_eisJeTopf * _n} ml für ${_n} Pflanzen)` : ''}. Daraus werden rund ${_jeTopf(waterMl)} ml Schmelzwasser${_n > 1 ? ' je Topf' : ''} — <b>Wasser gießt du keines dazu</b>. Eine beliebte Abschluss-Technik; ein Trichom-Plus ist nicht belegt.`;
   }
   if (action === 'ernte') {
-    return `Heute ist Erntetag! Schneide die Pflanze ab und häng sie kopfüber zum Trocknen auf.`;
+    // (v1.5.264) Der Schnitt-Befehl nur mit reifen Trichomen — vorher stand er hier bedingungslos (_ernteHeute).
+    return _ernteHeute(c, todayISO()).satz;
   }
   if (action === 'trocknen') {
     return `Deine Pflanze trocknet gerade. Einfach täglich kurz prüfen: ${TROCKNEN_TEXT} (RLF heißt Luftfeuchte), dunkel und ohne Luftstrom auf den Blüten.`;
@@ -16604,16 +16617,54 @@ function getTodayAction(c, p, a, iso) {
     };
   }
   if (a === 'ernte') {
+    // (v1.5.264) Die Karte folgt der Trichom-Messung (ernteFreigabe): „Heute: Ernte!" mit „Erledigt" nur bei reifen
+    // Trichomen. Sonst sagt sie, was zu tun ist — messen, noch nicht schneiden —, und der Knopf führt zur Trichom-Messung
+    // statt einen Schnitt als erledigt abzuhaken, der nicht stattfinden soll.
+    const eh = _ernteHeute(c, iso);
+    const f = eh.f;
+    const gp = giesspunktFor(c);
+    const trichTag = f.iso ? isoDiff(f.iso, c.startDate) + 1 : null;
+    const zumMessen = [{ label: '🔬 Trichome eintragen', onclick: `entryFrom='dash';openEntryAndScroll('${iso}','trich-${c.id}')`, primary: true }];
+    if (eh.schneiden) {
+      return {
+        title: f.zielErreicht ? '✂️ Heute: Ernte!' : '✂️ Heute: Ernte möglich',
+        icon: '✂️',
+        color: cl.hex,
+        steps: [
+          `Trichome reif: ${_tFmt(f.klar)} % klar, ${_tFmt(f.bernstein)} % Bernstein (dein Ziel ${f.ziel} %${f.zielErreicht ? ', erreicht' : ', noch nicht erreicht'}) · gemessen ${f.alterTage === 0 ? 'heute' : f.alterTage === 1 ? 'gestern' : `vor ${f.alterTage} Tagen`}`,
+          f.zielErreicht ? 'Ernten, bevor das Licht angeht — Terpene verdunsten mit Licht und Wärme' : 'Jetzt schneiden — oder für dein Bernstein-Ziel warten und jeden Tag messen',
+          'Dunkel hängen lassen: ' + TROCKNEN_TEXT,
+        ],
+        hint: '7–14 Tage Trocknung, dann Curing in Gläsern',
+      };
+    }
+    if (f.status === 'nochNicht') {
+      return {
+        title: '🔍 Plan-Erntetag — noch nicht schneiden',
+        icon: '🔍',
+        color: cl.hex,
+        steps: [
+          `Trichome am Tag ${trichTag}: ${_tFmt(f.klar)} % klar — nicht mehr zu früh erst ab höchstens ${RIPE_CLEAR_DONE} %${f.vsPlan && isFinite(f.vsPlan.fruehestens) ? ` · nach deinem Tempo etwa ab Tag ${f.vsPlan.fruehestens}` : ''}`,
+          `Gießen, sobald der Hebe-Test „${gp.knopf}" zeigt — nur klares Wasser`,
+          'Jeden Tag die Trichome auf den Blütenkelchen prüfen und eintragen',
+        ],
+        hint: 'Zu früh geerntet kostet Wirkung und Gewicht und lässt sich nicht nachholen — ein paar Tage länger kosten wenig.',
+        aktionen: zumMessen,
+      };
+    }
     return {
-      title: '✂️ Heute: Ernte!',
-      icon: '✂️',
+      title: '🔍 Plan-Erntetag — erst Trichome prüfen',
+      icon: '🔍',
       color: cl.hex,
       steps: [
-        `Trichome auf den Blütenkelchen final checken: klar höchstens ${RIPE_CLEAR_DONE} %, Bernstein nahe an deinem Ziel (${_targetAmber(c)} %)`,
-        'Ernten, bevor das Licht angeht — Terpene verdunsten mit Licht und Wärme',
-        'Dunkel hängen lassen: ' + TROCKNEN_TEXT,
+        f.status === 'veraltet'
+          ? `Deine letzte Trichom-Messung ist ${f.alterTage} Tage alt (Tag ${trichTag}) — heute neu unter die Lupe`
+          : 'Trichome mit Lupe prüfen — auf den Blütenkelchen, nicht auf den Blättchen',
+        `Höchstens ${RIPE_CLEAR_DONE} % klar: schneiden, bevor das Licht angeht`,
+        `Mehr klar: noch nicht schneiden — gießen, sobald der Hebe-Test „${gp.knopf}" zeigt, und jeden Tag messen`,
       ],
-      hint: '7–14 Tage Trocknung, dann Curing in Gläsern',
+      hint: 'Der Plan-Erntetag ist eine Schätzung aus Wochenangaben, die Trichome sind die Messung an deiner Pflanze.',
+      aktionen: zumMessen,
     };
   }
   if (a === 'trocknen') {
@@ -17087,7 +17138,11 @@ function renderDash() {
       </div>
       ${td.hint ? `<div style="font-size:10px;color:${td.color};opacity:0.85;border-top:0.5px solid ${td.color}33;padding-top:6px;margin-top:4px;line-height:1.4">💡 ${td.hint}</div>` : ''}
       <div style="display:flex;gap:8px;margin-top:8px;align-items:center">
-        ${td.isOutdoorManual
+        ${td.aktionen
+          // (v1.5.264) Eine Karte kann eigene Knöpfe mitbringen — die Ernte-Karte ohne reife Trichome führt zur Messung,
+          // statt einen Schnitt als „Erledigt" abzuhaken, der heute nicht stattfinden soll.
+          ? td.aktionen.map(x => `<button onclick="event.stopPropagation();${x.onclick}" style="flex:1;background:${x.primary ? td.color : 'transparent'};border:${x.primary ? 'none' : '1px solid ' + td.color};color:${x.primary ? '#fff' : td.color};border-radius:10px;padding:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font)">${x.label}</button>`).join('')
+          : td.isOutdoorManual
           ? `<button onclick="event.stopPropagation();entryFrom='dash';openEntry('${today}')" style="flex:1;background:${td.color};border:none;color:#fff;border-radius:10px;padding:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);display:flex;align-items:center;justify-content:center;gap:6px">
               <span>💧</span><span>Eintragen</span>
             </button>`
@@ -32187,6 +32242,70 @@ function _trichHistory(cId, cyc, untilIso) {
  * wie die Bernstein-Prognose (v1.5.39): Zieht das Tempo an, rückt das Fenster nach vorn.
  */
 const RIPE_CLEAR_DONE = 10;   // % klar, ab dem die Blüte als milchig-dominant gilt
+// (v1.5.264) Höchstes Alter einer Trichom-Messung, die über den Schnitt entscheiden darf — dieselbe Grenze wie in
+// Trichom-Karte und Prognose seit v1.4.82 („älter als 3 Tage: keine Aussage zum Erntezeitpunkt").
+const TRICH_FRISCH_TAGE = 3;
+
+/**
+ * (v1.5.264) Darf heute geschnitten werden? Eine Antwort für Startseite, Tageskarte, Hinweise und Tipps — nach derselben
+ * Regel wie die Trichom-Karte im Eintrag. Vorher befahl die Startseite am Plan-Erntetag „Schneide die Pflanze ab", ohne die
+ * Messung zu lesen, während der Eintrag am selben Tag „Noch zu viel klar — Geduld!" sagte. Zu früh ernten ist der eine
+ * Fehler, der sich nicht zurückholen lässt (ANBAU.md 11), und Trichome schlagen den Plan-Erntetag (15).
+ *
+ * Gezählt wird nur eine Messung mit Klar-Wert (ein Eintrag nur mit Bernstein sagt nichts über „zu früh").
+ * @returns {{status:'reif'|'nochNicht'|'veraltet'|'ohneMessung', iso?:string, alterTage?:number, klar?:number,
+ *            bernstein?:number, ziel?:number, zielErreicht?:boolean, vsPlan?:object|null}}
+ */
+function ernteFreigabe(c, iso) {
+  if (!c || !iso) return { status: 'ohneMessung' };
+  const start = c.startDate || '';
+  const tage = Object.keys(S.entries || {}).filter((k) => k <= iso && k >= start).sort().reverse();
+  let m = null;
+  for (const k of tage) {
+    const cd = S.entries[k] && S.entries[k].cycleData && S.entries[k].cycleData[c.id];
+    const t = cd && cd.trichomes;
+    if (t && isFinite(parseFloat(t.clear))) { m = { iso: k, klar: parseFloat(t.clear), bernstein: parseFloat(t.amber) || 0 }; break; }
+  }
+  if (!m) return { status: 'ohneMessung' };
+  const ziel = _targetAmber(c);
+  const basis = { iso: m.iso, alterTage: isoDiff(iso, m.iso), klar: m.klar, bernstein: m.bernstein, ziel };
+  if (basis.alterTage > TRICH_FRISCH_TAGE) return { status: 'veraltet', ...basis };
+  if (m.klar <= RIPE_CLEAR_DONE) return { status: 'reif', ...basis, zielErreicht: m.bernstein >= ziel };
+  return { status: 'nochNicht', ...basis, vsPlan: (typeof _trichVsPlan === 'function') ? _trichVsPlan(c, iso) : null };
+}
+
+/** (v1.5.264) Die Ernte-Karte der Startseite nach der Freigabe — ein Text je Zustand, gemeinsam mit plainSentence. */
+function _ernteHeute(c, iso) {
+  const f = ernteFreigabe(c, iso);
+  const gp = giesspunktFor(c);
+  const trichStand = (f.klar !== undefined) ? `${_tFmt(f.klar)} % klar, ${_tFmt(f.bernstein)} % Bernstein` : '';
+  const warten = `Bis dahin gießen, sobald der Hebe-Test „${gp.knopf}" zeigt — nur klares Wasser — und jeden Tag die Trichome auf den Blütenkelchen prüfen.`;
+  if (f.status === 'reif' && f.zielErreicht) {
+    return {
+      f, schneiden: true,
+      satz: `Heute ist Erntetag — deine Trichome sind reif (${trichStand}). Schneide die Pflanze ab, bevor das Licht angeht, und häng sie kopfüber zum Trocknen auf.`,
+    };
+  }
+  if (f.status === 'reif') {
+    return {
+      f, schneiden: true,
+      satz: `Heute ist dein Plan-Erntetag, und deine Trichome sind reif: kaum noch klare (${trichStand}). Dein Bernstein-Ziel von ${f.ziel} % ist noch nicht erreicht. <b>Du kannst heute schneiden</b> — oder für mehr Bernstein warten und jeden Tag weiter messen; mehr Bernstein heißt eine ruhigere, schläfrigere Wirkung.`,
+    };
+  }
+  if (f.status === 'nochNicht') {
+    const wann = f.vsPlan && isFinite(f.vsPlan.fruehestens) ? ` Nach deinem gemessenen Tempo etwa ab Tag ${f.vsPlan.fruehestens}.` : '';
+    return {
+      f, schneiden: false,
+      satz: `Heute ist dein Plan-Erntetag — <b>deine Trichome sagen noch nicht</b>: ${_tFmt(f.klar)} % sind noch klar, nicht mehr zu früh ist es erst ab höchstens ${RIPE_CLEAR_DONE} %.${wann} <b>Noch nicht schneiden.</b> ${warten}`,
+    };
+  }
+  const alt = f.status === 'veraltet' ? ` Deine letzte Messung ist ${f.alterTage} Tage alt — Trichome reifen in der Zeit weiter.` : '';
+  return {
+    f, schneiden: false,
+    satz: `Heute ist dein Plan-Erntetag. <b>Schau vor dem Schnitt unter die Lupe</b>, auf die Blütenkelche, nicht auf die Blättchen.${alt} Erst wenn höchstens ${RIPE_CLEAR_DONE} % der Köpfe klar sind, ist es nicht mehr zu früh — sind es mehr, noch nicht schneiden. ${warten}`,
+  };
+}
+
 
 /**
  * (v1.5.42) NIMMT DAS TEMPO ZU?
