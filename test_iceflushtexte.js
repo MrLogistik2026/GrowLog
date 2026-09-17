@@ -161,6 +161,26 @@ const EISTAG = (pflanzen) => `(function(){
     pruef('Alle Eismengen je Topf im Eintrag sind dieselbe Zahl', mengen.length > 0 && mengen.every(m => m === eisProfi.eis || m === eisProfi.eis * 2), mengen.join(', '));
   }
 
+  // (v1.5.262) Die IceFlush-Anleitung sagte „Licht aus → 24–36 h Dunkelphase" und im selben Atemzug „Ernte am Folgetag beim
+  // Lichtangang" — das ist nur mit einem IceFlush-Tag richtig. Der Plan erntet `iceLenFor(c)` Tage nach dem Eis (Patrick:
+  // Eis Tag 114, Ernte Tag 116). Wer der Karte folgte, schnitt einen Tag oder mehr vor dem Plan — zu früh ernten ist der
+  // teuerste Fehler (ANBAU.md 11). Und geschnitten wird vor dem Lichtangang (2.2), nicht „beim"; „früh ernten = maximaler
+  // Terpengehalt" ist nicht belegt — belegt ist nur, dass Terpene mit Licht und Wärme verdunsten (14).
+  console.log('\nE - (v1.5.262) Die Anleitung nennt den Erntetag des Plans');
+  if (!eisProfi.fehlt) {
+    pruef('Kein „Folgetag" mehr in der Anleitung', !/Folgetag/.test(eisProfi.panel), (eisProfi.panel.match(/.{0,60}Folgetag.{0,40}/) || [''])[0]);
+    pruef('Schritt: Ernte am Erntetag des Plans mit Tag und Datum', eisProfi.panel.includes('Ernte am Erntetag deines Plans (Tag ' + eisProfi.ernteTag + ' · ' + eisProfi.datum + '), bevor das Licht wieder angeht'),
+      (eisProfi.panel.match(/.{0,20}Ernte am Erntetag.{0,90}/) || [''])[0]);
+    pruef('Zeitleiste: ' + (eisProfi.bis === 1 ? 'Morgen' : 'In ' + eisProfi.bis + ' Tagen') + ' · früh', eisProfi.panel.includes((eisProfi.bis === 1 ? 'Morgen' : 'In ' + eisProfi.bis + ' Tagen') + ' · früh') && eisProfi.bis >= 1);
+    pruef('Dunkelphase bis zur Ernte statt fester Stunden', /Licht ausschalten → Dunkelphase bis zur Ernte/.test(eisProfi.panel) && !/24–36 h Dunkelphase startet/.test(eisProfi.panel));
+    pruef('Erntetag-Karte: vor dem Lichtangang, ohne „maximaler Terpengehalt"', /bevor das Licht angeht/.test(eisProfi.ernteSteps) && !/maximaler Terpengehalt/.test(eisProfi.ernteSteps), eisProfi.ernteSteps);
+  }
+  {
+    const quelle = fs.readFileSync(path.join(__dirname, 'app.js'), 'utf8').split('\n').filter(z => !/^\s*(\/\/|\*|\/\*)/.test(z)).join('\n');
+    pruef('Lexikon IceFlush: Ernte am Erntetag des Plans, bevor das Licht wieder angeht', /6\. Ernte am Erntetag deines Plans, bevor das Licht wieder angeht/.test(quelle) && !/Ernte am Folgetag/.test(quelle));
+    pruef('Nirgends mehr „maximaler Terpengehalt"', !/maximaler Terpengehalt/i.test(quelle));
+  }
+
   console.log(`\nErgebnis: ${ok} OK, ${fail} Fehler`);
   process.exit(fail ? 1 : 0);
 })();

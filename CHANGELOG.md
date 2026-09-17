@@ -2,6 +2,19 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-17 — v1.5.262
+
+- **Die IceFlush-Anleitung nannte den falschen Erntetag.** Sie sagte „Licht ausschalten → 24–36 h Dunkelphase" und
+  „Ernte am Folgetag beim Lichtangang", die Zeitleiste „Folgetag · früh: ERNTE", und der Lexikon-Eintrag ebenso. Das
+  stimmt nur mit einem IceFlush-Tag. Der Plan erntet so viele Tage nach dem Eis, wie IceFlush-Tage eingestellt sind —
+  bei Patrick Eis an Tag 114, Ernte an Tag 116, in der Voreinstellung nach drei Tagen. Wer der Anleitung folgte, schnitt
+  einen Tag oder mehr vor dem Plan; zu früh ernten ist nach `ANBAU.md` 11 der teuerste Fehler. Jetzt nennt die Anleitung
+  den Erntetag des Plans mit Tag und Datum (`endspurtState`), die Dunkelphase dauert bis zur Ernte.
+- **Geschnitten wird vor dem Lichtangang** (2.2), nicht „beim". „Früh am Morgen ernten (maximaler Terpengehalt)" in der
+  Erntetag-Karte und in der Anleitung → bevor das Licht angeht, weil Terpene mit Licht und Wärme verdunsten; einen
+  „maximalen Terpengehalt" am Morgen belegt `ANBAU.md` nicht (14).
+- `test_iceflushtexte.js` Abschnitt E (24 Prüfungen im Lauf).
+
 ## 2026-09-17 — v1.5.261
 
 - **Am IceFlush-Tag standen zwei Eismengen auf demselben Bildschirm.** Die Karte an der Gießmenge sagte fest „~1 L

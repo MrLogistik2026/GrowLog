@@ -3749,7 +3749,7 @@ const FERT_PRESETS = {
       9:  { phase: 'Reifung II', tip: 'Trichome checken. CANNAZYM weiterführen.' },
       10: { phase: 'Spülung',   tip: '7 Tage spülen mit reinem CalMag-Wasser. Das Spülende setzt der Plan, nicht der Drain-EC.' },
       11: { phase: 'Hard Dryback', tip: 'Nicht mehr gießen, bis der Topf den Gießpunkt erreicht (Hebe-Test „' + GIESSPUNKT.coco.knopf + '"). Coco trocknet schneller als Erde — darunter meldet die App „Zu trocken für Coco". Vorbereitung IceFlush oder Ernte.' },
-      12: { phase: 'Ernte',     tip: 'Ernte beim Lichtangang. Trichom-Profil bestimmt Zeitpunkt.' },
+      12: { phase: 'Ernte',     tip: 'Ernte vor dem Lichtangang. Trichom-Profil bestimmt Zeitpunkt.' },
     },
     products: [
       { name: 'CalMag',        unit: 'ml/L', color: '#f0d050', note: '① Calcium & Magnesium (Pflicht in Coco!)' },
@@ -3800,7 +3800,7 @@ const FERT_PRESETS = {
       9:  { phase: 'Reifung II', tip: 'Ripen startet (letzte 2 Wochen vor Spülung).' },
       10: { phase: 'Spülung',  tip: 'Reines Wasser mit pH ' + phTargetFor('coco').mid.toFixed(1) + '. Salze raus.' },
       11: { phase: 'Hard Dryback', tip: 'Nicht mehr gießen, bis der Topf den Gießpunkt erreicht (Hebe-Test „' + GIESSPUNKT.coco.knopf + '"). Coco trocknet schneller als Erde — darunter meldet die App „Zu trocken für Coco". Vorbereitung IceFlush oder Ernte.' },
-      12: { phase: 'Ernte',    tip: 'Ernte beim Lichtangang.' },
+      12: { phase: 'Ernte',    tip: 'Ernte vor dem Lichtangang.' },
     },
     products: [
       { name: 'CalMag',         unit: 'ml/L', color: '#f0d050', note: '① Calcium & Magnesium' },
@@ -4577,7 +4577,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.261';
+const APP_VERSION = 'v1.5.262';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -16610,7 +16610,7 @@ function getTodayAction(c, p, a, iso) {
       color: cl.hex,
       steps: [
         'Trichome final checken (90% milchig + max 10% bernstein)',
-        'Früh am Morgen ernten (maximaler Terpengehalt)',
+        'Ernten, bevor das Licht angeht — Terpene verdunsten mit Licht und Wärme',
         'Dunkel hängen lassen: ' + TROCKNEN_TEXT,
       ],
       hint: '7–14 Tage Trocknung, dann Curing in Gläsern',
@@ -30023,7 +30023,7 @@ function getLiftFeelForPct(pct) {
  *   - Crushed Ice am Topfrand (NICHT Stamm/Mitte), 1 L je 11 L Topf
  *   - 4-6h schmelzen — das Schmelzwasser bleibt im Topf, es gibt keinen Drain zu messen
  *   - 24-36h Pitch-Black Dunkelphase
- *   - Ernte beim Lichtangang
+ *   - Ernte am Erntetag des Plans, vor dem Lichtangang
  *
  * Die Checkliste ist persistent (gespeichert in cd._iceflushChecks), damit
  * der User sie über mehrere App-Aufrufe hinweg abarbeiten kann.
@@ -30051,7 +30051,7 @@ function _renderIceFlushPanel(c, iso) {
     { id: 'tent_dark', label: 'Zelt auf Pitch-Black geprüft — alle Lichtquellen abgeklebt' },
     { id: 'dry_tent',  label: `Trockenzelt vorbereitet: ${TROCKNEN_TEXT} · kein direkter Luftstrom` },
     { id: 'scissor',   label: 'Erntewerkzeug steril (Schere mit Isopropanol desinfiziert)' },
-    { id: 'morning',   label: 'Ernte geplant: früh morgens beim Lichtangang' },
+    { id: 'morning',   label: 'Ernte geplant: morgens, bevor das Licht angeht' },
   ];
   const checkedCount = checklistItems.filter(i => checks[i.id]).length;
   const totalCount = checklistItems.length;
@@ -30065,13 +30065,20 @@ function _renderIceFlushPanel(c, iso) {
     </div>`;
   }).join('');
 
+  // (v1.5.262) Der Erntetag kommt aus dem Plan — so viele Tage nach dem Eis, wie IceFlush-Tage eingestellt sind, nicht „am
+  // Folgetag". Geschnitten wird vor dem Lichtangang (ANBAU.md 2.2).
+  const _es = endspurtState(c, iso);
+  const _ernteISO = (_es && isFinite(_es.ernteTag)) ? isoPlus(c.startDate, _es.ernteTag - 1) : null;
+  const _bisErnte = _ernteISO ? isoDiff(_ernteISO, iso) : 0;
+  const _ernteWann = _ernteISO ? ` (Tag ${_es.ernteTag} · ${fmtDE(_ernteISO, { weekday: 'long', day: '2-digit', month: '2-digit' })})` : '';
+
   // Schritt-für-Schritt
   const steps = [
     'Untersetzer unter die Töpfe stellen — am Gießpunkt bleibt das Schmelzwasser im Topf',
     `Crushed Ice gleichmäßig entlang des gesamten Topfrandes verteilen — wie ein Ring (NICHT auf Stamm, NICHT in Mitte)`,
     '4–6 h schmelzen lassen — Zelt NICHT öffnen, kein Licht rein',
-    'Licht ausschalten → 24–36 h Dunkelphase startet',
-    'Ernte am Folgetag beim Lichtangang — sofort, nicht warten',
+    'Licht ausschalten → Dunkelphase bis zur Ernte',
+    `Ernte am Erntetag deines Plans${_ernteWann}, bevor das Licht wieder angeht`,
   ];
   const stepsHtml = steps.map((s, i) => `
     <div style="display:flex;gap:10px;padding:6px 0">
@@ -30086,7 +30093,7 @@ function _renderIceFlushPanel(c, iso) {
     { time: 'Tag −1',        dot: '#4ade80', text: 'Trichome final mit Lupe checken · Crushed Ice bereitstellen · Trockenzelt vorbereiten' },
     { time: 'Heute · 18 Uhr',  dot: '#a5f3fc', text: `IceFlush — ${icePerPot} ml Crushed Ice pro Topf am Rand verteilen` },
     { time: 'Heute · 22–24 Uhr', dot: '#a5f3fc', text: 'Eis geschmolzen · Licht AUS' },
-    { time: 'Folgetag · Früh', dot: '#f87171', text: '✂️ ERNTE — beim Lichtangang sofort starten' },
+    { time: _bisErnte >= 1 ? `${_inNTagen(_bisErnte)} · früh` : 'Erntetag · früh', dot: '#f87171', text: `✂️ ERNTE${_ernteWann} — bevor das Licht wieder angeht` },
     { time: 'Tag 2–12',        dot: '#4ade80', text: `Trocknung ${TROCKNEN_TEXT} · Pitch-Black · Snap-Test ab Tag 8` },
     { time: 'Tag 10–14',       dot: '#2dd4bf', text: 'Snap-Test bestanden → Curing in Glas mit Integra Boost 62%' },
   ];
@@ -31478,7 +31485,7 @@ function getAutoFillTemplate(c, p, a, iso) {
     // Kein water='0' (würde als Eintrag gespeichert) — Feld leer lassen
     tpl.doses = {};
     tpl._allDosesZero = true;
-    tpl.notePlaceholder = 'Ernte beim Lichtangang — sofort starten, nicht warten. Schere desinfiziert, Handschuhe an. Direkt ins Trockenzelt: ' + TROCKNEN_TEXT + ', Pitch-Black.';
+    tpl.notePlaceholder = 'Ernte vor dem Lichtangang — sofort starten, nicht warten. Schere desinfiziert, Handschuhe an. Direkt ins Trockenzelt: ' + TROCKNEN_TEXT + ', Pitch-Black.';
     tpl._actionType = 'harvest';
     return tpl;
   }
@@ -31530,7 +31537,7 @@ async function applyRecommended(cId, wk) {
   // Premium-Workflow schreibt vor dass ALLE Voraussetzungen erfüllt sein
   // müssen bevor IceFlush gestartet wird (Trichome-Status, Hard
   // Dryback, Crushed Ice bereit, Pitch-Black-Zelt, Trockenzelt, Schere steril,
-  // Ernte beim Lichtangang geplant). Wenn nicht alles abgehakt → Warnung.
+  // Ernte vor dem Lichtangang geplant). Wenn nicht alles abgehakt → Warnung.
   // Der User kann trotzdem fortfahren (Verantwortung), aber er sieht klar
   // dass etwas fehlt. Schützt Anfänger vor zu frühem IceFlush.
   if (a === 'ice') {
@@ -34418,8 +34425,8 @@ const LEXIKON = [
         '2. NICHT auf den Stamm, NICHT in die Mitte (lokaler Schock kann den Stamm schädigen)<br>' +
         '3. 4–6 h schmelzen lassen, Zelt nicht öffnen<br>' +
         '4. Kein Drain erwartet — das Schmelzwasser bleibt im abgetrockneten Topf, eine Drain-EC-Messung gibt es hier nicht<br>' +
-        '5. Licht ausschalten → 24–36 h Dunkelphase startet<br>' +
-        '6. Ernte am Folgetag beim Lichtangang<br><br>' +
+        '5. Licht ausschalten → Dunkelphase bis zur Ernte<br>' +
+        '6. Ernte am Erntetag deines Plans, bevor das Licht wieder angeht<br><br>' +
         '<b>Kombination Dunkelphase:</b> Beides zusammen ist üblich. Ein Synergie-Effekt ist nicht belegt; belegt ist nur, dass Terpene ohne Licht und Wärme langsamer verdunsten.',
       pitfall: '<b>Was schiefgehen kann:</b><br>' +
         '• <b>Mehr Eis ≠ besser</b> — je kälter die Wurzelzone, desto größer das Risiko für die Wurzeln. Die Temperatur im Topf bei 1 L je 11-L-Topf hat niemand gemessen; wer es wissen will, steckt ein Thermometer an den Rand<br>' +
@@ -34464,9 +34471,9 @@ const LEXIKON = [
   ]},
   { cat: '🍂 Nach der Ernte', items: [
     { t: 'Erntetag — Schnitttechnik',
-      brief: 'Wann und wie wird tatsächlich geschnitten. Früh morgens bei Lichtangang, Pflanze für Pflanze, Schere desinfiziert, Buds nicht anfassen.',
+      brief: 'Wann und wie wird tatsächlich geschnitten. Früh morgens vor dem Lichtangang, Pflanze für Pflanze, Schere desinfiziert, Buds nicht anfassen.',
       mechanism: 'Der Erntemoment selbst entscheidet über das <b>Terpen-Profil</b> des Endprodukts. Terpene sind <b>flüchtige Verbindungen</b> die bei Wärme und Licht verdampfen. Die kühlste Phase im 24h-Zyklus ist die letzte Stunde vor Lichtangang — dann verdunsten am wenigsten Terpene. Dass die Pflanze über Nacht Cannabinoide oder Terpene „hochpumpt", ist nicht belegt.<br><br>' +
-        'Sobald die Lampe angeht oder draußen die Sonne aufgeht, wird es wärmer, und Terpene verdunsten bei Wärme und Licht schneller. Wie viel Aroma eine Stunde kostet, ist nicht gemessen — die Richtung ist aber klar. Daher: <b>Ernte beim Lichtangang, sofort starten</b>. Idealerweise Lampe an um z.B. 6 Uhr, Schnitt ab 6:01.<br><br>' +
+        'Sobald die Lampe angeht oder draußen die Sonne aufgeht, wird es wärmer, und Terpene verdunsten bei Wärme und Licht schneller. Wie viel Aroma eine Stunde kostet, ist nicht gemessen — die Richtung ist aber klar. Daher: <b>Ernte vor dem Lichtangang</b>, ohne die Lampe wieder anzuschalten.<br><br>' +
         'Die Schnitttechnik beeinflusst, wie schnell die Buds ins Trockenklima kommen. Je <b>kürzer die Zeit zwischen Schnitt und Aufhängen</b>, desto weniger Terpene gehen verloren. Daher: eine Pflanze nach der anderen, direkt vom Schnitt ins Trockenzelt.',
       practice: '<b>Vorbereitung am Vorabend:</b><br>' +
         '• Schere mit <b>Isopropanol</b> desinfizieren, trocken wischen, eine Reserve-Schere bereitlegen<br>' +
@@ -36233,7 +36240,7 @@ const HOWTO = [
     { t: 'Trichom-Check',
       txt: 'Ab Blüte-Woche 6-7 mit einer Lupe (60x oder mehr) die Trichome an den Blüten anschauen. <b>Klar</b> = zu früh. <b>Milchig</b> = THC-Peak (euphorische Wirkung). <b>Bernstein</b> = abgebaut zu CBN (sedierend). Wie viel Bernstein es sein soll, entscheidest du — mehr Bernstein = ruhigere Wirkung, weniger Potenz. Dein Ziel legst du in den Einstellungen fest. Im Eintrag gibt es ein Trichom-Widget mit Prozent-Schiebern um deine Beobachtung festzuhalten.' },
     { t: 'Ernte',
-      txt: 'Früh am Morgen ernten, bevor die Lampen angehen (maximaler Terpengehalt). Äste abschneiden, grob entblättern, dann kopfüber aufhängen. Die App wechselt automatisch in die Trocknungs-Phase.' },
+      txt: 'Ernten, bevor die Lampen angehen — Terpene verdunsten mit Licht und Wärme. Äste abschneiden, grob entblättern, dann kopfüber aufhängen. Die App wechselt automatisch in die Trocknungs-Phase.' },
     { t: 'Trocknen',
       brief: 'Die wichtigste Phase für Aroma und Wirkung. Falsch trocknen ruiniert in 7 Tagen die ganze Arbeit der vorherigen Monate.',
       mechanism: '<b>Was beim Trocknen passiert:</b><br>• <b>Wasserentzug</b> aus den Buds (frisch ~80% Wasser, fertig ~10–15%)<br>• <b>Chlorophyll-Abbau</b> — das grüne Pigment macht den „Heu/Gras"-Geschmack. Es zerfällt langsam bei Dunkelheit und ' + TROCKNEN_KLIMA.tMin + '–' + TROCKNEN_KLIMA.tMax + ' °C in 7–14 Tagen<br>• <b>Stärke wandelt sich zu Zucker</b> — der typische süße Geschmack entsteht erst beim Trocknen<br>• <b>Terpene</b> (Aroma-Stoffe) sind flüchtig — bei &gt;25°C verdunsten sie weg, bei zu trockener Luft auch<br>• <b>THC ist zunächst inaktiv</b> als THCA — wird erst beim Erhitzen oder durch Zeit/UV zu THC<br><br>Zu schnell getrocknet (z.B. Heizung, Sonne, Lüfter direkt drauf) → Chlorophyll bleibt → kratzt im Hals, schmeckt nach Heu, brennt schwarz. Zu feucht → Schimmel, Pflanze ist Müll.',
