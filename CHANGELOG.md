@@ -2,6 +2,20 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-17 — v1.5.280
+
+- **Die Kacheln widersprachen am Plan-Erntetag der Karte darüber** (Bewertung vom 17.09.2026, Hebel 1 #16, an v1.5.271 gemessen
+  und gegengeprüft). Unter „Trichome noch nicht reif (20 % klar) — noch nicht schneiden" standen „Ernte in 0 ±5d", „Heute ✂️"
+  und „Erntedatum 17. Sept." — ebenso ohne Messung und mit einer 5 Tage alten. Bei Patrick am 08.09. „Ernte in 0 ±5d · Heute ✂️"
+  unter „Vor der Ernte: Trichome prüfen". Die Kacheln fragten die Messung nur, wenn `_trichVsPlan` einen späteren Tag lieferte.
+- **Jetzt:** Ist der Plan-Erntetag erreicht und die Ernte offen (`ernteOffen`), zeigen die Kacheln „offen", „nach Trichomen"
+  und 🔍 (dasselbe Zeichen wie „Ernte offen" seit v1.5.269), der Titel der Kachel ist der Ernte-Tipp. Mit reifen Trichomen
+  bleibt alles wie bisher. Trichome schlagen den Plan-Erntetag (`ANBAU.md` 11, 15).
+- **Neu: `_ernteTermin(c, iso)`** — messung / offen / plan, gebaut nur aus `harvestCountdown`, `_trichVsPlan` und `ernteOffen`.
+  Ausdrücklich als Vorstufe des Erntefensters aus Hebel 4 gekennzeichnet: Wer `erntefenster(c, iso)` baut, ersetzt sie.
+  „messung" meint das eigene Bernstein-Ziel, nicht die Reife.
+- `test_erntekacheln.js` (15 Prüfungen): Plan-Erntetag mit unreifer, fehlender, alter und reifer Messung, Einsteiger-Modus.
+
 ## 2026-09-17 — v1.5.279
 
 - **Die Kachel „Erntedatum" lag draußen drei Tage hinter „Ernte in"** (beim Nachmessen von Hebel 1 #16 gefunden,

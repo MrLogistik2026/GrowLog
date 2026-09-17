@@ -3592,7 +3592,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.279';
+const APP_VERSION = 'v1.5.280';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -10427,6 +10427,24 @@ function _trichVsPlan(c, iso) {
 }
 
 /**
+ * (v1.5.280) Erntetermin für die Übersichten — Vorstufe von erntefenster(c, iso) aus Hebel 4 (UEBERGABE 0m.2); wer das
+ * Erntefenster baut, ersetzt diese Funktion, statt eine zweite Quelle anzulegen.
+ *   basis 'messung': _trichVsPlan liefert einen späteren Tag — gemeint ist das eigene Bernstein-Ziel, nicht die Reife.
+ *   basis 'offen':   Plan-Erntetag erreicht oder vorbei, die Ernte ist noch offen (ernteOffen) — der Tag ist unbekannt.
+ *   basis 'plan':    der Plan-Erntetag.
+ */
+function _ernteTermin(c, iso) {
+  const hc = harvestCountdown(c, iso);
+  if (!hc) return null;
+  const planTag = isoDiff(hc.harvestISO, c.startDate) + 1;
+  const vs = _trichVsPlan(c, iso);
+  if (vs) return { basis: 'messung', tag: vs.fruehestens, iso: isoPlus(c.startDate, vs.fruehestens - 1), planTag, hc, vsPlan: vs };
+  const p = phase(iso, c);
+  if (hc.daysRemaining <= 0 && p && ernteOffen(c, iso, p)) return { basis: 'offen', tag: null, iso: null, planTag, hc };
+  return { basis: 'plan', tag: planTag, iso: hc.harvestISO, planTag, hc };
+}
+
+/**
  * Blütetage, die sich aus einer Wochen-Angabe der Samentüte ergeben. Bewusst das OBERE
  * Ende der Spanne: zu spät spülen kostet nichts, zu früh spülen kostet die Ernte.
  */
@@ -16331,23 +16349,28 @@ function renderDash() {
   // beim Überfliegen. Der Abgleich läuft hier und NICHT in `harvestCountdown`, weil
   // `harvestWindow` seinerseits `harvestCountdown` aufruft — das gäbe eine Endlosschleife.
   const fcVsPlan = fc ? _trichVsPlan(fc, today) : null;
+  // (v1.5.280) Plan-Erntetag erreicht, Ernte offen: Die Kacheln sagen „offen" statt „0 ±5d", „nach Trichomen" statt eines
+  // Datums und 🔍 statt ✂️ — wie die Karte darüber („noch nicht schneiden"). Trichome schlagen den Plan (ANBAU.md 11, 15).
+  const fcET = fc ? _ernteTermin(fc, today) : null;
+  const fcOffenTermin = !!(fcET && fcET.basis === 'offen');
+  const fcOffen = !!(fc && (() => { const _p = phase(today, fc); return _p && _p.ernteOffen; })());
   const fcHeuteTag = fc ? isoDiff(today, fc.startDate) + 1 : null;
-  const harvestStatLabel = (fcVsPlan && isFinite(fcHeuteTag))
+  const harvestStatLabel = fcOffenTermin ? 'offen' : (fcVsPlan && isFinite(fcHeuteTag))
     ? `min. ${Math.max(0, fcVsPlan.fruehestens - fcHeuteTag)}<span class="stat-unit"> d</span>`
     : (fcCountdown
         ? `${fcCountdown.daysRemaining >= 0 ? fcCountdown.daysRemaining : '—'}<span class="stat-unit"> ±${fcCountdown.uncertainty}d</span>`
         : '—');
-  const harvestStatTitle = fcVsPlan
+  const harvestStatTitle = fcOffenTermin ? _ernteTipp(fc, today) : fcVsPlan
     ? `Dein Plan nennt Tag ${fcVsPlan.planTag}. Deine Trichome sagen: frühestens Tag ${fcVsPlan.fruehestens}${fcVsPlan.unsicher ? ` — wie viel später, ist noch offen (Schätzung bis Tag ${fcVsPlan.spaetestens})` : ''}. Es gilt die Messung, nicht der Kalender: weiter täglich prüfen und erst schneiden, wenn das Ziel erreicht ist.`
     : (fcCountdown ? fcCountdown.tooltip : '');
   // Erntedatum entsprechend: Tag N liegt auf startDate + (N − 1).
-  const harvestDateShown = (fcVsPlan && fc)
+  const harvestDateShown = fcOffenTermin ? 'nach Trichomen' : (fcVsPlan && fc)
     ? `ab ${fmtDE(isoPlus(fc.startDate, fcVsPlan.fruehestens - 1), { day: '2-digit', month: 'short' })}`
     : harvestDate;
 
   const stats = act.length > 0 ? (S.beginnerMode ? `<div class="stat-row">
     <div class="stat-box" title="${harvestStatTitle}"><div class="stat-lbl">Ernte in</div><div class="stat-val">${harvestStatLabel}</div></div>
-    <div class="stat-box"><div class="stat-lbl">Heute</div><div class="stat-val" style="font-size:22px">${fcAction ? ACT_ICON[fcAction] || '💤' : '💤'}</div></div>
+    <div class="stat-box"><div class="stat-lbl">Heute</div><div class="stat-val" style="font-size:22px">${fcOffen ? '🔍' : (fcAction ? ACT_ICON[fcAction] || '💤' : '💤')}</div></div>
     <div class="stat-box" title="${harvestStatTitle}"><div class="stat-lbl">Erntedatum</div><div class="stat-val" style="font-size:14px">${harvestDateShown}</div></div>
   </div>` : (() => {
     const streak = fc ? calcStreak(fc) : 0;
@@ -16358,7 +16381,7 @@ function renderDash() {
       : `<span style="color:var(--text-hint)">—</span>`;
     return `<div class="stat-row">
       <div class="stat-box" title="${harvestStatTitle}"><div class="stat-lbl">Ernte in</div><div class="stat-val">${harvestStatLabel}</div></div>
-      <div class="stat-box"><div class="stat-lbl">Heute</div><div class="stat-val" style="font-size:22px">${fcAction ? ACT_ICON[fcAction] || '💤' : '💤'}</div></div>
+      <div class="stat-box"><div class="stat-lbl">Heute</div><div class="stat-val" style="font-size:22px">${fcOffen ? '🔍' : (fcAction ? ACT_ICON[fcAction] || '💤' : '💤')}</div></div>
       <div class="stat-box"><div class="stat-lbl">Ø pH</div><div class="stat-val" style="color:${avgPH !== '—' && parseFloat(avgPH) >= fcPht.lo && parseFloat(avgPH) <= fcPht.hi ? 'var(--green)' : avgPH !== '—' ? 'var(--orange)' : 'var(--text-hint)'}">${avgPH}</div></div>
     </div>
     <div class="stat-row" style="margin-top:6px">
