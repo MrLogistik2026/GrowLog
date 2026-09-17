@@ -2,6 +2,33 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-17 — v1.5.265
+
+- **Nach dem Plan-Erntetag hielt die App eine stehende Pflanze für geerntet** (Bewertung vom 17.09.2026, Hebel 1; eine
+  Folge von v1.5.264). Seit v1.5.264 sagt die Startseite am Plan-Erntetag „noch nicht schneiden", solange die Trichome nicht
+  reif sind. Am Tag danach stand trotzdem „Trocknung läuft", der Gieß-Fahrplan sagte „Ab der Ernte wird nicht mehr gegossen",
+  der Eintrag blendete Hebe-Test und Trichom-Karte aus („Trocknungs-Phase — kein Hebe-Test mehr"), und die
+  Hebe-Test-Bewertung sagte „Die Pflanze ist geerntet". Phase und Aktion folgen dem Kalender. Wer der App folgte, ließ die
+  Pflanze in den letzten Reifetagen ohne Wasser — und der „Trichome eintragen"-Knopf lief ins Leere.
+- **Woran die App erkennt, dass die Pflanze steht** (`_stehtNochNachPlan`): nach dem Plan-Erntetag ein eigener Guss, ein
+  Hebe-Test oder eine Trichom-Messung; am Plan-Erntetag selbst eine Messung mit mehr als 10 % klar. Eine vorgeschlagene
+  Menge, die niemand eingetippt hat, zählt nicht. **Als Schnitt zählen** „Erledigt" ab dem Plan-Erntetag, der neue Knopf
+  „Schon geschnitten" und Pflanzen, die alle einzeln geerntet oder gewogen sind; der Schnitt gewinnt, wenn er nicht vor dem
+  letzten Beleg fürs Stehen liegt. **Ohne jeden Beleg bleibt es beim Kalender** — Patricks Sicherung zeigt nach seinem
+  Erntetag unverändert „Trocknung läuft".
+- **Eine Regel für alle Stellen** (`ernteOffen`): Startseite (Satz, Karte, Zeile „Ernte offen"), Tipp, Gieß-Fahrplan
+  („Gießen, sobald der Hebe-Test „Knapp" zeigt", nur klares Wasser bis 15–20 % Drain), Eintrag (Trichom-Karte, Hebe-Test,
+  Kopfzeile) und die Hebe-Test-Bewertung in `contextFor`. Das gilt auch am Plan-Erntetag selbst ohne Trichom-Freigabe: Dort
+  stand bisher „Am Erntetag wird nicht mehr gegossen" unter einer Karte, die zum Gießen beim Gießpunkt rät. Mit reifer
+  Messung bleibt der Erntetag wie bisher.
+- **Noch offen, eigene Version:** Das Klima im Eintrag bewertet eine stehende Pflanze nach dem Plan-Erntetag weiter gar
+  nicht (`klimaStufe(p)` kennt für Trocknen und Curing keine Stufe und damit auch keinen Schimmel-Deckel; sie bekommt den
+  Zyklus nicht übergeben). Die Kette hinter einem späteren Schnitt — Trockentage, Curing — zählt weiter ab dem
+  Plan-Erntetag; das gehört zum Umbau „Erntefenster".
+- `test_nochnichtgeerntet.js` (34 Prüfungen): stehende Pflanze nach Guss, Hebe-Test und unreifer Messung, reif gemessen und
+  dann „Erledigt", „Erledigt" am Erntetag, alle Pflanzen geerntet, keine Einträge, Plan-Erntetag mit und ohne Freigabe,
+  stehende Pflanze im Curing, vorgeschlagene Menge ohne Eingabe.
+
 ## 2026-09-17 — v1.5.264
 
 - **Die Startseite befahl am Plan-Erntetag das Schneiden, ohne die Trichome zu lesen** (Bewertung vom 17.09.2026, Hebel 1,

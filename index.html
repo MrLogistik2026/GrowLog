@@ -4577,7 +4577,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.264';
+const APP_VERSION = 'v1.5.265';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -8642,7 +8642,11 @@ function contextFor(c, iso) {
   const isHardDryback = isFlush && !isOutdoor && daysUntilIce >= 0 && daysUntilIce <= 3;
   // Nach der Ernte gibt es keinen Guss mehr — die Box ist dort normalerweise ausgeblendet,
   // über "Doch eintragen" aber erreichbar. Auch dort darf kein Gieß-Rat stehen.
+  // (v1.5.265) Außer die Ernte ist noch offen (ernteOffen): am Plan-Erntetag ohne Trichom-Freigabe und danach, solange die
+  // Pflanze nachweislich steht. Dort wird bis zum Schnitt beim Gießpunkt gegossen — vorher galt „nicht mehr gießen".
+  const ernteNochOffen = (isHarvest || isDry || p.ph === 'cure') && ernteOffen(c, iso, p);
   const noWaterPhase = isIce ? 'ice'
+    : ernteNochOffen ? null
     : (isHarvest ? 'harvest'
     : (isDry || p.ph === 'cure') ? 'nachErnte'
     : (isHardDryback ? 'hardDryback' : null));
@@ -16198,16 +16202,24 @@ function ring(pct, color, sz = 56) {
   </div>`;
 }
 
-/** (v1.5.264) Tipp in der Erntephase — „Ernten! … schneiden." nur mit reifen Trichomen (ernteFreigabe). */
-function _ernteTipp(c) {
-  const f = ernteFreigabe(c, todayISO());
+/** (v1.5.264) Tipp in der Erntephase — „Ernten! … schneiden." nur mit reifen Trichomen (ernteFreigabe).
+ *  (v1.5.265) Mit dem Tag des Tipps, und nach dem Plan-Erntetag mit stehender Pflanze ohne „Plan-Erntetag" als heute. */
+function _ernteTipp(c, iso) {
+  const tag = iso || todayISO();
+  const f = ernteFreigabe(c, tag);
+  const nach = _stehtNochNachPlan(c, tag);
   if (f.status === 'reif') return 'Trichome reif — vor dem Lichtangang schneiden, dann dunkel hängen.';
-  if (f.status === 'nochNicht') return `Plan-Erntetag, aber noch ${_tFmt(f.klar)} % klar — noch nicht schneiden, täglich messen.`;
-  return `Plan-Erntetag: erst Trichome prüfen — geschnitten wird ab höchstens ${RIPE_CLEAR_DONE} % klar.`;
+  if (f.status === 'nochNicht') return `${nach ? 'Plan-Erntetag vorbei, aber noch' : 'Plan-Erntetag, aber noch'} ${_tFmt(f.klar)} % klar — noch nicht schneiden, täglich messen.`;
+  return `${nach ? 'Die Pflanze steht nach dem Plan-Erntetag noch' : 'Plan-Erntetag'}: erst Trichome prüfen — geschnitten wird ab höchstens ${RIPE_CLEAR_DONE} % klar.`;
 }
 
 function getSmartTip(c, p) {
   if (!p) return null;
+  // (v1.5.265) Steht die Pflanze nach dem Plan-Erntetag noch, gilt der Ernte-Tipp — nicht Trocknen oder Curing.
+  if ((p.ph === 'dry' || p.ph === 'cure') && c && c.startDate && p.day) {
+    const _tag = isoPlus(c.startDate, p.day - 1);
+    if (_stehtNochNachPlan(c, _tag)) return { text: _ernteTipp(c, _tag), lex: 'Trichom-Analyse (Ernte-Trigger)' };
+  }
   // (v1.4.55) Curing-Burp-Erinnerung, tag-bewusst und medium-neutral: die ersten 14 Tage
   // aktiv „heute burpen" (tägliches Lüften der Gläser lässt Restfeuchte raus und schützt vor
   // Schimmel im Glas), danach „geschlossen reifen lassen". Ersetzt den statischen cure-Tipp
@@ -16360,6 +16372,11 @@ function plainSentence(action, c, p, waterMl) {
   }
   if (action === 'ernte') {
     // (v1.5.264) Der Schnitt-Befehl nur mit reifen Trichomen — vorher stand er hier bedingungslos (_ernteHeute).
+    return _ernteHeute(c, todayISO()).satz;
+  }
+  // (v1.5.265) Steht die Pflanze nach dem Plan-Erntetag noch, gilt der Ernte-Satz — nicht „Deine Pflanze trocknet gerade",
+  // und auch nicht das Schweigen im Curing, das der Kalender nach den Trockentagen ansetzt (dort gibt es keine Aktion).
+  if ((action === 'trocknen' || (!action && p && p.ph === 'cure')) && _stehtNochNachPlan(c, todayISO())) {
     return _ernteHeute(c, todayISO()).satz;
   }
   if (action === 'trocknen') {
@@ -16616,7 +16633,11 @@ function getTodayAction(c, p, a, iso) {
       hint: 'Wer heute zusätzlich gießt, macht den Hard-Dryback der Tage davor zunichte',
     };
   }
-  if (a === 'ernte') {
+  // (v1.5.265) Steht die Pflanze nach dem Plan-Erntetag noch (_stehtNochNachPlan), gilt dieselbe Karte wie am Erntetag.
+  // Vorher stand dort „Trocknung läuft", weil der Kalender die Ernte längst abgehakt hatte — über einer Pflanze, der die
+  // Startseite am Tag davor „noch nicht schneiden" gesagt hatte.
+  const _nachPlan = (a === 'trocknen' || (!a && p.ph === 'cure')) ? _stehtNochNachPlan(c, iso) : null;
+  if (a === 'ernte' || _nachPlan) {
     // (v1.5.264) Die Karte folgt der Trichom-Messung (ernteFreigabe): „Heute: Ernte!" mit „Erledigt" nur bei reifen
     // Trichomen. Sonst sagt sie, was zu tun ist — messen, noch nicht schneiden —, und der Knopf führt zur Trichom-Messung
     // statt einen Schnitt als erledigt abzuhaken, der nicht stattfinden soll.
@@ -16625,6 +16646,8 @@ function getTodayAction(c, p, a, iso) {
     const gp = giesspunktFor(c);
     const trichTag = f.iso ? isoDiff(f.iso, c.startDate) + 1 : null;
     const zumMessen = [{ label: '🔬 Trichome eintragen', onclick: `entryFrom='dash';openEntryAndScroll('${iso}','trich-${c.id}')`, primary: true }];
+    // (v1.5.265) Wer schon geschnitten hat, sagt es hier: „Erledigt" ab dem Plan-Erntetag zählt als Schnitt, danach gilt die Trocknung.
+    if (_nachPlan) zumMessen.push({ label: '✂️ Schon geschnitten', onclick: `markTodayDone('${c.id}','${iso}')` });
     if (eh.schneiden) {
       return {
         title: f.zielErreicht ? '✂️ Heute: Ernte!' : '✂️ Heute: Ernte möglich',
@@ -16640,7 +16663,7 @@ function getTodayAction(c, p, a, iso) {
     }
     if (f.status === 'nochNicht') {
       return {
-        title: '🔍 Plan-Erntetag — noch nicht schneiden',
+        title: _nachPlan ? '🔍 Nach dem Plan-Erntetag — noch nicht schneiden' : '🔍 Plan-Erntetag — noch nicht schneiden',
         icon: '🔍',
         color: cl.hex,
         steps: [
@@ -16653,7 +16676,7 @@ function getTodayAction(c, p, a, iso) {
       };
     }
     return {
-      title: '🔍 Plan-Erntetag — erst Trichome prüfen',
+      title: _nachPlan ? '🔍 Nach dem Plan-Erntetag — erst Trichome prüfen' : '🔍 Plan-Erntetag — erst Trichome prüfen',
       icon: '🔍',
       color: cl.hex,
       steps: [
@@ -17076,7 +17099,7 @@ function renderDash() {
           ${fcDry ? `<div style="font-size:10px;color:var(--text-hint);margin-top:1px">Schätzung aus deinem Trocknungs-Tempo · Hebe-Test entscheidet</div>` : ''}
         </div>
         <div style="font-size:12px;color:${cl.hex};font-weight:500;white-space:nowrap">${a
-          ? (ACT_ICON[a] || '') + ' ' + (a === 'giess' ? 'Gießtag' : a === 'giess_anz' ? 'Anzucht' : ACT_NAME[a] || PN[a] || a)
+          ? (a === 'trocknen' && _stehtNochNachPlan(c, today) ? '🔍 Ernte offen' : (ACT_ICON[a] || '') + ' ' + (a === 'giess' ? 'Gießtag' : a === 'giess_anz' ? 'Anzucht' : ACT_NAME[a] || PN[a] || a))
           : (fcDry ? '💧 ~' + _drybackShort(fcDry.dateIso, fcDry.days) : (next ? 'in ' + next.days + 'd' : '—'))
         }</div>
       </div>`;
@@ -20029,9 +20052,18 @@ function renderGussplan() {
     // sie zudem die oberste Karte und damit die Antwort auf die tägliche Frage.
     const _p = (typeof phase === 'function') ? phase(todayISO(), c) : null;
     const _es = (typeof endspurtState === 'function') ? endspurtState(c, todayISO()) : null;
-    const _nachErnte = _p && (_p.ph === 'harvest' || _p.ph === 'dry' || _p.ph === 'cure');
+    // (v1.5.265) Ist die Ernte noch offen (ernteOffen: Plan-Erntetag ohne Trichom-Freigabe, oder die Pflanze steht danach noch),
+    // stand hier „Ab der Ernte wird nicht mehr gegossen" — über einer Pflanze, die bis zum Schnitt Wasser braucht.
+    const _offen = !!_p && ernteOffen(c, todayISO(), _p);
+    const _nachErnte = !_offen && _p && (_p.ph === 'harvest' || _p.ph === 'dry' || _p.ph === 'cure');
     let _titel, _satz;
-    if (_nachErnte) {
+    if (_offen) {
+      _titel = `Gießen, sobald der Hebe-Test „${giesspunktFor(c).knopf}" zeigt`;
+      _satz = (_p.ph === 'harvest'
+          ? `Heute ist dein Plan-Erntetag — geschnitten wird erst, wenn die Trichome es freigeben (höchstens ${RIPE_CLEAR_DONE} % klar).`
+          : 'Dein Plan-Erntetag ist vorbei, und die Pflanze steht noch.')
+        + ` Bis zum Schnitt nur klares Wasser, und so viel, dass ${DRAIN_ZIEL.min}–${DRAIN_ZIEL.max} % unten wieder herauslaufen.`;
+    } else if (_nachErnte) {
       _titel = _p.ph === 'harvest' ? 'Geerntet' : (_p.ph === 'dry' ? 'Trocknen läuft' : 'Curing läuft');
       _satz = 'Ab der Ernte wird nicht mehr gegossen. Die Liste darunter bleibt als Rückschau auf den Zyklus stehen.';
     } else if (_es && isFinite(_es.ernteTag) && _es.ernteTag >= _heuteTag) {
@@ -27272,7 +27304,7 @@ function renderEntry(iso) {
               a === 'spuelen' ? '🚿 Spültag' :
               a === 'ice' ? '🧊 IceFlush!' :
               a === 'ernte' ? '✂️ Erntetag!' :
-              a === 'trocknen' ? '🍂 Trocknung' :
+              a === 'trocknen' ? (_stehtNochNachPlan(c, iso) ? '🔍 Ernte offen — die Pflanze steht noch' : '🍂 Trocknung') :   // (v1.5.265)
               `· ${a}`  // fallback: kein Mystery-"Trocknung" mehr
             }</div>
             ${isWaterDay && a !== 'ice' ? (waterSug > 0
@@ -27504,7 +27536,8 @@ function renderEntry(iso) {
         const todayPhase = (typeof phase === 'function') ? phase(iso, c) : null;
         const isSaturationDay = todayAction === 'saettigung';
         const isSprayDay = todayAction === 'sprueh';
-        const isPostHarvest = todayPhase && (todayPhase.ph === 'dry' || todayPhase.ph === 'cure' || todayPhase.ph === 'harvest');
+        // (v1.5.265) Ist die Ernte noch offen (ernteOffen), bleibt der Hebe-Test: bis zum Schnitt wird beim Gießpunkt gegossen.
+        const isPostHarvest = todayPhase && (todayPhase.ph === 'dry' || todayPhase.ph === 'cure' || todayPhase.ph === 'harvest') && !ernteOffen(c, iso, todayPhase);
         const userExpanded = (S._liftExpanded && S._liftExpanded[iso + '|' + c.id]) === true;
         // Wenn der User schon einen Wert für heute getippt hat, NICHT skippen
         // (sonst verschwindet seine Eingabe optisch).
@@ -28501,7 +28534,8 @@ function renderEntry(iso) {
         const todayAction = (typeof getAction === 'function') ? getAction(iso, c) : null;
         const isSaturationDay = todayAction === 'saettigung';
         const isSprayDay = todayAction === 'sprueh';
-        const isPostHarvest = p && (p.ph === 'dry' || p.ph === 'cure' || p.ph === 'harvest');
+        // (v1.5.265) Ist die Ernte noch offen (ernteOffen), bleibt der Hebe-Test: bis zum Schnitt wird beim Gießpunkt gegossen.
+        const isPostHarvest = p && (p.ph === 'dry' || p.ph === 'cure' || p.ph === 'harvest') && !ernteOffen(c, iso, p);
         const userExpanded = (S._liftExpanded && S._liftExpanded[iso + '|' + c.id]) === true;
         const alreadyHasValue = (cd.restPct !== undefined && cd.restPct !== null)
                               || (cd.weightG !== undefined && cd.weightG !== null);
@@ -28778,7 +28812,8 @@ function renderEntry(iso) {
       // Nach der Ernte (Ernte/Trocknen/Curing) wird nicht mehr gegossen — Gießmenge,
       // nächster Gießtag und Auto-Ausfüllen ausblenden. Der Hebe-Test-Block (fullLift)
       // bleibt, der zeigt korrekt die „kein Hebe-Test mehr / reift im Glas"-Notiz.
-      const isPostHarvest = p && (p.ph === 'harvest' || p.ph === 'dry' || p.ph === 'cure');
+      // (v1.5.265) Ist die Ernte noch offen (ernteOffen), bleibt der Hebe-Test: bis zum Schnitt wird beim Gießpunkt gegossen.
+      const isPostHarvest = p && (p.ph === 'harvest' || p.ph === 'dry' || p.ph === 'cure') && !ernteOffen(c, iso, p);
       // (v1.5.73) Die Endspurt-Kette steht NUR im Gieß-Fahrplan. Im Tageseintrag hatte sie
       // nichts verloren: Man stellt sie einmal ein und schaut danach höchstens nach — als
       // tägliche Karte war sie eine Aufforderung zum Verstellen. Erreichbar über den
@@ -28976,8 +29011,10 @@ function renderEntry(iso) {
     // Blütephase — ausgerechnet in Spülen und IceFlush, also in den Tagen, in denen die
     // Reife über den Erntezeitpunkt entscheidet und der Trigger „milchig dominant + 2–5 %
     // Bernstein" scharf geprüft werden muss. Nach dem Schnitt entfällt er wieder.
+    // (v1.5.265) Auch nach dem Plan-Erntetag, solange die Pflanze steht (ernteOffen) — sonst lief „Trichome eintragen" ins Leere.
     const showTrich = p && (
       bluetestufe(p) === 'spaet' || p.ph === 'flush' || p.ph === 'ice' || p.ph === 'harvest'
+      || ((p.ph === 'dry' || p.ph === 'cure') && ernteOffen(c, iso, p))
     );
     const trich = cd.trichomes || (_prevTrich ? { clear: _prevTrich.clear, milky: _prevTrich.milky, amber: _prevTrich.amber } : { clear: 70, milky: 25, amber: 5 });
     // (v1.5.131) 'cure' ergänzt. Das Trockengewicht steht erst nach dem Trocknen fest —
@@ -32274,35 +32311,111 @@ function ernteFreigabe(c, iso) {
   return { status: 'nochNicht', ...basis, vsPlan: (typeof _trichVsPlan === 'function') ? _trichVsPlan(c, iso) : null };
 }
 
-/** (v1.5.264) Die Ernte-Karte der Startseite nach der Freigabe — ein Text je Zustand, gemeinsam mit plainSentence. */
+/**
+ * (v1.5.265) Sind alle Pflanzen dieses Zyklus bis zu diesem Tag geschnitten — einzeln geerntet oder mit Erntegewicht?
+ * Ohne Pflanzenliste weiß die App es nicht und sagt nein.
+ */
+function _alleGeschnitten(c, iso) {
+  if (!c || !Array.isArray(c.plants) || !c.plants.length) return false;
+  return c.plants.every((pl) => pl && ((pl.harvestedAt && pl.harvestedAt <= iso)
+    || parseFloat(pl.yieldWet) > 0 || parseFloat(pl.yieldDry) > 0));
+}
+
+/**
+ * (v1.5.265) Steht die Pflanze nach dem Plan-Erntetag noch?
+ *
+ * Seit v1.5.264 sagt die Startseite am Plan-Erntetag „noch nicht schneiden", solange die Trichome nicht reif sind. Am Tag
+ * danach stand dort trotzdem „Trocknung läuft" — Phase und Aktion folgen dem Kalender —, der Eintrag blendete Hebe-Test und
+ * Trichom-Karte aus, und der Gieß-Fahrplan sagte „Ab der Ernte wird nicht mehr gegossen". Wer der App folgte, ließ eine
+ * stehende Pflanze in den letzten Reifetagen austrocknen. Messung schlägt Kalender (ANBAU.md 15).
+ *
+ * Wann geschnitten wurde, liest die App aus den Einträgen. Für „steht noch" zählt, was nur an einer lebenden Pflanze geht:
+ * nach dem Plan-Erntetag ein eigener Guss, ein Hebe-Test oder eine Trichom-Messung; am Plan-Erntetag selbst eine Messung mit
+ * mehr als RIPE_CLEAR_DONE % klar. Für den Schnitt zählen „Erledigt" ab dem Plan-Erntetag und Pflanzen, die alle geerntet
+ * oder gewogen sind. Der Schnitt gewinnt, wenn er nicht vor dem letzten Beleg fürs Stehen liegt. Ohne jeden Beleg bleibt es
+ * beim Kalender, wie bisher.
+ * @returns {null|{ernteISO:string, seitTagen:number}}
+ */
+function _stehtNochNachPlan(c, iso) {
+  if (!c || !c.startDate || !iso) return null;
+  const p = phase(iso, c);
+  if (!p || (p.ph !== 'dry' && p.ph !== 'cure')) return null;
+  let ernteISO = null;
+  for (let d = isoPlus(iso, -1), n = 0; n < 400; d = isoPlus(d, -1), n++) {
+    const q = phase(d, c);
+    if (!q) break;
+    if (q.ph === 'harvest') { ernteISO = d; break; }
+    if (q.ph !== 'dry' && q.ph !== 'cure') break;
+  }
+  if (!ernteISO || _alleGeschnitten(c, iso)) return null;
+  let steht = null, schnitt = null;
+  for (const k of Object.keys(S.entries || {})) {
+    if (k < ernteISO || k > iso) continue;
+    const cd = S.entries[k] && S.entries[k].cycleData && S.entries[k].cycleData[c.id];
+    if (!cd) continue;
+    if (cd._doneTodo && (!schnitt || k > schnitt)) schnitt = k;
+    const klar = cd.trichomes ? parseFloat(cd.trichomes.clear) : NaN;
+    const guss = parseFloat(cd.water) > 0 && !(cd._suggested && cd._suggested.water);
+    const hebe = isFinite(parseFloat(cd.restPct)) || isFinite(parseFloat(cd.weightG));
+    const beleg = k > ernteISO ? (guss || hebe || isFinite(klar)) : (isFinite(klar) && klar > RIPE_CLEAR_DONE);
+    if (beleg && (!steht || k > steht)) steht = k;
+  }
+  if (!steht || (schnitt && schnitt >= steht)) return null;
+  return { ernteISO, seitTagen: isoDiff(iso, ernteISO) };
+}
+
+/**
+ * (v1.5.265) Ist die Ernte an diesem Tag noch offen? Am Plan-Erntetag, solange die Trichome den Schnitt nicht freigeben
+ * (ernteFreigabe) und weder „Erledigt" getippt noch alle Pflanzen geerntet sind; danach, solange die Pflanze nachweislich
+ * steht (_stehtNochNachPlan). Eine Regel für Hebe-Test-Bewertung (contextFor), Eintrag und Gieß-Fahrplan.
+ */
+function ernteOffen(c, iso, p) {
+  if (!c || !iso) return false;
+  const ph = p || phase(iso, c);
+  if (!ph) return false;
+  if (ph.ph === 'harvest') {
+    const cd = S.entries && S.entries[iso] && S.entries[iso].cycleData && S.entries[iso].cycleData[c.id];
+    if ((cd && cd._doneTodo) || _alleGeschnitten(c, iso)) return false;
+    return ernteFreigabe(c, iso).status !== 'reif';
+  }
+  if (ph.ph === 'dry' || ph.ph === 'cure') return !!_stehtNochNachPlan(c, iso);
+  return false;
+}
+
+/** (v1.5.264) Die Ernte-Karte der Startseite nach der Freigabe — ein Text je Zustand, gemeinsam mit plainSentence.
+ *  (v1.5.265) Auch nach dem Plan-Erntetag, solange die Pflanze steht — dann ohne „Heute ist dein Plan-Erntetag". */
 function _ernteHeute(c, iso) {
   const f = ernteFreigabe(c, iso);
+  const nach = _stehtNochNachPlan(c, iso);
+  const planTag = nach
+    ? `Dein Plan-Erntetag war ${nach.seitTagen === 1 ? 'gestern' : `vor ${nach.seitTagen} Tagen`}`
+    : 'Heute ist dein Plan-Erntetag';
   const gp = giesspunktFor(c);
   const trichStand = (f.klar !== undefined) ? `${_tFmt(f.klar)} % klar, ${_tFmt(f.bernstein)} % Bernstein` : '';
   const warten = `Bis dahin gießen, sobald der Hebe-Test „${gp.knopf}" zeigt — nur klares Wasser — und jeden Tag die Trichome auf den Blütenkelchen prüfen.`;
   if (f.status === 'reif' && f.zielErreicht) {
     return {
-      f, schneiden: true,
+      f, nach, schneiden: true,
       satz: `Heute ist Erntetag — deine Trichome sind reif (${trichStand}). Schneide die Pflanze ab, bevor das Licht angeht, und häng sie kopfüber zum Trocknen auf.`,
     };
   }
   if (f.status === 'reif') {
     return {
-      f, schneiden: true,
-      satz: `Heute ist dein Plan-Erntetag, und deine Trichome sind reif: kaum noch klare (${trichStand}). Dein Bernstein-Ziel von ${f.ziel} % ist noch nicht erreicht. <b>Du kannst heute schneiden</b> — oder für mehr Bernstein warten und jeden Tag weiter messen; mehr Bernstein heißt eine ruhigere, schläfrigere Wirkung.`,
+      f, nach, schneiden: true,
+      satz: `${planTag}, und deine Trichome sind reif: kaum noch klare (${trichStand}). Dein Bernstein-Ziel von ${f.ziel} % ist noch nicht erreicht. <b>Du kannst heute schneiden</b> — oder für mehr Bernstein warten und jeden Tag weiter messen; mehr Bernstein heißt eine ruhigere, schläfrigere Wirkung.`,
     };
   }
   if (f.status === 'nochNicht') {
     const wann = f.vsPlan && isFinite(f.vsPlan.fruehestens) ? ` Nach deinem gemessenen Tempo etwa ab Tag ${f.vsPlan.fruehestens}.` : '';
     return {
-      f, schneiden: false,
-      satz: `Heute ist dein Plan-Erntetag — <b>deine Trichome sagen noch nicht</b>: ${_tFmt(f.klar)} % sind noch klar, nicht mehr zu früh ist es erst ab höchstens ${RIPE_CLEAR_DONE} %.${wann} <b>Noch nicht schneiden.</b> ${warten}`,
+      f, nach, schneiden: false,
+      satz: `${planTag} — <b>deine Trichome sagen noch nicht</b>: ${_tFmt(f.klar)} % sind noch klar, nicht mehr zu früh ist es erst ab höchstens ${RIPE_CLEAR_DONE} %.${wann} <b>Noch nicht schneiden.</b> ${warten}`,
     };
   }
   const alt = f.status === 'veraltet' ? ` Deine letzte Messung ist ${f.alterTage} Tage alt — Trichome reifen in der Zeit weiter.` : '';
   return {
-    f, schneiden: false,
-    satz: `Heute ist dein Plan-Erntetag. <b>Schau vor dem Schnitt unter die Lupe</b>, auf die Blütenkelche, nicht auf die Blättchen.${alt} Erst wenn höchstens ${RIPE_CLEAR_DONE} % der Köpfe klar sind, ist es nicht mehr zu früh — sind es mehr, noch nicht schneiden. ${warten}`,
+    f, nach, schneiden: false,
+    satz: `${planTag}${nach ? ', und die Pflanze steht noch' : ''}. <b>Schau vor dem Schnitt unter die Lupe</b>, auf die Blütenkelche, nicht auf die Blättchen.${alt} Erst wenn höchstens ${RIPE_CLEAR_DONE} % der Köpfe klar sind, ist es nicht mehr zu früh — sind es mehr, noch nicht schneiden. ${warten}`,
   };
 }
 
