@@ -4577,7 +4577,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.254';
+const APP_VERSION = 'v1.5.255';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -33307,7 +33307,7 @@ const LEXIKON = [
     { t: 'Substrattypen',
       brief: 'Was unter der Pflanze ist entscheidet über fast alles andere. Die vier wichtigsten Kategorien.',
       mechanism: '<b>Light-Mix:</b> Torf + Perlite, wenig vorgedüngt (~2 Wochen) → für Dauerdüngung ab Woche 2-3.<br><br><b>All-Mix:</b> Wie Light-Mix, aber mit 6 Wochen Vordüngung → wenig Dünger nötig bis Mitte Blüte.<br><br><b>Coco (Kokos):</b> Inert, kein Nährstoff drin, hält Wasser + Luft perfekt → Grower muss jeden Nährstoff liefern, dafür volle Kontrolle.<br><br><b>Perlite:</b> Kein eigenständiges Substrat, sondern Drainage-Zusatz (20-30 % ins Erd-Gemisch mischen für mehr Sauerstoff).',
-      practice: '<b>Empfehlung nach Erfahrung:</b><br>• Einsteiger + Erde: All-Mix (verzeiht Dünger-Fehler)<br>• Einsteiger + Präzision: Light-Mix (mehr Kontrolle, weniger Pufferschock)<br>• Fortgeschritten: Coco mit CalMag-Protokoll<br>• Profi/Cup: Living Soil (eigener Kompost-Mix) oder Hydro<br><br>Bio-Supplemente (Algen, Enzyme) funktionieren <b>nur in lebendigem Boden</b> (Torf mit KAK), nicht in Coco.',
+      practice: '<b>Empfehlung nach Erfahrung:</b><br>• Einsteiger + Erde: All-Mix (verzeiht Dünger-Fehler)<br>• Einsteiger + Präzision: Light-Mix (mehr Kontrolle, weniger Pufferschock)<br>• Fortgeschritten: Coco mit CalMag-Protokoll<br>• Profi/Cup: Living Soil (eigener Kompost-Mix) oder Hydro<br><br>Bio-Dünger sind zum Teil organisch gebunden und werden erst von Mikroorganismen aufgeschlossen — die brauchen Sauerstoff, dauernd nasse Erde bremst sie.',
       pitfall: 'All-Mix von Anfang an zu düngen = Überdüngung. Mindestens 3-4 Wochen nur Wasser oder leicht CalMag. Coco ohne Calmag = garantierter Ca-Mangel, weil Coco aktiv Calcium bindet.' },
     { t: 'Cannabinoide',
       brief: 'Die aktiven Wirkstoffe der Pflanze. Entscheiden über Wirkung — nicht Geschmack.',
@@ -33357,10 +33357,10 @@ const LEXIKON = [
       practice: '<b>Materialien:</b><br>• Stofftopf (Fabric Pot): günstig, atmungsaktiv, wiederverwendbar<br>• Air-Pot: Hartplastik mit Luftlöchern, stabiler aber teurer<br><br><b>Größen-Tipp:</b><br>• 11 L für 60-80 g Automatics<br>• 15-19 L für größere Autos oder kleine Fems<br>• 25+ L für Fem-Photoperiode mit 3+ Monate Veg<br><br><b>Setup:</b> Unter den Topf ein Untersetzer (für Drain), <b>darüber</b> nochmal ein Gitter oder Klötzchen damit Luft unten durchkommt. Sonst steht der Stofftopf im Wasser.',
       pitfall: 'Stofftöpfe trocknen schneller aus — du musst öfter gießen. Im Winter-Zelt bei kalten Böden: Wurzeln unten werden kalt weil Luft drunter zieht. Lösung: Styropor-Platte drunter oder Heizmatte.' },
     { t: 'Sauerstoff-Sog',
-      brief: 'Der physikalische Grund warum Dryback funktioniert. Trockene Erde saugt Luft rein — feuchte nicht.',
-      mechanism: 'Wenn die Pflanze durch Transpiration Wasser aus dem Substrat zieht, entsteht im Wurzelballen ein <b>mikroskopisches Vakuum</b>. Dieser Unterdruck saugt aktiv <b>frische Luft (und damit Sauerstoff)</b> durch die Erdporen ein. Ohne Wasserverlust → kein Vakuum → keine neue Luft → Wurzeln ersticken.',
-      practice: '<b>Praxis-Konsequenz:</b> Lockeres, poröses Substrat (Light-Mix mit 20-30 % Perlite) hat mehr Poren und saugt besser nach. Komprimierte oder zu feine Erde „atmet" kaum.<br><br><b>Die ganze Kette:</b> Transpiration → Vakuum → Sauerstoff-Sog → aerobe Bakterien/Mykorrhiza leben → organische Nährstoffe werden aufgespalten → Pflanze bekommt Dünger.',
-      pitfall: 'Bio-Produkte (Alg·A·Mic, Acti·Vera, Bio·Heaven, Enzyme) funktionieren <b>nur in lebendigem Boden</b> mit Sauerstoff-Sog. In permanent nasser Erde oder inertem Coco bringen sie nichts — die Bakterien fehlen oder sind tot.' },
+      brief: 'Warum der Topf zwischen den Güssen bis zum Gießpunkt abtrocknen soll: In abtrocknende Erde zieht Luft nach — in dauernd nasse nicht.',
+      mechanism: 'Wenn die Pflanze Wasser aus dem Substrat zieht und es verdunstet, werden Poren frei — dort zieht <b>frische Luft (und damit Sauerstoff)</b> nach. Wurzeln veratmen Sauerstoff und wachsen bevorzugt dorthin, wo Wasser war und jetzt Luft ist. Bleibt der Topf dauernd nass, fehlt die Luft im Porenraum: Die Wurzelzone kippt ins Sauerstofffreie, Wurzelspitzen sterben ab.',
+      practice: '<b>Praxis-Konsequenz:</b> Lockeres, poröses Substrat (etwa Light-Mix mit Perlite) hat mehr Poren, in die beim Abtrocknen Luft nachzieht. Komprimierte oder zu feine Erde „atmet" kaum.<br><br><b>Die ganze Kette:</b> Transpiration → Poren werden frei → Luft zieht nach → Wurzeln und Mikroorganismen bekommen Sauerstoff → organisch gebundene Nährstoffe werden aufgeschlossen.',
+      pitfall: 'Bio-Dünger sind zum Teil organisch gebunden — beim Stickstoff der größte Teil — und werden erst von Mikroorganismen aufgeschlossen, die Sauerstoff brauchen. In dauernd nasser Erde arbeiten sie schlecht — ein Grund mehr, den Topf zwischen den Güssen bis zum Gießpunkt abtrocknen zu lassen.' },
     { t: 'Turgordruck',
       brief: 'Der Wasserdruck in den Zellen der Pflanze. Maximal voll = stabiler Stängel. Schlaff = Welke.',
       mechanism: 'Pflanzen haben kein Knochenskelett — ihre Stabilität kommt aus dem <b>Wasserdruck in den Zellvakuolen</b> (Turgor). Prall gefüllt = Zellen drücken gegen die Wand = steif und stabil. Trocknet die Pflanze aus, sinkt der Druck und die Zellen erschlaffen = welke Pflanze.',

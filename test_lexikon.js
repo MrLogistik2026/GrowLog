@@ -470,6 +470,24 @@ function pruef(name, bedingung, info) {
     pruef('BioBizz-Herkunft nach Herstellerseite', /1992 in den Niederlanden gegründet, heute mit Sitz in Spanien/.test(bm));
   }
 
+  // (v1.5.255) „Sauerstoff-Sog" erklärte die Belüftung mit einem „mikroskopischen Vakuum", das Luft ansaugt, und versprach,
+  // Bio-Produkte funktionierten „nur in lebendigem Boden", in Coco „bringen sie nichts". ANBAU.md 1: Beim Abtrocknen werden
+  // Poren frei, Luft zieht nach; dauernd nass kippt die Wurzelzone ins Anaerobe. Die Coco-Aussage widersprach dem BioBizz-Schema,
+  // das für Coco·Mix dasselbe gibt wie für Light·Mix — und stand ein zweites Mal im Eintrag „Substrattypen".
+  console.log('');
+  console.log('R - (v1.5.255) Sauerstoff im Topf nach ANBAU.md 1, ohne Vakuum und ohne Produktversprechen');
+  {
+    const q = fs.readFileSync(path.join(__dirname, 'app.js'), 'utf8').split('\n').filter(z => !/^\s*(\/\/|\*|\/\*)/.test(z)).join('\n');
+    [/mikroskopisches Vakuum/i, /Transpiration → Vakuum/i, /funktionieren <b>nur in lebendigem Boden/i, /inertem Coco bringen sie nichts/i,
+      /nicht in Coco\./i].forEach(re =>
+      pruef('Nirgends mehr: ' + re.source, !re.test(q), (q.match(new RegExp('.{0,60}' + re.source + '.{0,30}', 'i')) || [''])[0]));
+    const so = text(/^Sauerstoff-Sog$/), st = text(/^Substrattypen$/);
+    pruef('Mechanismus: Poren werden frei, Luft zieht nach (1)', /werden Poren frei — dort zieht frische Luft/.test(so), so.slice(0, 300));
+    pruef('… und dauernd nass fehlt die Luft, Wurzelspitzen sterben ab (1, 13.1)', /Bleibt der Topf dauernd nass, fehlt die Luft im Porenraum/.test(so) && /Wurzelspitzen sterben ab/.test(so));
+    pruef('Abtrocknen bis zum Gießpunkt, nicht ganz trocken (1.2)', /zwischen den Güssen bis zum Gießpunkt abtrocknen zu lassen/.test(so), so.slice(-300));
+    pruef('Substrattypen sagt dasselbe wie Sauerstoff-Sog', /Bio-Dünger sind zum Teil organisch gebunden und werden erst von Mikroorganismen aufgeschlossen/.test(st), st.slice(0, 600));
+  }
+
   console.log('');
   console.log(`Ergebnis: ${ok} OK, ${fail} Fehler`);
   process.exit(fail ? 1 : 0);

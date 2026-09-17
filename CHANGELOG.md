@@ -2,6 +2,18 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-17 — v1.5.255
+
+- **„Sauerstoff-Sog" erklärte die Belüftung mit einem „mikroskopischen Vakuum", das Luft ansaugt.** Nach `ANBAU.md` 1
+  werden beim Abtrocknen Poren frei, und Luft zieht nach; Wurzeln wachsen dorthin, wo Wasser war und jetzt Luft ist. Bleibt
+  der Topf dauernd nass, kippt die Wurzelzone ins Sauerstofffreie, und Wurzelspitzen sterben ab. So steht es jetzt da.
+- **„Bio-Produkte (Alg·A·Mic, Acti·Vera, Bio·Heaven, Enzyme) funktionieren nur in lebendigem Boden … in inertem Coco
+  bringen sie nichts"** — ein Wirkungs- und ein Nicht-Wirkungsversprechen ohne Beleg, das dem BioBizz-Schema widerspricht
+  (Coco·Mix bekommt dasselbe wie Light·Mix). Der belegte Kern bleibt: Bio-Dünger werden zum Teil erst von
+  Mikroorganismen aufgeschlossen, die Sauerstoff brauchen — ein Grund, den Topf bis zum Gießpunkt abtrocknen zu lassen
+  (1.2), nicht tiefer. Derselbe Satz stand ein zweites Mal in „Substrattypen".
+- `test_lexikon.js` Abschnitt R (164 Prüfungen im Lauf).
+
 ## 2026-09-17 — v1.5.254
 
 - **Der Eintrag „Bio vs. Mineralisch" behauptete, was `ANBAU.md` nicht trägt:** Mineral wirke „innerhalb von Stunden",
