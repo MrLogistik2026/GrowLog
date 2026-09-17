@@ -15357,7 +15357,7 @@ function plainSentence(action, c, p, waterMl) {
   // Quelle 'voll'). Der Satz sagte trotzdem „Gib deiner Pflanze heute etwa 0 ml … bis unten etwas herausläuft", während der
   // Eintrag darunter „Topf ist voll — heute nicht gießen" meldete. Der Hebe-Test schlägt das Gießintervall (ANBAU.md 15).
   if ((action === 'giess' || action === 'giess_anz') && !(waterMl > 0) && _topfVollHeute(c, p, todayISO())) {
-    return `Dein Topf ist heute noch voll — der Hebe-Test sagt „Voll". <b>Heute nicht gießen.</b> Heb ihn morgen wieder an: Gegossen wird, sobald er „${giesspunktFor(c).knopf}" zeigt. Ein voller Topf nimmt nichts mehr auf — was du jetzt gießt, läuft unten wieder heraus, und ein Topf, der nie abtrocknet, nimmt den Wurzeln die Luft.`;
+    return `Dein Topf ist heute noch voll — der Hebe-Test sagt „Voll". <b>Heute nicht gießen.</b> Heb ihn morgen wieder an: Gegossen wird, sobald er „${giesspunktFor(c).knopf}" zeigt.`;
   }
   if (action === 'giess_anz') {
     if (isVorzucht) {
