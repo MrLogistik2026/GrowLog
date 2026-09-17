@@ -2,6 +2,15 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-17 — v1.5.271
+
+- **Am IceFlush und in der Dunkelphase zeigte die Zyklus-Karte das Stadium „Trocknung"** (beim Bau von v1.5.269 gesehen).
+  `stageForCycle` führte die Phase `ice` seit jeher zusammen mit Trocknen und Curing unter Stadium 9 — auf der Startseite stand
+  am IceFlush-Tag „Trocknung · Tag 114", bevor überhaupt geschnitten wird.
+- **Jetzt:** Der IceFlush-Tag gehört als letzter Guss zur „Spülphase", die Dunkelphase danach zur „Ernte" — wie der Erntetag
+  selbst. Trocknen und Curing bleiben „Trocknung".
+- `test_stadium.js` (9 Prüfungen): Stadium an jedem Tag von sechs Tagen vor bis zwei Tage nach dem Plan-Erntetag.
+
 ## 2026-09-17 — v1.5.270
 
 - **Jeder neu angelegte Zyklus bekam beim ersten Neustart still drei Tage mehr bis zur Ernte** (beim Prüfen von v1.5.269 in

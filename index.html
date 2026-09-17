@@ -1918,7 +1918,7 @@ const STAGE_NAMES = {
  *  - Stage 5-6 within phase "bloom" (early/late split)
  *  - Stage 7: phase "flush"
  *  - Stage 8: phase "harvest"
- *  - Stage 9: phase "dry" or "ice"
+ *  - Stage 9: phase "dry" or "cure" (v1.5.271: IceFlush-Tag → 7, Dunkelphase → 8; v1.5.269: stehende Pflanze → 8)
  * For Automatics, "anzucht" only covers 21 days and bloom is shorter,
  * so we use shorter thresholds.
  */
@@ -1963,7 +1963,10 @@ function stageForCycle(cyc, iso) {
   if (ph === 'harvest') return 8;
   // (v1.5.269) Steht die Pflanze nach dem Plan-Erntetag noch (ernteOffen), bleibt sie im Stadium „Ernte" statt „Trocknung".
   if ((ph === 'dry' || ph === 'cure') && p.ernteOffen) return 8;
-  if (ph === 'ice' || ph === 'dry' || ph === 'cure') return 9;
+  // (v1.5.271) Der IceFlush ist kein Trocknen — die Pflanze steht noch, auf der Startseite stand aber „Trocknung · Tag 114".
+  // Der IceFlush-Tag gehört zum Ende der Spülphase, die Dunkelphase danach zur Ernte.
+  if (ph === 'ice') return (p.iceDay || 1) > 1 ? 8 : 7;
+  if (ph === 'dry' || ph === 'cure') return 9;
   return null;
 }
 
@@ -4589,7 +4592,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.270';
+const APP_VERSION = 'v1.5.271';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
