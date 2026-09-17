@@ -4593,7 +4593,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.283';
+const APP_VERSION = 'v1.5.284';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -13052,6 +13052,87 @@ function _reserveStatus(c, iso, restHeute) {
     text: `Topf bei ~${Math.round(r)} % Restgewicht. Zwischen deinen letzten beiden Güssen hat er etwa ${Math.round(ab.proTag)} Punkte am Tag verloren — morgen läge er bei ~${Math.max(0, Math.round(morgen))} %, unter dem Gießpunkt (${gp.von} %). Heute gießen, auch wenn kein Gießtag ist.` };
 }
 
+/**
+ * (v1.5.284) GIESSPUNKT SCHLÄGT KALENDER — eine Antwort auf „heute gießen?" aus der Messung dieses Tages (ANBAU.md 1.2, 15).
+ *
+ * null = nichts gemessen, heute schon gegossen, kein eingetragener Guss in 21 Tagen, oder keine Phase mit Gießpunkt (vor Tag 25,
+ * Topping-Tag, Spülen, IceFlush, Sättigung, Ernte, Outdoor, Hydro) — dann gilt der Kalender. Sonst { giessen, grund, r, gp }.
+ *
+ * An einem Gießtag: voll (≥ 95, dieselbe Grenze wie die Gießmenge) → nicht gießen; unter dem Gießpunkt → gießen. Dazwischen
+ * nur dann „feucht" (nicht gießen), wenn drei Dinge zusammenkommen, alle in Richtung Gießen gerundet (ANBAU.md 9, 14, 15):
+ *  1. Der letzte eingetragene Guss liegt höchstens einen Gießabstand zurück — nie zweimal hintereinander auslassen.
+ *  2. Ein Hebe-Test-Knopf steht für ein Band („Mittel" = 60–84 %), gerechnet wird mit dessen Untergrenze; die Waage zählt genau.
+ *  3. Mit dem schnelleren Tempo aus tagesAbnahme und „Guss füllt auf 100" läge der Topf am nächsten Gießtag noch über dem
+ *     Gießpunkt (gp.bis), nicht bloß über seiner Untergrenze.
+ * Gegenprüfung (Simulation, 60 Blütetage, 66 Verläufe, Nutzer hebt nur an Gießtagen an): Mit „Mittel = 70" und Horizont bis
+ * gp.von fielen 24 Verläufe unter 25 %, Tiefstwert 0 %; mit dieser Regel keiner, Tiefstwert 36 %. Folge: Mit Hebe-Test „Mittel"
+ * am 3-Tage-Gießtag wird weiter gegossen — ein Knopf kann nicht belegen, dass der Topf drei Tage hält. „Noch feucht" sagt die
+ * App bei Hebe-Test „Voll" unter 95 % oder mit der Waage.
+ *
+ * An einem Tag ohne Gießtag: unter dem Gießpunkt oder _reserveStatus (morgen darunter) → gießen, sonst keine Aussage.
+ */
+function giessenLautMessung(c, iso) {
+  if (!c || !iso || !c.startDate || c.growType === 'outdoor' || c.medium === 'hydro') return null;
+  const p = phase(iso, c);
+  // Ab Tag 25 wie _reserveStatus und die Drain-Regel — auch bei Autos, deren Blüte schon an Tag 22 beginnt.
+  if (!p || !(p.ph === 'bloom' || p.ph === 'anzucht') || (p.day || 1) < DRAIN_AB_TAG) return null;
+  if (c.toppingDate === iso) return null;   // Topping-Tag: erst gießen, dann toppen (Eintrag)
+  const giesstag = isGiessTag(iso, c);
+  const akt = getAction(iso, c);
+  if (giesstag && akt !== 'giess' && akt !== 'giess_anz') return null;   // Spülen, IceFlush, Sättigung: der Plan
+  const cd = _gussCd(c, iso);
+  if (cd && _gussZahl(cd.water) > 0) return null;   // heute schon gegossen: die Messung war vor dem Guss
+  const r = restgewichtHeute(c, iso);
+  if (r == null) return null;
+  const gp = giesspunktFor(c);
+  if (r >= 95) return { giessen: false, grund: 'voll', r, gp };
+  if (r < gp.bis) return { giessen: true, grund: r < gp.von ? 'trocken' : 'giesspunkt', r, gp };
+  if (!giesstag) return _reserveStatus(c, iso, r) ? { giessen: true, grund: 'reserve', r, gp } : null;
+  let seit = null;
+  for (let i = 1; i <= 21 && seit == null; i++) {
+    const cdk = _gussCd(c, isoPlus(iso, -i));
+    if (cdk && _gussZahl(cdk.water) > 0) seit = i;
+  }
+  if (seit == null) return null;
+  const h = _gussIv(c, iso, p.ph);
+  if (seit > h) return { giessen: true, grund: 'abstand', r, gp, seit };
+  const waage = _waageAktiv(c) && _gussZahl(cd.weightG) != null;
+  const ru = waage ? r : ({ full: 85, medium: 60, soon: 40, low: 25, dry: 0 })[getLiftFeelForPct(r)];
+  const ab = tagesAbnahme(c, iso);
+  const rate = Math.max(ab && ab.proTag > 0 ? ab.proTag : 0, (100 - ru) / seit);
+  const n = nextGiessTag(c, iso);
+  const tage = n ? n.days : h;
+  const bis = n ? n.iso : isoPlus(iso, h);
+  if (ru - rate * tage < gp.bis) return { giessen: true, grund: 'reserve', r, gp, bis, rate, tage };
+  return { giessen: false, grund: 'feucht', r, gp, bis, rate, tage };
+}
+
+/** (v1.5.284) Die Worte für „heute nicht gießen" — voll oder noch feucht — für Startseite, Eintrag und Gieß-Fahrplan aus einer Stelle. */
+function _nichtGiessenWorte(c, iso, gm) {
+  const gpW = giesspunktFor(c);
+  const knopf = gpW.knopf;
+  const feucht = !!(gm && gm.grund === 'feucht');
+  const r = gm ? gm.r : 100;
+  const wort = { full: 'Voll', medium: 'Mittel', soon: 'Bald', low: 'Knapp', dry: 'Trocken' }[getLiftFeelForPct(r)] || 'Voll';
+  const waage = c.weightMode === 'scale';
+  const tag = feucht && gm.bis ? fmtDE(gm.bis, { weekday: 'long', day: '2-digit', month: '2-digit' }) : '';
+  return {
+    feucht,
+    zustand: feucht ? 'feucht' : 'voll',
+    messung: waage ? `Deine Waage heute: ${feucht ? '~' + Math.round(r) + ' % Restgewicht' : 'satt'}` : `Dein Hebe-Test heute: „${wort}"`,
+    messungSatz: waage ? (feucht ? `die Waage zeigt ~${Math.round(r)} % Restgewicht` : 'die Waage zeigt ihn satt') : `der Hebe-Test sagt „${wort}"`,
+    wann: feucht
+      ? `Am ${tag} wird gegossen. ${waage ? `Zeigt die Waage vorher ~${gpW.bis} % Restgewicht oder weniger` : `Zeigt der Hebe-Test vorher „${knopf}"`}, gieß schon dann`
+      : `Morgen wieder anheben: Gegossen wird, sobald er „${knopf}" zeigt`,
+    wannSatz: feucht
+      ? `Am ${tag} wird gegossen. ${waage ? `Zeigt die Waage vorher ~${gpW.bis} % Restgewicht oder weniger` : `Zeigt der Hebe-Test vorher „${knopf}"`}, gieß schon dann.`
+      : `Heb ihn morgen wieder an: Gegossen wird, sobald er „${knopf}" zeigt.`,
+    warum: feucht
+      ? 'Der Topf liegt über dem Gießpunkt und bleibt nach seinem Tempo bis zum nächsten Gießtag darüber. Zu häufiges Gießen verdrängt die Luft aus dem Topf — die Wurzeln brauchen Sauerstoff.'
+      : 'Ein voller Topf nimmt nichts mehr auf. Was du jetzt gießt, läuft unten wieder heraus — und ein Topf, der nie abtrocknet, nimmt den Wurzeln die Luft.',
+  };
+}
+
 function drybackForecast(c, p, iso) {
   if (!c || !p) return null;
   // (v1.5.206) Eine Antwort auf „wann": Fällt der heute gemessene Topf bis morgen unter die Untergrenze des Gießpunkts
@@ -13503,7 +13584,12 @@ function _gussHeuteErledigt(c, iso) {
   const cd = _gussCd(c, iso);
   const w = cd ? _gussZahl(cd.water) : null;
   if (w != null && w > 0) return { status: 'gegossen', ml: Math.round(w) };
-  if (getAction(iso, c) !== 'ice' && _topfVollHeute(c, phase(iso, c), iso)) return { status: 'voll' };
+  if (getAction(iso, c) !== 'ice') {
+    if (_topfVollHeute(c, phase(iso, c), iso)) return { status: 'voll' };
+    // (v1.5.284) Auch „noch feucht": Die Messung sagt, der Topf hält bis zum nächsten Gießtag (giessenLautMessung).
+    const _gm = giessenLautMessung(c, iso);
+    if (_gm && _gm.grund === 'feucht') return { status: 'feucht', gm: _gm };
+  }
   if (cd && cd._doneTodo) return { status: 'erledigt' };
   return null;
 }
@@ -16417,8 +16503,12 @@ function plainSentence(action, c, p, waterMl) {
   // Quelle 'voll'). Der Satz sagte trotzdem „Gib deiner Pflanze heute etwa 0 ml … bis unten etwas herausläuft", während der
   // Eintrag darunter „Topf ist voll — heute nicht gießen" meldete. Der Hebe-Test schlägt das Gießintervall (ANBAU.md 15).
   // (v1.5.272) Auch am Spültag und draußen — dort sagte der Satz bei vollem Topf „ungefähr 0 ml" bzw. „gieß etwa 0 ml".
-  if ((action === 'giess' || action === 'giess_anz' || action === 'spuelen') && !(waterMl > 0) && _topfVollHeute(c, p, todayISO())) {
-    return `Dein Topf ist heute noch voll — ${c.weightMode === 'scale' ? 'die Waage zeigt ihn satt' : 'der Hebe-Test sagt „Voll"'}. <b>Heute nicht gießen${action === 'spuelen' ? ', auch nicht zum Spülen' : ''}.</b> Heb ihn morgen wieder an: Gegossen wird, sobald er „${giesspunktFor(c).knopf}" zeigt.`;
+  // (v1.5.284) Und „noch feucht" (giessenLautMessung) — vorher „Gib deiner Pflanze heute etwa 1500 ml" bei Hebe-Test „Mittel".
+  const _vollS = (action === 'giess' || action === 'giess_anz' || action === 'spuelen') && !(waterMl > 0) && _topfVollHeute(c, p, todayISO());
+  const _gmS = !_vollS && (action === 'giess' || action === 'giess_anz') ? giessenLautMessung(c, todayISO()) : null;
+  if (_vollS || (_gmS && _gmS.grund === 'feucht')) {
+    const _w = _nichtGiessenWorte(c, todayISO(), _vollS ? null : _gmS);
+    return `Dein Topf ist heute noch ${_w.zustand} — ${_w.messungSatz}. <b>Heute nicht gießen${action === 'spuelen' ? ', auch nicht zum Spülen' : ''}.</b> ${_w.wannSatz}`;
   }
   if (action === 'giess_anz') {
     if (isVorzucht) {
@@ -16617,16 +16707,21 @@ function getTodayAction(c, p, a, iso) {
   // (v1.5.267) Gießtag mit vollem Topf (Hebe-Test von heute „Voll"): Die Karte sagte „Ca. 0 ml Wasser, bis 15–20 % unten
   // ablaufen". Ohne eigenen eingetragenen Guss gilt jetzt, was der Eintrag sagt — heute nicht gießen.
   // (v1.5.272) Auch am Spültag und draußen: Die Karte sagte „Ca. 0 ml reines Wasser … Bis viel Drain unten durchläuft".
-  if ((a === 'giess' || a === 'giess_anz' || a === 'spuelen') && !_savedWater && !(waterMl > 0) && _topfVollHeute(c, p, iso)) {
+  // (v1.5.284) Und „noch feucht": Liegt der gemessene Topf über dem Gießpunkt und hält er nach seinem Tempo bis zum nächsten
+  // Gießtag (giessenLautMessung), sagt die Karte „heute nicht gießen" — vorher „Gießtag · Ca. 1500 ml" bei Hebe-Test „Mittel".
+  const _vollT = (a === 'giess' || a === 'giess_anz' || a === 'spuelen') && !_savedWater && !(waterMl > 0) && _topfVollHeute(c, p, iso);
+  const _gmT = !_vollT && (a === 'giess' || a === 'giess_anz') && !_savedWater ? giessenLautMessung(c, iso) : null;
+  if (_vollT || (_gmT && _gmT.grund === 'feucht')) {
+    const _w = _nichtGiessenWorte(c, iso, _vollT ? null : _gmT);
     return {
-      title: a === 'spuelen' ? '🚿 Spültag — der Topf ist noch voll' : '💧 Gießtag — der Topf ist noch voll',
+      title: `${a === 'spuelen' ? '🚿 Spültag' : '💧 Gießtag'} — der Topf ist noch ${_w.zustand}`,
       icon: a === 'spuelen' ? '🚿' : '💧',
       color: cl.hex,
       steps: [
-        `${c.weightMode === 'scale' ? 'Deine Waage heute: satt' : 'Dein Hebe-Test heute: „Voll"'} — <b>heute nicht gießen</b>`,
-        `Morgen wieder anheben: Gegossen wird, sobald er „${giesspunktFor(c).knopf}" zeigt`,
+        `${_w.messung} — <b>heute nicht gießen</b>`,
+        _w.wann,
       ],
-      hint: 'Ein voller Topf nimmt nichts mehr auf. Was du jetzt gießt, läuft unten wieder heraus — und ein Topf, der nie abtrocknet, nimmt den Wurzeln die Luft.',
+      hint: _w.warum,
     };
   }
   if (a === 'giess_anz') {
@@ -20089,7 +20184,8 @@ function renderGussplan() {
     const _heuteISO = todayISO();
     let _zielISO = null;
     if (c && c.startDate && typeof isGiessTag === 'function') {
-      if (_erlHeute && _erlHeute.status === 'voll') return { voll: true, iso: _heuteISO, tag: _heuteTag };
+      // (v1.5.284) Auch „noch feucht" (giessenLautMessung): dieselbe Karte, mit den Worten der Startseite.
+      if (_erlHeute && (_erlHeute.status === 'voll' || _erlHeute.status === 'feucht')) return { voll: true, iso: _heuteISO, tag: _heuteTag, worte: _nichtGiessenWorte(c, _heuteISO, _erlHeute.gm || null) };
       if (isGiessTag(_heuteISO, c) && !_erlHeute) _zielISO = _heuteISO;
       else if (typeof nextGiessTag === 'function') {
         const _n = nextGiessTag(c, _heuteISO);
@@ -20133,8 +20229,8 @@ function renderGussplan() {
     : '';
   const _naechsteKarte = (_naechster && _naechster.voll) ? `<div onclick="openEntry('${_naechster.iso}')" style="background:var(--green-bg);border:1px solid rgba(76,175,112,0.35);border-radius:12px;padding:12px 14px;margin-bottom:10px;cursor:pointer">
       <div style="font-size:10px;color:var(--text-hint);text-transform:uppercase;letter-spacing:0.5px">Nächster Guss · sobald der Hebe-Test „${giesspunktFor(c).knopf}" zeigt</div>
-      <div style="font-size:15px;font-weight:700;color:var(--green);margin-top:2px">Heute nicht gießen — der Topf ist noch voll</div>
-      <div style="font-size:12px;color:var(--text-sub);margin-top:3px">${c.weightMode === 'scale' ? 'Deine Waage heute: satt' : 'Dein Hebe-Test heute: „Voll"'}. Heb ihn morgen wieder an.</div>
+      <div style="font-size:15px;font-weight:700;color:var(--green);margin-top:2px">Heute nicht gießen — der Topf ist noch ${_naechster.worte.zustand}</div>
+      <div style="font-size:12px;color:var(--text-sub);margin-top:3px">${_naechster.worte.messung}. ${_naechster.worte.feucht ? _naechster.worte.wannSatz : 'Heb ihn morgen wieder an.'}</div>
     </div>` : _naechster ? (() => {
     const cd = S.entries[_naechster.iso] && S.entries[_naechster.iso].cycleData && S.entries[_naechster.iso].cycleData[c.id];
     // Feed/Wasser gilt nur für Blüte-Güsse. Vor der Blüte gibt es keinen Guss-Index,
@@ -20254,7 +20350,10 @@ function renderGussplan() {
           const _txt = _w > 0 ? `gegossen ${Math.round(_w)} ml${_cdS._suggested && _cdS._suggested.water ? ' · Vorschlag übernommen' : ''}`
             : (s.kind === 'ice' ? 'Crushed Ice, kein Guss' : 'nicht eingetragen');
           return `<div style="font-size:10px;color:var(--text-hint)">${_txt}</div>`;
-        })() : (s.kind === 'ice' ? '<div style="font-size:10px;color:var(--text-hint)">Crushed Ice, kein Guss</div>' : (_ml ? `<div style="font-size:10px;color:var(--text-hint)">etwa ${_mlTxt(_ml)}</div>` : ''))}
+        })() : (s.kind === 'ice' ? '<div style="font-size:10px;color:var(--text-hint)">Crushed Ice, kein Guss</div>'
+          // (v1.5.284) Heute voll oder noch feucht: keine Menge — dieselbe Antwort wie die Karte darüber.
+          : (_istHeute && _erlHeute && (_erlHeute.status === 'voll' || _erlHeute.status === 'feucht')) ? `<div style="font-size:10px;color:var(--text-hint)">Topf noch ${_erlHeute.status} — heute nicht gießen</div>`
+          : (_ml ? `<div style="font-size:10px;color:var(--text-hint)">etwa ${_mlTxt(_ml)}</div>` : ''))}
       </div>
       ${control}
     </div>`;
@@ -25446,8 +25545,11 @@ function markTodayDone(cId, iso) {
     // (v1.5.154) Auch der Sättigungsguss an Tag 1 ist ein Guss (isGiessTag). Vorher setzte „Erledigt“
     // dort nur den Haken, und der größte Wassereintrag in den Sämlingstopf fehlte im Verlauf.
     const isWaterDay = isGiessTag(iso, c);
+    // (v1.5.284) Sagt die Messung „noch feucht", ist „Erledigt" kein Guss: dieselbe 0 wie am vollen Tag, nicht die Vorschlagsmenge —
+    // sonst zählte der Tag als Guss und verschöbe den Rhythmus.
+    const _gmD = isWaterDay ? giessenLautMessung(c, iso) : null;
     if (isWaterDay && p && !cd.water) {
-      cd.water = String(waterSuggestion(c, p, iso));
+      cd.water = String(_gmD && _gmD.grund === 'feucht' ? 0 : waterSuggestion(c, p, iso));
       // (v1.2.57) Der Wert ist ein App-Vorschlag, keine Messung: als 'vorgeschlagen'
       // kennzeichnen — gleiches Flag wie im Nachhol-Assistenten. Ohne Flag lernt die
       // Gieß-Personalisierung aus ihren eigenen Empfehlungen (Echo-Schleife).
@@ -27441,9 +27543,14 @@ function renderEntry(iso) {
               a === 'trocknen' ? (_stehtNochNachPlan(c, iso) ? '🔍 Ernte offen — die Pflanze steht noch' : '🍂 Trocknung') :   // (v1.5.265)
               `· ${a}`  // fallback: kein Mystery-"Trocknung" mehr
             }</div>
-            ${isWaterDay && a !== 'ice' ? (waterSug > 0
+            ${isWaterDay && a !== 'ice' ? (() => {
+              // (v1.5.284) Sagt die Messung „noch feucht", gibt es keine Vorschlagsmenge — dieselbe Antwort wie Karte und Satz.
+              const _gmV = ((a === 'giess' || a === 'giess_anz') && !(parseFloat(cd.water) > 0)) ? giessenLautMessung(c, iso) : null;
+              const _feuchtV = !!(_gmV && _gmV.giessen === false && _gmV.grund === 'feucht');
+              return (waterSug > 0 && !_feuchtV)
               ? `<div style="font-size:11px;color:var(--text-muted)">Vorschlag: ~${waterSug} ml${_wsPerPlant} · Topf ${getPotSize(c)}L · ${getInt(c, p?.ph || 'bloom')}d Intervall</div>`
-              : `<div style="font-size:11px;color:var(--blue);font-weight:600">💧 Topf ist voll — heute nicht gießen. Morgen per Hebe-Test prüfen.</div>`) : ''}
+              : `<div style="font-size:11px;color:var(--blue);font-weight:600">💧 Topf ist ${_feuchtV ? 'noch feucht' : 'voll'} — heute nicht gießen. ${_feuchtV ? _nichtGiessenWorte(c, iso, _gmV).wannSatz : 'Morgen per Hebe-Test prüfen.'}</div>`;
+            })() : ''}
             ${(a === 'giess' || a === 'giess_anz') && waterBasisTxt && _wBasis !== 'model' ? `<div style="font-size:11px;color:${_wTrustColor};font-weight:600;margin-top:3px">${waterBasisTxt}</div>` : ''}
             ${(a === 'giess' || a === 'giess_anz') && _wBasis === 'model' ? `<div style="background:rgba(240,208,80,0.08);border:0.5px solid rgba(240,208,80,0.35);border-radius:10px;padding:10px 12px;margin-top:6px;line-height:1.5">
               <div style="font-size:12px;font-weight:700;color:var(--yellow);margin-bottom:3px">🌱 Dein erster Guss in diesem Zyklus</div>
@@ -27793,7 +27900,18 @@ function renderEntry(iso) {
           // SONDERFÄLLE: Topping-Tag, IceFlush-Tag → eigene Status-Texte (siehe unten)
           const isToppingToday = c.toppingDate === iso;
           const isIceFlushToday = a === 'ice';
-          if (clf && clf.status !== 'noWater' && a && ['giess','giess_anz','spuelen'].includes(a) && restVal < 85 && !isToppingToday) {
+          // (v1.5.284) Liegt der gemessene Topf über dem Gießpunkt und hält er bis zum nächsten Gießtag, entscheidet der Topf, nicht
+          // der Kalender. Vorher stand hier bei „Mittel" „Heute gießen — geplanter Gieß-Tag", und nach dem Guss warnte derselbe
+          // Eintrag „Topf war noch feucht" (ANBAU.md 1.2, 15).
+          const _gmE = ((a === 'giess' || a === 'giess_anz') && !(parseFloat(cd.water) > 0)) ? giessenLautMessung(c, iso) : null;
+          if (clf && _gmE && _gmE.grund === 'feucht' && !isToppingToday) {
+            clf = {
+              status: 'wait',
+              color: 'var(--blue)',
+              label: 'Gießtag — der Topf ist noch feucht: heute nicht gießen',
+              text: `Topf bei ~${Math.round(_gmE.r)} % Restgewicht, über dem Gießpunkt (${_gmE.gp.von}–${_gmE.gp.bis} %, Hebe-Test „${_gmE.gp.knopf}"). Nach seinem Tempo bleibt er bis zum nächsten Gießtag darüber. ${_nichtGiessenWorte(c, iso, _gmE).wannSatz}`,
+            };
+          } else if (clf && clf.status !== 'noWater' && a && ['giess','giess_anz','spuelen'].includes(a) && restVal < 85 && !isToppingToday) {
             clf = {
               status: 'waterToday',
               color: clf.color,
@@ -31563,6 +31681,9 @@ function getAutoFillTemplate(c, p, a, iso) {
 
     // Wassermenge — waterSuggestion enthält jetzt VPD- und Stretch-Faktor
     let waterMl = (typeof waterSuggestion === 'function') ? waterSuggestion(c, p, iso) : 200;
+    // (v1.5.284) Sagt die Messung „noch feucht", trägt „Tag automatisch ausfüllen" 0 ml ein wie am vollen Tag — sonst zählte der
+    // Tag als Guss und verschöbe den Rhythmus.
+    { const _gmA = giessenLautMessung(c, iso); if (_gmA && _gmA.grund === 'feucht') waterMl = 0; }
 
     // Telemetrie: Bonus-Markierung für Toast (wenn der Faktor wirklich aktiv war,
     // erkennen wir an der Differenz zur rohen Empfehlung)

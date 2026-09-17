@@ -2,6 +2,40 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-17 — v1.5.284
+
+- **Am Gießtag folgte die Startseite dem Kalender, auch wenn die Messung belegte, dass der Topf noch hält** (Bewertung vom
+  17.09.2026, Hebel 1 #13). Gemessen an v1.5.283, Erde, Gießtag drei Tage nach dem Guss: Bei Hebe-Test 90 % sagten Karte und
+  Satz „Heute: Gießtag · Ca. 500 ml Wasser, bis 15–20 % unten ablaufen", mit der Waage bei ~75 % „Ca. 1300 ml". `ANBAU.md` 15:
+  „Der Hebe-Test schlägt das Gießintervall." Nur ein ganz voller Topf (ab 95 %) hielt die App an.
+- **Jetzt** fragt `giessenLautMessung(c, iso)` den gemessenen Topf. Unter dem Gießpunkt wird gegossen. Darüber sagt die App nur
+  dann „noch feucht — heute nicht gießen", wenn drei Dinge zusammenkommen, alle zur sicheren Seite gerundet, weil bei
+  Automatics jeder Stresstag bleibt (`ANBAU.md` 9, 14): Der letzte Guss liegt höchstens einen Gießabstand zurück (nie zweimal
+  hintereinander auslassen); ein Hebe-Test-Knopf zählt mit der Untergrenze seines Bandes („Mittel" steht für 60–84 %, gerechnet
+  wird mit 60), die Waage genau; und mit dem schnelleren Tempo aus eigener Messung und letztem Guss läge der Topf am nächsten
+  Gießtag noch über dem Gießpunkt (`ANBAU.md` 1.2). Ohne Messung, ohne eingetragenen Guss, vor Tag 25, am Topping-Tag, beim
+  Spülen, IceFlush, Outdoor und Hydro gilt der Kalender wie bisher.
+- **Folge für den Alltag:** Mit Hebe-Test „Mittel" oder „Bald" am 3-Tage-Gießtag wird weiter gegossen — ein Knopf mit
+  25 Punkten Breite kann nicht belegen, dass der Topf noch drei Tage hält (Regel 2: erst die Aussagekraft der Messung). „Noch
+  feucht" kommt bei Hebe-Test „Voll" unter 95 % und mit der Waage.
+- **Gegengeprüft, bevor es rausging.** Die erste Fassung rechnete „Mittel" als 70 und prüfte nur, ob der Topf bis zum nächsten
+  Gießtag über der Gießpunkt-Untergrenze bleibt. Ein Prüf-Agent hat mit den echten App-Funktionen 66 Verläufe über 60
+  Blütetage simuliert (Nutzer hebt nur an Gießtagen an): 24 fielen unter 25 %, der Tiefste auf 0 %, weil die App zweimal
+  hintereinander „nicht gießen" sagen konnte. Mit dieser Fassung: keiner, Tiefstwert 36 % (nachgerechnet gegen den gebauten
+  Stand). Dieselbe Prüfung fand vier Stellen, die „noch feucht" noch nicht kannten: „Tag automatisch ausfüllen" trug die
+  Menge ein, die Listenzeile im Gieß-Fahrplan nannte „heute etwa 1500 ml", der Topping-Tag widersprach dem Eintrag, und Autos
+  wurden schon ab Tag 22 bewertet.
+- Karte, Einsteiger-Satz, Eintrag (Status und Vorschlagszeile), Gieß-Fahrplan (Karte und Listenzeile) und „Tag automatisch
+  ausfüllen" sagen dann dasselbe: „noch feucht — heute nicht gießen. Am <Tag> wird gegossen. Zeigt der Hebe-Test vorher
+  ‚Knapp', gieß schon dann." „Erledigt" trägt 0 ml ein wie am vollen Tag, sonst zählte der Tag als Guss und verschöbe den
+  Rhythmus.
+- **Noch offen dazu:** Nachholen und „Gießen überfällig" fragen die Messung noch nicht (#10, nächste Version) — das galt schon
+  für den vollen Topf. Am Tag nach dem Auslassen sagt die Startseite „Heute alles ruhig", auch wenn der Hebe-Test dann „Knapp"
+  zeigt (#11).
+- `test_giesspunkt.js` (51 Prüfungen): Schwelle und Monotonie über 20–100 %, „noch feucht" auf allen Bildschirmen, „Mittel",
+  „Bald" und „Voll" wie bisher, Coco, Waage, ohne Grundlage, nie zweimal auslassen, gemessenes Tempo, „Erledigt",
+  Auto-Ausfüllen, Spültag, Outdoor, Topping-Tag, Auto vor Tag 25, Profi-Modus.
+
 ## 2026-09-17 — v1.5.283
 
 - **Die Liste im Gieß-Fahrplan zeigte bei vergangenen Güssen eine nachgerechnete Menge** (Bewertung vom 17.09.2026, Hebel 1
