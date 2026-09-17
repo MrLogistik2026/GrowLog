@@ -3576,7 +3576,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.266';
+const APP_VERSION = 'v1.5.267';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -12434,6 +12434,11 @@ function _gussQuelleTeil(g) {
     default: return 'Startwert aus Topfgröße und Wachstum';
   }
 }
+/** (v1.5.267) Sagt der Hebe-Test (oder die Waage) von heute „Voll"? Dieselbe Grenze wie die Gießmenge (Quelle 'voll'). */
+function _topfVollHeute(c, p, iso) {
+  const g = gussMengeJePflanze(c, p, iso);
+  return !!(g && g.quelle === 'voll');
+}
 function _gussIstStart(g) { return !!(g && (g.quelle === 'start' || g.quelle === 'korridor')); }
 function _gussLernSatz(c, iso, g) {
   if (!g) return '';
@@ -15348,6 +15353,12 @@ function plainSentence(action, c, p, waterMl) {
   if (action === 'sprueh') {
     return `<b>Heute nur sprühen, nicht gießen!</b> Sobald die Erde direkt am Samen oder am Keimling oben hell wird: 3–5 Sprühstöße pH-Wasser genau auf diese Stelle. Eine durchnässte Erde ohne aktive Wurzel ist ein Schimmelparadies — der häufigste Anfänger-Killer.`;
   }
+  // (v1.5.267) Gießtag mit vollem Topf: Der Hebe-Test von heute sagt „Voll", die Menge ist deshalb 0 (gussMengeJePflanze,
+  // Quelle 'voll'). Der Satz sagte trotzdem „Gib deiner Pflanze heute etwa 0 ml … bis unten etwas herausläuft", während der
+  // Eintrag darunter „Topf ist voll — heute nicht gießen" meldete. Der Hebe-Test schlägt das Gießintervall (ANBAU.md 15).
+  if ((action === 'giess' || action === 'giess_anz') && !(waterMl > 0) && _topfVollHeute(c, p, todayISO())) {
+    return `Dein Topf ist heute noch voll — der Hebe-Test sagt „Voll". <b>Heute nicht gießen.</b> Heb ihn morgen wieder an: Gegossen wird, sobald er „${giesspunktFor(c).knopf}" zeigt. Ein voller Topf nimmt nichts mehr auf — was du jetzt gießt, läuft unten wieder heraus, und ein Topf, der nie abtrocknet, nimmt den Wurzeln die Luft.`;
+  }
   if (action === 'giess_anz') {
     if (isVorzucht) {
       return `Gib ${_n > 1 ? 'jeder vorgezogenen Pflanze' : 'deiner vorgezogenen Pflanze'} heute etwa <b>${_jeTopf(waterMl)} ml</b> lauwarmes Wasser${_zusammen(waterMl)} — sie ist noch drinnen, du musst nicht aufs Wetter achten.`;
@@ -15542,6 +15553,20 @@ function getTodayAction(c, p, a, iso) {
     };
   }
 
+  // (v1.5.267) Gießtag mit vollem Topf (Hebe-Test von heute „Voll"): Die Karte sagte „Ca. 0 ml Wasser, bis 15–20 % unten
+  // ablaufen". Ohne eigenen eingetragenen Guss gilt jetzt, was der Eintrag sagt — heute nicht gießen.
+  if ((a === 'giess' || a === 'giess_anz') && !_savedWater && !(waterMl > 0) && _topfVollHeute(c, p, iso)) {
+    return {
+      title: '💧 Gießtag — der Topf ist noch voll',
+      icon: '💧',
+      color: cl.hex,
+      steps: [
+        'Dein Hebe-Test heute: „Voll" — <b>heute nicht gießen</b>',
+        `Morgen wieder anheben: Gegossen wird, sobald er „${giesspunktFor(c).knopf}" zeigt`,
+      ],
+      hint: 'Ein voller Topf nimmt nichts mehr auf. Was du jetzt gießt, läuft unten wieder heraus — und ein Topf, der nie abtrocknet, nimmt den Wurzeln die Luft.',
+    };
+  }
   if (a === 'giess_anz') {
     const isOutdoor = c.growType === 'outdoor';
     const isVorzucht = p.ph === 'vorzucht';

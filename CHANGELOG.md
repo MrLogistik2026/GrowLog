@@ -2,6 +2,23 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-17 — v1.5.267
+
+- **Gießtag mit vollem Topf: Die Startseite sagte „etwa 0 ml"** (Bewertung vom 17.09.2026, Hebel 1). Zeigte
+  der Hebe-Test am Gießtag „Voll", rechnet die Gießmenge richtig mit 0 (`gussMengeJePflanze`, Quelle `voll`) — der
+  Einsteiger-Satz daraus lautete aber „Gib deiner Pflanze heute etwa **0 ml** lauwarmes Wasser. Langsam gießen, bis unten
+  etwas herausläuft", die Karte „Ca. 0 ml Wasser, bis 15–20 % unten ablaufen". Der Eintrag darunter meldete „Topf ist voll —
+  heute nicht gießen". Wer dem Satz folgt, gießt „bis unten etwas herausläuft" in einen vollen Topf.
+- **Jetzt sagen Satz und Karte dasselbe wie der Eintrag:** „Dein Topf ist heute noch voll — heute nicht gießen", dazu wann
+  wieder gegossen wird (sobald der Hebe-Test den Gießpunkt zeigt: Erde „Knapp", Coco „Mittel") und warum: Ein voller Topf
+  nimmt nichts mehr auf, und ein Topf, der nie abtrocknet, nimmt den Wurzeln die Luft (`ANBAU.md` 1, 1.1). Der Hebe-Test
+  schlägt das Gießintervall (15).
+- **Eine Grenze:** `_topfVollHeute` fragt die Gießmenge selbst (Quelle `voll`), statt eine zweite 95-%-Schwelle zu führen.
+  Hat jemand heute trotzdem gegossen und die Menge eingetragen, bleibt der eingetragene Guss auf der Karte. Outdoor und
+  Hydro sind nicht betroffen — dort rechnet die Gießmenge ohne Hebe-Test.
+- `test_topfvoll.js` (14 Prüfungen): voller Topf in Satz, Karte, Startseite und Eintrag, normaler Gießtag, eingetragener
+  Guss, Coco, ohne Hebe-Test, Profi-Modus.
+
 ## 2026-09-17 — v1.5.266
 
 - **Das Klima bewertete eine stehende Pflanze nach dem Plan-Erntetag gar nicht** (beim Bau von v1.5.265 gefunden).
