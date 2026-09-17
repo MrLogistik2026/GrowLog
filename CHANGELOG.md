@@ -2,6 +2,23 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-17 — v1.5.274
+
+- **Der Gieß-Fahrplan sagte „Nächster Guss · heute" nach dem Guss und bei vollem Topf** (Bewertung vom 17.09.2026, Hebel 1
+  #9, von zwei Agenten an v1.5.271 gemessen). Die Karte fragte nur den Kalender (`isGiessTag`). Nach einem eingetragenen Guss
+  stand dort „heute · etwa 2100 ml" — eine Aufforderung zum zweiten Guss (`ANBAU.md` 1.1, 13.1) —, bei vollem Topf „heute"
+  ohne Menge, während Startseite und Eintrag „heute nicht gießen" meldeten. Die Bildschirmhilfe verspricht das Gegenteil:
+  „Die Tage sind ein Gerüst — die Wahrheit ist das Topfgewicht."
+- **Jetzt** fragt die Karte dieselbe Antwort wie die Startseite (`_gussHeuteErledigt`, v1.5.273):
+  - voller Topf: „Nächster Guss · sobald der Hebe-Test „Knapp" zeigt" — „Heute nicht gießen — der Topf ist noch voll", ohne
+    Datum, weil der Gießpunkt und nicht der Kalender entscheidet (Coco: „Mittel");
+  - schon gegossen: „✓ Heute erledigt · 1500 ml eingetragen", darunter der nächste Gießtag;
+  - offen: wie bisher „heute" mit Menge.
+- `test_gussplan.js` Abschnitt G hielt die alte Regel fest („heute" an jedem Gießtag, auch nach dem Guss) und prüft jetzt
+  „heute genau dann, wenn Gießtag und nicht erledigt".
+- `test_fahrplanheute.js` (39 Prüfungen): voller Topf in Erde, Coco und am Spültag, voll mit Haken, eingetragener Guss mit
+  dem nächsten Gießtag, IceFlush-Tag mit Eintrag, Gegenprobe beim Gießpunkt.
+
 ## 2026-09-17 — v1.5.273
 
 - **Ein eingetragener Guss zählte auf der Startseite nicht als erledigt** (Bewertung vom 17.09.2026, Hebel 1 #8, von einem

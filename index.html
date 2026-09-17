@@ -4592,7 +4592,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.273';
+const APP_VERSION = 'v1.5.274';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -20054,18 +20054,23 @@ function renderGussplan() {
   // ausdrücklich nicht), und `nextGiessTag` sucht sie 60 Tage voraus. Die Karte fragte
   // nur die falsche Quelle. Die Liste darunter bleibt unverändert eine Blüte-Liste —
   // sie sagt das ab sofort auch (siehe `listHdr`).
+  // (v1.5.274) „Heute" nur, wenn der Guss von heute noch offen ist (_gussHeuteErledigt). Vorher sagte die Karte nach einem
+  // eingetragenen Guss „Nächster Guss · heute · etwa 2100 ml" und bei vollem Topf „heute", während Startseite und Eintrag
+  // „heute nicht gießen" meldeten — gegen die eigene Hilfe „die Wahrheit ist das Topfgewicht".
+  const _erlHeute = (c && c.startDate) ? _gussHeuteErledigt(c, todayISO()) : null;
   const _naechster = (() => {
     const _heuteISO = todayISO();
     let _zielISO = null;
     if (c && c.startDate && typeof isGiessTag === 'function') {
-      if (isGiessTag(_heuteISO, c)) _zielISO = _heuteISO;
+      if (_erlHeute && _erlHeute.status === 'voll') return { voll: true, iso: _heuteISO, tag: _heuteTag };
+      if (isGiessTag(_heuteISO, c) && !_erlHeute) _zielISO = _heuteISO;
       else if (typeof nextGiessTag === 'function') {
         const _n = nextGiessTag(c, _heuteISO);
         if (_n) _zielISO = _n.iso;
       }
     }
     // Rückfall auf das bisherige Verhalten, wenn die Helfer nichts liefern.
-    if (!_zielISO) return steps.find(s => s.tag >= _heuteTag) || null;
+    if (!_zielISO) return steps.find(s => _erlHeute ? s.tag > _heuteTag : s.tag >= _heuteTag) || null;
     // Liegt der Guss in der Blüte-Liste, wird ihr Eintrag benutzt — damit Feed/Wasser,
     // Sperren und Guss-Index unverändert wie bisher gelten.
     const _inListe = steps.find(s => s.iso === _zielISO);
@@ -20097,7 +20102,11 @@ function renderGussplan() {
   const _gapKarte = (typeof endspurtCard === 'function')
     ? endspurtCard(c, todayISO())
     : '';
-  const _naechsteKarte = _naechster ? (() => {
+  const _naechsteKarte = (_naechster && _naechster.voll) ? `<div onclick="openEntry('${_naechster.iso}')" style="background:var(--green-bg);border:1px solid rgba(76,175,112,0.35);border-radius:12px;padding:12px 14px;margin-bottom:10px;cursor:pointer">
+      <div style="font-size:10px;color:var(--text-hint);text-transform:uppercase;letter-spacing:0.5px">Nächster Guss · sobald der Hebe-Test „${giesspunktFor(c).knopf}" zeigt</div>
+      <div style="font-size:15px;font-weight:700;color:var(--green);margin-top:2px">Heute nicht gießen — der Topf ist noch voll</div>
+      <div style="font-size:12px;color:var(--text-sub);margin-top:3px">${c.weightMode === 'scale' ? 'Deine Waage heute: satt' : 'Dein Hebe-Test heute: „Voll"'}. Heb ihn morgen wieder an.</div>
+    </div>` : _naechster ? (() => {
     const cd = S.entries[_naechster.iso] && S.entries[_naechster.iso].cycleData && S.entries[_naechster.iso].cycleData[c.id];
     // Feed/Wasser gilt nur für Blüte-Güsse. Vor der Blüte gibt es keinen Guss-Index,
     // deshalb wird die Frage dort gar nicht erst gestellt.
@@ -20113,7 +20122,7 @@ function renderGussplan() {
     const inTagen = _naechster.tag - _heuteTag;
     const wann = inTagen <= 0 ? 'heute' : (inTagen === 1 ? 'morgen' : `in ${inTagen} Tagen`);
     return `<div onclick="openEntry('${_naechster.iso}')" style="background:var(--green-bg);border:1px solid rgba(76,175,112,0.35);border-radius:12px;padding:12px 14px;margin-bottom:10px;cursor:pointer">
-      <div style="font-size:10px;color:var(--text-hint);text-transform:uppercase;letter-spacing:0.5px">Nächster Guss · ${wann}</div>
+      ${_erlHeute ? `<div style="font-size:11px;color:var(--green);margin-bottom:4px">✓ Heute erledigt${_erlHeute.ml ? ` · ${_erlHeute.ml} ml eingetragen` : ''}</div>` : ''}<div style="font-size:10px;color:var(--text-hint);text-transform:uppercase;letter-spacing:0.5px">Nächster Guss · ${wann}</div>
       <div style="font-size:15px;font-weight:700;color:var(--green);margin-top:2px">Tag ${_naechster.tag} · ${fmtDE(_naechster.iso, { weekday: 'long', day: '2-digit', month: '2-digit' })}</div>
       <div style="font-size:12px;color:var(--text-sub);margin-top:3px">${art}${ml ? ` · etwa <b>${ml.ges} ml</b>` : ''}</div>
       ${ml && ml.proPfl ? `<div style="font-size:10px;color:var(--text-hint);margin-top:2px">${ml.proPfl} ml je Pflanze × ${ml.pflanzen} Pflanzen</div>` : ''}
@@ -20156,7 +20165,7 @@ function renderGussplan() {
       _satz = 'Für diesen Zyklus steht kein weiterer Guss im Fahrplan.';
     }
     return `<div onclick="openEntry(todayISO())" style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:10px;cursor:pointer">
-      <div style="font-size:10px;color:var(--text-hint);text-transform:uppercase;letter-spacing:0.5px">Nächster Guss</div>
+      ${_erlHeute ? `<div style="font-size:11px;color:var(--green);margin-bottom:4px">✓ Heute erledigt${_erlHeute.ml ? ` · ${_erlHeute.ml} ml eingetragen` : ''}</div>` : ''}<div style="font-size:10px;color:var(--text-hint);text-transform:uppercase;letter-spacing:0.5px">Nächster Guss</div>
       <div style="font-size:15px;font-weight:700;color:var(--text-sub);margin-top:2px">${_titel}</div>
       <div style="font-size:11px;color:var(--text-sub);margin-top:4px;line-height:1.5">${_satz}</div>
       <div style="font-size:10px;color:var(--text-hint);margin-top:6px">👆 Antippen öffnet den heutigen Eintrag</div>

@@ -229,6 +229,7 @@ const mess = (E, anfaenger) => JSON.parse(E(`(function(){
           wann: m ? m[1] : null,
           zielTag: m ? Number(m[2]) : null,
           heuteIstGuss: isGiessTag(todayISO(), c),
+          erledigt: !!_gussHeuteErledigt(c, todayISO()),   // (v1.5.274) schon gegossen oder Topf voll
           aktion: getAction(todayISO(), c) || null,
           hinweisVorBluete: /Diese Liste beginnt mit der Blüte/.test(t),
           text: t.slice(0, 170)
@@ -240,9 +241,9 @@ const mess = (E, anfaenger) => JSON.parse(E(`(function(){
     // nicht sein Stand. Geprueft wird deshalb ueber die ganze Spanne.
     const t1 = anTag(1);
     pruef('Tag 1: die Karte sagt "heute", nicht "in 23 Tagen"',
-      t1.heuteIstGuss ? t1.wann === 'heute' : t1.wann !== null, JSON.stringify(t1));
+      (t1.heuteIstGuss && !t1.erledigt) ? t1.wann === 'heute' : t1.wann !== null, JSON.stringify(t1));
     pruef('Tag 1: der genannte Tag ist der heutige',
-      t1.heuteIstGuss ? t1.zielTag === 1 : true, JSON.stringify(t1));
+      (t1.heuteIstGuss && !t1.erledigt) ? t1.zielTag === 1 : true, JSON.stringify(t1));
 
     // Die eigentliche Regel: Ist heute laut isGiessTag ein Guss, MUSS die Karte "heute"
     // sagen. Ist es keiner, darf sie keinen Tag nennen, der vor dem naechsten echten liegt.
@@ -250,8 +251,10 @@ const mess = (E, anfaenger) => JSON.parse(E(`(function(){
     for (const tag of [1, 2, 5, 8, 9, 12, 15, 18, 21, 24, 30, 45]) {
       const r = anTag(tag);
       if (r.wann === null) continue;
-      if (r.heuteIstGuss && r.wann !== 'heute') verletzt.push(`Tag ${tag}: ist Gusstag (${r.aktion}), Karte sagt "${r.wann}"`);
-      if (!r.heuteIstGuss && r.wann === 'heute') verletzt.push(`Tag ${tag}: kein Gusstag, Karte sagt "heute"`);
+      // (v1.5.274) „heute" genau dann, wenn heute ein Gießtag ist UND der Guss noch offen ist (_gussHeuteErledigt).
+      const offen = r.heuteIstGuss && !r.erledigt;
+      if (offen && r.wann !== 'heute') verletzt.push(`Tag ${tag}: ist offener Gusstag (${r.aktion}), Karte sagt "${r.wann}"`);
+      if (!offen && r.wann === 'heute') verletzt.push(`Tag ${tag}: kein offener Gusstag, Karte sagt "heute"`);
     }
     pruef('Karte und isGiessTag stimmen an allen 12 geprueften Tagen ueberein',
       verletzt.length === 0, verletzt.join(' | '));
