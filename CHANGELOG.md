@@ -2,6 +2,17 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-17 — v1.5.278
+
+- **Am Plan-Erntetag kündigte die Startseite „Morgen: Trocknung" an, obwohl die Ernte noch offen war** (beim Nachmessen von
+  Hebel 1 #15 gefunden, gegengeprüft). Direkt unter „Trichome noch nicht reif (20 % klar) — noch nicht schneiden" stand „Morgen:
+  Trocknung. Ziel: 18–20 °C, 55–62 % RLF für 7–14 Tage. Aufhängen an einer Schnur, dunkel." — auch ohne Messung und bei einer
+  alten; bei Patrick am 08.09. genauso. Die Karte schaut nur auf die Phase von morgen.
+- **Jetzt** kommt die Trocknungs-Karte nur, wenn die Ernte nicht mehr offen ist (`ernteOffen`, v1.5.265): mit reifen Trichomen,
+  „Erledigt" oder allen Pflanzen geerntet. Trichome schlagen den Plan-Erntetag (`ANBAU.md` 11, 15).
+- `test_phasenwechsel.js` hielt die alte Karte fest (Zyklus ohne Messung, Tag 102) und lässt den Plan-Erntetag mit offener Ernte
+  jetzt aus; neu die Gegenprobe mit reifer Messung von gestern.
+
 ## 2026-09-17 — v1.5.277
 
 - **Der Gieß-Fahrplan zeigte am IceFlush eine Gießmenge** (Bewertung vom 17.09.2026, Hebel 1 #14 Teil 1, an v1.5.271

@@ -77,6 +77,8 @@ const WORT = { bloom: /Blüte/, flush: /Spülphase/, ice: /IceFlush/, harvest: /
       const heute = phase(iso(t), c);
       let soll = null;
       for (let d = 1; d <= 3; d++) { const pd = phase(iso(t + d), c); if (pd && heute && pd.ph !== heute.ph) { soll = { d, ph: pd.ph }; break; } }
+      // (v1.5.278) Am Plan-Erntetag ohne Trichom-Freigabe ist die Ernte offen (ernteOffen) — dann keine Trocknungs-Karte.
+      if (soll && soll.ph === 'dry' && heute && heute.ph === 'harvest' && ernteOffen(c, iso(t), heute)) soll = null;
       setDebugDate(iso(t));
       const karten = getAlerts(c).filter(a => a.type === 'milestone' && /^(Morgen|In \\d+ Tagen)/.test(a.text)).map(a => a.text.replace(/<[^>]+>/g, ''));
       zeilen.push({ t, ph: heute && heute.ph, soll, karten });
@@ -104,6 +106,28 @@ const WORT = { bloom: /Blüte/, flush: /Spülphase/, ice: /IceFlush/, harvest: /
   pruef('Keine feste Angabe „~2 Wochen" mehr', !r.some(z => z.karten.some(k => /2 Wochen/.test(k))));
   const t101 = (r.find(z => z.t === 101) || { karten: [] }).karten[0] || '';
   pruef('IceFlush-Tag vor der Ernte: „Morgen: Erntetag", nicht schon die Trocknung', /^Morgen: Erntetag/.test(t101), t101);
+
+  // (v1.5.278) Am Plan-Erntetag mit offener Ernte keine Trocknungs-Karte — mit reifer Messung von gestern schon.
+  {
+    const lage = (mitMessung) => JSON.parse(E(`(function(){
+      const start = '2026-03-01';
+      const c = { id: 'pw2', name: 'Auto', active: true, startDate: start, seedType: 'auto', growType: 'indoor', medium: 'erde',
+        anzuchtDays: 21, bloomDays: 70, flushDays: 7, flushWetDays: 4, iceDryDays: 3, iceDays: 3, harvestDays: 1, dryDays: 7, cureDays: 21,
+        intAnzucht: 3, intBloom: 3, intFlush: 3, intIce: 2, intErnte: 1, intDry: 1, offsetHistory: [], skippedDays: [], plants: [], plantCount: 1 };
+      S.cycles = [c]; S.entries = {};
+      const iso = (t) => isoPlus(start, t - 1);
+      if (${mitMessung}) S.entries[iso(101)] = { cycleData: { pw2: { trichomes: { clear: 5, milky: 83, amber: 12 } } } };
+      setDebugDate(iso(102));
+      const karten = getAlerts(c).filter(a => a.type === 'milestone' && /^(Morgen|In \\d+ Tagen)/.test(a.text)).map(a => a.text.replace(/<[^>]+>/g, ''));
+      const out = { ph: phase(iso(102), c).ph, offen: ernteOffen(c, iso(102)), karten };
+      setDebugDate(null);
+      return JSON.stringify(out);
+    })()`));
+    const ohne = lage(false);
+    pruef('Plan-Erntetag ohne Messung: Ernte offen, keine „Morgen: Trocknung"', ohne.ph === 'harvest' && ohne.offen === true && !ohne.karten.some(k => /Trocknung/.test(k)), JSON.stringify(ohne));
+    const reif = lage(true);
+    pruef('Plan-Erntetag mit reifer Messung von gestern: „Morgen: Trocknung" wie bisher', reif.offen === false && reif.karten.some(k => /^Morgen: Trocknung/.test(k)), JSON.stringify(reif));
+  }
 
   pruef('Keine JS-Fehler im Lauf', errors.length === 0, errors.slice(0, 2).join(' | '));
   console.log(`\nErgebnis: ${ok} OK, ${fail} Fehler`);

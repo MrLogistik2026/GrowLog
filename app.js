@@ -3592,7 +3592,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.277';
+const APP_VERSION = 'v1.5.278';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -13620,7 +13620,7 @@ function getAlerts(c) {
       hint = { icon: '🧊', text: T.phaseTransition.toIceSoon({ daysUntil: _wechselIn }) };
     } else if (p3.ph === 'harvest') {
       hint = { icon: '✂️', text: T.phaseTransition.toHarvestSoon({ daysUntil: _wechselIn, vsPlan: _trichVsPlan(c, today) }) };
-    } else if (p3.ph === 'dry') {
+    } else if (p3.ph === 'dry' && !ernteOffen(c, today, p)) {   // (v1.5.278) nicht, solange die Ernte offen ist
       hint = { icon: '🍂', text: T.phaseTransition.toDrySoon({ daysUntil: _wechselIn }) };
     }
     if (hint && !c._milestones?.[transitionKey]) {
