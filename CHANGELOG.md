@@ -2,6 +2,22 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-17 — v1.5.258
+
+- **Der Eintrag „Spülung (Final-Flush)" hatte noch unbelegte Aussagen zu Living Soil und Coco:** „Bei Living Soil
+  trotzdem spülen → zerstört das mikrobielle Gleichgewicht", „Salzakkumulation findet kaum statt, Spülung würde dem
+  Bodenleben mehr schaden als helfen", Coco „inert, kein Pufferungs-Effekt". Nach `ANBAU.md` 14 ist für Geschmack, Asche
+  und Inhaltsstoffe kein Vorteil belegt und das Spülen als Praxis unschädlich; organische Erde liefert danach wieder nach
+  (5.1); Coco hat weniger Austauschkapazität, nicht keine (7.1). Ein steigender Drain-EC spät in der Blüte hat in
+  organischer Erde zwei Ursachen (5.1) — die Faustregel „nicht versalzen austreten" ist weg.
+- **„Visuelle Indikatoren für gut gespülte Pflanze"** widersprach dem eigenen Punkt 2 (die Vergilbung ist Seneszenz,
+  14). Die Überschrift sagt das jetzt, und die Liste darunter führt kein Welken mehr (ein Wasser-Symptom, 1), keine
+  „erschöpfte ganze Pflanze" (Seneszenz läuft von unten nach oben, 6.4), keinen Duft und keine „aktiven Trichome".
+  Hängende Blätter sind kein Spül-Zeichen: Topf heben. Griffelfarbe ist kein Reifezeichen (11).
+- „Hard Dryback = Substrat trocken (kein Wasser, 2–4 Tage)" → bis zum Gießpunkt, nicht tiefer (v1.5.196, 1.2);
+  „IceFlush = Kältereiz" → Crushed Ice an den Topfrand, ein Trichom-Plus ist nicht belegt (14).
+- `test_lexikon.js` Abschnitt U (205 Prüfungen im Lauf).
+
 ## 2026-09-17 — v1.5.257
 
 - **„Outdoor-Gießen: Grundregeln" begründete den lockeren pH mit „Bodenleben puffert".** Der Eintrag handelt von Töpfen,

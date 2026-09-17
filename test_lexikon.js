@@ -533,6 +533,36 @@ function pruef(name, bedingung, info) {
       og.includes('gießen, bis Drain kommt — Ziel ' + r.von + '–' + r.bis + ' % der Gießmenge. Wie viel das ist, hängt davon ab, wie trocken der Topf war'), og.slice(og.indexOf('Menge:'), og.indexOf('Menge:') + 220));
   }
 
+  // (v1.5.258) „Spülung (Final-Flush)": Living Soil „zerstört das mikrobielle Gleichgewicht", „Salzakkumulation findet kaum
+  // statt", Coco „kein Pufferungs-Effekt", eine Liste „Indikatoren für gut gespülte Pflanze" mit Welken, Duft und „Trichome
+  // bleiben aktiv" und „Hard Dryback = kein Wasser, 2–4 Tage". ANBAU.md 14: Für Geschmack, Asche oder Analytik kein belegter
+  // Vorteil, als Praxis unschädlich, die Vergilbung ist Seneszenz; 5.1: organische Erde liefert nach; 7.1: Coco hat weniger
+  // Austauschkapazität, nicht keine; 1.2: Hard Dryback endet am Gießpunkt; 6.4: Seneszenz läuft streng von unten nach oben.
+  console.log('');
+  console.log('U - (v1.5.258) Spülung ohne unbelegte Living-Soil- und Indikator-Aussagen');
+  {
+    const q = fs.readFileSync(path.join(__dirname, 'app.js'), 'utf8').split('\n').filter(z => !/^\s*(\/\/|\*|\/\*)/.test(z)).join('\n');
+    [/Inert, kein Pufferungs-Effekt/i, /bindet Nährstoffe organisch/i, /Indikatoren für gut gespülte/i, /zerstört das mikrobielle Gleichgewicht/i,
+      /Salzakkumulation findet kaum statt/i, /Bodenleben mehr schaden als helfen/i, /nicht versalzen austreten/i, /Substrat trocken<\/b> \(kein Wasser, 2–4 Tage\)/,
+      /IceFlush = <b>Kältereiz/i, /Trichome bleiben aktiv/i].forEach(re =>
+      pruef('Nirgends mehr: ' + re.source, !re.test(q), (q.match(new RegExp('.{0,60}' + re.source + '.{0,30}', 'i')) || [''])[0]));
+    const sp = text(/^Spülung \(Final-Flush\)$/);
+    const liste = sp.slice(sp.indexOf('Was du in dieser Zeit siehst'), sp.indexOf('Klima während der Spülung'));
+    pruef('Überschrift: überwiegend Seneszenz, die auch ohne Spülen kommt (14)', /Was du in dieser Zeit siehst — überwiegend Seneszenz, die auch ohne Spülen kommt/.test(sp));
+    pruef('… die Liste darunter ohne Welken, Duft und „erschöpft" (1, 6.4)', liste.length > 50 && !/welken|duftet|erschöpft/i.test(liste) && /von unten nach oben/.test(liste), liste);
+    pruef('… hängende Blätter sind kein Spül-Zeichen: Topf heben, drei Ursachen (1, 5, Regel 3)', /kein Spül-Zeichen\. Topf heben: leicht → zu trocken; schwer → zu nass oder zu viel Salz im Topf/.test(liste));
+    pruef('… lila nur bei Sorten mit der Anlage dazu (2.2)', /lila nur bei Sorten mit der Anlage dazu/.test(liste));
+    pruef('… Griffelfarbe ist kein Reifezeichen (11)', /kein Reifezeichen, das zeigen die Trichome/.test(liste));
+    pruef('Coco: weniger Austauschkapazität, nicht keine (7.1)', /Deutlich weniger Austauschkapazität als Erde/.test(sp));
+    pruef('Living Soil: die Erde liefert nach dem Spülen wieder nach (5.1)', /die Erde liefert nach dem Spülen wieder nach/.test(sp));
+    pruef('Mythos-Absatz: kein belegter Vorteil, organische Erde liefert nach, zwei Gründe für steigenden Drain-EC (14, 5.1)',
+      /Für Geschmack, Asche oder Inhaltsstoffe ist kein Vorteil belegt — in lebender Erde so wenig wie sonst/.test(sp)
+      && /Die Erde liefert nach, und die Pflanze nimmt gegen Ende weniger auf/.test(sp), sp.slice(sp.indexOf('Mythos'), sp.indexOf('Mythos') + 500));
+    pruef('Hard Dryback endet am Gießpunkt (1.2), IceFlush ohne Trichom-Zusage (14)',
+      /Hard Dryback = nicht gießen, bis der Topf den Gießpunkt erreicht — nicht tiefer/.test(sp) && /IceFlush = Crushed Ice an den Topfrand \(einmal, kein Wasser dazu\) — ein Trichom-Plus ist nicht belegt/.test(sp));
+    pruef('Der Eintrag bleibt ausführlich (Praxis bleibt beschrieben)', sp.length > 3000, 'zeichen=' + sp.length);
+  }
+
   console.log('');
   console.log(`Ergebnis: ${ok} OK, ${fail} Fehler`);
   process.exit(fail ? 1 : 0);
