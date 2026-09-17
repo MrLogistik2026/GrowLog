@@ -3592,7 +3592,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.281';
+const APP_VERSION = 'v1.5.282';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -13563,21 +13563,18 @@ function getAlerts(c) {
 
   // Smart: Estimated harvest date
   if (p.ph === 'bloom' || isVegiPhase(p.ph)) {
-    // Bei Outdoor-Photoperiode mit bloomStartDate: Ernte = bloomStart + bloomDays + flush + ice + harvest
-    const bs = _computeBloomStartDate(c);
-    let harvestISO;
-    if (bs) {
-      const bloomLen = c.bloomDays || PHASE_DEFAULTS.bloomDays;
-      const flushLen = c.flushDays || PHASE_DEFAULTS.flushDays;
-      const iceLen = iceLenFor(c);
-      harvestISO = isoPlus(bs, bloomLen + flushLen + iceLen);
-    } else {
-      const totalGrowDays = (c.anzuchtDays || PHASE_DEFAULTS.anzuchtDays) + (c.bloomDays || PHASE_DEFAULTS.bloomDays) + (c.flushDays || PHASE_DEFAULTS.flushDays) + iceLenFor(c);
-      harvestISO = isoPlus(c.startDate, totalGrowDays);
-    }
-    const daysLeft = isoDiff(harvestISO, today);
+    // (v1.5.282) Das Plan-Datum aus derselben Quelle wie Kacheln und Endspurt (harvestCountdown über _ernteTermin) statt einer
+    // eigenen Summe. Nennt die eigene Trichom-Reihe einen späteren Tag, sagt der Hinweis auch den — als Tag für das eigene
+    // Bernstein-Ziel, nicht als Reifegrenze: „nicht mehr zu früh" hängt an Klar ≤ RIPE_CLEAR_DONE (ANBAU.md 11, UEBERGABE 0m.2).
+    // Vorher stand „Ernte ca. 29. Sept." neben den Kacheln „min. 19 d · ab 06. Okt.".
+    const _et = _ernteTermin(c, today);
+    const harvestISO = _et ? _et.hc.harvestISO : today;
+    const daysLeft = _et ? isoDiff(harvestISO, today) : -1;
     if (daysLeft > 0 && daysLeft <= 14) {
-      out.push({ icon: '📅', text: `Ernte ca. ${fmtDE(harvestISO, {day:'2-digit',month:'short'})} (in ${daysLeft}d)`, type: 'success' });
+      const _ziel = (_et.vsPlan && _et.vsPlan.ziel != null) ? _et.vsPlan.ziel : _targetAmber(c);
+      out.push({ icon: '📅', text: _et.basis === 'messung'
+        ? `Ernte nach Plan ${fmtDE(harvestISO, {day:'2-digit',month:'short'})} — dein Bernstein-Ziel von ${_ziel} % erreichst du nach deinem Tempo frühestens am ${fmtDE(_et.iso, {day:'2-digit',month:'short'})} (in ${isoDiff(_et.iso, today)}d)`
+        : `Ernte ca. ${fmtDE(harvestISO, {day:'2-digit',month:'short'})} (in ${daysLeft}d)`, type: 'success' });
     } else if (c.growType === 'outdoor' && daysLeft > 14 && daysLeft <= 90 && p.ph === 'bloom') {
       // Outdoor: schon in Blüte aber noch nicht kritisch nah — Fenster-Prognose
       // ± 7 Tage weil echtes Erntetiming nach Trichomen, nicht Kalender geht

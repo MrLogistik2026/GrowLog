@@ -2,6 +2,20 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-17 — v1.5.282
+
+- **Der Hinweis „Ernte ca." widersprach den Kacheln daneben** (Bewertung vom 17.09.2026, Hebel 1 #15, an v1.5.271 gemessen und
+  gegengeprüft). Mit einer frischen Trichom-Reihe, nach der das eigene Bernstein-Ziel später erreicht wird als der Plan-Erntetag,
+  standen auf derselben Startseite „Ernte ca. 29. Sept. (in 12d)" und die Kacheln „Ernte in min. 19 d · Erntedatum ab 06. Okt.".
+  Der Hinweis rechnete sein Datum mit einer eigenen Summe und las die Messung nie. (Die Vermutung aus der Bewertung, er zähle
+  `c.anzuchtDays` statt `anzuchtLenFor`, hat sich beim Nachmessen nicht bestätigt: Das Datum war auch mit Blütestart gleich.)
+- **Jetzt** kommt das Plan-Datum aus `_ernteTermin` (v1.5.280, dieselbe Quelle wie Kacheln und Endspurt). Nennt die eigene Reihe
+  einen späteren Tag, sagt der Hinweis: „Ernte nach Plan 29. Sept. — dein Bernstein-Ziel von 5 % erreichst du nach deinem Tempo
+  frühestens am 06. Okt. (in 19d)". Bewusst als Tag für das eigene Bernstein-Ziel, nicht als Reifegrenze: Ob es nicht mehr zu
+  früh ist, entscheidet Klar ≤ 10 % (`ANBAU.md` 11, Patricks Vorgabe in 0m.2). Der Hinweis erscheint weiter ab 14 Tagen vor dem
+  Plan-Erntetag.
+- `test_erntehinweis.js` (9 Prüfungen): frische Reihe mit späterem Bernstein-Ziel, alte Reihe, ohne Messung, draußen.
+
 ## 2026-09-17 — v1.5.281
 
 - **Datumskarte und Zyklus-Karte zeigten am Plan-Erntetag „✂️ Ernte" unter „noch nicht schneiden"** (beim Gegenprüfen von #16
