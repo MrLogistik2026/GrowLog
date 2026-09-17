@@ -253,6 +253,7 @@ const BLICK = `window._blick = function (c) {
       pruef('Startseite: „🔍 Ernte offen · Tag", kein „Trocknen · Tag"', /🔍 Ernte offen · Tag \d+/.test(k.dash) && !/Trocknen · Tag/.test(k.dash) && !/Trocknung · Tag/.test(k.dash),
         (k.dash.match(/.{0,30}(Trockn|Ernte offen).{0,30}/) || [''])[0]);
       pruef('Eintragskopf: „🔍 Ernte offen"', /🔍 Ernte offen/.test(k.eintrag) && !/🍂 Trocknen/.test(k.eintrag));
+      pruef('Zyklus-Karte rechts: „Ernte offen", nirgends „Trocknen"', !/Trocknen/.test(k.dash), (k.dash.match(/.{0,40}Trocknen.{0,20}/) || [''])[0]);
     }
     const k2 = anzeige({ nach: 9, setup: "eintrag(8).water = '1500';" });
     if (!k2.fehlt) pruef('Im Curing-Zeitraum: „Tag N" statt „Tag x/y Curing"', /^Tag \d+$/.test(k2.tagLabel) && /🔍 Ernte offen · Tag \d+/.test(k2.dash), k2.tagLabel);

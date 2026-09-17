@@ -557,8 +557,8 @@ function phaseDayLabel(p) {
  * Tag 95", im Curing „Tag 3/28 Curing".
  */
 function _phasenAnzeige(p) {
-  if (p && (p.ph === 'dry' || p.ph === 'cure') && p.ernteOffen) return { icon: '🔍', name: 'Ernte offen' };
-  return { icon: (p && PH_ICON[p.ph]) || '', name: p ? (PN[p.ph] || p.ph) : '—' };
+  if (p && (p.ph === 'dry' || p.ph === 'cure') && p.ernteOffen) return { icon: '🔍', name: 'Ernte offen', offen: true };
+  return { icon: (p && PH_ICON[p.ph]) || '', name: p ? (PN[p.ph] || p.ph) : '—', offen: false };
 }
 const RI = { anzucht: 3, bloom: 3, flush: 4, ice: 2, ernte: 1, dry: 1 };
 // Default phase lengths (days). Single source of truth — referenced everywhere a cycle
@@ -16391,8 +16391,11 @@ function renderDash() {
           </div>`}
         </div>
         <div style="text-align:center">
-          <div style="font-size:26px">${a ? ACT_ICON[a] || '💤' : '💤'}</div>
-          <div style="font-size:10px;color:${a ? cl.hex : 'var(--text-hint)'};font-weight:600;margin-top:1px">${a ? (a === 'giess' ? 'Gießen' : a === 'giess_anz' ? 'Gießen 🌱' : ACT_NAME[a] || PN[a] || a) : 'Pause'}</div>
+          ${_phasenAnzeige(p).offen   /* (v1.5.269) stehende Pflanze nach dem Plan-Erntetag: nicht „Trocknen" oder „Pause" */
+            ? `<div style="font-size:26px">🔍</div>
+          <div style="font-size:10px;color:${cl.hex};font-weight:600;margin-top:1px">Ernte offen</div>`
+            : `<div style="font-size:26px">${a ? ACT_ICON[a] || '💤' : '💤'}</div>
+          <div style="font-size:10px;color:${a ? cl.hex : 'var(--text-hint)'};font-weight:600;margin-top:1px">${a ? (a === 'giess' ? 'Gießen' : a === 'giess_anz' ? 'Gießen 🌱' : ACT_NAME[a] || PN[a] || a) : 'Pause'}</div>`}
         </div>
       </div>
       ${!a && next ? `<div data-tour="next-water" onclick="event.stopPropagation();entryFrom='dash';openEntry('${next.iso}')" style="background:${cl.hex}0c;border:0.5px solid ${cl.hex}22;border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:10px;cursor:pointer">
