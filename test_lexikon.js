@@ -588,6 +588,23 @@ function pruef(name, bedingung, info) {
       /Wer am Ende trotzdem etwas ausprobieren will/.test(ws) && /Ein Plus an Harz oder Wirkung ist bei keinem belegt/.test(ws) && /Splitting dagegen ist eine offene Wunde/.test(ws), ws.slice(-420));
   }
 
+  // (v1.5.260) „Symptom-Diagnose-Baum": „60–70 % aller scheinbaren Mangelerscheinungen sind in Wahrheit pH-Lockouts oder
+  // Salzakkumulation" ist eine erfundene Zahl. Dazu fehlten die Bedingungen, unter denen ein Drain-Wert etwas sagt (5.1, 4.1),
+  // eine häufige Ursache (zu wenig Verdunstung, 1), und „bei jeder Auffälligkeit zuerst im Drain messen" hieß, extra zu
+  // gießen, nur um Drain zu bekommen — bei schwerem Topf der Weg zur Überwässerung (1.2, 13.1).
+  console.log('');
+  console.log('W - (v1.5.260) Diagnose-Baum ohne erfundene Zahl, mit Bedingungen');
+  {
+    const q = fs.readFileSync(path.join(__dirname, 'app.js'), 'utf8').split('\n').filter(z => !/^\s*(\/\/|\*|\/\*)/.test(z)).join('\n');
+    [/60–70\s?% aller/i, /Bei jeder Pflanzen-Auffälligkeit zuerst/i].forEach(re =>
+      pruef('Nirgends mehr: ' + re.source, !re.test(q), (q.match(new RegExp('.{0,60}' + re.source + '.{0,30}', 'i')) || [''])[0]));
+    const db = text(/^Symptom-Diagnose-Baum$/);
+    const regel = db.slice(db.indexOf('Wichtigste Regel'), db.indexOf('Wichtigste Regel') + 900);
+    pruef('Messen mit Bedingung: genug Drain, nicht extra gießen (5.1, 1.2)', /mit genug Drain, sonst sagt die Zahl nichts; ist der Topf noch schwer, nicht extra gießen, nur um zu messen/.test(regel), regel);
+    pruef('Drain-pH in gekalkter Erde, Drain-EC in organischer Spätblüte (4.1, 5.1)', /In gekalkter Erde liegt der Drain-pH normal über dem pH deines Gießwassers/.test(regel) && /steigt der Drain-EC spät in der Blüte auch ohne zu viel Dünger/.test(regel));
+    pruef('Vier Ursachen statt einer Prozentzahl, darunter zu wenig Verdunstung (13.2–13.4, 1)', /ein falscher pH, ein Überschuss, der andere Nährstoffe verdrängt, zu viel Salz im Topf oder zu wenig Verdunstung/.test(regel));
+  }
+
   console.log('');
   console.log(`Ergebnis: ${ok} OK, ${fail} Fehler`);
   process.exit(fail ? 1 : 0);

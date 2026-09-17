@@ -2,6 +2,19 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-17 — v1.5.260
+
+- **„Symptom-Diagnose-Baum": „60–70 % aller scheinbaren Mangelerscheinungen sind in Wahrheit pH-Lockouts oder
+  Salzakkumulation"** — eine erfundene Zahl, und der Kurztext von „Nährstoff-Lockout" hatte sie ein zweites Mal
+  („60–70 % aller Mangel-Symptome sind in Wahrheit Lockouts"). Jetzt stehen die Ursachen ohne Prozentzahl da, und eine vierte kommt dazu,
+  die `ANBAU.md` 1 „oft" nennt: zu wenig Verdunstung (dann kommt Calcium nicht in die jungen Blätter).
+- „Bei jeder Pflanzen-Auffälligkeit zuerst pH und EC im Drain messen" hieß, extra zu gießen, nur um Drain zu bekommen —
+  bei schwerem Topf der Weg zur Überwässerung (1.2, 13.1). Jetzt: beim nächsten Guss, mit genug Drain (5.1), und mit
+  den Bedingungen, ohne die ein Drain-Wert falsch gelesen wird — der höhere Drain-pH gekalkter Erde (4.1), der steigende
+  Drain-EC organischer Erde spät in der Blüte (5.1). „Bei jeder Auffälligkeit" passte auch nicht auf Schädlinge und
+  Schimmel; die Regel gilt jetzt für Verfärbungen und Mangelbilder.
+- `test_lexikon.js` Abschnitt W (224 Prüfungen im Lauf).
+
 ## 2026-09-17 — v1.5.259
 
 - **Drei IceFlush-Texte versprachen, was `ANBAU.md` 14 nicht trägt.** Der Infotext zum Fachbegriff empfahl „mit

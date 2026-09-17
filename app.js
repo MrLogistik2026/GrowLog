@@ -3576,7 +3576,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.259';
+const APP_VERSION = 'v1.5.260';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -32746,7 +32746,7 @@ const LEXIKON = [
       practice: 'Nur in den Bud-Mast-Wochen (grob Blüte-Woche 7-9, Peak Woche 8). In warmem Wasser <b>vorlösen</b>. Sehr niedrig dosieren (z.B. 0.2-0.3 g/L). <b>EC im Auge behalten</b> — MKP hebt ihn schnell. Im Cup-Sieger-Plan ist GiDeli MKP als Produkt angelegt, steht seit dem V3.4-Stand aber in keiner Woche mit einer Dosis — wer es fahren will, trägt sie selbst ein.',
       pitfall: 'Überdosis verbrennt schnell (P/K-Lockout, braune Spitzen) und verdrängt andere Nährstoffe. Nicht in Vegi oder Früh-Blüte einsetzen. <b>Nach dem Anmischen immer EC messen.</b>' },
     { t: 'Nährstoff-Lockout',
-      brief: 'Nährstoffe sind da — aber die Pflanze kommt nicht dran. Das unsichtbare Problem hinter vielen scheinbaren „Mängeln". 60–70% aller Mangel-Symptome sind in Wahrheit Lockouts.',
+      brief: 'Nährstoffe sind da — aber die Pflanze kommt nicht dran. Das unsichtbare Problem hinter vielen scheinbaren „Mängeln".',
       mechanism: 'Lockout bedeutet: <b>Die Nährstoffe sind im Substrat vorhanden, aber die Pflanze kann sie nicht aufnehmen</b>. Drei Hauptursachen — alle drei müssen geprüft werden:<br><br>' +
         '<b>1. pH außerhalb des Aufnahme-Fensters:</b><br>' +
         'Jeder Nährstoff hat einen <b>spezifischen pH-Bereich</b> in dem er als aufnehmbares Ion vorliegt. Außerhalb dieses Fensters fällt er chemisch aus oder bindet an andere Stoffe — er ist dann zwar physisch im Substrat, aber chemisch nicht zugänglich.<br><br>' +
@@ -34030,7 +34030,7 @@ const LEXIKON = [
     { t: 'Symptom-Diagnose-Baum',
       brief: 'Schnelle Diagnose-Hilfe: Symptom → mögliche Ursachen → erste Aktion. Bevor du behandelst, immer pH und EC prüfen.',
       mechanism: 'Viele Probleme bei Cannabis sehen sich ähnlich oder werden verwechselt. Ein systematischer Diagnose-Pfad spart Zeit und verhindert <b>Falsch-Behandlung</b>, die das Problem oft verschlimmert.<br><br>' +
-        '<b>Wichtigste Regel:</b> Bei jeder Pflanzen-Auffälligkeit zuerst <b>pH und EC im Drain messen</b>. 60–70% aller scheinbaren Mangelerscheinungen sind in Wahrheit <b>pH-Lockouts</b> oder Salzakkumulation — die Behandlung „mehr Dünger" verschlimmert sie. Erst messen, dann verstehen, dann handeln.',
+        '<b>Wichtigste Regel bei Verfärbungen und Mangelbildern:</b> Erst messen, dann verstehen, dann handeln. Miss beim nächsten Guss <b>pH und EC im Drain</b> — mit genug Drain, sonst sagt die Zahl nichts; ist der Topf noch schwer, nicht extra gießen, nur um zu messen. In gekalkter Erde liegt der Drain-pH normal über dem pH deines Gießwassers, und in organischer Erde steigt der Drain-EC spät in der Blüte auch ohne zu viel Dünger. Viele scheinbare Mangelerscheinungen sind in Wahrheit ein falscher pH, ein Überschuss, der andere Nährstoffe verdrängt, zu viel Salz im Topf oder zu wenig Verdunstung — dann kommt etwa Calcium nicht in die jungen Blätter. „Mehr Dünger" hilft in keinem dieser Fälle.',
       practice: '<b>Symptom → Ursache → Erste Aktion:</b><br>' +
         '<table style="width:100%;border-collapse:collapse;font-size:13px;margin-top:6px">' +
         '<tr style="background:rgba(255,255,255,0.04)"><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)" width="32%"><b>Symptom</b></td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)" width="34%"><b>Wahrscheinlichste Ursache</b></td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Erste Aktion</b></td></tr>' +
