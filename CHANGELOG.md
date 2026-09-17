@@ -2,6 +2,16 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-17 — v1.5.279
+
+- **Die Kachel „Erntedatum" lag draußen drei Tage hinter „Ernte in"** (beim Nachmessen von Hebel 1 #16 gefunden,
+  gegengeprüft). Die Kachel rechnete ihr Datum selbst und zählte `c.iceDays` mit — draußen gibt es keine IceFlush-Phase
+  (`iceLenFor`, v1.5.123). Gemessen: „Ernte in 10 ±5d" neben „Erntedatum 30. Sept.", der Plan erntet am 27.09. Das ist die
+  Fehlerklasse aus Abschnitt 0f — eine Rechnung, von Hand wiederholt.
+- **Jetzt** liest die Kachel `harvestCountdown` wie „Ernte in" daneben. Drinnen ändert sich nichts (dort ist `iceLenFor` gleich
+  `c.iceDays`). Der spätere Tag lag auf der sicheren Seite (`ANBAU.md` 11), war aber ein zweites Datum auf demselben Bildschirm.
+- `test_erntedatumkachel.js` (6 Prüfungen): draußen und drinnen, Kachel gegen `harvestCountdown`.
+
 ## 2026-09-17 — v1.5.278
 
 - **Am Plan-Erntetag kündigte die Startseite „Morgen: Trocknung" an, obwohl die Ernte noch offen war** (beim Nachmessen von

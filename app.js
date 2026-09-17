@@ -3592,7 +3592,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.278';
+const APP_VERSION = 'v1.5.279';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -16309,8 +16309,9 @@ function renderDash() {
       if (phVal > 0) { phSum += phVal; phCount++; }
     }
     if (phCount > 0) avgPH = (phSum / phCount).toFixed(1);
-    const hDays = anzuchtLenFor(fc) + (fc.bloomDays||PHASE_DEFAULTS.bloomDays) + (fc.flushDays||PHASE_DEFAULTS.flushDays) + (fc.iceDays||PHASE_DEFAULTS.iceDays);
-    harvestDate = fmtDE(isoPlus(fc.startDate, hDays), {day:'2-digit', month:'short'});
+    // (v1.5.279) Dieselbe Quelle wie „Ernte in" — die eigene Summe zählte draußen IceFlush-Tage mit, die es dort nicht gibt.
+    const _hcS = harvestCountdown(fc);
+    harvestDate = _hcS ? fmtDE(_hcS.harvestISO, {day:'2-digit', month:'short'}) : '—';
   }
 
   // Bei mehreren aktiven Zyklen: Label zeigen auf welchen Zyklus sich die Stats beziehen.
