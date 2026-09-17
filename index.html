@@ -4593,7 +4593,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.280';
+const APP_VERSION = 'v1.5.281';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -17193,7 +17193,7 @@ function renderDash() {
           ${fcDry ? `<div style="font-size:10px;color:var(--text-hint);margin-top:1px">Schätzung aus deinem Trocknungs-Tempo · Hebe-Test entscheidet</div>` : ''}
         </div>
         <div style="font-size:12px;color:${cl.hex};font-weight:500;white-space:nowrap">${a
-          ? (a === 'trocknen' && _stehtNochNachPlan(c, today) ? '🔍 Ernte offen' : (ACT_ICON[a] || '') + ' ' + (a === 'giess' ? 'Gießtag' : a === 'giess_anz' ? 'Anzucht' : ACT_NAME[a] || PN[a] || a))
+          ? ((a === 'ernte' || a === 'trocknen') && p && p.ernteOffen ? '🔍 Ernte offen'   /* (v1.5.281) auch am Plan-Erntetag */ : (ACT_ICON[a] || '') + ' ' + (a === 'giess' ? 'Gießtag' : a === 'giess_anz' ? 'Anzucht' : ACT_NAME[a] || PN[a] || a))
           : (fcDry ? '💧 ~' + _drybackShort(fcDry.dateIso, fcDry.days) : (next ? 'in ' + next.days + 'd' : '—'))
         }</div>
       </div>`;
@@ -17455,7 +17455,7 @@ function renderDash() {
           </div>`}
         </div>
         <div style="text-align:center">
-          ${_phasenAnzeige(p).offen   /* (v1.5.269) stehende Pflanze nach dem Plan-Erntetag: nicht „Trocknen" oder „Pause" */
+          ${(p && p.ernteOffen)   /* (v1.5.269) stehende Pflanze nach dem Plan-Erntetag, (v1.5.281) auch am Plan-Erntetag ohne Freigabe */
             ? `<div style="font-size:26px">🔍</div>
           <div style="font-size:10px;color:${cl.hex};font-weight:600;margin-top:1px">Ernte offen</div>`
             : `<div style="font-size:26px">${a ? ACT_ICON[a] || '💤' : '💤'}</div>

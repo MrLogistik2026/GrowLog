@@ -120,6 +120,22 @@ const LAGE = (opt) => `(function(){
   const e = lauf({ einsteiger: true });
   if (!e.fehlt) pruef('E: Heute-Kachel 🔍', e.heuteK && e.heuteK.val === '🔍', JSON.stringify(e.heuteK));
 
+  console.log('\nF - Datumskarte und Zyklus-Karte am Plan-Erntetag (v1.5.281)');
+  {
+    const f = lauf({ trich: [{ tageZurueck: 0, klar: 20, milchig: 74, bernstein: 6 }] });
+    if (!f.fehlt) {
+      pruef('F: Datumskarte „🔍 Ernte offen"', /🔍 Ernte offen/.test(f.dash), (f.dash.match(/Kacheln.{0,60}/) || [''])[0]);
+      pruef('F: Zyklus-Karte rechts „Ernte offen", kein Aktions-Etikett „✂️ Ernte" (die Phasen-Zeile „✂️ Ernte · Tag N" bleibt)', !/✂️ Ernte(?! · Tag)/.test(f.dash) && (f.dash.match(/Ernte offen/g) || []).length >= 2, (f.dash.match(/.{0,30}(✂️ Ernte|Ernte offen).{0,20}/g) || []).join(' | '));
+    }
+    const g = lauf({ trich: [{ tageZurueck: 1, klar: 5, milchig: 83, bernstein: 12 }] });
+    if (!g.fehlt) pruef('Reif: kein „Ernte offen"', !/Ernte offen/.test(g.dash), (g.dash.match(/.{0,30}Ernte offen.{0,20}/) || [''])[0]);
+    const eintragskopf = JSON.parse(E(`(function(){
+      const c = S.cycles[0]; openEntry(todayISO());
+      const eb = document.getElementById('entry-body'); return JSON.stringify({ kopf: eb ? eb.textContent.replace(/\\s+/g, ' ').slice(0, 400) : '' });
+    })()`));
+    pruef('Eintragskopf eines Plan-Erntetags bleibt „✂️ Ernte" (nicht über _phasenAnzeige geändert)', /✂️ Ernte/.test(eintragskopf.kopf), eintragskopf.kopf.slice(0, 160));
+  }
+
   pruef('Keine JS-Fehler im Lauf', errors.length === 0, errors.slice(0, 2).join(' | '));
   console.log(`\nErgebnis: ${ok} OK, ${fail} Fehler`);
   process.exit(fail ? 1 : 0);

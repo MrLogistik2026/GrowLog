@@ -2,6 +2,16 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-17 — v1.5.281
+
+- **Datumskarte und Zyklus-Karte zeigten am Plan-Erntetag „✂️ Ernte" unter „noch nicht schneiden"** (beim Gegenprüfen von #16
+  gefunden). v1.5.269 hatte die rechte Seite beider Karten nur für die Tage nach dem Plan-Erntetag auf „🔍 Ernte offen" gestellt;
+  am Plan-Erntetag selbst stand weiter die Schere.
+- **Jetzt** fragen beide `p.ernteOffen` (v1.5.266) — am Plan-Erntetag ohne Trichom-Freigabe und danach, solange die Pflanze steht.
+  Der Kopf eines Tageseintrags bleibt bewusst wie er ist: Über `_phasenAnzeige` hätte jeder vergangene Plan-Erntetag dauerhaft
+  „Ernte offen" gezeigt.
+- `test_erntekacheln.js` Abschnitt F: Datumskarte, Zyklus-Karte, reife Gegenprobe, Eintragskopf.
+
 ## 2026-09-17 — v1.5.280
 
 - **Die Kacheln widersprachen am Plan-Erntetag der Karte darüber** (Bewertung vom 17.09.2026, Hebel 1 #16, an v1.5.271 gemessen
