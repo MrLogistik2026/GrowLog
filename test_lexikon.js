@@ -488,6 +488,33 @@ function pruef(name, bedingung, info) {
     pruef('Substrattypen sagt dasselbe wie Sauerstoff-Sog', /Bio-Dünger sind zum Teil organisch gebunden und werden erst von Mikroorganismen aufgeschlossen/.test(st), st.slice(0, 600));
   }
 
+  // (v1.5.256) Das Lexikon empfahl Anfängern „Bio in All-Mix" — an zwei Stellen, und „Substrattypen" sagte „Einsteiger + Erde:
+  // All-Mix". Alle BioBizz-Vorlagen der App sind aber für Light-Mix gerechnet, und das BioBizz-Schema 2026 sieht für All-Mix
+  // Bio·Grow 1 ml/L vor statt 2–4 bei Light-Mix. Wer der Empfehlung folgte und „BioBizz Official 2026" lud, gab ein Vielfaches
+  // der Herstellermenge für sein Substrat (ANBAU.md 13.2: vorgedüngte Erde, Überdüngung; 15: bei Unsicherheit weniger).
+  console.log('');
+  console.log('S - (v1.5.256) Anfänger-Empfehlung passt zu den Vorlagen: Light-Mix, All-Mix nur mit weniger Bio·Grow');
+  {
+    const q = fs.readFileSync(path.join(__dirname, 'app.js'), 'utf8').split('\n').filter(z => !/^\s*(\/\/|\*|\/\*)/.test(z)).join('\n');
+    [/Bio in All-Mix/i, /Einsteiger \+ Erde: All-Mix/i, /6 Wochen Vordüngung/i, /wenig Dünger nötig bis Mitte Blüte/i, /Pufferschock/i,
+      /garantierter Ca-Mangel/i, /3-4 Wochen nur Wasser/i, /hält Wasser \+ Luft perfekt/i].forEach(re =>
+      pruef('Nirgends mehr: ' + re.source, !re.test(q), (q.match(new RegExp('.{0,60}' + re.source + '.{0,30}', 'i')) || [''])[0]));
+    const r = JSON.parse(E('JSON.stringify({ ein: FERT_PRESETS[EINSTEIGER_VORLAGE.erde].name, off: FERT_PRESETS.biobizz_official_2026.name, einMed: FERT_PRESETS[EINSTEIGER_VORLAGE.erde].medium, kons: FERT_PRESETS.biobizz_konservativ.subtitle })'));
+    const bm = text(/^Bio vs\. Mineralisch$/), st = text(/^Substrattypen$/), dp = text(/^Düngepläne \(Hersteller-Vergleich\)$/);
+    pruef('Empfehlung für Anfänger nennt die Einsteiger-Vorlage aus EINSTEIGER_VORLAGE', bm.includes('Anfänger, erste Zyklen Bio in Light-Mix mit der Einsteiger-Vorlage (' + r.ein + ')') && r.einMed === 'erde', bm.slice(bm.indexOf('Anfänger, erste'), bm.indexOf('Anfänger, erste') + 120));
+    pruef('… mittlere Erfahrung das Herstellerschema', bm.includes('Bio in Light-Mix nach dem Herstellerschema (' + r.off + ')'));
+    pruef('Goldene Regel: Light-Mix, und für All-Mix Bio·Grow höchstens 1 ml/L (BioBizz-Schema 2026)',
+      bm.includes('Im Zweifel als Anfänger: Bio in Light-Mix mit der Einsteiger-Vorlage (' + r.ein + ')') && /1 ml\/L statt 2–4 wie bei Light-Mix\. Nutzt du All-Mix, gib Bio·Grow höchstens in dieser Menge je Guss — maßgeblich ist die Menge, die der Eintrag am Gießtag nennt/.test(bm), bm.slice(-420));
+    // Die Zahl in der Warnung gegen das Blatt, das die App führt: Light·Mix-Spalte der Vorlage 2026 hat Bio·Grow 2–4.
+    const bg = JSON.parse(E('JSON.stringify(Object.values(FERT_PRESETS.biobizz_official_2026.schedule).map(w => w["Bio·Grow"]).filter(v => v > 0))'));
+    pruef('… „2–4" stimmt mit der Light·Mix-Vorlage 2026 überein', Math.min(...bg) === 2 && Math.max(...bg) === 4, bg.join(','));
+    pruef('Substrattypen: Einsteiger + Erde = Light-Mix, All-Mix mit weniger Bio·Grow', /Einsteiger \+ Erde: Light-Mix — die BioBizz-Vorlagen der App sind dafür gerechnet/.test(st) && /Bio·Grow höchstens 1 ml\/L/.test(st), st.slice(0, 700));
+    pruef('Substrattypen-Fehler: Coco-Calcium mit Bedingung ungepuffert (7.1)', /Ungepuffertes Coco ohne CalMag → Calcium-Mangel/.test(st) && /vorgepuffertes verhält sich anfangs neutraler/.test(st));
+    pruef('Substrattypen: All-Mix mit Light-Mix-Mengen = zu viel (13.2), Coco nicht vorgedüngt, aber nicht bindungsfrei (4, 7.1)',
+      /All-Mix mit den Mengen eines Light-Mix-Plans zu düngen = zu viel/.test(st) && /Nicht vorgedüngt, aber nicht bindungsfrei/.test(st));
+    pruef('Hersteller-Vergleich: konservativ für Light-Mix, wie die Vorlage selbst', /BioBizz konservativ Light-Mix Anfängerfreundlich/.test(dp) && !/BioBizz konservativ Light-Mix \/ All-Mix/.test(dp) && /Light-Mix/.test(r.kons), r.kons);
+  }
+
   console.log('');
   console.log(`Ergebnis: ${ok} OK, ${fail} Fehler`);
   process.exit(fail ? 1 : 0);

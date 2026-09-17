@@ -2,6 +2,22 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-17 — v1.5.256
+
+- **Das Lexikon empfahl Anfängern „Bio in All-Mix" — die Vorlagen der App rechnen aber mit Light-Mix.** Im Eintrag
+  „Bio vs. Mineralisch" stand es zweimal („Anfänger, erste Zyklen: Bio in All-Mix — höchste Toleranz", „Im Zweifel als
+  Anfänger: Bio in All-Mix"), in „Substrattypen" als „Einsteiger + Erde: All-Mix (verzeiht Dünger-Fehler)". Das
+  BioBizz-Schema 2026 sieht für All·Mix Bio·Grow 1 ml/L vor, für Light·Mix 2–4 (am gerenderten Blatt ein zweites Mal
+  abgelesen). Wer der Empfehlung folgte und „BioBizz Official 2026" lud, gab Bio·Grow ein Vielfaches der
+  Herstellermenge für sein Substrat — in vorgedüngter Erde der Weg zur Überdüngung (`ANBAU.md` 13.2).
+- **Jetzt:** Anfänger → Light-Mix mit der Einsteiger-Vorlage, der Name aus `EINSTEIGER_VORLAGE` (dieselbe Quelle wie
+  Assistent und Plan-Vergleich seit v1.5.245). Die Goldene Regel sagt, was bei All-Mix zu tun ist: Bio·Grow höchstens
+  1 ml/L. „Substrattypen" ohne „6 Wochen Vordüngung → wenig Dünger bis Mitte Blüte" (das All·Mix-Blatt gibt Bio·Bloom ab
+  Blühwoche 1) und ohne „mindestens 3–4 Wochen nur Wasser" (13.2 nennt die ersten Wochen, keine feste Zahl);
+  „Coco ohne CalMag = garantierter Ca-Mangel" → mit der Bedingung aus 7.1: ungepuffertes Coco.
+- Im Hersteller-Vergleich stand „BioBizz konservativ · Light-Mix / All-Mix", die Vorlage selbst sagt „Erde / Light-Mix".
+- `test_lexikon.js` Abschnitt S (180 Prüfungen im Lauf) — die Zahl „2–4" wird gegen die Vorlage 2026 geprüft.
+
 ## 2026-09-17 — v1.5.255
 
 - **„Sauerstoff-Sog" erklärte die Belüftung mit einem „mikroskopischen Vakuum", das Luft ansaugt.** Nach `ANBAU.md` 1
