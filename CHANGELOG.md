@@ -2,6 +2,16 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-17 — v1.5.269
+
+- **Eine stehende Pflanze hieß weiter „Trocknen"** (Nachtrag zu v1.5.265). Über der Karte „Nach dem Plan-Erntetag — noch nicht
+  schneiden" stand auf der Startseite „🍂 Trocknen · Tag 95", die Zyklus-Karte zeigte das Stadium „Trocknung", der Kopf des
+  Eintrags „🍂 Trocknen", und im Zeitraum, den der Kalender als Curing führt, zählte der Tag „Tag 3/28 Curing".
+- **Jetzt:** „🔍 Ernte offen · Tag 95", Stadium „Ernte" (wie am Plan-Erntetag) und der Tag des Zyklus ohne Curing-Zähler.
+  Eine Stelle entscheidet (`_phasenAnzeige`), sie liest `p.ernteOffen` aus v1.5.266. Ohne Beleg fürs Stehen bleibt alles
+  wie bisher.
+- `test_nochnichtgeerntet.js` Abschnitt K: Stadium, Startseite, Eintragskopf, Curing-Zeitraum, ohne Beleg.
+
 ## 2026-09-17 — v1.5.268
 
 - **Die Trichom-Karte urteilte ohne Messung** (beim Prüfen von v1.5.266 in der Vorschau gesehen). Unter der Plan-Zeile stand

@@ -231,6 +231,35 @@ const BLICK = `window._blick = function (c) {
     if (!j3.fehlt) pruef('Plan-Erntetag bleibt Stufe „Ernte" (Deckel 60 %)', j3.stufe === 'ernte' && j3.deckel === 60, j3.stufe);
   }
 
+  console.log('\nK - Phasen-Name und Tag einer stehenden Pflanze (v1.5.269)');
+  {
+    const anzeige = (opt) => {
+      const l = lauf(opt);
+      if (l.fehlt) return { fehlt: true };
+      return JSON.parse(E(`(function(){
+        const c = S.cycles[0], heute = todayISO(), p = phase(heute, c);
+        const stufe = stageForCycle(c, heute);
+        renderDash();
+        const dash = document.getElementById('scr-dash').textContent.replace(/\s+/g, ' ');
+        openEntry(heute);
+        const eb = document.getElementById('entry-body');
+        return JSON.stringify({ stufe, stufenName: STAGE_NAMES[stufe], tagLabel: phaseDayLabel(p), dash,
+          eintrag: eb ? eb.textContent.replace(/\s+/g, ' ') : '' });
+      })()`));
+    };
+    const k = anzeige({ nach: 2, setup: "eintrag(1).water = '1500';" });
+    if (!k.fehlt) {
+      pruef('Stadium „Ernte" statt „Trocknung"', k.stufe === 8 && k.stufenName === 'Ernte', k.stufe + ' ' + k.stufenName);
+      pruef('Startseite: „🔍 Ernte offen · Tag", kein „Trocknen · Tag"', /🔍 Ernte offen · Tag \d+/.test(k.dash) && !/Trocknen · Tag/.test(k.dash) && !/Trocknung · Tag/.test(k.dash),
+        (k.dash.match(/.{0,30}(Trockn|Ernte offen).{0,30}/) || [''])[0]);
+      pruef('Eintragskopf: „🔍 Ernte offen"', /🔍 Ernte offen/.test(k.eintrag) && !/🍂 Trocknen/.test(k.eintrag));
+    }
+    const k2 = anzeige({ nach: 9, setup: "eintrag(8).water = '1500';" });
+    if (!k2.fehlt) pruef('Im Curing-Zeitraum: „Tag N" statt „Tag x/y Curing"', /^Tag \d+$/.test(k2.tagLabel) && /🔍 Ernte offen · Tag \d+/.test(k2.dash), k2.tagLabel);
+    const k3 = anzeige({ nach: 2 });
+    if (!k3.fehlt) pruef('Ohne Beleg wie bisher: Stadium „Trocknung", „🍂 Trocknen · Tag"', k3.stufe === 9 && /🍂 Trocknen · Tag \d+/.test(k3.dash), k3.stufe);
+  }
+
   pruef('Keine JS-Fehler im Lauf', errors.length === 0, errors.slice(0, 2).join(' | '));
   console.log(`\nErgebnis: ${ok} OK, ${fail} Fehler`);
   process.exit(fail ? 1 : 0);

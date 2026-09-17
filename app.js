@@ -547,8 +547,18 @@ function phaseDayLabel(p) {
   if (p.ph === 'abhärten' && p.vegDay) return `Tag ${p.vegDay}/7 Abhärten`;
   if (p.ph === 'vegi_out' && p.vegDay) return `Tag ${p.vegDay} draußen`;
   if (p.ph === 'vorzucht' && p.vegDay) return `Tag ${p.vegDay} drinnen`;
-  if (p.ph === 'cure' && p.cureDay) return `Tag ${p.cureDay}/${p.cureTotal} Curing`;
+  if (p.ph === 'cure' && p.cureDay && !p.ernteOffen) return `Tag ${p.cureDay}/${p.cureTotal} Curing`;   // (v1.5.269) stehende Pflanze: kein Curing-Tag
   return `Tag ${p.day || '—'}`;
+}
+
+/**
+ * (v1.5.269) Phasen-Symbol und -Name für die Anzeige. Steht die Pflanze nach dem Plan-Erntetag noch (ernteOffen), heißt die
+ * Phase „Ernte offen" — vorher stand über der Karte „Nach dem Plan-Erntetag — noch nicht schneiden" die Zeile „🍂 Trocknen ·
+ * Tag 95", im Curing „Tag 3/28 Curing".
+ */
+function _phasenAnzeige(p) {
+  if (p && (p.ph === 'dry' || p.ph === 'cure') && p.ernteOffen) return { icon: '🔍', name: 'Ernte offen' };
+  return { icon: (p && PH_ICON[p.ph]) || '', name: p ? (PN[p.ph] || p.ph) : '—' };
 }
 const RI = { anzucht: 3, bloom: 3, flush: 4, ice: 2, ernte: 1, dry: 1 };
 // Default phase lengths (days). Single source of truth — referenced everywhere a cycle
@@ -950,6 +960,8 @@ function stageForCycle(cyc, iso) {
 
   if (ph === 'flush') return 7;
   if (ph === 'harvest') return 8;
+  // (v1.5.269) Steht die Pflanze nach dem Plan-Erntetag noch (ernteOffen), bleibt sie im Stadium „Ernte" statt „Trocknung".
+  if ((ph === 'dry' || ph === 'cure') && p.ernteOffen) return 8;
   if (ph === 'ice' || ph === 'dry' || ph === 'cure') return 9;
   return null;
 }
@@ -3576,7 +3588,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.268';
+const APP_VERSION = 'v1.5.269';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -16118,8 +16130,8 @@ function renderDash() {
       // „Wo10 Herbst" im Curing.
       const hideFertWk = !p || p.ph === 'harvest' || p.ph === 'dry' || p.ph === 'cure';
       const subLine = (S.beginnerMode || hideFertWk)
-        ? `${PH_ICON[p?.ph] || ''} ${p ? PN[p.ph] : '—'} · ${phaseDayLabel(p)}`
-        : `${PH_ICON[p?.ph] || ''} ${p ? PN[p.ph] : '—'} · ${phaseDayLabel(p)} · <span style="color:${cl.hex}">Wo${fertWk}</span> ${weekNames[fertWk] || ''}`;
+        ? `${_phasenAnzeige(p).icon} ${_phasenAnzeige(p).name} · ${phaseDayLabel(p)}`
+        : `${_phasenAnzeige(p).icon} ${_phasenAnzeige(p).name} · ${phaseDayLabel(p)} · <span style="color:${cl.hex}">Wo${fertWk}</span> ${weekNames[fertWk] || ''}`;
       return `<div style="display:flex;align-items:center;gap:8px;padding:3px 0">
         <span style="font-size:16px">${sym(c)}</span>
         <div style="flex:1">
@@ -27907,7 +27919,7 @@ function renderEntry(iso) {
           <div style="flex:1">
             <div style="font-size:15px;font-weight:700;color:${cl.hex};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.name}${c.location ? ' · ' + c.location : ''}</div>
             <div style="display:flex;align-items:center;gap:6px;margin-top:3px;flex-wrap:wrap">
-              <span style="background:${cl.hex}22;border:0.5px solid ${cl.hex}44;border-radius:6px;padding:2px 8px;font-size:11px;font-weight:600;color:${cl.hex}">${PH_ICON[p?.ph] || ''} ${p ? PN[p.ph] : '—'}</span>
+              <span style="background:${cl.hex}22;border:0.5px solid ${cl.hex}44;border-radius:6px;padding:2px 8px;font-size:11px;font-weight:600;color:${cl.hex}">${_phasenAnzeige(p).icon} ${_phasenAnzeige(p).name}</span>
               <span style="font-size:12px;color:var(--text-sub);font-weight:500">${phaseDayLabel(p)}</span>
               ${(() => {
                 // (v1.5.55) Pflanzen-Einstieg auf JEDEM Tag, nicht nur an Gießtagen. Die
