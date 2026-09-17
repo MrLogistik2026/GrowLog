@@ -3576,7 +3576,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.253';
+const APP_VERSION = 'v1.5.254';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -32564,33 +32564,33 @@ const LEXIKON = [
       practice: '<b>Die universelle Reihenfolge:</b><br>1. <b>Wasser</b> (idealerweise RO, sonst Leitungswasser)<br>2. <b>Silizium</b> (falls benutzt — muss ganz vorne sein, sonst flockt es)<br>3. <b>CalMag</b> (Calcium vor allem anderen — es fällt mit Phosphaten und Sulfaten aus, deshalb muss es verteilt sein, bevor die dazukommen)<br>4. <b>Basisdünger</b> (Bio·Grow, Bio·Bloom oder NPK-Mineral)<br>5. <b>Bio-Additive</b> (Root·Juice, Bio·Heaven, Alg·A·Mic, Acti·Vera)<br>6. <b>Humin-/Fulvosäuren</b> (Top·Max — immer zuletzt, verschieben pH stark)<br>7. <b>pH-Korrektur</b> auf Ziel-pH einstellen<br><br><b>Zwischen jedem Schritt kurz umrühren</b>, nicht einfach alles reinschütten.',
       pitfall: 'Wenn CalMag zu spät kommt: weiße Schlieren oder Flocken im Dünger = Ca ist verloren. Wenn Top·Max vor pH-Einstellung kommt ist OK — wenn pH-Einstellung vor Top·Max, ist die pH-Messung gleich wieder daneben.' },
     { t: 'Bio vs. Mineralisch',
-      brief: 'Zwei komplett verschiedene Dünger-Philosophien. Bio füttert das Bodenleben, Mineralisch direkt die Pflanze. Die Wahl entscheidet über Setup, Substrat und Workflow.',
-      mechanism: '<b>Organisch / Bio:</b> Du fütterst <b>nicht die Pflanze direkt</b>, sondern das <b>Bodenleben</b> — Bakterien, Pilze, Mikroorganismen, Würmer. Diese zersetzen die organischen Verbindungen aus dem Dünger und stellen sie der Pflanze in pflanzenverfügbarer Form zur Verfügung.<br><br>' +
-        'Wirkungsweise: <b>zeitverzögert</b> über Tage bis Wochen. Der Dünger ist ein Vorratsspeicher, das Bodenleben die „Verteilstation". Das macht Bio extrem <b>fehlerverzeihend</b> — Überdüngung wird vom System abgepuffert, da nicht alles sofort verfügbar ist. Aber: präzise Steuerung ist nicht möglich. Wenn man heute mehr P will, ist es übermorgen verfügbar, nicht jetzt.<br><br>' +
+      brief: 'Zwei Wege zu denselben Nährstoffen: Bei Bio-Düngern ist ein Teil organisch gebunden — beim Stickstoff der größte — und wird erst vom Bodenleben aufgeschlossen; mineralische liegen sofort gelöst vor. Die Wahl hängt am Substrat und daran, wie genau du messen willst.',
+      mechanism: '<b>Organisch / Bio:</b> Ein Teil der Nährstoffe ist organisch gebunden, beim Stickstoff der größte. Mikroorganismen im Substrat schließen ihn nach und nach auf; Stickstoff kommt so überwiegend als Nitrat bei der Pflanze an.<br><br>' +
+        'Wirkungsweise: <b>zeitverzögert</b>. Weil nicht alles sofort gelöst ist, verzeiht Bio eher — zu viel geben kann man trotzdem. Dafür lässt sich Bio schwerer fein steuern: Was du heute änderst, wirkt erst nach und nach.<br><br>' +
         '<b>Mineralisch / Synthetisch:</b> Du fütterst die Pflanze <b>direkt mit sofort verfügbaren Ionen</b>. Die Düngerlösung enthält bereits ionisierte Salze (NO₃⁻, K⁺, Ca²⁺, etc.) die die Wurzeln direkt aufnehmen.<br><br>' +
-        'Wirkungsweise: <b>direkt</b> innerhalb von Stunden. Das macht Mineral chirurgisch präzise steuerbar — wenn die Pflanze morgen anders aussehen soll, ändert man heute die Dosierung. Aber: Fehler sind sofort sichtbar (Burn, Lockout) und das System hat keine Pufferung.<br><br>' +
+        'Wirkungsweise: <b>direkt</b> — die Salze sind sofort gelöst, ihre Gesamtmenge zeigt der EC gut, welche Nährstoffe es sind, zeigt er nicht. Das macht Mineral gut steuerbar. Aber: Eine zu hohe Konzentration wirkt genauso direkt, und Coco puffert deutlich weniger als Erde, Hydro gar nicht.<br><br>' +
         '<b>Vergleichstabelle:</b><br>' +
         '<table style="width:100%;border-collapse:collapse;font-size:13px;margin-top:6px">' +
         '<tr style="background:rgba(255,255,255,0.04)"><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Eigenschaft</b></td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Bio</b></td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Mineralisch</b></td></tr>' +
-        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Wirkungseintritt</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Tage bis Wochen</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Stunden bis 1 Tag</td></tr>' +
-        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Fehlertoleranz</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Hoch — Bodenleben puffert</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Niedrig — Burn schnell sichtbar</td></tr>' +
-        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Präzise Steuerung</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Kaum möglich</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Voll steuerbar</td></tr>' +
-        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Substrat</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Lebende Erde, All-Mix, Light-Mix</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Coco, Hydro, inerte Substrate</td></tr>' +
-        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">EC-Steuerung</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Schwer messbar</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Klar messbar im Drain</td></tr>' +
-        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Geschmack-Profil</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Kein belegter Unterschied</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Kein belegter Unterschied</td></tr>' +
+        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Wirkungseintritt</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Zum Teil erst nach Umsetzung</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Sofort gelöst</td></tr>' +
+        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Fehlertoleranz</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Eher hoch — nicht alles sofort gelöst; in Coco fehlt der Puffer der Erde</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Hängt am Substrat: Erde puffert, Coco deutlich weniger, Hydro gar nicht</td></tr>' +
+        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Feine Steuerung</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Schwerer</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Gut</td></tr>' +
+        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Substrat</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Erde (Light-Mix, All-Mix, lebende Erde); BioBizz führt auch Coco·Mix</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Erde, Coco und Hydro — die Coco-Vorlagen der App sind mineralisch</td></tr>' +
+        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">EC-Messung (im Drain nur mit genug Drain)</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Erfasst organisch Gebundenes nur zum Teil</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Bildet die gelösten Salze in der Summe gut ab</td></tr>' +
+        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Geschmack</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Trocknen und Fermentieren prägen ihn stark (siehe dort)</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Trocknen und Fermentieren prägen ihn stark (siehe dort)</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Spülung</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Für den Geschmack nicht nötig — ein Vorteil ist nicht belegt</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Senkt angesammelte Salze — ein Geschmacksvorteil ist nicht belegt</td></tr>' +
-        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Anfänger-Tauglichkeit</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Sehr gut</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Anspruchsvoller</td></tr>' +
-        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Maximaler Ertrag</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Etwas niedriger</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Höher (theoretisch)</td></tr>' +
+        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Anfänger-Tauglichkeit</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Gut — verzeiht eher</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Anspruchsvoller — Fehler wirken schneller</td></tr>' +
+        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Ertrag</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Begrenzt meist von Licht und Topfgröße</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Begrenzt meist von Licht und Topfgröße</td></tr>' +
         '</table>',
       practice: '<b>Bio-Dünger-Linien (Beispiele):</b><br>' +
-        '• <b>BioBizz</b> (NL) — komplette Linie: Bio-Grow, Bio-Bloom, Top-Max, Bio-Heaven, Acti-Vera, Root-Juice, Alg-A-Mic. Anfängerfreundlich, gut dokumentiert.<br>' +
+        '• <b>BioBizz</b> (1992 in den Niederlanden gegründet, heute mit Sitz in Spanien) — komplette Linie: Bio-Grow, Bio-Bloom, Top-Max, Bio-Heaven, Acti-Vera, Root-Juice, Alg-A-Mic. Anfängerfreundlich, gut dokumentiert.<br>' +
         '• <b>Plagron Alga</b> — alga-basiert, ähnliches Konzept<br>' +
         '• <b>Greenhouse Powder Feeding</b> — pulverförmig, lange haltbar<br><br>' +
         '<b>Mineral-Dünger-Linien (Beispiele):</b><br>' +
         '• <b>Canna</b> — Coco A+B, Terra Vega/Flores, Hydro A+B, Boost. Sehr verbreitet, präzise.<br>' +
         '• <b>GHE / Terra Aquatica</b> — Flora-Serie (Micro/Grow/Bloom), 3-Komponenten-System<br>' +
         '• <b>Hesi Mineral / Hesi TNT</b> — niederländische Marke<br>' +
-        '• <b>Advanced Nutrients</b> — pH-perfect-System, automatische pH-Stabilisierung<br><br>' +
+        '• <b>Advanced Nutrients</b> — pH-Perfect: Laut Hersteller regelt sich der pH selbst. Ob er stabil bleibt, hängt an deinem Wasser und deinem Substrat — nachmessen.<br><br>' +
         '<b>Hybrid-Ansatz:</b><br>' +
         'Praktisch sehr verbreitet ist die Kombination aus mineralischer Basis + biologischen Additiven (Enzyme, Humin-Säuren, Mykorrhiza, Trichoderma). Das verbindet die Steuerbarkeit mineralischer Dünger mit biologischen Zusätzen.<br><br>' +
         'Beispiel-Hybrid: Canna Coco A+B (Mineral) + Cannazym (Enzyme, organisch) + Mykorrhiza-Pulver beim Einpflanzen + Top-Max (Humin-Säuren, organisch).<br><br>' +
@@ -32600,18 +32600,18 @@ const LEXIKON = [
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Anfänger, erste Zyklen</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Bio in All-Mix — höchste Toleranz</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Mittelmäßige Erfahrung</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Bio in Light-Mix mit besserer Kontrolle</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Erfahrener Grower</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Hybrid: Mineral + Bio-Additive</td></tr>' +
-        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Power-User, Maximalertrag</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Mineralisch in Coco oder Hydro</td></tr>' +
+        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Wer genau messen und steuern will</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Mineralisch in Coco oder Hydro</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Geschmacks-Fokussiert</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Sorgfältig trocknen und fermentieren — das zählt bei beiden Düngerarten</td></tr>' +
         '</table>',
-      pitfall: '<b>Inkompatible Mischungen:</b><br>' +
-        '• <b>Bio-Dünger in Coco</b> → Bodenleben fehlt, Bio-Wirkung halbiert. Coco ist inert. Funktioniert teilweise, aber Vorteile von Bio gehen verloren.<br>' +
-        '• <b>Mineral in Living Soil</b> → die Mikroorganismen werden über Zeit zerstört, Boden „stirbt", verliert seine Pufferfunktion<br>' +
-        '• <b>Bio + harte chemische Fungizide</b> → kill der Mykorrhiza und der Bodenmikroben, Bio-Wirkung tot<br>' +
+      pitfall: '<b>Kombinationen, bei denen du aufpassen musst:</b><br>' +
+        '• <b>Bio-Dünger in Coco</b> → BioBizz selbst gibt für Coco·Mix dasselbe Schema wie für Light·Mix. Coco hat aber deutlich weniger Austauschkapazität als Erde: Der Puffer fehlt, der pH braucht engere Kontrolle. Ungepuffertes Coco zieht außerdem Calcium aus der Lösung — dort ist Cal/Mag Grundbedarf; vorgepuffertes verhält sich anfangs neutraler. Die Coco-Vorlagen der App sind mineralisch.<br>' +
+        '• <b>Mineral in Living Soil</b> → passt nicht zum Konzept, das auf Bodenleben setzt. Dass der Boden davon „stirbt", ist so nicht belegt — aber ammoniumreicher Dünger senkt den pH, und bei zu niedrigem pH bricht die Aktivität des Bodenlebens ein<br>' +
+        '• <b>Bio + breit wirkende Fungizide</b> → Fungizide wirken gegen Pilze, und Mykorrhiza sind Pilze. Wer auf Bodenleben setzt, sollte das wissen<br>' +
         '• <b>Hybrid ohne Plan</b> → wer einfach Bio-Dünger und Mineral-Dünger zusammenmischt riskiert Wechselwirkungen und unkontrollierte EC-Werte<br><br>' +
         '<b>Häufige Fehler:</b><br>' +
         '• <b>Bio nach Mineral-Logik steuern</b> — der EC erfasst organisch gebundene Nährstoffe nur zum Teil, ein niedriger EC heißt bei Bio nicht automatisch Mangel. Maßstab sind Blatt und Wachstum<br>' +
-        '• <b>Mineral nach Bio-Logik</b> — wer nach Bio-Praxis großzügig dosiert wird sofort Burn sehen<br>' +
-        '• <b>Spülung bei Bio</b> als Standardprozedur → spült das Bodenleben mit raus<br>' +
+        '• <b>Mineral nach Bio-Logik</b> → Mineralsalze sind sofort gelöst; eine zu hohe Konzentration zieht der Pflanze Wasser ab. Das sieht aus wie Trockenheit — verbrannte, eingerollte Spitzen, welke Pflanze —, nur dass der Topf dabei nass ist<br>' +
+        '• <b>Spülung bei Bio als Pflicht verstehen</b> → für Geschmack, Asche oder Inhaltsstoffe ist kein Vorteil belegt, und in organischer Erde liefert das Substrat danach wieder nach. Als Praxis gilt sie als unschädlich, solange du bei den Spültagen deines Plans bleibst<br>' +
         '• <b>Spülen als Geschmacks-Garantie</b> → belegt ist nur, dass es Salze im Substrat senkt; ein Unterschied in Geschmack oder Asche ließ sich nicht nachweisen<br>' +
         '• <b>Marken mischen</b> innerhalb einer Linie — die Hersteller-Linien sind aufeinander abgestimmt. Canna Coco A+B funktioniert mit Canna-Boostern, nicht beliebig kombinierbar mit BioBizz<br><br>' +
         '<b>Goldene Regel:</b> Eine Philosophie wählen und konsequent durchziehen. Hybrid-Ansätze nur mit klarem Plan und ausreichend Erfahrung. Im Zweifel als Anfänger: Bio in All-Mix.' },

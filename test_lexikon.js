@@ -438,6 +438,38 @@ function pruef(name, bedingung, info) {
     pruef('CalMag von Anfang an nur mit der Bedingung weiches Wasser (3)', /Bei weichem Wasser sind Calcium und Magnesium knapp/.test(mm));
   }
 
+  // (v1.5.254) „Bio vs. Mineralisch" behauptete Zeitangaben („Stunden", „übermorgen"), einen Puffer durchs Bodenleben, einen
+  // höheren Ertrag mit Mineral, „Bio-Wirkung halbiert" in Coco und einen Boden, der „stirbt" — nichts davon trägt ANBAU.md.
+  // Der Puffer ist die Austauschkapazität der Erde (7.1), der EC zeigt nur gelöste Ionen (5), und ein Überschuss sieht aus
+  // wie Trockenheit, nur mit nassem Topf (5).
+  console.log('');
+  console.log('Q - (v1.5.254) Bio vs. Mineralisch ohne unbelegte Zusagen');
+  {
+    const q = fs.readFileSync(path.join(__dirname, 'app.js'), 'utf8').split('\n').filter(z => !/^\s*(\/\/|\*|\/\*)/.test(z)).join('\n');
+    [/Bio füttert das Bodenleben/i, /direkt<\/b> innerhalb von Stunden/i, /übermorgen verfügbar/i, /chirurgisch präzise/i, /Hoch — Bodenleben puffert/i,
+      /Stunden bis 1 Tag/i, /Höher \(theoretisch\)/i, /Bio-Wirkung (halbiert|tot)/i, /Boden „stirbt", verliert/i, /kill der Mykorrhiza/i,
+      /wird sofort Burn sehen/i, /spült das Bodenleben mit raus/i, /automatische pH-Stabilisierung/i, /BioBizz<\/b> \(NL\)/, /Power-User, Maximalertrag/i,
+      /Inkompatible Mischungen/i].forEach(re =>
+      pruef('Nirgends mehr: ' + re.source, !re.test(q), (q.match(new RegExp('.{0,60}' + re.source + '.{0,30}', 'i')) || [''])[0]));
+    const bm = text(/^Bio vs\. Mineralisch$/);
+    pruef('Mengenwort überall gleich: ein Teil organisch gebunden, beim Stickstoff der größte (6.2)',
+      /ein Teil organisch gebunden — beim Stickstoff der größte/.test(bm) && /Ein Teil der Nährstoffe ist organisch gebunden, beim Stickstoff der größte/.test(bm), bm.slice(0, 400));
+    pruef('Bio verzeiht eher — zu viel geben kann man trotzdem (5, 13.2)', /verzeiht Bio eher — zu viel geben kann man trotzdem/.test(bm));
+    pruef('Der EC zeigt die Menge, nicht die Zusammensetzung (5, 6.3)', /welche Nährstoffe es sind, zeigt er nicht/.test(bm));
+    pruef('Puffer mit Substrat-Bedingung: Erde puffert, Coco deutlich weniger, Hydro gar nicht (7.1, Regel 1)',
+      /Erde puffert, Coco deutlich weniger, Hydro gar nicht/.test(bm) && /in Coco fehlt der Puffer der Erde/.test(bm));
+    pruef('Ertrag: kein Vorsprung für Mineral, begrenzt meist von Licht und Topfgröße (8.1, 7.4)', (bm.match(/Ertrag Begrenzt meist von Licht und Topfgröße Begrenzt meist von Licht und Topfgröße/g) || []).length === 1);
+    pruef('Geschmack: Trocknen und Fermentieren statt „kein belegter Unterschied" (12)', /Geschmack Trocknen und Fermentieren prägen ihn stark/.test(bm) && !/Kein belegter Unterschied/i.test(bm));
+    pruef('EC im Drain nur mit genug Drain (5.1)', /nur mit genug Drain/.test(bm));
+    pruef('Coco: dasselbe BioBizz-Schema, aber weniger Austauschkapazität; Cal/Mag nur bei ungepuffertem Coco Grundbedarf (7.1)',
+      /BioBizz selbst gibt für Coco·Mix dasselbe Schema wie für Light·Mix/.test(bm) && /Ungepuffertes Coco zieht außerdem Calcium aus der Lösung — dort ist Cal\/Mag Grundbedarf/.test(bm));
+    pruef('Living Soil: „stirbt" nicht belegt, aber der Weg über Ammonium und pH genannt (4, 6.2)',
+      /ist so nicht belegt — aber ammoniumreicher Dünger senkt den pH/.test(bm));
+    pruef('Zu viel Mineral sieht aus wie Trockenheit — nur mit nassem Topf (5, Regel 3)', /nur dass der Topf dabei nass ist/.test(bm));
+    pruef('pH-Perfect: Herstellerangabe, nachmessen (3, 4.1)', /Laut Hersteller regelt sich der pH selbst/.test(bm) && /hängt an deinem Wasser und deinem Substrat — nachmessen/.test(bm));
+    pruef('BioBizz-Herkunft nach Herstellerseite', /1992 in den Niederlanden gegründet, heute mit Sitz in Spanien/.test(bm));
+  }
+
   console.log('');
   console.log(`Ergebnis: ${ok} OK, ${fail} Fehler`);
   process.exit(fail ? 1 : 0);

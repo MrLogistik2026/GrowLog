@@ -2,6 +2,26 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-17 — v1.5.254
+
+- **Der Eintrag „Bio vs. Mineralisch" behauptete, was `ANBAU.md` nicht trägt:** Mineral wirke „innerhalb von Stunden",
+  „chirurgisch präzise", Bio sei „übermorgen verfügbar"; Bio sei „extrem fehlerverzeihend", weil „das Bodenleben puffert";
+  Mineral bringe „höheren Ertrag"; „Bio-Dünger in Coco → Bio-Wirkung halbiert"; „Mineral in Living Soil → Boden stirbt";
+  „Spülung bei Bio spült das Bodenleben mit raus". Nichts davon ist belegt.
+- **Jetzt aus den Mechanismen:** Bei Bio ist ein Teil organisch gebunden, beim Stickstoff der größte, und wird erst
+  aufgeschlossen (6.2, 5.1) — deshalb verzeiht Bio eher, zu viel geben kann man trotzdem (13.2). Den Puffer liefert die
+  Austauschkapazität des Substrats: Erde puffert, Coco deutlich weniger, Hydro gar nicht (7.1). Der EC zeigt die
+  Gesamtmenge gelöster Salze, nicht die Zusammensetzung (5, 6.3), im Drain nur mit genug Drain (5.1). Den Ertrag
+  begrenzen meist Licht und Topfgröße (8.1, 7.4). Ein Überschuss mineralischer Salze sieht aus wie Trockenheit, nur mit
+  nassem Topf (5).
+- **Coco:** BioBizz gibt für Coco·Mix dasselbe Schema wie für Light·Mix; Coco hat aber weniger Austauschkapazität, und
+  ungepuffertes Coco zieht Calcium aus der Lösung (7.1). **Living Soil:** Dass der Boden „stirbt", ist so nicht belegt —
+  belegt ist der Weg über Ammonium, das den pH senkt, und die Mikroflora, die bei niedrigem pH einbricht (4, 6.2).
+- **BioBizz „(NL)"** → 1992 in den Niederlanden gegründet, heute mit Sitz in Spanien (Herstellerseite
+  biobizz.com/about-biobizz). „Advanced Nutrients: automatische pH-Stabilisierung" → Herstellerangabe; ob der pH stabil
+  bleibt, hängt an Wasser und Substrat — nachmessen (3, 4.1).
+- `test_lexikon.js` Abschnitt Q (155 Prüfungen im Lauf).
+
 ## 2026-09-17 — v1.5.253
 
 - **Die Mobilität der Nährstoffe stand an drei Stellen anders als in `ANBAU.md` 6.1.** Die Tabelle im Eintrag „NPK", die
