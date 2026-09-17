@@ -52,8 +52,14 @@ const dateien = fs.readdirSync(DIR).filter((d) => /^test_.*\.js$/.test(d)).sort(
 if (!dateien.length) { console.error('Keine passende Testdatei.'); process.exit(2); }
 
 const SCHLECHT = /^\s*FEHL\b|FEHLER:|Uncaught|TypeError|ReferenceError|SyntaxError/;
+// Zeitkritische Tests laufen danach, einzeln. test_dauerdruecken zählt Wiederholungen, die ein Timer in 1200 ms auslöst;
+// neben fünf parallelen jsdom-Läufen bekam der Timer keine Rechenzeit, und der Test war rot, obwohl die App stimmte
+// (gemessen am 17.09.2026: unter Last rot in beiden Zonen, einzeln grün an v1.5.264 und v1.5.265).
+const EINZELN = new Set(['test_dauerdruecken.js']);
 const jobs = [];
-for (const z of zonen) for (const d of dateien) jobs.push({ zone: z, datei: d });
+const einzeln = [];
+for (const z of zonen) for (const d of dateien) (EINZELN.has(d) ? einzeln : jobs).push({ zone: z, datei: d });
+const gesamt = jobs.length + einzeln.length;
 
 const start = Date.now();
 const ergebnisse = [];
@@ -78,33 +84,35 @@ function lauf(job) {
   });
 }
 
+function melde(r) {
+  ergebnisse.push(r);
+  fertig++;
+  const rot = r.code !== 0 || r.schlecht.length > 0;
+  if (rot) console.log(`ROT  ${r.zone} ${r.datei} (exit ${r.code}) — ${r.schlecht[0] || r.letzte}`);
+  else if (process.stdout.isTTY) process.stdout.write(`\r${fertig}/${gesamt} grün bis hier …`);
+}
+
 async function arbeiter() {
-  while (naechster < jobs.length) {
-    const job = jobs[naechster++];
-    const r = await lauf(job);
-    ergebnisse.push(r);
-    fertig++;
-    const rot = r.code !== 0 || r.schlecht.length > 0;
-    if (rot) console.log(`ROT  ${r.zone} ${r.datei} (exit ${r.code}) — ${r.schlecht[0] || r.letzte}`);
-    else if (process.stdout.isTTY) process.stdout.write(`\r${fertig}/${jobs.length} grün bis hier …`);
-  }
+  while (naechster < jobs.length) melde(await lauf(jobs[naechster++]));
 }
 
 (async () => {
-  console.log(`${dateien.length} Testdateien × ${zonen.length} Zeitzonen = ${jobs.length} Läufe, ${parallel} gleichzeitig · Start ${new Date().toLocaleTimeString('de-DE')}`);
+  console.log(`${dateien.length} Testdateien × ${zonen.length} Zeitzonen = ${gesamt} Läufe, ${parallel} gleichzeitig`
+    + `${einzeln.length ? ` (${einzeln.length} zeitkritische danach einzeln)` : ''} · Start ${new Date().toLocaleTimeString('de-DE')}`);
   await Promise.all(Array.from({ length: parallel }, arbeiter));
+  for (const job of einzeln) melde(await lauf(job));
   if (process.stdout.isTTY) process.stdout.write('\n');
   const rot = ergebnisse.filter((r) => r.code !== 0 || r.schlecht.length > 0);
   const dauer = Math.round((Date.now() - start) / 1000);
   const langsam = ergebnisse.slice().sort((a, b) => b.ms - a.ms).slice(0, 3).map((r) => `${r.datei} ${Math.round(r.ms / 1000)} s`).join(', ');
   console.log(`Ende ${new Date().toLocaleTimeString('de-DE')} · ${Math.floor(dauer / 60)} min ${dauer % 60} s · langsamste: ${langsam}`);
   if (rot.length) {
-    console.log(`\n${rot.length} von ${jobs.length} Läufen ROT:`);
+    console.log(`\n${rot.length} von ${gesamt} Läufen ROT:`);
     for (const r of rot) {
       console.log(`  ${r.zone} ${r.datei} (exit ${r.code})`);
       for (const z of r.schlecht.slice(0, 5)) console.log('    ' + z.trim());
     }
     process.exit(1);
   }
-  console.log(`ALLE ${jobs.length} LÄUFE GRÜN`);
+  console.log(`ALLE ${gesamt} LÄUFE GRÜN`);
 })();
