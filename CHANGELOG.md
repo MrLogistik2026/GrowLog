@@ -2,6 +2,55 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-19 — v1.5.291
+
+**Sieben Befunde der Prüfer an v1.5.290, vier davon schlechter als der Vorgänger.** Wieder vor dem Hochladen
+gemessen. Der rote Faden: Die Rettung war richtig gebaut, aber sie hat sich in den Weg gestellt — und an drei
+Stellen behauptet, etwas sei gespeichert, das nicht gespeichert war.
+
+- **Ein Import unter der Speichersperre meldete „Geladen ✓" und war nach dem Neustart weg.** Gemessen:
+  Hauptstand beschädigt und groß, kein Platz zum Aufheben → Sperre. Der Start-Hinweis riet wörtlich zum Import.
+  Der Nutzer importierte seine Sicherung, sah seine Zyklen und die Erfolgsmeldung — `saveS` hatte die Sperre
+  abgefangen und still nichts geschrieben. Nach dem Neustart: 0 Einträge (v1.5.289 hatte in derselben Lage
+  111 behalten). Wer die Backup-Datei danach gelöscht hat, stand ohne alles da. **Jetzt** gibt `saveS` zurück,
+  ob geschrieben wurde; der Import sagt „⚠️ Import noch nicht gespeichert — deine Datei steht auf dem
+  Bildschirm, gespeichert ist sie noch nicht", bietet den Download des alten Stands an und speichert danach
+  von selbst.
+- **Die Sperre sperrte auch dann, wenn es nichts zu retten gab.** Ein `growsmart_v4` mit dem Inhalt `{`,
+  `null` oder `[]` hielt die ganze App an — darin steckt kein einziger Eintrag. Gemessen: drei Sitzungen
+  hintereinander verloren. **Jetzt** wird nur gesperrt, wenn im Rohtext wirklich etwas steckt (mindestens
+  200 Zeichen und ein `"entries"` oder `"cycles"` darin).
+- **Die Warnung wurde von der nächsten Erfolgsmeldung überschrieben.** Es gibt nur ein Meldungsfeld, die
+  letzte gewinnt — „Geladen ✓" löschte „Nicht gespeichert". **Jetzt** steht ein rotes Band am oberen Rand,
+  solange die App nicht speichert: „GrowSmart speichert gerade nichts. Dein alter Stand liegt nur noch hier —
+  tippe, um ihn herunterzuladen." Antippbar, führt direkt zum Download.
+- **Der Download unter der Sperre stempelte den falschen Stand.** Lagen zwei Schäden vor (einer aufgehoben,
+  einer gesperrt), galt nach dem Download des gesperrten auch der aufgehobene als gesichert — und wurde beim
+  nächsten Schaden ohne Rückfrage überschrieben. **Jetzt** wird nur markiert, was wirklich heruntergeladen wurde.
+- **Beim nächsten Start stand der Vorfall im Präsens da.** Solange die alte Datei nicht heruntergeladen war,
+  meldete die App bei **jedem** Start „Beim Start ließ sich dein gespeicherter Stand nicht benutzen … deine
+  Einträge seit der Kopie fehlen" — auch wenn der Hauptstand längst wieder gesund war. Wer das las, griff nach
+  einer Sicherungskopie und verlor dabei wirklich Daten. **Jetzt** ist die Wiedervorlage ein eigener Text:
+  „🛟 Ein alter Stand liegt noch aufgehoben … Mit deinen heutigen Daten ist alles in Ordnung."
+- **`cycles: null` brach den Start weiterhin ab.** So ein Stand parst sauber und ist ein Objekt — er galt
+  deshalb als benutzbar, und `loadS` stürzte danach in `S.cycles.length` ab, mitten im Startskript: kein Bild,
+  keine Kopie, kein Hinweis. **Jetzt** prüft `_standMangel` auch die Form (`cycles` muss eine Liste sein,
+  `entries` ein Objekt — beides nur, wenn das Feld überhaupt da ist, damit ein frischer Stand gültig bleibt),
+  und der Aufruf von `loadS` steht in einem `try`, damit kein Zustand den Start je ganz abbricht.
+- **Eine leere Tageskopie schlug die reichere zweite Kopie.** Es gewann der erste lesbare Ersatzstand, nicht
+  der inhaltsreichste: Mit leerer Tageskopie und 111 Einträgen in der zweiten Kopie startete die App mit 0.
+  **Jetzt** gewinnt der Hauptstand, wenn er benutzbar ist, und sonst der inhaltsreichste Ersatz — auch ein
+  voller `growsmart_v3` schlägt eine leere Kopie.
+- Dazu: `restoreAutoBackup` meldete unter der Sperre „Sicherungskopie konnte nicht gelesen werden", obwohl die
+  Kopie einwandfrei war. Jetzt nennt sie den wahren Grund.
+
+`test_rettung.js` wächst auf **71 Prüfungen**; 11 davon fallen auf v1.5.290 um, 21 auf v1.5.289.
+
+**Daraus zu lernen:** Ein Schutz, der das Speichern anhält, wird selbst zur Gefahr, sobald er den Weg zur
+Rettung mit blockiert — und zwar genau dann, wenn der Nutzer ihn geht. **Jede Sperre braucht eine Tür**, und
+die Meldung darüber muss stehen bleiben, statt in derselben Zeile wie die nächste Erfolgsmeldung zu wohnen.
+
+
 ## 2026-09-19 — v1.5.290
 
 - **Ein unbrauchbarer Hauptstand ließ die App still leer starten — und wurde dann überschrieben.**

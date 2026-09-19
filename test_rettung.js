@@ -222,6 +222,113 @@ function pruef(name, bedingung, info) {
       !/lassen sich fehlende Einträge noch retten/.test(html) && /von Hand retten/.test(html));
   }
 
+  // ===== J bis Q: die Befunde der Prüfer an v1.5.290 (behoben in v1.5.291) =====
+
+  console.log('\nJ - Import unter der Sperre behauptet keinen Erfolg');
+  {
+    const fremd = JSON.stringify({ cycles: [], entries: {}, _fremd: 1 });
+    const a = await load({ [SK]: KAPUTT, [RET]: fremd, [RET_INFO]: JSON.stringify({ am: Date.now(), heruntergeladen: false }) });
+    pruef('J1 die Sperre steht', a.E("typeof _speicherSperre !== 'undefined' && _speicherSperre") === true);
+    // Import nachstellen: genau der Zweig, der nach dem Lesen der Datei läuft
+    a.E("S = JSON.parse(" + JSON.stringify(JSON.stringify(JSON.parse(SICHERUNG))) + "); const ok = saveS(); window.__importOk = ok;");
+    pruef('J2 saveS meldet den Fehlschlag', a.E('window.__importOk') === false, a.E('window.__importOk'));
+    pruef('J3 der Hauptstand ist unverändert', a.get(SK) === KAPUTT);
+    pruef('J4 kein "Geladen ✓"', !a.toasts.some(t => /Geladen ✓/.test(t)), a.toasts);
+    pruef('J5 die Sperre meldet sich', a.toasts.some(t => /Nicht gespeichert/.test(t)), a.toasts);
+  }
+
+  console.log('\nK - Ein Rohtext ohne Rettbares sperrt die App nicht');
+  {
+    const fremd = JSON.stringify({ cycles: [], entries: {}, _fremd: 1 });
+    for (const [name, wert] of [['{', '{'], ['null', 'null'], ['[]', '[]']]) {
+      const a = await load({ [SK]: wert, [BAK]: kopieText(gestern()), [RET]: fremd, [RET_INFO]: JSON.stringify({ am: Date.now(), heruntergeladen: false }) }, { warten: 400 });
+      const gesperrt = a.E("typeof _speicherSperre !== 'undefined' && _speicherSperre");
+      a.E("S.entries['2026-09-19'] = { note: 'darf gespeichert werden' }; saveS()");
+      pruef(`K "${name}": keine Sperre, und es wird gespeichert`,
+        gesperrt === false && (a.get(SK) || '').indexOf('darf gespeichert werden') > 0, { gesperrt, len: (a.get(SK) || '').length });
+    }
+    // Gegenprobe: ein Rohtext MIT Inhalt sperrt weiterhin
+    const b = await load({ [SK]: KAPUTT, [BAK]: kopieText(gestern()), [RET]: fremd, [RET_INFO]: JSON.stringify({ am: Date.now(), heruntergeladen: false }) });
+    pruef('K4 ein Rohtext mit Einträgen sperrt weiter', b.E("typeof _speicherSperre !== 'undefined' && _speicherSperre") === true);
+  }
+
+  console.log('\nL - Der Download stempelt nur den Stand, den er geladen hat');
+  {
+    const alterSchaden = '{"cycles":[],"entries":{"2026-01-01":{"cycleData":{}}},"_alt":1}' + 'x'.repeat(300);
+    const a = await load({
+      [SK]: KAPUTT, [BAK]: kopieText(gestern()),
+      [RET]: alterSchaden, [RET_INFO]: JSON.stringify({ am: Date.now(), heruntergeladen: false }),
+    });
+    a.window.customConfirm = () => Promise.resolve(true);
+    pruef('L1 die Sperre steht (Platz ist belegt)', a.E("typeof _speicherSperre !== 'undefined' && _speicherSperre") === true);
+    a.E('_rettungHerunterladen()');
+    await a.warte(150);
+    pruef('L2 die Sperre ist gefallen', a.E("typeof _speicherSperre !== 'undefined' && _speicherSperre") === false);
+    const info = JSON.parse(a.get(RET_INFO) || 'null');
+    pruef('L3 der geparkte, andere Stand gilt weiter als NICHT heruntergeladen', info && info.heruntergeladen === false, info);
+  }
+
+  console.log('\nM - Ein stehendes Band sagt, dass nicht gespeichert wird');
+  {
+    const fremd = JSON.stringify({ cycles: [], entries: {}, _fremd: 1 });
+    const a = await load({ [SK]: KAPUTT, [BAK]: kopieText(gestern()), [RET]: fremd, [RET_INFO]: JSON.stringify({ am: Date.now(), heruntergeladen: false }) });
+    a.window.customConfirm = () => Promise.resolve(true);
+    pruef('M1 das Band steht', a.E("!!document.getElementById('sperrband')"));
+    pruef('M2 und sagt, was zu tun ist', /herunterzuladen/.test(a.E("(document.getElementById('sperrband')||{}).textContent || ''")));
+    a.E('_rettungHerunterladen()');
+    await a.warte(150);
+    pruef('M3 nach dem bestätigten Download ist es weg', a.E("!document.getElementById('sperrband')"));
+  }
+
+  console.log('\nN - Beim nächsten Start ist der Vorfall Vergangenheit');
+  {
+    const a = await load({
+      [SK]: JSON.stringify(JSON.parse(SICHERUNG)), [BAK]: kopieText(gestern()),
+      [RET]: KAPUTT, [RET_INFO]: JSON.stringify({ am: Date.now() - 86400000, heruntergeladen: false, grund: 'nicht lesbar', geladen: 'kopie', zyklen: 1, eintraege: 111 }),
+    });
+    pruef('N1 der gesunde Hauptstand ist geladen', a.E('Object.keys(S.entries).length') === 111);
+    pruef('N2 der Hinweis ist eine Wiedervorlage', a.dialoge.some(d => /liegt noch aufgehoben/.test(d)), a.dialoge[0]);
+    pruef('N3 und behauptet nicht, dass heute etwas fehlt',
+      !a.dialoge.some(d => /Was du danach eingetragen hast, fehlt hier/.test(d)), a.dialoge[0]);
+    pruef('N4 sondern sagt, dass alles in Ordnung ist', a.dialoge.some(d => /alles in Ordnung/.test(d)));
+  }
+
+  console.log('\nO - cycles:null ist ein beschädigter Stand, kein Absturz');
+  {
+    const kaputtesObjekt = JSON.stringify({ cycles: null, entries: {}, _disclaimerAcceptedAt: '2026-05-01' });
+    const a = await load({ [SK]: kaputtesObjekt, [BAK]: kopieText(gestern()) });
+    pruef('O1 Start ohne JS-Fehler', a.errors.length === 0, a.errors[0]);
+    pruef('O2 die Kopie ist geladen', a.E('S.cycles.length') === 1 && a.E('Object.keys(S.entries).length') === 111,
+      { z: a.E('S.cycles.length'), e: a.E('Object.keys(S.entries).length') });
+    pruef('O3 der beschädigte Stand ist aufgehoben', a.get(RET) === kaputtesObjekt);
+    pruef('O4 und die App sagt es', a.dialoge.some(d => /Sicherungskopie geladen/.test(d)), a.dialoge[0]);
+    // Gegenprobe: ein frischer, leerer Stand gilt NICHT als beschädigt
+    const b = await load({ [SK]: JSON.stringify({ _disclaimerAcceptedAt: '2026-05-01' }) }, { warten: 300 });
+    pruef('O5 ein leerer Stand ohne cycles gilt als gesund', b.get(RET) === null);
+  }
+
+  console.log('\nP - Der inhaltsreichste Ersatzstand gewinnt');
+  {
+    const leereKopie = JSON.stringify({ cycles: [], entries: {}, _bakDate: '2026-09-18' });
+    const a = await load({ [SK]: KAPUTT, [BAK]: leereKopie, [BAK2]: kopieText('2026-09-16') });
+    pruef('P1 nicht die leere Tageskopie, sondern die mit 111 Einträgen',
+      a.E('Object.keys(S.entries).length') === 111, a.E('Object.keys(S.entries).length'));
+    const b = await load({ [SK]: KAPUTT, [BAK]: leereKopie, growsmart_v3: JSON.stringify(JSON.parse(SICHERUNG)) });
+    pruef('P2 auch ein voller alter Schlüssel schlägt die leere Kopie',
+      b.E('Object.keys(S.entries).length') === 111, b.E('Object.keys(S.entries).length'));
+  }
+
+  console.log('\nQ - Die Sicherungskopie meldet unter der Sperre nicht "nicht lesbar"');
+  {
+    const fremd = JSON.stringify({ cycles: [], entries: {}, _fremd: 1 });
+    const a = await load({ [SK]: KAPUTT, [BAK]: kopieText(gestern()), [RET]: fremd, [RET_INFO]: JSON.stringify({ am: Date.now(), heruntergeladen: false }) }, { antwort: true });
+    const vorher = a.toasts.length;
+    a.E("restoreAutoBackup('growsmart_v4_bak')");
+    await a.warte(120);
+    pruef('Q1 keine falsche Meldung über eine kaputte Kopie',
+      !a.toasts.slice(vorher).some(t => /nicht gelesen werden/.test(t)), a.toasts.slice(vorher));
+  }
+
   console.log('\n' + ok + ' OK, ' + fail + ' FEHL');
   process.exit(fail ? 1 : 0);
 })();
