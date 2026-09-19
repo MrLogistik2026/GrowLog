@@ -3592,7 +3592,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.289';
+const APP_VERSION = 'v1.5.290';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -4187,19 +4187,251 @@ function renderCompareBody(a, b, cmp) {
 // =====================================================================
 //  [SEKTION]: LOAD / SAVE
 // =====================================================================
-function loadS() {
+
+/**
+ * (v1.5.290) RETTUNGSPLATZ — ein Stand, den die App nicht benutzen kann, wird nicht überschrieben.
+ *
+ * Gemessen (Hebel 3, Störfall 1 und 4): `loadS` hatte ein `try` um die ganze Schleife und ein leeres
+ * `catch`. Ein abgeschnittener `growsmart_v4` beendete damit die Suche — die Tageskopie wurde nie
+ * versucht, die App startete leer, und der erste Speichervorgang (die Zustimmung zum
+ * Haftungsausschluss lässt sich nicht umgehen) schrieb den leeren Stand über die beschädigten Bytes.
+ * Danach war weder der Grow noch eine Chance auf Reparatur von Hand übrig.
+ *
+ * Drei Dinge passieren jetzt: Der Rohtext wird unverändert aufgehoben, die App lädt die beste
+ * Tageskopie, und sie sagt beim Start, was los war. Passt der Rohtext nirgends hin, **speichert die
+ * App nicht** (`_speicherSperre`), bis der Nutzer ihn heruntergeladen hat — denn dann ist
+ * `growsmart_v4` der einzige Ort, an dem er noch liegt.
+ */
+const RETTUNG_KEY = 'growsmart_v4_rettung';
+const RETTUNG_INFO_KEY = 'growsmart_v4_rettung_info';
+let _speicherSperre = false;   // true: growsmart_v4 hält einen Stand, der nirgends sonst liegt
+let _sperreRoh = null;         // genau dieser Stand, für den Download
+let _startHinweis = null;      // was beim Start passiert ist — _startHinweiseZeigen sagt es dem Nutzer
+let _rotIndicator = null;
+
+function _rettungInfo() {
+  try { const i = JSON.parse(localStorage.getItem(RETTUNG_INFO_KEY) || 'null'); return _istObjekt(i) ? i : null; } catch (e) { return null; }
+}
+function _rettungInfoSchreiben(info) {
+  try { localStorage.setItem(RETTUNG_INFO_KEY, JSON.stringify(info)); } catch (e) { /* dann erscheint der Hinweis beim nächsten Start erneut */ }
+}
+
+/**
+ * Legt einen Rohtext unverändert auf den Rettungsplatz. true = liegt jetzt dort (oder lag schon).
+ * Ein noch nicht heruntergeladener Stand wird nie verdrängt — sonst nähme der zweite Schaden dem
+ * ersten den letzten Platz. Liegt derselbe Text schon dort, ist nichts zu tun: Das ist der Fall
+ * „App-Update bei bleibendem Schaden", der sonst bei jedem Start neu sperren würde.
+ */
+function _rettungParken(roh, info) {
   try {
-    for (const k of ['growsmart_v4','growsmart_v3','growsmart_v2','growsmart_data']) {
-      const s = localStorage.getItem(k);
-      if (s) {
-        S = Object.assign({
-          cycles: [], entries: {}, products: [], weekSchedule: {},
-          potSize: 11, presetKey: null, mixOrder: null, mixInfo: null,
-        }, JSON.parse(s));
-        break;
-      }
+    const alt = localStorage.getItem(RETTUNG_KEY);
+    if (alt === roh) return true;
+    const altInfo = _rettungInfo();
+    if (alt && !(altInfo && altInfo.heruntergeladen)) return false;
+    localStorage.setItem(RETTUNG_KEY, roh);
+    _rettungInfoSchreiben(Object.assign({ am: Date.now(), laenge: roh.length, heruntergeladen: false, aufgehoben: true }, info));
+    return true;
+  } catch (e) { return false; }
+}
+
+/**
+ * Der einzige Weg, `growsmart_v4` zu schreiben. Wirft wie `localStorage.setItem` — die Aufrufer
+ * behalten ihre Behandlung für „Speicher voll". Unter der Sperre wirft er mit `name`
+ * `'SpeicherSperre'`, und der Nutzer erfährt es **jedes Mal**: Eine Drosselung hat in der Messung
+ * genau die Meldung verschluckt, auf die es ankam.
+ */
+function _skSchreiben(text) {
+  if (_speicherSperre) {
+    _speicherSperreMelden();
+    const e = new Error('Speichersperre'); e.name = 'SpeicherSperre';
+    throw e;
+  }
+  return _hauptstandSchreiben(text);
+}
+
+function _speicherSperreMelden() {
+  _speicherStatusRot(true);
+  toast('⚠ Nicht gespeichert: Dein alter Stand ist noch nirgends aufgehoben. Lade ihn zuerst herunter (Einstellungen → Daten & Sicherheit), danach speichert GrowSmart wieder.', 6000);
+}
+
+/** Roter Punkt oben rechts — er bleibt stehen, solange nicht gespeichert wird. Gegenstück zu _flashSaved. */
+function _speicherStatusRot(an) {
+  try {
+    if (!_rotIndicator) {
+      _rotIndicator = document.createElement('div');
+      _rotIndicator.style.cssText = 'position:fixed;top:calc(env(safe-area-inset-top) + 14px);right:14px;width:8px;height:8px;border-radius:50%;background:var(--red);opacity:0;transition:opacity 0.3s;pointer-events:none;z-index:9999;box-shadow:0 0 8px var(--red)';
+      document.body.appendChild(_rotIndicator);
     }
-  } catch (e) {}
+    _rotIndicator.style.opacity = an ? '1' : '0';
+  } catch (e) { /* vor dem ersten Bild gibt es noch keinen body */ }
+}
+
+/** Warum ein gelesener Stand nicht benutzbar ist — null, wenn er es ist. */
+function _standMangel(d) {
+  if (!_istObjekt(d)) return 'kein GrowSmart-Stand';
+  return null;
+}
+
+/**
+ * Hauptstand, dann die Tageskopien, dann die Schlüssel älterer Versionen. Der erste benutzbare
+ * gewinnt. Bis v1.5.289 beendete der erste unlesbare Schlüssel die ganze Suche.
+ */
+function _standLesen() {
+  const kandidaten = [SK, BAK_KEY, BAK2_KEY, 'growsmart_v3', 'growsmart_v2', 'growsmart_data'];
+  let haupt = null;
+  for (const k of kandidaten) {
+    let roh = null;
+    try { roh = localStorage.getItem(k); } catch (e) { return { k: null, d: null, haupt: null }; }
+    if (!roh) continue;
+    let d = null, mangel;
+    try { d = JSON.parse(roh); mangel = _standMangel(d); } catch (e) { mangel = 'nicht lesbar'; }
+    if (!mangel) return { k, d, haupt };
+    if (k === SK) haupt = { roh, mangel };
+  }
+  return { k: null, d: null, haupt };
+}
+
+/** Hält fest, was beim Start schieflief, und hebt den unbrauchbaren Hauptstand auf. */
+function _standVorfall(g) {
+  const kopie = g.k === BAK_KEY || g.k === BAK2_KEY;
+  if (!g.haupt && !kopie) return;
+  const info = {
+    grund: g.haupt ? g.haupt.mangel : 'fehlte',
+    geladen: kopie ? 'kopie' : (g.d ? 'alt' : 'leer'),
+    quelle: g.k, kopieVom: g.kopieVom || null,
+    zyklen: (S.cycles || []).length,
+    eintraege: _istObjekt(S.entries) ? Object.keys(S.entries).length : 0,
+    version: APP_VERSION,
+  };
+  if (g.haupt) {
+    info.aufgehoben = _rettungParken(g.haupt.roh, info);
+    if (!info.aufgehoben) { _speicherSperre = true; _sperreRoh = g.haupt.roh; }
+  }
+  _startHinweis = info;
+}
+
+function _vorfallText(i) {
+  const zahl = (n, eins, mehr) => `${n} ${n === 1 ? eins : mehr}`;
+  const umfang = `${zahl(i.zyklen, 'Zyklus', 'Zyklen')}, ${zahl(i.eintraege, 'Eintrag', 'Einträge')}`;
+  const anfang = i.grund === 'fehlte'
+    ? 'Beim Start fehlte dein gespeicherter Stand.'
+    : `Beim Start ließ sich dein gespeicherter Stand nicht benutzen (${i.grund}).`;
+  // Ehrlich bleiben: GrowSmart kann diese Datei selbst nicht wieder einlesen (sie ist ja beschädigt).
+  // Das Versprechen „daraus retten wir dir die Einträge" hielt in der Messung keiner der drei Wege.
+  const alterStand = i.grund === 'fehlte' ? ''
+    : (i.aufgehoben === false
+      ? '\n\nWichtig: Dein alter Stand ist noch nirgends aufgehoben, im Browser ist kein Platz dafür. Lade ihn jetzt herunter. Bis dahin speichert GrowSmart nichts, damit er nicht überschrieben wird.'
+      : '\n\nDein alter Stand ist nicht gelöscht, sondern aufgehoben. Lade ihn herunter und bewahre die Datei auf: GrowSmart kann sie selbst nicht wieder einlesen, aber aus ihr lassen sich Einträge von Hand retten.');
+  if (i.geladen === 'kopie') {
+    const weitere = (_backupInfo().kopien || []).find(k => k.key !== i.quelle && k.entries > i.eintraege);
+    return { titel: '🛟 Sicherungskopie geladen',
+      text: `${anfang} GrowSmart hat deshalb die automatische Sicherungskopie vom ${i.kopieVom ? fmtDE(i.kopieVom) : '(ohne Datum)'} geladen: ${umfang}.\n\nWas du danach eingetragen hast, fehlt hier. Fotos sind in der Kopie nie enthalten.`
+        + (weitere ? `\n\nEine zweite Kopie vom ${weitere.date ? fmtDE(weitere.date) : '(ohne Datum)'} hat ${weitere.entries} Einträge. Du findest sie unter Einstellungen → Daten & Sicherheit.` : '')
+        + alterStand };
+  }
+  if (i.geladen === 'alt') {
+    return { titel: '🛟 Ältere Daten geladen',
+      text: `${anfang} GrowSmart hat deshalb die Daten einer früheren App-Version geladen: ${umfang}. Neuere Einträge fehlen hier.${alterStand}` };
+  }
+  return { titel: '⚠️ GrowSmart startet leer',
+    text: `${anfang} Eine Sicherungskopie gibt es in diesem Browser nicht, deshalb startet die App leer.${alterStand}\n\nHast du eine Backup-Datei (growsmart_….json)? Dann lade sie unter Einstellungen → Daten & Sicherheit → „Import".` };
+}
+
+/** Nach dem ersten Bild und nach dem Haftungsausschluss: sagen, was beim Start passiert ist. */
+async function _startHinweiseZeigen() {
+  if (document.querySelector('[data-disclaimer]')) { setTimeout(_startHinweiseZeigen, 700); return; }
+  const gespeichert = _rettungInfo();
+  // Ein aufgehobener Stand meldet sich bei jedem Start, bis er heruntergeladen ist — „Später" verschiebt nur.
+  const offen = gespeichert && !gespeichert.heruntergeladen;
+  const i = _startHinweis || (offen ? gespeichert : null);
+  _startHinweis = null;
+  if (!i) return;
+  const t = _vorfallText(i);
+  const mitStand = i.grund !== 'fehlte';
+  const ok = await customConfirm(t.titel, t.text,
+    mitStand ? '💾 Alten Stand herunterladen' : 'Sicherungskopien ansehen', 'var(--green)', mitStand ? 'Später' : 'Verstanden');
+  if (ok && mitStand) _rettungHerunterladen();
+  else if (ok) { try { S._setUI = S._setUI || {}; S._setUI.data = true; goTo('set'); } catch (e) { /* dann öffnet der Nutzer die Einstellungen selbst */ } }
+  else if (_speicherSperre) _speicherStatusRot(true);
+}
+
+/**
+ * Lädt den aufgehobenen Stand herunter — und fragt danach nach, ob die Datei wirklich da ist.
+ * Der Klick allein genügt nicht: Im Standalone-Modus auf iOS kann er ohne Datei enden, und dann
+ * hätte das Aufheben der Sperre den letzten Ort überschrieben, an dem der Stand noch liegt.
+ */
+async function _rettungHerunterladen() {
+  let roh = _speicherSperre ? _sperreRoh : null;
+  if (!roh) { try { roh = localStorage.getItem(RETTUNG_KEY); } catch (e) { roh = null; } }
+  if (!roh) { toast('Kein aufgehobener Stand vorhanden'); return; }
+  const name = 'growsmart_alter-stand_' + todayISO() + '.json';
+  try {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([roh], { type: 'application/json' }));
+    a.download = name;
+    a.click();
+  } catch (e) {
+    toast('⚠ Herunterladen ging nicht (' + ((e && e.message) || e) + '). Dein alter Stand bleibt aufgehoben — versuch es noch einmal.', 6000);
+    return;
+  }
+  const da = await customConfirm('Datei angekommen?', `Liegt „${name}" jetzt in deinen Downloads?\n\nErst wenn du das bestätigst, speichert GrowSmart wieder normal — vorher wäre dein alter Stand nirgends mehr.`,
+    'Ja, liegt vor', 'var(--green)', 'Nein');
+  if (!da) {
+    toast('Gut. Dein alter Stand bleibt aufgehoben. Du kommst jederzeit über Einstellungen → Daten & Sicherheit wieder dran.', 6000);
+    return;
+  }
+  if (_speicherSperre) { _speicherSperre = false; _sperreRoh = null; _speicherStatusRot(false); }
+  const i = _rettungInfo();
+  if (i) { i.heruntergeladen = true; _rettungInfoSchreiben(i); }
+  toast('💾 Gespeichert — bewahre die Datei auf, sie enthält deinen alten Stand.', 4000);
+  if (tab === 'set' && typeof renderSet === 'function') renderSet();
+}
+
+async function _rettungVerwerfen() {
+  const i = _rettungInfo();
+  const ok = await customConfirm('Aufgehobenen Stand löschen?',
+    (i && i.heruntergeladen)
+      ? 'Du hast ihn heruntergeladen. Im Browser wird er nicht mehr gebraucht.'
+      : 'Du hast ihn noch NICHT heruntergeladen. Nach dem Löschen ist er endgültig weg.',
+    'Löschen');
+  if (!ok) return;
+  try { localStorage.removeItem(RETTUNG_KEY); localStorage.removeItem(RETTUNG_INFO_KEY); } catch (e) { /* egal */ }
+  toast('Aufgehobener Stand gelöscht');
+  if (tab === 'set' && typeof renderSet === 'function') renderSet();
+}
+
+/** Die Karte in den Einstellungen — der Weg zum aufgehobenen Stand, auch Tage später. */
+function _rettungKarte() {
+  let roh = null;
+  try { roh = localStorage.getItem(RETTUNG_KEY); } catch (e) { roh = null; }
+  if (!roh && !_speicherSperre) return '';
+  const i = _rettungInfo() || {};
+  const wann = (i.am && !_speicherSperre) ? fmtDE(_localISO(new Date(i.am))) : '';
+  const kb = Math.max(1, Math.round(((_speicherSperre ? _sperreRoh : roh) || '').length / 1024));
+  const status = _speicherSperre
+    ? '<b>Noch nirgends aufgehoben — GrowSmart speichert nichts, bis du ihn heruntergeladen hast.</b>'
+    : (i.heruntergeladen ? 'Heruntergeladen ✓' : '<b>Noch nicht heruntergeladen.</b>');
+  const knopf = 'flex:1;background:var(--card2);border:0.5px solid var(--border);border-radius:8px;padding:8px;font-size:11px;color:var(--text-sub);cursor:pointer;font-family:var(--font)';
+  return `<div style="background:var(--card);border:0.5px solid rgba(212,160,23,0.4);border-left:2px solid var(--yellow);border-radius:10px;padding:10px 12px;margin-bottom:8px">
+    <div style="font-size:12px;color:var(--text-sub);line-height:1.5">🛟 <b>Alter Stand aufgehoben</b>${wann ? ' (' + wann + ')' : ''}, ${kb} KB. ${status}<br><span style="font-size:10px;color:var(--text-hint)">Er ließ sich beim Start nicht benutzen. GrowSmart kann die Datei selbst nicht wieder einlesen — aufbewahren hilft trotzdem, weil sich Einträge daraus von Hand retten lassen.</span></div>
+    <div style="display:flex;gap:6px;margin-top:8px">
+      <button onclick="_rettungHerunterladen()" style="${knopf}">💾 Herunterladen</button>
+      ${roh && !_speicherSperre ? `<button onclick="_rettungVerwerfen()" style="${knopf}">🗑 Löschen</button>` : ''}
+    </div>
+  </div>`;
+}
+
+function loadS() {
+  const gelesen = _standLesen();
+  if (gelesen.d) {
+    gelesen.kopieVom = gelesen.d._bakDate || null;
+    delete gelesen.d._bakDate;
+    S = Object.assign({
+      cycles: [], entries: {}, products: [], weekSchedule: {},
+      potSize: 11, presetKey: null, mixOrder: null, mixInfo: null,
+    }, gelesen.d);
+  }
+  _standVorfall(gelesen);
 
   if (!S.products || !S.products.length) S.products = [];
   if (!S.weekSchedule) S.weekSchedule = {};
@@ -5181,7 +5413,8 @@ function saveS() {
       saveS._lastUndo = now;
     }
     // (v1.5.288) Bei vollem Speicher macht der Hauptstand sich Platz, statt still zu scheitern.
-    const wie = _hauptstandSchreiben(JSON.stringify(S));
+    // (v1.5.290) Und er ist gesperrt, solange ein unbrauchbarer Stand nur dort liegt.
+    const wie = _skSchreiben(JSON.stringify(S));
     if (wie === false) {
       const err = new Error('Speicher voll');
       err.name = 'QuotaExceededError';
@@ -5209,6 +5442,8 @@ function saveS() {
       _flashSaved();
     }
   } catch (e) {
+    // (v1.5.290) Die Sperre meldet sich selbst — hier bleibt nur der rote Punkt, der stehen bleibt.
+    if (e && e.name === 'SpeicherSperre') { _speicherStatusRot(true); return; }
     // Quota exceeded is the critical case we need to surface to the user
     if (e && (e.name === 'QuotaExceededError' || e.code === 22)) {
       // Rate-limit: only warn once per 5min (same throttle as maybeWarnStorageQuota)
@@ -5532,7 +5767,7 @@ async function restoreAutoBackup(key) {
   try {
     const b = k.d;
     delete b._bakDate;
-    localStorage.setItem(SK, JSON.stringify(b));
+    _skSchreiben(JSON.stringify(b));
     toast('Sicherungskopie geladen — App wird neu geladen');
     setTimeout(() => window.location.reload(), 800);
   } catch (e) {
@@ -7239,7 +7474,7 @@ function doUndo() {
       if (!c.skippedDays) c.skippedDays = [];
       delete c.dayOffset; delete c.offsetDate;
     });
-    try { localStorage.setItem(SK, JSON.stringify(S)); } catch (e2) {}
+    try { _skSchreiben(JSON.stringify(S)); } catch (e2) { if (e2 && e2.name !== 'SpeicherSperre') toast('⚠ Rückgängig gemacht, gespeichert wurde es nicht — der Speicher ist voll.'); }
     vibrate();
     toast(`↩ Rückgängig (${undoStack.length} übrig)`);
     _rerender();
@@ -7266,7 +7501,7 @@ function doRedo() {
       if (!c.skippedDays) c.skippedDays = [];
       delete c.dayOffset; delete c.offsetDate;
     });
-    try { localStorage.setItem(SK, JSON.stringify(S)); } catch (e2) {}
+    try { _skSchreiben(JSON.stringify(S)); } catch (e2) { if (e2 && e2.name !== 'SpeicherSperre') toast('⚠ Wiederhergestellt, gespeichert wurde es nicht — der Speicher ist voll.'); }
     vibrate();
     toast(`↪ Wiederhergestellt (${redoStack.length} übrig)`);
     _rerender();
@@ -21849,6 +22084,8 @@ function renderSet() {
     ${_setAccordionHeader('data', '💾', 'Daten & Sicherheit', (() => {
       // (v1.4.83) Fälligkeit schon am zugeklappten Kopf zeigen — wer die Sektion nie öffnet,
       // erführe sonst nie, dass sein letztes echtes Backup Wochen her ist.
+      const ri = _rettungInfo();
+      if (_speicherSperre || (ri && !ri.heruntergeladen)) return '<span style="color:var(--yellow)">🛟 Alter Stand aufgehoben — bitte herunterladen</span> · Backup, Export';
       const bi = _backupInfo();
       // (v1.5.288) Ein Fehlschlag bei der Sicherungskopie gehört schon an den zugeklappten Kopf —
       // sonst erfährt ihn nur, wer die Sektion öffnet, und das tut niemand ohne Anlass.
@@ -21862,6 +22099,7 @@ function renderSet() {
     <!-- 5. DATEN (Export/Backup) -->
     <div class="card" style="gap:8px;display:flex;flex-direction:column">
       <div class="sect-head">💾 Daten sichern</div>
+      ${_rettungKarte()}
       ${(() => {
         // (v1.4.83) Ehrlicher Sicherungs-Status: Wie alt ist das letzte echte Backup, und was
         // schützt die automatische Kopie tatsächlich? Ohne diese Zeile merkt niemand, dass er
@@ -32748,10 +32986,12 @@ function addPhotoFromDash(cId) {
         if (!S.entries[editISO].cycleData[cId].photos) S.entries[editISO].cycleData[cId].photos = [];
         S.entries[editISO].cycleData[cId].photos.push(compressed);
         try {
-          localStorage.setItem(SK, JSON.stringify(S));
+          _skSchreiben(JSON.stringify(S));
         } catch (err) {
           S.entries[editISO].cycleData[cId].photos.pop();
-          if (err && (err.name === 'QuotaExceededError' || err.code === 22)) {
+          if (err && err.name === 'SpeicherSperre') {
+            /* die Sperre hat sich schon selbst gemeldet */
+          } else if (err && (err.name === 'QuotaExceededError' || err.code === 22)) {
             customConfirm('💾 Speicher voll!', 'Der Browser-Speicher reicht nicht mehr für weitere Fotos. Bitte lösche einige alte Fotos oder exportiere ein Backup.', 'Verstanden', 'var(--orange)');
           } else {
             toast('⚠ Foto konnte nicht gespeichert werden');
@@ -32801,10 +33041,12 @@ function addPhoto(cId) {
         // saveS() will redo the write (with orphan cleanup & undo push) — a small
         // cost in exchange for proper user-visible quota handling.
         try {
-          localStorage.setItem(SK, JSON.stringify(S));
+          _skSchreiben(JSON.stringify(S));
         } catch (err) {
           S.entries[editISO].cycleData[cId].photos.pop(); // rollback in-memory state
-          if (err && (err.name === 'QuotaExceededError' || err.code === 22)) {
+          if (err && err.name === 'SpeicherSperre') {
+            /* die Sperre hat sich schon selbst gemeldet */
+          } else if (err && (err.name === 'QuotaExceededError' || err.code === 22)) {
             customConfirm(
               '💾 Speicher voll!',
               'Der Browser-Speicher reicht nicht mehr für weitere Fotos. Bitte lösche einige alte Fotos oder exportiere ein Backup (JSON) und starte danach frisch. Dein aktuelles Foto wurde nicht gespeichert.',
@@ -37122,6 +37364,9 @@ if (!S._disclaimerAcceptedAt) {
 } else {
   goTo('dash');
 }
+// (v1.5.290) Was beim Laden passiert ist (Kopie geladen, alter Stand aufgehoben), sagt die App jetzt —
+// nach dem Haftungsausschluss, damit nicht zwei Dialoge übereinanderliegen.
+setTimeout(_startHinweiseZeigen, 300);
 const _perfTotal = _perfMark('first-render');
 // Sichtbarer Toast wenn Init länger als 800ms dauert — sonst still bleiben.
 // Hilft uns zu sehen ob Optimierungen tatsächlich wirken.

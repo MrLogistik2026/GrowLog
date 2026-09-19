@@ -2,6 +2,49 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-19 — v1.5.290
+
+- **Ein unbrauchbarer Hauptstand ließ die App still leer starten — und wurde dann überschrieben.**
+  Gemessen (Hebel 3, Störfall 1, 2 und 4; am 19.09.2026 an v1.5.287 unverändert nachgemessen): `loadS` hatte
+  ein `try` um die ganze Schlüssel-Schleife und ein leeres `catch`. Ein abgeschnittener `growsmart_v4` beendete
+  damit die Suche — die Tageskopie wurde **nie versucht**, obwohl sie danebenlag. Die App zeigte die
+  Willkommensseite ohne ein Wort über Beschädigung oder Kopie, und der erste Speichervorgang (die Zustimmung
+  zum Haftungsausschluss lässt sich nicht umgehen) schrieb einen leeren Stand über die beschädigten Bytes.
+  Danach war weder der Grow noch eine Chance auf Reparatur von Hand übrig. Dasselbe galt, wenn `growsmart_v4`
+  fehlte und ein gültiger `growsmart_v3` dahinterlag.
+- **Jetzt** liest `_standLesen` der Reihe nach Hauptstand → Tageskopie → zweite Kopie → `growsmart_v3`/`v2`/
+  `data` und nimmt den ersten **benutzbaren**. Ein unlesbarer Schlüssel beendet die Suche nicht mehr.
+- **Der unbrauchbare Rohtext wird aufgehoben** (`growsmart_v4_rettung`), unverändert, bevor irgendetwas
+  geschrieben wird. In den Einstellungen steht er als Karte mit „💾 Herunterladen" und „🗑 Löschen", und der
+  zugeklappte Kopf „Daten & Sicherheit" sagt „🛟 Alter Stand aufgehoben — bitte herunterladen".
+- **Die App sagt beim Start, was passiert ist** — nach dem Haftungsausschluss, damit nicht zwei Dialoge
+  übereinanderliegen: „Beim Start ließ sich dein gespeicherter Stand nicht benutzen (nicht lesbar). GrowSmart
+  hat deshalb die automatische Sicherungskopie vom 18.09. geladen: 1 Zyklus, 111 Einträge. Was du danach
+  eingetragen hast, fehlt hier." Gibt es keine Kopie, heißt es „⚠️ GrowSmart startet leer" mit dem Weg über
+  Import. Kommen die Daten aus `growsmart_v3`, heißt es „🛟 Ältere Daten geladen".
+- **Passt der Rohtext nirgends hin, speichert die App nicht mehr** (`_speicherSperre`), bis der Nutzer ihn
+  heruntergeladen hat — denn dann ist `growsmart_v4` der einzige Ort, an dem er noch liegt. Die Sperre ist
+  **laut**: Meldung bei jedem Versuch ohne Drosselung, dazu ein roter Punkt oben rechts, der stehen bleibt
+  (Gegenstück zum grünen nach dem Speichern).
+- **Die Sperre fällt erst nach bestätigtem Download**, nicht schon beim Klick: „Liegt „growsmart_alter-stand_
+  ….json" jetzt in deinen Downloads?" Ein Klick, der im Standalone-Modus ohne Datei endet, hätte sonst den
+  letzten Ort freigegeben, an dem der Stand noch liegt.
+- **Kein neuer Schlag bei bleibendem Schaden:** Liegt derselbe Rohtext schon auf dem Rettungsplatz, wird nicht
+  erneut gesperrt — sonst hätte jedes App-Update von vorn gesperrt.
+- **Alle Schreibzugriffe auf `growsmart_v4` laufen jetzt über einen Weg** (`_skSchreiben`): Speichern,
+  Rückgängig, Wiederherstellen, die beiden Foto-Proben und das Laden einer Sicherungskopie. Vorher schrieben
+  fünf Stellen direkt — an der Sperre und an der Platz-Rangfolge aus v1.5.289 vorbei. Rückgängig und
+  Wiederherstellen melden einen Fehlschlag jetzt auch.
+- **Ehrlich geblieben:** Der Dialog verspricht nicht mehr, dass sich „fehlende Einträge noch retten lassen".
+  Gemessen konnte keiner der drei Wege (App-Import, `wiederherstellung.html`, Start) die Datei wieder
+  einlesen. Jetzt steht da: „GrowSmart kann sie selbst nicht wieder einlesen, aber aus ihr lassen sich
+  Einträge von Hand retten."
+- `test_rettung.js` (44 Prüfungen, beide Zeitzonen): alle fünf Formen eines kaputten Schlüssels, Kopie /
+  ältere Version / gar nichts, Sperre mit und ohne bestätigten Download, gesunder Stand als Gegenprobe,
+  App-Update bei bleibendem Schaden, die Karte in den Einstellungen. 21 davon fallen auf v1.5.289 um.
+  Im Browser bei 375 px durchgespielt.
+
+
 ## 2026-09-19 — v1.5.289
 
 **Fehler in v1.5.288, von drei Prüfern gemessen, bevor die Version auf dem Handy war.** Zwei davon machten
