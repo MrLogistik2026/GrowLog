@@ -137,7 +137,7 @@ function pruef(name, bedingung, info) {
     const html = a.E('document.getElementById("scr-set").innerHTML');
     pruef('B8 Einstellungen bieten beide Kopien zum Laden an',
       (html.match(/restoreAutoBackup\(/g) || []).length === 2, (html.match(/restoreAutoBackup\('[^']+'\)/g) || []));
-    pruef('B9 Einstellungen sagen, dass eine Kopie mehr enthält', /enthält deutlich mehr als dein jetziger Stand/.test(html));
+    pruef('B9 Einstellungen sagen, dass eine Kopie mehr enthält', /enthält deutlich mehr: /.test(html));
   }
 
   // ================= I · Ist nur für eine Kopie Platz, bleibt die Tageskopie trotzdem frisch =================
@@ -190,7 +190,7 @@ function pruef(name, bedingung, info) {
     pruef('D3 der Fehlschlag ist vermerkt', a.E('_autoBackup._fehler') === 'voll', a.E('_autoBackup._fehler'));
     a.E('goTo("set"); S._setUI = S._setUI || {}; S._setUI.data = true; renderSet()');
     const html = a.E('document.getElementById("scr-set").innerHTML');
-    pruef('D4 die Einstellungen sagen es', /Zuletzt ließ sich keine neue Kopie anlegen/.test(html));
+    pruef('D4 die Einstellungen sagen es', /Für eine neue Sicherungskopie war kein Platz mehr/.test(html));
     pruef('D5 und behaupten nicht mehr, eine werde beim nächsten Speichern angelegt',
       !/wird beim nächsten Speichern angelegt/.test(html));
     pruef('D6 der Hinweis steht schon am zugeklappten Kopf', /Sicherungskopie nicht angelegt/.test(html));
@@ -239,7 +239,7 @@ function pruef(name, bedingung, info) {
     a.window.eval('window.__r = restoreAutoBackup("growsmart_v4_bak2")');
     await new Promise(r => setTimeout(r, 60));
     pruef('G2 der Dialog nennt Datum und Umfang der gewählten Kopie',
-      !!dialog && /16\.09/.test(dialog) && /1 Zyklus und 111 Einträgen/.test(dialog), dialog);
+      !!dialog && /16\.09/.test(dialog) && /1 Zyklus mit 111 Einträgen/.test(dialog), dialog);
     pruef('G3 danach steht die Kopie im Hauptstand', a.beschreibe(SK).eintraege === 111, a.beschreibe(SK));
     pruef('G4 ohne das Kopie-Datum im Stand', !/_bakDate/.test(a.get(SK)));
     pruef('G5 kein Fachwort "JSON-Backup" mehr im Dialog', !/JSON-Backup/.test(dialog));
@@ -252,6 +252,92 @@ function pruef(name, bedingung, info) {
     const a = await load({ [SK]: stand, [BAK]: k1, [BAK2]: k2 }, { datum: '2026-09-17' });
     const own = a.E('_storageInfo().ownBytes');
     pruef('H1 ownBytes enthält alle drei Schlüssel', own >= stand.length + k1.length + k2.length, { own, soll: stand.length + k1.length + k2.length });
+  }
+
+  // ===== J bis O: die fünf Fehler, die die Prüfer in v1.5.288 gemessen haben (behoben in v1.5.289) =====
+
+  console.log('\nJ - Platz freigeben nimmt die inhaltsärmere Kopie, nie die reichere');
+  {
+    // Genau der Verlustfall: die jüngste Kopie ist leer, die zweite Generation hält den Grow.
+    const leerKopie = JSON.stringify({ cycles: [], entries: {}, _bakDate: '2026-09-17' });
+    const k2 = kopieText('2026-09-16');
+    const quota = SK.length + LEER.length + BAK.length + leerKopie.length + BAK2.length + k2.length + 100;
+    const a = await load({ [SK]: LEER, [BAK]: leerKopie, [BAK2]: k2 }, { datum: '2026-09-17', quota });
+    pruef('J1 Start ohne JS-Fehler', a.errors.length === 0, a.errors[0]);
+    a.E(`S.entries['2026-09-17'] = { note: 'z'.repeat(400) }; saveS()`);
+    pruef('J2 die Kopie mit dem Grow steht noch', a.beschreibe(BAK2).eintraege === 111, a.beschreibe(BAK2));
+    // Die leere Kopie ist nur 50 Zeichen groß — sie freizugeben reicht nicht, also kommt sie zurück
+    // und der Eintrag bleibt ungespeichert. Genau so ist die Regel gemeint: Ein Tag ist weniger wert
+    // als der ganze Grow. Vor v1.5.289 wäre stattdessen die Kopie mit den 111 Einträgen gefallen.
+    pruef('J3 die leere Kopie ist wieder da, nichts wurde umsonst geopfert', a.get(BAK) !== null, a.beschreibe(BAK));
+    pruef('J4 und der Nutzer erfährt, dass nicht gespeichert wurde',
+      a.toasts.some(t => /Speicher voll/.test(t)), a.toasts);
+    // Gegenprobe am Mechanismus: Wäre der Stand nicht deutlich kleiner, dürfte die reiche Kopie weichen.
+    pruef('J5 eine Kopie mit deutlich mehr Inhalt ist nie Kandidat',
+      a.E('_deutlichKleiner(_kopieUmfang(S), {zyklen:1,eintraege:111,daten:111})') === true);
+  }
+
+  console.log('\nK - Bringt das Freigeben nichts, kommen die Kopien zurück');
+  {
+    const stand = standText(), k1 = kopieText('2026-09-17'), k2 = kopieText('2026-09-16');
+    const quota = SK.length + stand.length + BAK.length + k1.length + BAK2.length + k2.length + 100;
+    const a = await load({ [SK]: stand, [BAK]: k1, [BAK2]: k2 }, { datum: '2026-09-17', quota });
+    pruef('K1 Start ohne JS-Fehler', a.errors.length === 0, a.errors[0]);
+    const vorher = a.beschreibe(SK).len;
+    a.E(`S.entries['2026-09-17'] = S.entries['2026-09-17'] || {}; S.entries['2026-09-17'].note = 'q'.repeat(200000); saveS()`);
+    pruef('K2 der Eintrag passt nicht — der Hauptstand bleibt, wie er war', a.beschreibe(SK).len === vorher, a.beschreibe(SK).len);
+    pruef('K3 die jüngste Kopie ist zurück', a.beschreibe(BAK).eintraege === 111, a.beschreibe(BAK));
+    pruef('K4 die zweite Kopie ist zurück', a.beschreibe(BAK2).eintraege === 111, a.beschreibe(BAK2));
+    pruef('K5 und der Nutzer hört davon', a.toasts.some(t => /Speicher voll/.test(t)), a.toasts);
+  }
+
+  console.log('\nL - Knapper Platz erzeugt keine zwei gleichen Kopien');
+  {
+    const stand = standText(), kopie = kopieText('2026-09-16');
+    const quota = SK.length + stand.length + BAK.length + kopie.length + 2000;
+    const a = await load({ [SK]: stand, [BAK]: kopie }, { datum: '2026-09-17', quota });
+    pruef('L1 Start ohne JS-Fehler', a.errors.length === 0, a.errors[0]);
+    a.E('saveS()');
+    pruef('L2 die Tageskopie ist frisch', a.beschreibe(BAK).datum === '2026-09-17', a.beschreibe(BAK));
+    pruef('L3 es gibt keine zweite, inhaltsgleiche Kopie', a.get(BAK2) === null || a.get(BAK2) !== a.get(BAK), a.beschreibe(BAK2));
+  }
+
+  console.log('\nM - Ein alter Fehlschlag bleibt nicht stehen, wenn die Kopie von heute da ist');
+  {
+    const a = await load({ [SK]: standText(), [BAK]: kopieText('2026-09-17') }, { datum: '2026-09-17' });
+    a.E("_autoBackup._fehler = 'voll'; _autoBackup._fehlerAm = Date.now(); saveS()");
+    pruef('M1 der Fehlschlag ist weg', a.E('_autoBackup._fehler') === null, a.E('_autoBackup._fehler'));
+    a.E('goTo("set"); S._setUI = S._setUI || {}; S._setUI.data = true; renderSet()');
+    const html = a.E('document.getElementById("scr-set").innerHTML');
+    pruef('M2 und die Einstellungen widersprechen sich nicht mehr',
+      !/kein Platz mehr/.test(html) && /Kopie vom .* laden/.test(html));
+  }
+
+  console.log('\nN - Die reichste Kopie steht oben');
+  {
+    const leerKopie = JSON.stringify({ cycles: [], entries: {}, _bakDate: '2026-09-17' });
+    const a = await load({ [SK]: LEER, [BAK]: leerKopie, [BAK2]: kopieText('2026-09-16') }, { datum: '2026-09-17' });
+    a.E('goTo("set"); S._setUI = S._setUI || {}; S._setUI.data = true; renderSet()');
+    const html = a.E('document.getElementById("scr-set").innerHTML');
+    const knoepfe = html.match(/restoreAutoBackup\('([^']+)'\)/g) || [];
+    pruef('N1 der erste Rettungsknopf lädt die Kopie mit dem Grow',
+      knoepfe[0] === "restoreAutoBackup('growsmart_v4_bak2')", knoepfe);
+    pruef('N2 der Knopf nennt die Zahl der Einträge', /laden \(111 Einträge\)/.test(html));
+  }
+
+  console.log('\nO - Weicht die letzte Kopie, wird das jedes Mal gesagt');
+  {
+    const stand = standText(), kopie = kopieText('2026-09-17');
+    const quota = SK.length + stand.length + BAK.length + kopie.length + 2000;
+    const a = await load({ [SK]: stand, [BAK]: kopie }, { datum: '2026-09-17', quota });
+    a.E(`S.entries['2026-09-17'] = S.entries['2026-09-17'] || {}; S.entries['2026-09-17'].note = 'w'.repeat(20000); saveS()`);
+    pruef('O1 der Eintrag ist gespeichert', /w{20000}/.test(a.get(SK)));
+    pruef('O2 die letzte Kopie ist weg', a.get(BAK) === null && a.get(BAK2) === null);
+    pruef('O3 und die App sagt genau das', a.toasts.some(t => /Es gibt jetzt keine mehr/.test(t)), a.toasts);
+    const vorher = a.toasts.length;
+    a.E(`S.entries['2026-09-18'] = { note: 'w'.repeat(20000) }; saveS()`);
+    pruef('O4 auch beim zweiten Mal, ohne Drosselung',
+      a.toasts.length > vorher || a.beschreibe(SK).len > 0, { vorher, nachher: a.toasts.length });
   }
 
   console.log('\n' + ok + ' OK, ' + fail + ' FEHL');

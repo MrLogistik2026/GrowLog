@@ -2,6 +2,54 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-19 — v1.5.289
+
+**Fehler in v1.5.288, von drei Prüfern gemessen, bevor die Version auf dem Handy war.** Zwei davon machten
+die Lage schlechter als vorher. Sie stehen hier einzeln, weil jeder für sich rücknehmbar sein muss.
+
+- **Die Platzfreigabe opferte die falsche Kopie.** `_hauptstandSchreiben` löschte bei vollem Speicher immer
+  zuerst `growsmart_v4_bak2` — ohne hinzusehen, was darin steht. Genau im Fall, für den die zweite Generation
+  gebaut wurde (leerer Start: die jüngste Kopie ist leer, die zweite hält den ganzen Grow), traf das den Grow.
+  Gemessen: BAK2 mit 111 Einträgen weg, die leere Kopie blieb stehen; am Folgetag rückte die leere nach, und der
+  Verlust war nicht mehr erkennbar. **Jetzt** weicht die Kopie mit dem **geringeren Inhalt** zuerst, bei gleichem
+  Inhalt die ältere — und eine Kopie, die deutlich mehr enthält als der zu schreibende Stand, weicht überhaupt
+  nicht. Dann bleibt der Eintrag ungespeichert: Ein Tag ist weniger wert als der ganze Grow.
+- **Es konnten beide Kopien fallen, ohne dass etwas gespeichert wurde.** Passte der Stand auch nach dem Löschen
+  nicht, waren am Ende keine Kopien mehr da **und** der Eintrag nicht gesichert — v1.5.287 hatte in derselben
+  Lage seine Kopie behalten. **Jetzt** merkt sich die App den Inhalt jeder entfernten Kopie und schreibt sie
+  zurück, wenn das Freigeben nichts gebracht hat.
+- **Weicht die letzte Kopie, wird das jedes Mal gesagt.** Die Meldung hing an einer Fünf-Minuten-Drosselung;
+  gemessen liefen drei Freigaben und genau ein Hinweis. Für den Fall „danach gibt es keine Kopie mehr" gilt die
+  Drosselung nicht mehr, und der Text sagt es beim Namen statt von „einer älteren Sicherungskopie" zu sprechen.
+- **Die Rotation zerstörte die vorige Generation, bevor die neue Kopie stand.** Bei knappem Speicher blieben zwei
+  byte-gleiche Kopien zurück, die zweite Generation war ersatzlos weg. **Jetzt** wird erst die neue Tageskopie
+  geschrieben und danach die bisherige nachgerückt — scheitert das Nachrücken, steht wenigstens die frische Kopie.
+- **Ein alter Fehlschlag blieb stehen.** Lag die Kopie von heute längst vor, kehrte `_autoBackup` zurück, ohne den
+  Vermerk zu löschen: Die Einstellungen warnten „keine Kopie angelegt" über einem Knopf, der genau diese Kopie
+  anbot — bis zum nächsten Tag. **Jetzt** löscht die frühe Rückkehr den Vermerk mit.
+
+Dazu vier Texte, die etwas anderes sagten als die Wirklichkeit:
+
+- **„Es gibt noch keine automatische Sicherungskopie"** stand da, nachdem gerade zwei gelöscht worden waren
+  („noch keine" heißt „gab es nie"). Jetzt: „Zurzeit ist keine automatische Sicherungskopie da. Der Platz reichte
+  nicht — deshalb musste sie weichen, damit dein Eintrag gespeichert werden konnte."
+- **„der Speicher ist voll" stand zwei Zeilen unter „2 % belegt".** Beides stimmte: Die Prozentzahl misst den
+  ganzen Browser-Speicher, die Kopie scheitert an der viel kleineren Grenze für diese App. Jetzt heißt es „Für eine
+  neue Sicherungskopie war kein Platz mehr", mit genau diesem Hinweis dahinter.
+- **Im Verlustfall stand die leere Kopie als erster Rettungsknopf.** Die Liste war nach Alter sortiert. Jetzt nach
+  Inhalt — die reichste zuerst, und der Knopf nennt die Zahl der Einträge.
+- **Der Lade-Dialog sagte nicht, was man verliert**, und drohte mit Fotos, die es nicht gab. Jetzt nennt er beide
+  Seiten („Die Kopie vom 18.09. enthält 1 Zyklus mit 111 Einträgen. In der App stehen gerade 1 Zyklus mit
+  3 Einträgen …") und den Fotosatz nur, wenn wirklich Fotos da sind, mit ihrer Zahl.
+
+`test_kopien.js` wächst auf **68 Prüfungen**; sechs davon (J–O) fallen auf v1.5.288 um, 23 auf v1.5.287.
+
+**Daraus zu lernen:** Der Fehler steckte nicht in der Regel, sondern in ihrer Reihenfolge. „Erst die zweite
+Generation opfern" klang nach Rangfolge und war in Wahrheit eine Annahme darüber, wo das Wertvolle liegt — und
+die stimmt genau dann nicht, wenn der Schutz gebraucht wird. **Wo etwas weichen muss, entscheidet der Inhalt,
+nicht der Platz in der Liste.** Und: Eine Aufräumaktion, die nichts bringt, muss sich zurücknehmen lassen.
+
+
 ## 2026-09-19 — v1.5.288
 
 - **Ein leerer oder beschädigter Stand fraß die Sicherungskopie — stiller Totalverlust** (Bewertung vom 17.09.2026,

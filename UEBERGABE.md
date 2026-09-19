@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.288** · index.html 2,55 MB · 736 Funktionen
+Stand: **v1.5.289** · index.html 2,55 MB · 736 Funktionen
 Zuletzt fortgeschrieben am 19.09.2026 (Hebel 3, Speicher-Störfälle — Abschnitt 0o). Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
@@ -131,10 +131,17 @@ Unterlagen: `.claude/notizen/hebel3/plan.md` (23 gemessene Störfälle, 14 Entw�
 `.claude/notizen/hebel3/patches/` (die Volltexte der Entwürfe, aus dem vergänglichen Sitzungsordner gesichert).
 Abgearbeitet wird die Liste in `.claude/notizen/REIHENFOLGE.md` von oben.
 
-- **Punkt 1 erledigt (v1.5.288):** Zwei Kopie-Generationen, Umfang nach Zyklen · Datums-Schlüsseln · Tagebuch-Einträgen,
-  der Hauptstand geht bei vollem Speicher vor den Kopien, beide Kopien sichtbar und einzeln ladbar. Test `test_kopien.js`
-  (47 Prüfungen, beide Zeitzonen; 23 davon fallen auf dem Vorgängerstand um). Die drei Störfälle wurden vorher an
-  v1.5.287 nachgemessen und traten unverändert auf — die Messung aus dem Plan (v1.5.271) gilt also weiter.
+- **Punkt 1 erledigt (v1.5.288 und v1.5.289):** Zwei Kopie-Generationen, Umfang nach Zyklen · Datums-Schlüsseln ·
+  Tagebuch-Einträgen, der Hauptstand geht bei vollem Speicher vor den Kopien, beide Kopien sichtbar und einzeln ladbar.
+  Test `test_kopien.js` (68 Prüfungen, beide Zeitzonen; 23 fallen auf v1.5.287 um, 6 auf v1.5.288). Die drei Störfälle
+  wurden vorher an v1.5.287 nachgemessen und traten unverändert auf — die Messung aus dem Plan (v1.5.271) gilt weiter.
+- **Wichtig für die nächsten Punkte — drei Prüfer haben v1.5.288 vor dem Hochladen zerlegt und fünf Fehler gemessen,
+  zwei davon schlechter als der Vorgänger** (behoben in v1.5.289, Einzelheiten im CHANGELOG). Der Kern: Die Regel war
+  richtig, ihre *Reihenfolge* nicht — „erst die zweite Generation opfern" war eine Annahme darüber, wo das Wertvolle
+  liegt, und sie stimmt genau dann nicht, wenn der Schutz gebraucht wird. **Wo etwas weichen muss, entscheidet der
+  Inhalt, nicht der Platz in der Liste**, und eine Aufräumaktion, die nichts bringt, muss sich zurücknehmen lassen.
+  Für Punkt 3 (Rettungsplatz, Speichersperre) gilt dasselbe Muster — dort wird ebenfalls etwas aufgehoben, verdrängt
+  und gelöscht. Vor dem Hochladen wieder gegenprüfen lassen.
 - **Offen aus Punkt 1, bewusst zurückgestellt:** Hält die zweite Kopie einen größeren Stand fest, sagt das bisher nur die
   Karte in den Einstellungen und der zugeklappte Kopf. Die vom Skeptiker vorgeschlagene Rückfrage beim Start („Deine Daten
   sind deutlich weniger als in der Kopie vom … — War das Absicht?") braucht den Start-Hinweis aus Punkt 3 und gehört
@@ -1844,7 +1851,7 @@ cat head.html app.js tail.html | cmp - index.html && echo "BYTE-IDENTISCH OK"
 115 Testdateien (Gesamtlauf auf v1.5.187 grün, beide Zeitzonen, 180 Läufe; seit v1.5.188 die betroffenen) — neu dazu
 `test_tageseintrag` (33), `test_navwege` (28), `test_leerzustand` (27),
 `test_outdoor` (29), `test_diagnose` (38), `test_lexikon` (224), `test_kalender` (23), `test_ernte_iceflush` (35), `test_rainbowplan` (61), `test_planumhaengen` (17),
-`test_wochentipp` (27), `test_assistentplan` (33), `test_kopfkarte` (12), `test_zuweisungskarte` (10), `test_ecziel` (20), `test_bluetestufen` (14), `test_einsteigersatz` (11), `test_iceflushtexte` (28), `test_zweiplaene` (11), `test_dauerdruecken` (10), `test_giessluecke` (19), `test_planblattwoche` (12), `test_schimmelspuelen` (14), `test_drainohnemenge` (26), `test_trocknungsklima` (29), `test_wassertagstart` (20), `test_saettigungnachholen` (10), `test_rlfdiagnose` (17), `test_sortenchip` (9), `test_phtexte` (22), `test_anzuchtduenger` (15), `test_tag1` (22), `test_demozyklus` (11), `test_weeklysplit` (18) und `test_ecspanne` (12), `test_tag1keimung` (26), `test_tag1mengen` (16), `test_feedtaganzucht` (13), `test_dosismodus` (7), `test_bernsteintexte` (15), `test_erntereif` (9), `test_drainzieltexte` (4), `test_giesspunkttexte` (6), `test_korridorsaemling` (6), `test_drainnieschaetzen` (7), `test_vorlageoutdoor` (9), `test_wochenfrageanzucht` (6), `test_ueberfaellig` (6), `test_zeitumstellung` (13), `test_bluetestartfeld` (10), `test_spuelhinweis` (8), `test_phasenwechsel` (7), `test_bluetestart` (38), `test_klimanieschaetzen` (7), `test_klimaziel` (33), `test_dunkelphase` (36), `test_vpddiagramm` (14), `test_klimatexte` (24), `test_temperaturtexte` (15), `test_iceflushzusagen` (12), `test_trockenwarnungen` (10), `test_finisherband` (9), `test_harddryback` (16), `test_giesspunktzahlen` (14), `test_iceflushreste` (12), `test_finisherreste` (8), `test_cocogiesspunkt` (18), `test_draingieguide` (7), `test_giesstipps` (7), `test_mischzeile` (7), `test_waageskala` (15), `test_giessmenge_topf` (21), `test_reserve` (13), `test_klimafunktion` (6), `test_giesstexte` (16), `test_drainregel` (16), `test_draintexte` (18), `test_spuelende` (10), `test_keimung` (87), `test_duengeplantexte` (103), `test_biobizzschema` (57), `test_kopien` (47, Speicher-Störfälle: laufen mit :GS_INDEX auch gegen einen anderen Build):
+`test_wochentipp` (27), `test_assistentplan` (33), `test_kopfkarte` (12), `test_zuweisungskarte` (10), `test_ecziel` (20), `test_bluetestufen` (14), `test_einsteigersatz` (11), `test_iceflushtexte` (28), `test_zweiplaene` (11), `test_dauerdruecken` (10), `test_giessluecke` (19), `test_planblattwoche` (12), `test_schimmelspuelen` (14), `test_drainohnemenge` (26), `test_trocknungsklima` (29), `test_wassertagstart` (20), `test_saettigungnachholen` (10), `test_rlfdiagnose` (17), `test_sortenchip` (9), `test_phtexte` (22), `test_anzuchtduenger` (15), `test_tag1` (22), `test_demozyklus` (11), `test_weeklysplit` (18) und `test_ecspanne` (12), `test_tag1keimung` (26), `test_tag1mengen` (16), `test_feedtaganzucht` (13), `test_dosismodus` (7), `test_bernsteintexte` (15), `test_erntereif` (9), `test_drainzieltexte` (4), `test_giesspunkttexte` (6), `test_korridorsaemling` (6), `test_drainnieschaetzen` (7), `test_vorlageoutdoor` (9), `test_wochenfrageanzucht` (6), `test_ueberfaellig` (6), `test_zeitumstellung` (13), `test_bluetestartfeld` (10), `test_spuelhinweis` (8), `test_phasenwechsel` (7), `test_bluetestart` (38), `test_klimanieschaetzen` (7), `test_klimaziel` (33), `test_dunkelphase` (36), `test_vpddiagramm` (14), `test_klimatexte` (24), `test_temperaturtexte` (15), `test_iceflushzusagen` (12), `test_trockenwarnungen` (10), `test_finisherband` (9), `test_harddryback` (16), `test_giesspunktzahlen` (14), `test_iceflushreste` (12), `test_finisherreste` (8), `test_cocogiesspunkt` (18), `test_draingieguide` (7), `test_giesstipps` (7), `test_mischzeile` (7), `test_waageskala` (15), `test_giessmenge_topf` (21), `test_reserve` (13), `test_klimafunktion` (6), `test_giesstexte` (16), `test_drainregel` (16), `test_draintexte` (18), `test_spuelende` (10), `test_keimung` (87), `test_duengeplantexte` (103), `test_biobizzschema` (57), `test_kopien` (68, Speicher-Störfälle: laufen mit :GS_INDEX auch gegen einen anderen Build):
 
 **Alle Tests mit einem Befehl: `node testlauf.js`** (auch `npm test`, seit v1.5.264) — beide Zeitzonen, parallel. Zeitkritische
 Tests stehen in `EINZELN` und laufen danach einzeln: `test_dauerdruecken` war unter fünf parallelen Läufen rot, einzeln
