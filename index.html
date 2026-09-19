@@ -4593,7 +4593,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.291';
+const APP_VERSION = 'v1.5.292';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -5306,7 +5306,11 @@ function _speicherStatusRot(an) {
 function _standMangel(d) {
   if (!_istObjekt(d)) return 'kein GrowSmart-Stand';
   if (d.cycles !== undefined && !Array.isArray(d.cycles)) return 'beschädigt';
+  // (v1.5.292) Auch der Inhalt der Liste: Ein null oder ein Text in cycles ließ loadS mitten in der
+  // Migration werfen, und der Fangkorb darum kam zu spät — der erste Render stürzte trotzdem ab.
+  if (Array.isArray(d.cycles) && d.cycles.some(c => !_istObjekt(c))) return 'beschädigt';
   if (d.entries !== undefined && !_istObjekt(d.entries)) return 'beschädigt';
+  if (d.fertPlans !== undefined && !Array.isArray(d.fertPlans)) return 'beschädigt';
   return null;
 }
 
@@ -5327,8 +5331,9 @@ function _lohntRettung(roh) {
  */
 function _standLesen() {
   const kandidaten = [SK, BAK_KEY, BAK2_KEY, 'growsmart_v3', 'growsmart_v2', 'growsmart_data'];
+  const legacy = (k) => k !== SK && k !== BAK_KEY && k !== BAK2_KEY;
   let haupt = null;
-  const ersatz = [];
+  const kopien = [], alte = [];
   for (const k of kandidaten) {
     let roh = null;
     try { roh = localStorage.getItem(k); } catch (e) { return { k: null, d: null, haupt: null }; }
@@ -5337,18 +5342,45 @@ function _standLesen() {
     try { d = JSON.parse(roh); mangel = _standMangel(d); } catch (e) { mangel = 'nicht lesbar'; }
     if (mangel) { if (k === SK) haupt = { roh, mangel }; continue; }
     if (k === SK) return { k, d, haupt: null };   // der Hauptstand geht immer vor
-    ersatz.push({ k, d, u: _kopieUmfang(d), datum: (d && d._bakDate) || '' });
+    (legacy(k) ? alte : kopien).push({ k, d, u: _kopieUmfang(d), datum: (d && d._bakDate) || '' });
   }
-  if (!ersatz.length) return { k: null, d: null, haupt };
-  const gewicht = (u) => u.daten * 1000 + u.eintraege * 10 + u.zyklen;
-  ersatz.sort((x, y) => (gewicht(y.u) - gewicht(x.u)) || String(y.datum).localeCompare(String(x.datum)));
-  return { k: ersatz[0].k, d: ersatz[0].d, haupt, weitere: ersatz.slice(1) };
+  // (v1.5.292) Die Schlüssel älterer App-Versionen sind eine Migrationsquelle, kein Sicherungsstand:
+  // Die App liest sie nur, schreibt sie nie. Sie kommen deshalb erst dran, wenn es keine Kopie gibt.
+  // Vorher konnte ein alter growsmart_v3 die heutige Tageskopie schlagen, weil er mehr enthielt —
+  // gemessen: der laufende Grow war nach zwei Speichertagen aus beiden Kopien verdrängt.
+  // Das Jüngste gewinnt. Ein älterer Stand kommt nur zum Zug, wenn der jüngere eingebrochen ist —
+  // sonst holte ein gewolltes Löschen den gelöschten Zyklus zurück und warf die Arbeit danach weg.
+  // „Eingebrochen" heißt hier leer, nicht „weniger als die Hälfte". Zwischen zwei Generationen ist
+  // ein Rückgang oft gewollt (ein Zyklus gelöscht, die Demo beendet), und automatisch den älteren zu
+  // nehmen hieße, gelöschte Daten zurückzuholen und die Arbeit danach wegzuwerfen. Die reichere Kopie
+  // geht nicht verloren: Sie steht im Start-Hinweis und in den Einstellungen mit ihrer Eintragszahl.
+  const leer = (u) => u.zyklen === 0 || (u.eintraege === 0 && u.daten === 0);
+  const waehle = (liste) => {
+    liste.sort((x, y) => String(y.datum).localeCompare(String(x.datum)));
+    let b = liste[0];
+    for (const e of liste.slice(1)) if (leer(b.u) && !leer(e.u)) b = e;
+    return b;
+  };
+  let beste = kopien.length ? waehle(kopien) : null;
+  // Auf die alten Schlüssel wird nur ausgewichen, wenn gar keine Kopie da ist oder die beste Kopie
+  // leer ist. „Weniger als die Hälfte" reicht hier bewusst nicht: Zwischen Kopie und Altbestand ist
+  // ein Rückgang oft gewollt (ein Zyklus gelöscht), und der Altbestand ist immer der ältere Stand.
+  if ((!beste || leer(beste.u)) && alte.length) {
+    const alt = waehle(alte);
+    if (!beste || !leer(alt.u)) beste = alt;
+  }
+  if (!beste) return { k: null, d: null, haupt };
+  return { k: beste.k, d: beste.d, haupt, weitere: kopien.concat(alte).filter(e => e !== beste) };
 }
 
 /** Hält fest, was beim Start schieflief, und hebt den unbrauchbaren Hauptstand auf. */
 function _standVorfall(g) {
   const kopie = g.k === BAK_KEY || g.k === BAK2_KEY;
-  if (!g.haupt && !kopie) return;
+  // (v1.5.292) Jeder Start, der nicht aus dem Hauptstand kommt, wird gemeldet. Vorher blieb der Fall
+  // „Hauptstand fehlte, ein Schlüssel einer früheren App-Version wurde geladen" völlig stumm — der
+  // Nutzer sah einen fremden, alten Grow und hatte keinen Anlass, nach den Kopien zu sehen.
+  if (!g.haupt && g.k === SK) return;
+  if (!g.haupt && !g.k) return;
   const info = {
     grund: g.haupt ? g.haupt.mangel : 'fehlte',
     geladen: kopie ? 'kopie' : (g.d ? 'alt' : 'leer'),
@@ -38430,8 +38462,18 @@ function _perfMark(label) {
 try { loadS(); } catch (e) {
   try { console.error('loadS', e); } catch (e2) {}
   try {
+    // (v1.5.292) Nicht raten: Liegt eine Sicherungskopie da, sagt der Hinweis das auch. Vorher stand
+    // hier „Eine Sicherungskopie gibt es in diesem Browser nicht", während eine volle danebenlag.
     const roh = localStorage.getItem(SK);
-    if (roh) _standVorfall({ k: null, d: null, haupt: { roh, mangel: 'nicht lesbar' } });
+    const kop = (_backupInfo().kopien || [])[0] || null;
+    if (roh || kop) {
+      _standVorfall({
+        k: kop ? kop.key : null,
+        d: kop ? true : null,
+        kopieVom: kop ? kop.date : null,
+        haupt: roh ? { roh, mangel: 'nicht lesbar' } : null,
+      });
+    }
   } catch (e3) {}
 }
 _perfMark('loadS');

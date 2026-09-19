@@ -2,6 +2,45 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-19 — v1.5.292
+
+**Vier Befunde der Prüfer an v1.5.291, zwei davon schwer und schlechter als der Vorgänger.** Beide stecken in
+derselben Änderung: Die Auswahl des Ersatzstands nach *Inhalt* war die Überkorrektur einer Auswahl nach
+*Reihenfolge*.
+
+- **Nach einem gewollten Löschen holte die App den gelöschten Zyklus zurück — und warf die Arbeit danach weg.**
+  Gemessen: Der Nutzer beendet einen Zyklus und löscht ihn (2 Zyklen/60 Einträge → 1 Zyklus/20), trägt fünf
+  weitere Tage ein (Tageskopie: 25 Einträge), dann wird der Hauptstand unlesbar. v1.5.291 lud die **zweite**
+  Kopie mit 60 Einträgen, weil sie mehr enthielt — den Stand *vor* dem Löschen. Beim nächsten Speichern
+  verdrängte dieser Stand auch die 25er-Kopie aus beiden Generationen. **Jetzt gewinnt die jüngste Kopie**;
+  eine ältere kommt nur zum Zug, wenn die jüngste **leer** ist (0 Zyklen oder gar keine Einträge). „Weniger als
+  die Hälfte" reicht dafür bewusst nicht — zwischen zwei Generationen ist ein Rückgang oft gewollt. Die reichere
+  Kopie geht nicht verloren: Sie steht im Start-Hinweis („Eine zweite Kopie vom … hat 60 Einträge") und in den
+  Einstellungen mit einem eigenen Ladeknopf.
+- **Ein Schlüssel einer früheren App-Version schlug die heutige Sicherungskopie — stumm.** `growsmart_v3` ist
+  eine Migrationsquelle: Die App liest ihn, schreibt ihn nie, er ist also immer älter als jede Tageskopie.
+  Gemessen: Hauptstand fehlt, Tageskopie 25 Einträge von heute, `growsmart_v3` 90 Einträge von früher →
+  v1.5.291 lud die 90, **ohne jeden Hinweis** (der Fall „Hauptstand fehlte, Ersatz geladen" erzeugte keine
+  Meldung, solange der Ersatz keine Tageskopie war). Nach zwei Speichertagen war der laufende Grow aus beiden
+  Kopien verdrängt. **Jetzt** kommen die alten Schlüssel erst dran, wenn es keine brauchbare Kopie gibt oder die
+  beste Kopie leer ist — und **jeder** Start, der nicht aus dem Hauptstand kommt, wird gemeldet.
+- **`cycles: [null]` und `cycles: ["text"]` galten als gesund.** Die Formprüfung sah nur, dass `cycles` eine
+  Liste ist. `loadS` warf dann mitten in der Migration, und der Fangkorb aus v1.5.291 kam zu spät — der erste
+  Render stürzte trotzdem ab. Dasselbe bei `fertPlans` als Objekt. **Jetzt** prüft `_standMangel` auch die
+  Einträge der Liste und den Typ von `fertPlans`; solche Stände nehmen den normalen Weg über Kopie und
+  Rettungsplatz.
+- **Der Fangkorb um `loadS` behauptete „Eine Sicherungskopie gibt es in diesem Browser nicht"**, während eine
+  volle danebenlag — der Nutzer wurde zum Import geschickt und hätte ohne Backup-Datei neu angefangen.
+  **Jetzt** sieht der Fangkorb nach, welche Kopie da ist, und nennt sie.
+
+`test_rettung.js` wächst auf **84 Prüfungen**; 8 davon fallen auf v1.5.291 um.
+
+**Daraus zu lernen:** Zwei Runden hintereinander lag der Fehler nicht in der Regel, sondern in ihrer
+Rangordnung — erst „nach Schlüssel statt nach Inhalt" (v1.5.289), jetzt „nach Inhalt statt nach Aktualität".
+**Bei Sicherungen gilt: das Jüngste zuerst, und der Inhalt ist nur die Notbremse gegen den Totalausfall.**
+Alles andere holt gelöschte Daten zurück — und Löschen ist meistens Absicht.
+
+
 ## 2026-09-19 — v1.5.291
 
 **Sieben Befunde der Prüfer an v1.5.290, vier davon schlechter als der Vorgänger.** Wieder vor dem Hochladen

@@ -329,6 +329,68 @@ function pruef(name, bedingung, info) {
       !a.toasts.slice(vorher).some(t => /nicht gelesen werden/.test(t)), a.toasts.slice(vorher));
   }
 
+  // ===== R bis V: die Befunde der Prüfer an v1.5.291 (behoben in v1.5.292) =====
+
+  function standMit(zyklen, eintraege, datum) {
+    const cycles = [], entries = {};
+    for (let i = 0; i < zyklen; i++) cycles.push({ id: 'c' + i, name: 'Zyklus ' + i, startDate: '2026-05-16', active: i === 0, seedType: 'auto', medium: 'soil' });
+    for (let i = 0; i < eintraege; i++) {
+      const d = '2026-0' + (1 + (i % 9)) + '-' + String(1 + (i % 28)).padStart(2, '0');
+      entries[d] = { cycleData: { c0: { note: 'x' + i } } };
+    }
+    const st = { cycles, entries, _disclaimerAcceptedAt: '2026-05-01' };
+    if (datum) st._bakDate = datum;
+    return JSON.stringify(st);
+  }
+
+  console.log('\nR - Nach gewolltem Löschen kommt der gelöschte Zyklus nicht zurück');
+  {
+    // Der gemessene Fall: heute 1 Zyklus mit 25 Einträgen, die vorige Generation hält den Stand
+    // von vor dem Löschen (2 Zyklen, 60 Einträge). Der Hauptstand ist unlesbar.
+    const a = await load({ [SK]: KAPUTT, [BAK]: standMit(1, 25, '2026-09-19'), [BAK2]: standMit(2, 60, '2026-09-17') });
+    pruef('R1 Start ohne JS-Fehler', a.errors.length === 0, a.errors[0]);
+    pruef('R2 geladen wird die heutige Kopie', a.E('S.cycles.length') === 1 && a.E('Object.keys(S.entries).length') === 25,
+      { z: a.E('S.cycles.length'), e: a.E('Object.keys(S.entries).length') });
+    pruef('R3 der gelöschte Zyklus bleibt gelöscht', a.E('S.cycles.length') === 1);
+    // Gegenprobe: ist die heutige Kopie eingebrochen, gewinnt doch die vorige
+    const b = await load({ [SK]: KAPUTT, [BAK]: standMit(0, 0, '2026-09-19'), [BAK2]: standMit(2, 60, '2026-09-17') });
+    pruef('R4 eine eingebrochene Tageskopie verliert gegen die vorige',
+      b.E('Object.keys(S.entries).length') === 60, b.E('Object.keys(S.entries).length'));
+  }
+
+  console.log('\nS - Ein alter App-Schlüssel schlägt keine Tageskopie');
+  {
+    const a = await load({ [BAK]: standMit(1, 25, '2026-09-19'), growsmart_v3: standMit(2, 90) });
+    pruef('S1 geladen wird die Tageskopie', a.E('Object.keys(S.entries).length') === 25, a.E('Object.keys(S.entries).length'));
+    pruef('S2 und der Start sagt es', a.dialoge.length > 0, a.dialoge[0]);
+  }
+
+  console.log('\nT - Ohne Kopie wird der alte Schlüssel genommen — und gemeldet');
+  {
+    const a = await load({ growsmart_v3: standMit(2, 90) });
+    pruef('T1 die älteren Daten sind geladen', a.E('Object.keys(S.entries).length') === 90, a.E('Object.keys(S.entries).length'));
+    pruef('T2 der Start meldet es, obwohl der Hauptstand nur fehlte (nicht beschädigt war)',
+      a.dialoge.some(d => /Ältere Daten geladen/.test(d)), a.dialoge[0]);
+  }
+
+  console.log('\nU - Kaputte Einträge in der Zyklusliste gelten als beschädigt');
+  {
+    for (const [name, wert] of [['cycles:[null]', '{"cycles":[null],"entries":{}}'],
+                                ['cycles:["x"]', '{"cycles":["x"],"entries":{}}'],
+                                ['fertPlans als Objekt', '{"cycles":[],"entries":{},"fertPlans":{}}']]) {
+      const a = await load({ [SK]: wert, [BAK]: kopieText(gestern()) }, { warten: 400 });
+      pruef(`U "${name}": Kopie geladen, kein JS-Fehler`,
+        a.E('S.cycles.length') === 1 && a.errors.length === 0, { z: a.E('S.cycles.length'), f: a.errors[0] });
+    }
+  }
+
+  console.log('\nV - Ein gesunder Stand mit leerer Zyklusliste bleibt gültig');
+  {
+    const a = await load({ [SK]: JSON.stringify({ cycles: [], entries: {}, fertPlans: [], _disclaimerAcceptedAt: '2026-05-01' }), [BAK]: kopieText(gestern()) }, { warten: 400 });
+    pruef('V1 kein Rettungsplatz, kein Dialog', a.get(RET) === null && a.dialoge.length === 0, a.dialoge[0]);
+    pruef('V2 und die Kopie wird nicht geladen', a.E('S.cycles.length') === 0);
+  }
+
   console.log('\n' + ok + ' OK, ' + fail + ' FEHL');
   process.exit(fail ? 1 : 0);
 })();
