@@ -2,6 +2,32 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-19 — v1.5.293
+
+Vier Verfeinerungen aus der Schlussprüfung vor dem Hochladen. Keine davon war schlechter als der
+ausgelieferte Stand — beide Prüfer haben v1.5.292 ausdrücklich freigegeben —, aber alle vier sind
+Einzeiler, und jeder schließt eine Lücke, die gemessen wurde.
+
+- **„Leer" heißt jetzt wirklich leer.** Die Regel „eine ältere Kopie springt nur ein, wenn die jüngste leer
+  ist" zählte schon 0 Zyklen als leer. Wer seinen Zyklus löscht, behält aber Einträge mit Klimawerten:
+  0 Zyklen, 50 Einträge. Gemessen fiel diese Kopie durch, die ältere Generation sprang ein, der gelöschte
+  Zyklus kam zurück und die 50 Einträge waren weg. Leer ist jetzt: kein Zyklus **und** kein Eintrag **und**
+  kein Tagebuch.
+- **Die Reihenfolge der Kopien kommt aus der Generation, nicht aus der Geräteuhr.** Sortiert wurde nach
+  `_bakDate`. Ein einziger Tag mit falsch gestellter Uhr schob ein Datum aus der Zukunft in die zweite
+  Generation — und die schlug danach jede jüngere Kopie (gemessen: 3 statt 111 Einträge geladen). Die
+  Kandidatenliste steht ohnehin in Generationsreihenfolge; `_bakDate` ist jetzt reine Anzeige.
+- **Das Nachrücken überschreibt keine reichere zweite Generation mehr.** Es prüfte „nicht deutlich kleiner",
+  also mehr als die Hälfte. Eine Kopie mit 50 Einträgen schob damit eine mit 90 weg; 40 Einträge waren
+  danach endgültig weg, und die Einstellungen boten die reichere Kopie nicht mehr an. Jetzt rückt nur nach,
+  was mindestens so viel enthält.
+- **Eine leere Kopie wird nicht mehr als Rettung ausgegeben.** Der Hinweis sagte „🛟 Sicherungskopie geladen:
+  0 Zyklen, 0 Einträge" — eine Erfolgsmeldung über einer leeren App. Jetzt greift derselbe Text wie ohne
+  Kopie: „⚠️ GrowSmart startet leer", mit dem Weg über Import.
+
+`test_rettung.js` wächst auf **93 Prüfungen**; 7 davon fallen auf v1.5.292 um.
+
+
 ## 2026-09-19 — v1.5.292
 
 **Vier Befunde der Prüfer an v1.5.291, zwei davon schwer und schlechter als der Vorgänger.** Beide stecken in

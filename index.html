@@ -4593,7 +4593,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.292';
+const APP_VERSION = 'v1.5.293';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -5354,9 +5354,15 @@ function _standLesen() {
   // ein Rückgang oft gewollt (ein Zyklus gelöscht, die Demo beendet), und automatisch den älteren zu
   // nehmen hieße, gelöschte Daten zurückzuholen und die Arbeit danach wegzuwerfen. Die reichere Kopie
   // geht nicht verloren: Sie steht im Start-Hinweis und in den Einstellungen mit ihrer Eintragszahl.
-  const leer = (u) => u.zyklen === 0 || (u.eintraege === 0 && u.daten === 0);
+  // (v1.5.293) Leer heißt leer: kein Zyklus UND kein Eintrag UND kein Tagebuch. „0 Zyklen" allein
+  // reichte nicht — wer seinen Zyklus löscht, behält Einträge mit Klimawerten, und diese Kopie galt
+  // dann als nichts. Gemessen: 50 Einträge fielen weg, weil die ältere Generation einsprang.
+  const leer = (u) => u.zyklen === 0 && u.eintraege === 0 && u.daten === 0;
+  // Die Liste kommt in Generationsreihenfolge (BAK vor BAK2) — das ist die verlässliche Auskunft
+  // darüber, was jünger ist. Nach `_bakDate` zu sortieren hieße, der Geräteuhr zu glauben: Ein
+  // einziger Tag mit falsch gestellter Uhr schob ein Datum aus der Zukunft in die zweite Generation,
+  // und die schlug danach jede jüngere Kopie. `_bakDate` bleibt Anzeige.
   const waehle = (liste) => {
-    liste.sort((x, y) => String(y.datum).localeCompare(String(x.datum)));
     let b = liste[0];
     for (const e of liste.slice(1)) if (leer(b.u) && !leer(e.u)) b = e;
     return b;
@@ -5381,9 +5387,12 @@ function _standVorfall(g) {
   // Nutzer sah einen fremden, alten Grow und hatte keinen Anlass, nach den Kopien zu sehen.
   if (!g.haupt && g.k === SK) return;
   if (!g.haupt && !g.k) return;
+  // (v1.5.293) Eine Kopie, in der nichts steht, ist keine Rettung. Vorher meldete die App
+  // „Sicherungskopie geladen: 0 Zyklen, 0 Einträge" — eine Erfolgsmeldung über einer leeren App.
+  const nichtsDrin = !(S.cycles || []).length && !(_istObjekt(S.entries) ? Object.keys(S.entries).length : 0);
   const info = {
     grund: g.haupt ? g.haupt.mangel : 'fehlte',
-    geladen: kopie ? 'kopie' : (g.d ? 'alt' : 'leer'),
+    geladen: (kopie && !nichtsDrin) ? 'kopie' : ((g.d && !nichtsDrin) ? 'alt' : 'leer'),
     quelle: g.k, kopieVom: g.kopieVom || null,
     zyklen: (S.cycles || []).length,
     eintraege: _istObjekt(S.entries) ? Object.keys(S.entries).length : 0,
@@ -6707,7 +6716,12 @@ function _autoBackup() {
     localStorage.setItem(BAK_KEY, _backupJSON(S, today));
     if (a) {
       const b = _kopieLesen(BAK2_KEY);
-      if (!b || !_deutlichKleiner(uA, _kopieUmfang(b.d))) {
+      // (v1.5.293) Die nachrückende Kopie darf die vorige nur ersetzen, wenn sie mindestens so viel
+      // enthält. „Nicht deutlich kleiner" reichte nicht: Eine Kopie mit 50 Einträgen schob eine mit
+      // 90 weg, weil 50 mehr als die Hälfte von 90 ist — gemessen waren 40 Einträge danach weg,
+      // und die Einstellungen boten die reichere Kopie nicht mehr an.
+      const gewicht = (u) => u.daten * 1000 + u.eintraege * 10 + u.zyklen;
+      if (!b || gewicht(uA) >= gewicht(_kopieUmfang(b.d))) {
         try { localStorage.setItem(BAK2_KEY, a.roh); } catch (e2) { /* kein Platz für zwei Generationen — die frische Kopie steht */ }
       }
     }

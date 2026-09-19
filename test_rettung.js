@@ -391,6 +391,54 @@ function pruef(name, bedingung, info) {
     pruef('V2 und die Kopie wird nicht geladen', a.E('S.cycles.length') === 0);
   }
 
+  // ===== W bis Z: die Verfeinerungen aus der Schlussprüfung (v1.5.293) =====
+
+  console.log('\nW - Eine Kopie mit Einträgen, aber ohne Zyklus, gilt nicht als leer');
+  {
+    // Nach „Zyklus löschen" bleiben Einträge mit Klimawerten stehen: 0 Zyklen, 50 Einträge.
+    const ohneZyklus = JSON.stringify({ cycles: [], entries: JSON.parse(standMit(0, 50, '2026-09-19')).entries, _bakDate: '2026-09-19' });
+    const a = await load({ [SK]: KAPUTT, [BAK]: ohneZyklus, [BAK2]: standMit(1, 40, '2026-09-18') });
+    pruef('W1 geladen wird die jüngste Kopie mit den 50 Einträgen',
+      a.E('Object.keys(S.entries).length') === 50, a.E('Object.keys(S.entries).length'));
+    pruef('W2 der gelöschte Zyklus kommt nicht zurück', a.E('S.cycles.length') === 0);
+    // Gegenprobe: wirklich leer (0/0/0) lässt die ältere Generation einspringen
+    const b = await load({ [SK]: KAPUTT, [BAK]: JSON.stringify({ cycles: [], entries: {}, _bakDate: '2026-09-19' }), [BAK2]: standMit(1, 40, '2026-09-18') });
+    pruef('W3 eine wirklich leere Kopie verliert gegen die vorige',
+      b.E('Object.keys(S.entries).length') === 40, b.E('Object.keys(S.entries).length'));
+  }
+
+  console.log('\nX - Ein Datum aus der Zukunft dreht die Reihenfolge nicht um');
+  {
+    // Stand die Geräteuhr einen Tag falsch, trägt die zweite Generation ein Datum in der Zukunft.
+    const a = await load({ [SK]: KAPUTT, [BAK]: standMit(1, 111, '2026-09-18'), [BAK2]: standMit(1, 3, '2027-01-01') });
+    pruef('X1 geladen wird die jüngere Generation, nicht das größere Datum',
+      a.E('Object.keys(S.entries).length') === 111, a.E('Object.keys(S.entries).length'));
+    const b = await load({ [SK]: KAPUTT, [BAK]: standMit(1, 111), [BAK2]: standMit(1, 3, '2026-09-17') });
+    pruef('X2 auch eine Kopie ohne Datum bleibt die jüngere Generation',
+      b.E('Object.keys(S.entries).length') === 111, b.E('Object.keys(S.entries).length'));
+  }
+
+  console.log('\nY - Das Nachrücken überschreibt keine reichere zweite Generation');
+  {
+    const a = await load({ [SK]: KAPUTT, [BAK]: standMit(1, 50, '2026-09-18'), [BAK2]: standMit(1, 90, '2026-09-17') });
+    pruef('Y1 geladen wird die jüngste Kopie', a.E('Object.keys(S.entries).length') === 50);
+    a.E("setDebugDate('2026-09-19'); saveS()");
+    const b2 = JSON.parse(a.get(BAK2) || 'null');
+    pruef('Y2 die reichere zweite Kopie steht noch',
+      b2 && Object.keys(b2.entries || {}).length === 90, b2 && Object.keys(b2.entries || {}).length);
+    pruef('Y3 und die Einstellungen bieten sie an',
+      a.E('(_backupInfo().kopien || []).some(k => k.entries === 90)'));
+  }
+
+  console.log('\nZ - Eine leere Kopie wird nicht als Rettung ausgegeben');
+  {
+    const a = await load({ [SK]: KAPUTT, [BAK]: JSON.stringify({ cycles: [], entries: {}, _bakDate: '2026-09-19' }) });
+    a.E('_acceptDisclaimer()');
+    await a.warte(900);
+    pruef('Z1 der Hinweis sagt „startet leer", nicht „Sicherungskopie geladen"',
+      a.dialoge.some(d => /startet leer/.test(d)) && !a.dialoge.some(d => /Sicherungskopie geladen/.test(d)), a.dialoge[0]);
+  }
+
   console.log('\n' + ok + ' OK, ' + fail + ' FEHL');
   process.exit(fail ? 1 : 0);
 })();
