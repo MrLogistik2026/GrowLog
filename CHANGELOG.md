@@ -2,6 +2,47 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-19 — v1.5.288
+
+- **Ein leerer oder beschädigter Stand fraß die Sicherungskopie — stiller Totalverlust** (Bewertung vom 17.09.2026,
+  Hebel 3; an v1.5.271 gemessen, am 19.09.2026 an v1.5.287 unverändert nachgemessen). Der Ablauf, Zahl für Zahl: Der
+  Hauptstand `growsmart_v4` war unlesbar (abgeschnitten, `null`, `[]`, Steuerzeichen — alle fünf Formen gleich), die App
+  startete **ohne einen Hinweis** mit 0 Zyklen auf der Willkommensseite, und der erste Speichervorgang — der Klick auf
+  „✓ Verstanden" beim Haftungsausschluss, der sich nicht umgehen lässt — schrieb die Tageskopie neu: aus 1 Zyklus mit
+  111 Einträgen wurden 0 und 0. Danach war der Grow nirgends mehr. Zwei weitere Wege dorthin: `entries` als Array (die
+  Einträge verschwinden beim Speichern still, die Kopie wird mit dem leeren Stand überschrieben), und ein voller Speicher
+  — dort löschte der `catch` in `_autoBackup` die **vorhandene** Kopie (`removeItem`), so dass gar keine mehr da war,
+  während die Einstellungen weiter sagten, eine werde „beim nächsten Speichern angelegt".
+- **Jetzt** hält GrowSmart **zwei Generationen**: `growsmart_v4_bak` ist die jüngste Tageskopie, `growsmart_v4_bak2` die
+  vorige. Beim Tageswechsel rückt die bisherige Kopie nach, statt überschrieben zu werden. Warum nicht einfach „eine
+  Kopie, die nie kleiner werden darf": Sie bliebe nach jedem **gewollten** Löschen (Demo beenden, Zyklus löschen) auf dem
+  alten Stand stehen. Mit zwei Generationen folgt die jüngste jedem Löschen, und die vorige rückt nicht nach, solange die
+  jüngere deutlich weniger enthält.
+- **Gemessen wird der Umfang an drei Größen, nicht an zweien:** Zyklen, Datums-Schlüssel und — neu — die Zahl der
+  Tagebuch-Einträge (`cycleData`). Der Grund steht im Code: Ein Stand kann alle 111 Datums-Schlüssel behalten und trotzdem
+  sein ganzes Tagebuch verloren haben (Zyklus ohne `id`, danach räumt `saveS` jede `cycleData` weg). Nach Datums-Schlüsseln
+  gemessen wäre genau dieser Stand „gleich groß" gewesen und hätte beide Kopien überschrieben.
+- **Der Hauptstand geht vor den Kopien.** Ist der Speicher voll, macht `_hauptstandSchreiben` Platz: erst die zweite
+  Generation, dann — nur wenn der zu schreibende Stand nicht selbst deutlich kleiner ist als sie — die jüngste Kopie.
+  Der Nutzer erfährt es („Platz war knapp — dein Eintrag ist gespeichert, dafür wurde eine ältere Sicherungskopie
+  entfernt"), und es wird nicht sofort eine neue angelegt, die den Platz wieder wegnähme. Ohne diese Rangfolge blieben in
+  der Messung 21 von 28 Notizen ungespeichert, während zwei Kopien den Platz belegten.
+- **Scheitert eine Kopie, bleibt die alte stehen** statt gelöscht zu werden, und die Einstellungen sagen es — im
+  aufgeklappten Bereich **und** schon am zugeklappten Kopf „Daten & Sicherheit". Reicht der Platz nur für eine Kopie,
+  wird die Tageskopie trotzdem aufgefrischt; nur wenn der jetzige Stand deutlich kleiner ist als sie, bleibt sie
+  unangetastet — dann ist die alte Kopie mehr wert als eine frische.
+- **Beide Kopien sind sichtbar und einzeln ladbar** („🛟 Kopie vom 18.09. laden (111 Einträge)"), und wenn eine Kopie
+  deutlich mehr enthält als der jetzige Stand, steht das dabei: „Hast du nichts absichtlich gelöscht, lade sie."
+  Bisher gab es einen Knopf ohne Zahl, der im Verlustfall die **leere** Kopie geladen hätte.
+- Fachwort raus, wo es den Weg verstellt: „Mach vorher am besten ein JSON-Backup" → „Zieh vorher am besten ein Backup
+  (Einstellungen → Daten & Sicherheit → Backup)"; dasselbe im Speicher-voll-Toast und in der Platzwarnung. Die
+  Speicheranzeige zählt die zweite Kopie mit, sonst meldete sie weniger, als belegt ist.
+- `test_kopien.js` (47 Prüfungen, beide Zeitzonen): Nachrücken, der gemessene Verlustfall über fünf Tage, der reine
+  Tagebuch-Verlust, Platz für nur eine Kopie, voller Speicher mit und ohne geschrumpften Stand, gezieltes Laden der
+  zweiten Kopie, Speicheranzeige. **Gegen den Vorgängerstand laufen 23 dieser Prüfungen rot** (`GS_INDEX=…` im Test) —
+  ein Test, der nur auf dem eigenen Build grün ist, prüft nichts.
+
+
 ## 2026-09-17 — v1.5.287
 
 - **Ein wegen vollem oder feuchtem Topf ausgelassener Guss galt als verpasst** (Bewertung vom 17.09.2026, Hebel 1 #10, an

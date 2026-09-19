@@ -3592,7 +3592,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.287';
+const APP_VERSION = 'v1.5.288';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -5180,11 +5180,29 @@ function saveS() {
       pushUndo();
       saveS._lastUndo = now;
     }
-    localStorage.setItem(SK, JSON.stringify(S));
-    // (v1.4.83) Tägliche Sicherungskopie + einmalig dauerhaften Speicher anfordern.
-    // Läuft nach dem eigentlichen Schreiben, damit ein Fehler dort die Speicherung nie gefährdet.
-    if (typeof _autoBackup === 'function') _autoBackup();
-    _flashSaved();
+    // (v1.5.288) Bei vollem Speicher macht der Hauptstand sich Platz, statt still zu scheitern.
+    const wie = _hauptstandSchreiben(JSON.stringify(S));
+    if (wie === false) {
+      const err = new Error('Speicher voll');
+      err.name = 'QuotaExceededError';
+      throw err;
+    }
+    if (wie === 'ok-befreit') {
+      // Jetzt keine neue Kopie anlegen — sie nähme den eben freigeräumten Platz sofort wieder weg.
+      _autoBackup._fehler = 'voll';
+      _autoBackup._fehlerAm = Date.now();
+      const now = Date.now();
+      if (!saveS._lastPlatzToast || now - saveS._lastPlatzToast > 300000) {
+        saveS._lastPlatzToast = now;
+        toast('Platz war knapp — dein Eintrag ist gespeichert, dafür wurde eine ältere Sicherungskopie entfernt. Lösche alte Fotos und zieh ein Backup.');
+      }
+      _flashSaved();
+    } else {
+      // (v1.4.83) Tägliche Sicherungskopie + einmalig dauerhaften Speicher anfordern.
+      // Läuft nach dem eigentlichen Schreiben, damit ein Fehler dort die Speicherung nie gefährdet.
+      if (typeof _autoBackup === 'function') _autoBackup();
+      _flashSaved();
+    }
   } catch (e) {
     // Quota exceeded is the critical case we need to surface to the user
     if (e && (e.name === 'QuotaExceededError' || e.code === 22)) {
@@ -5192,7 +5210,7 @@ function saveS() {
       const now = Date.now();
       if (!saveS._lastQuotaErr || now - saveS._lastQuotaErr > 300000) {
         saveS._lastQuotaErr = now;
-        toast('⚠ Speicher voll — Eintrag nicht gesichert! Bitte Foto-Löschen oder JSON-Export nutzen.');
+        toast('⚠ Speicher voll — Eintrag nicht gesichert! Lösche alte Fotos (Einstellungen → Daten & Sicherheit) und zieh dort ein Backup.');
       }
     }
     // Other errors (DOMException in private mode, etc.) silently ignored —
@@ -5215,6 +5233,71 @@ function saveS() {
  * unersetzlichen Daten sind die Messwerte, nicht die Bilder.
  */
 const BAK_KEY = 'growsmart_v4_bak';
+
+/**
+ * (v1.5.288) ZWEITE KOPIE — und warum es sie braucht.
+ *
+ * Gemessen am 17.09.2026: In jedem Verlustfall ersetzte der erste Speichervorgang eines neuen Tages
+ * die Kopie mit 111 Einträgen durch eine mit 0. Der Hauptstand war unlesbar, die App startete leer,
+ * und genau dieser leere Stand wurde am Folgetag zur einzigen Sicherung. Danach war alles weg, ohne
+ * einen einzigen Hinweis.
+ *
+ * Eine einzige Kopie, die nie kleiner werden darf, wäre der falsche Schluss: Nach jedem GEWOLLTEN
+ * Löschen (Demo-Zyklus beenden, Zyklus löschen) bliebe sie auf dem alten Stand stehen. Deshalb zwei
+ * Generationen — BAK_KEY hält die jüngste Tageskopie, BAK2_KEY die vorige. Die vorige rückt nicht
+ * nach, solange die jüngere deutlich weniger enthält. So geht ein großer Stand nie still verloren,
+ * und die jüngste Kopie folgt trotzdem jedem gewollten Löschen.
+ *
+ * Platz: Patricks Stand ohne Fotos sind rund 48 000 Zeichen je Kopie, etwa 1 % von 5 MB. Wird es
+ * trotzdem eng, gilt die Rangfolge aus `_hauptstandSchreiben`: der Hauptstand geht vor den Kopien.
+ */
+const BAK2_KEY = 'growsmart_v4_bak2';
+
+function _istObjekt(x) { return !!x && typeof x === 'object' && !Array.isArray(x); }
+
+/**
+ * Wie viel steckt in einem Stand? Drei Maße, weil zwei nicht reichen.
+ *
+ * `daten` zählt die Tagebuch-Einträge je Zyklus (cycleData) — und das ist der wichtige Teil: Ein
+ * Stand kann alle 111 Datums-Schlüssel behalten und trotzdem sein ganzes Tagebuch verloren haben
+ * (gemessen: Zyklus ohne `id`, danach räumt saveS jede cycleData weg). Nach Datums-Schlüsseln
+ * gemessen wäre dieser Stand gleich groß geblieben und hätte beide Kopien überschrieben.
+ */
+function _kopieUmfang(d) {
+  let daten = 0;
+  if (d && _istObjekt(d.entries)) {
+    Object.keys(d.entries).forEach(k => {
+      const e = d.entries[k];
+      if (e && _istObjekt(e.cycleData)) daten += Object.keys(e.cycleData).length;
+    });
+  }
+  return {
+    zyklen: (d && Array.isArray(d.cycles)) ? d.cycles.length : 0,
+    eintraege: (d && _istObjekt(d.entries)) ? Object.keys(d.entries).length : 0,
+    daten,
+  };
+}
+
+/**
+ * „Deutlich kleiner": alle Zyklen weg, oder weniger als die Hälfte der Einträge bzw. der
+ * Tagebuch-Daten. Die Untergrenze von 10 verhindert, dass ein junger Zyklus bei jedem gelöschten
+ * Tag als geschrumpft gilt.
+ */
+function _deutlichKleiner(neu, alt) {
+  return (alt.zyklen > 0 && neu.zyklen === 0)
+    || (alt.eintraege >= 10 && neu.eintraege * 2 < alt.eintraege)
+    || (alt.daten >= 10 && neu.daten * 2 < alt.daten);
+}
+
+/** Liest eine Kopie. null, wenn sie fehlt oder kein lesbares Objekt ist. */
+function _kopieLesen(key) {
+  try {
+    const roh = localStorage.getItem(key);
+    if (!roh) return null;
+    const d = JSON.parse(roh);
+    return _istObjekt(d) ? { key, roh, d } : null;
+  } catch (e) { return null; }
+}
 
 function _requestPersistentStorage() {
   if (_requestPersistentStorage._done) return;
@@ -5249,16 +5332,79 @@ function _backupJSON(state, bakDate) {
 function _autoBackup() {
   _requestPersistentStorage();
   if (_storageEstimate === null) _refreshStorageEstimate();
+  const today = todayISO();
+  const a = _kopieLesen(BAK_KEY);
+  if (a && a.d._bakDate === today) return;
+  // (v1.5.288) Hat der Hauptstand gerade Platz gebraucht und dafür eine Kopie geopfert, wird hier
+  // nicht sofort eine neue angelegt — sie nähme den Platz wieder weg, den der Eintrag braucht.
+  if (_autoBackup._fehlerAm && Date.now() - _autoBackup._fehlerAm < 600000) return;
   try {
-    const today = todayISO();
-    const raw = localStorage.getItem(BAK_KEY);
-    if (raw) {
-      try { if (JSON.parse(raw)._bakDate === today) return; } catch (e) { /* kaputt — neu schreiben */ }
+    let rotiert = false, rotationVoll = false;
+    if (a) {
+      const uA = _kopieUmfang(a.d);
+      const b = _kopieLesen(BAK2_KEY);
+      // Die bisherige Kopie rückt nach — außer die vorige hält einen deutlich größeren Stand fest.
+      if (!b || !_deutlichKleiner(uA, _kopieUmfang(b.d))) {
+        try { localStorage.setItem(BAK2_KEY, a.roh); rotiert = true; } catch (e2) { rotationVoll = true; }
+      }
+      // Ist der jetzige Stand deutlich kleiner als die bisherige Kopie und ließ die sich nicht
+      // sichern, bleibt sie unangetastet stehen. Eine frische Kopie ist weniger wert als die letzte,
+      // die noch alles enthält — genau dieser Tausch war der gemessene Totalverlust.
+      if (!rotiert && _deutlichKleiner(_kopieUmfang(S), uA)) {
+        if (rotationVoll) { _autoBackup._fehler = 'voll'; _autoBackup._fehlerAm = Date.now(); }
+        return;
+      }
     }
     localStorage.setItem(BAK_KEY, _backupJSON(S, today));
+    _autoBackup._fehler = null;
+    _autoBackup._fehlerAm = 0;
   } catch (e) {
     // Scheitert die Kopie (z.B. Speicher voll), darf das die Haupt-Speicherung nie stören.
-    try { localStorage.removeItem(BAK_KEY); } catch (e2) { /* egal */ }
+    // (v1.5.288) Die vorhandenen Kopien bleiben dabei stehen. Bis hier wurden sie gelöscht —
+    // gemessen: 32 Tage ohne jede Kopie und ohne Hinweis, während die Einstellungen sagten,
+    // eine werde „beim nächsten Speichern angelegt".
+    _autoBackup._fehler = (e && (e.name === 'QuotaExceededError' || e.code === 22)) ? 'voll' : 'fehler';
+    _autoBackup._fehlerAm = Date.now();
+  }
+}
+
+/**
+ * (v1.5.288) Schreibt den Hauptstand — und macht ihm bei vollem Speicher Platz.
+ *
+ * Rangfolge: Der Hauptstand geht vor den Kopien. Eine Kopie ist ein Abzug von gestern, der
+ * Hauptstand ist das, was der Nutzer gerade eingetragen hat. Gemessen ohne diese Regel:
+ * 21 von 28 Notizen ungespeichert, während zwei Kopien den Platz belegten.
+ *
+ * Die jüngste Kopie wird allerdings nur geopfert, wenn der zu schreibende Stand nicht selbst
+ * deutlich kleiner ist als sie — sonst würde ein beschädigter Stand die letzte gute Kopie
+ * verdrängen, und das ist genau der Verlust, den diese Version verhindern soll.
+ *
+ * Rückgabe: 'ok' · 'ok-befreit' (geschrieben, Kopie(n) dafür entfernt) · false (nicht geschrieben).
+ */
+function _hauptstandSchreiben(txt) {
+  const istVoll = (e) => !!e && (e.name === 'QuotaExceededError' || e.code === 22);
+  try {
+    localStorage.setItem(SK, txt);
+    return 'ok';
+  } catch (e) {
+    if (!istVoll(e)) throw e;
+  }
+  try {
+    localStorage.removeItem(BAK2_KEY);
+    localStorage.setItem(SK, txt);
+    return 'ok-befreit';
+  } catch (e) {
+    if (!istVoll(e)) throw e;
+  }
+  const a = _kopieLesen(BAK_KEY);
+  if (a && _deutlichKleiner(_kopieUmfang(S), _kopieUmfang(a.d))) return false;
+  try {
+    localStorage.removeItem(BAK_KEY);
+    localStorage.setItem(SK, txt);
+    return 'ok-befreit';
+  } catch (e) {
+    if (!istVoll(e)) throw e;
+    return false;
   }
 }
 
@@ -5286,7 +5432,8 @@ function _refreshStorageEstimate() {
 
 function _storageInfo() {
   let ownBytes = 0;
-  try { ownBytes = (localStorage.getItem(SK) || '').length + (localStorage.getItem(BAK_KEY) || '').length; } catch (e) { /* egal */ }
+  // (v1.5.288) Die zweite Kopie zählt mit — sonst meldet die Anzeige weniger, als wirklich belegt ist.
+  try { ownBytes = (localStorage.getItem(SK) || '').length + (localStorage.getItem(BAK_KEY) || '').length + (localStorage.getItem(BAK2_KEY) || '').length; } catch (e) { /* egal */ }
   const est = _storageEstimate;
   const quota = est && est.quota ? Math.min(est.quota, 50 * 1024 * 1024) : LS_ASSUMED_LIMIT;
   const used = est && est.quota ? Math.max(est.used, ownBytes) : ownBytes;
@@ -5302,33 +5449,43 @@ function _storageInfo() {
 }
 
 function _backupInfo() {
-  let bakDate = null, bakEntries = 0;
-  try {
-    const raw = localStorage.getItem(BAK_KEY);
-    if (raw) { const b = JSON.parse(raw); bakDate = b._bakDate || null; bakEntries = Object.keys(b.entries || {}).length; }
-  } catch (e) { /* keine gültige Kopie */ }
+  // (v1.5.288) Beide Kopien, jüngste zuerst — dazu ein Fehlschlag beim Anlegen und der Fall, dass
+  // eine Kopie deutlich mehr enthält als der jetzige Stand. Letzteres war bisher unsichtbar: Der
+  // Stand schrumpfte, die Kopie hielt still dagegen, und niemand erfuhr davon.
+  const kopien = [BAK_KEY, BAK2_KEY].map(_kopieLesen).filter(Boolean).map(k => {
+    const u = _kopieUmfang(k.d);
+    return { key: k.key, date: k.d._bakDate || null, zyklen: u.zyklen, entries: u.eintraege, daten: u.daten };
+  });
+  const jetzt = _kopieUmfang(S);
+  const groesser = kopien.find(k => _deutlichKleiner(jetzt, { zyklen: k.zyklen, eintraege: k.entries, daten: k.daten })) || null;
+  const erste = kopien.find(k => k.key === BAK_KEY) || null;
   const last = S._lastExport || null;
   const days = last ? isoDiff(todayISO(), last) : null;
-  return { bakDate, bakEntries, lastExport: last, daysSinceExport: days, due: (days === null || days >= 14) };
+  return {
+    bakDate: erste ? erste.date : null, bakEntries: erste ? erste.entries : 0,
+    kopien, groesser, kopieFehler: _autoBackup._fehler || null,
+    lastExport: last, daysSinceExport: days, due: (days === null || days >= 14),
+  };
 }
 
 /**
  * Stellt die automatische Sicherungskopie wieder her. Fotos fehlen darin bewusst — darum
  * wird das vorher deutlich gesagt, statt den Verlust hinterher zu überraschen.
  */
-async function restoreAutoBackup() {
-  const info = _backupInfo();
-  if (!info.bakDate) { toast('Keine automatische Sicherungskopie vorhanden'); return; }
+async function restoreAutoBackup(key) {
+  // (v1.5.288) Welche Kopie: die jüngste (Vorgabe) oder die vorige.
+  const k = _kopieLesen(key || BAK_KEY);
+  if (!k) { toast('Keine automatische Sicherungskopie vorhanden'); return; }
+  const u = _kopieUmfang(k.d);
   const ok = await customConfirm(
     '💾 Sicherungskopie laden?',
-    `Die Kopie ist vom ${fmtDE(info.bakDate)} mit ${info.bakEntries} Einträgen.\n\n`
+    `Die Kopie ist vom ${k.d._bakDate ? fmtDE(k.d._bakDate) : '(ohne Datum)'} mit ${u.zyklen} ${u.zyklen === 1 ? 'Zyklus' : 'Zyklen'} und ${u.eintraege} Einträgen.\n\n`
     + 'Dein aktueller Stand wird dabei ERSETZT. Fotos sind in der Kopie nicht enthalten und gehen verloren.\n\n'
-    + 'Mach vorher am besten ein JSON-Backup.',
+    + 'Zieh vorher am besten ein Backup (Einstellungen → Daten & Sicherheit → Backup).',
     'Laden');
   if (!ok) return;
   try {
-    const raw = localStorage.getItem(BAK_KEY);
-    const b = JSON.parse(raw);
+    const b = k.d;
     delete b._bakDate;
     localStorage.setItem(SK, JSON.stringify(b));
     toast('Sicherungskopie geladen — App wird neu geladen');
@@ -21648,6 +21805,10 @@ function renderSet() {
       // (v1.4.83) Fälligkeit schon am zugeklappten Kopf zeigen — wer die Sektion nie öffnet,
       // erführe sonst nie, dass sein letztes echtes Backup Wochen her ist.
       const bi = _backupInfo();
+      // (v1.5.288) Ein Fehlschlag bei der Sicherungskopie gehört schon an den zugeklappten Kopf —
+      // sonst erfährt ihn nur, wer die Sektion öffnet, und das tut niemand ohne Anlass.
+      if (bi.kopieFehler) return `<span style="color:var(--yellow)">⚠️ Sicherungskopie ${bi.kopieFehler === 'voll' ? 'nicht angelegt — Speicher voll' : 'nicht angelegt'}</span> · Backup, Export`;
+      if (bi.groesser) return `<span style="color:var(--yellow)">⚠️ Eine Sicherungskopie enthält mehr als dein jetziger Stand</span> · Backup, Export`;
       if (!bi.due) return 'Backup, Export, Rechtliches';
       return `<span style="color:var(--yellow)">⚠️ ${bi.lastExport === null ? 'Noch nie gesichert' : 'Letztes Backup vor ' + bi.daysSinceExport + ' Tagen'}</span> · Backup, Export`;
     })())}
@@ -21674,16 +21835,18 @@ function renderSet() {
             const col = si.pct >= 90 ? 'var(--red)' : (si.tight ? 'var(--yellow)' : 'var(--text-hint)');
             return `<div style="font-size:10px;color:${col};margin-top:8px;line-height:1.5">
               📦 Speicher: <b>${si.pct}% belegt</b> (${mb(si.used)} von ~${mb(si.quota)} MB${si.exact ? '' : ', geschätzt'})${si.photos ? ` · ${si.photos} Foto${si.photos === 1 ? '' : 's'}` : ''}
-              ${si.tight ? `<br><b>Es wird eng.</b> Fotos brauchen mit Abstand am meisten Platz — sichere jetzt als JSON und lösche danach ältere Fotos, sonst lassen sich irgendwann keine neuen mehr speichern.` : ''}
+              ${si.tight ? `<br><b>Es wird eng.</b> Fotos brauchen mit Abstand am meisten Platz — zieh jetzt ein Backup (Knopf unten) und lösche danach ältere Fotos, sonst lassen sich irgendwann keine neuen mehr speichern.` : ''}
             </div>`;
           })()}
           <div style="font-size:10px;color:var(--text-hint);margin-top:6px;line-height:1.5">
-            ${bi.bakDate
-              ? `🛟 Automatische Sicherungskopie vom <b>${fmtDE(bi.bakDate)}</b> (${bi.bakEntries} Einträge, ohne Fotos).`
-              : '🛟 Automatische Sicherungskopie wird beim nächsten Speichern angelegt.'}
+            ${bi.kopien.length
+              ? bi.kopien.map(k => `🛟 Automatische Sicherungskopie vom <b>${k.date ? fmtDE(k.date) : '–'}</b> (${k.zyklen} ${k.zyklen === 1 ? 'Zyklus' : 'Zyklen'}, ${k.entries} Einträge, ohne Fotos).`).join('<br>')
+              : (bi.kopieFehler ? '🛟 Es gibt noch keine automatische Sicherungskopie.' : '🛟 Automatische Sicherungskopie wird beim nächsten Speichern angelegt.')}
+            ${bi.kopieFehler ? `<br><b style="color:var(--yellow)">⚠️ Zuletzt ließ sich keine neue Kopie anlegen${bi.kopieFehler === 'voll' ? ' — der Speicher ist voll' : ''}.</b>${bi.kopien.length ? ' Die bisherige bleibt stehen.' : ''} Zieh jetzt ein Backup (Knopf unten) und lösche alte Fotos.` : ''}
+            ${bi.groesser ? `<br><b style="color:var(--yellow)">ℹ️ Die Kopie vom ${bi.groesser.date ? fmtDE(bi.groesser.date) : '–'} enthält deutlich mehr als dein jetziger Stand</b> (${bi.groesser.zyklen} ${bi.groesser.zyklen === 1 ? 'Zyklus' : 'Zyklen'}, ${bi.groesser.entries} Einträge). Hast du nichts absichtlich gelöscht, lade sie — sie bleibt so lange stehen.` : ''}
             <br>Sie hilft bei Bedien- und App-Fehlern — aber sie liegt im <b>selben Browser-Speicher</b>. Löschst du den, ist auch sie weg. <b>Nur die JSON-Datei liegt außerhalb.</b>
           </div>
-          ${bi.bakDate ? `<button onclick="restoreAutoBackup()" style="width:100%;margin-top:8px;background:var(--card2);border:0.5px solid var(--border);border-radius:8px;padding:8px;font-size:11px;color:var(--text-sub);cursor:pointer;font-family:var(--font)">🛟 Sicherungskopie laden</button>` : ''}
+          ${bi.kopien.map(k => `<button onclick="restoreAutoBackup('${k.key}')" style="width:100%;margin-top:8px;background:var(--card2);border:0.5px solid var(--border);border-radius:8px;padding:8px;font-size:11px;color:var(--text-sub);cursor:pointer;font-family:var(--font)">🛟 Kopie vom ${k.date ? fmtDE(k.date) : '–'} laden (${k.entries} Einträge)</button>`).join('')}
         </div>`;
       })()}
       <div class="sec-tog" onclick="exportReportPDF()" style="border-color:rgba(76,175,112,0.3);margin:0;background:rgba(76,175,112,0.04)">
