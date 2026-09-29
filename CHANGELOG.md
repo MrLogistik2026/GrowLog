@@ -2,6 +2,33 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-29 — v1.5.295
+
+- **Leere Stellen in Listen ließen Start und Bildschirme abstürzen** (Hebel 3, Punkt 5; gemessen an v1.5.271):
+  `fertPlans [null, …]` brach den Start ab, `offsetHistory [null]` jeden Bildschirm, `plants [null]` Einstellungen
+  und Tageseintrag, `skippedDays` als Zahl Kalender und Einstellungen. **Jetzt** räumt `_standLueckenEntfernen` beim
+  Start auf, bevor Migrationen und erstes Bild die Listen anfassen.
+- **Aufräumen heißt nicht wegwerfen.** Die erste Fassung entfernte die Lücken und schrieb „verloren ist nichts". Der
+  Prüfer hat vor dem Hochladen drei Fälle gemessen, in denen das falsch war — die App schreibt nie selbst Lücken in
+  diese Listen, eine leere Stelle war also vorher ein echter Eintrag:
+  - Eine leere Stelle war der **Düngeplan des Zyklus**. Die erste Fassung schickte den Stand deshalb zur älteren
+    Kopie — 10 neuere Einträge und alle Fotos fielen weg, ohne Kopie startete die App leer. **Jetzt** bleibt der
+    Hauptstand, und der Plan kommt aus der Sicherungskopie zurück.
+  - Eine leere Stelle war eine **geerntete Pflanze mit Ertrag**. **Jetzt** kommt sie aus der Kopie desselben Zyklus
+    zurück; steht sie nirgends mehr, sagt die App „Nicht mehr vorhanden: 1 Pflanze samt Ernte-Angaben" statt
+    „verloren ist nichts".
+  - Die **Verschiebungsliste** als Objekt wurde gelöscht — der Erntetag rückte still um drei Tage vor (zu früh ernten
+    ist der teuerste Fehler, `ANBAU.md` 11). **Jetzt** wird ausgepackt statt gelöscht, und nur Einträge mit Datum und
+    Tageszahl bleiben; unvollständige (`{}`, `{date:null}`) ließen sonst den Tageseintrag abstürzen.
+- **Kein Warndialog.** Was aufgeräumt wurde, steht in einer Zeile unter „Daten & Sicherheit" — ruhig, wenn nichts
+  verloren ging, gelb, wenn etwas nirgends mehr steht.
+- `_standReparieren` bricht den Start nicht mehr ab, wenn es selbst auf eine leere Stelle trifft (gefunden beim Bauen:
+  ein verlorener Plan warf eine Ausnahme bis in den Fangkorb um `loadS`).
+- **Noch offen, aus derselben Prüfung:** Der Import räumt nicht auf — eine Datei, die der Start still repariert,
+  scheitert beim Import, und `S` ist dann schon ersetzt. Das ist Punkt 7 der Reihenfolge („Import prüft Struktur").
+- `test_rettung.js` wächst auf **143 Prüfungen** (Abschnitt AH).
+
+
 ## 2026-09-29 — v1.5.294
 
 - **Ein lesbarer, aber an einer Stelle beschädigter Stand wird repariert statt durch eine ältere Kopie ersetzt**

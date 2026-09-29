@@ -4593,7 +4593,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.294';
+const APP_VERSION = 'v1.5.295';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -5342,6 +5342,70 @@ function _standMangel(d) {
  * Nicht reparierbar — dann gewinnt die Kopie: Tagebuch kaputt, Zyklusliste weder Liste noch Objekt,
  * Kennungen nicht eindeutig zuzuordnen, oder kein Zyklus mehr übrig, obwohl das Tagebuch Einträge hat.
  */
+/**
+ * (v1.5.295) Leere Stellen (null, Zahl, Text) in Listen, die Objekte bzw. Datumsangaben führen, werden entfernt.
+ * Gemessen an v1.5.271: fertPlans [null, …] brach den Start ab, offsetHistory [null] jeden Bildschirm, plants [null]
+ * Einstellungen und Tageseintrag, skippedDays als Zahl Kalender und Einstellungen. Dort stand nichts — entfernen
+ * verliert nichts, deshalb ohne Dialog und ohne Sperre (der Prüfer an Entwurf 283: ein Warndialog alarmiert einen
+ * Anfänger über etwas, das nichts gekostet hat, und eine Sperre bei knappem Speicher erzeugte erst den Schaden).
+ * Zyklen selbst behandelt _standReparieren — dort kann eine leere Stelle ein verlorener Zyklus sein.
+ */
+// (Prüfer, 29.09.2026) Eine leere Stelle in einer Liste, die die App nie mit Lücken schreibt, war vorher ein
+// echter Eintrag — eine Pflanze mit Ertrag, ein Plan. „Entfernen, verloren ist nichts" stimmte dort nicht.
+// Deshalb: was die Sicherungskopie noch hat, kommt von dort zurück; was nirgends mehr steht, wird ehrlich gemeldet.
+// Und Behälter mit falschem Typ werden ausgepackt statt gelöscht — eine gelöschte Verschiebungsliste zog den
+// Erntetag still um drei Tage vor.
+let _lueckenBeimStart = null;
+function _standLueckenEntfernen(d) {
+  const bericht = { leer: 0, zurueck: [], verloren: [] };
+  if (!_istObjekt(d)) return bericht;
+  let kopienCache = null;
+  const kopien = () => kopienCache || (kopienCache = [BAK_KEY, BAK2_KEY].map(_kopieLesen).filter(Boolean).map(k => k.d));
+  const zyklusInKopie = (id) => { for (const k of kopien()) { const c = (k.cycles || []).find(x => _istObjekt(x) && x.id === id); if (c) return c; } return null; };
+  const auspacken = (x) => Array.isArray(x) ? x : (_istObjekt(x) ? Object.values(x) : []);
+
+  // Düngepläne: Lücken raus, fehlender Plan eines Zyklus aus der Kopie zurück
+  if (Array.isArray(d.fertPlans) && d.fertPlans.some(p => !_istObjekt(p))) {
+    d.fertPlans = d.fertPlans.filter(_istObjekt);
+    (Array.isArray(d.cycles) ? d.cycles : []).forEach(c => {
+      if (!_istObjekt(c) || !c.fertPlanId || d.fertPlans.some(p => p.id === c.fertPlanId)) return;
+      const plan = kopien().map(k => (k.fertPlans || []).find(p => _istObjekt(p) && p.id === c.fertPlanId)).find(Boolean);
+      if (plan) { d.fertPlans.push(JSON.parse(JSON.stringify(plan))); bericht.zurueck.push('Düngeplan „' + (plan.name || 'ohne Namen') + '"'); }
+      else bericht.verloren.push('ein Düngeplan');
+    });
+    bericht.leer++;
+  }
+  (Array.isArray(d.cycles) ? d.cycles : []).forEach(c => {
+    if (!_istObjekt(c)) return;
+    // Pflanzen: Lücken raus, Pflanzen, die die Kopie noch hat, zurück
+    if (Array.isArray(c.plants) && c.plants.some(p => !_istObjekt(p))) {
+      const luecken = c.plants.filter(p => !_istObjekt(p)).length;
+      c.plants = c.plants.filter(_istObjekt);
+      const kz = zyklusInKopie(c.id);
+      const ids = new Set(c.plants.map(p => p.id));
+      const aus = kz && Array.isArray(kz.plants) ? kz.plants.filter(p => _istObjekt(p) && p.id && !ids.has(p.id)) : [];
+      aus.slice(0, luecken).forEach(p => c.plants.push(JSON.parse(JSON.stringify(p))));
+      if (aus.length) bericht.zurueck.push(Math.min(aus.length, luecken) + (Math.min(aus.length, luecken) === 1 ? ' Pflanze' : ' Pflanzen'));
+      if (luecken > aus.length) bericht.verloren.push((luecken - aus.length) + ((luecken - aus.length) === 1 ? ' Pflanze' : ' Pflanzen') + ' samt Ernte-Angaben');
+      if (!c.plants.length) delete c.plants;   // die Migration legt sie aus der Pflanzenzahl neu an
+      bericht.leer++;
+    }
+    // Verschiebungen: auspacken, nur gültige Einträge behalten (Datum als Text, Tage als Zahl)
+    if (c.offsetHistory !== undefined) {
+      const vorher = c.offsetHistory;
+      const gueltig = auspacken(vorher).filter(o => _istObjekt(o) && typeof o.date === 'string' && typeof o.offset === 'number');
+      if (!Array.isArray(vorher) || gueltig.length !== vorher.length) { c.offsetHistory = gueltig; bericht.leer++; }
+    }
+    // Übersprungene Tage: auspacken, nur Datumsangaben behalten
+    if (c.skippedDays !== undefined) {
+      const vorher = c.skippedDays;
+      const gueltig = auspacken(vorher).filter(x => typeof x === 'string' && x.length >= 10);
+      if (!Array.isArray(vorher) || gueltig.length !== vorher.length) { c.skippedDays = gueltig; bericht.leer++; }
+    }
+  });
+  return bericht;
+}
+
 function _standReparieren(d, kopien) {
   if (!_istObjekt(d) || (d.entries !== undefined && !_istObjekt(d.entries))) return null;
   const liste = [];
@@ -5390,7 +5454,7 @@ function _standReparieren(d, kopien) {
   }
   // Jeder Zyklus muss seinen Plan noch finden.
   if (Array.isArray(d.cycles) && Array.isArray(d.fertPlans)) {
-    const planIds = new Set(d.fertPlans.map(p => p.id));
+    const planIds = new Set(d.fertPlans.filter(_istObjekt).map(p => p.id));
     if (d.cycles.some(c => c.fertPlanId && !planIds.has(c.fertPlanId))) return null;
   }
   if (!liste.length || _standMangel(d)) return null;
@@ -5436,7 +5500,9 @@ function _standLesen() {
   // (v1.5.294) Ist der Hauptstand lesbar und nur an einer Stelle beschädigt, wird er repariert — eine ältere
   // Kopie verdrängt nie einen lesbaren, neueren Hauptstand.
   if (haupt && haupt.d) {
-    const rep = _standReparieren(haupt.d, kopien);
+    // Die Reparatur darf den Start nie abbrechen — wirft sie, gilt der Stand als nicht reparierbar.
+    let rep = null;
+    try { rep = _standReparieren(haupt.d, kopien); } catch (e) { rep = null; }
     // Ein repariertes, aber leeres Gerüst ist keine Rettung, solange eine Kopie mit Inhalt daliegt.
     const _leer = (u) => u.zyklen === 0 && u.eintraege === 0 && u.daten === 0;
     if (rep && !(_leer(_kopieUmfang(rep.d)) && kopien.some(k => !_leer(k.u)))) return { k: SK, d: rep.d, haupt, repariert: rep.liste };
@@ -5651,6 +5717,8 @@ function loadS() {
     }, gelesen.d);
   }
   _standVorfall(gelesen);
+  // (v1.5.295) Leere Stellen in den Listen entfernen, bevor Migrationen und erstes Bild sie anfassen.
+  try { const b = _standLueckenEntfernen(S); _lueckenBeimStart = b.leer ? b : null; } catch (e) { _lueckenBeimStart = null; }
 
   if (!S.products || !S.products.length) S.products = [];
   if (!S.weekSchedule) S.weekSchedule = {};
@@ -23335,6 +23403,13 @@ function renderSet() {
     <div class="card" style="gap:8px;display:flex;flex-direction:column">
       <div class="sect-head">💾 Daten sichern</div>
       ${_rettungKarte()}
+      ${(() => {
+        const b = _lueckenBeimStart;
+        if (!b) return '';
+        const zurueck = b.zurueck.length ? ` Aus der Sicherungskopie zurückgeholt: ${b.zurueck.join(', ')}.` : '';
+        if (b.verloren.length) return `<div style="font-size:11px;color:var(--yellow);line-height:1.5;margin-bottom:8px">⚠️ Beim Start waren Teile deiner gespeicherten Listen leer.${zurueck} <b>Nicht mehr vorhanden: ${b.verloren.join(', ')}</b> — auch keine Sicherungskopie hat sie noch. Hast du eine Backup-Datei, steht es dort.</div>`;
+        return `<div style="font-size:11px;color:var(--text-hint);line-height:1.5;margin-bottom:8px">🧹 Beim Start waren Stellen in deinen gespeicherten Listen leer oder falsch abgelegt. GrowSmart hat sie aufgeräumt.${zurueck || ' Dabei ist nichts verloren gegangen.'}</div>`;
+      })()}
       ${(() => {
         // (v1.4.83) Ehrlicher Sicherungs-Status: Wie alt ist das letzte echte Backup, und was
         // schützt die automatische Kopie tatsächlich? Ohne diese Zeile merkt niemand, dass er

@@ -526,6 +526,63 @@ function pruef(name, bedingung, info) {
     pruef('AG6 das Tagebuch kommt aus der Kopie, statt eine leere Reparatur „vollständig" zu nennen', daten > 90, daten);
   }
 
+  // ===== AH: leere Stellen in Listen (Hebel 3, Punkt 5 — v1.5.295) =====
+  console.log('\nAH - Leere Stellen in Listen: entfernt, kein Absturz, kein Verlust');
+  {
+    const bildschirme = async (a) => {
+      const vorher = a.errors.length;
+      for (const s of ['dash', 'cal', 'set']) { try { a.E(`goTo('${s}')`); } catch (e) { a.errors.push(s + ': ' + e.message); } }
+      try { a.E('openEntry(todayISO())'); } catch (e) { a.errors.push('eintrag: ' + e.message); }
+      await a.warte(50);
+      return a.errors.slice(vorher);
+    };
+    const faelle = [
+      ['fertPlans [null, …]', st => { st.fertPlans.unshift(null); }],
+      ['offsetHistory [null]', st => { st.cycles[0].offsetHistory = [null]; }],
+      ['offsetHistory als Zahl', st => { st.cycles[0].offsetHistory = 5; }],
+      ['plants [null, …]', st => { st.cycles[0].plants.push(null); }],
+      ['skippedDays als Zahl', st => { st.cycles[0].skippedDays = 5; }],
+      ['skippedDays [null, "x"]', st => { st.cycles[0].skippedDays = [null, 'x']; }],
+    ];
+    for (const [name, mut] of faelle) {
+      const a = await load({ [SK]: haupt(mut), [BAK]: kopie101 }, { warten: 400 });
+      const fehler = a.errors.concat(await bildschirme(a));
+      pruef(`AH "${name}": kein JS-Fehler auf Start, Kalender, Einstellungen, Eintrag`, fehler.length === 0, fehler[0]);
+      pruef(`AH "${name}": der Hauptstand bleibt (111 Einträge)`, a.E('Object.keys(S.entries).length') === 111, a.E('Object.keys(S.entries).length'));
+      pruef(`AH "${name}": kein Warndialog`, a.dialoge.length === 0, a.dialoge[0]);
+    }
+    // Die Pflanzen mit Daten bleiben erhalten, nur die leere Stelle geht
+    const b = await load({ [SK]: haupt(st => { st.cycles[0].plants.push(null); }) }, { warten: 400 });
+    pruef('AH die echten Pflanzen sind alle noch da', b.E('S.cycles[0].plants.length') === JSON.parse(SICHERUNG).cycles[0].plants.length, b.E('S.cycles[0].plants.length'));
+    b.E('goTo("set"); S._setUI = S._setUI || {}; S._setUI.data = true; renderSet()');
+    pruef('AH die Einstellungen sagen es', /Listen (leer|waren)|leer oder falsch abgelegt|Listen leer/.test(b.E('document.getElementById("scr-set").innerHTML')));
+    // Prüferbefund 1: eine leere Stelle, die der Plan des Zyklus war → Plan aus der Kopie, Hauptstand bleibt
+    const c = await load({ [SK]: haupt(st => { const i = st.fertPlans.findIndex(p => p.id === st.cycles[0].fertPlanId); st.fertPlans[i] = null; }), [BAK]: kopie101 });
+    pruef('AH der Plan des Zyklus kommt aus der Kopie zurück', c.E('(getPlanForCycle(S.cycles[0]) || {products:[]}).products.length') > 0);
+    pruef('AH und der Hauptstand bleibt (111, nicht 101)', c.E('Object.keys(S.entries).length') === 111, c.E('Object.keys(S.entries).length'));
+    // Prüferbefund 2: eine null in plants war eine echte Pflanze mit Ernte → aus der Kopie zurück
+    const geerntet = (st) => st.cycles[0].plants.findIndex(p => p.yieldDry || p.yieldWet || p.harvestedAt);
+    const d2 = await load({ [SK]: haupt(st => { st.cycles[0].plants[geerntet(st)] = null; }), [BAK]: kopie101 }, { warten: 400 });
+    pruef('AH die geerntete Pflanze kommt aus der Kopie zurück', d2.E('S.cycles[0].plants.length') === JSON.parse(SICHERUNG).cycles[0].plants.length, d2.E('S.cycles[0].plants.length'));
+    d2.E('goTo("set"); S._setUI = S._setUI || {}; S._setUI.data = true; renderSet()');
+    pruef('AH die Einstellungen sagen „zurückgeholt"', /zurückgeholt/.test(d2.E('document.getElementById("scr-set").innerHTML')));
+    const d3 = await load({ [SK]: haupt(st => { st.cycles[0].plants[geerntet(st)] = null; }) }, { warten: 400 });
+    d3.E('goTo("set"); S._setUI = S._setUI || {}; S._setUI.data = true; renderSet()');
+    const h3 = d3.E('document.getElementById("scr-set").innerHTML');
+    pruef('AH ohne Kopie: kein „verloren ist nichts", sondern „Nicht mehr vorhanden"', /Nicht mehr vorhanden/.test(h3) && !/nichts verloren/.test(h3));
+    // Prüferbefund 3: offsetHistory als Objekt mit einer echten Verschiebung → ausgepackt, der Erntetag bleibt
+    const mitVersatz = (st) => { st.cycles[0].offsetHistory = [{ date: '2026-07-01', offset: 3 }]; };
+    const ref = await load({ [SK]: haupt(mitVersatz) }, { warten: 300 });
+    const soll = ref.E('harvestCountdown ? JSON.stringify(endspurtState(S.cycles[0], "2026-08-20").ernteTag) : ""');
+    const e = await load({ [SK]: haupt(st => { mitVersatz(st); st.cycles[0].offsetHistory = { a: st.cycles[0].offsetHistory[0] }; }) }, { warten: 300 });
+    pruef('AH Verschiebung als Objekt: ausgepackt, der Erntetag rückt nicht vor',
+      e.E('JSON.stringify(endspurtState(S.cycles[0], "2026-08-20").ernteTag)') === soll, { soll, ist: e.E('JSON.stringify(endspurtState(S.cycles[0], "2026-08-20").ernteTag)') });
+    // offsetHistory mit {} oder {date:null}: kein Absturz im Tageseintrag
+    const f = await load({ [SK]: haupt(st => { st.cycles[0].offsetHistory = [{}, { date: null, offset: 2 }]; }) }, { warten: 300 });
+    const ff = f.errors.concat(await bildschirme(f));
+    pruef('AH unvollständige Verschiebungen: kein Absturz im Tageseintrag', ff.length === 0, ff[0]);
+  }
+
   console.log('\n' + ok + ' OK, ' + fail + ' FEHL');
   process.exit(fail ? 1 : 0);
 })();
