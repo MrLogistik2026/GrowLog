@@ -4593,7 +4593,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.295';
+const APP_VERSION = 'v1.5.296';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -5594,6 +5594,19 @@ function _vorfallText(i) {
         + (weitere ? `\n\nEine zweite Kopie vom ${weitere.date ? fmtDE(weitere.date) : '(ohne Datum)'} hat ${weitere.entries} Einträge. Du findest sie unter Einstellungen → Daten & Sicherheit.` : '')
         + alterStand };
   }
+  const technisch = (x) => `\n\n(Für die Fehlersuche: ${x})`;
+  if (i.geladen === 'aktualisierung') {
+    return { titel: '⚠️ Start mit Einschränkung',
+      text: 'Beim Start ließ sich ein Teil deiner Daten nicht auf den Stand dieser App-Version bringen. Deine Einträge sind da (' + umfang + '), GrowSmart läuft weiter — einzelne Anzeigen können aber fehlen oder unvollständig sein.'
+        + (i.aufgehoben
+          ? '\n\nDein Stand von vor dem Start ist aufgehoben' + (i.ohneFotos ? ' (ohne Fotos — die hat die App weiter)' : '') + '. Lade ihn herunter und zieh zusätzlich ein Backup: Einstellungen → Daten & Sicherheit → „Backup".'
+          : '\n\nZieh am besten gleich ein Backup: Einstellungen → Daten & Sicherheit → „Backup".')
+        + technisch(i.grund) };
+  }
+  if (i.migration) {
+    const t0 = _vorfallText(Object.assign({}, i, { migration: null }));
+    return { titel: t0.titel, text: t0.text + '\n\nAußerdem ließ sich ein Teil der Daten nicht auf den Stand dieser App-Version bringen; einzelne Anzeigen können fehlen.' + technisch(i.migration) };
+  }
   if (i.geladen === 'repariert') {
     return { titel: '🛠 Gespeicherter Stand repariert',
       text: `Beim Start war ein Teil deines gespeicherten Stands beschädigt: ${(i.repariert || []).join(', ')}. GrowSmart hat nur diesen Teil repariert — deine Einträge sind vollständig da (${umfang}).\n\nDer ursprüngliche Stand ist aufgehoben. Du brauchst ihn nur, wenn dir nach der Reparatur etwas fehlt.` };
@@ -5611,7 +5624,8 @@ async function _startHinweiseZeigen() {
   if (document.querySelector('[data-disclaimer]')) { setTimeout(_startHinweiseZeigen, 700); return; }
   const gespeichert = _rettungInfo();
   // Ein aufgehobener Stand meldet sich bei jedem Start, bis er heruntergeladen ist — „Später" verschiebt nur.
-  const offen = gespeichert && !gespeichert.heruntergeladen && (gespeichert.geladen !== 'repariert' || gespeichert.reparaturVerlust);
+  const offen = gespeichert && !gespeichert.heruntergeladen && gespeichert.geladen !== 'aktualisierung'
+    && (gespeichert.geladen !== 'repariert' || gespeichert.reparaturVerlust);
   const i = _startHinweis || (offen ? gespeichert : null);
   const wiedervorlage = !_startHinweis;
   _startHinweis = null;
@@ -5626,7 +5640,8 @@ async function _startHinweiseZeigen() {
           + '\n\nMit deinen heutigen Daten ist alles in Ordnung — dieser Hinweis kommt nur, weil die alte Datei noch nicht heruntergeladen ist.'
           + '\n\nLade sie herunter und bewahre sie auf; danach ist Ruhe. Über „🗑 Löschen" in den Einstellungen wirst du sie auch los.' }
     : _vorfallText(i);
-  const mitStand = i.grund !== 'fehlte';
+  // (Prüfer, 29.09.2026) Bei einer Anpassung ohne aufgehobenen Stand lud der Knopf einen ganz anderen herunter.
+  const mitStand = i.grund !== 'fehlte' && !(i.geladen === 'aktualisierung' && !i.aufgehoben);
   const ok = await customConfirm(t.titel, t.text,
     mitStand ? '💾 Alten Stand herunterladen' : 'Sicherungskopien ansehen', 'var(--green)', mitStand ? 'Später' : 'Verstanden');
   if (ok && mitStand) _rettungHerunterladen();
@@ -5698,7 +5713,9 @@ function _rettungKarte() {
     : (i.heruntergeladen ? 'Heruntergeladen ✓' : '<b>Noch nicht heruntergeladen.</b>');
   const knopf = 'flex:1;background:var(--card2);border:0.5px solid var(--border);border-radius:8px;padding:8px;font-size:11px;color:var(--text-sub);cursor:pointer;font-family:var(--font)';
   return `<div style="background:var(--card);border:0.5px solid rgba(212,160,23,0.4);border-left:2px solid var(--yellow);border-radius:10px;padding:10px 12px;margin-bottom:8px">
-    <div style="font-size:12px;color:var(--text-sub);line-height:1.5">🛟 <b>Alter Stand aufgehoben</b>${wann ? ' (' + wann + ')' : ''}, ${kb} KB. ${status}<br><span style="font-size:10px;color:var(--text-hint)">Er ließ sich beim Start nicht benutzen. GrowSmart kann die Datei selbst nicht wieder einlesen — aufbewahren hilft trotzdem, weil sich Einträge daraus von Hand retten lassen.</span></div>
+    <div style="font-size:12px;color:var(--text-sub);line-height:1.5">🛟 <b>Alter Stand aufgehoben</b>${wann ? ' (' + wann + ')' : ''}, ${kb} KB. ${status}<br><span style="font-size:10px;color:var(--text-hint)">${i.geladen === 'aktualisierung'
+      ? 'Das ist dein Stand von vor einem Start, bei dem sich ein Teil der Daten nicht auf die neue App-Version bringen ließ. Deine Einträge hat die App weiter — die Datei ist nur zur Sicherheit da.'
+      : 'Er ließ sich beim Start nicht benutzen. GrowSmart kann die Datei selbst nicht wieder einlesen — aufbewahren hilft trotzdem, weil sich Einträge daraus von Hand retten lassen.'}</span></div>
     <div style="display:flex;gap:6px;margin-top:8px">
       <button onclick="_rettungHerunterladen()" style="${knopf}">💾 Herunterladen</button>
       ${roh && !_speicherSperre ? `<button onclick="_rettungVerwerfen()" style="${knopf}">🗑 Löschen</button>` : ''}
@@ -5720,6 +5737,58 @@ function loadS() {
   // (v1.5.295) Leere Stellen in den Listen entfernen, bevor Migrationen und erstes Bild sie anfassen.
   try { const b = _standLueckenEntfernen(S); _lueckenBeimStart = b.leer ? b : null; } catch (e) { _lueckenBeimStart = null; }
 
+  // (v1.5.296) Die Migrationen laufen in drei Abschnitten, jeder für sich abgesichert, die Zyklen einzeln. Bis hier
+  // brach ein einziger Fehler loadS ab — gemessen an v1.5.271: sichtbar blieb nur die Kopfzeile, jedes Speichern
+  // scheiterte still. Jetzt laufen die übrigen Abschnitte weiter, und der Nutzer erfährt es.
+  _startFehler = [];
+  _startSchritt('Grundwerte', _ladenGrundwerte);
+  _startSchritt('Zyklen', _ladenZyklen);
+  _startSchritt('Düngepläne', _ladenPlaene);
+  if (_startFehler.length) _standVorfallMigration();
+}
+
+let _startFehler = [];
+function _startSchritt(name, fn) {
+  try { fn(); } catch (e) { _startFehler.push(name + ': ' + ((e && e.message) || e)); }
+}
+
+/**
+ * Ein Start-Abschnitt ist gescheitert. Der Stand von vor dem Start wird aufgehoben — passt er nicht, ohne Fotos —,
+ * gesperrt wird aber nie: Der Arbeitsstand trägt alle Daten, nur nicht ganz auf dem neuesten Format. Der Prüfer an
+ * Entwurf 284: Eine Sperre machte aus einem bleibenden Migrationsfehler bei jedem App-Update einen Stillstand.
+ * Gemeldet wird einmal je App-Version; danach steht es als Karte in den Einstellungen.
+ */
+function _standVorfallMigration() {
+  const text = _startFehler.join(' · ');
+  if (_startHinweis) { _startHinweis.migration = text; return; }
+  const bisher = _rettungInfo();
+  if (bisher && bisher.geladen === 'aktualisierung' && !bisher.heruntergeladen) {
+    if (bisher.version === APP_VERSION) return;          // schon gemeldet, schon aufgehoben
+    bisher.version = APP_VERSION; bisher.grund = text;   // neue Version, derselbe Fund: einmal erinnern
+    _rettungInfoSchreiben(bisher);
+    // (Prüfer, 29.09.2026) Die Zahlen aus dem jetzigen Stand — der alte Fund nannte sonst 91 Einträge, wo 111 da waren.
+    _startHinweis = Object.assign({}, bisher, { aufgehoben: true,
+      zyklen: (S.cycles || []).length, eintraege: _istObjekt(S.entries) ? Object.keys(S.entries).length : 0 });
+    return;
+  }
+  const info = { grund: text, geladen: 'aktualisierung', zyklen: (S.cycles || []).length,
+    eintraege: _istObjekt(S.entries) ? Object.keys(S.entries).length : 0, version: APP_VERSION };
+  let roh = null;
+  try { roh = localStorage.getItem(SK); } catch (e) { roh = null; }
+  if (roh) {
+    info.aufgehoben = _rettungParken(roh, info);
+    if (!info.aufgehoben) {
+      try {
+        const ohneFotos = JSON.stringify(JSON.parse(roh), (k, v) => (k === 'photos' ? [] : v));
+        info.ohneFotos = true;
+        info.aufgehoben = _rettungParken(ohneFotos, info);
+      } catch (e) { /* dann eben nicht aufgehoben — die Daten trägt der Arbeitsstand */ }
+    }
+  }
+  _startHinweis = info;
+}
+
+function _ladenGrundwerte() {
   if (!S.products || !S.products.length) S.products = [];
   if (!S.weekSchedule) S.weekSchedule = {};
   if (!S.potSize) S.potSize = 11;
@@ -5800,8 +5869,11 @@ function loadS() {
     }
   }
 
+}
+
+function _ladenZyklen() {
   // Migrate from old offset system → offsetHistory per cycle
-  S.cycles.forEach((c, i) => {
+  S.cycles.forEach((c, i) => { try {
     if (!c.colorId)    c.colorId = COLORS[i % COLORS.length].id;
     if (!c.symbol)     c.symbol = SYMS[i % SYMS.length];
     // (v1.5.123) Diese drei Zeilen stempelten `RI.*` — die ERDE-Werte 3/3/4 — in jeden
@@ -6019,8 +6091,10 @@ function loadS() {
     delete c.offsetDate;
     delete c.bakedOffset;
     delete c.bakedOffsetDate;
-  });
+  } catch (e) { _startFehler.push('Zyklus ' + (i + 1) + ': ' + ((e && e.message) || e)); } });
+}
 
+function _ladenPlaene() {
   // Remove legacy skipDays
   delete S.skipDays;
 
@@ -38703,7 +38777,14 @@ if (!S._disclaimerAcceptedAt) {
 } else if (shouldShowWelcome()) {
   showWelcome();
 } else {
-  goTo('dash');
+  // (v1.5.296) Wirft das erste Bild, blieb bisher nur die Kopfzeile — kein Knopf, kein Weg zu den Kopien.
+  try { goTo('dash'); } catch (e) {
+    try { console.error('Startseite', e); } catch (e2) {}
+    try {
+      const el = document.getElementById('dash-body') || document.getElementById('scr-dash');
+      if (el) el.innerHTML = '<div class="card" style="margin:16px;padding:16px;line-height:1.5">⚠️ <b>Die Startseite ließ sich nicht aufbauen.</b><br>Deine Daten sind unverändert gespeichert, und die anderen Bereiche funktionieren. Zieh zur Sicherheit ein Backup.<br><button onclick="S._setUI=S._setUI||{};S._setUI.data=true;goTo(\'set\')" style="margin-top:10px;width:100%;padding:10px;border-radius:8px;border:0.5px solid var(--border);background:var(--card2);color:var(--text);font-family:var(--font)">💾 Zu Daten &amp; Sicherheit</button><div style="font-size:10px;color:var(--text-hint);margin-top:8px">Für die Fehlersuche: ' + String((e && e.message) || e).replace(/[<>&]/g, '') + '</div></div>';
+    } catch (e3) {}
+  }
 }
 // (v1.5.290) Was beim Laden passiert ist (Kopie geladen, alter Stand aufgehoben), sagt die App jetzt —
 // nach dem Haftungsausschluss, damit nicht zwei Dialoge übereinanderliegen.

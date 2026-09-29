@@ -583,6 +583,37 @@ function pruef(name, bedingung, info) {
     pruef('AH unvollständige Verschiebungen: kein Absturz im Tageseintrag', ff.length === 0, ff[0]);
   }
 
+  // ===== AI: eine Migration wirft (Hebel 3, Punkt 6 — v1.5.296) =====
+  console.log('\nAI - Eine scheiternde Migration bricht den Start nicht ab');
+  {
+    const kaputtePlaene = haupt(st => { st.fertPlans[0].products = 'x'; });
+    const a = await load({ [SK]: kaputtePlaene, [BAK]: kopie101 });
+    pruef('AI1 Start ohne JS-Fehler', a.errors.length === 0, a.errors[0]);
+    pruef('AI2 die gescheiterten Schritte sind vermerkt', a.E('_startFehler.length') > 0, a.E('JSON.stringify(_startFehler)'));
+    pruef('AI3 der Hauptstand bleibt (111 Einträge, 1 Zyklus)', a.E('Object.keys(S.entries).length') === 111 && a.E('S.cycles.length') === 1,
+      { e: a.E('Object.keys(S.entries).length'), z: a.E('S.cycles.length') });
+    const fehler = [];
+    for (const sc of ['dash', 'cal', 'set']) { try { a.E("goTo('" + sc + "')"); } catch (e) { fehler.push(sc + ': ' + e.message); } }
+    try { a.E('openEntry(todayISO())'); } catch (e) { fehler.push('eintrag: ' + e.message); }
+    pruef('AI4 Start, Kalender, Einstellungen und Eintrag bauen sich auf', fehler.length === 0, fehler[0]);
+    pruef('AI5 die App sagt es: „Start mit Einschränkung"', a.dialoge.some(d => /Start mit Einschränkung/.test(d)), a.dialoge[0]);
+    pruef('AI6 der Stand von vor dem Start ist aufgehoben', a.get(RET) === kaputtePlaene);
+    pruef('AI7 und es wird nicht gesperrt', a.E("typeof _speicherSperre !== 'undefined' && _speicherSperre") === false);
+    a.E("S.entries['2026-09-29'] = { note: 'geht' }; saveS()");
+    pruef('AI8 Speichern funktioniert', (a.get(SK) || '').indexOf('"note":"geht"') > 0);
+    // Nächster Start mit demselben Fund in derselben Version: kein zweiter Dialog
+    const b = await load({ [SK]: kaputtePlaene, [RET]: a.get(RET), [RET_INFO]: a.get(RET_INFO) });
+    pruef('AI9 beim nächsten Start kein erneuter Dialog', b.dialoge.length === 0, b.dialoge[0]);
+    pruef('AI10 keine Sperre beim nächsten Start', b.E("typeof _speicherSperre !== 'undefined' && _speicherSperre") === false);
+  }
+
+  // Prüferbefund 4a: nach einem App-Update nennt der Hinweis die Zahlen von heute, nicht die des alten Funds
+  {
+    const info = JSON.stringify({ am: Date.now() - 86400000 * 30, heruntergeladen: false, geladen: 'aktualisierung', version: 'v1.5.1', zyklen: 1, eintraege: 91, grund: 'alt' });
+    const a = await load({ [SK]: haupt(st => { st.fertPlans[0].products = 'x'; }), [RET]: '{"alt":1}', [RET_INFO]: info });
+    pruef('AI11 nach einem Update: der Hinweis nennt 111 Einträge, nicht 91', a.dialoge.some(d => /111 Einträge/.test(d)) && !a.dialoge.some(d => /91 Einträge/.test(d)), a.dialoge[0]);
+  }
+
   console.log('\n' + ok + ' OK, ' + fail + ' FEHL');
   process.exit(fail ? 1 : 0);
 })();

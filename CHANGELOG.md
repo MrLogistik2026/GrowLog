@@ -2,6 +2,35 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-29 — v1.5.296
+
+- **Ein einziger Fehler in der Datenanpassung brach den ganzen Start ab** (Hebel 3, Punkt 6; gemessen an v1.5.271).
+  Beim Start bringt `loadS` alte Daten auf den Stand der aktuellen App-Version — über 600 Zeilen Migrationen in einem
+  Block. Warf eine davon (etwa weil eine Produktliste als Text statt als Liste gespeichert war), endete `loadS` dort:
+  Die restlichen Anpassungen liefen nicht, sichtbar blieb nur die Kopfzeile, und jedes Speichern scheiterte still.
+  **Jetzt** laufen die Migrationen in drei abgesicherten Abschnitten (Grundwerte, Zyklen — jeder einzeln —,
+  Düngepläne). Scheitert einer, laufen die anderen weiter, und die App startet normal.
+- **Der Nutzer erfährt es — einmal, nicht bei jedem Start:** „⚠️ Start mit Einschränkung: Deine Einträge sind da,
+  GrowSmart läuft weiter — einzelne Anzeigen können aber fehlen." Der Stand von vor dem Start wird aufgehoben
+  (passt er nicht in den Speicher, ohne Fotos — die trägt die App weiter). **Gesperrt wird nie:** Der Prüfer an
+  Entwurf 284 hatte gemessen, dass eine Sperre aus einem bleibenden Anpassungsfehler bei jedem App-Update einen
+  Stillstand macht. Nach einem Update erinnert die App einmal neu.
+- **Das erste Bild hat eine Ersatzkarte.** Ließ sich die Startseite nicht aufbauen, blieb bisher eine leere Fläche
+  ohne einen Knopf. Jetzt steht dort, dass die Daten unverändert gespeichert sind, mit einem Knopf zu „Daten &
+  Sicherheit".
+- **Vor dem Hochladen gegengeprüft:** Der normale Start ist nachgemessen unverändert (Patricks Sicherung ergibt Zeichen
+  für Zeichen denselben Zustand wie mit v1.5.295). Mitgenommen: Nach einem App-Update nannte der Hinweis die Zahlen
+  des alten Funds (91 statt 111 Einträge); der Download-Knopf lud bei einer Anpassung ohne aufgehobenen Stand einen
+  anderen, älteren Stand herunter; die Karte in den Einstellungen beschrieb einen Anpassungs-Fund als „nicht
+  benutzbar"; und die Ersatzkarte ersetzte die ganze Startseite samt Navigation statt nur ihren Inhalt.
+- **Offen aus der Prüfung, bewusst eigene Versionen:** Aufräumarbeiten für den ganzen Stand stehen in der Zyklus-
+  Schleife und fallen mit einem kaputten Plan für alle Zyklen aus; ein Plan mit kaputter Produktliste reißt alle
+  Plan-Migrationen mit (bei sehr alten Daten kann eine später nachgeholte Migration eine Dosis-Änderung überschreiben);
+  ein nicht heruntergeladener Anpassungs-Fund belegt den Rettungsplatz für einen späteren echten Schaden.
+- `test_rettung.js` wächst auf **154 Prüfungen** (Abschnitt AI). Die Ersatzkarte fürs erste Bild ist nicht durch einen
+  Test abgedeckt — einen Renderfehler beim Start lässt sich in jsdom nicht sauber auslösen.
+
+
 ## 2026-09-29 — v1.5.295
 
 - **Leere Stellen in Listen ließen Start und Bildschirme abstürzen** (Hebel 3, Punkt 5; gemessen an v1.5.271):
