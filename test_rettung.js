@@ -614,6 +614,72 @@ function pruef(name, bedingung, info) {
     pruef('AI11 nach einem Update: der Hinweis nennt 111 Einträge, nicht 91', a.dialoge.some(d => /111 Einträge/.test(d)) && !a.dialoge.some(d => /91 Einträge/.test(d)), a.dialoge[0]);
   }
 
+  // ===== AJ: Import prüft, ersetzt erst nach Bestätigung, lädt neu (Hebel 3, Punkt 7a — v1.5.297) =====
+  console.log('\nAJ - Import einer Datei');
+  {
+    const importiere = async (a, text, antwort) => {
+      a.dialoge.length = 0; a.toasts.length = 0;
+      const knoepfe = [];
+      a.window.customConfirm = (titel, txt, ok, farbe) => { a.dialoge.push(titel + '\n' + txt); knoepfe.push(farbe); return Promise.resolve(antwort); };
+      let inp = null;
+      const orig = a.window.document.createElement.bind(a.window.document);
+      a.window.document.createElement = (tag) => { const el = orig(tag); if (tag === 'input') inp = el; return el; };
+      a.window.eval('importData()');
+      await a.warte(20);
+      a.window.document.createElement = orig;
+      const datei = new a.window.File([text], 'growsmart_2026-09-29.json', { type: 'application/json' });
+      Object.defineProperty(inp, 'files', { value: [datei] });
+      await inp.onchange({ target: inp });
+      await a.warte(200);
+      return knoepfe;
+    };
+    const a = await load({ [SK]: SICHERUNG }, { warten: 300 });
+    const vorher = a.get(SK);
+    await importiere(a, '{"foo":1}', true);
+    pruef('AJ1 eine fremde JSON-Datei wird abgelehnt, ohne Rückfrage', a.dialoge.length === 0 && a.toasts.some(t => /keine GrowSmart-Sicherung/.test(t)), a.toasts);
+    await importiere(a, JSON.stringify({ _type: 'growsmart_preset', name: 'X', products: [], schedule: {} }), true);
+    pruef('AJ2 ein Düngeplan wird als Düngeplan erkannt', a.toasts.some(t => /Düngeplan, keine Sicherung/.test(t)), a.toasts);
+    await importiere(a, 'null', true);
+    pruef('AJ3 eine leere Datei wird abgelehnt', a.toasts.some(t => /keine lesbare Sicherung/.test(t)), a.toasts);
+    await importiere(a, JSON.stringify({ cycles: null, entries: {} }), true);
+    pruef('AJ4 eine nicht reparierbare Sicherung wird abgelehnt', a.toasts.some(t => /nicht sicher reparieren/.test(t)), a.toasts);
+    pruef('AJ5 nach all dem ist der Stand unverändert (Speicher und App)', a.get(SK) === vorher && a.E('Object.keys(S.entries).length') === 111);
+    // Eine kleinere Sicherung: Dialog nennt beide Seiten, roter Knopf; Abbrechen ändert nichts
+    const klein = JSON.stringify({ cycles: [], entries: {}, _disclaimerAcceptedAt: '2026-05-01' });
+    const k1 = await importiere(a, klein, false);
+    pruef('AJ6 der Dialog nennt Datei und App', a.dialoge.some(d => /In der Datei: 0 Zyklen/.test(d) && /Jetzt in der App: 1 Zyklus mit 111/.test(d)), a.dialoge[0]);
+    pruef('AJ7 bei deutlich weniger Inhalt ist der Knopf rot', k1[0] === 'var(--red)', k1);
+    pruef('AJ8 Abbrechen ändert nichts', a.get(SK) === vorher);
+    // Eine echte Sicherung, bestätigt: geschrieben, Neuladen steht an, bis dahin schreibt nichts mehr
+    const b = await load({ [SK]: klein }, { warten: 300 });
+    await importiere(b, SICHERUNG, true);
+    pruef('AJ9 die Sicherung ist geschrieben', Object.keys(JSON.parse(b.get(SK)).entries).length === 111);
+    pruef('AJ10 die App lädt neu (dieselben Migrationen wie beim Start)', b.E('_neuladenAnsteht') === true);
+    b.E('doUndo()');
+    pruef('AJ11 ein ↩ vor dem Neuladen macht den Import nicht rückgängig', Object.keys(JSON.parse(b.get(SK)).entries).length === 111);
+  }
+
+  // Prüferbefund F1: Import einer inhaltsärmeren, aber größeren Datei in einen fast vollen Speicher
+  // darf keine Kopie mit deutlich mehr Inhalt opfern.
+  {
+    const kopie = kopieText(gestern());
+    const quota = SK.length + SICHERUNG.length + BAK.length + kopie.length + 3000;
+    const a = await load({ [SK]: SICHERUNG, [BAK]: kopie }, { quota, warten: 300 });
+    const st = JSON.parse(SICHERUNG);
+    Object.keys(st.entries).slice(20).forEach(k => delete st.entries[k]);
+    st._polster = 'p'.repeat(40000);   // weniger Inhalt, aber mehr Zeichen
+    a.dialoge.length = 0; a.toasts.length = 0;
+    a.window.customConfirm = () => Promise.resolve(true);
+    let inp = null; const orig = a.window.document.createElement.bind(a.window.document);
+    a.window.document.createElement = (tag) => { const el = orig(tag); if (tag === 'input') inp = el; return el; };
+    a.window.eval('importData()'); await a.warte(20); a.window.document.createElement = orig;
+    Object.defineProperty(inp, 'files', { value: [new a.window.File([JSON.stringify(st)], 'growsmart_x.json')] });
+    await inp.onchange({ target: inp }); await a.warte(200);
+    pruef('AJ12 die Kopie mit 111 Einträgen bleibt', a.get(BAK) === kopie);
+    pruef('AJ13 der Hauptstand bleibt unverändert', a.get(SK) === SICHERUNG);
+    pruef('AJ14 und die Meldung sagt ehrlich, dass die Datei zu groß ist', a.toasts.some(t => /zu groß für den Speicher/.test(t)), a.toasts);
+  }
+
   console.log('\n' + ok + ' OK, ' + fail + ' FEHL');
   process.exit(fail ? 1 : 0);
 })();

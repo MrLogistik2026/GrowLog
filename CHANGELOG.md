@@ -2,6 +2,37 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-29 — v1.5.297
+
+- **Der Import prüfte die Datei nicht und ersetzte den Stand, bevor er wusste, ob er ihn laden kann** (Hebel 3,
+  Punkt 7, erster Teil; gemessen an v1.5.271). Eine fremde JSON-Datei `{"foo":1}` oder eine Düngeplan-Datei lief als
+  „0 Zyklen gefunden" mit grünem Knopf durch und ersetzte den ganzen Grow. Bei `cycles: null` war der Stand in der App
+  schon ersetzt, als die Fehlermeldung kam. Und eine Sicherung aus einer älteren App-Version lief bis zum nächsten
+  Start unangepasst weiter — kein Plan zugeordnet, Erntetag drei Tage daneben.
+- **Jetzt** prüft der Import zuerst: Unlesbare, leere und fremde Dateien werden abgelehnt, mit dem Satz, welche Datei
+  richtig ist („ihr Name beginnt mit growsmart_ und dem Datum"); eine Düngeplan-Datei wird als solche erkannt und
+  dorthin verwiesen, wo sie hingehört. Eine lesbare, aber beschädigte Sicherung nimmt dieselbe Reparatur wie der Start
+  (v1.5.294); lässt sie sich nicht sicher reparieren, wird sie abgelehnt, statt eingespielt und beim nächsten Start
+  wieder verworfen.
+- **Der Dialog nennt beide Seiten:** „In der Datei: 1 Zyklus mit 111 Einträgen. Jetzt in der App: …" Enthält die Datei
+  deutlich weniger als der jetzige Stand, ist der Knopf rot und der Dialog sagt es.
+- **Nach dem Einspielen lädt die App neu** — damit laufen dieselben Prüfungen, Reparaturen und Anpassungen wie bei
+  jedem Start. Bis zum Neuladen schreibt die App nichts mehr; ein Tipp auf ↩ in diesen 800 ms hätte den Import sonst
+  still rückgängig gemacht. Das Laden einer Sicherungskopie nimmt denselben Weg.
+- **Unter der Speichersperre** fragt der Import zuerst nach dem Download des alten Stands und spielt das Backup danach
+  ein — statt es nur auf den Bildschirm zu bringen.
+- **Vor dem Hochladen gegengeprüft:** Ein echter Export — mit Fotos, aus einer alten Version, ein Demo-Zyklus — wird
+  angenommen und nach dem Neuladen richtig angepasst (beide Zeitzonen). Mitgenommen: Die Platzregel verglich beim Import
+  mit dem alten Stand statt mit der Datei — eine inhaltsärmere, aber größere Datei konnte so eine Kopie mit dem alten
+  Grow still verdrängen; jetzt wird mit dem Inhalt der Datei verglichen, und wenn eine Kopie weichen musste, sagt es
+  die Meldung. „Lösche alte Fotos" half beim Import nichts (der alte Stand wird ja als Ganzes ersetzt) und heißt jetzt
+  „Die Datei ist zu groß für den Speicher dieses Geräts". Lädt die Seite nach dem Import nicht neu, sagt es nach
+  4 Sekunden ein Band, statt still nichts mehr zu speichern.
+- `test_rettung.js` wächst auf **168 Prüfungen** (Abschnitt AJ: den Import echt mit einer Datei durchgespielt).
+- Voller Lauf: 269 von 270 grün. Rot war einmal `test_dauerdruecken` in Berlin (6 → 7 statt Hochzählen) — der bekannte
+  zeitempfindliche Test (Abschnitt 8 der Übergabe); einzeln danach 6 von 6 grün, je drei Läufe in beiden Zeitzonen.
+
+
 ## 2026-09-29 — v1.5.296
 
 - **Ein einziger Fehler in der Datenanpassung brach den ganzen Start ab** (Hebel 3, Punkt 6; gemessen an v1.5.271).

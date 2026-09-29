@@ -3592,7 +3592,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.296';
+const APP_VERSION = 'v1.5.297';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -4240,13 +4240,14 @@ function _rettungParken(roh, info) {
  * `'SpeicherSperre'`, und der Nutzer erfährt es **jedes Mal**: Eine Drosselung hat in der Messung
  * genau die Meldung verschluckt, auf die es ankam.
  */
-function _skSchreiben(text) {
+function _skSchreiben(text, umfangNeu) {
+  if (_neuladenAnsteht) { const e = new Error('Neuladen'); e.name = 'SpeicherSperre'; throw e; }
   if (_speicherSperre) {
     _speicherSperreMelden();
     const e = new Error('Speichersperre'); e.name = 'SpeicherSperre';
     throw e;
   }
-  return _hauptstandSchreiben(text);
+  return _hauptstandSchreiben(text, umfangNeu);
 }
 
 function _speicherSperreMelden() {
@@ -5810,7 +5811,7 @@ function saveS() {
     return true;
   } catch (e) {
     // (v1.5.290) Die Sperre meldet sich selbst — hier bleibt nur der rote Punkt, der stehen bleibt.
-    if (e && e.name === 'SpeicherSperre') { _speicherStatusRot(true); return false; }
+    if (e && e.name === 'SpeicherSperre') { if (!_neuladenAnsteht) _speicherStatusRot(true); return false; }
     // Quota exceeded is the critical case we need to surface to the user
     if (e && (e.name === 'QuotaExceededError' || e.code === 22)) {
       // Rate-limit: only warn once per 5min (same throttle as maybeWarnStorageQuota)
@@ -6010,7 +6011,7 @@ function _autoBackup() {
  * Rückgabe: 'ok' · 'ok-befreit' · false (nicht geschrieben). Wie viele Kopien weichen mussten und
  * ob danach noch eine steht, steht in `_hauptstandSchreiben.zuletzt` — daraus wird die Meldung.
  */
-function _hauptstandSchreiben(txt) {
+function _hauptstandSchreiben(txt, umfangNeu) {
   const istVoll = (e) => !!e && (e.name === 'QuotaExceededError' || e.code === 22);
   _hauptstandSchreiben.zuletzt = { befreit: 0, kopienDanach: 0 };
   try {
@@ -6021,7 +6022,8 @@ function _hauptstandSchreiben(txt) {
   }
 
   // Kandidaten nach Inhalt: die kleinste zuerst, und nur, was gegenüber dem neuen Stand entbehrlich ist.
-  const neu = _kopieUmfang(S);
+  // (v1.5.297) Beim Import ist S noch der alte Stand — gemessen wird deshalb der Text, der wirklich geschrieben wird.
+  const neu = umfangNeu || _kopieUmfang(S);
   const gewicht = (u) => u.daten * 1000 + u.eintraege * 10 + u.zyklen;
   const kandidaten = [BAK_KEY, BAK2_KEY].map(_kopieLesen).filter(Boolean)
     .map(k => ({ k, u: _kopieUmfang(k.d), datum: k.d._bakDate || '' }))
@@ -6140,9 +6142,7 @@ async function restoreAutoBackup(key) {
   try {
     const b = k.d;
     delete b._bakDate;
-    _skSchreiben(JSON.stringify(b));
-    toast('Sicherungskopie geladen — App wird neu geladen');
-    setTimeout(() => window.location.reload(), 800);
+    _standErsetzenUndNeuLaden(JSON.stringify(b), 'Sicherungskopie geladen');
   } catch (e) {
     // (v1.5.291) Den wahren Grund nennen: Unter der Sperre war die Kopie einwandfrei, die App
     // durfte nur nicht schreiben — „konnte nicht gelesen werden" schickte auf die falsche Fährte.
@@ -26535,6 +26535,47 @@ function _promptFactoryReset() {
   });
 }
 
+/**
+ * (v1.5.297) Schreibt einen ganzen Stand und lädt die App neu, damit loadS mit allen Prüfungen und Migrationen
+ * läuft. Bis zum Neuladen wird nichts mehr geschrieben — ein Tipp auf ↩ in den 800 ms hätte den Import sonst
+ * still rückgängig gemacht (Prüfer an Entwurf 285).
+ */
+let _neuladenAnsteht = false;
+function _standErsetzenUndNeuLaden(text, meldung) {
+  let wie, umfang = null;
+  try { umfang = _kopieUmfang(JSON.parse(text)); } catch (e) { umfang = null; }
+  try { wie = _skSchreiben(text, umfang); } catch (e) {
+    if (e && e.name === 'SpeicherSperre') return false;   // die Sperre hat sich selbst gemeldet
+    wie = false;
+  }
+  if (wie === false) {
+    // (Prüfer, 29.09.2026) „Alte Fotos löschen" hilft hier nicht — der alte Stand wird ja als Ganzes ersetzt.
+    toast('⚠ Die Datei ist zu groß für den Speicher dieses Geräts (vermutlich wegen vieler Fotos). Dein bisheriger Stand ist unverändert.', 8000);
+    return false;
+  }
+  _neuladenAnsteht = true;
+  const z = _hauptstandSchreiben.zuletzt || {};
+  const platz = wie === 'ok-befreit'
+    ? (z.kopienDanach === 0 ? ' Dafür musste die letzte Sicherungskopie weichen.' : ' Dafür wurde die kleinere Sicherungskopie entfernt.')
+    : '';
+  toast(meldung + ' — App wird neu geladen.' + platz, platz ? 4000 : 2500);
+  setTimeout(() => window.location.reload(), platz ? 2500 : 800);
+  // F3 · Lädt die Seite nicht neu (etwa weil der Browser es verhindert), sagt es ein Band — sonst würde still
+  // nichts mehr gespeichert.
+  setTimeout(() => {
+    try {
+      if (document.getElementById('neuladeband')) return;
+      const b = document.createElement('div');
+      b.id = 'neuladeband';
+      b.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9998;background:var(--yellow);color:#000;font-family:var(--font);font-size:12px;padding:calc(env(safe-area-inset-top) + 8px) 12px 8px;text-align:center;cursor:pointer';
+      b.textContent = '⚠ Bitte neu laden — tippe hier. Bis dahin speichert GrowSmart nichts, damit das eben Geladene nicht überschrieben wird.';
+      b.onclick = () => { try { window.location.reload(); } catch (e) {} };
+      document.body.appendChild(b);
+    } catch (e) { /* egal */ }
+  }, 4000);
+  return true;
+}
+
 async function importData() {
   const inp = document.createElement('input');
   inp.type = 'file';
@@ -26543,46 +26584,49 @@ async function importData() {
     const f = e.target.files[0];
     if (!f) return;
     const r = new FileReader();
+    // (v1.5.297) Erst prüfen, dann ersetzen — und danach neu laden, damit dieselben Prüfungen, Reparaturen und
+    // Migrationen laufen wie beim Start. Gemessen an v1.5.271: {"foo":1} und eine Düngeplan-Datei liefen als
+    // „0 Zyklen gefunden" mit grünem Knopf durch und ersetzten den ganzen Grow; bei cycles: null war S schon ersetzt,
+    // als die Fehlermeldung kam; und eine Sicherung aus einer alten Version lief bis zum nächsten Start unmigriert
+    // (kein Plan zugeordnet, Erntetag drei Tage daneben).
     r.onload = async (ev) => {
-      try {
-        const d = JSON.parse(ev.target.result);
-        const ok = await customConfirm(
-          'Backup laden?',
-          `${(d.cycles || []).length} Zyklen gefunden. Aktuelle Daten werden überschrieben!`,
-          'Laden', 'var(--green)'
-        );
-        if (!ok) return;
-        S = Object.assign({
-          cycles: [], entries: {}, products: [], weekSchedule: {}, potSize: 11,
-        }, d);
-        // Ensure offsetHistory exists on imported cycles (migrate old format)
-        S.cycles.forEach(c => {
-          if (!c.offsetHistory) {
-            c.offsetHistory = [];
-            if (c.dayOffset && c.dayOffset !== 0 && c.offsetDate) {
-              c.offsetHistory.push({ date: c.offsetDate, offset: c.dayOffset });
-            }
-          }
-          delete c.dayOffset; delete c.offsetDate;
-        });
-        delete S.skipDays; // remove legacy
-        // (v1.5.291) Erst prüfen, dann jubeln. Unter der Speichersperre stand hier „Geladen ✓" über
-        // einem Import, der nur im Arbeitsspeicher ankam — nach dem nächsten Start war er weg,
-        // und wer seine Backup-Datei danach gelöscht hatte, stand ohne alles da.
-        if (saveS() === false) {
-          goTo('dash');
-          if (_speicherSperre) {
-            customConfirm('⚠️ Import noch nicht gespeichert',
-              'Deine Datei ist geladen und steht auf dem Bildschirm — gespeichert ist sie noch nicht.\n\nIn GrowSmart liegt noch ein alter, beschädigter Stand, der nirgends sonst gesichert ist. Lade ihn zuerst herunter; danach speichert GrowSmart deinen Import.\n\nSchließe die App vorher nicht.',
-              '💾 Alten Stand herunterladen', 'var(--green)', 'Später').then(ok => { if (ok) _rettungHerunterladen().then(() => { if (!_speicherSperre) saveS(); }); });
-          } else {
-            toast('⚠ Import konnte nicht gespeichert werden — der Speicher ist voll. Lösche alte Fotos und versuch es erneut.', 6000);
-          }
-        } else {
-          toast('Geladen ✓');
-          goTo('dash');
-        }
-      } catch (err) { toast('⚠ Backup konnte nicht geladen werden — Datei evtl. beschädigt oder kein GrowSmart-Backup. Exportiere die Sicherung neu und wähle sie erneut.', 5000); }
+      const wegweiser = 'Dein Stand in der App bleibt unverändert. Wähle die Datei, die der Knopf „Backup" heruntergeladen hat — ihr Name beginnt mit growsmart_ und dem Datum.';
+      let d;
+      try { d = JSON.parse(ev.target.result); } catch (err) { d = undefined; }
+      if (d === undefined || d === null) { toast('⚠ Diese Datei ist keine lesbare Sicherung — sie ist leer oder unvollständig. ' + wegweiser, 7000); return; }
+      if (_istObjekt(d) && d._type === 'growsmart_preset') { toast('⚠ Das ist ein Düngeplan, keine Sicherung. Düngepläne lädst du im Bereich Dünger über „📥 Import". ' + wegweiser, 7000); return; }
+      if (!_istObjekt(d) || (d.cycles === undefined && d.entries === undefined)) { toast('⚠ Diese Datei ist keine GrowSmart-Sicherung. ' + wegweiser, 7000); return; }
+      let repariert = null;
+      if (_standMangel(d)) {
+        // Lesbar, aber an einer Stelle beschädigt: dieselbe Reparatur wie beim Start. Geht sie nicht, lieber ablehnen
+        // als einen Stand einspielen, den die App beim nächsten Start selbst verwerfen würde.
+        let rep = null;
+        try { rep = _standReparieren(JSON.parse(JSON.stringify(d)), []); } catch (e) { rep = null; }
+        if (!rep) { toast('⚠ Diese Sicherung ist beschädigt und lässt sich nicht sicher reparieren. ' + wegweiser, 7000); return; }
+        d = rep.d; repariert = rep.liste;
+      }
+      delete d._bakDate;
+      const neuU = _kopieUmfang(d), jetzt = _kopieUmfang(S);
+      const kleiner = _deutlichKleiner(neuU, jetzt);
+      const zahl = (u) => `${u.zyklen} ${u.zyklen === 1 ? 'Zyklus' : 'Zyklen'} mit ${u.eintraege} Einträgen`;
+      const ok = await customConfirm(
+        'Backup laden?',
+        `In der Datei: ${zahl(neuU)}.\nJetzt in der App: ${zahl(jetzt)}.\n\n`
+        + (repariert ? `Die Datei war an einer Stelle beschädigt (${repariert.join(', ')}); GrowSmart hat das repariert.\n\n` : '')
+        + (kleiner ? 'Achtung: Die Datei enthält deutlich weniger als dein jetziger Stand. ' : '')
+        + 'Dein jetziger Stand wird ersetzt. Willst du ihn behalten, tippe auf Abbrechen und zieh vorher ein Backup.',
+        'Laden', kleiner ? 'var(--red)' : 'var(--green)');
+      if (!ok) return;
+      // Unter der Speichersperre erst den alten Stand sichern — sonst käme der Import nie an (die Sperre hat eine Tür).
+      if (_speicherSperre) {
+        const weiter = await customConfirm('Erst den alten Stand sichern',
+          'In GrowSmart liegt noch ein beschädigter alter Stand, der nirgends sonst gesichert ist. Lade ihn zuerst herunter — danach wird dein Backup eingespielt.',
+          '💾 Alten Stand herunterladen', 'var(--green)', 'Abbrechen');
+        if (!weiter) return;
+        await _rettungHerunterladen();
+        if (_speicherSperre) { toast('Dein Backup ist noch nicht eingespielt — erst, wenn der alte Stand heruntergeladen ist.', 6000); return; }
+      }
+      _standErsetzenUndNeuLaden(JSON.stringify(d), 'Backup geladen');
     };
     r.readAsText(f);
   };
