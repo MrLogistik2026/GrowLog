@@ -3592,7 +3592,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.293';
+const APP_VERSION = 'v1.5.294';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -4310,7 +4310,96 @@ function _standMangel(d) {
   if (Array.isArray(d.cycles) && d.cycles.some(c => !_istObjekt(c))) return 'beschädigt';
   if (d.entries !== undefined && !_istObjekt(d.entries)) return 'beschädigt';
   if (d.fertPlans !== undefined && !Array.isArray(d.fertPlans)) return 'beschädigt';
+  // (v1.5.294) Ein Zyklus ohne Kennung verliert sein Tagebuch: saveS räumt jede cycleData weg, deren
+  // Kennung zu keinem Zyklus passt. Gemessen an v1.5.271: 111 Einträge, nach einem Tag in beiden Kopien leer.
+  if (Array.isArray(d.cycles) && d.cycles.some(c => typeof c.id !== 'string' || !c.id)) return 'beschädigt';
+  // Die Pflanzenliste ist eine Liste — eine Zahl ist das alte Format und wird migriert. null, ein Objekt oder
+  // ein Text ließen die Migration still neue, namenlose Pflanzen anlegen; Einzelernten und Erträge waren weg.
+  if (Array.isArray(d.cycles) && d.cycles.some(c => c.plants !== undefined && typeof c.plants !== 'number' && !Array.isArray(c.plants))) return 'beschädigt';
+  // Tagebuch ohne einen einzigen passenden Zyklus: Die Zyklen sind verloren, nicht gelöscht — delCyc räumt
+  // die Einträge eines gelöschten Zyklus selbst mit weg.
+  if (Array.isArray(d.cycles) && _istObjekt(d.entries)) {
+    const ids = new Set(d.cycles.map(c => c.id));
+    let daten = 0, passend = 0;
+    Object.values(d.entries).forEach(e => {
+      if (e && _istObjekt(e.cycleData)) Object.keys(e.cycleData).forEach(id => { daten++; if (ids.has(id)) passend++; });
+    });
+    if (daten > 0 && passend === 0) return 'beschädigt';
+  }
   return null;
+}
+
+/**
+ * (v1.5.294) Repariert einen lesbaren, aber beschädigten Hauptstand an Ort und Stelle — oder gibt null
+ * zurück, wenn das nicht eindeutig geht (dann springt die Sicherungskopie ein).
+ *
+ * Warum reparieren statt die Kopie zu laden: Die Kopie ist von gestern oder älter. Wer sie lädt, verliert
+ * alles seit ihrem Datum und alle Fotos (die Kopie hat keine). Gemessen an v1.5.271: 20 neuere Einträge und
+ * die Fotos fielen aus dem Arbeitsstand, obwohl der Schaden nur in der Pflanzenliste eines Zyklus saß.
+ * Repariert wird deshalb nur der kaputte Behälter; das Tagebuch bleibt, wie es ist.
+ *
+ * Nicht reparierbar — dann gewinnt die Kopie: Tagebuch kaputt, Zyklusliste weder Liste noch Objekt,
+ * Kennungen nicht eindeutig zuzuordnen, oder kein Zyklus mehr übrig, obwohl das Tagebuch Einträge hat.
+ */
+function _standReparieren(d, kopien) {
+  if (!_istObjekt(d) || (d.entries !== undefined && !_istObjekt(d.entries))) return null;
+  const liste = [];
+  if (d.cycles !== undefined && !Array.isArray(d.cycles)) {
+    if (!_istObjekt(d.cycles)) return null;
+    d.cycles = Object.values(d.cycles);
+    liste.push('Zyklusliste');
+  }
+  if (Array.isArray(d.cycles)) {
+    const vorher = d.cycles.length;
+    d.cycles = d.cycles.filter(_istObjekt);
+    const stellenEntfernt = d.cycles.length !== vorher;
+    if (stellenEntfernt) liste.push('leere Stellen in der Zyklusliste');
+    // Die Kennung steckt noch im Tagebuch: dort, wo Einträge zu keinem Zyklus mehr passen.
+    const ohneId = d.cycles.filter(c => typeof c.id !== 'string' || !c.id);
+    if (ohneId.length) {
+      const bekannt = new Set(d.cycles.map(c => c.id).filter(id => typeof id === 'string' && id));
+      const verwaist = new Set();
+      Object.values(d.entries || {}).forEach(e => {
+        if (e && _istObjekt(e.cycleData)) Object.keys(e.cycleData).forEach(id => { if (!bekannt.has(id)) verwaist.add(id); });
+      });
+      // (Prüfer, 29.09.2026) Nicht zuordnen, wenn eine leere Stelle entfernt wurde: Sie kann der Zyklus
+      // gewesen sein, dem das verwaiste Tagebuch gehört — dann bekäme ein fremder Zyklus es.
+      if (stellenEntfernt) return null;
+      if (ohneId.length === 1 && verwaist.size === 1) ohneId[0].id = [...verwaist][0];
+      else if (verwaist.size === 0 && !(kopien || []).some(k => k.u && k.u.daten > 0)) ohneId.forEach((c, i) => { c.id = String(Date.now() + i); });
+      else return null;   // nicht eindeutig, oder eine Kopie hält das Tagebuch noch: nicht raten, Kopie laden.
+      liste.push(ohneId.length === 1 ? 'Kennung eines Zyklus' : 'Kennungen von ' + ohneId.length + ' Zyklen');
+    }
+    // Pflanzenliste: aus der Kopie desselben Zyklus, sonst legt die Migration sie aus der Pflanzenzahl neu an.
+    d.cycles.forEach(c => {
+      const p = c.plants;
+      if (p === undefined || Array.isArray(p) || typeof p === 'number') return;
+      const aus = (kopien || []).map(k => ((k.d && k.d.cycles) || []).find(x => _istObjekt(x) && x.id === c.id))
+        .find(x => x && Array.isArray(x.plants));
+      if (aus) { c.plants = JSON.parse(JSON.stringify(aus.plants)); liste.push('Pflanzenliste (aus der Sicherungskopie)'); }
+      else { delete c.plants; liste.push('Pflanzenliste (neu angelegt, Einzelernten fehlen)'); }
+    });
+  }
+  if (d.fertPlans !== undefined && !Array.isArray(d.fertPlans)) {
+    // (Prüfer, 29.09.2026) Auspacken statt löschen — gelöscht waren eigene und angepasste Pläne weg, und die
+    // Zyklen zeigten auf einen Plan, den es nicht mehr gab.
+    if (!_istObjekt(d.fertPlans)) return null;
+    d.fertPlans = Object.values(d.fertPlans).filter(_istObjekt);
+    liste.push('Düngepläne');
+  }
+  // Jeder Zyklus muss seinen Plan noch finden.
+  if (Array.isArray(d.cycles) && Array.isArray(d.fertPlans)) {
+    const planIds = new Set(d.fertPlans.map(p => p.id));
+    if (d.cycles.some(c => c.fertPlanId && !planIds.has(c.fertPlanId))) return null;
+  }
+  if (!liste.length || _standMangel(d)) return null;
+  // (Prüfer, 29.09.2026) Kein Tagebuch-Eintrag darf ohne Zyklus übrig bleiben. Sonst räumt das nächste saveS ihn
+  // weg — gemessen: ein Zyklus mit 40 Einträgen stand als null in der Liste, die Reparatur meldete „vollständig",
+  // und nach dem Speichern waren die 40 Einträge weg. Dann gewinnt die Kopie.
+  const ids = new Set((d.cycles || []).map(c => c.id));
+  const verwaistNachher = Object.values(d.entries || {}).some(e => e && _istObjekt(e.cycleData) && Object.keys(e.cycleData).some(id => !ids.has(id)));
+  if (verwaistNachher) return null;
+  return { d, liste };
 }
 
 /**
@@ -4339,9 +4428,17 @@ function _standLesen() {
     if (!roh) continue;
     let d = null, mangel;
     try { d = JSON.parse(roh); mangel = _standMangel(d); } catch (e) { mangel = 'nicht lesbar'; }
-    if (mangel) { if (k === SK) haupt = { roh, mangel }; continue; }
+    if (mangel) { if (k === SK) haupt = { roh, mangel, d: _istObjekt(d) ? d : null }; continue; }
     if (k === SK) return { k, d, haupt: null };   // der Hauptstand geht immer vor
     (legacy(k) ? alte : kopien).push({ k, d, u: _kopieUmfang(d), datum: (d && d._bakDate) || '' });
+  }
+  // (v1.5.294) Ist der Hauptstand lesbar und nur an einer Stelle beschädigt, wird er repariert — eine ältere
+  // Kopie verdrängt nie einen lesbaren, neueren Hauptstand.
+  if (haupt && haupt.d) {
+    const rep = _standReparieren(haupt.d, kopien);
+    // Ein repariertes, aber leeres Gerüst ist keine Rettung, solange eine Kopie mit Inhalt daliegt.
+    const _leer = (u) => u.zyklen === 0 && u.eintraege === 0 && u.daten === 0;
+    if (rep && !(_leer(_kopieUmfang(rep.d)) && kopien.some(k => !_leer(k.u)))) return { k: SK, d: rep.d, haupt, repariert: rep.liste };
   }
   // (v1.5.292) Die Schlüssel älterer App-Versionen sind eine Migrationsquelle, kein Sicherungsstand:
   // Die App liest sie nur, schreibt sie nie. Sie kommen deshalb erst dran, wenn es keine Kopie gibt.
@@ -4391,7 +4488,9 @@ function _standVorfall(g) {
   const nichtsDrin = !(S.cycles || []).length && !(_istObjekt(S.entries) ? Object.keys(S.entries).length : 0);
   const info = {
     grund: g.haupt ? g.haupt.mangel : 'fehlte',
-    geladen: (kopie && !nichtsDrin) ? 'kopie' : ((g.d && !nichtsDrin) ? 'alt' : 'leer'),
+    geladen: g.repariert ? 'repariert' : ((kopie && !nichtsDrin) ? 'kopie' : ((g.d && !nichtsDrin) ? 'alt' : 'leer')),
+    repariert: g.repariert || null,
+    reparaturVerlust: !!(g.repariert && g.repariert.some(x => /neu angelegt/.test(x))),
     quelle: g.k, kopieVom: g.kopieVom || null,
     zyklen: (S.cycles || []).length,
     eintraege: _istObjekt(S.entries) ? Object.keys(S.entries).length : 0,
@@ -4401,7 +4500,9 @@ function _standVorfall(g) {
     info.aufgehoben = _rettungParken(g.haupt.roh, info);
     // (v1.5.291) Gesperrt wird nur, wenn im Rohtext wirklich etwas steckt. Für ein „{" oder ein
     // „null" gibt es nichts von Hand zu retten — dafür die App anzuhalten kostet mehr, als es schützt.
-    if (!info.aufgehoben && _lohntRettung(g.haupt.roh)) { _speicherSperre = true; _sperreRoh = g.haupt.roh; _sperrBand(true); }
+    // Nach einer Reparatur trägt der Arbeitsstand alles, was im Rohtext brauchbar war — dann gibt es nichts zu
+    // schützen, wofür die App anhalten müsste.
+    if (!info.aufgehoben && !g.repariert && _lohntRettung(g.haupt.roh)) { _speicherSperre = true; _sperreRoh = g.haupt.roh; _sperrBand(true); }
     if (!info.aufgehoben) info.nichtsZuRetten = !_lohntRettung(g.haupt.roh);
   }
   _startHinweis = info;
@@ -4426,6 +4527,10 @@ function _vorfallText(i) {
         + (weitere ? `\n\nEine zweite Kopie vom ${weitere.date ? fmtDE(weitere.date) : '(ohne Datum)'} hat ${weitere.entries} Einträge. Du findest sie unter Einstellungen → Daten & Sicherheit.` : '')
         + alterStand };
   }
+  if (i.geladen === 'repariert') {
+    return { titel: '🛠 Gespeicherter Stand repariert',
+      text: `Beim Start war ein Teil deines gespeicherten Stands beschädigt: ${(i.repariert || []).join(', ')}. GrowSmart hat nur diesen Teil repariert — deine Einträge sind vollständig da (${umfang}).\n\nDer ursprüngliche Stand ist aufgehoben. Du brauchst ihn nur, wenn dir nach der Reparatur etwas fehlt.` };
+  }
   if (i.geladen === 'alt') {
     return { titel: '🛟 Ältere Daten geladen',
       text: `${anfang} GrowSmart hat deshalb die Daten einer früheren App-Version geladen: ${umfang}. Neuere Einträge fehlen hier.${alterStand}` };
@@ -4439,7 +4544,7 @@ async function _startHinweiseZeigen() {
   if (document.querySelector('[data-disclaimer]')) { setTimeout(_startHinweiseZeigen, 700); return; }
   const gespeichert = _rettungInfo();
   // Ein aufgehobener Stand meldet sich bei jedem Start, bis er heruntergeladen ist — „Später" verschiebt nur.
-  const offen = gespeichert && !gespeichert.heruntergeladen;
+  const offen = gespeichert && !gespeichert.heruntergeladen && (gespeichert.geladen !== 'repariert' || gespeichert.reparaturVerlust);
   const i = _startHinweis || (offen ? gespeichert : null);
   const wiedervorlage = !_startHinweis;
   _startHinweis = null;
@@ -5514,7 +5619,13 @@ function saveS() {
     if (!saveS._lastUndo || now - saveS._lastUndo > 2000) {
       // Clean up orphaned cycleData
       const cycleIds = new Set(S.cycles.map(c => c.id));
-      Object.keys(S.entries).forEach(d => {
+      // (v1.5.294) Nicht aufräumen, wenn ein Zyklus keine Kennung hat oder GAR KEIN Eintrag mehr zu einem Zyklus
+      // passt — das ist das Zeichen eines Schadens, nicht eines Überbleibsels (delCyc räumt selbst auf).
+      // Gemessen: ein Zyklus ohne Kennung, und das nächste Speichern löschte alle 111 Tagebuch-Einträge.
+      let _daten = 0, _passend = 0;
+      Object.values(S.entries).forEach(e => { if (e?.cycleData) Object.keys(e.cycleData).forEach(id => { _daten++; if (cycleIds.has(id)) _passend++; }); });
+      const _aufraeumen = !S.cycles.some(c => !c.id) && !(_daten > 0 && _passend === 0);
+      if (_aufraeumen) Object.keys(S.entries).forEach(d => {
         const e = S.entries[d];
         if (e?.cycleData) {
           Object.keys(e.cycleData).forEach(cId => {

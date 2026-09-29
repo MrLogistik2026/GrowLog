@@ -396,7 +396,9 @@ function pruef(name, bedingung, info) {
   console.log('\nW - Eine Kopie mit Einträgen, aber ohne Zyklus, gilt nicht als leer');
   {
     // Nach „Zyklus löschen" bleiben Einträge mit Klimawerten stehen: 0 Zyklen, 50 Einträge.
-    const ohneZyklus = JSON.stringify({ cycles: [], entries: JSON.parse(standMit(0, 50, '2026-09-19')).entries, _bakDate: '2026-09-19' });
+    // delCyc räumt die cycleData mit weg — übrig bleiben Einträge mit Klimawerten, ohne cycleData.
+    const _e = {}; Object.keys(JSON.parse(standMit(0, 50)).entries).forEach(k => { _e[k] = { temp: 22, humidity: 55 }; });
+    const ohneZyklus = JSON.stringify({ cycles: [], entries: _e, _bakDate: '2026-09-19' });
     const a = await load({ [SK]: KAPUTT, [BAK]: ohneZyklus, [BAK2]: standMit(1, 40, '2026-09-18') });
     pruef('W1 geladen wird die jüngste Kopie mit den 50 Einträgen',
       a.E('Object.keys(S.entries).length') === 50, a.E('Object.keys(S.entries).length'));
@@ -437,6 +439,91 @@ function pruef(name, bedingung, info) {
     await a.warte(900);
     pruef('Z1 der Hinweis sagt „startet leer", nicht „Sicherungskopie geladen"',
       a.dialoge.some(d => /startet leer/.test(d)) && !a.dialoge.some(d => /Sicherungskopie geladen/.test(d)), a.dialoge[0]);
+  }
+
+  // ===== AA bis AF: beschädigter, aber lesbarer Hauptstand (Hebel 3, Punkt 4 — v1.5.294) =====
+  const haupt = (mut) => { const st = JSON.parse(SICHERUNG); mut(st); return JSON.stringify(st); };
+  // Eine Kopie von gestern mit 10 Einträgen weniger — so ist sichtbar, welcher Stand geladen wurde.
+  const kopie101 = (() => { const st = JSON.parse(SICHERUNG); Object.keys(st.entries).sort().slice(-10).forEach(k => delete st.entries[k]); st._bakDate = gestern(); return JSON.stringify(st, (k, v) => (k === 'photos' ? [] : v)); })();
+
+  console.log('\nAA - Zyklus ohne Kennung: die Kennung kommt aus dem Tagebuch zurück');
+  {
+    const a = await load({ [SK]: haupt(st => { delete st.cycles[0].id; }), [BAK]: kopie101 });
+    pruef('AA1 Start ohne JS-Fehler', a.errors.length === 0, a.errors[0]);
+    pruef('AA2 der Hauptstand bleibt (111 Einträge, nicht die Kopie mit 101)', a.E('Object.keys(S.entries).length') === 111, a.E('Object.keys(S.entries).length'));
+    pruef('AA3 der Zyklus hat seine Kennung zurück', a.E("S.cycles.every(c => typeof c.id === 'string' && c.id)"));
+    a.E('saveS()');
+    const nach = JSON.parse(a.get(SK)); let daten = 0;
+    Object.values(nach.entries).forEach(e => { daten += Object.keys((e && e.cycleData) || {}).length; });
+    pruef('AA4 nach dem Speichern ist das Tagebuch vollständig da', daten > 100, daten);
+    pruef('AA5 der Hinweis sagt „repariert", nicht „Kopie geladen"', a.dialoge.some(d => /repariert/.test(d)) && !a.dialoge.some(d => /Sicherungskopie geladen/.test(d)), a.dialoge[0]);
+    pruef('AA6 und keine Sperre', a.E("typeof _speicherSperre !== 'undefined' && _speicherSperre") === false);
+  }
+
+  console.log('\nAB - Pflanzenliste null: Pflanzen aus der Kopie, Einträge aus dem Hauptstand');
+  {
+    const a = await load({ [SK]: haupt(st => { st.cycles[0].plants = null; }), [BAK]: kopie101 });
+    pruef('AB1 der Hauptstand bleibt (111 Einträge)', a.E('Object.keys(S.entries).length') === 111, a.E('Object.keys(S.entries).length'));
+    pruef('AB2 die Einzelernten sind wieder da', a.E("S.cycles[0].plants.filter(p => p.harvestedAt || p.yieldDry || p.yieldWet).length") > 0,
+      a.E("JSON.stringify(S.cycles[0].plants.map(p => Object.keys(p)))").slice(0, 200));
+    pruef('AB3 der Hinweis nennt die Pflanzenliste', a.dialoge.some(d => /Pflanzenliste/.test(d)), a.dialoge[0]);
+  }
+
+  console.log('\nAC - Pflanzenliste als Text, keine Kopie: neu angelegt, Einträge bleiben');
+  {
+    const a = await load({ [SK]: haupt(st => { st.cycles[0].plants = 'kaputt'; }) });
+    pruef('AC1 Start ohne JS-Fehler', a.errors.length === 0, a.errors[0]);
+    pruef('AC2 alle Einträge da', a.E('Object.keys(S.entries).length') === 111);
+    pruef('AC3 die Pflanzen sind eine Liste', a.E('Array.isArray(S.cycles[0].plants) && S.cycles[0].plants.length > 0'));
+    pruef('AC4 der Hinweis sagt, dass Einzelernten fehlen', a.dialoge.some(d => /Einzelernten fehlen/.test(d)), a.dialoge[0]);
+  }
+
+  console.log('\nAD - Düngepläne als Objekt: der Hauptstand bleibt');
+  {
+    const a = await load({ [SK]: haupt(st => { st.fertPlans = {}; }), [BAK]: kopie101 });
+    // Ein LEERES Objekt heißt: die Pläne sind weg, der Zyklus findet seinen nicht mehr — dann hat nur die Kopie sie.
+    pruef('AD1 leeres Plan-Objekt: die Kopie mit den Plänen gewinnt', a.E('Object.keys(S.entries).length') === 101, a.E('Object.keys(S.entries).length'));
+    pruef('AD2 und der Zyklus findet seinen Plan', a.E('(getPlanForCycle(S.cycles[0]) || {products:[]}).products.length') > 0);
+  }
+
+  console.log('\nAE - saveS räumt kein Tagebuch weg, wenn ein Zyklus seine Kennung verliert');
+  {
+    const a = await load({ [SK]: SICHERUNG });
+    a.E('delete S.cycles[0].id; saveS._lastUndo = 0; saveS()');
+    const nach = JSON.parse(a.get(SK)); let daten = 0;
+    Object.values(nach.entries).forEach(e => { daten += Object.keys((e && e.cycleData) || {}).length; });
+    pruef('AE1 das Tagebuch steht noch im Speicher', daten > 100, daten);
+  }
+
+  console.log('\nAF - Nicht eindeutig: zwei Zyklen ohne Kennung, zwei Tagebücher → Kopie');
+  {
+    const a = await load({ [SK]: haupt(st => {
+      const c2 = JSON.parse(JSON.stringify(st.cycles[0])); c2.id = 'zweiter';
+      st.cycles.push(c2);
+      Object.values(st.entries).slice(0, 5).forEach(e => { if (e.cycleData) e.cycleData.zweiter = { note: 'x' }; });
+      st.cycles.forEach(c => { delete c.id; });
+    }), [BAK]: kopie101 });
+    pruef('AF1 geladen wird die Kopie (101), statt Tagebücher zu raten', a.E('Object.keys(S.entries).length') === 101, a.E('Object.keys(S.entries).length'));
+  }
+
+  console.log('\nAG - Prüferbefunde vor dem Hochladen (v1.5.294)');
+  {
+    // Befund 2: Düngepläne als Objekt MIT den echten Plänen — ausgepackt, nicht gelöscht.
+    const a = await load({ [SK]: haupt(st => { const o = {}; (st.fertPlans || []).forEach((p, i) => { o['p' + i] = p; }); st.fertPlans = o; }), [BAK]: kopie101 });
+    pruef('AG1 die echten Pläne sind alle wieder da', a.E('S.fertPlans.length') === JSON.parse(SICHERUNG).fertPlans.length, a.E('S.fertPlans.length'));
+    pruef('AG2 der Zyklus findet seinen Plan mit Produkten', a.E('(getPlanForCycle(S.cycles[0]) || {products:[]}).products.length') > 0);
+    pruef('AG3 der Hauptstand bleibt (111)', a.E('Object.keys(S.entries).length') === 111);
+    // Befund 1: an der Stelle eines echten Zyklus mit Tagebuch steht null → Kopie, nicht „repariert".
+    const zwei = (st) => { const c2 = JSON.parse(JSON.stringify(st.cycles[0])); c2.id = 'zweiter'; st.cycles.push(c2);
+      Object.values(st.entries).slice(0, 40).forEach(e => { if (e.cycleData) e.cycleData.zweiter = { note: 'B' }; }); };
+    const kopieZwei = (() => { const st = JSON.parse(SICHERUNG); zwei(st); st._bakDate = gestern(); return JSON.stringify(st, (k, v) => (k === 'photos' ? [] : v)); })();
+    const b = await load({ [SK]: haupt(st => { zwei(st); st.cycles[1] = null; }), [BAK]: kopieZwei });
+    pruef('AG4 der Zyklus mit 40 Einträgen kommt aus der Kopie zurück', b.E('S.cycles.length') === 2, b.E('S.cycles.length'));
+    pruef('AG5 kein „vollständig da" über einem verlorenen Zyklus', !b.dialoge.some(d => /vollständig da/.test(d)), b.dialoge[0]);
+    // Befund 3: Kennung weg, Tagebuch schon geleert, Kopie hat es noch → Kopie statt neuer Kennung.
+    const c = await load({ [SK]: haupt(st => { delete st.cycles[0].id; Object.values(st.entries).forEach(e => { if (e) e.cycleData = {}; }); }), [BAK]: kopie101 });
+    let daten = 0; c.E('Object.values(S.entries).map(e => Object.keys((e && e.cycleData) || {}).length)').forEach(n => { daten += n; });
+    pruef('AG6 das Tagebuch kommt aus der Kopie, statt eine leere Reparatur „vollständig" zu nennen', daten > 90, daten);
   }
 
   console.log('\n' + ok + ' OK, ' + fail + ' FEHL');

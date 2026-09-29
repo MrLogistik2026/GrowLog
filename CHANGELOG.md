@@ -2,6 +2,38 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-09-29 — v1.5.294
+
+- **Ein lesbarer, aber an einer Stelle beschädigter Stand wird repariert statt durch eine ältere Kopie ersetzt**
+  (Hebel 3, Punkt 4). Bis v1.5.293 galt jeder Formschaden als „unbrauchbar", und die Tageskopie sprang ein. Die
+  Kopie ist aber von gestern oder älter und hat keine Fotos: Gemessen fielen 20 neuere Einträge und alle Fotos aus
+  dem Arbeitsstand, obwohl der Schaden nur in der Pflanzenliste eines Zyklus saß. **Jetzt** repariert
+  `_standReparieren` nur den kaputten Behälter — Zyklusliste als Objekt, leere Stellen darin, Düngepläne als Objekt,
+  eine kaputte Pflanzenliste (aus der Kopie desselben Zyklus, sonst neu aus der Pflanzenzahl) — und lässt das
+  Tagebuch, wie es ist. Der Start-Hinweis sagt „🛠 Gespeicherter Stand repariert" und nennt, was repariert wurde.
+  Der Rohtext wird trotzdem aufgehoben; eine Speichersperre gibt es in diesem Fall nicht, weil der Arbeitsstand
+  alles trägt, was im Rohtext brauchbar war.
+- **Ein Zyklus ohne Kennung verlor still sein ganzes Tagebuch.** `saveS` räumt jede cycleData weg, deren Kennung
+  zu keinem Zyklus passt — gemessen waren nach einem Speichervorgang alle 111 Einträge weg, nach einem Tag auch in
+  beiden Kopien. **Jetzt** holt die Reparatur die Kennung aus dem Tagebuch zurück, wenn sie eindeutig ist (ein
+  Zyklus ohne Kennung, genau eine verwaiste Kennung). Ist sie es nicht, wird nicht geraten, sondern die Kopie
+  geladen. Und `saveS` räumt nicht mehr auf, wenn ein Zyklus keine Kennung hat oder gar kein Eintrag mehr zu einem
+  Zyklus passt — das ist das Zeichen eines Schadens, kein Überbleibsel (`delCyc` räumt selbst auf).
+- **`plants: null`, als Objekt oder als Text** ließ die Migration still neue, namenlose Pflanzen anlegen; Einzelernten
+  und Erträge waren weg. Das gilt jetzt als Schaden und nimmt den Weg über die Reparatur.
+- Ein repariertes, aber leeres Gerüst gilt nicht als Rettung, solange eine Kopie mit Inhalt daliegt.
+- **Vor dem Hochladen gegengeprüft — und dabei zwei Verluste gefunden, beide schlechter als v1.5.293.** (a) Eine
+  „leere Stelle" in der Zyklusliste war ein echter Zyklus: Die Reparatur filterte sie weg, meldete „vollständig",
+  und das nächste Speichern räumte seine 40 Tagebuch-Einträge ab. Jetzt darf nach einer Reparatur kein
+  Tagebuch-Eintrag ohne Zyklus übrig bleiben, sonst gewinnt die Kopie; und nach einer entfernten leeren Stelle wird
+  keine Kennung mehr zugeordnet. (b) Düngepläne als Objekt wurden gelöscht statt ausgepackt — eigene und angepasste
+  Pläne waren weg, der Zyklus zeigte ins Leere. Jetzt werden sie ausgepackt, und jeder Zyklus muss seinen Plan
+  finden. Dazu: Eine neue Kennung wird nur vergeben, wenn keine Kopie das Tagebuch noch hat, und die Erinnerung an
+  den aufgehobenen Stand bleibt, wenn bei der Reparatur Einzelernten verloren gingen.
+- `test_rettung.js` wächst auf **116 Prüfungen** (Abschnitte AA–AG); 10 davon fallen auf v1.5.293 um. Die Testdaten des Falls W waren unrealistisch
+  (Einträge mit cycleData ohne Zyklus — das hinterlässt `delCyc` nie) und sind berichtigt.
+
+
 ## 2026-09-19 — v1.5.293
 
 Vier Verfeinerungen aus der Schlussprüfung vor dem Hochladen. Keine davon war schlechter als der
