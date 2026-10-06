@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.302** · index.html 2,50 MB · 754 Funktionen
+Stand: **v1.5.303** · index.html 2,50 MB · 756 Funktionen
 Zuletzt fortgeschrieben am 06.10.2026 (Run 02 neben Run 01 — Abschnitt 0o, „Stand Run 02"). Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
@@ -198,6 +198,7 @@ kein Blocker, aber Fehler, die nur mit zwei Zyklen oder direkt nach dem Anlegen 
 - v1.5.300: „Vom Plan übernehmen" legt die Spüldauer auf die Spültage um — Endspurt und Kalender nennen danach denselben Erntetag.
 - v1.5.301: Der Vorlauf vom Keimstart bis zum Keimling gehört in Plan-Woche 1 (`_keimVorlauf`, höchstens 1 + 7 Tage) — die Plan-Wochen treffen die Stammdaten von Run 02 auf den Tag.
 - v1.5.302: Rainbow-Vorlage auf Blatt v2.1 (24 Dosen, EC-Korridore, Tipps, Alfa Boost raus); unveränderte v1.0-Kopien werden einmalig mitgehoben (`RAINBOW_V10_SCHEDULE`, `_produktInEintraegen`). **Vor dem Hochladen gegengeprüft** — siehe CHANGELOG.
+- v1.5.303: Das Zeltklima wird nach dem Zyklus bewertet, dessen Pflanzen noch stehen (`_fuehrenderZyklus`) — vorher nach Run 01 im Curing, ohne Schimmel-Warnung für Run 02.
 
 **Bei der nächsten Bewertung** dieselbe Skala, dieselben Kategorie-IDs und dieselben Regeln aus `auftrag.md` nehmen und
 die Noten gegen diese Tabelle stellen.

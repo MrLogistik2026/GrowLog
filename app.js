@@ -3593,7 +3593,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.302';
+const APP_VERSION = 'v1.5.303';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -14982,10 +14982,35 @@ function _klimaLexVpd() {
  * Zielzeile), Temperatur- und Luftfeuchte-Zeile samt kritischer Warnung, Platzhalter. renderEntry baut sie beim Öffnen,
  * uEnv beim Tippen — vorher zog beim Tippen nur die Profi-Pille mit, Satz, Zielzeilen und Warnung blieben stehen.
  */
+/**
+ * (v1.5.303) Der Zyklus, nach dem sich das Zeltklima richtet: einer, dessen Pflanzen noch stehen — bei mehreren der am
+ * weitesten entwickelte, weil sein Schimmel-Deckel der strengere ist (ANBAU.md 13.5: der Deckel ist hart). Vorher nahm
+ * die Bewertung den ersten aktiven Zyklus. Stand dort ein Zyklus im Curing (Run 01), lief Run 02 gegen dessen Phase:
+ * In der Blüte fehlte bei 75 % Luftfeuchte die Schimmel-Warnung, ab dem Ende des Curings gab es gar keine Bewertung.
+ * Steht keine Pflanze mehr (Trocknen, Curing), bleibt es beim ersten Zyklus — dann gilt dessen Trockenklima.
+ */
+const _KLIMA_RANG = { anzucht: 1, bloom: 2, flush: 3, ice: 4, harvest: 5 };
+function _fuehrenderZyklus(act, iso) {
+  const liste = (act || []).filter(Boolean);
+  if (!liste.length) return null;
+  let best = null, bestRang = 0, bestTag = -1;
+  liste.forEach(c => {
+    const p = phase(iso, c);
+    if (!p) return;
+    const r = _KLIMA_RANG[p.ph] || (p.ernteOffen ? 5 : 0);   // stehende Pflanze nach dem Plan-Erntetag: wie Ernte
+    if (r > bestRang || (r === bestRang && r > 0 && p.day > bestTag)) { best = c; bestRang = r; bestTag = p.day; }
+  });
+  return bestRang > 0 ? best : liste[0];
+}
+/** (v1.5.303) Wie viele Zyklen haben an diesem Tag noch stehende Pflanzen? */
+function _wachsendeZyklen(act, iso) {
+  return (act || []).filter(c => { const p = c && phase(iso, c); return !!p && (!!_KLIMA_RANG[p.ph] || !!p.ernteOffen); });
+}
+
 function _klimaEntryTeile(tRaw, rhRaw, act, iso) {
   const t = parseFloat(tRaw), rh = parseFloat(rhRaw);
   const vpd = calcVPD(t, rh);
-  const c0 = act.length > 0 ? act[0] : null;
+  const c0 = _fuehrenderZyklus(act, iso);
   const p0 = c0 ? phase(iso, c0) : null;
   const allOutdoor = act.length > 0 && act.every(c => c.growType === 'outdoor');
   const isOutdoorEnv = !!(c0 && c0.growType === 'outdoor');
@@ -15034,6 +15059,10 @@ function _klimaEntryTeile(tRaw, rhRaw, act, iso) {
         </div>${zielText ? `<div id="klima-ziel" style="margin-top:6px;padding:6px 10px;background:rgba(255,255,255,0.02);border:0.5px dashed var(--border);border-radius:8px;font-size:10px;color:${farbe(zielMark)};display:flex;align-items:center;gap:6px"><span>${zielMark}</span><span>${zielText}</span></div>` : ''}`;
     } else {
       vpdBox = `<div style="background:var(--teal-bg);border:0.5px solid var(--teal-bd);border-radius:10px;padding:10px 12px;font-size:12px;color:var(--text-muted)">Temp & RLF eingeben → VPD</div>`;
+    }
+    // (v1.5.303) Wachsen mehrere Zyklen im selben Zelt, steht dabei, nach welchem bewertet wird.
+    if (c0 && _wachsendeZyklen(act, iso).length > 1) {
+      vpdBox += `<div style="font-size:10px;color:var(--text-hint);margin-top:4px;line-height:1.4">Bewertet nach „${c0.name}“ — am weitesten entwickelt, also mit den strengsten Grenzen.</div>`;
     }
   }
 
@@ -19501,9 +19530,10 @@ function toggleAllTips() {
 function renderTips() {
   const act = active(), today = todayISO(), entry = S.entries[today] || {};
   const vpd = calcVPD(parseFloat(entry.temp), parseFloat(entry.humidity));
-  // Use first active cycle's phase for VPD zone context (Premium-Spätblüte mode)
-  const p4vpd = act.length > 0 ? phase(today, act[0]) : null;
-  const gt4vpd = act.length > 0 ? act[0].growType : 'indoor';
+  // (v1.5.303) Nach dem Zyklus, dessen Pflanzen noch stehen — nicht nach dem ersten aktiven (siehe _fuehrenderZyklus).
+  const _fz4vpd = _fuehrenderZyklus(act, today);
+  const p4vpd = _fz4vpd ? phase(today, _fz4vpd) : null;
+  const gt4vpd = _fz4vpd ? _fz4vpd.growType : 'indoor';
   const z = vpdZone(vpd, p4vpd, gt4vpd);
 
   // (v1.5.109) Die Dünge-Regeln weiter unten kommen aus dem eigenen Zustand statt aus

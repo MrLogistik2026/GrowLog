@@ -2,6 +2,22 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-06 — v1.5.303
+
+- **Mit einem zweiten Zyklus bewertete der Eintrag das Klima nach dem falschen** (gemessen beim Durchspielen von Run 02,
+  vom Skeptiker bestätigt). Temperatur und Luftfeuchte gelten fürs ganze Zelt; bewertet wurden sie nach dem ersten
+  aktiven Zyklus — und das war Run 01 im Curing. Run 02 lief damit gegen die Phase „Curing": In der Blüte fehlte bei
+  22 °C / 75 % die Schimmel-Warnung, und ab dem Ende des Curings (07.10.) gab es gar keine Bewertung mehr. Dasselbe
+  galt für die VPD-Einordnung im Tipps-Bildschirm.
+- **Jetzt** richtet sich das Klima nach dem Zyklus, dessen Pflanzen noch stehen (`_fuehrenderZyklus`); wachsen mehrere,
+  nach dem am weitesten entwickelten, weil sein Schimmel-Deckel der strengere ist (`ANBAU.md` 13.5: der Deckel ist hart).
+  Dann steht im Eintrag dabei: „Bewertet nach „…“ — am weitesten entwickelt, also mit den strengsten Grenzen." Steht
+  keine Pflanze mehr, bleibt es beim ersten Zyklus und seinem Trockenklima.
+- Bekannt und so gewollt: Steht ein Keimling neben einer blühenden Pflanze im selben Zelt, widersprechen sich die
+  Ziele (der Keimling will mehr Feuchte). Die App nimmt dann den Schimmelschutz, weil er der härtere Fehler ist.
+- Test: `test_zyklus2.js` Abschnitt F (8 Prüfungen, beide Zeitzonen; fällt auf v1.5.302 um).
+
+
 ## 2026-10-06 — v1.5.302
 
 - **Die Rainbow-Vorlage stand noch auf Patricks Plan-Blatt v1.0, er gießt Run 02 nach v2.1** (bekannt seit der

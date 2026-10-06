@@ -272,6 +272,33 @@ function pruef(name, bedingung, info) {
     pruef('E10 keine JS-Fehler', a.errors.length + b.errors.length + c.errors.length + d.errors.length === 0, [a.errors[0], b.errors[0], c.errors[0], d.errors[0]]);
   }
 
+  // ===== F: Das Klima richtet sich nach dem Zyklus, dessen Pflanzen noch stehen (v1.5.303) =====
+  console.log('\nF - Klima-Bewertung mit einem Zyklus im Curing davor');
+  {
+    const a = await load();
+    // Run 02 in der Blüte (Start 20.07., Anzucht 26 → am 06.10. Blütetag 53), Run 01 im Curing davor in der Liste
+    a.E("addCyc({ name: 'Blüte', startDate: '2026-07-20', potSize: 15, plantCount: 4 }); (() => { const c = S.cycles.find(x => x.name === 'Blüte'); c.anzuchtDays = 26; c.bloomDays = 70; })()");
+    pruef('F0 Lage: Run 01 steht vorn und ist im Curing, der neue Zyklus in der Blüte',
+      a.E("active()[0].id === S.cycles[0].id && phase(todayISO(), S.cycles[0]).ph") === 'cure' && a.E("phase(todayISO(), S.cycles.find(x => x.name === 'Blüte')).ph") === 'bloom');
+    const k = a.E("JSON.stringify(_klimaEntryTeile('22', '75', active(), todayISO()))");
+    pruef('F1 bei 22 °C / 75 % warnt der Eintrag vor Schimmel (Deckel der Blüte)', /Schimmel/i.test(k), k.slice(0, 300));
+    pruef('F2 die Bewertung läuft nach dem Zyklus in der Blüte', a.E("_fuehrenderZyklus(active(), todayISO()).name") === 'Blüte');
+    pruef('F3 bei nur einem wachsenden Zyklus kein Zusatzsatz „Bewertet nach …"', !/Bewertet nach/.test(k));
+    // Ein zweiter wachsender Zyklus (Anzucht) dazu: Bewertet wird nach dem weiter entwickelten, und es steht dabei
+    a.E("addCyc({ name: 'Keimling', startDate: '2026-09-26', potSize: 15, plantCount: 2 })");
+    const k2 = a.E("JSON.stringify(_klimaEntryTeile('22', '75', active(), todayISO()))");
+    pruef('F4 mit Keimling und Blüte im Zelt: nach der Blüte bewertet, und der Satz sagt es', /Schimmel/i.test(k2) && /Bewertet nach „Blüte“/.test(k2), k2.slice(0, 300));
+    // Nach dem Curing (07.10.) gibt es für Run 01 keine Phase mehr — die Bewertung bleibt
+    a.E("setDebugDate('2026-10-20')");
+    const k3 = a.E("JSON.stringify(_klimaEntryTeile('22', '75', active(), todayISO()))");
+    pruef('F5 auch nach dem Ende des Curings von Run 01 wird bewertet', /Schimmel/i.test(k3), k3.slice(0, 200));
+    // Nur ein Zyklus im Trocknen: wie bisher dessen Klima (kein Zwang zu einer wachsenden Pflanze)
+    const b = await load(null, { datum: '2026-09-12' });
+    pruef('F6 nur Run 01 im Trocknen: es bleibt bei Run 01', b.E("_fuehrenderZyklus(active(), todayISO()).id === S.cycles[0].id"));
+    a.E("renderTips()");
+    pruef('F7 keine JS-Fehler (Eintrag und Tipps)', a.errors.length + b.errors.length === 0, a.errors[0] || b.errors[0]);
+  }
+
   console.log('\n' + ok + ' OK, ' + fail + ' FEHL');
   if (fail) process.exit(1);
 })().catch((e) => { console.log('FEHLER: ' + (e && e.stack || e)); process.exit(1); });
