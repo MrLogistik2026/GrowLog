@@ -658,6 +658,23 @@ function pruef(name, bedingung, info) {
     pruef('U5 keine JS-Fehler', a.errors.length === 0, a.errors[0]);
   }
 
+  // ===== V: Drei kleine Anzeigefehler (v1.5.319) =====
+  console.log('\nV - Rainbow im Assistenten, Curing auf der Startseite, pH im Zyklus-Vergleich');
+  {
+    const a = await load();
+    a.E("openCycleWizard('dash'); Object.assign(_wizAnswers, { growType: 'indoor', medium: 'erde', seedType: 'auto' })");
+    let gesehen = '';
+    for (let s = 1; s <= 8; s++) { a.E(`_wizStep = ${s}; _renderWiz()`); const t = a.window.document.getElementById('scr-wizard')?.textContent || ''; if (/Rainbow Düngeplan \(v2\.1\)/.test(t)) { gesehen = t.replace(/\s+/g, ' '); break; } }
+    pruef('V1 Rainbow im Assistenten mit Beschreibung', /Rainbow Düngeplan \(v2\.1\) Plan-Blatt v2\.1 · Automatics in Light-Mix/.test(gesehen), gesehen.slice(0, 120));
+    a.E("goTo('dash'); renderDash()");
+    const d = (a.window.document.getElementById('dash-body')?.textContent || '').replace(/\s+/g, ' ');
+    pruef('V2 Run 01 im Curing: Karte sagt „Curing", nicht „Trocknung"', /Curing · Tag 21\/21 Curing/.test(d) && !/Trocknung · Tag 21\/21/.test(d), d.slice(0, 400));
+    pruef('V3 Kachel „Ernte in": geerntet statt „— ±5d"', /Ernte ins*✓ geerntet/.test(d) && !/Ernte ins*— ±5d/.test(d), d.slice(0, 300));
+    const cmp = JSON.parse(a.E("JSON.stringify(compareCycles({ medium: 'coco', totalDays: 1, photos: { total: 0 }, ph: { avg: 6.0, honestyPct: null }, ec: {}, weight: {}, runoff: {}, training: { total: 0 }, water: {}, consumption: [] }, { medium: 'coco', totalDays: 1, photos: { total: 0 }, ph: { avg: 6.3, honestyPct: null }, ec: {}, weight: {}, runoff: {}, training: { total: 0 }, water: {}, consumption: [] }))"));
+    pruef('V4 Zyklus-Vergleich in Coco: pH 6,0 liegt näher am Ziel als 6,3', cmp && cmp.deltas && cmp.deltas.phAvg && cmp.deltas.phAvg.winner === 'a', cmp && cmp.deltas && cmp.deltas.phAvg);
+    pruef('V5 keine JS-Fehler', a.errors.length === 0, a.errors[0]);
+  }
+
   console.log('\n' + ok + ' OK, ' + fail + ' FEHL');
   if (fail) process.exit(1);
 })().catch((e) => { console.log('FEHLER: ' + (e && e.stack || e)); process.exit(1); });

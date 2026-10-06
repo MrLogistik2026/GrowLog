@@ -3593,7 +3593,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.318';
+const APP_VERSION = 'v1.5.319';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -3827,6 +3827,7 @@ function summarizeCycle(c) {
     color: col(c).hex,
     startDate: c.startDate,
     endDate,
+    medium: c.medium || 'erde',   // (v1.5.319) für den pH-Vergleich
     status: c.active ? 'active' : (c.archived ? 'archived' : 'stopped'),
     totalDays,
 
@@ -3911,10 +3912,12 @@ function compareCycles(a, b) {
   // Photos (neutral — mehr ist nicht automatisch besser)
   deltas.photos = { diff: a.photos.total - b.photos.total, winner: null };
 
-  // pH Avg (neutral; zu weit von 6.3 = schlechter)
+  // pH Avg: näher am Ziel des eigenen Substrats = besser. (v1.5.319) Vorher gegen fest 6,3 — für Coco (5,8–6,2) und Hydro
+  // (5,5–6,0) gewann damit der Zyklus, dessen pH weiter vom eigenen Ziel weg lag.
   if (a.ph.avg !== null && b.ph.avg !== null) {
-    const aDist = Math.abs(a.ph.avg - 6.3);
-    const bDist = Math.abs(b.ph.avg - 6.3);
+    const _mitte = (s) => { const z = phTargetFor(s.medium || 'erde'); return (z.lo + z.hi) / 2; };
+    const aDist = Math.abs(a.ph.avg - _mitte(a));
+    const bDist = Math.abs(b.ph.avg - _mitte(b));
     deltas.phAvg = {
       diff: a.ph.avg - b.ph.avg,
       winner: Math.abs(aDist - bDist) > 0.05 ? (aDist < bDist ? 'a' : 'b') : null,
@@ -17421,7 +17424,9 @@ function renderDash() {
   const fcOffenTermin = !!(fcET && fcET.basis === 'offen');
   const fcOffen = !!(fc && (() => { const _p = phase(today, fc); return _p && _p.ernteOffen; })());
   const fcHeuteTag = fc ? isoDiff(today, fc.startDate) + 1 : null;
-  const harvestStatLabel = fcOffenTermin ? 'offen' : (fcVsPlan && isFinite(fcHeuteTag))
+  // (v1.5.319) Nach der Ernte (Trocknen, Curing, fertig) zeigte die Kachel „— ±5d".
+  const fcGeerntet = !!(fc && (() => { const _p = phase(today, fc); return !_p ? fc.startDate <= today : ((_p.ph === 'dry' || _p.ph === 'cure') && !_p.ernteOffen); })());
+  const harvestStatLabel = fcGeerntet ? '✓<span class="stat-unit"> geerntet</span>' : fcOffenTermin ? 'offen' : (fcVsPlan && isFinite(fcHeuteTag))
     ? `min. ${Math.max(0, fcVsPlan.fruehestens - fcHeuteTag)}<span class="stat-unit"> d</span>`
     : (fcCountdown
         ? `${fcCountdown.daysRemaining >= 0 ? fcCountdown.daysRemaining : '—'}<span class="stat-unit"> ±${fcCountdown.uncertainty}d</span>`
@@ -17513,7 +17518,7 @@ function renderDash() {
             <span style="font-size:14px;font-weight:600">${c.name}</span>
             ${c.location ? `<span style="font-size:11px;color:var(--text-muted)">· ${c.location}</span>` : ''}
           </div>
-          <div style="font-size:12px;color:${cl.hex};font-weight:500">${!p && c.startDate <= today ? '✓ Fertig — alle Phasen vorbei' : `${stgName || (p ? PN[p.ph] : '—')}${!S.beginnerMode && p?.week ? ' · Wo. ' + p.week : ''} · ${phaseDayLabel(p)}`}</div>
+          <div style="font-size:12px;color:${cl.hex};font-weight:500">${!p && c.startDate <= today ? '✓ Fertig — alle Phasen vorbei' : `${(p && p.ph === 'cure' && !p.ernteOffen) ? 'Curing' : (stgName || (p ? PN[p.ph] : '—'))}${!S.beginnerMode && p?.week ? ' · Wo. ' + p.week : ''} · ${phaseDayLabel(p)}`}</div>
           ${S.beginnerMode ? '' : `<div style="display:flex;gap:8px;margin-top:3px;align-items:center">
             ${streak > 0 ? `<span class="streak">🔥 ${streak}</span>` : ''}
             <span style="font-size:10px;color:var(--text-muted)">Start ${sf}</span>
@@ -24549,6 +24554,7 @@ function _wizStepFertPlan(a) {
         plagron: '🌾',
         canna_coco: '🥥',
         ghe_flora: '⚗️',
+        rainbow_auto: '🌈',
       }[key] || '🧪';
       const summary = {
         biobizz_light: 'Master × 50% · fehlerverzeihend für Einsteiger',
@@ -24560,6 +24566,7 @@ function _wizStepFertPlan(a) {
         plagron: 'Terra Grow + Bloom · mineralisch, für Erde',
         canna_coco: 'A+B Mineral · CalMag Pflicht · jeder Guss ist ein Feed',
         ghe_flora: 'Micro + Grow + Bloom · Verhältnis wechselt je Phase',
+        rainbow_auto: 'Plan-Blatt v2.1 · Automatics in Light-Mix · 8 Produkte · jeder Guss ein Feed',
       }[key] || '';
       return `
         <button onclick="_wizAnswer('fertPresetKey','${key}')" style="display:block;width:100%;background:${isRecommended ? 'rgba(76,175,112,0.08)' : 'var(--card)'};border:1px solid ${isRecommended ? 'var(--green)' : 'var(--border)'};border-radius:12px;padding:12px 14px;margin-bottom:8px;cursor:pointer;text-align:left;font-family:var(--font)">

@@ -2,6 +2,18 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-07 — v1.5.319
+
+- **Drei kleine Anzeigefehler** (Nachtprüfung vom 07.10.2026; zwei davon aus meinen eigenen Versionen von gestern):
+  - Der Assistent bot „Rainbow Düngeplan (v2.1)" seit v1.5.310 ohne Symbol und ohne Beschreibung an — als einzigen Plan
+    der Liste. Jetzt 🌈 und „Plan-Blatt v2.1 · Automatics in Light-Mix · 8 Produkte · jeder Guss ein Feed".
+  - Ein Zyklus im Curing hieß auf der Startseite „Trocknung · Tag 21/21 Curing", und die Kachel „Ernte in" zeigte nach der
+    Ernte „— ±5d". Jetzt „Curing" und „✓ geerntet".
+  - Der Zyklus-Vergleich wertete den pH gegen fest 6,3: In Coco (Ziel 5,8–6,2) gewann der Zyklus mit 6,3 gegen den mit
+    6,0. Jetzt zählt der Abstand zum Ziel des eigenen Substrats (`phTargetFor`).
+- Test: `test_zyklus2.js` Abschnitt V (5 Prüfungen, beide Zeitzonen; 4 fallen auf v1.5.318 um).
+
+
 ## 2026-10-07 — v1.5.318
 
 - **Gieß-Ratschläge mit fester Frist statt Gießpunkt** (Nachtprüfung vom 07.10.2026).

@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.318** · index.html 2,52 MB · 764 Funktionen
+Stand: **v1.5.319** · index.html 2,52 MB · 764 Funktionen
 Zuletzt fortgeschrieben am 07.10.2026 (Nachtprüfung und Run 02 — Abschnitt 0o, „Stand Run 02"). Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
@@ -214,6 +214,7 @@ kein Blocker, aber Fehler, die nur mit zwei Zyklen oder direkt nach dem Anlegen 
 - v1.5.316: Fünf unbelegte Wirkungszusagen raus (Toppen verdoppelt, Cannabinoid bricht ein, Entlauben spürbar, dichte Buds, Reinigung); Toppen-Hinweis für Automatics mit Grenze.
 - v1.5.317: pH-Notfall mit dem Ziel des Substrats und Messgerät-Prüfung statt „pH 6.4, 2× Topfvolumen"; Kalium-Schnellhilfe unterscheidet zuerst Überdüngung.
 - v1.5.318: Gieß-Ratschläge folgen dem Gießpunkt statt einer festen Frist; „Gleichmäßiger = besser" entfernt (REIHENFOLGE 12 erledigt).
+- v1.5.319: Rainbow im Assistenten mit Beschreibung, „Curing" und „✓ geerntet" auf der Startseite, pH-Vergleich gegen das Substrat-Ziel.
 
 **Bei der nächsten Bewertung** dieselbe Skala, dieselben Kategorie-IDs und dieselben Regeln aus `auftrag.md` nehmen und
 die Noten gegen diese Tabelle stellen.
