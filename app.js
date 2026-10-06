@@ -3593,7 +3593,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.304';
+const APP_VERSION = 'v1.5.305';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -17654,9 +17654,11 @@ function renderDash() {
   // schon — diese Box ist für Indoor-Anfänger der Anker.
   const quietBanner = (S.beginnerMode && act.length > 0 && actionCards.trim() === '')
     ? (() => {
-        // Nächsten Gießtag der ersten aktiven Pflanze ermitteln
-        const primaryC = act[0];
-        const next = nextGiessTag(primaryC, today);
+        // (v1.5.305) Nächster Gießtag über die Zyklen mit stehenden Pflanzen — nicht nur der erste aktive. Vorher hieß
+        // es bei Run 01 im Curing davor „Beobachten", während Run 02 morgen gegossen werden musste.
+        const _wz = _wachsendeZyklen(act, today);
+        const next = (_wz.length ? _wz : [act[0]]).map(z => nextGiessTag(z, today)).filter(Boolean)
+          .sort((x, y) => x.days - y.days)[0] || null;
         const sub = next
           ? `Nächster Gießtag: ${next.days === 1 ? 'morgen' : 'in ' + next.days + ' Tagen'}`
           : 'Beobachten, ggf. Foto machen';
@@ -20025,10 +20027,31 @@ function collectBloomGusse(c) {
 }
 
 // Der Zyklus, dessen Fahrplan gerade gilt (Auswahl > erster aktiver > erster).
+/**
+ * (v1.5.305) Welcher Zyklus im Gieß-Fahrplan steht. Vorher der in den Einstellungen gewählte — und der ist nach jedem
+ * App-Start der erste der Liste: Run 01 im Curing („Ab der Ernte wird nicht mehr gegossen"), auch archiviert, ohne den
+ * Namen zu nennen. Jetzt: ein Zyklus, den man im Fahrplan selbst angetippt hat; sonst der gewählte, wenn seine Pflanzen
+ * noch stehen; sonst der am weitesten entwickelte mit stehenden Pflanzen (_fuehrenderZyklus).
+ */
+let _gussplanZyklusId = null;
 function gussplanActiveCycle() {
-  return (S.cycles || []).find(x => x.id === selId)
-      || (S.cycles || []).find(x => x.active && !x.archived)
-      || (S.cycles || [])[0] || null;
+  const cs = S.cycles || [];
+  const angetippt = _gussplanZyklusId && cs.find(x => x.id === _gussplanZyklusId);
+  if (angetippt) return angetippt;
+  const heute = todayISO();
+  const wachsend = _wachsendeZyklen(active(), heute);
+  const gewaehlt = cs.find(x => x.id === selId);
+  if (gewaehlt && (!wachsend.length || wachsend.includes(gewaehlt))) return gewaehlt;
+  return (wachsend.length ? _fuehrenderZyklus(wachsend, heute) : null)
+      || cs.find(x => x.active && !x.archived) || gewaehlt || cs[0] || null;
+}
+/** (v1.5.305) Bei mehreren Zyklen: welcher gemeint ist, und ein Tipp wechselt. */
+function _gussplanZyklusWahl(c) {
+  const liste = active();
+  if (liste.length < 2 && (!c || liste.includes(c))) return '';
+  const knopf = (z) => `<button onclick="_gussplanZyklusId='${z.id}';renderGussplan()" style="padding:6px 10px;border-radius:999px;font-size:11px;cursor:pointer;font-family:var(--font);border:0.5px solid ${z.id === c.id ? 'var(--green)' : 'var(--border)'};background:${z.id === c.id ? 'rgba(76,175,112,0.12)' : 'var(--card)'};color:${z.id === c.id ? 'var(--green)' : 'var(--text-sub)'};font-weight:${z.id === c.id ? '700' : '400'}">${sym(z)} ${escHtml(z.name)}</button>`;
+  const zeigen = liste.includes(c) ? liste : [c].concat(liste);
+  return `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px" aria-label="Zyklus wählen">${zeigen.map(knopf).join('')}</div>`;
 }
 
 function openGussplan() {
@@ -20454,7 +20477,7 @@ function renderGussplan() {
     : listHdr;
   const _einstellungenEff = _anf ? '' : _einstellungen;
 
-  body.innerHTML = `<div style="padding:14px 14px 30px">${_naechsteKarte}${_listHdrEff}${_erledigtVoll}${rows}${ovResetBtn}${darkNote}${_endspurtBlock}${_einstellungenEff}</div>`;
+  body.innerHTML = `<div style="padding:14px 14px 30px">${_gussplanZyklusWahl(c)}${_naechsteKarte}${_listHdrEff}${_erledigtVoll}${rows}${ovResetBtn}${darkNote}${_endspurtBlock}${_einstellungenEff}</div>`;
   if (_scroller && _scrollY) requestAnimationFrame(() => { _scroller.scrollTop = _scrollY; });
 }
 
@@ -26880,7 +26903,7 @@ function scheduleNotify() {
     // Evening already passed — check if today IS the watering day and it's morning
     const todayTarget = new Date(today + 'T08:00:00');
     const msToday = todayTarget.getTime() - now;
-    if (msToday > 0 && isGiessTag(today, act[0])) {
+    if (msToday > 0 && act.some(c => isGiessTag(today, c))) {   // (v1.5.305) nicht nur der erste aktive
       // Fallback: morning reminder if evening was missed
       _notifyTimer = setTimeout(() => {
         new Notification('🌱 Heute ist Gießtag!', {

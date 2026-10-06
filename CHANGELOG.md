@@ -2,6 +2,20 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-06 — v1.5.305
+
+- **Der Gieß-Fahrplan zeigte nach jedem App-Start Run 01 im Curing — auch archiviert — und nannte den Zyklus nicht**
+  (gemessen beim Durchspielen von Run 02, vom Skeptiker bestätigt). Er nahm den in den Einstellungen gewählten Zyklus,
+  und das ist nach dem Start immer der erste der Liste. Statt „Nächster Guss · in 2 Tagen" stand dort „Curing läuft.
+  Ab der Ernte wird nicht mehr gegossen" — die Antwort auf die tägliche Frage für einen Zyklus, der fertig ist. Dieselbe
+  Wurzel an zwei weiteren Stellen: Die Startseite im Einsteiger-Modus nannte am ruhigen Tag „Beobachten" statt des
+  nächsten Gießtags von Run 02, und die Erinnerung am Morgen prüfte nur den ersten aktiven Zyklus.
+- **Jetzt** zeigt der Fahrplan einen Zyklus, dessen Pflanzen noch stehen — den in den Einstellungen gewählten, wenn er
+  noch wächst, sonst den am weitesten entwickelten. Bei mehreren Zyklen steht oben eine Leiste mit ihren Namen; ein Tipp
+  wechselt. Die Startseite nennt den nächsten Gießtag über alle wachsenden Zyklen, die Erinnerung prüft jeden.
+- Test: `test_zyklus2.js` Abschnitt H (9 Prüfungen, beide Zeitzonen; 5 fallen auf v1.5.304 um).
+
+
 ## 2026-10-06 — v1.5.304
 
 - **Die Zeile „N/6 eingetragen" im Eintrag zählte den ersten aktiven Zyklus, auch wenn der im Curing stand**

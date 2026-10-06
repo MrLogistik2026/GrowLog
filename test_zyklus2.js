@@ -330,6 +330,39 @@ function pruef(name, bedingung, info) {
     pruef('G4 keine JS-Fehler', a.errors.length === 0, a.errors[0]);
   }
 
+  // ===== H: Der Gieß-Fahrplan zeigt den Zyklus mit stehenden Pflanzen und nennt ihn (v1.5.305) =====
+  console.log('\nH - Gieß-Fahrplan nach dem App-Start');
+  {
+    const neu = (st) => {
+      const vorlage = JSON.parse(JSON.stringify(st.cycles[0]));
+      const z = (name, start, n) => Object.assign({}, vorlage, { id: 'z_' + name, name, startDate: start, anzuchtDays: 26, bloomDays: 70,
+        plants: Array.from({ length: n }, (_, i) => ({ id: 'p_' + name + i, label: 'Pflanze ' + (i + 1), strain: '', color: '', addedAt: start, notes: '' })),
+        plantCount: n, potSize: 15, offsetHistory: [], skippedDays: [], toppingDate: null, trainings: [] });
+      st.cycles.push(z('Anesia', '2026-09-20', 4), z('Mimosa', '2026-09-26', 2));
+    };
+    const a = await load(neu);
+    const text = () => { a.E("goTo('gussplan')"); return (a.window.document.getElementById('gussplan-body')?.textContent || '').replace(/\s+/g, ' '); };
+    pruef('H0 Lage: nach dem Start ist in den Einstellungen Run 01 gewählt', a.E('selId === null || selId === S.cycles[0].id'));
+    const t1 = text();
+    pruef('H1 der Fahrplan zeigt die Anesia-Gruppe, nicht Run 01 im Curing', a.E('gussplanActiveCycle().name') === 'Anesia' && !/Curing läuft/.test(t1), t1.slice(0, 160));
+    pruef('H2 und nennt die Zyklen zum Wechseln', /Anesia/.test(t1) && /Mimosa/.test(t1) && /Sensi Amnesia/.test(t1));
+    a.E("_gussplanZyklusId = 'z_Mimosa'");
+    pruef('H3 ein Tipp auf „Mimosa" wechselt', a.E('gussplanActiveCycle().name') === 'Mimosa' && /Mimosa/.test(text()));
+    a.E("_gussplanZyklusId = null; selId = 'z_Mimosa'");
+    pruef('H4 in den Einstellungen gewählt und noch wachsend: der gilt', a.E('gussplanActiveCycle().name') === 'Mimosa');
+    a.E("_gussplanZyklusId = null; selId = S.cycles[0].id; S.cycles[0].archived = true; S.cycles[0].active = false");
+    pruef('H5 Run 01 archiviert und noch in den Einstellungen gewählt: trotzdem Anesia', a.E('gussplanActiveCycle().name') === 'Anesia');
+    const b = await load();
+    const tb = (() => { b.E("goTo('gussplan')"); return (b.window.document.getElementById('gussplan-body')?.textContent || ''); })();
+    pruef('H6 mit nur einem Zyklus keine Wahl-Leiste', !/aria-label="Zyklus wählen"/.test(b.window.document.getElementById('gussplan-body')?.innerHTML || '') && tb.length > 0);
+    // Startseite, Einsteiger, ruhiger Tag: der nächste Gießtag kommt von den wachsenden Zyklen
+    a.E("S.cycles[0].archived = false; S.cycles[0].active = true; S.beginnerMode = true; renderDash()");
+    const dash = (a.window.document.getElementById('dash-body')?.textContent || '').replace(/\s+/g, ' ');
+    pruef('H7 Startseite (Einsteiger, ruhiger Tag): „Nächster Gießtag: in 2 Tagen" statt „Beobachten"',
+      /Nächster Gießtag: in 2 Tagen/.test(dash) && !/Beobachten, ggf\. Foto machen/.test(dash), dash.slice(0, 240));
+    pruef('H8 keine JS-Fehler', a.errors.length + b.errors.length === 0, a.errors[0] || b.errors[0]);
+  }
+
   console.log('\n' + ok + ' OK, ' + fail + ' FEHL');
   if (fail) process.exit(1);
 })().catch((e) => { console.log('FEHLER: ' + (e && e.stack || e)); process.exit(1); });
