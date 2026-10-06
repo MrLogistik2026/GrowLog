@@ -4594,7 +4594,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.314';
+const APP_VERSION = 'v1.5.315';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -18270,6 +18270,30 @@ function renderDash() {
     const _eingetragenH = (!doneTs && _erlH && _erlH.status === 'gegossen') ? _erlH : null;
 
     if (doneTs || _eingetragenH) {
+      // (v1.5.315) Hat der heutige Eintrag einen ernsten Befund (Typ err — etwa EC viel zu hoch für den Sämling, sehr viel
+      // Wasser, pH weit daneben), sagt die Startseite nicht mehr grün „erledigt". Vorher stand dort „✓ Heute erledigt ·
+      // 9000 ml", während der Eintrag „SOFORT mit klarem Wasser spülen" verlangte (Nachtprüfung 07.10.2026) — und ein Anfänger
+      // liest die Startseite, nicht den Eintrag. Dieselbe Prüfung wie im Eintrag (getEntryWarnings), keine eigene Schwelle.
+      const _befunde = (() => {
+        try {
+          const _cdH = S.entries[today] && S.entries[today].cycleData && S.entries[today].cycleData[c.id];
+          return _cdH ? getEntryWarnings(_cdH, p, S.entries[today], c, today).filter(w => w && w.type === 'err') : [];
+        } catch (e) { return []; }
+      })();
+      if (_befunde.length) {
+        return `<div style="background:linear-gradient(135deg,rgba(224,96,96,0.12),rgba(224,96,96,0.04));border:1px solid rgba(224,96,96,0.5);border-radius:14px;padding:12px 16px;cursor:pointer" onclick="entryFrom='dash';openEntry('${today}')">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+          <span style="font-size:22px">⚠️</span>
+          <div style="flex:1">
+            <div style="font-size:13px;font-weight:700;color:var(--red)">Eingetragen — aber ${_befunde.length === 1 ? 'ein Wert braucht' : _befunde.length + ' Werte brauchen'} deinen Blick</div>
+            <div style="font-size:11px;color:var(--text-muted)">${sym(c)} ${c.name}${_eingetragenH ? ' · ' + _eingetragenH.ml + ' ml eingetragen' : ''}</div>
+          </div>
+          <span style="color:var(--red);font-size:18px">›</span>
+        </div>
+        ${_befunde.slice(0, 2).map(w => `<div style="font-size:12px;color:var(--text);line-height:1.5;margin-top:4px">${w.text}</div>`).join('')}
+        <div style="font-size:11px;color:var(--text-muted);margin-top:6px">Im Eintrag stehen alle Hinweise mit dem nächsten Schritt.</div>
+      </div>`;
+      }
       // Compact "✓ Erledigt" mode
       return `<div style="background:linear-gradient(135deg,rgba(76,175,112,0.1),rgba(76,175,112,0.04));border:1px solid rgba(76,175,112,0.4);border-radius:14px;padding:12px 16px;cursor:pointer" onclick="entryFrom='dash';openEntry('${today}')">
         <div style="display:flex;align-items:center;gap:10px">

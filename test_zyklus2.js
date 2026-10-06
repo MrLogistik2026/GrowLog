@@ -592,6 +592,25 @@ function pruef(name, bedingung, info) {
     pruef('Q4 keine JS-Fehler', a.errors.length + b.errors.length === 0, a.errors[0] || b.errors[0]);
   }
 
+  // ===== R: Die Startseite übernimmt ernste Befunde des Eintrags (v1.5.315) =====
+  console.log('\nR - Startseite nach einem Eintrag mit ernstem Befund');
+  {
+    const TAG = '2026-10-08';
+    const a = await load(null, { datum: TAG });
+    a.E("S.cycles[0].archived = true; S.cycles[0].active = false; S.cycles[0].endDate = '2026-09-13'");
+    a.E("addCyc({ name: 'Mimosa', startDate: '2026-09-26', potSize: 15, plantCount: 2, startMethod: 'direct' }); S.cycles.find(x => x.name === 'Mimosa').anzuchtDays = 26");
+    const mi = a.E("S.cycles.find(x => x.name === 'Mimosa').id");
+    const setze = (w, ph, ec) => a.E(`(() => { editISO = '${TAG}'; ensE('${mi}'); const cd = S.entries['${TAG}'].cycleData['${mi}']; cd.water = '${w}'; cd.ph = '${ph}'; cd.ec = '${ec}'; S.entries['${TAG}'].temp = '24'; S.entries['${TAG}'].humidity = '60'; saveS(); renderDash(); })()`);
+    setze(9000, 8.0, 1.9);
+    let d = (a.window.document.getElementById('dash-body')?.textContent || '').replace(/\s+/g, ' ');
+    pruef('R1 Sämling mit 9000 ml und EC 1,9: kein grünes „Heute erledigt", sondern „Eingetragen — aber …"', /Eingetragen — aber/.test(d) && !/Heute erledigt/.test(d), d.slice(0, 260));
+    pruef('R2 der wichtigste Befund steht auf der Startseite', /EC|Wasser|pH/.test(d.split('Eingetragen — aber')[1] || ''));
+    setze(500, 6.3, 0.35);
+    d = (a.window.document.getElementById('dash-body')?.textContent || '').replace(/\s+/g, ' ');
+    pruef('R3 ein unauffälliger Eintrag bleibt „Heute erledigt"', /Heute erledigt/.test(d) && !/Eingetragen — aber/.test(d), d.slice(0, 200));
+    pruef('R4 keine JS-Fehler', a.errors.length === 0, a.errors[0]);
+  }
+
   console.log('\n' + ok + ' OK, ' + fail + ' FEHL');
   if (fail) process.exit(1);
 })().catch((e) => { console.log('FEHLER: ' + (e && e.stack || e)); process.exit(1); });

@@ -2,6 +2,20 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-07 — v1.5.315
+
+- **Die Startseite meldete grün „erledigt", während der Eintrag vor einem ernsten Fehler warnte** (Nachtprüfung vom
+  07.10.2026, schwerster Befund). Zwei Sämlinge mit 9000 ml, EC 1,9, pH 8,0: Der Eintrag zeigte acht Meldungen, darunter
+  „EC … viel zu hoch für Sämling" und „Sehr viel Wasser für Tag 13", die Startseite „✓ Heute erledigt · 9000 ml
+  eingetragen" und in ihrer Auffälligkeiten-Zeile nur Temperatur und Luftfeuchte. Überwässerung und Überdüngung sind
+  die häufigsten Anfängertode (`ANBAU.md` 13.1, 13.2) — und der Anfänger liest die Startseite, nicht den Eintrag.
+- **Jetzt** prüft die Karte „Heute erledigt" den heutigen Eintrag mit derselben Funktion wie der Eintrag selbst
+  (`getEntryWarnings`, keine eigene Schwelle). Gibt es einen ernsten Befund, steht dort rot „Eingetragen — aber ein Wert
+  braucht deinen Blick" mit den ein, zwei wichtigsten Sätzen und dem Verweis auf den Eintrag. Unauffällige Tage bleiben
+  grün „Heute erledigt".
+- Test: `test_zyklus2.js` Abschnitt R (4 Prüfungen, beide Zeitzonen; 2 fallen auf v1.5.314 um).
+
+
 ## 2026-10-07 — v1.5.314
 
 - **Ein Zyklus im Freien führte das Zeltklima, sobald er weiter war** (Nachtprüfung vom 07.10.2026, Rückschritt aus
