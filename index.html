@@ -4594,7 +4594,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.305';
+const APP_VERSION = 'v1.5.306';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -15264,8 +15264,11 @@ function catchupApply(mode) {
     if (tpl.doses && typeof tpl.doses === 'object') {
       cd.doses = { ...tpl.doses };
       cd.mixChecks = {};
+      // (v1.5.306) Die Plan-Dosen sind ein Vorschlag wie die Gießmenge — gekennzeichnet, damit die Dünger-Bilanz sie
+      // als „vorgeschlagen" führt statt als gegeben. _suggestedDoses wurde gelesen, aber nirgends gesetzt.
+      cd._suggestedDoses = {};
       Object.keys(tpl.doses).forEach(prodId => {
-        if (parseFloat(tpl.doses[prodId]) > 0) cd.mixChecks[prodId] = true;
+        if (parseFloat(tpl.doses[prodId]) > 0) { cd.mixChecks[prodId] = true; cd._suggestedDoses[prodId] = true; }
       });
     }
     // Markierung dass das ein Catch-up war (für Statistiken: nicht "echte" Messung)
@@ -26439,11 +26442,13 @@ async function backfillPast(id) {
             // die Mischreihenfolge optisch komplett (Häkchen statt Kreise) und entspricht
             // der Realität: ein abgeschlossener vergangener Tag ist abgearbeitet.
             if (!cd.mixChecks) cd.mixChecks = {};
+            if (!cd._suggestedDoses) cd._suggestedDoses = {};   // (v1.5.306) Vorschlag, keine Gabe — siehe catchupApply
             Object.entries(doses).forEach(([prodId, plan]) => {
               if (plan > 0) {
                 const prod = _produktFuer(c, prodId);   // (v1.5.145)
                 cd.doses[prodId] = calcDose(plan, waterMl, prod?.unit);
                 cd.mixChecks[prodId] = true;
+                cd._suggestedDoses[prodId] = true;
               }
             });
           }

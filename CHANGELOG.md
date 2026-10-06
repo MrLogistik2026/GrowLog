@@ -2,6 +2,18 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-06 — v1.5.306
+
+- **Nachgetragene Dünger-Dosen zählten als gegeben** (gefunden beim Durchspielen von Run 02, vom Skeptiker bestätigt).
+  „Nachtragen → War ungefähr so" und „Auto-eintragen" schreiben für vergangene Gießtage die Dosen aus dem Plan.
+  Gießmenge, pH und EC trugen dabei die Kennzeichnung „Vorschlag" (`_suggested`), die Dosen nicht: `_suggestedDoses`
+  wurde von der Dünger-Bilanz gelesen und beim Eintippen gelöscht, aber nirgends gesetzt. Die Bilanz des Zyklus führte
+  geplante Mengen deshalb als tatsächlich gegeben.
+- **Jetzt** kennzeichnen beide Wege jede übernommene Dosis als Vorschlag; wer die Dosis im Eintrag ändert, macht sie
+  wie bisher zur Angabe (das Kennzeichen fällt dann weg).
+- Test: `test_zyklus2.js` Abschnitt I (4 Prüfungen, beide Zeitzonen; 3 fallen auf v1.5.305 um).
+
+
 ## 2026-10-06 — v1.5.305
 
 - **Der Gieß-Fahrplan zeigte nach jedem App-Start Run 01 im Curing — auch archiviert — und nannte den Zyklus nicht**

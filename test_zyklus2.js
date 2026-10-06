@@ -363,6 +363,32 @@ function pruef(name, bedingung, info) {
     pruef('H8 keine JS-Fehler', a.errors.length + b.errors.length === 0, a.errors[0] || b.errors[0]);
   }
 
+  // ===== I: Nachgetragene Plan-Dosen sind als Vorschlag gekennzeichnet (v1.5.306) =====
+  console.log('\nI - Nachtragen: Dünger-Dosen als Vorschlag');
+  {
+    const a = await load();
+    a.window.customConfirm = () => Promise.resolve(true);
+    await a.E("loadPreset('rainbow_auto')");
+    const planId = a.E("(S.fertPlans.find(p => p.presetKey === 'rainbow_auto') || {}).id");
+    a.E(`addCyc({ name: 'N', startDate: '2026-09-20', potSize: 15, plantCount: 4, startMethod: 'direct', fertPlanId: '${planId}' }); S.cycles.find(x => x.name === 'N').anzuchtDays = 26`);
+    const cid = a.E("S.cycles.find(x => x.name === 'N').id");
+    a.E(`openCatchupWizard('${cid}')`);
+    const iso = a.E("_catchupState && _catchupState.candidates[0] && _catchupState.candidates[0].iso");
+    a.E("catchupApply('was-so')");
+    const cd = JSON.parse(a.E(`JSON.stringify((S.entries['${iso}'] || {}).cycleData['${cid}'] || {})`));
+    const mitDosis = Object.keys(cd.doses || {}).filter(k => parseFloat(cd.doses[k]) > 0);
+    pruef('I1 „War ungefähr so": jede übernommene Plan-Dosis ist als Vorschlag gekennzeichnet',
+      mitDosis.length > 0 && mitDosis.every(k => cd._suggestedDoses && cd._suggestedDoses[k]), { iso, mitDosis, sd: cd._suggestedDoses });
+    const bil = JSON.parse(a.E(`JSON.stringify(calcCycleConsumption(S.cycles.find(x => x.id === '${cid}')))`));
+    pruef('I2 die Dünger-Bilanz führt sie als vorgeschlagen, nicht als gegeben', bil.every(p => !p.totalMeasured) && bil.some(p => p.totalSuggested > 0),
+      bil.map(p => [p.name, p.totalMeasured, p.totalSuggested]));
+    await a.E(`backfillPast('${cid}')`);
+    const alle = JSON.parse(a.E(`JSON.stringify(Object.entries(S.entries).filter(([d, e]) => e.cycleData && e.cycleData['${cid}']).map(([d, e]) => e.cycleData['${cid}']))`));
+    const ohneFlag = alle.filter(x => Object.keys(x.doses || {}).some(k => parseFloat(x.doses[k]) > 0 && !(x._suggestedDoses || {})[k]));
+    pruef('I3 „Auto-eintragen": auch dort jede Plan-Dosis gekennzeichnet', alle.length > 1 && ohneFlag.length === 0, { tage: alle.length, ohne: ohneFlag.length });
+    pruef('I4 keine JS-Fehler', a.errors.length === 0, a.errors[0]);
+  }
+
   console.log('\n' + ok + ' OK, ' + fail + ' FEHL');
   if (fail) process.exit(1);
 })().catch((e) => { console.log('FEHLER: ' + (e && e.stack || e)); process.exit(1); });
