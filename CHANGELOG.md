@@ -2,6 +2,25 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-07 — v1.5.316
+
+- **Unbelegte Wirkungszusagen in Hinweisen, Diagnose und einem Plan-Tipp** (Nachtprüfung vom 07.10.2026; außerhalb des
+  Lexikons, das Patrick separat prüft). Fünf Stellen versprachen, was `ANBAU.md` nicht belegt:
+  - Startseite (Einsteiger): „Du könntest jetzt toppen — das verdoppelt deinen Ertrag." Auch für Automatics, für die
+    `ANBAU.md` 9 Eingriffe nur früh und moderat erlaubt. Jetzt mit Zyklusnamen, ohne Ertragszusage, für Automatics
+    „nur jetzt und nur bei kräftigen Pflanzen, LST stresst weniger"; der Profi-Hinweis nennt dieselbe Grenze.
+  - Diagnose und Schnellhilfe zum Lichtbleichen: „Cannabinoid-Produktion bricht ein / fällt zusammen". `ANBAU.md` 8.1:
+    Die Konzentration bleibt bei mehr Licht weitgehend gleich. Jetzt: ausgeblichenes Gewebe, mehr Licht, als die
+    Spitzen verarbeiten — die Unterscheidung weiß gegen gelb/braun bleibt.
+  - Infotext Entlauben: „senkt das Schimmelrisiko spürbar". Belegt ist die Luftbewegung an den Blüten (13.5); jetzt mit
+    „ein Blatt ist auch Photosynthese-Organ — wenig und gezielt" (14).
+  - Diagnose Kaliummangel: „Wichtig für dichte Buds" und eine einzige Handlung „Kalium aufstocken". Jetzt zuerst die
+    Unterscheidung zur Überdüngung (Drain-EC bei gültigem Drain), Kalium nur bei stabilem Magnesium (`ANBAU.md` 6.2).
+  - Wochen-Tipp der Spülwoche im BioBizz-Master-Plan: „Reinigung". Jetzt: Der Plan nimmt den Dünger heraus, ein
+    Qualitätsgewinn ist nicht belegt, das Ende setzt der Plan (14, v1.5.211).
+- Test: `test_zyklus2.js` Abschnitt S (4 Prüfungen, beide Zeitzonen; 3 fallen auf v1.5.315 um).
+
+
 ## 2026-10-07 — v1.5.315
 
 - **Die Startseite meldete grün „erledigt", während der Eintrag vor einem ernsten Fehler warnte** (Nachtprüfung vom

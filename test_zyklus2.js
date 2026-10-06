@@ -611,6 +611,24 @@ function pruef(name, bedingung, info) {
     pruef('R4 keine JS-Fehler', a.errors.length === 0, a.errors[0]);
   }
 
+  // ===== S: Keine unbelegten Wirkungszusagen in Hinweisen, Diagnose und Plan-Tipps (v1.5.316) =====
+  console.log('\nS - Wirkungszusagen');
+  {
+    const a = await load();
+    const quelle = a.window.document.documentElement.outerHTML;
+    const verboten = [/verdoppelt deinen Ertrag/, /Cannabinoid-Produktion (bricht ein|fällt zusammen)/, /senkt das Schimmelrisiko spürbar/, /Wichtig für dichte Buds/, /Reinigung\. Nur noch Wasser/];
+    const rest = verboten.filter(re => re.test(quelle)).map(re => re.source);
+    pruef('S1 keine der fünf Zusagen steht noch im Quelltext', rest.length === 0, rest);
+    a.E("S.cycles[0].archived = true; S.cycles[0].active = false; addCyc({ name: 'Auto', startDate: '2026-09-20', seedType: 'auto', potSize: 15, plantCount: 2 }); S.beginnerMode = true");
+    const auto = JSON.parse(a.E("JSON.stringify(getAlerts(S.cycles.find(x => x.name === 'Auto')).filter(x => /opp/.test(x.text)).map(x => x.text))"));
+    pruef('S2 Toppen-Hinweis für Automatics: nur früh, LST schonender, Ertragsplus nicht belegt, mit Zyklusname',
+      auto.length === 1 && /bei Automatics nur jetzt/.test(auto[0]) && /nicht belegt/.test(auto[0]) && /^Auto:/.test(auto[0]), auto);
+    a.E("S.beginnerMode = false");
+    const profi = JSON.parse(a.E("JSON.stringify(getAlerts(S.cycles.find(x => x.name === 'Auto')).filter(x => /opp/.test(x.text)).map(x => x.text))"));
+    pruef('S3 Profi-Hinweis für Automatics nennt die Grenze', profi.length === 1 && /später nicht mehr/.test(profi[0]), profi);
+    pruef('S4 keine JS-Fehler', a.errors.length === 0, a.errors[0]);
+  }
+
   console.log('\n' + ok + ' OK, ' + fail + ' FEHL');
   if (fail) process.exit(1);
 })().catch((e) => { console.log('FEHLER: ' + (e && e.stack || e)); process.exit(1); });

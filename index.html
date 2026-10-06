@@ -2241,7 +2241,7 @@ const PROBLEMS = [
     },
     description: 'Gelbe/braune Ränder und Spitzen, beginnt bei älteren Blättern. Unterschied zu Nährstoff-Burn: nicht nur Spitzen — ganze Ränder.',
     context: { phase: ['bloom'], phHigh: true },
-    action: 'Kalium aufstocken (Blüh-Booster). Wichtig für dichte Buds. Bei pH über 6.6 schlechte K-Aufnahme — pH korrigieren.',
+    action: 'Erst unterscheiden: Braune Ränder an älteren Blättern bringt auch zu viel Dünger (Drain-EC bei mindestens ' + DRAIN_ZIEL.min + ' % Drain prüfen — ist er hoch, weniger düngen, nicht mehr). Erst wenn das ausgeschlossen ist, Kalium (Blüh-Booster) moderat erhöhen — und nur, wenn Magnesium bisher stabil war, sonst verdrängt Kalium das Magnesium. Zulauf-pH ins Ziel deines Substrats bringen.',
     lexiconKey: 'k_deficiency',
   },
   {
@@ -2454,7 +2454,7 @@ const PROBLEMS = [
       color: ['paleGreen', 'yellow'],
       shape: ['spotted', 'curlUp'],
     },
-    description: 'Top-Buds und obere Blätter werden weißlich/gebleicht (NICHT braun-verbrannt), oft mit silbrig-glänzenden Flecken. Chlorophyll und Trichome werden ausgebleicht. Sieht potent aus, ist aber das Gegenteil — Cannabinoid-Produktion bricht ein. Typisch bei starken LEDs über 600 W/m², PPFD über ~1200 am Canopy.',
+    description: 'Top-Buds und obere Blätter werden weißlich/gebleicht (NICHT braun-verbrannt), oft mit silbrig-glänzenden Flecken. Chlorophyll und Trichome werden ausgebleicht. Sieht nach viel Harz aus, ist aber ausgeblichenes Gewebe: An diesen Spitzen kommt mehr Licht an, als die Blätter verarbeiten können. Typisch bei starken LEDs über 600 W/m², PPFD über ~1200 am Canopy.',
     context: { phase: ['bloom'], daysToHarvestLow: false },
     action: 'LED um 15–20 cm anheben oder Dimmer auf 60–70% bis Ernte. PPFD-Meter (oder LED-PAR-Sensor) zeigt am Canopy: Bloom-Optimum 600–900, Bleaching-Risiko ab ~1200 (steigend je näher/stärker die LED). Wenn Trichome schon trüb-braun sind: lieber jetzt ernten als noch mehr stressen.',
     lexiconKey: 'photo_bleaching',
@@ -3398,7 +3398,7 @@ const FERT_PRESETS = {
       8:  { phase: 'Swelling II', tip: 'Stickstoff-Stopp. Bio·Bloom liefert genug. Zusätze laufen aus.' },
       9:  { phase: 'Ripening I',  tip: 'Reifung. Ab jetzt P/K und Top·Max, kein Stickstoff mehr.' },
       10: { phase: 'Ripening II', tip: 'Reifung. Bio·Bloom reduzieren. Dass die unteren Blätter jetzt gleichmäßig von unten nach oben vergilben, ist normal — die Pflanze verlagert Stickstoff in die Blüten.' },
-      11: { phase: 'Flush',       tip: 'Reinigung. Nur noch Wasser + leicht CalMag-Puffer. Mit ordentlich Drain gießen!' },
+      11: { phase: 'Flush',       tip: 'Letzte Woche vor dem Eis: nur noch Wasser mit etwas CalMag, der Plan nimmt den Dünger heraus. Ein Qualitätsgewinn durchs Spülen ist nicht belegt; das Ende setzt der Plan, nicht ein Drain-EC-Wert. Gießen wie immer, bis unten ' + DRAIN_ZIEL.min + '–' + DRAIN_ZIEL.max + ' % herauslaufen.' },
       12: { phase: 'Ernte',       tip: 'IceFlush & Hard-Dryback. Nach dem letzten Spülgang nicht mehr gießen, bis der Topf den Gießpunkt erreicht (Hebe-Test „Knapp“), dann Eis und Ernte.' },
     },
     products: [
@@ -4594,7 +4594,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.315';
+const APP_VERSION = 'v1.5.316';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -7594,7 +7594,7 @@ const INFO_TERMS = {
   },
   defoliation: {
     title: 'Defoliation (Entlauben)',
-    text: 'Defoliation heißt: gezielt alte, schattige Blätter abschneiden, damit Licht und Luft an die Blüten kommen. Das senkt das Schimmelrisiko spürbar.',
+    text: 'Defoliation heißt: gezielt einzelne große Blätter abschneiden, die Blüten beschatten oder die Luft im Inneren stauen. Belegt ist, dass Luftbewegung an den Blüten Schimmel bremst — dafür kann Entlauben helfen. Ein Blatt ist aber auch Photosynthese-Organ und Nährstoffspeicher: wenig und gezielt, nicht großflächig.',
     tip: 'Nur in der Wachstumsphase und frühen bis mittleren Blüte (etwa bis Woche 4–5), <b>nie</b> in der Spätblüte. Höchstens ein Drittel der Blätter auf einmal. Ziel: kein Blatt liegt auf einer Blüte, jede Blüte sieht Licht.',
     lex: 'Defoliation (Entlaubung)',
   },
@@ -8029,7 +8029,7 @@ const SYMPTOMS = [
         heading: 'Spitzen direkt unter Lampe weiß-gelb, untere Bereiche grün',
         verdict: '⚠⚠ Foto-Bleaching (zu starke Lampe)',
         color: 'var(--red)',
-        text: 'Das passiert wenn die PPFD an den Top-Buds über ~1200 erreicht — Chlorophyll und Trichome werden ausgebleicht. Wirkt zwar wie „weiße Buds = potent", ist aber das Gegenteil: Cannabinoid-Produktion fällt zusammen. <b>Lösung:</b> Lampe SOFORT höher hängen (mind. 20 cm), oder Dimmer auf 60–70% reduzieren bis zur Ernte.',
+        text: 'Das passiert wenn die PPFD an den Top-Buds über ~1200 erreicht — Chlorophyll und Trichome werden ausgebleicht. Wirkt zwar wie „weiße Buds = potent", ist aber ausgeblichenes Gewebe — mehr Licht, als die Spitzen verarbeiten. <b>Lösung:</b> Lampe SOFORT höher hängen (mind. 20 cm), oder Dimmer auf 60–70% reduzieren bis zur Ernte.',
         when: 'Bloom mit starker LED über 600 W/m²',
         lex: 'Lichtbrand (Phototoxizität)',
       },
@@ -15519,9 +15519,14 @@ function getAlerts(c) {
   // schon in Woche 2, obwohl der Toppen-Button im Eintrag erst ab Tag 15 erscheint
   // (vor Tag 15 hat die Pflanze meist nur 3 Nodien, Topping stresst dann mehr als es nützt).
   if (isVegiPhase(p.ph) && p.day >= 15 && p.week <= 3 && !c.toppingDate) {
+    // (v1.5.316) Ohne Ertragszusage (die alte Zusage einer Verdopplung ist nicht belegt, ANBAU.md 14) und mit der Bedingung für
+    // Automatics: Eingriffe nur früh und moderat, jeder Stresstag ist dort dauerhaft (ANBAU.md 9).
+    const _auto = c.seedType === 'auto';
     const text = S.beginnerMode
-      ? 'Du könntest jetzt "toppen" — das verdoppelt deinen Ertrag. Im Lexikon nachschlagen.'
-      : 'Topping-Fenster offen! 4.–5. Nodium = idealer Zeitpunkt.';
+      ? (_auto
+        ? `${c.name}: Jetzt wäre das Zeitfenster fürs „Toppen" (Triebspitze kappen) — bei Automatics nur jetzt und nur bei kräftigen Pflanzen. Sanftes Herunterbinden (LST) stresst weniger. Ein Ertragsplus durchs Toppen ist nicht belegt.`
+        : `${c.name}: Jetzt wäre das Zeitfenster fürs „Toppen" (Triebspitze kappen, damit mehrere Haupttriebe entstehen). Ein Ertragsplus ist nicht belegt — es formt die Pflanze breiter.`)
+      : (_auto ? 'Topping-Fenster offen (4.–5. Nodium) — bei Automatics nur jetzt, später nicht mehr; LST stresst weniger.' : 'Topping-Fenster offen! 4.–5. Nodium = idealer Zeitpunkt.');
     out.push({ icon: '✂️', text, type: 'tip' });
   }
 
