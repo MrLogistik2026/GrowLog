@@ -2,6 +2,19 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-06 — v1.5.300
+
+- **„Vom Plan übernehmen" machte Endspurt-Karte und Kalender uneins** (bekannt seit der Rainbow-Prüfung vom 17.09., in
+  `ENTSCHEIDUNGEN.md` notiert, am 06.10. für Run 02 nachgemessen). Ein Zyklus hat zwei Teile in der Spülphase:
+  Spültage und Hard-Dryback (Vorgabe 5 + 3 = 8). Der Knopf schrieb die Plan-Dauer (7) ins Rohfeld `flushDays` und ließ
+  beide Teile stehen. Der Kalender rechnete danach mit 7, die Endspurt-Karte mit 8 — Erntetag 101 gegen 102 —, und
+  beim nächsten Eingriff stellte `_syncFlushPhase` die 8 still wieder her. Dein Plan-Blatt riet deshalb selbst davon ab,
+  den Knopf zu benutzen.
+- **Jetzt** legt der Knopf die Plan-Dauer auf die Spültage um (7 − 3 Hard-Dryback = 4 Spültage); der Hard-Dryback
+  bleibt, wie er eingestellt ist. Der Vergleich nennt die echte Spüldauer (Spültage + Hard-Dryback) statt des Rohfelds.
+- Test: `test_zyklus2.js` Abschnitt C (6 Prüfungen, beide Zeitzonen; 4 fallen auf v1.5.299 um).
+
+
 ## 2026-10-06 — v1.5.299
 
 - **Die Topfgröße aus dem Assistenten landete in der allgemeinen Vorgabe statt am Zyklus** (gefunden beim Durchspielen

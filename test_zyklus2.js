@@ -142,6 +142,30 @@ function pruef(name, bedingung, info) {
     pruef('B7 keine JS-Fehler', a.errors.length === 0, a.errors[0]);
   }
 
+  // ===== C: „Vom Plan übernehmen" hält Endspurt und Kalender einig (v1.5.300) =====
+  console.log('\nC - Phasendauern vom Rainbow-Plan übernehmen');
+  {
+    const a = await load();
+    a.window.customConfirm = () => Promise.resolve(true);
+    await a.E("loadPreset('rainbow_auto')");
+    const planId = a.E("(S.fertPlans.find(p => p.presetKey === 'rainbow_auto') || {}).id");
+    a.E(`addCyc({ name: 'R', startDate: '2026-09-20', potSize: 15, plantCount: 4, fertPlanId: '${planId}' })`);
+    const r = "S.cycles.find(c => c.name === 'R')";
+    a.E(`${r}.bloomDays = 70; ${r}.anzuchtDays = 21`);
+    const vorher = a.E(`JSON.stringify(planSkeletonDiff(${r}))`);
+    pruef('C1 der Vergleich nennt die echte Spüldauer (5 Spültage + 3 Hard-Dryback = 8)', JSON.parse(vorher).ist.flushDays === 8, vorher);
+    await a.E(`applyPlanSkeleton(${r}.id)`);
+    const kalErnte = a.E(`(() => { const c = ${r}; for (let d = 0; d < 200; d++) { const iso = isoPlus(c.startDate, d); const p = phase(iso, c); if (p && p.ph === 'harvest') return d + 1; } return null; })()`);
+    const esErnte = a.E(`endspurtState(${r}, todayISO()).ernteTag`);
+    pruef('C2 nach dem Übernehmen: Endspurt und Kalender nennen denselben Erntetag', kalErnte === esErnte && esErnte > 0, { kalErnte, esErnte });
+    pruef('C3 die Plan-Dauer 7 liegt auf den Spültagen (4 + 3 Hard-Dryback)', a.E(`flushWetDays(${r})`) === 4 && a.E(`iceDryDays(${r})`) === 3 && a.E(`${r}.flushDays`) === 7,
+      { nass: a.E(`flushWetDays(${r})`), dry: a.E(`iceDryDays(${r})`), fd: a.E(`${r}.flushDays`) });
+    a.E(`_syncFlushPhase(${r})`);
+    pruef('C4 ein späterer Abgleich stellt nichts still zurück', a.E(`${r}.flushDays`) === 7 && a.E(`endspurtState(${r}, todayISO()).ernteTag`) === esErnte);
+    pruef('C5 danach meldet der Vergleich keine Spül-Abweichung mehr', !a.E(`planSkeletonDiff(${r}).felder.includes('flushDays')`));
+    pruef('C6 keine JS-Fehler', a.errors.length === 0, a.errors[0]);
+  }
+
   console.log('\n' + ok + ' OK, ' + fail + ' FEHL');
   if (fail) process.exit(1);
 })().catch((e) => { console.log('FEHLER: ' + (e && e.stack || e)); process.exit(1); });

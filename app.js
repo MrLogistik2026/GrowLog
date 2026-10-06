@@ -3592,7 +3592,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.299';
+const APP_VERSION = 'v1.5.300';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -10746,7 +10746,8 @@ function planSkeletonDiff(c) {
   const ist = {}, soll = {};
   [['anzucht', 'anzuchtDays'], ['flush', 'flushDays'], ['ice', 'iceDays'], ['harvest', 'harvestDays'], ['dry', 'dryDays']].forEach(([k, f]) => {
     if (sk[k] == null) return;
-    ist[f] = c[f] || PHASE_DEFAULTS[f];
+    // (v1.5.300) Die Spülphase ist Spültage + Hard-Dryback — so rechnen Endspurt und Kalender, nicht mit dem Rohfeld.
+    ist[f] = f === 'flushDays' ? (flushWetDays(c) + iceDryDays(c)) : (c[f] || PHASE_DEFAULTS[f]);
     soll[f] = sk[k];
     if (ist[f] !== soll[f]) felder.push(f);
   });
@@ -10773,7 +10774,14 @@ async function applyPlanSkeleton(cId) {
     + (df.soll.anzuchtDays !== anzAlt ? '\n\nAchtung: Eine andere Anzuchtdauer verschiebt auch Spülstart und Ernte.' : ''),
     'Übernehmen', 'var(--green)');
   if (!ok) return;
-  df.felder.forEach(f => { c[f] = df.soll[f]; });
+  // (v1.5.300) Die Spüldauer nicht ins Rohfeld schreiben: Ein Zyklus hat Spültage + Hard-Dryback (5 + 3 = 8), der Knopf
+  // setzte flushDays = 7 und ließ beide Teile stehen. Danach nannte die Endspurt-Karte einen anderen Erntetag als der
+  // Kalender, und _syncFlushPhase stellte die 8 beim nächsten Eingriff still wieder her. Jetzt wird die Plan-Dauer auf die
+  // Spültage umgelegt; der Hard-Dryback bleibt, wie er eingestellt ist.
+  df.felder.forEach(f => {
+    if (f === 'flushDays') { c.flushWetDays = Math.max(1, df.soll[f] - iceDryDays(c)); _syncFlushPhase(c); }
+    else c[f] = df.soll[f];
+  });
   saveS();
   vibrate(10);
   toast('Phasendauern vom Plan übernommen');
