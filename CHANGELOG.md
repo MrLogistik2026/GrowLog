@@ -2,6 +2,36 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-06 — v1.5.302
+
+- **Die Rainbow-Vorlage stand noch auf Patricks Plan-Blatt v1.0, er gießt Run 02 nach v2.1** (bekannt seit der
+  Rainbow-Prüfung vom 17.09., am 06.10. Zelle für Zelle nachgemessen). 24 von 135 Dosis-Zellen wichen ab, alle direkt
+  in den Millilitern der Mischliste: CalMag in Woche 2–8 zu hoch (in Woche 4–6 fast das Dreifache, 0,8 statt 0,3),
+  Epsom ab Woche 3 zwei Drittel zu hoch (0,25 statt 0,15 g/L), Bio-Grow in Woche 7–11 zu niedrig (0,3 statt 0,75 —
+  in der Phase mit dem höchsten Stickstoffbedarf), Alg-A-Mic in Woche 11–12 3 statt 2 ml/L. Alfa Boost stand noch als
+  Produkt, in der Mischreihenfolge und in vier Wochen-Tipps, obwohl das Blatt es seit v1.2 streicht (keine
+  Herstellermenge). Die EC-Korridore stimmten nur in Woche 1; in Woche 4–6 lag die Untergrenze der App über der
+  Obergrenze des Blatts, ein nach Blatt angesetzter Feed galt als „niedrig".
+- **Jetzt** trägt die Vorlage „Rainbow Düngeplan (v2.1)" jede Dosis, jeden EC-Korridor (EC-Spitze 1,25) und die
+  Wochen-Tipps aus dem Blatt v2.1 — gegen eine zweite, je Produkt abgeschriebene Fassung in `test_rainbowplan.js`
+  geprüft. Die Tipps folgen dem Blatt, wo es mit den Regeln der App übereinstimmt, und den Regeln der App, wo
+  v1.5.238 schon entschieden hat: kein gleitender Gießpunkt (Spülen und Hard Dryback am Gießpunkt statt „32–35 %"
+  und „30 %"), kein eigenes Nacht-Klima, das eigene Bernstein-Ziel statt einer festen Spanne. Neu in den Tipps:
+  Selektion nur nach Kriterium („nie eine gesunde wegen Beschattung" — der alte Tipp sagte „bei Beschattung auf
+  4 Pflanzen"), Kontrollguss mit rund 5 L statt 2000 ml, Unterscheidungsreihe vor Epsom, FIM-Stichtag Plan-Tag 13,
+  Ceiling-Test je Sorte, Dunkelphase 28 h nur bei gemeinsamem Schnitttag. Plan-Tage zählen ab dem Keimling.
+- **Schon gespeicherte Kopien:** Wer die Vorlage vorher geladen hatte, behielt die v1.0-Dosen — `loadPreset` frischt
+  bei vorhandener Kopie nur Rückgrat und EC-Ziele auf. Eine einmalige Anpassung hebt jetzt jede Kopie, deren
+  Wochenplan noch **genau** der von v1.0 ist; hat jemand selbst eine Dosis geändert, bleibt die Kopie, wie sie ist.
+  Alfa Boost fällt nur weg, wenn kein Eintrag darauf zeigt (Dosis, Dosis-Bezug, Misch-Häkchen). Schon eingetragene
+  Tage behalten ihre Dosen. Der Düngeplan sagt in der Kopfkarte, dass und wann die Kopie gehoben wurde.
+- Nicht geändert: Woche 13 zeigt weiter den Rampen-Guss; die 7 Tage Basis davor nennt der Wochen-Tipp, und wer auf
+  die Trichome wartet, verlängert die Blütedauer (so steht es auch im roten Kasten des Blatts).
+- Tests: `test_zyklus2.js` Abschnitt E (11 Prüfungen); `test_rainbowplan.js` auf Blatt v2.1 (62); Fingerabdruck in
+  `test_duengeplaene.js` 8 Produkte, Summe 84,1 (vom Prüfer vor der Änderung unabhängig aus dem Blatt gerechnet);
+  Planname in fünf weiteren Tests nachgezogen. Beide Zeitzonen.
+
+
 ## 2026-10-06 — v1.5.301
 
 - **Die Plan-Wochen der Anzucht begannen zu früh, sobald die Anzucht den Vorlauf bis zum Keimling enthielt** (gefunden

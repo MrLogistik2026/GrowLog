@@ -68,20 +68,19 @@ function pruef(name, bedingung, info) {
   else { fail++; console.log('  FEHL ' + name + (info !== undefined ? '  -> ' + info : '')); }
 }
 
-// Das Plan-Blatt „Rainbow Düngeplan v1.0", je Produkt über Woche 1 bis 13.
-// null = in dieser Woche nicht dabei. Woche 14 (Spülen) und 15 (IceFlush) sind leer.
+// Das Plan-Blatt „Rainbow Düngeplan v2.1", je Produkt über Woche 1 bis 13 — abgeschrieben aus den
+// Wochenkarten des Blatts (v1.5.302; bis dahin stand hier v1.0). null = in dieser Woche nicht dabei.
+// Woche 14 (Spülen) und 15 (IceFlush) sind leer. Woche 13 ist der Rampen-Guss (Endkette Schritt 3).
 const BLATT = {
-  'Silica Force':   [null, 0.3,  0.4, 0.5,  0.5,  0.5,  0.5,  0.5,  0.5, 0.5, 0.5, 0.5, null],
-  'CalMag':         [0.3,  0.4,  0.5, 0.8,  0.8,  0.8,  0.8,  0.8,  0.8, 0.8, 0.8, 0.8, 0.5],
-  'Epsom Salz':     [null, 0.15, 0.2, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.2],
-  'POWHUMUS':       [2.5,  2.5,  2.5, 2.5,  2.5,  2.5,  2.5,  2.5,  2.5, 2.5, 2.5, 2.5, null],
-  'Bio-Grow':       [null, 0.25, 0.6, 1.0,  1.0,  0.75, 0.5,  0.3,  0.3, 0.3, 0.3, 0.3, null],
-  // Woche 10–12 steht auf dem Blatt „Ceiling" — 1,2 ist der letzte Wert, den es nennt.
-  'Bio-Bloom':      [null, null, null, null, null, 0.75, 0.9, 1.05, 1.2, 1.2, 1.2, 1.2, 0.5],
-  'Alg-A-Mic':      [2,    2,    2,   2,    2,    2,    2,    2,    2,   2,   3,   3,   null],
-  'Advanced Amino': [null, 0.15, 0.2, 0.2,  0.2,  0.2,  0.2,  null, null, null, null, null, null],
-  // „n. Label" — das Blatt nennt keine Zahl, also steht auch keine im Plan.
-  'Alfa Boost':     [null, null, null, null, null, null, null, null, null, null, null, null, null],
+  'Silica Force':   [null, 0.3,  0.4,  0.5,  0.5,  0.5,  0.5,  0.5,  0.5, 0.5, 0.5, 0.5, null],
+  'CalMag':         [0.3,  0.3,  0.3,  0.3,  0.3,  0.3,  0.5,  0.5,  0.8, 0.8, 0.8, 0.8, 0.5],
+  'Epsom Salz':     [null, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.2],
+  'POWHUMUS':       [2.5,  2.5,  2.5,  2.5,  2.5,  2.5,  2.5,  2.5,  2.5, 2.5, 2.5, 2.5, null],
+  'Bio-Grow':       [null, 0.25, 0.6,  1.0,  1.0,  0.75, 0.75, 0.75, 0.75, 0.75, 0.5, 0.3, null],
+  // Woche 10–12 steht auf dem Blatt „Ceiling … bis Ergebnis 1,2".
+  'Bio-Bloom':      [null, null, null, null, null, 0.75, 0.9,  1.05, 1.2, 1.2, 1.2, 1.2, 0.5],
+  'Alg-A-Mic':      [2,    2,    2,    2,    2,    2,    2,    2,    2,   2,   2,   2,   null],
+  'Advanced Amino': [null, 0.15, 0.2,  0.2,  0.2,  0.2,  0.2,  null, null, null, null, null, null],
 };
 
 // Plan über den echten Weg anlegen (Düngeplan-Bildschirm → Vorlage laden), dann einen
@@ -131,7 +130,7 @@ const ZYKLUS = (bluete) => `(function(){
   Object.entries(pr.schedule).forEach(([w, d]) => Object.keys(d).forEach((prod) => {
     if (!BLATT[prod]) abweichungen.push(`Wo ${w}: Produkt „${prod}" steht nicht auf dem Blatt`);
   }));
-  pruef('Alle 117 Felder (9 Produkte × 13 Wochen) wie auf dem Blatt', abweichungen.length === 0, abweichungen.join(' | '));
+  pruef('Alle 104 Felder (8 Produkte × 13 Wochen) wie auf dem Blatt', abweichungen.length === 0, abweichungen.join(' | '));
   pruef('Woche 14 (Spülen) und 15 (IceFlush) ohne Dünger',
     Object.keys(pr.schedule[14] || {}).length === 0 && Object.keys(pr.schedule[15] || {}).length === 0);
   pruef('Genau 15 Plan-Wochen, passend zum Rückgrat',
@@ -140,7 +139,7 @@ const ZYKLUS = (bluete) => `(function(){
   pruef('Rückgrat: 3 Anzucht, 10 Blüte, Spülen, IceFlush',
     pr.weekPhases.filter(x => x === 'anzucht').length === 3 && pr.weekPhases.filter(x => x === 'bloom').length === 10
     && pr.weekPhases[13] === 'flush' && pr.weekPhases[14] === 'ice', pr.weekPhases.join(','));
-  pruef('Die 9 Produkte des Blatts, kein MKP', pr.products.length === 9
+  pruef('Die 8 Produkte des Blatts, kein MKP, kein Alfa Boost', pr.products.length === 8
     && Object.keys(BLATT).every(n => pr.products.some(p => p.name === n)) && !pr.products.some(p => /MKP/.test(p.name)),
     pr.products.map(p => p.name).join(', '));
   pruef('Substrat Erde (Light-Mix)', pr.medium === 'erde');
@@ -152,8 +151,8 @@ const ZYKLUS = (bluete) => `(function(){
     /20 g .*250 ml.*80 mg\/ml.*2,5 ml\/L.*200 mg\/L/.test(pr.products.find(p => p.name === 'POWHUMUS').note));
 
   // EC-Korridore
-  const ecSoll = { 1: [0.3, 0.4], 2: [0.4, 0.6], 3: [0.7, 0.9], 4: [0.9, 1.0], 5: [0.85, 1.0], 6: [0.9, 1.05],
-    7: [0.9, 1.05], 8: [1.0, 1.15], 9: [1.05, 1.2], 10: [1.05, 1.2], 11: [1.0, 1.15], 12: [0.9, 1.05] };
+  const ecSoll = { 1: [0.3, 0.4], 2: [0.35, 0.55], 3: [0.6, 0.8], 4: [0.65, 0.8], 5: [0.65, 0.8], 6: [0.65, 0.8],
+    7: [0.8, 0.95], 8: [0.95, 1.1], 9: [1.1, 1.25], 10: [1.1, 1.25], 11: [0.95, 1.1], 12: [0.8, 0.95] };
   const ecAbw = [];
   Object.entries(ecSoll).forEach(([w, [lo, hi]]) => {
     const t = pr.ecTargets[w];
@@ -171,10 +170,12 @@ const ZYKLUS = (bluete) => `(function(){
   // Die drei Stellen ohne feste Zahl sind sichtbar gemacht, nicht erfunden
   const tips = pr.weekFocus;
   pruef('weekFocus für alle 15 Wochen', Object.keys(tips).length === 15);
-  pruef('Alfa Boost „nach Etikett" steht in Woche 4–7 im Wochen-Tipp',
-    [4, 5, 6, 7].every(w => /Alfa Boost/.test(tips[w].tip)) && ![1, 2, 3, 8].some(w => /Alfa Boost/.test(tips[w].tip)));
-  pruef('Alfa Boost: Produkt-Hinweis sagt, warum keine Zahl im Plan steht',
-    /Etikett/.test(pr.products.find(p => p.name === 'Alfa Boost').note));
+  // (v1.5.302) Seit Blatt v1.2 ist Alfa Boost draußen — der Hersteller nennt keine Menge.
+  pruef('Alfa Boost steht nirgends mehr — kein Produkt, kein Tipp, keine Mischreihenfolge',
+    !pr.products.some(p => /Alfa/.test(p.name)) && !Object.values(tips).some(w => /Alfa/.test(w.tip))
+    && !pr.mixOrder.some(n => /Alfa/.test(n)) && !/Alfa/.test(pr.mixInfo));
+  pruef('Epsom und CalMag: Produkt-Hinweis nennt die Stufen des Blatts',
+    /0,15/.test(pr.products.find(p => p.name === 'Epsom Salz').note) && /0,3 bis Woche 6 · 0,5 in Woche 7–8 · 0,8 ab Woche 9/.test(pr.products.find(p => p.name === 'CalMag').note));
   pruef('Bio-Bloom: Ceiling-Hinweis am Produkt', /Ceiling/.test(pr.products.find(p => p.name === 'Bio-Bloom').note));
   pruef('N-Stopp nur per Trigger (Woche 12)', /70–80 % milchig/.test(tips[12].tip));
   // (v1.5.238) Bis hierher pinnte diese Prüfung den festen Ernte-Trigger des Blatts
@@ -197,7 +198,7 @@ const ZYKLUS = (bluete) => `(function(){
   // gespeicherte Kopie V3.4.7 bleibt seit v1.5.135 in seiner Plan-Liste stehen (siehe C).
   const bild = JSON.parse(E(`(function(){ renderDuenger();
     const vorlagen = Array.from(document.querySelectorAll('#scr-duenger button[onclick^="loadPreset("]')).map(b => b.textContent.replace(/\\s+/g, ' ').trim());
-    return JSON.stringify({ vorlagen, rainbow: vorlagen.some(v => v.includes('Rainbow Düngeplan (v1.0)')), sensi: vorlagen.filter(v => /Sensi/.test(v)) }); })()`));
+    return JSON.stringify({ vorlagen, rainbow: vorlagen.some(v => v.includes('Rainbow Düngeplan (v2.1)')), sensi: vorlagen.filter(v => /Sensi/.test(v)) }); })()`));
   pruef('Vorlagen-Auswahl bietet den Rainbow-Plan an', bild.rainbow, bild.vorlagen.length + ' Vorlagen');
   pruef('Vorlagen-Auswahl enthält keinen Sensi-Plan mehr', bild.vorlagen.length > 0 && bild.sensi.length === 0, bild.sensi.join(' | '));
 
@@ -324,7 +325,7 @@ const ZYKLUS = (bluete) => `(function(){
         });
       });
       pruef('Die Gießdosen im Tageseintrag sind die Blatt-Dosen, Woche für Woche', dosAbw.length === 0, dosAbw.slice(0, 5).join(' | '));
-      pruef('EC-Ziel Woche 4 aus dem Plan (0,9–1,0)', r.ec4 && r.ec4.min === 0.9 && r.ec4.max === 1.0, JSON.stringify(r.ec4));
+      pruef('EC-Ziel Woche 4 aus dem Plan (0,65–0,8)', r.ec4 && r.ec4.min === 0.65 && r.ec4.max === 0.8, JSON.stringify(r.ec4));
       pruef('EC-Ziel in der Rampe: keins statt eines erfundenen', r.ec13 === null, JSON.stringify(r.ec13));
       pruef('EC-Ziel beim Spülen: höchstens 0,5', r.ec14 && r.ec14.max === 0.5, JSON.stringify(r.ec14));
     }

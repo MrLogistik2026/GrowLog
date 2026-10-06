@@ -49,7 +49,10 @@ const FINGERABDRUCK = {
   plagron:             { medium: 'erde', produkte: 5,  wochen: 10, gaben: 22,  summe: 54 },
   // (v1.5.133) sensi_amnesia_auto (V6.0) entfernt — auf Patricks Wunsch durch den Rainbow-Plan
   // ersetzt. Summe aus dem Plan-Blatt nachgerechnet: 87,65 ml/g ueber 85 Gaben (von Hand erst 88 verzaehlt — der Test hat es gefangen).
-  rainbow_auto:        { medium: 'erde', produkte: 9,  wochen: 15, gaben: 85,  summe: 87.65 },
+  // (v1.5.302) Auf Blatt v2.1: Alfa Boost raus (8 Produkte), 24 Gaben geaendert (CalMag Wo 2–8, Epsom Wo 3–12,
+  // Bio-Grow Wo 7–11, Alg-A-Mic Wo 11–12), Zahl der Gaben gleich. Summe 84,1 — vom Pruefer am 06.10. unabhaengig
+  // aus dem Blatt gerechnet, bevor die Vorlage geaendert war.
+  rainbow_auto:        { medium: 'erde', produkte: 8,  wochen: 15, gaben: 85,  summe: 84.1 },
 };
 
 (async () => {

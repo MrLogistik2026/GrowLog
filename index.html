@@ -3261,107 +3261,108 @@ function renderDiagFooter() {
 const ARC_RHYTHM = { 1:'F', 2:'F', 3:'FFW', 4:'FFW', 5:'FFW', 6:'FWF', 7:'FWF', 8:'FWF', 9:'FWF', 10:'WFW', 11:'W', 12:'-' };
 const FERT_PRESETS = {
   // (v1.5.133) Löst die Sensi-Amnesia-Pläne ab (V6.0 als Vorlage, V3.4.7 als gespeicherte
-  // Kopie). Übertragen aus Patricks Plan-Blatt „Rainbow Düngeplan v1.0“ (Run 02), jede Dosis
-  // 1:1. Drei Stellen nennt das Blatt ohne feste Zahl — sie stehen hier bewusst NICHT als
-  // ausgedachte Menge:
-  //   · Alfa Boost, Woche 4–7, „n. Label“: kein Eintrag im Wochenplan. Der Hinweis steht am
-  //     Produkt und in weekFocus, bis die Etikett-Dosis feststeht.
-  //   · Bio-Bloom, Woche 10–12, „Ceiling“: 1,2 — der letzte Wert, den das Blatt selbst nennt
-  //     („1,2 oder Ceiling“ in Woche 9). Findet der Ceiling-Test einen tieferen Wert, gilt der.
-  //   · Bio-Grow, Woche 12, „0,3 → 0 nur bei Trigger, pro Pflanze“: 0,3. Den Stopp lösen die
+  // Kopie). (v1.5.302) Auf Patricks Plan-Blatt „Rainbow Düngeplan v2.1" gehoben (Run 02) — jede
+  // Dosis, jeder EC-Korridor und jeder Wochen-Tipp aus dem Blatt, gegen eine zweite Abschrift in
+  // test_rainbowplan.js geprüft. Zwei Stellen nennt das Blatt ohne feste Zahl — sie stehen hier
+  // bewusst NICHT als ausgedachte Menge:
+  //   · Bio-Bloom, Woche 10–12, „Ceiling": 1,2 — der Wert, den das Blatt bis zum Testergebnis
+  //     nennt („bis Ergebnis 1,2"). Findet der Ceiling-Test einen tieferen Wert, gilt der.
+  //   · Bio-Grow, Woche 12, „0,3 → 0, Stopp je Sorte bei Trigger": 0,3. Den Stopp lösen die
   //     Trichome aus; ein verfrühter N-Stopp ist nach ANBAU.md 5 der teurere Fehler.
+  // Alfa Boost ist seit Blatt v1.2 draußen: Der Hersteller nennt keine Menge (UEBERGABE 0n·C).
   rainbow_auto: {
-    name: 'Rainbow Düngeplan (v1.0)',
+    name: 'Rainbow Düngeplan (v2.1)',
     medium: 'erde',   // Light-Mix
-    subtitle: '6 Pfl. (3× Rainbow Donut Auto · 3× Wham Boom Auto) · 11L Stofftopf (aufgemoundet 14–16L) · Light-Mix · Zeus Pro 300W · pH 6,25–6,4 · EC 0,3→1,2 · jeder Guss ist ein Feed · 13 Wochen, Puffer bis 15 · Trigger schlägt Kalender',
+    subtitle: 'Automatics · 15-L-Stofftopf (gefüllt 14–16 L) · Light-Mix · Zeus Pro 300W · Licht 20/4 · pH 6,25–6,4 · EC 0,3→1,25 · jeder Guss ist ein Feed · 13 Wochen, Puffer bis 15 · Trigger schlägt Kalender',
     doseMode: 'per-watering',
-    // Jede Gabe ist eine Feed-Gabe — außer dem einen Wasserguss nach dem FIM und dem Spülen.
-    // Die Dosen unten sind deshalb direkt die Gießdosen und werden nie hochskaliert.
+    // Jede Gabe ist eine Feed-Gabe — außer dem Setzguss, dem einen Wasserguss in Woche 3 und dem
+    // Spülen. Die Dosen unten sind deshalb direkt die Gießdosen und werden nie hochskaliert.
     feedDayBasis: true,
-    // Blütetag 0 = erste Pistillen in Woche 4 (Tag 22–28). 3 Wochen Anzucht + 70 Blütetage
-    // ergeben den Spülstart an Tag 92.
+    // Blütetag 0 = erste Pistillen in Woche 4 (Plan-Tag 22–28). Das Blatt zählt ab dem Keimling,
+    // die App ab dem Keimstart: Anzucht im Zyklus = 21 + Tage vom Keimstart bis zum Keimling —
+    // diese Tage gehören vor Plan-Woche 1 (v1.5.301, _keimVorlauf).
     bloomDaysHint: 70,
-    ecPeak: 1.2,
-    // RÜCKGRAT (siehe v1.5.51). Das Blatt fasst unter „Woche 13 · Finish“ Rampe, Spülen, Hard
-    // Dryback, IceFlush und Schnitt zusammen und nennt dazu „Puffer bis Wo 15“. Hier sind es
+    ecPeak: 1.25,
+    // RÜCKGRAT (siehe v1.5.51). Das Blatt fasst unter „Woche 13 · Finish" Rampe, Spülen, Hard
+    // Dryback, IceFlush und Schnitt zusammen und nennt dazu „Puffer bis Wo 15". Hier sind es
     // drei Plan-Wochen: 13 = Rampe (noch Blüte), 14 = Spülen, 15 = IceFlush + Ernte. Nur so
-    // kann die App am Spültag „nur Wasser“ sagen. Die Blüte-Wochen dehnen sich mit der echten
+    // kann die App am Spültag „nur Wasser" sagen. Die Blüte-Wochen dehnen sich mit der echten
     // Blütedauer — eine langsamere Pflanze bekommt längere Plan-Wochen, nicht mehr Wochen.
     weekPhases: ['anzucht','anzucht','anzucht',
                  'bloom','bloom','bloom','bloom','bloom','bloom','bloom','bloom','bloom','bloom',
                  'flush','ice'],
-    // Spülen 7 + IceFlush 2 + Erntetag 1 = 10 Tage; das Blatt: „Flush-Start ist 7–10 Tage vor
-    // dem Schnitt“. Trocknung laut Blatt 8–12 Tage — geplant wird mit dem oberen Ende.
+    // Spülen 7 (zwei Spülgänge + Hard Dryback) + IceFlush 2 (Eistag + 28 h Dunkelphase) +
+    // Erntetag 1. Trocknung laut Blatt 8–12 Tage — geplant wird mit dem oberen Ende.
     phaseSkeleton: { anzucht: 21, bloom: 70, flush: 7, ice: 2, harvest: 1, dry: 12 },
     // Fallback für Pläne ohne Rückgrat — bei diesem Plan nur Rückfallebene.
     weekDayBounds: [7, 14, 21, 28, 35, 42, 49, 56, 63, 70, 77, 84, 91, 98],
-    // EC-Korridore vom Blatt, def = Mitte. Das Blatt: „EC ist Kontrolle, nicht Ziel. Liegt der
-    // gemessene EC unter dem Korridor, wird nicht nachgedüngt.“ Für Woche 13 nennt es keinen
-    // Korridor — deshalb steht dort keiner. Spülziel laut Blatt: Drain-EC höchstens 0,5.
+    // EC-Korridore vom Blatt v2.1, def = Mitte. Das Blatt: „EC ist Kontrolle, nicht Ziel. Liegt
+    // der gemessene EC unter dem Korridor, wird nicht nachgedüngt." Für Woche 13 nennt es keinen
+    // Korridor — deshalb steht dort keiner. Das Spülende setzt die Zahl der Spülgänge, kein Drain-EC.
     ecTargets: {
       1:  { def: 0.35, min: 0.3,  max: 0.4,  label: 'Sämling' },
-      2:  { def: 0.5,  min: 0.4,  max: 0.6,  label: 'Früh-Vegi' },
-      3:  { def: 0.8,  min: 0.7,  max: 0.9,  label: 'Vegi' },
-      4:  { def: 0.95, min: 0.9,  max: 1.0,  label: 'Stretch' },
-      5:  { def: 0.93, min: 0.85, max: 1.0,  label: 'Stretch-Ende' },
-      6:  { def: 0.98, min: 0.9,  max: 1.05, label: 'Frühblüte' },
-      7:  { def: 0.98, min: 0.9,  max: 1.05, label: 'Bud-Set' },
-      8:  { def: 1.08, min: 1.0,  max: 1.15, label: 'Bulk-Start' },
-      9:  { def: 1.13, min: 1.05, max: 1.2,  label: 'Bulk' },
-      10: { def: 1.13, min: 1.05, max: 1.2,  label: 'Bulk-Peak' },
-      11: { def: 1.08, min: 1.0,  max: 1.15, label: 'Reifung' },
-      12: { def: 0.98, min: 0.9,  max: 1.05, label: 'Taper' },
+      2:  { def: 0.45, min: 0.35, max: 0.55, label: 'Früh-Vegi' },
+      3:  { def: 0.7,  min: 0.6,  max: 0.8,  label: 'Vegi' },
+      4:  { def: 0.73, min: 0.65, max: 0.8,  label: 'Stretch' },
+      5:  { def: 0.73, min: 0.65, max: 0.8,  label: 'Stretch-Ende' },
+      6:  { def: 0.73, min: 0.65, max: 0.8,  label: 'Frühblüte' },
+      7:  { def: 0.88, min: 0.8,  max: 0.95, label: 'Bud-Set' },
+      8:  { def: 1.03, min: 0.95, max: 1.1,  label: 'Bulk-Start' },
+      9:  { def: 1.18, min: 1.1,  max: 1.25, label: 'Bulk' },
+      10: { def: 1.18, min: 1.1,  max: 1.25, label: 'Bulk-Peak' },
+      11: { def: 1.03, min: 0.95, max: 1.1,  label: 'Reifung' },
+      12: { def: 0.88, min: 0.8,  max: 0.95, label: 'Taper' },
       14: { def: 0.22, min: 0.2,  max: 0.5,  label: 'Spülen' },
       15: { def: 0.22, min: 0,    max: 0.5,  label: 'IceFlush — nur Wasser', waterOnly: true },
     },
+    // Plan-Tage zählen ab dem Keimling (Blatt: „Tag 1 = Sprout"), nicht ab dem App-Tag 1.
     weekFocus: {
-      1:  { phase: 'Sämling',                  tip: 'pH 6,4. Kein Bio-Grow — Light-Mix ist vorgedüngt. Licht 25 %, 60–65 cm. Gießradius 5 cm.' },
-      2:  { phase: 'Früh-Vegi · LST-Start',    tip: 'pH 6,35. Gießradius auf 8–12 cm erweitern — Salze wandern mit der Feuchtefront nach außen. LST ab Tag 10–12, ab Tag 10 täglich Nodes zählen.' },
-      3:  { phase: 'Vegi · FIM · Wasserguss',  tip: 'pH 6,3 · noch kein Drain möglich. FIM Tag 15–18 bei Node 4–5, alle 6 — nur wenn Node 4–5 mindestens 7 Tage vor den ersten Pistillen steht, sonst entfällt FIM. 48 h nach dem FIM EIN Wasserguss: reines pH-Wasser 6,3, gleiche Menge wie ein Feed (im Tageseintrag auf „Nur Wasser“ stellen). Fällt FIM aus, bleibt der Wasserguss. Ab jetzt wöchentlich pro Topf: Höhe, Seitentriebe, Internodienabstand.' },
-      4:  { phase: 'Stretch · Selektion',      tip: 'pH 6,3. Erste Pistillen pro Topf notieren = Blütetag 0. Selektion Tag 22–31: bei Beschattung auf 4 Pflanzen — Kriterium Seitentriebzahl und Internodienabstand, nicht Höhe. CalMag und Epsom ab jetzt konstant. Alfa Boost nach Etikett dazu (schütteln) — das Blatt nennt keine feste Menge. Erste Drain-Versuche.' },
-      5:  { phase: 'Stretch-Ende · Kontrollguss', tip: 'pH 6,3. Kontrollguss an einem Topf: 2000 ml in Etappen, dann in 500-ml-Schritten nachgießen, bis Drain austritt — diese Menge ist die Referenz für alle Töpfe. Ab jetzt jeder Feed mit Drain; Drain-EC nur bei mindestens 15 % Durchfluss werten. Letzte Entlaubung, max. 10–15 %, nur Fächerblätter über Bud-Sites. Alfa Boost nach Etikett.' },
-      6:  { phase: 'Frühblüte · Bio-Bloom startet', tip: 'pH 6,25. Entfeuchtung ab jetzt nachts durchlaufen lassen: Beim Abkühlen steigt die Luftfeuchte von selbst, und der Schimmel-Deckel der App gilt auch nachts — zur kühlsten Stunde messen. Epsom nur bei interveinaler Chlorose an mittleren/unteren Blättern für 2–3 Feeds auf 0,4 g/L, dann zurück auf 0,25 — nicht vorbeugend. Lollipopping nach Licht-Test, letzter Eingriff. Alfa Boost nach Etikett.' },
-      7:  { phase: 'Bud-Set',                  tip: 'pH 6,25. Advanced Amino und Alfa Boost (nach Etikett) zum letzten Mal. Buds nicht mehr anfassen, Zweige am Stiel bewegen. Luft unter und durch den Canopy, nie direkt auf die Blüten — ist im Canopy-Inneren keine Bewegung spürbar, braucht es einen zweiten Ventilator.' },
-      8:  { phase: 'Bulk-Start · Ceiling-Test', tip: 'pH 6,25. Ceiling-Test Bio-Bloom 1,05 → 1,2 → 1,35 → 1,5: nach jedem Schritt 48–72 h die Zuckerblattspitzen an den Buds prüfen, beide Sorten getrennt. Erste Gelbfärbung → einen Schritt zurück, Ceiling gefunden, Test für alle beendet. Notieren, welche Sorte zuerst brennt. Bio-Grow bleibt bei 0,3 — nur die Trichome lösen den Stopp aus, frühestens Woche 12.' },
-      9:  { phase: 'Bulk · Trichom-Baseline',  tip: 'pH 6,25. Bio-Bloom 1,2 oder dein Ceiling. Trichom-Baseline pro Topf: alle 3–4 Tage, dieselben Stellen, nur Calyxen, mehrere Etagen — nie Zuckerblätter, nie Foxtail-Neuwuchs. Der Hebe-Test bleibt der einzige Gieß-Trigger.' },
-      10: { phase: 'Bulk-Peak', tip: 'pH 6,25. Bio-Bloom auf deinem Ceiling (bis zum Testergebnis 1,2). Nachts nicht gezielt herunterkühlen — Kühle kostet Blütenmasse, und jedes Grad weniger hebt die Luftfeuchte. Die Wurzelzone soll nicht unter 16 °C fallen. Luftfeuchte zur kühlsten Stunde prüfen; hält der Deckel nicht, entfeuchten statt kühlen. Ertragsstärkste Phase: Feed konstant, nichts ändern.' },
-      11: { phase: 'Reifung · Seneszenz',      tip: 'pH 6,25. Alg-A-Mic auf 3 ml/L. Vergilbung gleichmäßig von unten nach oben bei laufender Blütenentwicklung ist Seneszenz — nicht andüngen. Steigender Drain-EC bei mindestens 20 % Durchfluss und ohne Spitzenbrand ist Mineralisierung, keine Überdüngung. Erreicht eine Sorte den N-Stopp-Trigger und die andere nicht: zwei Ansätze nacheinander mischen.' },
-      12: { phase: 'Taper · N-Stopp bei Trigger', tip: 'pH 6,25. Silica zum letzten Mal. N-Stopp NUR bei 70–80 % milchigen Trichomen, pro Pflanze — bei 60 % läuft Bio-Grow mit 0,3 weiter, auch bis Woche 14. Bio-Bloom bleibt oben und wird erst 7 Tage nach dem N-Stopp reduziert.' },
-      13: { phase: 'Finish · Rampe',           tip: 'Nach dem N-Stopp 7 Tage Bio-Bloom + Basis, dann die Rampe: Bio-Bloom 0,5 · CalMag 0,5 · Epsom 0,2. Vor dem Spülen nicht tiefer abtrocknen lassen als bis zum Gießpunkt. Trichome nicht im Fenster → Feed aus Woche 11/12 läuft weiter. Liegt der Bernstein-Anteil über deinem eingestellten Ziel → sofort schneiden, IceFlush entfällt.' },
-      14: { phase: 'Spülen',                   tip: 'Nur pH-Wasser 6,3, Gießwasser-EC 0,2–0,5, maximal 2 Spülgänge. Der Spülstart liegt 7–10 Tage vor dem Schnitt, nicht vor einem Datum. Wann Schluss ist, sagt der Plan — nicht ein Drain-EC-Wert: In Erde kann er nach dem Spülen wieder ansteigen, weil das Substrat nachliefert. Danach nicht mehr gießen, bis der Topf den Gießpunkt erreicht.' },
-      15: { phase: 'IceFlush + Ernte',         tip: 'Nicht mehr gießen, bis der Topf den Gießpunkt erreicht — dann bleibt das Schmelzwasser im Topf. 1 L Crushed Ice pro Topf an den Rand, 4–6 h. Dunkelphase 24–36 h — reguläres Licht-aus nutzen, Zeitschaltuhr trennen. Schnitt vor Lichtstart unter Grünlicht, Frischgewicht pro Topf. Ernte-Trigger: kaum noch klare Trichome und dein eingestelltes Bernstein-Ziel erreicht — wie viel Bernstein du willst, entscheidest du selbst (Vorgabe 5 %; mehr macht die Wirkung ruhiger und senkt die Potenz). Gemessen wird auf den Kelchen, nicht auf Zuckerblättern. Griffelbräunung ist kein Reifezeichen.' },
+      1:  { phase: 'Sämling',                  tip: 'pH 6,4. Kein Bio-Grow — Light-Mix ist vorgedüngt. Licht 25 %, 60–65 cm. Gießradius 5 cm, eng am Samen. Gegossen wird, wenn die Oberfläche im Gießradius hell wird und sich am Samen trocken anfühlt — höchstens alle zwei Tage. Nimmt der Referenztopf zwei Tage in Folge kaum ab, ist er unten noch nass: dann nicht gießen.' },
+      2:  { phase: 'Früh-Vegi · LST-Start',    tip: 'pH 6,35. Gießradius mit den Wurzeln auf 8–12 cm erweitern — nasse Erde ohne aufnehmende Wurzel bleibt nass. LST ab Plan-Tag 10–12 (Plan-Tage zählen ab dem Keimling). Ab Plan-Tag 10 täglich Nodes zählen — der FIM-Stichtag (Plan-Tag 13) fällt in diese Woche.' },
+      3:  { phase: 'Vegi · FIM · Wasserguss',  tip: 'pH 6,3 · gegossen wird am Gießpunkt („Knapp“) · noch kein Drain möglich. FIM nur, wenn alle Pflanzen bis Plan-Tag 13 Node 4–5 erreicht haben — Eingriff bis Plan-Tag 15, und am Eingriffstag müssen noch mindestens 7 Tage bis zum erwarteten Blütetag 0 bleiben; sonst bei keiner, dann LST allein. Reihenfolge: Feed → 1–2 Tage später FIM bei prallen Blättern → der erste Guss danach (frühestens 48 h, sobald der Topf den Gießpunkt erreicht) ist reines pH-Wasser 6,3 in Feed-Menge (im Tageseintrag auf „Nur Wasser“ stellen). Fällt FIM aus, ist der erste Guss dieser Woche der Wasserguss. Ab jetzt wöchentlich pro Topf: Höhe, Seitentriebe, Internodienabstand.' },
+      4:  { phase: 'Stretch · Selektion',      tip: 'pH 6,3. Erste Pistillen pro Topf notieren = Blütetag 0 (die App zählt denselben Tag als Blütetag 1). Selektion Plan-Tag 22–31: Entfernt wird nur eine Pflanze, die selbst zurückbleibt (weniger Seitentriebe, größerer Internodienabstand) oder krank ist — nie eine gesunde wegen Beschattung; eine Auto holt den verlorenen Wurzelraum nicht auf. Epsom ab jetzt konstant 0,15, CalMag bleibt bis Woche 6 bei 0,3. Erste Drain-Versuche, noch ohne Bewertung.' },
+      5:  { phase: 'Stretch-Ende · Kontrollguss', tip: 'pH 6,3. Kontrollguss je Sorte: Topf kurz vor dem Gießen wiegen, rund 5 L je Topf ansetzen und mittig, langsam in Etappen gießen, bis ' + DRAIN_ZIEL.min + '–' + DRAIN_ZIEL.max + ' % in einer breiten Wanne ankommen. Abtropfen lassen, dann wiegen — das ist das erste Gewicht (100 %). Das zweite Gewicht kommt erst in Woche 6, kurz vor dem Gießen. Ab jetzt jeder Feed bis ' + DRAIN_ZIEL.min + '–' + DRAIN_ZIEL.max + ' % Drain; Drain-EC nur bei mindestens ' + DRAIN_ZIEL.min + ' % Durchfluss werten. Letzte Entlaubung, max. 10–15 %, nur Fächerblätter über Bud-Sites.' },
+      6:  { phase: 'Frühblüte · Bio-Bloom startet', tip: 'pH 6,25. Zweites Gewicht in dieser Woche kurz vor dem Gießen nehmen, am Gießpunkt („Knapp“) — die App setzt es als Gießpunkt, erst dann rechnet sie Prozente für diesen Topf. Ab jetzt die schwerste Schimmelphase: Handprobe im Canopy-Inneren wöchentlich, Luftfeuchte nachts zur kühlsten Stunde messen — beim Abkühlen steigt sie von selbst, und der Deckel gilt auch nachts. Gelb zwischen grünen Adern an mittleren/unteren Blättern erst unterscheiden: Seneszenz (spät, gleichmäßig von unten, Kelche schwellen weiter) → Hebe-Test (dauernass?) → Zulauf-pH (nie unter 6,0) → keine Calcium-Quelle erhöhen → erst dann Epsom 0,4 g/L für 2–3 Feeds, danach zurück auf 0,15. Nicht vorbeugend. Lollipopping nach Licht-Test, letzter Eingriff.' },
+      7:  { phase: 'Bud-Set',                  tip: 'pH 6,25. CalMag jetzt 0,5, Bio-Grow bleibt bei 0,75. Advanced Amino zum letzten Mal. Buds nicht mehr anfassen, Zweige am Stiel bewegen. Luft unter und durch den Canopy, nie direkt auf die Blüten — ist im Canopy-Inneren keine Bewegung spürbar, braucht es einen zweiten Ventilator.' },
+      8:  { phase: 'Bulk-Start · Ceiling-Test', tip: 'pH 6,25. Ceiling-Test Bio-Bloom 1,05 → 1,2 → 1,35 → 1,5: nach jedem Schritt 48–72 h die Zuckerblattspitzen an den Buds prüfen, jede Sorte getrennt. Erste Gelbfärbung → einen Schritt zurück: Das ist das Ceiling dieser Sorte, der Test ist für sie beendet. Bio-Grow bleibt bei 0,75 bis einschließlich Woche 10 — den Stopp lösen nur die Trichome aus, frühestens Woche 12.' },
+      9:  { phase: 'Bulk · Trichom-Baseline',  tip: 'pH 6,25. CalMag ab jetzt 0,8. Bio-Bloom 1,2 oder dein Ceiling. Trichom-Baseline pro Topf: alle 3–4 Tage, dieselben Stellen — Headbud, Mitte, unterer Trieb, je 30–50 Köpfe, die Zahl der Köpfe mit notieren —, nur Calyxen, nie Zuckerblätter, nie Foxtail-Neuwuchs. Der Hebe-Test bleibt der einzige Gieß-Trigger.' },
+      10: { phase: 'Bulk-Peak', tip: 'pH 6,25. Bio-Bloom auf deinem Ceiling (bis zum Testergebnis 1,2), Bio-Grow die letzte Woche mit 0,75. Nachts nicht gezielt herunterkühlen — Kühle kostet Blütenmasse, und jedes Grad weniger hebt die Luftfeuchte. Die Wurzelzone soll nicht unter 16 °C fallen. Luftfeuchte zur kühlsten Stunde prüfen; hält der Deckel nicht, entfeuchten statt kühlen. Ertragsstärkste Phase: Feed konstant, nichts ändern.' },
+      11: { phase: 'Reifung · Seneszenz',      tip: 'pH 6,25. Bio-Grow 0,5 als Zwischenstufe. Ab jetzt Schimmel-Deckel 60 % statt 65, Tag und Nacht. Vergilbung gleichmäßig von unten nach oben bei laufender Blütenentwicklung ist Seneszenz — nicht andüngen. Steigender Drain-EC bei mindestens 20 % Durchfluss und ohne Spitzenbrand ist Mineralisierung, keine Überdüngung. Erreicht eine Sorte den Trigger für den Bio-Grow-Stopp und eine andere nicht: getrennte Ansätze nacheinander mischen.' },
+      12: { phase: 'Taper · N-Stopp bei Trigger', tip: 'pH 6,25. Bio-Grow 0,3 → 0: Stopp je Sorte bei 70–80 % milchigen Trichomen, ausgelöst von der am wenigsten reifen Pflanze dieser Sorte — nicht nach Kalender. Silica Force endet mit dem Stopp, spätestens mit dem letzten Guss dieser Woche. Bio-Bloom bleibt oben und wird erst 7 Tage nach dem Stopp reduziert.' },
+      13: { phase: 'Finish · Rampe',           tip: 'Nach dem Bio-Grow-Stopp 7 Tage Basis (Bio-Bloom 1,2 bzw. Ceiling · CalMag 0,8 · Epsom 0,15 · POWHUMUS 2,5 · Alg-A-Mic 2, ohne Bio-Grow und Silica), dann EIN Rampen-Guss: Bio-Bloom 0,5 · CalMag 0,5 · Epsom 0,2 — den zeigt die Mischliste in dieser Woche. Die Rampe erst starten, wenn der Trichom-Verlauf dein Ernteziel innerhalb von (4 × Gießabstand + 3) Tagen erwarten lässt; sonst bleibt der Feed wie Woche 12 ohne Silica als Warteschleife, und du verlängerst die Blütedauer im Endspurt. Liegt der Bernstein-Anteil über deinem eingestellten Ziel → schneiden, Spülen und IceFlush entfallen.' },
+      14: { phase: 'Spülen',                   tip: 'Zwei Güsse reines pH-Wasser 6,3, jeweils am Gießpunkt („Knapp“), nicht tiefer. Wann Schluss ist, sagt die Zahl der Spülgänge — nicht ein Drain-EC-Wert: In Light-Mix kann er nach dem Spülen wieder steigen, weil das Substrat nachliefert. Nach dem zweiten Spülgang einmalig Hard Dryback: nicht mehr gießen, bis der Topf den Gießpunkt erreicht — dann nimmt er das Schmelzwasser des IceFlush auf.' },
+      15: { phase: 'IceFlush + Ernte',         tip: '1 L Crushed Ice pro Topf an den Rand, 4–6 h, kein Wasser dazu. Dunkelphase 28 h nur, wenn alle Töpfe im Zelt am selben Tag geschnitten werden (Licht aus 01:00, Zeitschaltuhr trennen, der folgende Lichttag entfällt); Luftfeuchte höchstens 60 %. Schnitt mit Dunkelphase am nächsten Morgen vor 05:00, ohne zwischen 01:00 und 05:00 — unter Grünlicht, Frischgewicht pro Topf. Ernte-Trigger: kaum noch klare Trichome und dein eingestelltes Bernstein-Ziel erreicht — wie viel Bernstein du willst, entscheidest du selbst (Vorgabe 5 %; mehr macht die Wirkung ruhiger und senkt die Potenz). Gemessen wird auf den Kelchen, nicht auf Zuckerblättern. Griffelbräunung ist kein Reifezeichen.' },
     },
     products: [
-      { name: 'Silica Force',   unit: 'ml/L', color: '#b06ac8', note: '① IMMER zuerst, dann 2–5 Min warten — sonst Ausfällung mit Calcium. Kaliumsilikat 0-0-13, hebt den pH deutlich. Letzte Gabe Woche 12.' },
-      { name: 'CalMag',         unit: 'ml/L', color: '#f0d050', note: '② BioBizz CalMag (CaO 4,2 % · MgO 1,7 %). Pflicht bei weichem Wasser (4,5 °dH · Ca 24 · Mg 4,8 mg/L). Ab Woche 4 konstant 0,8.' },
-      { name: 'Epsom Salz',     unit: 'g/L',  color: '#90c8e0', note: '③ Feinwaage, klar rühren. Ab Woche 4 konstant 0,25. Nur bei interveinaler Chlorose an mittleren/unteren Blättern für 2–3 Feeds 0,4 g/L, dann zurück — nicht vorbeugend erhöhen.' },
-      { name: 'POWHUMUS',       unit: 'ml/L', color: '#c8a060', note: '④ Konzentrat: 20 g POWHUMUS WSG 85 auf 250 ml destilliertes Wasser = 80 mg/ml → 2,5 ml/L = 200 mg/L Wirkstoff. Haltbar 4 Wochen, dunkel bei 15–20 °C. Flasche mit Konzentration und Datum beschriften.' },
-      { name: 'Bio-Grow',       unit: 'ml/L', color: '#4caf70', note: '⑤ N-Quelle. Kein Bio-Grow in Woche 1 — Light-Mix ist vorgedüngt. Ab Woche 8 auf 0,3 halten. Stopp nur bei 70–80 % milchigen Trichomen, pro Pflanze — nicht nach Kalender.' },
+      { name: 'Silica Force',   unit: 'ml/L', color: '#b06ac8', note: '① IMMER zuerst, dann 2–5 Min warten — sonst Ausfällung mit Calcium. Kaliumsilikat (NPK laut Etikett deiner Flasche; Herstellerseite 0-0-3), hebt den pH deutlich. Endet mit dem Bio-Grow-Stopp, spätestens letzter Guss Woche 12.' },
+      { name: 'CalMag',         unit: 'ml/L', color: '#f0d050', note: '② BioBizz CalMag (CaO 4,2 % · MgO 1,7 %). Pflicht bei weichem Wasser (4,5 °dH · Ca 24 · Mg 4,8 mg/L). Nach dem BioBizz-Datenblatt für weiches Wasser: 0,3 bis Woche 6 · 0,5 in Woche 7–8 · 0,8 ab Woche 9.' },
+      { name: 'Epsom Salz',     unit: 'g/L',  color: '#90c8e0', note: '③ Feinwaage, klar rühren. Ab Woche 2 konstant 0,15. Nur bei interveinaler Chlorose an mittleren/unteren Blättern — und erst nach Seneszenz, Hebe-Test und pH — für 2–3 Feeds 0,4 g/L, dann zurück. Nicht vorbeugend erhöhen.' },
+      { name: 'POWHUMUS',       unit: 'ml/L', color: '#c8a060', note: '④ Konzentrat: 20 g POWHUMUS WSG 85 auf 250 ml destilliertes Wasser = 80 mg/ml → 2,5 ml/L = 200 mg/L Wirkstoff. Haltbar 4 Wochen, dunkel bei 15–20 °C. Flasche mit Konzentration und Datum beschriften. Hebt den pH.' },
+      { name: 'Bio-Grow',       unit: 'ml/L', color: '#4caf70', note: '⑤ N-Quelle. Kein Bio-Grow in Woche 1 — Light-Mix ist vorgedüngt. Woche 6–10: 0,75 · Woche 11: 0,5 · Woche 12: 0,3. Stopp je Sorte bei 70–80 % milchigen Trichomen — nicht nach Kalender.' },
       { name: 'Bio-Bloom',      unit: 'ml/L', color: '#e8884a', note: '⑥ Start Woche 6. Ceiling-Test ab Woche 8: 1,05 → 1,2 → 1,35 → 1,5. Für Woche 10–12 nennt das Plan-Blatt „Ceiling“ — hier steht 1,2, bis dein Test ein Ergebnis hat; dann das Ceiling im Wochenplan eintragen.' },
-      { name: 'Alg-A-Mic',      unit: 'ml/L', color: '#e0a0f0', note: '⑦ 2 ml/L, ab Woche 11 3 ml/L.' },
-      { name: 'Alfa Boost',     unit: 'ml/L', color: '#a0c840', note: '⑧ Nur Woche 4–7. Schütteln! Dosis nach Etikett — das Plan-Blatt nennt keine Zahl, deshalb steht Alfa Boost nicht im Wochenplan. Angesetzt höchstens 24 h haltbar.' },
-      { name: 'Advanced Amino', unit: 'ml/L', color: '#db61a2', note: '⑨ Per Einwegspritze. Nur Woche 2–7.' },
+      { name: 'Alg-A-Mic',      unit: 'ml/L', color: '#e0a0f0', note: '⑦ 2 ml/L durchgehend bis Woche 12. Zählt nicht als Düngung (rund 4 % des Stickstoffs).' },
+      { name: 'Advanced Amino', unit: 'ml/L', color: '#db61a2', note: '⑧ Per Einwegspritze. Nur Woche 2–7.' },
     ],
     schedule: {
       1:  {'CalMag':0.3,'POWHUMUS':2.5,'Alg-A-Mic':2.0},
-      2:  {'Silica Force':0.3,'CalMag':0.4,'Epsom Salz':0.15,'POWHUMUS':2.5,'Bio-Grow':0.25,'Advanced Amino':0.15,'Alg-A-Mic':2.0},
-      3:  {'Silica Force':0.4,'CalMag':0.5,'Epsom Salz':0.2,'POWHUMUS':2.5,'Bio-Grow':0.6,'Advanced Amino':0.2,'Alg-A-Mic':2.0},
-      4:  {'Silica Force':0.5,'CalMag':0.8,'Epsom Salz':0.25,'POWHUMUS':2.5,'Bio-Grow':1.0,'Advanced Amino':0.2,'Alg-A-Mic':2.0},
-      5:  {'Silica Force':0.5,'CalMag':0.8,'Epsom Salz':0.25,'POWHUMUS':2.5,'Bio-Grow':1.0,'Advanced Amino':0.2,'Alg-A-Mic':2.0},
-      6:  {'Silica Force':0.5,'CalMag':0.8,'Epsom Salz':0.25,'POWHUMUS':2.5,'Bio-Grow':0.75,'Bio-Bloom':0.75,'Advanced Amino':0.2,'Alg-A-Mic':2.0},
-      7:  {'Silica Force':0.5,'CalMag':0.8,'Epsom Salz':0.25,'POWHUMUS':2.5,'Bio-Grow':0.5,'Bio-Bloom':0.9,'Advanced Amino':0.2,'Alg-A-Mic':2.0},
-      8:  {'Silica Force':0.5,'CalMag':0.8,'Epsom Salz':0.25,'POWHUMUS':2.5,'Bio-Grow':0.3,'Bio-Bloom':1.05,'Alg-A-Mic':2.0},
-      9:  {'Silica Force':0.5,'CalMag':0.8,'Epsom Salz':0.25,'POWHUMUS':2.5,'Bio-Grow':0.3,'Bio-Bloom':1.2,'Alg-A-Mic':2.0},
-      10: {'Silica Force':0.5,'CalMag':0.8,'Epsom Salz':0.25,'POWHUMUS':2.5,'Bio-Grow':0.3,'Bio-Bloom':1.2,'Alg-A-Mic':2.0},
-      11: {'Silica Force':0.5,'CalMag':0.8,'Epsom Salz':0.25,'POWHUMUS':2.5,'Bio-Grow':0.3,'Bio-Bloom':1.2,'Alg-A-Mic':3.0},
-      12: {'Silica Force':0.5,'CalMag':0.8,'Epsom Salz':0.25,'POWHUMUS':2.5,'Bio-Grow':0.3,'Bio-Bloom':1.2,'Alg-A-Mic':3.0},
+      2:  {'Silica Force':0.3,'CalMag':0.3,'Epsom Salz':0.15,'POWHUMUS':2.5,'Bio-Grow':0.25,'Advanced Amino':0.15,'Alg-A-Mic':2.0},
+      3:  {'Silica Force':0.4,'CalMag':0.3,'Epsom Salz':0.15,'POWHUMUS':2.5,'Bio-Grow':0.6,'Advanced Amino':0.2,'Alg-A-Mic':2.0},
+      4:  {'Silica Force':0.5,'CalMag':0.3,'Epsom Salz':0.15,'POWHUMUS':2.5,'Bio-Grow':1.0,'Advanced Amino':0.2,'Alg-A-Mic':2.0},
+      5:  {'Silica Force':0.5,'CalMag':0.3,'Epsom Salz':0.15,'POWHUMUS':2.5,'Bio-Grow':1.0,'Advanced Amino':0.2,'Alg-A-Mic':2.0},
+      6:  {'Silica Force':0.5,'CalMag':0.3,'Epsom Salz':0.15,'POWHUMUS':2.5,'Bio-Grow':0.75,'Bio-Bloom':0.75,'Advanced Amino':0.2,'Alg-A-Mic':2.0},
+      7:  {'Silica Force':0.5,'CalMag':0.5,'Epsom Salz':0.15,'POWHUMUS':2.5,'Bio-Grow':0.75,'Bio-Bloom':0.9,'Advanced Amino':0.2,'Alg-A-Mic':2.0},
+      8:  {'Silica Force':0.5,'CalMag':0.5,'Epsom Salz':0.15,'POWHUMUS':2.5,'Bio-Grow':0.75,'Bio-Bloom':1.05,'Alg-A-Mic':2.0},
+      9:  {'Silica Force':0.5,'CalMag':0.8,'Epsom Salz':0.15,'POWHUMUS':2.5,'Bio-Grow':0.75,'Bio-Bloom':1.2,'Alg-A-Mic':2.0},
+      10: {'Silica Force':0.5,'CalMag':0.8,'Epsom Salz':0.15,'POWHUMUS':2.5,'Bio-Grow':0.75,'Bio-Bloom':1.2,'Alg-A-Mic':2.0},
+      11: {'Silica Force':0.5,'CalMag':0.8,'Epsom Salz':0.15,'POWHUMUS':2.5,'Bio-Grow':0.5,'Bio-Bloom':1.2,'Alg-A-Mic':2.0},
+      12: {'Silica Force':0.5,'CalMag':0.8,'Epsom Salz':0.15,'POWHUMUS':2.5,'Bio-Grow':0.3,'Bio-Bloom':1.2,'Alg-A-Mic':2.0},
       13: {'CalMag':0.5,'Epsom Salz':0.2,'Bio-Bloom':0.5},
       14: {},
       15: {},
     },
-    mixOrder: ['Silica Force','CalMag','Epsom Salz','POWHUMUS','Bio-Grow','Bio-Bloom','Alg-A-Mic','Alfa Boost','Advanced Amino'],
-    mixInfo: 'Wasser 20–22 °C → Silica Force (2–5 Min warten) → CalMag → Epsom (klar rühren) → POWHUMUS-Konzentrat → Bio-Grow / Bio-Bloom → Alg-A-Mic → Alfa Boost (geschüttelt) / Advanced Amino (per Spritze), beide nur bis Woche 7 → EC messen → pH auf Zielwert, 5 Min warten, nachmessen. Nie zwei Konzentrate direkt zusammengeben — jede Komponente vollständig verteilen, bevor die nächste kommt. Nicht auf Vorrat mischen: der BioBizz-Ansatz hält wenige Stunden, Alfa Boost höchstens 24 h.',
-    drainInfo: 'Drain-Menge 15–25 %. Drain-EC erst ab 15 % Durchfluss werten, darunter gar nicht. Drain-pH 6,8–7,2 ist Kalkpuffer, kein Befund — erst wenn er über Wochen weiter steigt oder mit Chlorose an jungen Blättern auftritt. Drain/Zulauf-EC 1,35–1,55 in Vollversorgung, über 1,6 heißt Anreicherung. Zulauf-pH 6,2–6,4, nie unter 6,0. Gegossen wird nach dem Hebe-Test, nicht nach einer Wochenzahl: erst wenn der Topf den Gießpunkt erreicht. Vor dem IceFlush gilt derselbe Punkt — nicht tiefer, darunter ist es Wasserstress. Woche 1–3 ist kein Drain möglich, ab Woche 5 jeder Feed mit Drain.',
+    mixOrder: ['Silica Force','CalMag','Epsom Salz','POWHUMUS','Bio-Grow','Bio-Bloom','Alg-A-Mic','Advanced Amino'],
+    mixInfo: 'Wasser 20–22 °C → Silica Force (2–5 Min warten) → CalMag → Epsom (klar rühren) → POWHUMUS-Konzentrat → Bio-Grow / Bio-Bloom → Alg-A-Mic → Advanced Amino (per Spritze, nur bis Woche 7) → EC messen → pH auf Zielwert, 5 Min warten, nachmessen. Nie zwei Konzentrate direkt zusammengeben — jede Komponente vollständig verteilen, bevor die nächste kommt. Nicht auf Vorrat mischen: der BioBizz-Ansatz hält wenige Stunden. Spül- und Rampenwasser brauchen viel weniger Säure (Silica Force und POWHUMUS fehlen dann) — pH-Down tropfenweise neu einstellen.',
+    drainInfo: 'Drain-Ziel ' + DRAIN_ZIEL.min + '–' + DRAIN_ZIEL.max + ' %, in einer breiten Wanne gemessen. Drain-EC: ' + T.drainRegelKurz() + '. Ein niedriges Verhältnis ist hier kein Grund nachzudüngen — dieser Plan ist bewusst keine Vollversorgung, und organisch gebundenen Stickstoff zeigt der EC nicht. Drain-pH 6,8–7,2 ist Kalkpuffer, kein Befund — erst wenn er über Wochen weiter steigt oder mit Chlorose an jungen Blättern auftritt. Zulauf-pH 6,25–6,4, nie unter 6,0. Gegossen wird am Gießpunkt nach dem Hebe-Test, nicht nach einer Wochenzahl. Woche 1–3 ist kein Drain möglich, Woche 4 erste Versuche ohne Bewertung, ab Woche 5 jeder Feed mit Drain.',
     // Jeder Guss ein Feed bis zur Rampe; Spülen nur Wasser, am IceFlush wird nicht gegossen.
     // Den einen Wasserguss nach dem FIM (Woche 3) stellt man am Tag selbst um — er hängt am
     // FIM-Termin, nicht an der Woche.
@@ -4593,7 +4594,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.301';
+const APP_VERSION = 'v1.5.302';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -6407,6 +6408,47 @@ function _ladenPlaene() {
       plan.mixOrder = plan.mixOrder.filter(n => !/Mykorrhiza/i.test(String(n)));
     });
     S._mykoMixFix = true;
+    if (typeof syncActivePlanToGlobals === 'function') syncActivePlanToGlobals();
+  }
+
+  // RAINBOW AUF BLATT v2.1 (v1.5.302, einmalig): Wer die Vorlage schon einmal geladen hat, trägt eine Kopie mit den
+  // v1.0-Dosen — loadPreset frischt bei vorhandener Kopie nur Rückgrat und EC-Ziele auf, nie die Dosen. Gehoben wird nur
+  // eine Kopie, deren Wochenplan noch genau der von v1.0 ist: Hat Patrick selbst Dosen geändert, bleiben sie seine.
+  // Alfa Boost fällt nur weg, wenn kein Eintrag darauf zeigt (Dosen, Dosis-Bezug, Misch-Häkchen hängen an der ID).
+  if (!S._rainbowV21) {
+    const pr = (typeof FERT_PRESETS !== 'undefined') ? FERT_PRESETS.rainbow_auto : null;
+    (S.fertPlans || []).forEach(plan => {
+      if (!pr || !plan || plan.presetKey !== 'rainbow_auto' || !Array.isArray(plan.products) || !_istObjekt(plan.schedule)) return;
+      const nameVon = {}, idVon = {};
+      plan.products.forEach(p => { if (p && p.id) { nameVon[p.id] = p.name; idVon[p.name] = p.id; } });
+      const alsNamen = (w) => {
+        const o = {};
+        Object.entries(plan.schedule['w' + w] || {}).forEach(([id, v]) => { if (nameVon[id] && parseFloat(v) > 0) o[nameVon[id]] = parseFloat(v); });
+        return o;
+      };
+      const gleich = (x, y) => {
+        const kx = Object.keys(x).sort(), ky = Object.keys(y).sort();
+        return kx.length === ky.length && kx.every((k, i) => k === ky[i] && Math.abs(x[k] - y[k]) < 1e-9);
+      };
+      for (let w = 1; w <= 15; w++) if (!gleich(alsNamen(w), RAINBOW_V10_SCHEDULE[w] || {})) return;
+      const neu = {};
+      Object.entries(pr.schedule).forEach(([w, doses]) => {
+        const m = {};
+        Object.entries(doses || {}).forEach(([n, d]) => { if (idVon[n]) m[idVon[n]] = d; });
+        neu['w' + w] = m;
+      });
+      plan.schedule = neu;
+      plan.products.forEach(p => { const v = pr.products.find(x => x.name === p.name); if (v) p.note = v.note; });
+      const alfa = plan.products.find(p => p && p.name === 'Alfa Boost');
+      if (alfa && !_produktInEintraegen(alfa.id)) plan.products = plan.products.filter(p => p !== alfa);
+      plan.mixOrder = pr.mixOrder.slice();
+      plan.mixInfo = pr.mixInfo;
+      plan.drainInfo = pr.drainInfo;
+      if (plan.name === 'Rainbow Düngeplan (v1.0)') plan.name = pr.name;
+      _planRueckgratAuffrischen(plan, pr);
+      plan._gehobenAuf = { blatt: 'v2.1', am: todayISO() };
+    });
+    S._rainbowV21 = true;
     if (typeof syncActivePlanToGlobals === 'function') syncActivePlanToGlobals();
   }
 
@@ -21994,6 +22036,7 @@ function renderDuenger() {
         <div style="font-size:10px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">🧪 Dein Düngeplan</div>
         <div style="font-size:18px;font-weight:700;color:var(--text);line-height:1.2">${heroPlanName}</div>
         <div style="font-size:11px;color:var(--text-muted);margin-top:4px">${heroProdCount} Produkt${heroProdCount === 1 ? '' : 'e'}${heroSub ? ' · ' + heroSub : ''}</div>
+        ${activePlan && activePlan._gehobenAuf ? `<div style="font-size:11px;color:var(--yellow);margin-top:6px;line-height:1.45">Am ${fmtDE(activePlan._gehobenAuf.am)} auf dein Plan-Blatt ${activePlan._gehobenAuf.blatt} gebracht: CalMag, Epsom, Bio-Grow und Alg-A-Mic nach dem Blatt, EC-Korridore neu, Alfa Boost entfernt. Schon eingetragene Tage behalten ihre Dosen.</div>` : ''}
         <div style="font-size:11px;color:var(--text-muted);margin-top:3px">${heroDoseNote}</div>
         ${S.beginnerMode ? `<div style="font-size:11px;color:var(--green);margin-top:8px;line-height:1.5">✓ Die App sagt dir jeden Tag automatisch, was und wie viel du mischst — hier musst du nichts einstellen.</div>` : ''}
       </div>`
@@ -22160,6 +22203,30 @@ function _cycleAufPlanZeigen(planId) {
     n++;
   });
   return n;
+}
+
+/** (v1.5.302) Der Wochenplan der Rainbow-Vorlage v1.0 — nur, um unverändert übernommene Kopien zu erkennen. */
+const RAINBOW_V10_SCHEDULE = {
+  1:  {'CalMag':0.3,'POWHUMUS':2.5,'Alg-A-Mic':2.0},
+  2:  {'Silica Force':0.3,'CalMag':0.4,'Epsom Salz':0.15,'POWHUMUS':2.5,'Bio-Grow':0.25,'Advanced Amino':0.15,'Alg-A-Mic':2.0},
+  3:  {'Silica Force':0.4,'CalMag':0.5,'Epsom Salz':0.2,'POWHUMUS':2.5,'Bio-Grow':0.6,'Advanced Amino':0.2,'Alg-A-Mic':2.0},
+  4:  {'Silica Force':0.5,'CalMag':0.8,'Epsom Salz':0.25,'POWHUMUS':2.5,'Bio-Grow':1.0,'Advanced Amino':0.2,'Alg-A-Mic':2.0},
+  5:  {'Silica Force':0.5,'CalMag':0.8,'Epsom Salz':0.25,'POWHUMUS':2.5,'Bio-Grow':1.0,'Advanced Amino':0.2,'Alg-A-Mic':2.0},
+  6:  {'Silica Force':0.5,'CalMag':0.8,'Epsom Salz':0.25,'POWHUMUS':2.5,'Bio-Grow':0.75,'Bio-Bloom':0.75,'Advanced Amino':0.2,'Alg-A-Mic':2.0},
+  7:  {'Silica Force':0.5,'CalMag':0.8,'Epsom Salz':0.25,'POWHUMUS':2.5,'Bio-Grow':0.5,'Bio-Bloom':0.9,'Advanced Amino':0.2,'Alg-A-Mic':2.0},
+  8:  {'Silica Force':0.5,'CalMag':0.8,'Epsom Salz':0.25,'POWHUMUS':2.5,'Bio-Grow':0.3,'Bio-Bloom':1.05,'Alg-A-Mic':2.0},
+  9:  {'Silica Force':0.5,'CalMag':0.8,'Epsom Salz':0.25,'POWHUMUS':2.5,'Bio-Grow':0.3,'Bio-Bloom':1.2,'Alg-A-Mic':2.0},
+  10: {'Silica Force':0.5,'CalMag':0.8,'Epsom Salz':0.25,'POWHUMUS':2.5,'Bio-Grow':0.3,'Bio-Bloom':1.2,'Alg-A-Mic':2.0},
+  11: {'Silica Force':0.5,'CalMag':0.8,'Epsom Salz':0.25,'POWHUMUS':2.5,'Bio-Grow':0.3,'Bio-Bloom':1.2,'Alg-A-Mic':3.0},
+  12: {'Silica Force':0.5,'CalMag':0.8,'Epsom Salz':0.25,'POWHUMUS':2.5,'Bio-Grow':0.3,'Bio-Bloom':1.2,'Alg-A-Mic':3.0},
+  13: {'CalMag':0.5,'Epsom Salz':0.2,'Bio-Bloom':0.5},
+  14: {}, 15: {},
+};
+/** (v1.5.302) Zeigt irgendein Eintrag auf dieses Produkt (Dosis, Dosis-Bezug, Misch-Häkchen)? */
+function _produktInEintraegen(prodId) {
+  if (!prodId) return false;
+  return Object.values(S.entries || {}).some(e => e && _istObjekt(e.cycleData) && Object.values(e.cycleData).some(cd =>
+    cd && ['doses', 'doseRef', 'mixChecks'].some(f => _istObjekt(cd[f]) && Object.prototype.hasOwnProperty.call(cd[f], prodId))));
 }
 
 function _planRueckgratAuffrischen(plan, preset) {

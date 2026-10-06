@@ -89,7 +89,7 @@ const KARTE = (planId) => `(function(){
   pruef('Plan hat 15 Wochen', rb.wochen === 15, rb.wochen);
   pruef('Karte nennt „15 Wochen"', /· 15 Wochen/.test(rb.text || ''), rb.text);
   pruef('… und nicht „12 Wochen"', !/12 Wochen/.test(rb.text || ''), rb.text);
-  pruef('… mit dem Plan-Namen', (rb.text || '').includes('Rainbow Düngeplan (v1.0)'), rb.text);
+  pruef('… mit dem Plan-Namen', (rb.text || '').includes('Rainbow Düngeplan (v2.1)'), rb.text);
 
   console.log('\nB - BioBizz Official aufgeschlagen: bleibt bei seinen Wochen');
   const bio = JSON.parse(E(KARTE(BIO_ID)));

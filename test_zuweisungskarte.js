@@ -4,7 +4,7 @@
  *
  * Gefunden bei der Vorführung im Browser: Patrick lädt den Rainbow-Plan, während Run 01 trocknet.
  * v1.5.134 lässt Run 01 dabei richtig an „BioBizz Official" — aber der Düngeplan-Bildschirm zeigt
- * sofort eine orange Karte mit großem grünem Knopf: „Rainbow Düngeplan (v1.0)" für „Sensi Amnesia
+ * sofort eine orange Karte mit großem grünem Knopf: „Rainbow Düngeplan (v2.1)" für „Sensi Amnesia
  * XXL Auto" übernehmen. Ein Tipp darauf hätte dessen Vergangenheit doch umgeschrieben. Die Karte
  * zählte jeden aktiven Zyklus als „laufend", mit ihrer eigenen Kopie der Regel.
  *
@@ -95,7 +95,7 @@ async function mitRainbow() {
     const lage = JSON.parse(E(`JSON.stringify({ phase: phase(todayISO(), S.cycles[0]).ph, plan: S.cycles[0].fertPlanId })`));
     pruef('Ausgangslage: Trocknen, Run 01 bleibt an BioBizz (v1.5.134)', lage.phase === 'dry' && lage.plan === BIO_ID, JSON.stringify(lage));
     const k = JSON.parse(E(KARTE));
-    pruef('Rainbow ist aufgeschlagen', k.aufgeschlagen === 'Rainbow Düngeplan (v1.0)', k.aufgeschlagen);
+    pruef('Rainbow ist aufgeschlagen', k.aufgeschlagen === 'Rainbow Düngeplan (v2.1)', k.aufgeschlagen);
     pruef('Keine Karte „noch nicht zugewiesen"', !k.karte);
     pruef('Kein Knopf, der Rainbow dem trocknenden Zyklus gibt', k.knoepfe.length === 0, k.knoepfe.join(','));
   }

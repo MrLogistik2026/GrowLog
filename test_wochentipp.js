@@ -104,7 +104,8 @@ function pruef(name, bedingung, info) {
   pruef('Aufgeschlagen ist wirklich BioBizz', mitBio.aufgeschlagen === 'biobizz_official', mitBio.aufgeschlagen);
   pruef('Statuszeile nennt die Rainbow-Woche „Stretch · Selektion"', /Woche 4 .*Stretch · Selektion/.test(mitBio.status), mitBio.status);
   pruef('Wochenfrage bringt den Rainbow-Tipp (erste Pistillen notieren)', /Erste Pistillen pro Topf notieren/.test(mitBio.frage), mitBio.frage.slice(0, 160));
-  pruef('… samt Alfa-Boost-Hinweis', /Alfa Boost nach Etikett/.test(mitBio.frage));
+  // (v1.5.302) Blatt v2.1: Alfa Boost ist draußen, Woche 4 nennt dafür die Selektion nach Kriterium.
+  pruef('… samt Selektions-Regel aus Blatt v2.1 (nie eine gesunde Pflanze wegen Beschattung)', /nie eine gesunde wegen Beschattung/.test(mitBio.frage) && !/Alfa Boost/.test(mitBio.frage));
 
   console.log('\nB - Derselbe Zyklus, diesmal ist Rainbow aufgeschlagen');
   const mitRb = text(aufbau.rb, 'run02');
@@ -149,9 +150,9 @@ function pruef(name, bedingung, info) {
   })()`));
   pruef('Tagebuch-Export wurde erzeugt', exp.mdLaenge > 0, exp.mdLaenge);
   pruef('Zusammenfassung: Patricks Zyklus → BioBizz Official', exp.zusammenfassung === 'BioBizz Official', exp.zusammenfassung);
-  pruef('Zusammenfassung: Run 02 → Rainbow', exp.zusammenfassungRun02 === 'Rainbow Düngeplan (v1.0)', exp.zusammenfassungRun02);
+  pruef('Zusammenfassung: Run 02 → Rainbow', exp.zusammenfassungRun02 === 'Rainbow Düngeplan (v2.1)', exp.zusammenfassungRun02);
   pruef('Tagebuch-Export: Patricks Zyklus mit BioBizz Official', exp.exportPatrick === 'BioBizz Official', exp.exportPatrick);
-  pruef('Tagebuch-Export: Run 02 mit Rainbow', exp.exportRun02 === 'Rainbow Düngeplan (v1.0)', exp.exportRun02);
+  pruef('Tagebuch-Export: Run 02 mit Rainbow', exp.exportRun02 === 'Rainbow Düngeplan (v2.1)', exp.exportRun02);
   pruef('PDF-Bericht liest nicht mehr den aufgeschlagenen Plan', exp.pdfLiestGlobal === false);
 
   // (v1.5.236) Fünf der elf Vorlagen führen kein weekFocus — darunter BioBizz Light, den der Assistent

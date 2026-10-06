@@ -201,6 +201,77 @@ function pruef(name, bedingung, info) {
     pruef('D9 keine JS-Fehler', a.errors.length === 0, a.errors[0]);
   }
 
+  // ===== E: Rainbow-Vorlage auf Blatt v2.1, unveränderte Kopien mitgehoben (v1.5.302) =====
+  console.log('\nE - Rainbow-Vorlage und gespeicherte Kopien');
+  {
+    // Eine Kopie, wie v1.5.297 sie beim Laden der Vorlage anlegte (Wochenplan v1.0, mit Alfa Boost)
+    const V10 = {
+      1:  {'CalMag':0.3,'POWHUMUS':2.5,'Alg-A-Mic':2.0},
+      2:  {'Silica Force':0.3,'CalMag':0.4,'Epsom Salz':0.15,'POWHUMUS':2.5,'Bio-Grow':0.25,'Advanced Amino':0.15,'Alg-A-Mic':2.0},
+      3:  {'Silica Force':0.4,'CalMag':0.5,'Epsom Salz':0.2,'POWHUMUS':2.5,'Bio-Grow':0.6,'Advanced Amino':0.2,'Alg-A-Mic':2.0},
+      4:  {'Silica Force':0.5,'CalMag':0.8,'Epsom Salz':0.25,'POWHUMUS':2.5,'Bio-Grow':1.0,'Advanced Amino':0.2,'Alg-A-Mic':2.0},
+      5:  {'Silica Force':0.5,'CalMag':0.8,'Epsom Salz':0.25,'POWHUMUS':2.5,'Bio-Grow':1.0,'Advanced Amino':0.2,'Alg-A-Mic':2.0},
+      6:  {'Silica Force':0.5,'CalMag':0.8,'Epsom Salz':0.25,'POWHUMUS':2.5,'Bio-Grow':0.75,'Bio-Bloom':0.75,'Advanced Amino':0.2,'Alg-A-Mic':2.0},
+      7:  {'Silica Force':0.5,'CalMag':0.8,'Epsom Salz':0.25,'POWHUMUS':2.5,'Bio-Grow':0.5,'Bio-Bloom':0.9,'Advanced Amino':0.2,'Alg-A-Mic':2.0},
+      8:  {'Silica Force':0.5,'CalMag':0.8,'Epsom Salz':0.25,'POWHUMUS':2.5,'Bio-Grow':0.3,'Bio-Bloom':1.05,'Alg-A-Mic':2.0},
+      9:  {'Silica Force':0.5,'CalMag':0.8,'Epsom Salz':0.25,'POWHUMUS':2.5,'Bio-Grow':0.3,'Bio-Bloom':1.2,'Alg-A-Mic':2.0},
+      10: {'Silica Force':0.5,'CalMag':0.8,'Epsom Salz':0.25,'POWHUMUS':2.5,'Bio-Grow':0.3,'Bio-Bloom':1.2,'Alg-A-Mic':2.0},
+      11: {'Silica Force':0.5,'CalMag':0.8,'Epsom Salz':0.25,'POWHUMUS':2.5,'Bio-Grow':0.3,'Bio-Bloom':1.2,'Alg-A-Mic':3.0},
+      12: {'Silica Force':0.5,'CalMag':0.8,'Epsom Salz':0.25,'POWHUMUS':2.5,'Bio-Grow':0.3,'Bio-Bloom':1.2,'Alg-A-Mic':3.0},
+      13: {'CalMag':0.5,'Epsom Salz':0.2,'Bio-Bloom':0.5}, 14: {}, 15: {},
+    };
+    const NAMEN = ['Silica Force','CalMag','Epsom Salz','POWHUMUS','Bio-Grow','Bio-Bloom','Alg-A-Mic','Alfa Boost','Advanced Amino'];
+    const kopie = (anpassen) => (st) => {
+      const products = NAMEN.map((n, i) => ({ id: 'rb' + i, name: n, unit: n === 'Epsom Salz' ? 'g/L' : 'ml/L', color: '#888', note: 'alt' }));
+      const id = {}; products.forEach(p => { id[p.name] = p.id; });
+      const schedule = {};
+      Object.entries(V10).forEach(([w, d]) => { const m = {}; Object.entries(d).forEach(([n, v]) => { m[id[n]] = v; }); schedule['w' + w] = m; });
+      st.fertPlans.push({ id: 'fp_rb', name: 'Rainbow Düngeplan (v1.0)', presetKey: 'rainbow_auto', products, schedule,
+        mixOrder: NAMEN.slice(), mixInfo: 'alt', drainInfo: 'alt' });
+      delete st._rainbowV21;
+      if (anpassen) anpassen(st, id);
+    };
+    const lies = (a) => JSON.parse(a.E(`(() => { const p = S.fertPlans.find(x => x.id === 'fp_rb'); const n = {}; p.products.forEach(x => { n[x.id] = x.name; });
+      const w = {}; Object.entries(p.schedule).forEach(([k, d]) => { const o = {}; Object.entries(d).forEach(([i, v]) => { o[n[i]] = v; }); w[k.slice(1)] = o; });
+      return JSON.stringify({ name: p.name, produkte: p.products.map(x => x.name), w, gehoben: p._gehobenAuf || null, mix: p.mixOrder }); })()`));
+    const vorlage = (a) => JSON.parse(a.E('JSON.stringify(FERT_PRESETS.rainbow_auto.schedule)'));
+    const gleich = (x, y) => JSON.stringify(Object.keys(x).sort().map(k => [k, x[k]])) === JSON.stringify(Object.keys(y).sort().map(k => [k, y[k]]));
+
+    const a = await load(kopie());
+    pruef('E0 Start ohne JS-Fehler', a.errors.length === 0, a.errors[0]);
+    const v = vorlage(a), r = lies(a);
+    const alleWochen = Object.keys(v).every(w => gleich(r.w[w] || {}, v[w]));
+    pruef('E1 eine unverändert übernommene v1.0-Kopie trägt danach die Dosen von Blatt v2.1', alleWochen, r.w);
+    pruef('E2 CalMag Woche 4 jetzt 0,3, Epsom 0,15, Bio-Grow Woche 8 0,75, Alg-A-Mic Woche 11 2',
+      r.w[4]['CalMag'] === 0.3 && r.w[4]['Epsom Salz'] === 0.15 && r.w[8]['Bio-Grow'] === 0.75 && r.w[11]['Alg-A-Mic'] === 2);
+    pruef('E3 Alfa Boost ist weg (kein Eintrag zeigte darauf)', !r.produkte.includes('Alfa Boost') && !r.mix.includes('Alfa Boost'), r.produkte);
+    pruef('E4 Name und Hinweis: „Rainbow Düngeplan (v2.1)", gehoben am 06.10.', r.name === 'Rainbow Düngeplan (v2.1)' && r.gehoben && r.gehoben.blatt === 'v2.1', r);
+    a.E("switchFertPlan && switchFertPlan('fp_rb')");
+    a.E("renderDuenger()");
+    const scr = a.window.document.getElementById('scr-duenger')?.textContent || '';
+    pruef('E5 der Düngeplan sagt es: „auf dein Plan-Blatt v2.1 gebracht"', /auf dein Plan-Blatt v2\.1 gebracht/.test(scr));
+    pruef('E6 die Vorlage selbst: 8 Produkte, kein Alfa Boost, EC Woche 4 0,65–0,8',
+      a.E("FERT_PRESETS.rainbow_auto.products.length") === 8 && a.E("FERT_PRESETS.rainbow_auto.ecTargets[4].min") === 0.65 && a.E("FERT_PRESETS.rainbow_auto.ecTargets[4].max") === 0.8);
+    // Nochmal starten: nichts ändert sich
+    const roh = a.get('growsmart_v4');
+    const b = await load(null, { roh });
+    pruef('E7 beim nächsten Start bleibt alles, wie es ist', JSON.stringify(lies(b)) === JSON.stringify(r));
+
+    // Selbst geänderte Dose: Kopie bleibt seine
+    const c = await load(kopie((st, id) => { st.fertPlans.find(p => p.id === 'fp_rb').schedule.w9[id['Bio-Bloom']] = 1.35; }));
+    const rc = lies(c);
+    pruef('E8 eine Kopie mit eigener Dosis (Ceiling 1,35) wird nicht angefasst', rc.name === 'Rainbow Düngeplan (v1.0)' && rc.w[9]['Bio-Bloom'] === 1.35 && rc.w[4]['CalMag'] === 0.8 && !rc.gehoben, rc.name);
+
+    // Alfa Boost mit Misch-Häkchen in einem Eintrag: Dosen gehoben, Produkt bleibt
+    const d = await load(kopie((st, id) => {
+      const iso = '2026-10-01'; st.entries[iso] = st.entries[iso] || {}; st.entries[iso].cycleData = st.entries[iso].cycleData || {};
+      st.entries[iso].cycleData[st.cycles[0].id] = { mixChecks: { [id['Alfa Boost']]: true } };
+    }));
+    const rd = lies(d);
+    pruef('E9 zeigt ein Eintrag auf Alfa Boost, bleibt das Produkt — die Dosen kommen trotzdem vom Blatt', rd.produkte.includes('Alfa Boost') && rd.w[4]['CalMag'] === 0.3, rd.produkte);
+    pruef('E10 keine JS-Fehler', a.errors.length + b.errors.length + c.errors.length + d.errors.length === 0, [a.errors[0], b.errors[0], c.errors[0], d.errors[0]]);
+  }
+
   console.log('\n' + ok + ' OK, ' + fail + ' FEHL');
   if (fail) process.exit(1);
 })().catch((e) => { console.log('FEHLER: ' + (e && e.stack || e)); process.exit(1); });

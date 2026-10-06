@@ -169,7 +169,7 @@ const ANLEGEN = `
       const ziel = (d) => { const iso = isoPlus(c.startDate, d - 1); return getEcTarget(c, phase(iso, c), iso); };
       return JSON.stringify({ t22: ziel(22), t91: ziel(91), t92: ziel(92) });
     })()`));
-    pruef('Woche 4 aus dem Plan-Blatt (0,9–1,0)', r.t22 && r.t22.min === 0.9 && r.t22.max === 1.0, JSON.stringify(r.t22));
+    pruef('Woche 4 aus dem Plan-Blatt v2.1 (0,65–0,8)', r.t22 && r.t22.min === 0.65 && r.t22.max === 0.8, JSON.stringify(r.t22));
     pruef('Woche 13 (Rampe): weiter kein erfundenes Ziel', r.t91 === null, JSON.stringify(r.t91));
     pruef('Spülen: höchstens 0,5', r.t92 && r.t92.max === 0.5, JSON.stringify(r.t92));
   }

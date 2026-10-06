@@ -106,7 +106,7 @@ async function fall(datum, mut, zyklusId) {
     pruef('Nach „Rainbow laden" hängt er weiter an BioBizz', nachher.planId === BIO_ID, nachher.plan);
     pruef('Seine Woche 6 zeigt weiter BioBizz-Produkte (Top·Max)', nachher.woche6.includes('Top·Max'), nachher.woche6.join(', '));
     pruef('… und keine Rainbow-Produkte (POWHUMUS)', !nachher.woche6.includes('POWHUMUS'), nachher.woche6.join(', '));
-    pruef('Der Düngeplan-Bildschirm zeigt trotzdem den neuen Plan zum Bearbeiten', nachher.bearbeitet === 'Rainbow Düngeplan (v1.0)', nachher.bearbeitet);
+    pruef('Der Düngeplan-Bildschirm zeigt trotzdem den neuen Plan zum Bearbeiten', nachher.bearbeitet === 'Rainbow Düngeplan (v2.1)', nachher.bearbeitet);
     E('saveS(); loadS();');
     pruef('Nach dem Neuladen unverändert', E(`S.cycles.find(c => c.active).fertPlanId`) === BIO_ID);
   }
@@ -122,7 +122,7 @@ async function fall(datum, mut, zyklusId) {
   {
     const { vorher, nachher } = await fall('2026-08-01');
     pruef('Ausgangslage: Blüte', vorher.phase === 'bloom', JSON.stringify(vorher));
-    pruef('Hängt jetzt am Rainbow-Plan', nachher.plan === 'Rainbow Düngeplan (v1.0)', nachher.plan);
+    pruef('Hängt jetzt am Rainbow-Plan', nachher.plan === 'Rainbow Düngeplan (v2.1)', nachher.plan);
     pruef('Tageseintrag und Düngeplan-Bildschirm zeigen denselben Plan', nachher.plan === nachher.bearbeitet);
   }
 
@@ -136,7 +136,7 @@ async function fall(datum, mut, zyklusId) {
     };
     const { E, vorher, nachher } = await fall('2026-09-13', mut, 'run02');
     pruef('Ausgangslage: noch nicht gestartet', vorher.phase === null && vorher.planId === BIO_ID, JSON.stringify(vorher));
-    pruef('Run 02 hängt jetzt am Rainbow-Plan', nachher.plan === 'Rainbow Düngeplan (v1.0)', nachher.plan);
+    pruef('Run 02 hängt jetzt am Rainbow-Plan', nachher.plan === 'Rainbow Düngeplan (v2.1)', nachher.plan);
     const alt = JSON.parse(E(ZUSTAND(E('S.cycles[0].id'))));
     pruef('Der trocknende Zyklus daneben bleibt an BioBizz', alt.planId === BIO_ID, alt.plan);
   }
