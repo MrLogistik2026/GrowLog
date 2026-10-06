@@ -2,6 +2,20 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-06 — v1.5.307
+
+- **Nachtragen schrieb geschätzte pH- und EC-Werte in vergangene Tage** (offener Punkt aus UEBERGABE 0o/REIHENFOLGE C,
+  beim Durchspielen von Run 02 nachgemessen). „Auto-eintragen" erfand eine pH-Reihe („Pseudo-Variation" zwischen 6,2
+  und 6,5, damit Diagramme „realistisch" aussehen) und eine EC-Kurve ohne Quelle (Blüte 1,5 → 2,0). „War ungefähr so"
+  trug den pH-Zielwert ein. Gekennzeichnet waren sie, sichtbar aber wie gemessen — `ANBAU.md` 15: „Messwerte werden nie
+  geschätzt und eingetragen." Dazu versprach der Dialog „Temp/RLF passend zur Phase", geschrieben wurde keins.
+- **Jetzt** tragen beide Wege nur noch ein, was man getan hat: Gießmenge und Plan-Dünger, als Vorschlag gekennzeichnet.
+  pH, EC und Klima bleiben leer; die Texte sagen das („pH und EC nur eintragen, wenn gemessen").
+- Bekannt: Patricks Stammdaten nennen für Run 02 bisher nur den Setzguss (50 ml pH-Wasser). Für die übrigen
+  vergangenen Gießtage ist „bewusst übersprungen" die ehrliche Wahl, wenn keine Mengen notiert sind.
+- Test: `test_zyklus2.js` Abschnitt J (6 Prüfungen, beide Zeitzonen; 4 fallen auf v1.5.306 um).
+
+
 ## 2026-10-06 — v1.5.306
 
 - **Nachgetragene Dünger-Dosen zählten als gegeben** (gefunden beim Durchspielen von Run 02, vom Skeptiker bestätigt).

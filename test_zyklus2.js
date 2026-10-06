@@ -389,6 +389,32 @@ function pruef(name, bedingung, info) {
     pruef('I4 keine JS-Fehler', a.errors.length === 0, a.errors[0]);
   }
 
+  // ===== J: Nachtragen schreibt keine geschätzten Messwerte (v1.5.307) =====
+  console.log('\nJ - Nachtragen ohne pH und EC');
+  {
+    const a = await load();
+    const dialoge = [];
+    a.window.customConfirm = (titel, text) => { dialoge.push(titel + ' ' + text); return Promise.resolve(true); };
+    await a.E("loadPreset('rainbow_auto')");
+    const planId = a.E("(S.fertPlans.find(p => p.presetKey === 'rainbow_auto') || {}).id");
+    a.E(`addCyc({ name: 'N', startDate: '2026-09-20', potSize: 15, plantCount: 4, startMethod: 'direct', fertPlanId: '${planId}' }); S.cycles.find(x => x.name === 'N').anzuchtDays = 26`);
+    const cid = a.E("S.cycles.find(x => x.name === 'N').id");
+    a.E(`openCatchupWizard('${cid}')`);
+    const modal = (a.window.document.body.textContent || '').replace(/\s+/g, ' ');
+    pruef('J1 der Knopf „War ungefähr so" verspricht keinen pH-Wert mehr', /pH und EC nur eintragen, wenn gemessen/.test(modal) && !/Empfohlene Werte übernehmen \(\d+ ?ml, pH/.test(modal));
+    const iso = a.E("_catchupState.candidates[0].iso");
+    a.E("catchupApply('was-so')");
+    const cd = JSON.parse(a.E(`JSON.stringify(S.entries['${iso}'].cycleData['${cid}'])`));
+    pruef('J2 „War ungefähr so": Gießmenge ja, pH und EC leer', parseFloat(cd.water) > 0 && !cd.ph && !cd.ec, { w: cd.water, ph: cd.ph, ec: cd.ec });
+    await a.E(`backfillPast('${cid}')`);
+    const d = dialoge.find(x => /auto-eintragen/i.test(x)) || '';
+    pruef('J3 der Auto-eintragen-Dialog sagt, dass pH, EC und Klima leer bleiben', /pH, EC und Klima bleiben leer/.test(d) && !/pH \(6\.2-6\.5\)/.test(d), d.slice(0, 200));
+    const alle = JSON.parse(a.E(`JSON.stringify(Object.values(S.entries).map(e => e.cycleData && e.cycleData['${cid}']).filter(Boolean))`));
+    pruef('J4 kein nachgetragener Tag trägt einen pH- oder EC-Wert', alle.length > 1 && alle.every(x => !x.ph && !x.ec), alle.map(x => [x.ph, x.ec]));
+    pruef('J5 die Gießmengen sind als Vorschlag gekennzeichnet', alle.filter(x => parseFloat(x.water) > 0).every(x => x._suggested && x._suggested.water));
+    pruef('J6 keine JS-Fehler', a.errors.length === 0, a.errors[0]);
+  }
+
   console.log('\n' + ok + ' OK, ' + fail + ' FEHL');
   if (fail) process.exit(1);
 })().catch((e) => { console.log('FEHLER: ' + (e && e.stack || e)); process.exit(1); });

@@ -4594,7 +4594,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.306';
+const APP_VERSION = 'v1.5.307';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -15195,7 +15195,7 @@ function _renderCatchupModal() {
             <span style="font-size:20px">✓</span>
             <div style="flex:1">
               <div>War ungefähr so</div>
-              <div style="font-size:11px;font-weight:500;opacity:0.85;margin-top:2px">Empfohlene Werte übernehmen (${next.sugWater}ml, pH ${pht.mid.toFixed(1)})</div>
+              <div style="font-size:11px;font-weight:500;opacity:0.85;margin-top:2px">Gießmenge (~${next.sugWater} ml) und Dünger aus dem Plan übernehmen, als Vorschlag gekennzeichnet — pH und EC nur eintragen, wenn gemessen</div>
             </div>
           </div>
         </button>
@@ -15258,8 +15258,9 @@ function catchupApply(mode) {
     }
     const cd = S.entries[iso].cycleData[c.id];
     if (tpl.water !== undefined) cd.water = String(tpl.water);
-    if (tpl.ph !== undefined) cd.ph = String(tpl.ph);
-    if (tpl.ec !== undefined) cd.ec = String(tpl.ec);
+    // (v1.5.307) pH und EC sind Messwerte — die App trägt sie nie geschätzt ein (ANBAU.md 15). Vorher landete der
+    // Zielwert als Messung im Eintrag (pH 6,3 an jedem nachgetragenen Tag), gekennzeichnet zwar, aber in Diagramm und
+    // Eintrag wie gemessen sichtbar. Gießmenge und Dünger bleiben: Sie sind, was man getan hat, nicht was man misst.
     // Doses übernehmen falls Template welche hat (Wochenplan-Dosen)
     if (tpl.doses && typeof tpl.doses === 'object') {
       cd.doses = { ...tpl.doses };
@@ -15274,8 +15275,6 @@ function catchupApply(mode) {
     // Markierung dass das ein Catch-up war (für Statistiken: nicht "echte" Messung)
     if (!cd._suggested) cd._suggested = {};
     cd._suggested.water = true;
-    cd._suggested.ph = true;
-    if (tpl.ec !== undefined) cd._suggested.ec = true;
     saveS();
     _catchupState.candidates.shift();
     _catchupState.applied++;
@@ -26374,7 +26373,7 @@ async function backfillPast(id) {
   if (missing === 0) return;
   const ok = await customConfirm(
     `🕐 ${missing} vergangene Gießtage auto-eintragen?`,
-    `Wasser, pH (6.2-6.5), EC, Plan-Dünger sowie Temp/RLF passend zur Phase werden für ${missing} Gießtage zwischen ${fmtDE(c.startDate, {day:'2-digit',month:'short'})} und heute eingetragen. Bestehende Einträge bleiben unverändert.`,
+    `Gießmenge und Plan-Dünger werden für ${missing} Gießtage zwischen ${fmtDE(c.startDate, {day:'2-digit',month:'short'})} und heute als Vorschlag eingetragen — gekennzeichnet, sie zählen nicht als Messung. pH, EC und Klima bleiben leer: Die trägst du nur ein, wo du gemessen hast. Bestehende Einträge bleiben unverändert.`,
     'Auto-eintragen', 'var(--yellow)'
   );
   if (!ok) return;
@@ -26404,36 +26403,12 @@ async function backfillPast(id) {
           
           const waterMl = waterSuggestion(c, p, iter);
           cd.water = String(waterMl);
-          // pH leicht variieren um realistische Charts zu produzieren statt
-          // einer flachen Linie auf 6.4. Tag-basierte Pseudo-Variation
-          // zwischen 6.2 und 6.5 — typischer Bereich eines guten Growers.
-          const phVariation = [6.3, 6.4, 6.2, 6.4, 6.3, 6.5, 6.3, 6.4, 6.2, 6.4];
-          const dayIdx = isoDiff(iter, c.startDate);
-          cd.ph = String(phVariation[dayIdx % phVariation.length]);
-          // EC: phasen-spezifisch nach typischem Düngeschema. Auch in früher
-          // Anzucht setzen wir einen Mini-Wert (0.4) statt komplett leer zu lassen,
-          // sonst sehen die Trend-Charts unvollständig aus.
-          const ecForPhase = (() => {
-            if (p.ph === 'anzucht' && dayIdx <= 7) return '0.4';   // Sämling: minimal
-            if (p.ph === 'anzucht') return (0.8 + (dayIdx - 7) * 0.04).toFixed(1);
-            if (p.ph === 'bloom') {
-              const wk = Math.min(p.week || 1, 8);
-              return (1.4 + wk * 0.08).toFixed(1);  // Wo1: 1.5 → Wo8: 2.0
-            }
-            if (p.ph === 'flush') return (1.0 - (p.day || 1) * 0.1).toFixed(1);  // Flush rampt runter
-            if (p.ph === 'ice') return '0.4';
-            return '1.5';
-          })();
-          if (ecForPhase) cd.ec = ecForPhase;
-          // (v1.2.57) Backfill-Werte sind App-Vorschläge, keine Messungen: kennzeichnen
-          // wie im Nachhol-Assistenten. Hält die Statistiken ehrlich (gemessen vs.
-          // vorgeschlagen), schließt die Werte aus der Problem-Diagnose aus und
-          // verhindert, dass die Gieß-Personalisierung aus den eigenen Vorschlägen
-          // lernt (Echo-Schleife). Pflanzenzahl-Stempel wie bei uEF.
+          // (v1.5.307) Keine erfundene pH- und EC-Reihe mehr. Hier stand eine „Pseudo-Variation" zwischen 6,2 und 6,5
+          // („realistische Charts") und eine EC-Kurve ohne Quelle (Blüte 1,5 → 2,0). Beides sind Messwerte, die nie
+          // stattfanden — ANBAU.md 15: „Messwerte werden nie geschätzt und eingetragen." Gießmenge und Plan-Dünger
+          // bleiben, als Vorschlag gekennzeichnet.
           if (!cd._suggested) cd._suggested = {};
           cd._suggested.water = true;
-          cd._suggested.ph = true;
-          if (ecForPhase) cd._suggested.ec = true;
           cd.plantsAtWatering = getEffectivePlantCount(c, iter);
           // Only fertilizers on normal watering days
           if (a === 'giess' || a === 'giess_anz') {

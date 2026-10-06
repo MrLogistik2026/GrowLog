@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.306** · index.html 2,50 MB · 757 Funktionen
+Stand: **v1.5.307** · index.html 2,50 MB · 757 Funktionen
 Zuletzt fortgeschrieben am 06.10.2026 (Run 02 neben Run 01 — Abschnitt 0o, „Stand Run 02"). Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
@@ -202,6 +202,7 @@ kein Blocker, aber Fehler, die nur mit zwei Zyklen oder direkt nach dem Anlegen 
 - v1.5.304: „N/6 eingetragen" zählt die Zyklen mit stehenden Pflanzen; bei zwei Gruppen ist Wasser erst erledigt, wenn beide gegossen sind.
 - v1.5.305: Gieß-Fahrplan, ruhiger Tag auf der Startseite und Morgen-Erinnerung folgen den Zyklen mit stehenden Pflanzen; der Fahrplan hat bei mehreren Zyklen eine Wahl-Leiste (`_gussplanZyklusId`).
 - v1.5.306: Nachgetragene Plan-Dosen tragen das Kennzeichen „Vorschlag" (`_suggestedDoses`) — die Dünger-Bilanz führt sie nicht mehr als gegeben.
+- v1.5.307: Nachtragen und Auto-eintragen schreiben keine geschätzten pH-/EC-Werte mehr (ANBAU.md 15), nur Gießmenge und Plan-Dünger als Vorschlag.
 
 **Bei der nächsten Bewertung** dieselbe Skala, dieselben Kategorie-IDs und dieselben Regeln aus `auftrag.md` nehmen und
 die Noten gegen diese Tabelle stellen.
