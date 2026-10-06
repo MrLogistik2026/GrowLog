@@ -541,6 +541,21 @@ function pruef(name, bedingung, info) {
     pruef('N10 keine JS-Fehler', a.errors.length + b.errors.length + c.errors.length === 0, a.errors[0] || b.errors[0] || c.errors[0]);
   }
 
+  // ===== O: Der Assistent verspricht so viele Fragen, wie er stellt (v1.5.312) =====
+  console.log('\nO - Zahl der Fragen im Assistenten');
+  {
+    const a = await load();
+    const zaehle = (antworten) => a.E(`(() => { openCycleWizard('dash'); Object.assign(_wizAnswers, ${JSON.stringify(antworten)}); let n = 0;
+      for (let s = 1; s < 20; s++) { _wizStep = s; _renderWiz(); n++; if (/Zyklus erstellen/.test(document.getElementById('scr-wizard').textContent)) break; } return n; })()`);
+    const drinnen = zaehle({ growType: 'indoor', medium: 'erde' }), draussen = zaehle({ growType: 'outdoor', medium: 'erde' });
+    a.E("openCycleWizard('dash'); _wizStep = 0; _renderWiz()");
+    const willkommen = (a.window.document.getElementById('scr-wizard')?.textContent || '').replace(/\s+/g, ' ');
+    pruef('O1 gezählt: drinnen 8, draußen 7 Fragen-Seiten', drinnen === 8 && draussen === 7, { drinnen, draussen });
+    pruef('O2 das Willkommen sagt „sieben bis acht kurze Fragen", nicht „5 einfache Sachen"', /sieben bis acht kurze Fragen/.test(willkommen) && !/5 einfache/.test(willkommen));
+    pruef('O3 nirgends mehr „5 einfache" im Quelltext', !/5 einfache/.test(a.window.document.documentElement.outerHTML));
+    pruef('O4 keine JS-Fehler', a.errors.length === 0, a.errors[0]);
+  }
+
   console.log('\n' + ok + ' OK, ' + fail + ' FEHL');
   if (fail) process.exit(1);
 })().catch((e) => { console.log('FEHLER: ' + (e && e.stack || e)); process.exit(1); });

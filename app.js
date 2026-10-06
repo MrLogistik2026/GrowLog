@@ -3593,7 +3593,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.311';
+const APP_VERSION = 'v1.5.312';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -17572,7 +17572,7 @@ function renderDash() {
     <div style="font-size:56px;opacity:0.3;margin-bottom:8px">🌱</div>
     <div style="font-size:18px;color:var(--green);font-weight:700;margin-bottom:6px">Willkommen bei GrowSmart!</div>
     <div style="font-size:13px;color:var(--text-muted);line-height:1.7;margin-bottom:18px;max-width:280px">
-      Dein erster Grow ist schnell eingerichtet — wir führen dich durch 5 einfache Fragen.
+      Dein erster Zyklus ist schnell eingerichtet — wir führen dich durch sieben bis acht kurze Fragen, jede mit einer Empfehlung, die du übernehmen kannst.
     </div>
     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center;margin-bottom:12px">
       <button id="welcome-start-btn" style="background:var(--green);border:none;border-radius:22px;padding:14px 28px;font-size:15px;color:#fff;cursor:pointer;font-family:var(--font);font-weight:700;box-shadow:0 4px 14px rgba(76,175,112,0.3)" onclick="openCycleWizard('dash')">🌱 Jetzt starten →</button>
@@ -23555,7 +23555,7 @@ function _renderWelcome() {
           <span style="font-size:28px">🌱</span>
           <div style="flex:1">
             <div style="font-size:16px;font-weight:800">Meinen ersten Zyklus einrichten</div>
-            <div style="font-size:11px;font-weight:500;opacity:0.85;margin-top:2px">Geführt durch 5 einfache Fragen — empfohlen</div>
+            <div style="font-size:11px;font-weight:500;opacity:0.85;margin-top:2px">Geführt durch sieben bis acht kurze Fragen — empfohlen</div>
           </div>
           <span style="font-size:20px;opacity:0.8">›</span>
         </div>
@@ -24230,7 +24230,7 @@ function _wizStepWelcome(a) {
     <div style="font-size:48px;text-align:center;margin-bottom:12px">🌱</div>
     <h1 style="font-size:22px;font-weight:700;color:var(--green);text-align:center;margin:0 0 12px">Willkommen!</h1>
     <p style="font-size:14px;line-height:1.6;color:var(--text-sub);text-align:center;margin:0 0 24px">
-      Lass uns deinen neuen Zyklus einrichten.<br>Ich frage dich <b>5 einfache Sachen</b> — dauert keine Minute.
+      Lass uns deinen neuen Zyklus einrichten.<br>Ich stelle dir <b>sieben bis acht kurze Fragen</b> — jede mit einer Empfehlung, die du übernehmen kannst.
     </p>
     <button onclick="_wizNext()" style="width:100%;background:var(--green);color:#fff;border:none;border-radius:12px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;font-family:var(--font)">Los geht's →</button>
     ${skipBtn}

@@ -2,6 +2,17 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-06 — v1.5.312
+
+- **Der Assistent versprach „5 einfache Sachen — dauert keine Minute" und stellte acht Fragen** (offen seit der Bewertung
+  vom 17.09., UEBERGABE 0o Hebel 7; beim Durchspielen von Run 02 nachgezählt: drinnen 8, draußen 7 Fragen-Seiten).
+  Dieselbe Zahl stand an zwei weiteren Stellen (Willkommen, Startknopf). Ein Versprechen, das beim dritten Bildschirm
+  nicht mehr stimmt, kostet beim Anfänger genau das Vertrauen, das der Assistent aufbauen soll.
+- **Jetzt** heißt es „sieben bis acht kurze Fragen — jede mit einer Empfehlung, die du übernehmen kannst"; die
+  unbelegte Zeitangabe ist weg, und „Dein erster Grow" heißt „Dein erster Zyklus".
+- Test: `test_zyklus2.js` Abschnitt O (4 Prüfungen, beide Zeitzonen; zählt die Seiten selbst nach; fällt auf v1.5.311 um).
+
+
 ## 2026-10-06 — v1.5.311
 
 - **Nachbesserungen aus der Prüfung von v1.5.298–302** (ein Skeptiker hat die fünf Versionen vor dem Hochladen gegen
