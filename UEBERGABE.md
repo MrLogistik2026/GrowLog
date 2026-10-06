@@ -203,7 +203,7 @@ kein Blocker, aber Fehler, die nur mit zwei Zyklen oder direkt nach dem Anlegen 
 - v1.5.305: Gieß-Fahrplan, ruhiger Tag auf der Startseite und Morgen-Erinnerung folgen den Zyklen mit stehenden Pflanzen; der Fahrplan hat bei mehreren Zyklen eine Wahl-Leiste (`_gussplanZyklusId`).
 - v1.5.306: Nachgetragene Plan-Dosen tragen das Kennzeichen „Vorschlag" (`_suggestedDoses`) — die Dünger-Bilanz führt sie nicht mehr als gegeben.
 - v1.5.307: Nachtragen und Auto-eintragen schreiben keine geschätzten pH-/EC-Werte mehr (ANBAU.md 15), nur Gießmenge und Plan-Dünger als Vorschlag.
-- v1.5.308: „🏁 Zyklus abschließen" mit Datum (`c.endDate`, `_zyklusEndeVorschlag`) — danach keine Phase, der Kalender zählt nicht weiter; die Startseite bietet es im Curing und nach dem Ende an. Offen: Kachel „Ernte in — ±5d" bei fertigem Zyklus.
+- v1.5.308: „🏁 Zyklus abschließen" mit Datum (`c.endDate`, `_zyklusEndeVorschlag`) — danach keine Phase, der Kalender zählt nicht weiter; die Startseite bietet es im Curing und nach dem Ende an.
 - v1.5.309: Startseite hat unter „Meine Zyklen" den Knopf „＋ Neuen Zyklus anlegen" (`_neuerZyklusKnopf`).
 - v1.5.310: Assistent fragt die Pflanzenzahl, nennt das Datum „Keimstart (Tag 1)" und bietet die Rainbow-Vorlage an.
 - v1.5.311: Prüfer-Nachbesserungen zu v1.5.302 — Ceiling-Test und Bio-Grow-Rückweg nach Blatt, genauer Hinweis nach dem Heben (wegtippbar), eigene Notizen bleiben, abweichende v1.0-Kopie mit Knopf „Auf Blatt v2.1 bringen" (`_rainbowKopieHeben`). **v1.5.298–302 vom Skeptiker freigegeben (06.10.2026).**
@@ -215,6 +215,29 @@ kein Blocker, aber Fehler, die nur mit zwei Zyklen oder direkt nach dem Anlegen 
 - v1.5.317: pH-Notfall mit dem Ziel des Substrats und Messgerät-Prüfung statt „pH 6.4, 2× Topfvolumen"; Kalium-Schnellhilfe unterscheidet zuerst Überdüngung.
 - v1.5.318: Gieß-Ratschläge folgen dem Gießpunkt statt einer festen Frist; „Gleichmäßiger = besser" entfernt (REIHENFOLGE 12 erledigt).
 - v1.5.319: Rainbow im Assistenten mit Beschreibung, „Curing" und „✓ geerntet" auf der Startseite, pH-Vergleich gegen das Substrat-Ziel.
+
+**Nachtprüfung 07.10.2026 (v1.5.312, vier Sonnet-Prüfer: Anfänger und Profi je in beiden Modi, Fach+Technik, Skeptiker; ohne
+Lexikon).** Gesamt **6,5** (Anfänger 6,4, Profi 6,7) — gleich wie am 06.10., gegenüber 6,4 am 17.09. Besser: Fachtexte und
+Zwei-Zyklen-Führung (H3 6,8, F2 7,2, T1 7,9). Schwächste Stellen unverändert: T5 Barrierefreiheit 3,6, S2 Outdoor 4,3, H6
+Einstellungen 5,2, I5 Ernte 5,4, H5 Übersicht 5,8. 48 Befunde, 41 bestätigt, 7 abgeschwächt; die zwölf ohne Rückfrage
+behebbaren und drei kleine Anzeigefehler sind in v1.5.313–319 behoben. Rohdaten: Sitzungs-Scratchpad `pruefung/` und Workflow
+wf_0586d0bf-d3d (vergänglich). **Offen, nach Nutzen geordnet** (Umbauten oder Patricks Entscheidung):
+1. Speichern scheitert still bei jedem Fehler außer „Speicher voll"; ein zweites Fenster überschreibt unbemerkt; gesperrter
+   Browser-Speicher startet leer ohne Hinweis — Hebel 3 Punkt 7 (REIHENFOLGE), Entwürfe in `hebel3/patches/`.
+2. Gießtag-Eintrag im Einsteiger-Modus so dicht wie im Profi-Modus (46 Felder bei zwei Zyklen), fünf Zahlen für „wie viel
+   gieße ich" im Anzucht-Eintrag, Wochenwechsel-Block 2530 Zeichen ohne ⓘ — Umbau „Tageseintrag entschlacken".
+3. EC-Bewertung ignoriert den Korridor der Plan-Woche (Sämling erst ab 1,2, Blüte Woche 9 bei 2,4 stumm) — Idee: eine
+   Messwert-Ampel aus dem Plan für Eintrag und Startseite.
+4. Fachwörter ohne ⓘ im Assistenten und im Einsteiger-Eintrag; Einsteiger-Startseite ohne Erste-Hilfe-Karte (Profi hat sie).
+5. Toppen-Knopf für Automatics bis Blüte-Woche 3 gegen den eigenen Text; „2 Tage ohne Gießen nach dem Topping" ohne Beleg.
+6. Tag 1 verweist auf eine Mischliste, die es dort nicht gibt; „Deine nächsten Güsse" beginnt in der Anzucht erst bei Blüte.
+7. „Erledigt" bucht nur Wasser; Dünger abhaken sind 15 Einzel-Taps — Idee: „Alles wie im Plan" mit einem Tipp.
+8. Diagnose: bei „welk" und „weiß ausgebleicht" falsche Reihung; Sämlings-EC „SOFORT spülen" ohne Gültigkeitsprüfung.
+9. Zyklus-Vergleich ohne Ertrag, g je Pflanze, Tage bis Ernte; Einstellungen ohne Vorschau (H6); Barrierefreiheit (Zoom-Sperre,
+   Kontraste 2,2:1, Schrift ≤ 11 px); Fotos als Base64 füllen den Speicher (~30 Fotos); kein Test-Gate vor dem Veröffentlichen.
+Weitere Ideen der Prüfer: gemeinsamer Mischansatz für zwei Zyklen am selben Gießtag („zusammen 4800 ml"), Sicherungs-Erinnerung
+auf der Startseite ab 14 Tagen ohne Export, Plan-Abgleich beim Zuweisen und Substratwechsel, Diagnose beantwortet
+Unterscheidungsfragen aus dem eigenen Zustand.
 
 **Bei der nächsten Bewertung** dieselbe Skala, dieselben Kategorie-IDs und dieselben Regeln aus `auftrag.md` nehmen und
 die Noten gegen diese Tabelle stellen.

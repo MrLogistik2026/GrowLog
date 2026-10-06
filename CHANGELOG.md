@@ -183,7 +183,7 @@ Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
   („Im Curing — schon fertig?") oder alle Phasen vorbei sind („✓ Fertig — alle Phasen vorbei" statt „Tag –").
   Ein Datum vor dem Start oder nach heute wird nicht angenommen.
 - Wortwahl nach `ANWEISUNG.md` („Zyklus", nie „Grow"): Der Knopf hieß „📦 Grow archivieren".
-- Noch offen: Die Kachel „Ernte in" zeigt für einen fertigen, nicht abgeschlossenen Zyklus „— ±5d".
+- Die Kachel „Ernte in" zeigte für einen fertigen, nicht abgeschlossenen Zyklus „— ±5d" — behoben in v1.5.319.
 - Test: `test_zyklus2.js` Abschnitt K (11 Prüfungen, beide Zeitzonen; fällt auf v1.5.307 um).
 
 
