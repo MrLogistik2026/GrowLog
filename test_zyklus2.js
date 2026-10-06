@@ -166,6 +166,41 @@ function pruef(name, bedingung, info) {
     pruef('C6 keine JS-Fehler', a.errors.length === 0, a.errors[0]);
   }
 
+  // ===== D: Der Vorlauf bis zum Keimling gehört vor Plan-Woche 1 (v1.5.301) =====
+  console.log('\nD - Plan-Wochen der Anzucht mit Vorlauf bis zum Sprout');
+  {
+    const a = await load();
+    a.window.customConfirm = () => Promise.resolve(true);
+    await a.E("loadPreset('rainbow_auto')");
+    const planId = a.E("(S.fertPlans.find(p => p.presetKey === 'rainbow_auto') || {}).id");
+    // Anesia-Gruppe: eingeweicht 20.09., Keimling 25.09. → 5 Tage Vorlauf, Anzucht 21 + 5 = 26 (Rainbow-Blatt)
+    a.E(`addCyc({ name: 'Anesia', startDate: '2026-09-20', potSize: 15, plantCount: 4, fertPlanId: '${planId}' })`);
+    a.E(`addCyc({ name: 'Mimosa', startDate: '2026-09-26', potSize: 15, plantCount: 2, fertPlanId: '${planId}' })`);
+    const an = "S.cycles.find(c => c.name === 'Anesia')", mi = "S.cycles.find(c => c.name === 'Mimosa')";
+    a.E(`[${an}, ${mi}].forEach(c => { c.anzuchtDays = 26; c.bloomDays = 70; })`);
+    const b = a.E(`JSON.stringify(planWeekBounds(${an}).slice(0, 3))`);
+    pruef('D1 Anzucht 26: Woche 1 trägt die 5 Tage bis zum Keimling (Grenzen 12 · 19 · 26)', b === '[12,19,26]', b);
+    const w = (z, iso) => a.E(`fertPlanWeek(${z}, '${iso}')`);
+    pruef('D2 Anesia: Woche 2 ab 02.10., Woche 3 ab 09.10., Woche 4 ab 16.10. — wie die Stammdaten',
+      w(an, '2026-10-01') === 1 && w(an, '2026-10-02') === 2 && w(an, '2026-10-08') === 2 && w(an, '2026-10-09') === 3 && w(an, '2026-10-16') === 4,
+      ['10-01', '10-02', '10-08', '10-09', '10-16'].map(d => w(an, '2026-' + d)));
+    pruef('D3 Mimosa: Woche 2 ab 08.10., Woche 3 ab 15.10., Woche 4 ab 22.10.',
+      w(mi, '2026-10-07') === 1 && w(mi, '2026-10-08') === 2 && w(mi, '2026-10-15') === 3 && w(mi, '2026-10-22') === 4,
+      ['10-07', '10-08', '10-15', '10-22'].map(d => w(mi, '2026-' + d)));
+    const df = JSON.parse(a.E(`JSON.stringify(planSkeletonDiff(${an}))`));
+    pruef('D4 der Vergleich nennt die 26 nicht als Abweichung, sondern als 5 Tage Vorlauf', !df.felder.includes('anzuchtDays') && df.vorlauf === 5, df);
+    a.E(`${an}.anzuchtDays = 21`);
+    pruef('D5 Anzucht wie der Plan (21): gleichmäßig wie bisher (7 · 14 · 21)', a.E(`JSON.stringify(planWeekBounds(${an}).slice(0, 3))`) === '[7,14,21]');
+    a.E(`${an}.anzuchtDays = 35`);
+    const df35 = JSON.parse(a.E(`JSON.stringify(planSkeletonDiff(${an}))`));
+    pruef('D6 14 Tage mehr sind kein Vorlauf mehr: gleichmäßig verteilt und als Abweichung genannt',
+      a.E(`JSON.stringify(planWeekBounds(${an}).slice(0, 3))`) === '[12,23,35]' && df35.felder.includes('anzuchtDays'), df35);
+    a.E(`${an}.anzuchtDays = 18`);
+    pruef('D7 weniger Anzucht als der Plan bleibt eine Abweichung', a.E(`planSkeletonDiff(${an}).felder.includes('anzuchtDays')`));
+    pruef('D8 Run 01 (Plan ohne Gerüst) bleibt unverändert', a.E('_keimVorlauf(S.cycles[0], getPlanForCycle(S.cycles[0]))') === 0);
+    pruef('D9 keine JS-Fehler', a.errors.length === 0, a.errors[0]);
+  }
+
   console.log('\n' + ok + ' OK, ' + fail + ' FEHL');
   if (fail) process.exit(1);
 })().catch((e) => { console.log('FEHLER: ' + (e && e.stack || e)); process.exit(1); });

@@ -2,6 +2,23 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-06 — v1.5.301
+
+- **Die Plan-Wochen der Anzucht begannen zu früh, sobald die Anzucht den Vorlauf bis zum Keimling enthielt** (gefunden
+  beim Abgleich der Rainbow-Vorlage mit dem Blatt v2.1). Der Rainbow-Plan zählt ab dem Keimling („Tag 1 = Sprout"), die
+  App ab dem Keimstart. Das Blatt verlangt deshalb Anzucht = 21 + Tage vom Einweichen bis zum Sprout — bei Run 02 sind das
+  5 Tage, also 26. Die App verteilte diese 26 Tage gleichmäßig auf die drei Anzucht-Wochen (9 · 8 · 9): Woche 2 begann
+  drei Tage, Woche 3 einen Tag zu früh, und die Pflanzen bekamen die Mischung der nächsten Woche, bevor das Blatt sie
+  vorsah. Dazu bot „Vom Plan übernehmen" an, die 26 auf 21 zurückzusetzen.
+- **Jetzt** gehört der Vorlauf ganz in die erste Anzucht-Woche (`_keimVorlauf`): Mit Start 20.09. und Anzucht 26 beginnt
+  Woche 2 am 02.10., Woche 3 am 09.10., Woche 4 am 16.10. — genau wie in Patricks Stammdaten; für die Mimosa-Gruppe
+  (Start 26.09.) 08.10., 15.10., 22.10. Der Vergleich mit dem Plan nennt die Mehrtage nicht mehr als Abweichung, sondern
+  als „+ 5 Tage vom Keimstart bis zum Keimling". Als Vorlauf gilt höchstens der Einweichtag plus das späteste Auflaufen
+  (1 + 7 Tage, Konvention aus `ANBAU.md` 16); eine längere Anzucht wird wie bisher gleichmäßig verteilt und genannt.
+  Betrifft nur Pläne mit Phasen-Gerüst — heute nur die Rainbow-Vorlage; Run 01 ist unverändert.
+- Test: `test_zyklus2.js` Abschnitt D (9 Prüfungen, beide Zeitzonen; fällt auf v1.5.300 um).
+
+
 ## 2026-10-06 — v1.5.300
 
 - **„Vom Plan übernehmen" machte Endspurt-Karte und Kalender uneins** (bekannt seit der Rainbow-Prüfung vom 17.09., in

@@ -4593,7 +4593,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.300';
+const APP_VERSION = 'v1.5.301';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -11700,11 +11700,31 @@ function _planWeekQuestion(c, iso) {
  *
  * @returns {null|number[]} Endtage je Woche (ohne die letzte), wie weekDayBounds
  */
+// (v1.5.301) Höchstens so viele Tage zählt die App als Vorlauf vom Keimstart bis zum Keimling: der Einweichtag plus das
+// späteste Auflaufen (KEIMUNG.auflaufenBis, Konvention aus ANBAU.md 16). Was darüber hinausgeht, ist eine längere Anzucht.
+const KEIM_VORLAUF_MAX = 1 + KEIMUNG.auflaufenBis;
+/**
+ * (v1.5.301) Tage vom Keimstart bis zum Keimling, die in der Anzucht des Zyklus stecken, aber nicht im Plan.
+ * Ein Plan mit Phasen-Gerüst zählt seine Anzucht ab dem Keimling (Rainbow: „Tag 1 = Sprout"), die App ab dem Keimstart —
+ * deshalb trägt der Zyklus mehr Anzuchttage (Rainbow-Blatt: „21 + die Tage vom Einweichen bis zum Sprout"). Diese Tage
+ * gehören vor Plan-Woche 1, nicht gleichmäßig über alle Anzucht-Wochen: Sonst begann Woche 2 bei 26 Anzuchttagen drei
+ * Tage zu früh, und die Pflanzen bekamen die Mischung der nächsten Woche, bevor das Blatt sie vorsah.
+ * @returns {number} 0, wenn der Plan kein Gerüst hat oder die Differenz kein Vorlauf sein kann.
+ */
+function _keimVorlauf(c, plan) {
+  const sk = plan && plan.phaseSkeleton;
+  const soll = sk && Number(sk.anzucht);
+  if (!Number.isFinite(soll) || soll <= 0) return 0;
+  const v = anzuchtLenFor(c) - soll;
+  return (v > 0 && v <= KEIM_VORLAUF_MAX) ? v : 0;
+}
+
 function planWeekBounds(c) {
   const plan = (typeof getPlanForCycle === 'function') ? getPlanForCycle(c) : null;
   if (!plan) return null;
   const wp = plan.weekPhases;
   if (!Array.isArray(wp) || !wp.length) return plan.weekDayBounds || null;
+  const vorlauf = _keimVorlauf(c, plan);
 
   const d = {
     anzucht: anzuchtLenFor(c),
@@ -11726,7 +11746,9 @@ function planWeekBounds(c) {
     lauf[ph] = (lauf[ph] || 0) + 1;
     const gesamt = d[ph] || 0;
     const s0 = start[ph] || 0;
-    bounds.push(s0 + Math.round(gesamt * lauf[ph] / anzahl[ph]));
+    // (v1.5.301) Der Vorlauf bis zum Keimling gehört ganz in die erste Anzucht-Woche.
+    if (ph === 'anzucht' && vorlauf) bounds.push(s0 + vorlauf + Math.round((gesamt - vorlauf) * lauf[ph] / anzahl[ph]));
+    else bounds.push(s0 + Math.round(gesamt * lauf[ph] / anzahl[ph]));
   });
   bounds.pop();                       // die letzte Woche ist offen, wie bei weekDayBounds
   // Monoton halten: bei sehr kurzen Phasen könnten zwei Wochen auf denselben Tag fallen.
@@ -11745,14 +11767,18 @@ function planSkeletonDiff(c) {
   if (!sk) return null;
   const felder = [];
   const ist = {}, soll = {};
+  // (v1.5.301) Mehr Anzuchttage als der Plan sind der Vorlauf vom Keimstart bis zum Keimling — keine Abweichung. Vorher bot
+  // der Knopf an, Patricks 26 Tage (21 + 5 bis zum Sprout, wie das Rainbow-Blatt es verlangt) auf 21 zurückzusetzen.
+  const vorlauf = _keimVorlauf(c, plan);
   [['anzucht', 'anzuchtDays'], ['flush', 'flushDays'], ['ice', 'iceDays'], ['harvest', 'harvestDays'], ['dry', 'dryDays']].forEach(([k, f]) => {
     if (sk[k] == null) return;
+    if (f === 'anzuchtDays' && vorlauf) return;
     // (v1.5.300) Die Spülphase ist Spültage + Hard-Dryback — so rechnen Endspurt und Kalender, nicht mit dem Rohfeld.
     ist[f] = f === 'flushDays' ? (flushWetDays(c) + iceDryDays(c)) : (c[f] || PHASE_DEFAULTS[f]);
     soll[f] = sk[k];
     if (ist[f] !== soll[f]) felder.push(f);
   });
-  return { ist, soll, felder };
+  return { ist, soll, felder, vorlauf };
 }
 
 /**
@@ -23181,7 +23207,7 @@ function renderSet() {
             return `<div style="background:var(--card2);border-radius:9px;padding:10px 11px;margin-bottom:9px">
               <div style="font-size:11px;color:var(--text-sub);line-height:1.6">
                 <b>Plan:</b> ${_plan.name} · ${_wochen} Wochen<br>
-                ${_skDa ? `<b>Feste Phasen aus dem Plan:</b> Anzucht ${_sk.anzucht} · Spülen ${_sk.flush} · IceFlush ${_sk.ice} · Ernte ${_sk.harvest} Tage<br>` : ''}
+                ${_skDa ? `<b>Feste Phasen aus dem Plan:</b> Anzucht ${_sk.anzucht}${_df && _df.vorlauf ? ` (+ ${_df.vorlauf} ${_df.vorlauf === 1 ? 'Tag' : 'Tage'} vom Keimstart bis zum Keimling — Plan-Woche 1 beginnt mit dem Keimling)` : ''} · Spülen ${_sk.flush} · IceFlush ${_sk.ice} · Ernte ${_sk.harvest} Tage<br>` : ''}
                 <b>Dehnbar:</b> die Blüte — sie richtet sich nach deiner Sorte und deinen Trichomen.
                 ${_hw ? `<br><b>Ernte:</b> ${_hw.lo === _hw.hi ? 'etwa Tag ' + _hw.lo : 'Tag ' + _hw.lo + '–' + _hw.hi}${_hw.basis === 'trichome' ? ' (aus deinen Trichomen)' : (_hw.basis === 'packung' ? ' (aus der Samentüte)' : '')}` : ''}
               </div>
