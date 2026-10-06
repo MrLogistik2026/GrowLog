@@ -2321,12 +2321,12 @@ const FERT_PRESETS = {
       3:  { phase: 'Vegi · FIM · Wasserguss',  tip: 'pH 6,3 · gegossen wird am Gießpunkt („Knapp“) · noch kein Drain möglich. FIM nur, wenn alle Pflanzen bis Plan-Tag 13 Node 4–5 erreicht haben — Eingriff bis Plan-Tag 15, und am Eingriffstag müssen noch mindestens 7 Tage bis zum erwarteten Blütetag 0 bleiben; sonst bei keiner, dann LST allein. Reihenfolge: Feed → 1–2 Tage später FIM bei prallen Blättern → der erste Guss danach (frühestens 48 h, sobald der Topf den Gießpunkt erreicht) ist reines pH-Wasser 6,3 in Feed-Menge (im Tageseintrag auf „Nur Wasser“ stellen). Fällt FIM aus, ist der erste Guss dieser Woche der Wasserguss. Ab jetzt wöchentlich pro Topf: Höhe, Seitentriebe, Internodienabstand.' },
       4:  { phase: 'Stretch · Selektion',      tip: 'pH 6,3. Erste Pistillen pro Topf notieren = Blütetag 0 (die App zählt denselben Tag als Blütetag 1). Selektion Plan-Tag 22–31: Entfernt wird nur eine Pflanze, die selbst zurückbleibt (weniger Seitentriebe, größerer Internodienabstand) oder krank ist — nie eine gesunde wegen Beschattung; eine Auto holt den verlorenen Wurzelraum nicht auf. Epsom ab jetzt konstant 0,15, CalMag bleibt bis Woche 6 bei 0,3. Erste Drain-Versuche, noch ohne Bewertung.' },
       5:  { phase: 'Stretch-Ende · Kontrollguss', tip: 'pH 6,3. Kontrollguss je Sorte: Topf kurz vor dem Gießen wiegen, rund 5 L je Topf ansetzen und mittig, langsam in Etappen gießen, bis ' + DRAIN_ZIEL.min + '–' + DRAIN_ZIEL.max + ' % in einer breiten Wanne ankommen. Abtropfen lassen, dann wiegen — das ist das erste Gewicht (100 %). Das zweite Gewicht kommt erst in Woche 6, kurz vor dem Gießen. Ab jetzt jeder Feed bis ' + DRAIN_ZIEL.min + '–' + DRAIN_ZIEL.max + ' % Drain; Drain-EC nur bei mindestens ' + DRAIN_ZIEL.min + ' % Durchfluss werten. Letzte Entlaubung, max. 10–15 %, nur Fächerblätter über Bud-Sites.' },
-      6:  { phase: 'Frühblüte · Bio-Bloom startet', tip: 'pH 6,25. Zweites Gewicht in dieser Woche kurz vor dem Gießen nehmen, am Gießpunkt („Knapp“) — die App setzt es als Gießpunkt, erst dann rechnet sie Prozente für diesen Topf. Ab jetzt die schwerste Schimmelphase: Handprobe im Canopy-Inneren wöchentlich, Luftfeuchte nachts zur kühlsten Stunde messen — beim Abkühlen steigt sie von selbst, und der Deckel gilt auch nachts. Gelb zwischen grünen Adern an mittleren/unteren Blättern erst unterscheiden: Seneszenz (spät, gleichmäßig von unten, Kelche schwellen weiter) → Hebe-Test (dauernass?) → Zulauf-pH (nie unter 6,0) → keine Calcium-Quelle erhöhen → erst dann Epsom 0,4 g/L für 2–3 Feeds, danach zurück auf 0,15. Nicht vorbeugend. Lollipopping nach Licht-Test, letzter Eingriff.' },
+      6:  { phase: 'Frühblüte · Bio-Bloom startet', tip: 'pH 6,25. Zweites Gewicht in dieser Woche kurz vor dem Gießen nehmen, am Gießpunkt („Knapp“) — die App setzt es als Gießpunkt, erst dann rechnet sie Prozente für diesen Topf. Ab jetzt die schwerste Schimmelphase: Handprobe im Canopy-Inneren wöchentlich, Luftfeuchte nachts zur kühlsten Stunde messen — beim Abkühlen steigt sie von selbst, und der Deckel gilt auch nachts. Gelb zwischen grünen Adern an mittleren/unteren Blättern erst unterscheiden: Seneszenz (spät, gleichmäßig von unten, Kelche schwellen weiter) → Hebe-Test (dauernass?) → Zulauf-pH (nie unter 6,0) → keine Calcium-Quelle erhöhen → erst dann Epsom 0,4 g/L für 2–3 Feeds, danach zurück auf 0,15. Nicht vorbeugend. Rückweg für Bio-Grow, am Blattbild statt am Kalender: Läuft eine Vergilbung schnell, fleckig oder etagenweise und stockt die Blütenbildung, Bio-Grow auf den nächsthöheren Wert des Plans — in Woche 6–10 auf 1,0, ab Woche 11 auf 0,75 — und dort bleiben, bis das Bild kippt. Es ist die einzige Korrektur für zu wenig Stickstoff; der EC zeigt organisch gebundenen Stickstoff nicht. Lollipopping nach Licht-Test, letzter Eingriff.' },
       7:  { phase: 'Bud-Set',                  tip: 'pH 6,25. CalMag jetzt 0,5, Bio-Grow bleibt bei 0,75. Advanced Amino zum letzten Mal. Buds nicht mehr anfassen, Zweige am Stiel bewegen. Luft unter und durch den Canopy, nie direkt auf die Blüten — ist im Canopy-Inneren keine Bewegung spürbar, braucht es einen zweiten Ventilator.' },
-      8:  { phase: 'Bulk-Start · Ceiling-Test', tip: 'pH 6,25. Ceiling-Test Bio-Bloom 1,05 → 1,2 → 1,35 → 1,5: nach jedem Schritt 48–72 h die Zuckerblattspitzen an den Buds prüfen, jede Sorte getrennt. Erste Gelbfärbung → einen Schritt zurück: Das ist das Ceiling dieser Sorte, der Test ist für sie beendet. Bio-Grow bleibt bei 0,75 bis einschließlich Woche 10 — den Stopp lösen nur die Trichome aus, frühestens Woche 12.' },
+      8:  { phase: 'Bulk-Start · Ceiling-Test', tip: 'pH 6,25. Ceiling-Test Bio-Bloom 1,05 → 1,2 → 1,35 → 1,5, je Stufe mindestens zwei Güsse, jede Sorte getrennt; Bio-Grow bleibt dabei unverändert. Als Befund zählt Spitzenbrand an den Zuckerblättern nur, wenn der Topf nicht trocken war (Hebe-Test) und nicht nur die lichtnächsten Spitzen betroffen sind — dann eine Stufe zurück: Das ist das Ceiling dieser Sorte. Genauso zählen hellgelbe junge Blätter mit grün bleibenden Adern oder auffällig kurze Abstände zwischen den Blattknoten an den neuen Etagen (Bio-Bloom hebt vor allem Phosphor, und Phosphor verdrängt Zink und Eisen) — die jüngsten Blätter deshalb ab jetzt wöchentlich ansehen. Kein Befund bis 1,5: 1,5 ist die Arbeitsdosis. Bio-Grow bleibt bei 0,75 bis einschließlich Woche 10 — den Stopp lösen nur die Trichome aus, frühestens Woche 12.' },
       9:  { phase: 'Bulk · Trichom-Baseline',  tip: 'pH 6,25. CalMag ab jetzt 0,8. Bio-Bloom 1,2 oder dein Ceiling. Trichom-Baseline pro Topf: alle 3–4 Tage, dieselben Stellen — Headbud, Mitte, unterer Trieb, je 30–50 Köpfe, die Zahl der Köpfe mit notieren —, nur Calyxen, nie Zuckerblätter, nie Foxtail-Neuwuchs. Der Hebe-Test bleibt der einzige Gieß-Trigger.' },
       10: { phase: 'Bulk-Peak', tip: 'pH 6,25. Bio-Bloom auf deinem Ceiling (bis zum Testergebnis 1,2), Bio-Grow die letzte Woche mit 0,75. Nachts nicht gezielt herunterkühlen — Kühle kostet Blütenmasse, und jedes Grad weniger hebt die Luftfeuchte. Die Wurzelzone soll nicht unter 16 °C fallen. Luftfeuchte zur kühlsten Stunde prüfen; hält der Deckel nicht, entfeuchten statt kühlen. Ertragsstärkste Phase: Feed konstant, nichts ändern.' },
-      11: { phase: 'Reifung · Seneszenz',      tip: 'pH 6,25. Bio-Grow 0,5 als Zwischenstufe. Ab jetzt Schimmel-Deckel 60 % statt 65, Tag und Nacht. Vergilbung gleichmäßig von unten nach oben bei laufender Blütenentwicklung ist Seneszenz — nicht andüngen. Steigender Drain-EC bei mindestens 20 % Durchfluss und ohne Spitzenbrand ist Mineralisierung, keine Überdüngung. Erreicht eine Sorte den Trigger für den Bio-Grow-Stopp und eine andere nicht: getrennte Ansätze nacheinander mischen.' },
+      11: { phase: 'Reifung · Seneszenz',      tip: 'pH 6,25. Bio-Grow 0,5 als Zwischenstufe. Ab jetzt Schimmel-Deckel 60 % statt 65, Tag und Nacht. Vergilbung gleichmäßig von unten nach oben bei laufender Blütenentwicklung ist Seneszenz — nicht andüngen; läuft sie fleckig oder etagenweise und stockt die Blüte: Rückweg aus Woche 6, hier auf Bio-Grow 0,75. Steigt der Drain-EC bei mindestens 20 % Durchfluss, ohne Spitzenbrand und mit gleichmäßiger Vergilbung von unten, spricht das für Nachlieferung aus dem Substrat — keine Maßnahme. Steigt er dagegen schon seit Wochen, bei wenig Durchfluss oder mit fleckiger Vergilbung, ist es Anreicherung: Zufuhr senken oder Durchfluss erhöhen. Erreicht eine Sorte den Trigger für den Bio-Grow-Stopp und eine andere nicht: getrennte Ansätze nacheinander mischen.' },
       12: { phase: 'Taper · N-Stopp bei Trigger', tip: 'pH 6,25. Bio-Grow 0,3 → 0: Stopp je Sorte bei 70–80 % milchigen Trichomen, ausgelöst von der am wenigsten reifen Pflanze dieser Sorte — nicht nach Kalender. Silica Force endet mit dem Stopp, spätestens mit dem letzten Guss dieser Woche. Bio-Bloom bleibt oben und wird erst 7 Tage nach dem Stopp reduziert.' },
       13: { phase: 'Finish · Rampe',           tip: 'Nach dem Bio-Grow-Stopp 7 Tage Basis (Bio-Bloom 1,2 bzw. Ceiling · CalMag 0,8 · Epsom 0,15 · POWHUMUS 2,5 · Alg-A-Mic 2, ohne Bio-Grow und Silica), dann EIN Rampen-Guss: Bio-Bloom 0,5 · CalMag 0,5 · Epsom 0,2 — den zeigt die Mischliste in dieser Woche. Die Rampe erst starten, wenn der Trichom-Verlauf dein Ernteziel innerhalb von (4 × Gießabstand + 3) Tagen erwarten lässt; sonst bleibt der Feed wie Woche 12 ohne Silica als Warteschleife, und du verlängerst die Blütedauer im Endspurt. Liegt der Bernstein-Anteil über deinem eingestellten Ziel → schneiden, Spülen und IceFlush entfallen.' },
       14: { phase: 'Spülen',                   tip: 'Zwei Güsse reines pH-Wasser 6,3, jeweils am Gießpunkt („Knapp“), nicht tiefer. Wann Schluss ist, sagt die Zahl der Spülgänge — nicht ein Drain-EC-Wert: In Light-Mix kann er nach dem Spülen wieder steigen, weil das Substrat nachliefert. Nach dem zweiten Spülgang einmalig Hard Dryback: nicht mehr gießen, bis der Topf den Gießpunkt erreicht — dann nimmt er das Schmelzwasser des IceFlush auf.' },
@@ -2361,7 +2361,7 @@ const FERT_PRESETS = {
     },
     mixOrder: ['Silica Force','CalMag','Epsom Salz','POWHUMUS','Bio-Grow','Bio-Bloom','Alg-A-Mic','Advanced Amino'],
     mixInfo: 'Wasser 20–22 °C → Silica Force (2–5 Min warten) → CalMag → Epsom (klar rühren) → POWHUMUS-Konzentrat → Bio-Grow / Bio-Bloom → Alg-A-Mic → Advanced Amino (per Spritze, nur bis Woche 7) → EC messen → pH auf Zielwert, 5 Min warten, nachmessen. Nie zwei Konzentrate direkt zusammengeben — jede Komponente vollständig verteilen, bevor die nächste kommt. Nicht auf Vorrat mischen: der BioBizz-Ansatz hält wenige Stunden. Spül- und Rampenwasser brauchen viel weniger Säure (Silica Force und POWHUMUS fehlen dann) — pH-Down tropfenweise neu einstellen.',
-    drainInfo: 'Drain-Ziel ' + DRAIN_ZIEL.min + '–' + DRAIN_ZIEL.max + ' %, in einer breiten Wanne gemessen. Drain-EC: ' + T.drainRegelKurz() + '. Ein niedriges Verhältnis ist hier kein Grund nachzudüngen — dieser Plan ist bewusst keine Vollversorgung, und organisch gebundenen Stickstoff zeigt der EC nicht. Drain-pH 6,8–7,2 ist Kalkpuffer, kein Befund — erst wenn er über Wochen weiter steigt oder mit Chlorose an jungen Blättern auftritt. Zulauf-pH 6,25–6,4, nie unter 6,0. Gegossen wird am Gießpunkt nach dem Hebe-Test, nicht nach einer Wochenzahl. Woche 1–3 ist kein Drain möglich, Woche 4 erste Versuche ohne Bewertung, ab Woche 5 jeder Feed mit Drain.',
+    drainInfo: 'Drain-Ziel ' + DRAIN_ZIEL.min + '–' + DRAIN_ZIEL.max + ' %, in einer breiten Wanne gemessen. Drain-EC: ' + T.drainRegelKurz() + '. Ein niedriges Verhältnis ist hier kein Grund nachzudüngen — dieser Plan ist bewusst keine Vollversorgung, und organisch gebundenen Stickstoff zeigt der EC nicht. Was zu wenig Stickstoff anzeigt, steht im Rückweg für Bio-Grow (Wochen-Tipp Woche 6). Drain-pH 6,8–7,2 ist Kalkpuffer, kein Befund — erst wenn er über Wochen weiter steigt oder mit Chlorose an jungen Blättern auftritt. Zulauf-pH 6,25–6,4, nie unter 6,0. Gegossen wird am Gießpunkt nach dem Hebe-Test, nicht nach einer Wochenzahl. Woche 1–3 ist kein Drain möglich, Woche 4 erste Versuche ohne Bewertung, ab Woche 5 jeder Feed mit Drain.',
     // Jeder Guss ein Feed bis zur Rampe; Spülen nur Wasser, am IceFlush wird nicht gegossen.
     // Den einen Wasserguss nach dem FIM (Woche 3) stellt man am Tag selbst um — er hängt am
     // FIM-Termin, nicht an der Woche.
@@ -3593,7 +3593,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.310';
+const APP_VERSION = 'v1.5.311';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -5412,41 +5412,10 @@ function _ladenPlaene() {
 
   // RAINBOW AUF BLATT v2.1 (v1.5.302, einmalig): Wer die Vorlage schon einmal geladen hat, trägt eine Kopie mit den
   // v1.0-Dosen — loadPreset frischt bei vorhandener Kopie nur Rückgrat und EC-Ziele auf, nie die Dosen. Gehoben wird nur
-  // eine Kopie, deren Wochenplan noch genau der von v1.0 ist: Hat Patrick selbst Dosen geändert, bleiben sie seine.
-  // Alfa Boost fällt nur weg, wenn kein Eintrag darauf zeigt (Dosen, Dosis-Bezug, Misch-Häkchen hängen an der ID).
+  // eine Kopie, deren Wochenplan noch genau der von v1.0 ist: Hat Patrick selbst Dosen geändert, bleiben sie seine —
+  // dann sagt es der Düngeplan und bietet das Heben auf Knopfdruck an (v1.5.311, _rainbowKopieHeben).
   if (!S._rainbowV21) {
-    const pr = (typeof FERT_PRESETS !== 'undefined') ? FERT_PRESETS.rainbow_auto : null;
-    (S.fertPlans || []).forEach(plan => {
-      if (!pr || !plan || plan.presetKey !== 'rainbow_auto' || !Array.isArray(plan.products) || !_istObjekt(plan.schedule)) return;
-      const nameVon = {}, idVon = {};
-      plan.products.forEach(p => { if (p && p.id) { nameVon[p.id] = p.name; idVon[p.name] = p.id; } });
-      const alsNamen = (w) => {
-        const o = {};
-        Object.entries(plan.schedule['w' + w] || {}).forEach(([id, v]) => { if (nameVon[id] && parseFloat(v) > 0) o[nameVon[id]] = parseFloat(v); });
-        return o;
-      };
-      const gleich = (x, y) => {
-        const kx = Object.keys(x).sort(), ky = Object.keys(y).sort();
-        return kx.length === ky.length && kx.every((k, i) => k === ky[i] && Math.abs(x[k] - y[k]) < 1e-9);
-      };
-      for (let w = 1; w <= 15; w++) if (!gleich(alsNamen(w), RAINBOW_V10_SCHEDULE[w] || {})) return;
-      const neu = {};
-      Object.entries(pr.schedule).forEach(([w, doses]) => {
-        const m = {};
-        Object.entries(doses || {}).forEach(([n, d]) => { if (idVon[n]) m[idVon[n]] = d; });
-        neu['w' + w] = m;
-      });
-      plan.schedule = neu;
-      plan.products.forEach(p => { const v = pr.products.find(x => x.name === p.name); if (v) p.note = v.note; });
-      const alfa = plan.products.find(p => p && p.name === 'Alfa Boost');
-      if (alfa && !_produktInEintraegen(alfa.id)) plan.products = plan.products.filter(p => p !== alfa);
-      plan.mixOrder = pr.mixOrder.slice();
-      plan.mixInfo = pr.mixInfo;
-      plan.drainInfo = pr.drainInfo;
-      if (plan.name === 'Rainbow Düngeplan (v1.0)') plan.name = pr.name;
-      _planRueckgratAuffrischen(plan, pr);
-      plan._gehobenAuf = { blatt: 'v2.1', am: todayISO() };
-    });
+    (S.fertPlans || []).forEach(plan => { if (_rainbowWochenplanGleich(plan, RAINBOW_V10_SCHEDULE)) _rainbowKopieHeben(plan); });
     S._rainbowV21 = true;
     if (typeof syncActivePlanToGlobals === 'function') syncActivePlanToGlobals();
   }
@@ -21112,7 +21081,7 @@ function renderDuenger() {
         <div style="font-size:10px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">🧪 Dein Düngeplan</div>
         <div style="font-size:18px;font-weight:700;color:var(--text);line-height:1.2">${heroPlanName}</div>
         <div style="font-size:11px;color:var(--text-muted);margin-top:4px">${heroProdCount} Produkt${heroProdCount === 1 ? '' : 'e'}${heroSub ? ' · ' + heroSub : ''}</div>
-        ${activePlan && activePlan._gehobenAuf ? `<div style="font-size:11px;color:var(--yellow);margin-top:6px;line-height:1.45">Am ${fmtDE(activePlan._gehobenAuf.am)} auf dein Plan-Blatt ${activePlan._gehobenAuf.blatt} gebracht: CalMag, Epsom, Bio-Grow und Alg-A-Mic nach dem Blatt, EC-Korridore neu, Alfa Boost entfernt. Schon eingetragene Tage behalten ihre Dosen.</div>` : ''}
+        ${_rainbowHinweis(activePlan)}
         <div style="font-size:11px;color:var(--text-muted);margin-top:3px">${heroDoseNote}</div>
         ${S.beginnerMode ? `<div style="font-size:11px;color:var(--green);margin-top:8px;line-height:1.5">✓ Die App sagt dir jeden Tag automatisch, was und wie viel du mischst — hier musst du nichts einstellen.</div>` : ''}
       </div>`
@@ -21298,11 +21267,101 @@ const RAINBOW_V10_SCHEDULE = {
   13: {'CalMag':0.5,'Epsom Salz':0.2,'Bio-Bloom':0.5},
   14: {}, 15: {},
 };
+/** (v1.5.311) Ist der Wochenplan dieser Rainbow-Kopie (nach Produktnamen) genau der übergebene? */
+function _rainbowWochenplanGleich(plan, soll) {
+  if (!plan || plan.presetKey !== 'rainbow_auto' || !Array.isArray(plan.products) || !_istObjekt(plan.schedule) || !soll) return false;
+  const nameVon = {};
+  plan.products.forEach(p => { if (p && p.id) nameVon[p.id] = p.name; });
+  const gleich = (x, y) => {
+    const kx = Object.keys(x).sort(), ky = Object.keys(y).sort();
+    return kx.length === ky.length && kx.every((k, i) => k === ky[i] && Math.abs(x[k] - y[k]) < 1e-9);
+  };
+  for (let w = 1; w <= 15; w++) {
+    const o = {};
+    const woche = plan.schedule['w' + w];
+    if (woche != null && !_istObjekt(woche)) return false;
+    Object.entries(woche || {}).forEach(([id, v]) => { if (nameVon[id] && parseFloat(v) > 0) o[nameVon[id]] = parseFloat(v); });
+    if (!gleich(o, soll[w] || {})) return false;
+  }
+  return true;
+}
+/**
+ * (v1.5.302/311) Bringt eine Rainbow-Kopie auf die Vorlage (Blatt v2.1): Wochenplan über die Produkt-IDs der Kopie,
+ * Mischreihenfolge, Misch- und Drain-Info, Rückgrat und EC-Ziele. Produktnotizen nur, wo noch die Vorlagen-Notiz steht
+ * (sie beginnt mit ①–⑨) — eine eigene Notiz bleibt. Alfa Boost fällt nur weg, wenn kein Eintrag darauf zeigt.
+ * @returns {{alfaWeg:boolean}|null}
+ */
+function _rainbowKopieHeben(plan) {
+  const pr = (typeof FERT_PRESETS !== 'undefined') ? FERT_PRESETS.rainbow_auto : null;
+  if (!pr || !plan || plan.presetKey !== 'rainbow_auto' || !Array.isArray(plan.products)) return null;
+  const idVon = {};
+  plan.products.forEach(p => { if (p && p.id) idVon[p.name] = p.id; });
+  const neu = {};
+  Object.entries(pr.schedule).forEach(([w, doses]) => {
+    const m = {};
+    Object.entries(doses || {}).forEach(([n, d]) => { if (idVon[n]) m[idVon[n]] = d; });
+    neu['w' + w] = m;
+  });
+  plan.schedule = neu;
+  plan.products.forEach(p => {
+    const v = p && pr.products.find(x => x.name === p.name);
+    if (v && (!p.note || /^[①-⑨]/.test(String(p.note)))) p.note = v.note;
+  });
+  const alfa = plan.products.find(p => p && p.name === 'Alfa Boost');
+  const alfaWeg = !!alfa && !_produktInEintraegen(alfa.id);
+  if (alfaWeg) plan.products = plan.products.filter(p => p !== alfa);
+  plan.mixOrder = pr.mixOrder.slice();
+  plan.mixInfo = pr.mixInfo;
+  plan.drainInfo = pr.drainInfo;
+  if (plan.name === 'Rainbow Düngeplan (v1.0)') plan.name = pr.name;
+  _planRueckgratAuffrischen(plan, pr);
+  plan._gehobenAuf = { blatt: 'v2.1', am: todayISO(), alfaWeg, alfaBleibt: !!alfa && !alfaWeg };
+  return { alfaWeg };
+}
+/** (v1.5.311) Knopf im Düngeplan: eine selbst geänderte Kopie auf Blatt v2.1 bringen — nur nach Rückfrage. */
+async function rainbowKopieAufBlatt(planId) {
+  const plan = (S.fertPlans || []).find(p => p.id === planId);
+  if (!plan) return;
+  const ok = await customConfirm('Auf dein Plan-Blatt v2.1 bringen?',
+    'Wochenplan, Mischreihenfolge, Misch- und Drain-Info und die EC-Ziele kommen dann aus deinem Blatt v2.1. Deine eigenen Änderungen an den Dosen dieser Kopie gehen dabei verloren — schon eingetragene Tage behalten die Dosen, die bei ihnen gespeichert sind.',
+    'Auf v2.1 bringen', 'var(--orange)');
+  if (!ok) return;
+  _rainbowKopieHeben(plan);
+  if (S._activePlanId === plan.id && typeof syncActivePlanToGlobals === 'function') syncActivePlanToGlobals();
+  saveS();
+  toast('✓ Auf Blatt v2.1 gebracht');
+  if (typeof renderDuenger === 'function') renderDuenger();
+}
+/** (v1.5.311) Den Hinweis „auf Blatt v2.1 gebracht" wegtippen. */
+function rainbowHinweisZu(planId) {
+  const plan = (S.fertPlans || []).find(p => p.id === planId);
+  if (!plan || !plan._gehobenAuf) return;
+  plan._gehobenAuf.zu = true;
+  saveS();
+  if (typeof renderDuenger === 'function') renderDuenger();
+}
+
 /** (v1.5.302) Zeigt irgendein Eintrag auf dieses Produkt (Dosis, Dosis-Bezug, Misch-Häkchen)? */
 function _produktInEintraegen(prodId) {
   if (!prodId) return false;
   return Object.values(S.entries || {}).some(e => e && _istObjekt(e.cycleData) && Object.values(e.cycleData).some(cd =>
     cd && ['doses', 'doseRef', 'mixChecks'].some(f => _istObjekt(cd[f]) && Object.prototype.hasOwnProperty.call(cd[f], prodId))));
+}
+
+/** (v1.5.311) Hinweis in der Kopfkarte des Düngeplans für Rainbow-Kopien. */
+function _rainbowHinweis(plan) {
+  if (!plan || plan.presetKey !== 'rainbow_auto') return '';
+  const g = plan._gehobenAuf;
+  if (g && !g.zu) {
+    const alfa = g.alfaWeg ? ', Alfa Boost entfernt' : (g.alfaBleibt ? '; Alfa Boost bleibt in der Liste, weil Einträge darauf zeigen' : '');
+    return `<div style="font-size:11px;color:var(--yellow);margin-top:6px;line-height:1.45;display:flex;gap:8px;align-items:flex-start"><span style="flex:1">Am ${fmtDE(g.am)} auf dein Plan-Blatt ${g.blatt} gebracht: CalMag, Epsom, Bio-Grow und Alg-A-Mic nach dem Blatt, EC-Korridore neu${alfa}. Tage, bei denen schon Dosen gespeichert sind, behalten sie; Tage ohne gespeicherte Dosis zeigen die neuen Mengen.</span><button onclick="rainbowHinweisZu('${plan.id}')" aria-label="Hinweis schließen" style="background:transparent;border:none;color:var(--text-muted);font-size:14px;cursor:pointer;padding:0 2px">✕</button></div>`;
+  }
+  // Nur alte Kopien aus der Zeit vor Blatt v2.1 (Name „(v1.0)“) — wer eine v2.1-Kopie selbst anpasst (etwa das Ceiling
+  // einträgt, wie die Notiz es verlangt), bekommt keinen Dauerhinweis.
+  if (!g && plan.name === 'Rainbow Düngeplan (v1.0)' && !_rainbowWochenplanGleich(plan, (FERT_PRESETS.rainbow_auto || {}).schedule)) {
+    return `<div style="font-size:11px;color:var(--yellow);margin-top:6px;line-height:1.45">Diese Kopie weicht von deinem Plan-Blatt v2.1 ab — sie trägt eigene Änderungen und wurde deshalb nicht von selbst angepasst. Die Wochen-Tipps kommen schon vom Blatt v2.1, die Dosen dieser Kopie nicht.<button onclick="rainbowKopieAufBlatt('${plan.id}')" style="display:block;width:100%;margin-top:6px;background:var(--card);border:0.5px solid var(--border);border-radius:7px;padding:8px;font-size:11px;color:var(--text-sub);cursor:pointer;font-family:var(--font)">Auf Blatt v2.1 bringen …</button></div>`;
+  }
+  return '';
 }
 
 function _planRueckgratAuffrischen(plan, preset) {

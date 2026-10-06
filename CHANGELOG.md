@@ -2,6 +2,34 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-06 — v1.5.311
+
+- **Nachbesserungen aus der Prüfung von v1.5.298–302** (ein Skeptiker hat die fünf Versionen vor dem Hochladen gegen
+  das Blatt v2.1 nachgerechnet und freigegeben: alle Dosen Woche 1–15 und alle EC-Korridore stimmen, die Plan-Wochen
+  treffen Patricks Wochenwechsel, kein Datenverlust in rund 25 Migrations-Lagen, Run 01 über 135 Tage unverändert).
+  Vier kleinere Punkte waren offen, alle behoben:
+- **Wochen-Tipp 8 (Ceiling-Test)** sagte noch aus v1.0 „Erste Gelbfärbung → einen Schritt zurück". Das Blatt v2.1 ist
+  strenger: Spitzenbrand zählt nur, wenn der Topf nicht trocken war und nicht nur die lichtnächsten Spitzen betroffen
+  sind; dazu kommt ein zweites Abbruchbild (hellgelbe junge Blätter mit grünen Adern oder kurze Abstände zwischen den
+  Blattknoten — Phosphor verdrängt Zink und Eisen, `ANBAU.md` 6.2), und je Stufe mindestens zwei Güsse. Gelb allein
+  kann auch Seneszenz sein (Regel 3).
+- **Der Rückweg für Bio-Grow fehlte in den Tipps** — laut Blatt die einzige Korrektur für zu wenig Stickstoff: Läuft eine
+  Vergilbung schnell, fleckig oder etagenweise und stockt die Blüte, Bio-Grow auf den nächsthöheren Wert (Woche 6–10:
+  1,0, ab Woche 11: 0,75). Steht jetzt in Tipp 6 und 11; die Ablauf-Info verweist darauf. Tipp 11 sagt zum steigenden
+  Drain-EC nicht mehr „ist Mineralisierung", sondern nennt beide Fälle mit Unterscheidung wie das Blatt.
+- **Der Hinweis „auf dein Plan-Blatt v2.1 gebracht"** sagte „Alfa Boost entfernt" auch dann, wenn es blieb (weil ein
+  Eintrag darauf zeigt), und „Schon eingetragene Tage behalten ihre Dosen" stimmte nur für Tage mit gespeicherter Dosis.
+  Jetzt sagt er beides genau und lässt sich wegtippen. Eigene Produktnotizen überschreibt das Heben nicht mehr — nur
+  noch die Vorlagen-Notizen (sie beginnen mit ①–⑨).
+- **Eine selbst geänderte v1.0-Kopie** blieb zu Recht unangetastet, sagte es aber nirgends — während die Wochen-Tipps
+  schon vom Blatt v2.1 kamen und den alten Dosen widersprachen. Jetzt steht in der Kopfkarte „Diese Kopie weicht von
+  deinem Plan-Blatt v2.1 ab" mit dem Knopf „Auf Blatt v2.1 bringen …" (nach Rückfrage; eigene Dosen gehen dabei
+  verloren). Eine v2.1-Kopie, in die man das Ceiling einträgt, bekommt diesen Hinweis nicht.
+- Nicht übernommen: Der Skeptiker hielt „Ein niedriges Verhältnis ist hier kein Grund nachzudüngen" für nicht belegt —
+  der Satz steht wörtlich im Blatt (Steuerung, Drain-EC ÷ Zulauf-EC).
+- Test: `test_zyklus2.js` Abschnitt N (10 Prüfungen, beide Zeitzonen; fällt auf v1.5.310 um).
+
+
 ## 2026-10-06 — v1.5.310
 
 - **Der Assistent passte nicht zu Run 02** (gemessen beim Durchspielen mit Patricks Daten). Er fragte nicht nach der

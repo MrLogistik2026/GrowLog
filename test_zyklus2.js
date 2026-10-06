@@ -203,7 +203,6 @@ function pruef(name, bedingung, info) {
 
   // ===== E: Rainbow-Vorlage auf Blatt v2.1, unveränderte Kopien mitgehoben (v1.5.302) =====
   console.log('\nE - Rainbow-Vorlage und gespeicherte Kopien');
-  {
     // Eine Kopie, wie v1.5.297 sie beim Laden der Vorlage anlegte (Wochenplan v1.0, mit Alfa Boost)
     const V10 = {
       1:  {'CalMag':0.3,'POWHUMUS':2.5,'Alg-A-Mic':2.0},
@@ -236,6 +235,7 @@ function pruef(name, bedingung, info) {
       return JSON.stringify({ name: p.name, produkte: p.products.map(x => x.name), w, gehoben: p._gehobenAuf || null, mix: p.mixOrder }); })()`));
     const vorlage = (a) => JSON.parse(a.E('JSON.stringify(FERT_PRESETS.rainbow_auto.schedule)'));
     const gleich = (x, y) => JSON.stringify(Object.keys(x).sort().map(k => [k, x[k]])) === JSON.stringify(Object.keys(y).sort().map(k => [k, y[k]]));
+  {
 
     const a = await load(kopie());
     pruef('E0 Start ohne JS-Fehler', a.errors.length === 0, a.errors[0]);
@@ -496,6 +496,49 @@ function pruef(name, bedingung, info) {
       { pc: c.plantCount, n: (c.plants || []).length, s: c.startDate, t: c.potSize });
     pruef('M6 Run 01 unberührt', a.E('S.cycles[0].plants.length') === 5 && a.E('getPotSize(S.cycles[0])') === 11);
     pruef('M7 keine JS-Fehler', a.errors.length === 0, a.errors[0]);
+  }
+
+  // ===== N: Nachbesserungen aus der Prüfung (v1.5.311) =====
+  console.log('\nN - Rainbow: Tipps, Hinweis, eigene Notizen, geänderte Kopien');
+  {
+    const a = await load(kopie((st, id) => {
+      st.fertPlans.find(p => p.id === 'fp_rb').products.find(p => p.name === 'CalMag').note = 'MEINE NOTIZ';
+      st.fertPlans.find(p => p.id === 'fp_rb').products.find(p => p.name === 'POWHUMUS').note = '④ alte Vorlagen-Notiz';
+      const iso = '2026-10-01'; st.entries[iso] = st.entries[iso] || {}; st.entries[iso].cycleData = st.entries[iso].cycleData || {};
+      st.entries[iso].cycleData[st.cycles[0].id] = { mixChecks: { [id['Alfa Boost']]: true } };
+    }));
+    const pr = JSON.parse(a.E('JSON.stringify(FERT_PRESETS.rainbow_auto)'));
+    pruef('N1 Tipp 8: Spitzenbrand zählt nur bei nicht trockenem Topf und nicht nur an den lichtnächsten Spitzen, dazu das Phosphor-Bild',
+      /nicht nur die lichtnächsten Spitzen/.test(pr.weekFocus[8].tip) && /Phosphor verdrängt Zink und Eisen/.test(pr.weekFocus[8].tip) && !/Erste Gelbfärbung/.test(pr.weekFocus[8].tip));
+    pruef('N2 Tipp 6 nennt den Rückweg für Bio-Grow (1,0 bzw. 0,75), Ablauf-Info verweist darauf',
+      /Rückweg für Bio-Grow/.test(pr.weekFocus[6].tip) && /auf 1,0, ab Woche 11 auf 0,75/.test(pr.weekFocus[6].tip) && /Rückweg für Bio-Grow/.test(pr.drainInfo));
+    pruef('N3 Tipp 11: Drain-EC mit Unterscheidung statt „ist Mineralisierung"', /spricht das für Nachlieferung/.test(pr.weekFocus[11].tip) && !/ist Mineralisierung, keine Überdüngung/.test(pr.weekFocus[11].tip));
+    const pl = JSON.parse(a.E("JSON.stringify(S.fertPlans.find(p => p.id === 'fp_rb'))"));
+    pruef('N4 eigene Produktnotiz bleibt, Vorlagen-Notiz wird ersetzt',
+      pl.products.find(p => p.name === 'CalMag').note === 'MEINE NOTIZ' && /^④ Konzentrat/.test(pl.products.find(p => p.name === 'POWHUMUS').note));
+    a.E("switchFertPlan('fp_rb'); renderDuenger()");
+    let scr = (a.window.document.getElementById('scr-duenger')?.textContent || '').replace(/\s+/g, ' ');
+    pruef('N5 Alfa Boost blieb (Eintrag zeigt darauf) — der Hinweis sagt das, statt „entfernt"', /Alfa Boost bleibt in der Liste/.test(scr) && !/Alfa Boost entfernt/.test(scr), scr.slice(0, 300));
+    a.E("rainbowHinweisZu('fp_rb')");
+    scr = (a.window.document.getElementById('scr-duenger')?.textContent || '').replace(/\s+/g, ' ');
+    pruef('N6 der Hinweis lässt sich wegtippen', !/auf dein Plan-Blatt v2\.1 gebracht/.test(scr));
+    // Eine selbst geänderte v1.0-Kopie: Hinweis und Knopf
+    const b = await load(kopie((st, id) => { st.fertPlans.find(p => p.id === 'fp_rb').schedule.w9[id['Bio-Bloom']] = 1.35; }));
+    b.window.customConfirm = () => Promise.resolve(true);
+    b.E("switchFertPlan('fp_rb'); renderDuenger()");
+    const sb = (b.window.document.getElementById('scr-duenger')?.textContent || '').replace(/\s+/g, ' ');
+    pruef('N7 eine selbst geänderte v1.0-Kopie sagt, dass sie abweicht, und bietet das Heben an', /weicht von deinem Plan-Blatt v2\.1 ab/.test(sb) && /Auf Blatt v2\.1 bringen/.test(sb));
+    await b.E("rainbowKopieAufBlatt('fp_rb')");
+    const rb = lies(b);
+    pruef('N8 nach dem Knopf: Dosen vom Blatt (CalMag Woche 4 0,3, Bio-Bloom Woche 9 1,2), Name v2.1', rb.w[4]['CalMag'] === 0.3 && rb.w[9]['Bio-Bloom'] === 1.2 && rb.name === 'Rainbow Düngeplan (v2.1)', rb.name);
+    // Eine v2.1-Kopie mit eingetragenem Ceiling bekommt keinen Dauerhinweis
+    const c = await load();
+    c.window.customConfirm = () => Promise.resolve(true);
+    await c.E("loadPreset('rainbow_auto')");
+    c.E("(() => { const p = S.fertPlans.find(x => x.presetKey === 'rainbow_auto'); const bb = p.products.find(x => x.name === 'Bio-Bloom').id; p.schedule.w10[bb] = 1.35; switchFertPlan(p.id); renderDuenger(); })()");
+    const sc = (c.window.document.getElementById('scr-duenger')?.textContent || '').replace(/\s+/g, ' ');
+    pruef('N9 eine v2.1-Kopie mit eingetragenem Ceiling: kein Hinweis „weicht ab"', !/weicht von deinem Plan-Blatt/.test(sc));
+    pruef('N10 keine JS-Fehler', a.errors.length + b.errors.length + c.errors.length === 0, a.errors[0] || b.errors[0] || c.errors[0]);
   }
 
   console.log('\n' + ok + ' OK, ' + fail + ' FEHL');
