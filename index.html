@@ -4593,7 +4593,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.297';
+const APP_VERSION = 'v1.5.298';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -12964,10 +12964,36 @@ function getPlantById(cycleId, plantId) {
  * @param {object} props { label?, strain?, color?, notes? }
  * @returns {object|null} neues Plant-Objekt oder null bei Fehler
  */
+/**
+ * (v1.5.298) Legt anonyme Pflanzen an, bis der Zyklus n Pflanzen hat; gibt die Zahl der neuen zurück.
+ * Vorher entstand die Pflanzenliste erst beim nächsten App-Start (Migration v1.0.30). Bis dahin stand nur die Zahl da —
+ * und der erste Tipp auf „Pflanze mit Strain-Name hinzufügen" legte eine Liste mit EINER Pflanze an und setzte die
+ * Pflanzenzahl still von 6 auf 1. Alle Mengen liefen danach für eine Pflanze (Prüfer, 06.10.2026, beim Anlegen von Run 02).
+ */
+function _pflanzenAuffuellen(c, n, addedAt) {
+  if (!Array.isArray(c.plants)) c.plants = [];
+  const ziel = Math.max(1, parseInt(n) || 1);
+  let neu = 0;
+  while (c.plants.length < ziel) {
+    c.plants.push({
+      id: _genPlantId(),
+      label: 'Pflanze ' + (c.plants.length + 1),
+      strain: '',
+      color: '',
+      addedAt: addedAt || c.startDate || todayISO(),
+      notes: '',
+    });
+    neu++;
+  }
+  c.plantCount = c.plants.length;
+  return neu;
+}
+
 function addPlant(cycleId, props = {}) {
   const c = S.cycles.find(x => x.id === cycleId);
   if (!c) return null;
-  if (!Array.isArray(c.plants)) c.plants = [];
+  // (v1.5.298) Fehlt die Liste, zuerst die schon gezählten Pflanzen anlegen — sonst ersetzt die neue Pflanze sie alle.
+  if (!Array.isArray(c.plants)) _pflanzenAuffuellen(c, c.plantCount, c.startDate);
   const plant = {
     id: _genPlantId(),
     label: props.label || ('Pflanze ' + (c.plants.length + 1)),
@@ -23793,10 +23819,20 @@ function setCycleMedium(v) {
 // kapseln das.
 
 function _addPlantFromSettings(cycleId) {
-  const plant = addPlant(cycleId);
-  if (!plant) return;
-  // draft.plantCount synchron halten damit der Counter im UI passt
   const c = S.cycles.find(x => x.id === cycleId);
+  if (!c) return;
+  // (v1.5.298) Steht im Zähler schon eine größere Zahl, als Pflanzen angelegt sind, will der Tipp sie benennen —
+  // nicht eine weitere dazulegen. Dann die fehlenden anlegen und die Liste aufklappen.
+  const imZaehler = (typeof draft !== 'undefined' && draft && draft.id === cycleId) ? (parseInt(draft.plantCount) || 0) : 0;
+  const soll = Math.max(imZaehler, parseInt(c.plantCount) || 1);
+  const da = Array.isArray(c.plants) ? c.plants.length : 0;
+  if (soll > da) {
+    _pflanzenAuffuellen(c, soll, todayISO());
+    if (!S._setUI) S._setUI = {};
+    S._setUI.plants = true;
+    saveS();
+  } else if (!addPlant(cycleId)) return;
+  // draft.plantCount synchron halten damit der Counter im UI passt
   if (c && typeof draft !== 'undefined' && draft.id === cycleId) {
     draft.plantCount = c.plants.length;
   }
@@ -23944,6 +23980,8 @@ async function saveDraft() {
   // PLANT-SYNC: wenn plantCount im Counter geändert wurde, Plants-Array anpassen.
   // Größer → anonyme Plants hinzufügen ('Pflanze N'). Kleiner → von hinten kürzen
   // (letzte zuerst). Bei manueller Editor-Bearbeitung läuft das schon synchron.
+  // (v1.5.298) Ohne Liste wurde der Abgleich übersprungen: Zähler 6, aber keine Pflanze zum Benennen.
+  if (!Array.isArray(c.plants)) c.plants = [];
   if (Array.isArray(c.plants)) {
     const target = Math.max(1, parseInt(c.plantCount) || 1);
     if (c.plants.length < target) {
@@ -25925,6 +25963,8 @@ function addCyc(overrides) {
   // Neustart still drei Tage mehr bis zur Ernte. flushWetDays(c) liest die Gesamtdauer als Summe — genau das bleibt stehen.
   c.iceDryDays = iceDryDays(c);
   c.flushWetDays = flushWetDays(c);
+  // (v1.5.298) Die Pflanzenliste gleich anlegen, nicht erst beim nächsten Start — siehe _pflanzenAuffuellen.
+  _pflanzenAuffuellen(c, c.plantCount, c.startDate);
   S.cycles.push(c);
   // (v1.5.270) Den Spülstart schon jetzt auf den Gießrhythmus einrasten, wie es der App-Start ohnehin tut (v1.5.80) — sonst
   // zeigte der neue Zyklus heute einen anderen Erntetag als ab dem nächsten Öffnen.

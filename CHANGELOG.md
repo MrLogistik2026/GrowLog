@@ -2,6 +2,21 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-06 — v1.5.298
+
+- **Die Pflanzenzahl sprang still auf 1, sobald man die erste Pflanze benennen wollte** (gefunden beim Durchspielen von
+  Run 02 mit Patricks Daten). Ein neuer Zyklus bekam nur die Zahl `plantCount`, die Pflanzenliste entstand erst beim
+  nächsten App-Start. Wer direkt nach dem Assistenten in den Einstellungen 6 Pflanzen einstellte, sah deshalb nur den
+  Hinweis „Mehrere Pflanzen mit verschiedenen Strains? Pflanze mit Strain-Name hinzufügen" — und genau dieser Tipp legte
+  eine Liste mit **einer** Pflanze an und setzte die Zahl von 6 auf 1. Alle Gieß- und Düngermengen liefen danach für
+  eine Pflanze, ohne Meldung.
+- **Jetzt** hat ein neuer Zyklus seine Pflanzenliste sofort (`_pflanzenAuffuellen`, derselbe Aufbau wie die Migration
+  beim Start). Fehlt die Liste trotzdem — etwa bei einem Zyklus aus einer älteren Version —, legen „Pflanze hinzufügen"
+  und „Sichern" zuerst die schon gezählten Pflanzen an. Steht im Zähler schon eine größere Zahl, als Pflanzen angelegt
+  sind, legt der Tipp die fehlenden an und klappt die Liste zum Benennen auf, statt eine weitere dazuzulegen.
+- Test: `test_zyklus2.js` Abschnitt A (13 Prüfungen, beide Zeitzonen; fällt auf v1.5.297 um).
+
+
 ## 2026-09-29 — v1.5.297
 
 - **Der Import prüfte die Datei nicht und ersetzte den Stand, bevor er wusste, ob er ihn laden kann** (Hebel 3,
