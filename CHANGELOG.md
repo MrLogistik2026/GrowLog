@@ -2,6 +2,19 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-06 — v1.5.299
+
+- **Die Topfgröße aus dem Assistenten landete in der allgemeinen Vorgabe statt am Zyklus** (gefunden beim Durchspielen
+  von Run 02). `addCyc` schrieb sie nach `S.potSize` (Kommentar im Code: „TODO: per-cycle field"). Ein frisch angelegter
+  Zyklus hatte also keinen eigenen Wert und las die Vorgabe — legte man danach einen weiteren Zyklus mit 11 L an, rechnete
+  der erste still mit 11 statt 15 L. An der Topfgröße hängen das nutzbare Wasser (`ANBAU.md` 7.5), jeder
+  Hebe-Test-Prozentwert und jede Gießmenge; beim 15-L-Topf sind 11 L rund 27 % zu wenig Wasser.
+- **Jetzt** steht die Topfgröße am Zyklus fest — die aus dem Assistenten, sonst die Vorgabe zum Zeitpunkt des Anlegens
+  (dieselbe Regel wie v1.5.270 für Spültage und Dryback). Die Vorgabe in den App-Einstellungen bleibt die Vorgabe für
+  neue Zyklen. Bestehende Zyklen sind unverändert.
+- Test: `test_zyklus2.js` Abschnitt B (7 Prüfungen, beide Zeitzonen; 4 fallen auf v1.5.298 um).
+
+
 ## 2026-10-06 — v1.5.298
 
 - **Die Pflanzenzahl sprang still auf 1, sobald man die erste Pflanze benennen wollte** (gefunden beim Durchspielen von

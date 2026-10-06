@@ -3592,7 +3592,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.298';
+const APP_VERSION = 'v1.5.299';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -24955,8 +24955,11 @@ function addCyc(overrides) {
     // Beeinflusst getAction (saettigung vs. giess_anz an Tag 1) und Auto-Fill-Mengen.
     startMethod: o.startMethod || 'saturated',
   };
-  // Pot size: if wizard supplied one, save globally (TODO: per-cycle field in later iteration)
-  if (o.potSize) S.potSize = o.potSize;
+  // (v1.5.299) Die Topfgröße gehört dem Zyklus. Vorher schrieb der Assistent sie in die allgemeine Vorgabe S.potSize:
+  // Ein Zyklus ohne eigenen Wert (also jeder frisch angelegte) bekam damit still die Topfgröße des nächsten neuen
+  // Zyklus — 15 L wurden zu 11 L, und mit ihnen jeder Hebe-Test-Prozentwert und jede Gießmenge. Jetzt steht der Wert
+  // am Zyklus fest, wie v1.5.270 Spültage und Dryback festschreibt; die allgemeine Vorgabe bleibt die Vorgabe.
+  c.potSize = (o.potSize && o.potSize > 0) ? o.potSize : (S.potSize || 11);
   // (v1.5.270) Spültage und Hard-Dryback getrennt festschreiben. Ohne `flushWetDays` las die Umstellung aus v1.5.75 beim
   // nächsten Start die Gesamtdauer (8 Tage) als Spültage und hängte 3 Tage Dryback an: Jeder neue Zyklus bekam beim ersten
   // Neustart still drei Tage mehr bis zur Ernte. flushWetDays(c) liest die Gesamtdauer als Summe — genau das bleibt stehen.

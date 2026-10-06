@@ -124,6 +124,24 @@ function pruef(name, bedingung, info) {
     pruef('A12 keine JS-Fehler', a.errors.length === 0, a.errors[0]);
   }
 
+  // ===== B: Die Topfgröße gehört dem Zyklus (v1.5.299) =====
+  console.log('\nB - Topfgröße eines neuen Zyklus');
+  {
+    const a = await load();
+    const vorgabe = a.E('S.potSize');
+    a.E("addCyc({ name: 'Groß', potSize: 15 })");
+    const gross = "S.cycles.find(c => c.name === 'Groß')";
+    pruef('B1 der Zyklus rechnet mit seinen 15 L', a.E(`getPotSize(${gross})`) === 15);
+    pruef('B2 und hat sie selbst gespeichert', a.E(`${gross}.potSize`) === 15);
+    pruef('B3 die allgemeine Vorgabe bleibt, wie sie war', a.E('S.potSize') === vorgabe, { vorher: vorgabe, nachher: a.E('S.potSize') });
+    a.E("addCyc({ name: 'Klein', potSize: 11 })");
+    pruef('B4 ein danach angelegter 11-L-Zyklus ändert die 15 L nicht', a.E(`getPotSize(${gross})`) === 15, a.E(`getPotSize(${gross})`));
+    a.E("addCyc({ name: 'Ohne' })");
+    pruef('B5 ohne Angabe: die Vorgabe wird am Zyklus festgehalten', a.E("S.cycles.find(c => c.name === 'Ohne').potSize") === vorgabe);
+    pruef('B6 Run 01 behält seinen Topf', a.E('getPotSize(S.cycles[0])') === 11);
+    pruef('B7 keine JS-Fehler', a.errors.length === 0, a.errors[0]);
+  }
+
   console.log('\n' + ok + ' OK, ' + fail + ' FEHL');
   if (fail) process.exit(1);
 })().catch((e) => { console.log('FEHLER: ' + (e && e.stack || e)); process.exit(1); });

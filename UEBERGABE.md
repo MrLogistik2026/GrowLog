@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.298** · index.html 2,49 MB · 752 Funktionen
+Stand: **v1.5.299** · index.html 2,49 MB · 752 Funktionen
 Zuletzt fortgeschrieben am 06.10.2026 (Run 02 neben Run 01 — Abschnitt 0o, „Stand Run 02"). Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
@@ -194,6 +194,7 @@ Abgearbeitet wird die Liste in `.claude/notizen/REIHENFOLGE.md` von oben.
 abgeschlossenen Run 01. Vier Prüfer und ein Skeptiker (Sonnet) haben den Weg am 06.10.2026 durchgespielt, ohne etwas zu ändern:
 kein Blocker, aber Fehler, die nur mit zwei Zyklen oder direkt nach dem Anlegen auftreten. Abgearbeitet in dieser Reihenfolge:
 - v1.5.298: Ein neuer Zyklus hat seine Pflanzenliste sofort; „Pflanze hinzufügen" setzt die Zahl nicht mehr von 6 auf 1 (`_pflanzenAuffuellen`).
+- v1.5.299: Die Topfgröße steht am Zyklus fest, statt in der allgemeinen Vorgabe — ein späterer 11-L-Zyklus ändert die 15 L nicht mehr.
 
 **Bei der nächsten Bewertung** dieselbe Skala, dieselben Kategorie-IDs und dieselben Regeln aus `auftrag.md` nehmen und
 die Noten gegen diese Tabelle stellen.
