@@ -65,7 +65,7 @@ function pruef(name, bedingung, info) {
 const SATZ = (aktion, von, bis, pflanzen) => `(function(){
   S.cycles = []; S.entries = {}; S.beginnerMode = true;
   const c = addCyc({ name: 'Einsteiger', seedType: 'auto', medium: 'erde' });
-  c.potSize = 11; c.plantCount = ${pflanzen};
+  c.potSize = 11; /* (v1.5.313) Seit v1.5.298 hat ein neuer Zyklus seine Pflanzenliste sofort — die Zahl allein ändert sie nicht mehr, deshalb wie im Bildschirm über die Liste. */ _pflanzenAuffuellen(c, ${pflanzen});
   for (let d = ${von}; d <= ${bis}; d++) {
     c.startDate = isoPlus(todayISO(), -(d - 1));
     if (getAction(todayISO(), c) === ${JSON.stringify(aktion)}) {

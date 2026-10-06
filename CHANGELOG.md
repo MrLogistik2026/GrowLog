@@ -11,6 +11,12 @@ Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 - **Jetzt** heißt es „sieben bis acht kurze Fragen — jede mit einer Empfehlung, die du übernehmen kannst"; die
   unbelegte Zeitangabe ist weg, und „Dein erster Grow" heißt „Dein erster Zyklus".
 - Test: `test_zyklus2.js` Abschnitt O (4 Prüfungen, beide Zeitzonen; zählt die Seiten selbst nach; fällt auf v1.5.311 um).
+- **Dazu, ohne Versionssprung (die App ist unverändert): drei Tests nachgezogen**, die der volle Lauf rot zeigte.
+  `test_einsteigersatz` und `test_iceflushtexte` setzten die Pflanzenzahl direkt (`c.plantCount = 3`) — seit v1.5.298 hat
+  ein neuer Zyklus seine Pflanzenliste sofort, und die Liste zählt; die Tests legen die Pflanzen jetzt über
+  `_pflanzenAuffuellen` an, wie der Bildschirm es tut. In der App setzt keine Stelle die Zahl ohne die Liste.
+  `test_kalender` (Abschnitt D) lief mit der echten Uhr: Seit Oktober steht Run 01 im Curing ohne Aufgaben, und es gab
+  keinen Tag mehr, an dem beide Zyklen etwas haben. Datum jetzt fest auf den 10.09.2026.
 
 
 ## 2026-10-06 — v1.5.311

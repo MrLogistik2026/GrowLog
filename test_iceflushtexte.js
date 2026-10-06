@@ -66,7 +66,7 @@ function pruef(name, bedingung, info) {
 const EISTAG = (pflanzen) => `(function(){
   S.cycles = []; S.entries = {}; S.beginnerMode = true;
   const c = addCyc({ name: 'Eis', seedType: 'auto', medium: 'erde' });
-  c.potSize = 11; c.plantCount = ${pflanzen};
+  c.potSize = 11; /* (v1.5.313) Seit v1.5.298 hat ein neuer Zyklus seine Pflanzenliste sofort — die Zahl allein ändert sie nicht mehr, deshalb wie im Bildschirm über die Liste. */ _pflanzenAuffuellen(c, ${pflanzen});
   for (let d = 70; d <= 120; d++) {
     c.startDate = isoPlus(todayISO(), -(d - 1));
     if (getAction(todayISO(), c) === 'ice') {
@@ -128,7 +128,7 @@ const EISTAG = (pflanzen) => `(function(){
   const EIS15 = (beginner) => `(function(){
     S.cycles = []; S.entries = {}; S.beginnerMode = ${beginner};
     const c = addCyc({ name: 'Eis15', seedType: 'auto', medium: 'erde' });
-    c.potSize = 15; c.plantCount = 2; c.targetAmber = 15;
+    c.potSize = 15; _pflanzenAuffuellen(c, 2); c.targetAmber = 15;
     for (let d = 70; d <= 130; d++) {
       c.startDate = isoPlus(todayISO(), -(d - 1));
       if (getAction(todayISO(), c) === 'ice') {

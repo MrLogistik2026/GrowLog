@@ -192,6 +192,9 @@ function pruef(name, bedingung, info) {
   {
     const r = JSON.parse(E(`(function(){
       var sicherung = JSON.stringify(S.cycles);
+      // (v1.5.313) Datum fest: Mit der echten Uhr steht Run 01 seit Oktober im Curing ohne Aufgaben, und es gab keinen
+      // Tag mehr, an dem beide Zyklen etwas haben — der Test fiel um, ohne dass sich die App geändert hatte.
+      setDebugDate('2026-09-10');
       try {
         var c = S.cycles[0];
         var c2 = JSON.parse(JSON.stringify(c));
@@ -200,7 +203,7 @@ function pruef(name, bedingung, info) {
         c2.startDate = isoPlus(todayISO(), -55);
         delete c2.offsetHistory;
         S.cycles.push(c2);
-        calDate = new Date(); goTo('cal');
+        calDate = iso12(todayISO()); goTo('cal');
         var zellen = [].slice.call(document.querySelectorAll('#cal-body .cal-grid > *'))
           .filter(function(z){ return /calClick/.test(z.getAttribute('onclick') || ''); });
         var nurZweiter = null, beide = null;
@@ -217,7 +220,7 @@ function pruef(name, bedingung, info) {
             titel: (z.querySelector('span[title]') || {}).title || '' };
         });
         return JSON.stringify({ nurZweiter: nurZweiter, beide: beide });
-      } finally { S.cycles = JSON.parse(sicherung); goTo('cal'); }
+      } finally { S.cycles = JSON.parse(sicherung); setDebugDate(''); goTo('cal'); }
     })()`));
 
     pruef('Es gibt einen Tag, an dem nur der zweite Grow etwas hat', !!r.nurZweiter, JSON.stringify(r));
