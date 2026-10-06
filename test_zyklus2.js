@@ -556,6 +556,25 @@ function pruef(name, bedingung, info) {
     pruef('O4 keine JS-Fehler', a.errors.length === 0, a.errors[0]);
   }
 
+  // ===== P: Ein abgeschlossener Zyklus verschwindet aus dem Gieß-Fahrplan (v1.5.313) =====
+  console.log('\nP - Gieß-Fahrplan nach dem Abschließen');
+  {
+    const a = await load(null, { datum: '2026-10-08' });
+    a.E("addCyc({ name: 'Anesia', startDate: '2026-09-20', potSize: 15, plantCount: 4 }); addCyc({ name: 'Mimosa', startDate: '2026-09-26', potSize: 15, plantCount: 2 })");
+    const mi = a.E("S.cycles.find(x => x.name === 'Mimosa').id");
+    a.E(`_gussplanZyklusId = '${mi}'`);
+    pruef('P0 Lage: im Fahrplan ist Mimosa angetippt', a.E('gussplanActiveCycle().name') === 'Mimosa');
+    a.window.customPrompt = () => Promise.resolve('2026-10-07');
+    await a.E(`archiveCycle('${mi}')`);
+    pruef('P1 nach dem Abschließen zeigt der Fahrplan Mimosa nicht mehr', a.E('gussplanActiveCycle().name') !== 'Mimosa' && a.E('_gussplanZyklusId') === null, a.E('gussplanActiveCycle().name'));
+    a.E(`selId = '${mi}'`);
+    pruef('P2 auch nicht, wenn Mimosa in den Einstellungen gewählt ist', a.E('gussplanActiveCycle().name') !== 'Mimosa');
+    a.E("S.cycles.forEach(c => { c.archived = true; c.active = false; }); goTo('gussplan')");
+    const t = (a.window.document.getElementById('gussplan-body')?.textContent || '').replace(/\s+/g, ' ');
+    pruef('P3 sind alle abgeschlossen: „Kein laufender Zyklus" statt eines geplanten Gusses', a.E('gussplanActiveCycle()') === null && /Kein laufender Zyklus/.test(t) && !/Nächster Guss/.test(t), t.slice(0, 160));
+    pruef('P4 keine JS-Fehler', a.errors.length === 0, a.errors[0]);
+  }
+
   console.log('\n' + ok + ' OK, ' + fail + ' FEHL');
   if (fail) process.exit(1);
 })().catch((e) => { console.log('FEHLER: ' + (e && e.stack || e)); process.exit(1); });

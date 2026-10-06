@@ -2,6 +2,18 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-07 — v1.5.313
+
+- **Ein abgeschlossener Zyklus blieb im Gieß-Fahrplan stehen und plante weiter** (Nachtprüfung vom 07.10.2026, vom
+  Skeptiker gemessen; Rückschritt aus v1.5.305/308). Wer im Fahrplan den Zyklus angetippt hatte und ihn danach abschloss,
+  sah weiter „Nächster Guss · heute … etwa 4200 ml". Waren alle Zyklen abgeschlossen, plante der Fahrplan für den in den
+  Einstellungen gewählten einen Guss in 17 Tagen. Das Abschlussdatum wirkt in `phase()`, der Fahrplan fragte aber
+  `getAction` und `nextGiessTag`.
+- **Jetzt** führt der Fahrplan nur laufende Zyklen; das Abschließen setzt die Fahrplan-Wahl zurück. Ist kein Zyklus mehr
+  aktiv, sagt er „Kein laufender Zyklus" und wo die Bilanz der abgeschlossenen steht, statt „Noch kein Zyklus".
+- Test: `test_zyklus2.js` Abschnitt P (5 Prüfungen, beide Zeitzonen; 3 fallen auf v1.5.312 um).
+
+
 ## 2026-10-06 — v1.5.312
 
 - **Der Assistent versprach „5 einfache Sachen — dauert keine Minute" und stellte acht Fragen** (offen seit der Bewertung

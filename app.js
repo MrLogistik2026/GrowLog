@@ -3593,7 +3593,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.312';
+const APP_VERSION = 'v1.5.313';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -20028,7 +20028,9 @@ function collectBloomGusse(c) {
  */
 let _gussplanZyklusId = null;
 function gussplanActiveCycle() {
-  const cs = S.cycles || [];
+  // (v1.5.313) Nur laufende Zyklen. Vorher blieb ein im Fahrplan angetippter Zyklus nach dem Abschließen stehen und plante
+  // „Nächster Guss · heute … 4200 ml" (Prüfer, 07.10.2026) — das Abschlussdatum wirkt in phase(), nicht in getAction.
+  const cs = (S.cycles || []).filter(x => x && !x.archived && x.active !== false);
   const angetippt = _gussplanZyklusId && cs.find(x => x.id === _gussplanZyklusId);
   if (angetippt) return angetippt;
   const heute = todayISO();
@@ -20036,7 +20038,7 @@ function gussplanActiveCycle() {
   const gewaehlt = cs.find(x => x.id === selId);
   if (gewaehlt && (!wachsend.length || wachsend.includes(gewaehlt))) return gewaehlt;
   return (wachsend.length ? _fuehrenderZyklus(wachsend, heute) : null)
-      || cs.find(x => x.active && !x.archived) || gewaehlt || cs[0] || null;
+      || cs[0] || null;
 }
 /** (v1.5.305) Bei mehreren Zyklen: welcher gemeint ist, und ein Tipp wechselt. */
 function _gussplanZyklusWahl(c) {
@@ -20065,10 +20067,10 @@ function renderGussplan() {
   if (!c) {
     body.innerHTML = `<div class="empty-state" style="padding:44px 22px">
       <div style="font-size:38px;opacity:0.3">💧</div>
-      <div style="font-size:14px;font-weight:700;color:var(--text-sub);margin:8px 0 6px">Noch kein Zyklus</div>
+      <div style="font-size:14px;font-weight:700;color:var(--text-sub);margin:8px 0 6px">${(S.cycles || []).length ? 'Kein laufender Zyklus' : 'Noch kein Zyklus'}</div>
       <div style="font-size:11px;color:var(--text-hint);line-height:1.6;max-width:290px;margin:0 auto 16px">
         Der Gieß-Fahrplan rechnet aus deinem Zyklus — Sorte, Topfgröße, Substrat und
-        Düngeplan —, wann du gießt und wie viel. Ohne Zyklus gibt es nichts zu rechnen.
+        Düngeplan —, wann du gießt und wie viel. ${(S.cycles || []).length ? 'Deine abgeschlossenen Zyklen stehen mit Bilanz in den Einstellungen; für neue Pflanzen leg einen neuen an.' : 'Ohne Zyklus gibt es nichts zu rechnen.'}
       </div>
       <div style="display:flex;flex-direction:column;gap:8px;align-items:stretch;max-width:260px;margin:0 auto">
         <button onclick="openCycleWizard('dash')" style="background:var(--green);border:none;border-radius:12px;padding:12px 18px;font-size:13px;color:#fff;cursor:pointer;font-family:var(--font);font-weight:700">🌱 Zyklus jetzt anlegen</button>
@@ -25423,6 +25425,7 @@ async function archiveCycle(id) {
   c.archived = true;
   c.active = false; // Deactivate from watering schedule
   c.endDate = ende;
+  if (_gussplanZyklusId === id) _gussplanZyklusId = null;   // (v1.5.313)
   if (typeof draft !== 'undefined' && draft && draft.id === id) { draft.archived = true; draft.active = false; draft.endDate = ende; }
   saveS();
   vibrate();

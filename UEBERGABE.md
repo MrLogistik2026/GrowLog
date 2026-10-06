@@ -1,7 +1,7 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.312** · index.html 2,51 MB · 764 Funktionen
-Zuletzt fortgeschrieben am 06.10.2026 (Run 02 neben Run 01 — Abschnitt 0o, „Stand Run 02"). Fünf Fehler behoben: Der Widerspruch zwischen
+Stand: **v1.5.313** · index.html 2,51 MB · 764 Funktionen
+Zuletzt fortgeschrieben am 07.10.2026 (Nachtprüfung und Run 02 — Abschnitt 0o, „Stand Run 02"). Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
 die Ernte-Kacheln widersprechen der Erntekarte nicht mehr (v1.5.99), und **die Düngermengen
@@ -208,6 +208,7 @@ kein Blocker, aber Fehler, die nur mit zwei Zyklen oder direkt nach dem Anlegen 
 - v1.5.310: Assistent fragt die Pflanzenzahl, nennt das Datum „Keimstart (Tag 1)" und bietet die Rainbow-Vorlage an.
 - v1.5.311: Prüfer-Nachbesserungen zu v1.5.302 — Ceiling-Test und Bio-Grow-Rückweg nach Blatt, genauer Hinweis nach dem Heben (wegtippbar), eigene Notizen bleiben, abweichende v1.0-Kopie mit Knopf „Auf Blatt v2.1 bringen" (`_rainbowKopieHeben`). **v1.5.298–302 vom Skeptiker freigegeben (06.10.2026).**
 - v1.5.312: Der Assistent nennt die echte Zahl seiner Fragen (sieben bis acht statt „5 einfache Sachen").
+- v1.5.313: Gieß-Fahrplan führt nur laufende Zyklen; ein abgeschlossener plant nicht mehr (Nachtprüfung 07.10.).
 
 **Bei der nächsten Bewertung** dieselbe Skala, dieselben Kategorie-IDs und dieselben Regeln aus `auftrag.md` nehmen und
 die Noten gegen diese Tabelle stellen.
