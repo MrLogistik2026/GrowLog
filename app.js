@@ -3593,7 +3593,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.313';
+const APP_VERSION = 'v1.5.314';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -14968,8 +14968,12 @@ const _KLIMA_RANG = { anzucht: 1, bloom: 2, flush: 3, ice: 4, harvest: 5 };
 function _fuehrenderZyklus(act, iso) {
   const liste = (act || []).filter(Boolean);
   if (!liste.length) return null;
+  // (v1.5.314) Wächst drinnen etwas, zählen Zyklen im Freien nicht fürs Zeltklima. Vorher führte ein Garten-Zyklus mit der
+  // höheren Tageszahl, und den Sämlingen im Zelt fehlte bei 85 % RLF die Pilzwarnung (Nachtprüfung 07.10.2026).
+  const drinnen = _wachsendeZyklen(liste, iso).filter(c => c.growType !== 'outdoor');
+  const kandidaten = drinnen.length ? drinnen : liste;
   let best = null, bestRang = 0, bestTag = -1;
-  liste.forEach(c => {
+  kandidaten.forEach(c => {
     const p = phase(iso, c);
     if (!p) return;
     const r = _KLIMA_RANG[p.ph] || (p.ernteOffen ? 5 : 0);   // stehende Pflanze nach dem Plan-Erntetag: wie Ernte
@@ -15036,7 +15040,7 @@ function _klimaEntryTeile(tRaw, rhRaw, act, iso) {
       vpdBox = `<div style="background:var(--teal-bg);border:0.5px solid var(--teal-bd);border-radius:10px;padding:10px 12px;font-size:12px;color:var(--text-muted)">Temp & RLF eingeben → VPD</div>`;
     }
     // (v1.5.303) Wachsen mehrere Zyklen im selben Zelt, steht dabei, nach welchem bewertet wird.
-    if (c0 && _wachsendeZyklen(act, iso).length > 1) {
+    if (c0 && _wachsendeZyklen(act, iso).filter(c => c.growType !== 'outdoor').length > 1) {   // (v1.5.314) nur Zyklen im Zelt
       vpdBox += `<div style="font-size:10px;color:var(--text-hint);margin-top:4px;line-height:1.4">Bewertet nach „${c0.name}“ — am weitesten entwickelt, also mit den strengsten Grenzen.</div>`;
     }
   }

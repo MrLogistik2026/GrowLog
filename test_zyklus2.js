@@ -575,6 +575,23 @@ function pruef(name, bedingung, info) {
     pruef('P4 keine JS-Fehler', a.errors.length === 0, a.errors[0]);
   }
 
+  // ===== Q: Ein Zyklus im Freien führt nicht das Zeltklima (v1.5.314) =====
+  console.log('\nQ - Zeltklima neben einem Outdoor-Zyklus');
+  {
+    const a = await load();
+    a.E("S.cycles[0].archived = true; S.cycles[0].active = false; S.cycles[0].endDate = '2026-09-13'");
+    a.E("addCyc({ name: 'Zelt', startDate: '2026-09-20', potSize: 15, plantCount: 4 }); S.cycles.find(x => x.name === 'Zelt').anzuchtDays = 26");
+    a.E("addCyc({ name: 'Garten', startDate: '2026-05-10', growType: 'outdoor', seedType: 'photo', potSize: 50, plantCount: 1 })");
+    pruef('Q0 Lage: der Garten-Zyklus hat die höhere Tageszahl', a.E("phase(todayISO(), S.cycles.find(x => x.name === 'Garten')).day") > a.E("phase(todayISO(), S.cycles.find(x => x.name === 'Zelt')).day"));
+    pruef('Q1 das Zeltklima richtet sich nach dem Zyklus im Zelt', a.E('_fuehrenderZyklus(active(), todayISO()).name') === 'Zelt', a.E('_fuehrenderZyklus(active(), todayISO()).name'));
+    const k = a.E("JSON.stringify(_klimaEntryTeile('24', '85', active(), todayISO()))");
+    pruef('Q2 bei 24 °C / 85 % kommt die Warnung für die Sämlinge, kein „Indoor-Idealwert" der Blüte', !/Indoor-Idealwert/.test(k) && /Anzucht|Sämling/.test(k) && !/Bewertet nach/.test(k), k.slice(0, 300));
+    const b = await load();
+    b.E("S.cycles[0].archived = true; S.cycles[0].active = false; addCyc({ name: 'Nur Garten', startDate: '2026-05-10', growType: 'outdoor', seedType: 'photo', potSize: 50, plantCount: 1 })");
+    pruef('Q3 nur draußen: dann führt der Garten-Zyklus', b.E('_fuehrenderZyklus(active(), todayISO()).name') === 'Nur Garten');
+    pruef('Q4 keine JS-Fehler', a.errors.length + b.errors.length === 0, a.errors[0] || b.errors[0]);
+  }
+
   console.log('\n' + ok + ' OK, ' + fail + ' FEHL');
   if (fail) process.exit(1);
 })().catch((e) => { console.log('FEHLER: ' + (e && e.stack || e)); process.exit(1); });

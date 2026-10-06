@@ -2,6 +2,17 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-07 — v1.5.314
+
+- **Ein Zyklus im Freien führte das Zeltklima, sobald er weiter war** (Nachtprüfung vom 07.10.2026, Rückschritt aus
+  v1.5.303). `_fuehrenderZyklus` wählte den am weitesten entwickelten Zyklus, ohne zu fragen, ob er überhaupt im Zelt
+  steht. Mit einem Garten-Zyklus in der Blüte bewertete der Eintrag die Luft im Zelt nach der späten Blüte („Indoor-
+  Idealwert"), und den Sämlingen im Zelt fehlte bei 24 °C / 85 % die Pilzwarnung.
+- **Jetzt** zählen Zyklen im Freien fürs Zeltklima nicht, solange drinnen etwas wächst; steht nur draußen etwas, führt
+  wie bisher der Zyklus im Freien. Der Satz „Bewertet nach …" zählt nur Zyklen im Zelt.
+- Test: `test_zyklus2.js` Abschnitt Q (5 Prüfungen, beide Zeitzonen; 2 fallen auf v1.5.313 um).
+
+
 ## 2026-10-07 — v1.5.313
 
 - **Ein abgeschlossener Zyklus blieb im Gieß-Fahrplan stehen und plante weiter** (Nachtprüfung vom 07.10.2026, vom
