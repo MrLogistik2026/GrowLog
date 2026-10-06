@@ -455,6 +455,20 @@ function pruef(name, bedingung, info) {
     pruef('K11 keine JS-Fehler', a.errors.length === 0, a.errors[0]);
   }
 
+  // ===== L: Neuer Zyklus von der Startseite (v1.5.309) =====
+  console.log('\nL - Startseite: Knopf für einen neuen Zyklus');
+  {
+    for (const anfaenger of [true, false]) {
+      const a = await load();
+      a.E(`S.beginnerMode = ${anfaenger}; renderDash()`);
+      const knopf = Array.from(a.window.document.querySelectorAll('#dash-body button')).find(b => /Neuen Zyklus anlegen/.test(b.textContent));
+      pruef(`L1 ${anfaenger ? 'Einsteiger' : 'Profi'}: unter „Meine Zyklen" steht „＋ Neuen Zyklus anlegen"`, !!knopf);
+      if (knopf) knopf.click();
+      pruef(`L2 ${anfaenger ? 'Einsteiger' : 'Profi'}: der Knopf öffnet den Assistenten`, a.window.document.getElementById('scr-wizard')?.classList.contains('active') === true);
+      pruef(`L3 ${anfaenger ? 'Einsteiger' : 'Profi'}: keine JS-Fehler`, a.errors.length === 0, a.errors[0]);
+    }
+  }
+
   console.log('\n' + ok + ' OK, ' + fail + ' FEHL');
   if (fail) process.exit(1);
 })().catch((e) => { console.log('FEHLER: ' + (e && e.stack || e)); process.exit(1); });

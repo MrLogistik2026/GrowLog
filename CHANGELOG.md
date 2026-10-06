@@ -2,6 +2,16 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-06 — v1.5.309
+
+- **Von der Startseite führte kein Weg zu einem neuen Zyklus, sobald einer existierte** (gemessen beim Durchspielen von
+  Run 02). Die Knöpfe „🌱 Zyklus jetzt anlegen" stehen nur im leeren Zustand; mit einem Zyklus — auch einem fertigen — ging
+  es nur über Einstellungen → „＋ Neu". Patrick fand den Weg nicht, als Run 02 schon im Zelt stand.
+- **Jetzt** steht unter „Meine Zyklen" in beiden Modi „＋ Neuen Zyklus anlegen" und öffnet den Assistenten, mit dem
+  Hinweis „Ein Zyklus je Gruppe, die am selben Tag gekeimt ist" — der Grund, warum Run 02 zwei Zyklen bekommt.
+- Test: `test_zyklus2.js` Abschnitt L (6 Prüfungen, beide Zeitzonen; fällt auf v1.5.308 um).
+
+
 ## 2026-10-06 — v1.5.308
 
 - **Ein fertiger Zyklus lief im Kalender endlos weiter, und die Startseite bot nie an, ihn abzuschließen** (Patricks
