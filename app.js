@@ -3593,7 +3593,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.307';
+const APP_VERSION = 'v1.5.308';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -6293,13 +6293,13 @@ function customConfirm(title, msg, okText = 'OK', okColor = 'var(--red)', cancel
  * das globale Modal-DOM — dieses erwartet feste textContent-Nodes).
  * @returns {Promise<string|null>} Getipter Text oder null bei Abbruch.
  */
-function customPrompt({ title, msg = '', placeholder = '', initial = '', multiline = false, okText = 'OK' } = {}) {
+function customPrompt({ title, msg = '', placeholder = '', initial = '', multiline = false, okText = 'OK', type = 'text' } = {}) {
   return new Promise((resolve) => {
     const overlay = document.createElement('div');
     overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:10002;display:flex;align-items:center;justify-content:center;padding:16px;font-family:var(--font)';
     const field = multiline
       ? `<textarea id="custom-prompt-input" placeholder="${placeholder.replace(/"/g,'&quot;')}" rows="6" style="width:100%;box-sizing:border-box;padding:10px 12px;background:var(--card2);border:0.5px solid var(--border);border-radius:10px;font-size:13px;color:var(--text);font-family:var(--mono);resize:vertical">${initial}</textarea>`
-      : `<input id="custom-prompt-input" type="text" placeholder="${placeholder.replace(/"/g,'&quot;')}" value="${initial}" style="width:100%;box-sizing:border-box;padding:10px 12px;background:var(--card2);border:0.5px solid var(--border);border-radius:10px;font-size:14px;color:var(--text);font-family:var(--font)"/>`;
+      : `<input id="custom-prompt-input" type="${type === 'date' ? 'date' : 'text'}" placeholder="${placeholder.replace(/"/g,'&quot;')}" value="${initial}" style="width:100%;box-sizing:border-box;padding:10px 12px;background:var(--card2);border:0.5px solid var(--border);border-radius:10px;font-size:14px;color:var(--text);font-family:var(--font)"/>`;
     overlay.innerHTML = `
       <div style="background:var(--card);border:0.5px solid var(--border);border-radius:16px;padding:20px;max-width:440px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.5)">
         <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:6px">${title}</div>
@@ -8151,6 +8151,10 @@ function _datebasedPhase(iso, c) {
 /** Returns the current phase for a given date and cycle */
 function phase(iso, c) {
   if (!c) return null;
+  // (v1.5.308) Ein abgeschlossener Zyklus hat nach seinem Abschlusstag keine Phase mehr — der Kalender zählt dort keine
+  // Tage weiter, und nichts plant mehr für ihn. Vorher lief die Tageszahl bis zum Ende des Curings mit (Run 01: T122–T143
+  // ohne Inhalt), obwohl der Zyklus für Patrick längst fertig war.
+  if (c.endDate && iso > c.endDate) return null;
   // Datum-basierte Phase (Outdoor-Photoperiode oder Indoor mit explizitem bloomStartDate)
   const dated = _datebasedPhase(iso, c);
   if (dated) return _mitErnteOffen(dated, iso, c);   // (v1.5.266) ernteOffen am Phasen-Objekt
@@ -17243,7 +17247,9 @@ function renderDash() {
       // nur Phase + Tag zeigen (wie im Beginner-Modus), sonst stünde irreführend z.B.
       // „Wo10 Herbst" im Curing.
       const hideFertWk = !p || p.ph === 'harvest' || p.ph === 'dry' || p.ph === 'cure';
-      const subLine = (S.beginnerMode || hideFertWk)
+      // (v1.5.308) Ein Zyklus ohne Phase ist fertig — vorher stand hier „— · Tag –".
+      const subLine = (!p && c.startDate && c.startDate <= today) ? '✓ Fertig — alle Phasen vorbei'
+        : (S.beginnerMode || hideFertWk)
         ? `${_phasenAnzeige(p).icon} ${_phasenAnzeige(p).name} · ${phaseDayLabel(p)}`
         : `${_phasenAnzeige(p).icon} ${_phasenAnzeige(p).name} · ${phaseDayLabel(p)} · <span style="color:${cl.hex}">Wo${fertWk}</span> ${weekNames[fertWk] || ''}`;
       return `<div style="display:flex;align-items:center;gap:8px;padding:3px 0">
@@ -17509,7 +17515,7 @@ function renderDash() {
             <span style="font-size:14px;font-weight:600">${c.name}</span>
             ${c.location ? `<span style="font-size:11px;color:var(--text-muted)">· ${c.location}</span>` : ''}
           </div>
-          <div style="font-size:12px;color:${cl.hex};font-weight:500">${stgName || (p ? PN[p.ph] : '—')}${!S.beginnerMode && p?.week ? ' · Wo. ' + p.week : ''} · ${phaseDayLabel(p)}</div>
+          <div style="font-size:12px;color:${cl.hex};font-weight:500">${!p && c.startDate <= today ? '✓ Fertig — alle Phasen vorbei' : `${stgName || (p ? PN[p.ph] : '—')}${!S.beginnerMode && p?.week ? ' · Wo. ' + p.week : ''} · ${phaseDayLabel(p)}`}</div>
           ${S.beginnerMode ? '' : `<div style="display:flex;gap:8px;margin-top:3px;align-items:center">
             ${streak > 0 ? `<span class="streak">🔥 ${streak}</span>` : ''}
             <span style="font-size:10px;color:var(--text-muted)">Start ${sf}</span>
@@ -17523,6 +17529,14 @@ function renderDash() {
           <div style="font-size:10px;color:${a ? cl.hex : 'var(--text-hint)'};font-weight:600;margin-top:1px">${a ? (a === 'giess' ? 'Gießen' : a === 'giess_anz' ? 'Gießen 🌱' : ACT_NAME[a] || PN[a] || a) : 'Pause'}</div>`}
         </div>
       </div>
+      ${(!p && c.startDate <= today) || (p && p.ph === 'cure' && !p.ernteOffen) ? `<div onclick="event.stopPropagation();archiveCycle('${c.id}')" style="background:${cl.hex}0c;border:0.5px solid ${cl.hex}33;border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:10px;cursor:pointer">
+        <span style="font-size:16px">🏁</span>
+        <div style="flex:1">
+          <div style="font-size:12px;font-weight:600;color:${cl.hex}">${p ? 'Im Curing — schon fertig?' : 'Zyklus abschließen'}</div>
+          <div style="font-size:11px;color:var(--text-muted);line-height:1.4">Danach steht er nicht mehr auf der Startseite und im Kalender. Einträge, Erträge und Bilanz bleiben.</div>
+        </div>
+        <span style="color:${cl.hex};font-size:16px">›</span>
+      </div>` : ''}
       ${!a && next ? `<div data-tour="next-water" onclick="event.stopPropagation();entryFrom='dash';openEntry('${next.iso}')" style="background:${cl.hex}0c;border:0.5px solid ${cl.hex}22;border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:10px;cursor:pointer">
         <span style="font-size:16px">💧</span>
         <div style="flex:1">
@@ -22465,8 +22479,8 @@ function renderSet() {
             if (!isArchived && !isLongActive) return '';
             return _setAccordionHeader('stand', sel.archived ? '🏁' : '📊', sel.archived ? 'Zyklus-Bilanz' : 'Aktueller Stand') + ((S._setUI && S._setUI.stand) ? renderCycleSummaryCard(sel, { noTitle: true }) : '');
           })()}
-          ${sel.active && !sel.archived ? `<button onclick="archiveCycle('${sel.id}')" style="width:100%;background:rgba(90,171,240,0.06);border:0.5px solid rgba(90,171,240,0.25);border-radius:10px;padding:10px;font-size:13px;color:var(--blue);cursor:pointer;font-family:var(--font);margin-top:4px">📦 Grow archivieren</button>` : ''}
-          ${sel.archived ? `<button onclick="unarchiveCycle('${sel.id}')" style="width:100%;background:rgba(76,175,112,0.06);border:0.5px solid rgba(76,175,112,0.25);border-radius:10px;padding:10px;font-size:13px;color:var(--green);cursor:pointer;font-family:var(--font);margin-top:4px">📦 Archivierung aufheben</button>` : ''}
+          ${sel.active && !sel.archived ? `<button onclick="archiveCycle('${sel.id}')" style="width:100%;background:rgba(90,171,240,0.06);border:0.5px solid rgba(90,171,240,0.25);border-radius:10px;padding:10px;font-size:13px;color:var(--blue);cursor:pointer;font-family:var(--font);margin-top:4px">🏁 Zyklus abschließen</button>` : ''}
+          ${sel.archived ? `<button onclick="unarchiveCycle('${sel.id}')" style="width:100%;background:rgba(76,175,112,0.06);border:0.5px solid rgba(76,175,112,0.25);border-radius:10px;padding:10px;font-size:13px;color:var(--green);cursor:pointer;font-family:var(--font);margin-top:4px">↩ Abschluss aufheben</button>` : ''}
           <div style="font-size:10px;color:var(--text-hint);text-align:center;padding:8px 4px 2px;line-height:1.5">💡 Zyklus löschen → unten in der <span style="color:var(--red)">Gefahrenzone</span></div>
         </div>
       ` : `<div style="padding:20px 10px;text-align:center">
@@ -25302,24 +25316,45 @@ function toggleEntryDetails(showDetails) {
   }
 }
 
-/** Archive a grow — keeps all data but removes from active schedule */
+/**
+ * (v1.5.308) Vorschlag fürs Abschlussdatum: der letzte Tag mit einem Eintrag für diesen Zyklus — nie vor dem Start,
+ * nie nach heute. Ohne Eintrag: heute.
+ */
+function _zyklusEndeVorschlag(c) {
+  const heute = todayISO();
+  const tage = Object.keys(S.entries || {}).filter(d => d >= c.startDate && d <= heute
+    && S.entries[d] && S.entries[d].cycleData && S.entries[d].cycleData[c.id]).sort();
+  return tage.length ? tage[tage.length - 1] : heute;
+}
+
+/**
+ * Schließt einen Zyklus ab — alle Daten bleiben, er verschwindet aus Startseite, Planung und Gieß-Fahrplan.
+ * (v1.5.308) Mit Abschlussdatum: Ab dem Tag danach hat er keine Phase mehr (siehe phase()), der Kalender zählt nicht
+ * weiter. Vorher hieß es „Grow archivieren" (Nomenklatur: Zyklus) ohne Datum, und die Startseite bot es nie an.
+ */
 async function archiveCycle(id) {
   const c = S.cycles.find(x => x.id === id);
   if (!c) return;
-  const ok = await customConfirm(
-    '📦 Grow archivieren?',
-    `"${c.name}" wird archiviert. Im Kalender verblasst dargestellt, nicht mehr editierbar. Alle Daten bleiben erhalten. Du kannst jederzeit die Archivierung aufheben.`,
-    'Archivieren', 'var(--blue)'
-  );
-  if (!ok) return;
+  const heute = todayISO();
+  const vorschlag = _zyklusEndeVorschlag(c);
+  const wert = await customPrompt({
+    title: '🏁 Zyklus abschließen?',
+    msg: `„${escHtml(c.name)}“ ist danach abgeschlossen: Startseite, Kalender-Planung und Gieß-Fahrplan führen ihn nicht mehr. Alle Einträge, Fotos, Erträge und die Bilanz bleiben, und du kannst den Abschluss in den Einstellungen jederzeit aufheben.<br><br><b>Seit wann ist er fertig?</b> Ab dem Tag danach zählt der Kalender keine Tage mehr. Vorgeschlagen ist dein letzter Eintrag.`,
+    initial: vorschlag, type: 'date', okText: 'Abschließen',
+  });
+  if (wert === null || wert === undefined) return;
+  const ende = /^\d{4}-\d{2}-\d{2}$/.test(String(wert).trim()) ? String(wert).trim() : vorschlag;
+  if (ende < c.startDate || ende > heute) { toast('⚠ Das Datum muss zwischen dem Start (' + fmtDE(c.startDate) + ') und heute liegen.', 4500); return; }
   c.archived = true;
   c.active = false; // Deactivate from watering schedule
-  draft.archived = true;
-  draft.active = false;
+  c.endDate = ende;
+  if (typeof draft !== 'undefined' && draft && draft.id === id) { draft.archived = true; draft.active = false; draft.endDate = ende; }
   saveS();
   vibrate();
-  toast(`📦 ${c.name} archiviert`);
+  toast(`🏁 ${c.name} abgeschlossen (fertig seit ${fmtDE(ende)})`);
   renderSet();
+  if (typeof renderDash === 'function') renderDash();
+  if (typeof renderCal === 'function') renderCal();
 }
 
 /** Unarchive a grow — restore to editable state */
@@ -25328,12 +25363,13 @@ async function unarchiveCycle(id) {
   if (!c) return;
   c.archived = false;
   c.active = true;
-  draft.archived = false;
-  draft.active = true;
+  delete c.endDate;   // (v1.5.308) weiterführen heißt: auch das Abschlussdatum gilt nicht mehr
+  if (typeof draft !== 'undefined' && draft && draft.id === id) { draft.archived = false; draft.active = true; delete draft.endDate; }
   saveS();
   vibrate();
-  toast(`📦 ${c.name} wieder aktiv`);
+  toast(`${sym(c)} ${c.name} läuft wieder`);
   renderSet();
+  if (typeof renderDash === 'function') renderDash();
 }
 
 /**

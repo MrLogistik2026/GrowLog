@@ -2,6 +2,24 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-06 — v1.5.308
+
+- **Ein fertiger Zyklus lief im Kalender endlos weiter, und die Startseite bot nie an, ihn abzuschließen** (Patricks
+  Meldung vom 06.10.2026 mit Bildschirmfoto: „Hier gehen die Tage bis 143. Dabei ist der Zyklus ja schon länger komplett
+  abgeschlossen."). Die App zählt Trocknen und 21 Tage Curing zum Zyklus und nummerierte deshalb jeden Tag weiter (T122–T143
+  ohne Inhalt). Nach dem Curing stand auf der Startseite „— · Tag –" und 0 %. Abschließen ging nur über „Grow archivieren"
+  ganz unten in den Einstellungen, ohne Datum.
+- **Jetzt** gibt es „🏁 Zyklus abschließen" mit Datum: „Seit wann ist er fertig?", vorgeschlagen ist der letzte Eintrag.
+  Ab dem Tag danach hat der Zyklus keine Phase mehr (`c.endDate`, geprüft in `phase()`) — der Kalender zählt dort nicht
+  weiter, nichts plant mehr für ihn. Alle Einträge, Fotos, Erträge und die Bilanz bleiben; „↩ Abschluss aufheben" in den
+  Einstellungen nimmt auch das Datum zurück. Die Startseite bietet das Abschließen an, sobald ein Zyklus im Curing steht
+  („Im Curing — schon fertig?") oder alle Phasen vorbei sind („✓ Fertig — alle Phasen vorbei" statt „Tag –").
+  Ein Datum vor dem Start oder nach heute wird nicht angenommen.
+- Wortwahl nach `ANWEISUNG.md` („Zyklus", nie „Grow"): Der Knopf hieß „📦 Grow archivieren".
+- Noch offen: Die Kachel „Ernte in" zeigt für einen fertigen, nicht abgeschlossenen Zyklus „— ±5d".
+- Test: `test_zyklus2.js` Abschnitt K (11 Prüfungen, beide Zeitzonen; fällt auf v1.5.307 um).
+
+
 ## 2026-10-06 — v1.5.307
 
 - **Nachtragen schrieb geschätzte pH- und EC-Werte in vergangene Tage** (offener Punkt aus UEBERGABE 0o/REIHENFOLGE C,

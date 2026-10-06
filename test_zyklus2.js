@@ -415,6 +415,46 @@ function pruef(name, bedingung, info) {
     pruef('J6 keine JS-Fehler', a.errors.length === 0, a.errors[0]);
   }
 
+  // ===== K: Zyklus abschließen mit Datum (v1.5.308) =====
+  console.log('\nK - Run 01 abschließen');
+  {
+    const a = await load();
+    const run01 = a.E('S.cycles[0].id');
+    a.E("renderDash()");
+    const dash = (a.window.document.getElementById('dash-body')?.textContent || '').replace(/\s+/g, ' ');
+    pruef('K1 im Curing bietet die Startseite das Abschließen an', /Im Curing — schon fertig\?/.test(dash), dash.slice(0, 200));
+    a.E("setDebugDate('2026-10-07'); renderDash()");
+    const dash2 = (a.window.document.getElementById('dash-body')?.textContent || '').replace(/\s+/g, ' ');
+    pruef('K2 nach dem Curing: „✓ Fertig — alle Phasen vorbei" statt „Tag –", mit Knopf zum Abschließen',
+      /✓ Fertig — alle Phasen vorbei/.test(dash2) && /Zyklus abschließen/.test(dash2) && !/· Tag –/.test(dash2), dash2.slice(0, 220));
+    a.E("setDebugDate('2026-10-06')");
+    // Abschließen: Vorschlag ist der letzte Eintrag, Patrick wählt den 13.09.
+    let gefragt = null;
+    a.window.customPrompt = (o) => { gefragt = o; return Promise.resolve('2026-09-13'); };
+    await a.E(`archiveCycle('${run01}')`);
+    const letzter = a.E(`Object.keys(S.entries).filter(d => d <= '2026-10-06' && S.entries[d].cycleData && S.entries[d].cycleData['${run01}']).sort().pop()`);
+    pruef('K3 gefragt wird nach dem Datum, vorgeschlagen ist der letzte Eintrag', gefragt && gefragt.type === 'date' && gefragt.initial === letzter, gefragt && gefragt.initial);
+    pruef('K4 abgeschlossen am 13.09.: archiviert, nicht mehr aktiv', a.E(`S.cycles[0].endDate`) === '2026-09-13' && a.E('S.cycles[0].archived') === true && a.E('S.cycles[0].active') === false);
+    pruef('K5 ab dem 14.09. hat Run 01 keine Phase mehr, am 13.09. noch', a.E(`phase('2026-09-14', S.cycles[0])`) === null && !!a.E(`phase('2026-09-13', S.cycles[0])`));
+    a.E("calDate = new Date(2026, 8, 15); renderCal()");
+    const zellen = Array.from(a.window.document.querySelectorAll('#cal-grid > div, .cal-grid > div, #scr-cal [onclick^="openEntry"]')).map(z => (z.textContent || '').replace(/\s+/g, ' '));
+    const kal = (a.window.document.getElementById('scr-cal')?.textContent || '').replace(/\s+/g, ' ');
+    pruef('K6 im Kalender September: T121 (13.09.) steht noch, T122 (14.09.) und später nicht', /T121/.test(kal) && !/T122/.test(kal) && !/T138/.test(kal), kal.slice(0, 300));
+    pruef('K7 Ertrag und Einträge bleiben', a.E(`Object.values(S.entries).filter(e => e.cycleData && e.cycleData['${run01}']).length`) > 100);
+    a.window.customPrompt = () => Promise.resolve('2027-01-01');
+    a.E(`S.cycles[0].archived = false; S.cycles[0].active = true; delete S.cycles[0].endDate`);
+    await a.E(`archiveCycle('${run01}')`);
+    pruef('K8 ein Datum nach heute wird nicht angenommen', !a.E('S.cycles[0].endDate') && a.E('S.cycles[0].archived') === false);
+    a.window.customPrompt = () => Promise.resolve(null);
+    await a.E(`archiveCycle('${run01}')`);
+    pruef('K9 Abbrechen ändert nichts', !a.E('S.cycles[0].archived'));
+    a.window.customPrompt = () => Promise.resolve('2026-09-13');
+    await a.E(`archiveCycle('${run01}')`);
+    await a.E(`unarchiveCycle('${run01}')`);
+    pruef('K10 „Abschluss aufheben" nimmt auch das Datum zurück', a.E('S.cycles[0].active') === true && !a.E('S.cycles[0].endDate'));
+    pruef('K11 keine JS-Fehler', a.errors.length === 0, a.errors[0]);
+  }
+
   console.log('\n' + ok + ' OK, ' + fail + ' FEHL');
   if (fail) process.exit(1);
 })().catch((e) => { console.log('FEHLER: ' + (e && e.stack || e)); process.exit(1); });
