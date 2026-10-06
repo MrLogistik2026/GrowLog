@@ -2,6 +2,21 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-07 — v1.5.317
+
+- **Notfall-Texte nannten Erd-Werte für jedes Substrat und eine einzige Ursache** (Nachtprüfung vom 07.10.2026).
+  - Die kritische pH-Warnung (unter 4,5 oder über 8,0) verlangte „SOFORT mit pH 6.4 spülen — 2× Topfvolumen" — auch
+    für Coco (Ziel 5,8–6,2) und Hydro (5,5–6,0), obwohl die Warnung das Substrat kennt und die nicht kritische Stufe
+    darüber es längst richtig macht. Die Spülmenge stand in keiner Quelle. Jetzt nennt sie das Ziel des Substrats
+    (`phTargetFor`), rät zuerst, das Messgerät zu prüfen — ein Wert so weit daneben ist oft ein Messfehler
+    (`ANBAU.md` Regel 2) —, und lässt bei schon gegossenem Topf bis zum Drain-Ziel nachgießen und den Drain-pH messen.
+  - Die Schnellhilfe „Ränder braun/trocken" führte direkt zu „Bloom-Dünger hochfahren oder PK-Booster" und pH 6,2–6,4.
+    Dasselbe Bild macht zu viel Dünger (`ANBAU.md` 5) oder Trockenheit — wer dann mehr düngt, verschlimmert es (Regel 3).
+    Jetzt erst die Unterscheidung über den Drain-EC bei gültigem Drain, dann der Zulauf-pH für Erde und Coco, und
+    Kalium nur bei bisher stabilem Magnesium (`ANBAU.md` 6.2).
+- Test: `test_zyklus2.js` Abschnitt T (5 Prüfungen, beide Zeitzonen; 4 fallen auf v1.5.316 um).
+
+
 ## 2026-10-07 — v1.5.316
 
 - **Unbelegte Wirkungszusagen in Hinweisen, Diagnose und einem Plan-Tipp** (Nachtprüfung vom 07.10.2026; außerhalb des

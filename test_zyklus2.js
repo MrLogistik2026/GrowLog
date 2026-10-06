@@ -629,6 +629,21 @@ function pruef(name, bedingung, info) {
     pruef('S4 keine JS-Fehler', a.errors.length === 0, a.errors[0]);
   }
 
+  // ===== T: Notfall-Texte kennen das Substrat (v1.5.317) =====
+  console.log('\nT - pH-Notfall und Kalium-Schnellhilfe');
+  {
+    const a = await load();
+    const warn = (medium, ph) => JSON.parse(a.E(`JSON.stringify(getCriticalWarning('ph', ${ph}, { ph: 'bloom', week: 4 }, { medium: '${medium}', id: 'x' }))`));
+    const cocoLo = warn('coco', 4.2), hydroHi = warn('hydro', 8.5), erdeLo = warn('erde', 4.2);
+    pruef('T1 Coco, pH 4,2: Ziel 5,8–6,2 statt „6.4", keine „2× Topfvolumen"', /5,8–6,2/.test(cocoLo.action) && !/6\.4/.test(cocoLo.action) && !/Topfvolumen/.test(cocoLo.action), cocoLo.action);
+    pruef('T2 Hydro, pH 8,5: Ziel 5,5–6,0', /5,5–6,0/.test(hydroHi.action) && !/6\.4/.test(hydroHi.action), hydroHi.action);
+    pruef('T3 Erde, pH 4,2: Ziel der Erde, zuerst das Messgerät prüfen', /6,2–6,4/.test(erdeLo.action) && /Messgerät prüfen/.test(erdeLo.action), erdeLo.action);
+    const q = a.window.document.documentElement.outerHTML;
+    pruef('T4 Schnellhilfe „Ränder braun": erst unterscheiden (Drain-EC), Kalium nur bei stabilem Magnesium, kein festes „6.2-6.4"',
+      /Ränder braun\/trocken/.test(q) && /Erst unterscheiden:<\/b> Drain-EC/.test(q) && !/pH prüfen \(6\.2-6\.4\) damit die Aufnahme klappt/.test(q));
+    pruef('T5 keine JS-Fehler', a.errors.length === 0, a.errors[0]);
+  }
+
   console.log('\n' + ok + ' OK, ' + fail + ' FEHL');
   if (fail) process.exit(1);
 })().catch((e) => { console.log('FEHLER: ' + (e && e.stack || e)); process.exit(1); });

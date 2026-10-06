@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.316** · index.html 2,52 MB · 764 Funktionen
+Stand: **v1.5.317** · index.html 2,52 MB · 764 Funktionen
 Zuletzt fortgeschrieben am 07.10.2026 (Nachtprüfung und Run 02 — Abschnitt 0o, „Stand Run 02"). Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
@@ -212,6 +212,7 @@ kein Blocker, aber Fehler, die nur mit zwei Zyklen oder direkt nach dem Anlegen 
 - v1.5.314: Zyklen im Freien führen das Zeltklima nicht, solange drinnen etwas wächst (Rückschritt aus v1.5.303).
 - v1.5.315: Startseite zeigt ernste Befunde des heutigen Eintrags statt „erledigt" (`getEntryWarnings`, Typ err).
 - v1.5.316: Fünf unbelegte Wirkungszusagen raus (Toppen verdoppelt, Cannabinoid bricht ein, Entlauben spürbar, dichte Buds, Reinigung); Toppen-Hinweis für Automatics mit Grenze.
+- v1.5.317: pH-Notfall mit dem Ziel des Substrats und Messgerät-Prüfung statt „pH 6.4, 2× Topfvolumen"; Kalium-Schnellhilfe unterscheidet zuerst Überdüngung.
 
 **Bei der nächsten Bewertung** dieselbe Skala, dieselben Kategorie-IDs und dieselben Regeln aus `auftrag.md` nehmen und
 die Noten gegen diese Tabelle stellen.

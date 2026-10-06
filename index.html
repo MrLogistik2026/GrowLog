@@ -4594,7 +4594,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.316';
+const APP_VERSION = 'v1.5.317';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -7799,7 +7799,7 @@ const SYMPTOMS = [
         heading: 'Ränder braun/trocken, nicht nur Spitzen',
         verdict: '⚠ Kalium-Mangel',
         color: 'var(--orange)',
-        text: 'Braune, trockene Blattränder. <b>Lösung:</b> Bloom-Dünger hochfahren oder PK-Booster in der Blüte dazu. pH prüfen (6.2-6.4) damit die Aufnahme klappt.',
+        text: 'Braune, trockene Blattränder an älteren Blättern. Das kann Kaliummangel sein — genauso aber zu viel Dünger (Salz zieht Wasser aus dem Blatt) oder Trockenheit. <b>Erst unterscheiden:</b> Drain-EC bei mindestens ' + DRAIN_ZIEL.min + ' % Drain messen — ist er hoch, weniger düngen, nicht mehr. Ist er unauffällig und der Topf nicht ausgetrocknet: Zulauf-pH prüfen (Erde ' + phTargetFor('erde').labelComma + ', Coco ' + phTargetFor('coco').labelComma + '). <b>Erst dann</b> Bloom-Dünger oder PK-Booster moderat erhöhen — und nur, wenn Magnesium bisher stabil war, sonst verdrängt Kalium das Magnesium.',
         when: 'Blüte',
         lex: 'Nährstoffmangel',
       },
@@ -16434,12 +16434,16 @@ function getCriticalWarning(category, value, p, c, t) {
 
   if (category === 'ph') {
     // pH außerhalb 4.5-8.0 = Wurzelschaden, sterben langsam ab
+    // (v1.5.317) Ziel aus phTargetFor statt fest 6,4 (für Coco und Hydro falsch), keine Spülmenge ohne Quelle („2× Topfvolumen"),
+    // und zuerst die Validität: Ein Wert so weit daneben ist oft ein Messfehler (ANBAU.md Regel 2).
+    const _phNot = phTargetFor(c && c.medium);
+    const _nachgiessen = `Ist schon gegossen: mit richtig eingestelltem Wasser nachgießen, bis unten ${DRAIN_ZIEL.min}–${DRAIN_ZIEL.max} % herauslaufen, und den Drain-pH messen.`;
     if (value < 4.5) {
       return {
         level: 'critical',
         icon: '🚨',
         title: `pH ${value.toFixed(1)} ist gefährlich niedrig`,
-        action: 'Wurzeln werden geschädigt, Ca/Mg/P komplett blockiert. SOFORT mit pH-eingestelltem Wasser (6.4) spülen — 2× Topfvolumen. Erst danach wieder düngen.',
+        action: `Wurzeln werden geschädigt, Calcium, Magnesium und Phosphor sind blockiert. Zuerst das Messgerät prüfen (kalibriert? ein Wert so weit daneben ist oft ein Messfehler). Stimmt er: Gießwasser auf ${_phNot.labelComma} einstellen, bevor du gießt. ${_nachgiessen} Erst danach wieder düngen.`,
       };
     }
     if (value > 8.0) {
@@ -16447,7 +16451,7 @@ function getCriticalWarning(category, value, p, c, t) {
         level: 'critical',
         icon: '🚨',
         title: `pH ${value.toFixed(1)} ist gefährlich hoch`,
-        action: 'Eisen, Mangan, Zink komplett blockiert. SOFORT mit pH 6.4 spülen — 2× Topfvolumen. Bei wiederholtem Problem: Substrat oder Dünger prüfen.',
+        action: `Eisen, Mangan und Zink sind blockiert. Zuerst das Messgerät prüfen (kalibriert? ein Wert so weit daneben ist oft ein Messfehler). Stimmt er: Gießwasser mit pH-Down auf ${_phNot.labelComma} einstellen. ${_nachgiessen} Kommt es wieder: Wasser (Karbonathärte), Substrat oder Dünger prüfen.`,
       };
     }
     // Sub-kritisch außerhalb des Aufnahme-Fensters = Lockout-Bereich. Medium-bewusst:
