@@ -2,6 +2,18 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-06 — v1.5.304
+
+- **Die Zeile „N/6 eingetragen" im Eintrag zählte den ersten aktiven Zyklus, auch wenn der im Curing stand**
+  (gemessen beim Durchspielen von Run 02). Nach dem Guss für Run 02 blieb sie bei „0/6" ohne Haken, und die
+  Sprungknöpfe („💧 Wasser" usw.) führten in den Block von Run 01.
+- **Jetzt** zählt die Zeile die Zyklen, deren Pflanzen noch stehen (`_wachsendeZyklen`). Wasser und pH gelten als
+  erledigt, wenn jeder Zyklus mit Guss an diesem Tag beides hat — bei zwei Gruppen im Zelt also erst, wenn beide
+  gegossen sind; ohne fälligen Guss reicht ein Eintrag bei einem der Zyklen. Der Sprung geht zum ersten Zyklus, dem
+  noch etwas fehlt. Mit nur einem Zyklus ist alles wie bisher.
+- Test: `test_zyklus2.js` Abschnitt G (5 Prüfungen, beide Zeitzonen; 3 fallen auf v1.5.303 um).
+
+
 ## 2026-10-06 — v1.5.303
 
 - **Mit einem zweiten Zyklus bewertete der Eintrag das Klima nach dem falschen** (gemessen beim Durchspielen von Run 02,

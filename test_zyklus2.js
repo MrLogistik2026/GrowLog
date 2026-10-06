@@ -299,6 +299,37 @@ function pruef(name, bedingung, info) {
     pruef('F7 keine JS-Fehler (Eintrag und Tipps)', a.errors.length + b.errors.length === 0, a.errors[0] || b.errors[0]);
   }
 
+  // ===== G: Die Zeile „N/6 eingetragen" zählt die Zyklen mit stehenden Pflanzen (v1.5.304) =====
+  console.log('\nG - Statuszeile im Eintrag mit Run 01 im Curing davor');
+  {
+    const TAG = '2026-10-08';
+    const a = await load(null, { datum: TAG });
+    a.E("addCyc({ name: 'Anesia', startDate: '2026-09-20', potSize: 15, plantCount: 4, startMethod: 'direct' }); S.cycles.find(x => x.name === 'Anesia').anzuchtDays = 26");
+    const an = a.E("S.cycles.find(x => x.name === 'Anesia').id");
+    pruef('G0 Lage: am 08.10. ist für die Anesia-Gruppe Gießtag', a.E(`gussFaellig(S.cycles.find(x => x.id === '${an}'), '${TAG}')`) === true);
+    const zeile = () => {
+      a.E(`editISO = '${TAG}'; renderEntry('${TAG}')`);
+      const body = a.window.document.getElementById('entry-body');
+      const txt = (body?.textContent || '').replace(/\s+/g, ' ');
+      const m = txt.match(/(\d)\/6 eingetragen/);
+      const knopf = Array.from(body?.querySelectorAll('button') || []).find(b => /jumpToEntryField\('[^']+','water'\)/.test(b.getAttribute('onclick') || ''));
+      return { n: m ? +m[1] : null, wasserZiel: knopf ? (knopf.getAttribute('onclick').match(/jumpToEntryField\('([^']+)'/) || [])[1] : null };
+    };
+    a.E(`(() => { editISO = '${TAG}'; ensE('${an}'); S.entries['${TAG}'].cycleData['${an}'].water = 2100; saveS(); })()`);
+    const z1 = zeile();
+    pruef('G1 nach dem Guss für Run 02: „1/6 eingetragen" statt „0/6"', z1.n === 1, z1);
+    a.E("addCyc({ name: 'Mimosa', startDate: '2026-09-26', potSize: 15, plantCount: 2, startMethod: 'direct' }); S.cycles.find(x => x.name === 'Mimosa').anzuchtDays = 26");
+    const mi = a.E("S.cycles.find(x => x.name === 'Mimosa').id");
+    const due = a.E(`gussFaellig(S.cycles.find(x => x.id === '${mi}'), '${TAG}')`);
+    const z2 = zeile();
+    pruef('G2 zweite Gruppe mit Guss heute, noch ohne Wasser: Wasser offen, der Sprung führt zu ihr',
+      due ? (z2.n === 0 && z2.wasserZiel === mi) : true, { due, z2, mi });
+    a.E(`(() => { editISO = '${TAG}'; ensE('${mi}'); S.entries['${TAG}'].cycleData['${mi}'].water = 700; saveS(); })()`);
+    const z3 = zeile();
+    pruef('G3 beide Gruppen gegossen: Wasser erledigt', z3.n === 1, z3);
+    pruef('G4 keine JS-Fehler', a.errors.length === 0, a.errors[0]);
+  }
+
   console.log('\n' + ok + ' OK, ' + fail + ' FEHL');
   if (fail) process.exit(1);
 })().catch((e) => { console.log('FEHLER: ' + (e && e.stack || e)); process.exit(1); });

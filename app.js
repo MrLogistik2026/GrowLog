@@ -3593,7 +3593,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.303';
+const APP_VERSION = 'v1.5.304';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -29841,13 +29841,29 @@ function renderEntry(iso) {
   if (act.length > 0) {
     const hasTemp = !!temp;
     const hasRh = !!rh;
-    // Für den ersten aktiven Zyklus: Wasser/pH/Notiz/Foto-Status
-    const fc = act[0];
-    const fcCd = saved.cycleData?.[fc.id] || {};
-    const hasWater = !!fcCd.water;
-    const hasPh = !!fcCd.ph;
-    const hasNote = !!(fcCd.notes && String(fcCd.notes).trim());
-    const hasPhoto = Array.isArray(fcCd.photos) && fcCd.photos.length > 0;
+    // (v1.5.304) Wasser/pH/Notiz/Foto nach den Zyklen, deren Pflanzen noch stehen — nicht nach dem ersten aktiven.
+    // Vorher zählte die Zeile Run 01 im Curing: Nach dem Guss für Run 02 blieb sie bei „0/6" ohne Haken, und die
+    // Sprungknöpfe führten in den Block von Run 01. Wasser und pH zählen als erledigt, wenn jeder Zyklus mit Guss an
+    // diesem Tag beides hat; ohne fälligen Guss reicht ein Eintrag bei einem der Zyklen. Der Sprung geht zum ersten,
+    // dem noch etwas fehlt.
+    const _wz = _wachsendeZyklen(act, iso);
+    const _zeile = _wz.length ? _wz : [_fuehrenderZyklus(act, iso) || act[0]];
+    const _cdVon = (c) => saved.cycleData?.[c.id] || {};
+    const _faellig = _zeile.filter(c => { try { return gussFaellig(c, iso); } catch (e) { return false; } });
+    const _pruefe = (feld) => {
+      const pool = _faellig.length ? _faellig : _zeile;
+      const fehlt = pool.find(c => !_cdVon(c)[feld]);
+      return { ok: _faellig.length ? !fehlt : _zeile.some(c => !!_cdVon(c)[feld]), ziel: fehlt || pool[0] };
+    };
+    const _w = _pruefe('water'), _ph = _pruefe('ph');
+    const _hatNotiz = (c) => !!(_cdVon(c).notes && String(_cdVon(c).notes).trim());
+    const _hatFoto = (c) => Array.isArray(_cdVon(c).photos) && _cdVon(c).photos.length > 0;
+    const fc = _zeile[0];
+    const hasWater = _w.ok;
+    const hasPh = _ph.ok;
+    const hasNote = _zeile.some(_hatNotiz);
+    const hasPhoto = _zeile.some(_hatFoto);
+    const _sprungZiel = { water: _w.ziel, ph: _ph.ziel };
     const filled = [hasWater, hasPh, hasTemp, hasRh, hasNote, hasPhoto].filter(Boolean).length;
     const total = 6;
     // (v1.5.114) Die Zeile erscheint jetzt auch am leeren Tag. Früher blieb sie
@@ -29869,7 +29885,7 @@ function renderEntry(iso) {
       : '';
     fillStatusChip = `<div style="display:flex;align-items:center;gap:5px;padding:7px 10px;background:rgba(76,175,112,0.05);border:0.5px solid rgba(76,175,112,0.2);border-radius:10px;flex-wrap:wrap">
       <span style="font-size:11px;color:var(--green);font-weight:700;margin-right:2px">${filled}/${total} <span style="font-weight:500">eingetragen</span></span>
-      ${chips.map(ch => `<button onclick="jumpToEntryField('${fc.id}','${ch.ziel}')" title="Zum Feld ${ch.label} springen" style="font-size:10px;padding:3px 7px;border-radius:6px;border:0.5px solid ${ch.ok ? 'rgba(76,175,112,0.3)' : 'var(--border)'};background:${ch.ok ? 'rgba(76,175,112,0.15)' : 'var(--surface)'};color:${ch.ok ? 'var(--green)' : 'var(--text-hint)'};opacity:${ch.ok ? '1' : '0.75'};cursor:pointer;font-family:var(--font)">${ch.ok ? '✓' : ''}${ch.icon} ${ch.label}</button>`).join('')}
+      ${chips.map(ch => `<button onclick="jumpToEntryField('${(_sprungZiel[ch.ziel] || fc).id}','${ch.ziel}')" title="Zum Feld ${ch.label} springen" style="font-size:10px;padding:3px 7px;border-radius:6px;border:0.5px solid ${ch.ok ? 'rgba(76,175,112,0.3)' : 'var(--border)'};background:${ch.ok ? 'rgba(76,175,112,0.15)' : 'var(--surface)'};color:${ch.ok ? 'var(--green)' : 'var(--text-hint)'};opacity:${ch.ok ? '1' : '0.75'};cursor:pointer;font-family:var(--font)">${ch.ok ? '✓' : ''}${ch.icon} ${ch.label}</button>`).join('')}
       ${tippHint}
     </div>`;
   }
