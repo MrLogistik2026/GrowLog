@@ -3593,7 +3593,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.317';
+const APP_VERSION = 'v1.5.318';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -6742,7 +6742,7 @@ const SYMPTOMS = [
         heading: 'Gelb + Blätter hängen',
         verdict: '⚠ Überwässerung',
         color: 'var(--red)',
-        text: 'Erde ist dauernd nass, Wurzeln kriegen keinen Sauerstoff. <b>Lösung:</b> Eine Woche NICHT gießen (Topf anheben prüfen!). Ist die Erde immer noch nass → Topf schräg stellen zum Ablaufen.',
+        text: 'Erde ist dauernd nass, Wurzeln kriegen keinen Sauerstoff. <b>Lösung:</b> Nicht nach Kalender gießen, sondern erst wieder, wenn der Topf beim Anheben den Gießpunkt erreicht (Erde: Hebe-Test „' + GIESSPUNKT.erde.knopf + '“, Coco: „' + GIESSPUNKT.coco.knopf + '“) — bei kleiner Pflanze im großen Topf kann das mehrere Tage dauern, eine feste Frist gibt es nicht. Wasser im Untersetzer weggießen; steht der Topf unten im Wasser, ihn schräg stellen zum Ablaufen.',
         when: 'Alle Phasen',
         lex: 'Restgewicht (Dryback · Trocken-Nass-Zyklus)',
       },
@@ -6814,7 +6814,7 @@ const SYMPTOMS = [
         heading: 'Erde nass, Pflanze welk',
         verdict: '⚠ Überwässerung (Hauptfehler Nr.1)',
         color: 'var(--red)',
-        text: 'Paradox aber häufig: Zu viel Wasser → Wurzeln ersticken → Pflanze welkt wie bei Durst. <b>Lösung:</b> 5-7 Tage NICHT gießen. Topf anfassen — erst bei leichtem Topf wieder gießen.',
+        text: 'Paradox aber häufig: Zu viel Wasser → Wurzeln ersticken → Pflanze welkt wie bei Durst. Dasselbe Bild macht zu viel Dünger: Das Salz zieht Wasser aus der Wurzel, auch im nassen Topf. <b>Unterscheiden:</b> Drain-EC bei mindestens ' + DRAIN_ZIEL.min + ' % Drain hoch → Überdüngung, beim nächsten Guss nur klares Wasser mit Drain und danach weniger düngen. Drain-EC unauffällig → Überwässerung: erst wieder gießen, wenn der Topf beim Anheben den Gießpunkt erreicht (Erde „' + GIESSPUNKT.erde.knopf + '“, Coco „' + GIESSPUNKT.coco.knopf + '“) — keine feste Frist.',
         when: 'Alle Phasen',
         lex: 'Restgewicht (Dryback · Trocken-Nass-Zyklus)',
       },
@@ -14313,17 +14313,9 @@ function getAlerts(c) {
     }
   }
 
-  // Irregular interval warning (check last 5 waterings) — nach der Ernte ohne Aussage
-  if (waterDates.length >= 3 && !_nachErnte) {
-    const recent = waterDates.slice(-5);
-    const gaps = [];
-    for (let i = 1; i < recent.length; i++) gaps.push(isoDiff(recent[i], recent[i-1]));
-    const avg = gaps.reduce((a, b) => a + b, 0) / gaps.length;
-    const variance = gaps.reduce((a, b) => a + Math.pow(b - avg, 2), 0) / gaps.length;
-    if (variance > 2) {
-      out.push({ icon: '📊', text: `Gießrhythmus schwankt (${gaps.join(', ')}d). Gleichmäßiger = besser!`, type: 'tip' });
-    }
-  }
+  // (v1.5.318) Kein Hinweis mehr, der einen gleichmäßigen Gießabstand verlangt. Gegossen wird nach dem Hebe-Test am
+  // Gießpunkt; trocknet der Topf mit wachsender Pflanze oder wärmerem Klima schneller, wird er kürzer — das ist Messung,
+  // kein Fehler (ANBAU.md 1.2, 15: Der Hebe-Test schlägt das Gießintervall).
 
   // Phase-specific alerts
   if (p.ph === 'bloom') {
@@ -15773,7 +15765,7 @@ function getEntryWarnings(cd, p, e, c, iso) {
     // Sämling: Ein großer Guss hält den ganzen Topf lange nass, die kleine Wurzel nimmt kaum etwas davon auf (ANBAU.md 13.1).
     const sug = waterSuggestion(c, p, iso);
     if (waterVal > sug * 2.5) {
-      out.push({ type: 'err', text: `⚠️ Sehr viel Wasser für Tag ${p.day}! Empfehlung: ~${sug} ml. Zu viel Wasser = Wurzelfäule.` });
+      out.push({ type: 'err', text: `⚠️ Sehr viel Wasser für Tag ${p.day}! Empfehlung: ~${sug} ml. Der Topf bleibt dann lange nass, und die kleine Wurzel nimmt kaum etwas davon auf — nasse Erde ohne aufnehmende Wurzel ist beim Sämling der häufigste Weg zur Wurzelfäule. Bis zum nächsten Guss warten, bis der Topf deutlich leichter ist.` });
     } else if (waterVal > sug * 1.8) {
       out.push({ type: 'warn', text: `💧 Viel Wasser (Empfehlung: ~${sug} ml). Sicher? Erde darf dazwischen antrocknen.` });
     }

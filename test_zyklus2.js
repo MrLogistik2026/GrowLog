@@ -644,6 +644,20 @@ function pruef(name, bedingung, info) {
     pruef('T5 keine JS-Fehler', a.errors.length === 0, a.errors[0]);
   }
 
+  // ===== U: Gieß-Ratschläge folgen dem Gießpunkt, nicht einer Frist (v1.5.318) =====
+  console.log('\nU - Gieß-Ratschläge');
+  {
+    const a = await load(null, { datum: '2026-08-10' });
+    const q = a.window.document.documentElement.outerHTML;
+    pruef('U1 keine feste Gießpause mehr („Eine Woche NICHT gießen", „5-7 Tage NICHT gießen")', !/Eine Woche NICHT gießen|5-7 Tage NICHT gießen/.test(q));
+    pruef('U2 „Erde nass, Pflanze welk" unterscheidet Überwässerung und Überdüngung über den Drain-EC', /Dasselbe Bild macht zu viel Dünger/.test(q) && /keine feste Frist/.test(q));
+    pruef('U3 kein „Zu viel Wasser = Wurzelfäule" mehr', !/Zu viel Wasser = Wurzelfäule/.test(q));
+    // Patricks Run 01 hatte schwankende Abstände — der Tipp „Gleichmäßiger = besser" kommt nicht mehr
+    const alerts = JSON.parse(a.E('JSON.stringify(getAlerts(S.cycles[0]).map(x => x.text))'));
+    pruef('U4 kein Hinweis „Gießrhythmus schwankt … Gleichmäßiger = besser!"', !alerts.some(x => /Gießrhythmus schwankt/.test(x)) && !/Gleichmäßiger = besser/.test(q), alerts);
+    pruef('U5 keine JS-Fehler', a.errors.length === 0, a.errors[0]);
+  }
+
   console.log('\n' + ok + ' OK, ' + fail + ' FEHL');
   if (fail) process.exit(1);
 })().catch((e) => { console.log('FEHLER: ' + (e && e.stack || e)); process.exit(1); });

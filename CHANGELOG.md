@@ -2,6 +2,21 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-07 — v1.5.318
+
+- **Gieß-Ratschläge mit fester Frist statt Gießpunkt** (Nachtprüfung vom 07.10.2026).
+  - Zwei Karten der Schnellhilfe („Gelb + Blätter hängen", „Erde nass, Pflanze welk") verordneten „Eine Woche NICHT gießen"
+    bzw. „5–7 Tage NICHT gießen" — für alle Phasen und Substrate. In Coco und beim Sämling ist eine Woche ohne Wasser selbst
+    der Fehler, und ein welker Sämling im nassen Topf kann auch zu viel Dünger haben (`ANBAU.md` 5, Regel 3). Jetzt gilt
+    der Gießpunkt des Substrats (Erde „Knapp", Coco „Mittel") ohne Frist, und „Erde nass, Pflanze welk" unterscheidet
+    Überwässerung und Überdüngung über den Drain-EC bei gültigem Drain.
+  - Die Sämlings-Warnung „Zu viel Wasser = Wurzelfäule" nennt den Mechanismus (nasse Erde ohne aufnehmende Wurzel,
+    `ANBAU.md` 13.1, 16) und was zu tun ist — derselbe Satz war in v1.5.208 an anderer Stelle schon ersetzt.
+  - Der Tipp „Gießrhythmus schwankt … Gleichmäßiger = besser!" ist weg: Ein kürzerer Abstand bei schneller trocknendem
+    Topf ist Messung, kein Fehler (`ANBAU.md` 1.2, 15; offen seit REIHENFOLGE Punkt 12).
+- Test: `test_zyklus2.js` Abschnitt U (5 Prüfungen, beide Zeitzonen; 4 fallen auf v1.5.317 um).
+
+
 ## 2026-10-07 — v1.5.317
 
 - **Notfall-Texte nannten Erd-Werte für jedes Substrat und eine einzige Ursache** (Nachtprüfung vom 07.10.2026).
