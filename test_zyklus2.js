@@ -469,6 +469,35 @@ function pruef(name, bedingung, info) {
     }
   }
 
+  // ===== M: Assistent fragt die Pflanzenzahl, nennt Tag 1 richtig, bietet Rainbow an (v1.5.310) =====
+  console.log('\nM - Assistent für Run 02');
+  {
+    const a = await load();
+    a.E("openCycleWizard('dash'); Object.assign(_wizAnswers, { growType: 'indoor', medium: 'erde', seedType: 'auto', potSize: 15, startMethod: 'direct' })");
+    let rainbowGesehen = false, letzter = 0;
+    for (let s = 1; s <= 12; s++) {
+      a.E(`_wizStep = ${s}; _renderWiz()`);
+      const txt = a.window.document.getElementById('scr-wizard')?.textContent || '';
+      if (/Rainbow Düngeplan \(v2\.1\)/.test(txt)) rainbowGesehen = true;
+      if (/Zyklus erstellen/.test(txt)) { letzter = s; break; }
+    }
+    pruef('M1 der Rainbow-Plan steht unter den fertigen Plänen (Erde, drinnen)', rainbowGesehen);
+    const txt = (a.window.document.getElementById('scr-wizard')?.textContent || '').replace(/\s+/g, ' ');
+    pruef('M2 das Datum heißt „Keimstart (Tag 1)" und sagt, was gemeint ist', /Keimstart \(Tag 1\)/.test(txt) && /nicht der Tag, an dem der Keimling durchkommt/.test(txt) && !/Tag an dem der Samen keimt/.test(txt));
+    const plus = Array.from(a.window.document.querySelectorAll('#scr-wizard button')).find(b => b.getAttribute('aria-label') === 'Eine Pflanze mehr');
+    pruef('M3 die letzte Seite fragt nach der Pflanzenzahl', !!plus && letzter > 0);
+    for (let i = 0; i < 3 && plus; i++) Array.from(a.window.document.querySelectorAll('#scr-wizard button')).find(b => b.getAttribute('aria-label') === 'Eine Pflanze mehr').click();
+    pruef('M4 „+" zählt hoch (4)', a.E('_wizAnswers.plantCount') === 4 && /🌿 Pflanzen: − 4 \+/.test((a.window.document.getElementById('scr-wizard')?.textContent || '').replace(/\s+/g, ' ')));
+    a.E("_wizAnswers.customStartDate = '2026-09-20'; _wizAnswers.name = 'Run 02 · Anesia'");
+    const vorher = a.E('S.cycles.length');
+    a.E('_wizFinish()');
+    const c = JSON.parse(a.E("JSON.stringify(S.cycles[S.cycles.length - 1])"));
+    pruef('M5 der neue Zyklus: 4 Pflanzen in der Liste, Start 20.09., Topf 15 L', a.E('S.cycles.length') === vorher + 1 && c.plantCount === 4 && (c.plants || []).length === 4 && c.startDate === '2026-09-20' && c.potSize === 15,
+      { pc: c.plantCount, n: (c.plants || []).length, s: c.startDate, t: c.potSize });
+    pruef('M6 Run 01 unberührt', a.E('S.cycles[0].plants.length') === 5 && a.E('getPotSize(S.cycles[0])') === 11);
+    pruef('M7 keine JS-Fehler', a.errors.length === 0, a.errors[0]);
+  }
+
   console.log('\n' + ok + ' OK, ' + fail + ' FEHL');
   if (fail) process.exit(1);
 })().catch((e) => { console.log('FEHLER: ' + (e && e.stack || e)); process.exit(1); });

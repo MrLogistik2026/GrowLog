@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.309** · index.html 2,51 MB · 759 Funktionen
+Stand: **v1.5.310** · index.html 2,51 MB · 759 Funktionen
 Zuletzt fortgeschrieben am 06.10.2026 (Run 02 neben Run 01 — Abschnitt 0o, „Stand Run 02"). Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
@@ -205,6 +205,7 @@ kein Blocker, aber Fehler, die nur mit zwei Zyklen oder direkt nach dem Anlegen 
 - v1.5.307: Nachtragen und Auto-eintragen schreiben keine geschätzten pH-/EC-Werte mehr (ANBAU.md 15), nur Gießmenge und Plan-Dünger als Vorschlag.
 - v1.5.308: „🏁 Zyklus abschließen" mit Datum (`c.endDate`, `_zyklusEndeVorschlag`) — danach keine Phase, der Kalender zählt nicht weiter; die Startseite bietet es im Curing und nach dem Ende an. Offen: Kachel „Ernte in — ±5d" bei fertigem Zyklus.
 - v1.5.309: Startseite hat unter „Meine Zyklen" den Knopf „＋ Neuen Zyklus anlegen" (`_neuerZyklusKnopf`).
+- v1.5.310: Assistent fragt die Pflanzenzahl, nennt das Datum „Keimstart (Tag 1)" und bietet die Rainbow-Vorlage an.
 
 **Bei der nächsten Bewertung** dieselbe Skala, dieselben Kategorie-IDs und dieselben Regeln aus `auftrag.md` nehmen und
 die Noten gegen diese Tabelle stellen.

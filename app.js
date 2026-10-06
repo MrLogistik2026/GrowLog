@@ -3593,7 +3593,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.309';
+const APP_VERSION = 'v1.5.310';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -24438,7 +24438,7 @@ function _wizStepFertPlan(a) {
     ? ['canna_coco', 'ghe_flora']
     : isOutdoor
       ? ['biobizz_light', 'canna', 'hesi', 'plagron', 'biobizz_master', 'biobizz_official_2026']
-      : ['biobizz_light', 'cup_sieger', 'canna', 'hesi', 'plagron', 'biobizz_master', 'biobizz_official_2026'];
+      : ['biobizz_light', 'cup_sieger', 'canna', 'hesi', 'plagron', 'biobizz_master', 'biobizz_official_2026', 'rainbow_auto'];
   const recommendedKey = med === 'coco' ? EINSTEIGER_VORLAGE.coco : EINSTEIGER_VORLAGE.erde;
   const presetOptions = presetKeys
     .filter(key => !plans.some(p => p.presetKey === key))
@@ -24654,11 +24654,11 @@ function _wizStepNameSummary(a) {
         <div>${a.growType === 'outdoor' ? '☀️ Outdoor' : '🏠 Indoor'}</div>
         ${a.seedType ? `<div>${seedLabel}</div>` : ''}
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:4px 0">
-          <span>🌱 Keimung:</span>
+          <span>🌱 Keimstart (Tag 1):</span>
           <input type="date" value="${startDateInfo.date}" onchange="_wizAnswers.customStartDate=this.value;_renderWiz()" style="background:var(--card2);border:0.5px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);font-family:var(--font);font-size:12px;font-weight:700;color-scheme:dark"/>
           <span style="font-size:10px;color:var(--text-muted)">${fmtDE(startDateInfo.date, { weekday:'short' })}</span>
         </div>
-        <div style="font-size:10px;color:var(--text-hint);padding-left:2px;margin-top:-2px">Tag an dem der Samen keimt</div>
+        <div style="font-size:10px;color:var(--text-hint);padding-left:2px;margin-top:-2px;line-height:1.45">Der Tag, an dem du den Samen eingeweicht oder in die Erde gelegt hast — nicht der Tag, an dem der Keimling durchkommt. Liegt er in der Vergangenheit, trag ihn so ein; die App rechnet ab dort.</div>
         ${a.growType === 'outdoor' ? (() => {
           // Default: Keimdatum + 21 Tage (sicherer Sweetspot — Pflanze hat 4-5 Blattetagen,
           // Wurzelmasse aufgebaut, hält Wind und Sonne aus). Eisheiligen sind schon eingerechnet
@@ -24680,6 +24680,13 @@ function _wizStepNameSummary(a) {
           `;
         })() : ''}
         <div>🪴 Topf: <b>${a.potSize || 11} L</b></div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:4px 0">
+          <span>🌿 Pflanzen:</span>
+          <button onclick="_wizAnswers.plantCount=Math.max(1,(parseInt(_wizAnswers.plantCount)||1)-1);_renderWiz()" aria-label="Eine Pflanze weniger" style="width:34px;height:34px;border-radius:8px;background:var(--card2);border:0.5px solid var(--border);color:var(--text);font-size:16px;cursor:pointer">−</button>
+          <b id="wiz-plants" style="min-width:20px;text-align:center">${Math.max(1, parseInt(a.plantCount) || 1)}</b>
+          <button onclick="_wizAnswers.plantCount=Math.min(50,(parseInt(_wizAnswers.plantCount)||1)+1);_renderWiz()" aria-label="Eine Pflanze mehr" style="width:34px;height:34px;border-radius:8px;background:var(--card2);border:0.5px solid var(--border);color:var(--text);font-size:16px;cursor:pointer">+</button>
+        </div>
+        <div style="font-size:10px;color:var(--text-hint);padding-left:2px;margin-top:-2px;line-height:1.45">Gieß- und Düngermengen rechnet die App je Pflanze und für alle zusammen. Namen und Sorten je Pflanze trägst du danach in den Einstellungen ein (Grundausstattung → Anzahl Pflanzen).</div>
         <div>🧪 Düngeplan: <b>${planName}</b></div>
       </div>
     </div>
@@ -24945,6 +24952,7 @@ function _wizFinish() {
     seedType,
     startDate: startInfo.date,
     potSize: a.potSize,
+    plantCount: Math.max(1, parseInt(a.plantCount) || 1),   // (v1.5.310) vorher fragte der Assistent nicht danach
     fertPlanId: resolvedPlanId,
     // Bei Outdoor wird startMethod ignoriert (createCycle nimmt Default 'saturated',
     // aber Sämlings-Protokoll greift dort sowieso nicht in voller Form).

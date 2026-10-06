@@ -2,6 +2,20 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-06 — v1.5.310
+
+- **Der Assistent passte nicht zu Run 02** (gemessen beim Durchspielen mit Patricks Daten). Er fragte nicht nach der
+  Pflanzenzahl — jeder neue Zyklus begann mit einer Pflanze, die Mengen liefen für eine, bis man in den Einstellungen
+  nachzog. Das Datumsfeld hieß „Keimung: Tag an dem der Samen keimt", während die App (seit v1.5.168) und Patricks
+  Plan-Blatt Tag 1 als Keimstart zählen, also den Tag des Einweichens — wer das Sprout-Datum eintrug, verschob alle Tage
+  um rund vier bis fünf. Und die Rainbow-Vorlage stand nicht unter den fertigen Plänen; sie war nur wählbar, wenn man sie
+  vorher im Düngeplan geladen hatte.
+- **Jetzt** fragt die letzte Seite „🌿 Pflanzen: − 1 +" (mit dem Hinweis, wo Namen und Sorten je Pflanze hingehören), das
+  Datum heißt „Keimstart (Tag 1)" mit dem Satz „Der Tag, an dem du den Samen eingeweicht oder in die Erde gelegt hast —
+  nicht der Tag, an dem der Keimling durchkommt", und „Rainbow Düngeplan (v2.1)" steht für Erde drinnen in der Liste.
+- Test: `test_zyklus2.js` Abschnitt M (7 Prüfungen, beide Zeitzonen; 5 fallen auf v1.5.309 um).
+
+
 ## 2026-10-06 — v1.5.309
 
 - **Von der Startseite führte kein Weg zu einem neuen Zyklus, sobald einer existierte** (gemessen beim Durchspielen von
