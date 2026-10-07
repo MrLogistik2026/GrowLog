@@ -4594,7 +4594,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.329';
+const APP_VERSION = 'v1.5.330';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -5250,6 +5250,16 @@ function _skSchreiben(text, umfangNeu, ersetzen) {
   if (_speicherSperre) {
     _speicherSperreMelden();
     const e = new Error('Speichersperre'); e.name = 'SpeicherSperre';
+    throw e;
+  }
+  // (v1.5.330) Ließ sich der Speicher beim Start nicht lesen, wird er auch nicht beschrieben. Manche Browser verweigern
+  // nur das Lesen; dann überschrieb schon die Zustimmung zum Haftungsausschluss einen Stand, den die App nie gesehen hatte
+  // (Skeptiker, 07.10.2026: 1 Zyklus und 111 Einträge → 0 und 1). Wo ohnehin nichts geschrieben werden kann, ändert das
+  // nichts. Die Tür ist das Backup im Band; danach in einem Browser, der lesen darf, importieren.
+  if (_speicherGesperrt) {
+    _speicherStatusRot(true);
+    _fehlerBand('gesperrt');
+    const e = new Error('Speicher nicht lesbar'); e.name = 'SpeicherSperre';
     throw e;
   }
   // (v1.5.327) Hat ein anderes Fenster geschrieben, schreibt dieses nicht darüber. Ein ganzer Stand, der bewusst alles

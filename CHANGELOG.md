@@ -2,6 +2,19 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-07 — v1.5.330
+
+- **Durfte der Browser nur nicht lesen, überschrieb die App den ungelesenen Stand** (Skeptiker vor dem Hochladen,
+  mittel/leicht; in v1.5.319 genauso). Manche Browser verweigern nur das Lesen. v1.5.321 erkennt das beim Start, aber
+  geschrieben wurde trotzdem: Schon die Zustimmung zum Haftungsausschluss legte einen leeren Stand über einen, den die App
+  nie gesehen hatte (gemessen: 1 Zyklus und 111 Einträge → 0 Zyklen und 1 Eintrag), und danach blinkte der grüne Punkt.
+- **Jetzt** schreibt `_skSchreiben` nicht, wenn der Speicher beim Start nicht lesbar war — dieselbe Regel wie beim
+  Rettungsplatz: Was nicht gelesen werden konnte, wird nicht überschrieben. Das Band aus v1.5.328 nennt den Grund und
+  zieht auf Antippen ein Backup; der rote Punkt bleibt. Wo ohnehin nichts geschrieben werden kann, ändert sich nichts.
+- Test: `test_speichern.js` Abschnitt I (4 Prüfungen, beide Zeitzonen; 3 fallen auf v1.5.329 um). B5 prüft den Grund seit
+  v1.5.328 im Band statt im Toast.
+
+
 ## 2026-10-07 — v1.5.329
 
 - **Ein zerstörter Arbeitsstand wurde seit v1.5.320 geschrieben** (Skeptiker vor dem Hochladen, mittel). v1.5.320 schreibt

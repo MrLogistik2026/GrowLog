@@ -48,6 +48,10 @@ async function load(speicher, opts = {}) {
       if (opts.gesperrt) {
         Object.defineProperty(w, 'localStorage', { configurable: true, get() { const e = new w.DOMException('The operation is insecure.', 'SecurityError'); throw e; } });
       }
+      // Nur Lesen gesperrt, Schreiben geht (manche Browser): w.__lies(k) liest am Sperre vorbei für die Prüfung.
+      const origGet = w.Storage.prototype.getItem;
+      w.__lies = (k) => origGet.call(w.localStorage, k);
+      if (opts.lesenGesperrt) w.Storage.prototype.getItem = function () { throw new w.DOMException('The operation is insecure.', 'SecurityError'); };
     },
   });
   const w = dom.window;
@@ -118,7 +122,8 @@ function pruef(name, bedingung, info) {
     pruef('B4 der Hinweis ist kein Download-Angebot', !/herunterlad/i.test(d));
     b.toasts.length = 0;
     b.E("S.entries['2026-09-30'] = { note: 'geht nicht' }; saveS._lastQuotaErr = 0; saveS()");
-    pruef('B5 ein Speicherversuch nennt den Grund statt „gespeichert"', b.toasts.some(t => /lässt GrowSmart nicht an den Speicher/.test(t)), b.toasts);
+    const bb = b.window.document.getElementById('sperrband');
+    pruef('B5 ein Speicherversuch nennt den Grund statt „gespeichert" (seit v1.5.328 im Band)', !!bb && /lässt GrowSmart nicht an den Speicher/.test(bb.textContent), bb && bb.textContent);
     pruef('B6 der rote Punkt steht', b.rot());
   }
   {
@@ -318,6 +323,20 @@ function pruef(name, bedingung, info) {
     pruef(`H ${name}: nicht geschrieben, Hauptstand und Kopie unverändert`, r === false && k.get(SK) === vorher && k.get('growsmart_v4_bak') === kopie);
     const b = k.window.document.getElementById('sperrband');
     pruef(`H ${name}: Band „Nicht gespeichert … neu laden"`, !!b && /gespeicherter Stand, wie er war/.test(b.textContent) && k.rot());
+  }
+
+  // ===== I: Was nicht gelesen werden konnte, wird nicht überschrieben (v1.5.330) =====
+  console.log('\nI - Lesen gesperrt, Schreiben ginge');
+  {
+    const m = await load({ [SK]: SICHERUNG }, { lesenGesperrt: true, warten: 1500 });
+    pruef('I0 Start ohne JS-Fehler, gilt als gesperrt', m.errors.length === 0 && m.E('_speicherGesperrt') === true, m.errors[0]);
+    m.E('_acceptDisclaimer()');
+    await new Promise((r) => setTimeout(r, 800));
+    m.E("S.entries['2026-09-30'] = { note: 'neu' }; saveS._lastUndo = 0; saveS()");
+    pruef('I1 Haftungsausschluss und Speichern überschreiben den ungelesenen Stand nicht', m.window.__lies(SK) === SICHERUNG);
+    const b = m.window.document.getElementById('sperrband');
+    pruef('I2 Band mit Backup-Tür steht', !!b && /Backup zu ziehen/.test(b.textContent), b && b.textContent);
+    pruef('I3 kein grüner Erfolg: roter Punkt an', m.rot());
   }
 
   console.log('\n' + ok + ' OK, ' + fail + ' FEHL');
