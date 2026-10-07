@@ -3593,7 +3593,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.343';
+const APP_VERSION = 'v1.5.344';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -4879,7 +4879,12 @@ async function _rettungHerunterladen() {
   // ein Download unter der Sperre den ganz anderen, geparkten Stand als „heruntergeladen" — und der
   // wurde danach ohne Rückfrage überschrieben.
   if (_speicherSperre) {
-    _speicherSperre = false; _sperreRoh = null; _speicherStatusRot(false); _sperrBand(false);
+    _speicherSperre = false; _sperreRoh = null;
+    // (v1.5.344) Nur das eigene Band der Sperre wegnehmen. Vorher fiel jedes Band, auch „Dieses Fenster speichert nicht mehr"
+    // (anderes Fenster, geleerter Speicher) — danach blieb das Speichern still blockiert, ohne Hinweis (Prüfer, 07.10.2026).
+    const _b = document.getElementById('sperrband');
+    if (!_b || !_b.dataset.art) _sperrBand(false);
+    if (!_fremdGeschrieben && !_speicherGeleert) _speicherStatusRot(false);
   } else {
     const i = _rettungInfo();
     if (i) { i.heruntergeladen = true; _rettungInfoSchreiben(i); }

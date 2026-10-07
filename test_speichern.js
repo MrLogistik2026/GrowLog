@@ -429,6 +429,27 @@ function pruef(name, bedingung, info) {
     pruef('K10 anderes Fenster schreibt während der Frage: „Wieder speichern" überschreibt es nicht, Hinweis „woanders geändert"', k.get(SK) === fremd && k.dialoge.some(d => /woanders geändert/.test(d)), k.dialoge);
   }
 
+  // ===== M: Der Rettungs-Download räumt fremde Bänder nicht ab (v1.5.344) =====
+  console.log('\nM - Rettungs-Download und andere Bänder');
+  {
+    const m = await load({ [SK]: SICHERUNG }, { antwort: true });
+    m.window.URL.createObjectURL = () => 'blob:test';
+    m.window.HTMLAnchorElement.prototype.click = function () {};
+    m.E("_speicherSperre = true; _sperreRoh = '{\"cycles\":[]}'; _sperrBand(true)");
+    m.E("_fremdGeschrieben = true; _speicherStatusRot(true); _sperrBand(true, 'FREMD speichert nicht mehr', () => {}, 'fremd')");
+    await m.E('_rettungHerunterladen()');
+    await new Promise((r) => setTimeout(r, 100));
+    const b = m.window.document.getElementById('sperrband');
+    pruef('M1 Sperre aufgehoben, das Band „anderes Fenster" bleibt stehen, roter Punkt auch', m.E('_speicherSperre') === false && !!b && /FREMD/.test(b.textContent) && m.rot(), b && b.textContent);
+    const n = await load({ [SK]: SICHERUNG }, { antwort: true });
+    n.window.URL.createObjectURL = () => 'blob:test';
+    n.window.HTMLAnchorElement.prototype.click = function () {};
+    n.E("_speicherSperre = true; _sperreRoh = '{\"cycles\":[]}'; _sperrBand(true)");
+    await n.E('_rettungHerunterladen()');
+    await new Promise((r) => setTimeout(r, 100));
+    pruef('M2 nur die Sperre: ihr Band geht nach dem Download weg', n.E('_speicherSperre') === false && !n.window.document.getElementById('sperrband'));
+  }
+
   // ===== L: ↩, dann gleich weiterarbeiten — ↪ überschreibt nichts (v1.5.333) =====
   console.log('\nL - Rückgängig und danach weiterarbeiten');
   {

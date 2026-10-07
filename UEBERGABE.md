@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.343** · index.html 2,56 MB · 781 Funktionen
+Stand: **v1.5.344** · index.html 2,56 MB · 781 Funktionen
 Zuletzt fortgeschrieben am 07.10.2026 (Nachtprüfung und Run 02 — Abschnitt 0o, „Stand Run 02"). Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
@@ -264,6 +264,7 @@ Unterscheidungsfragen aus dem eigenen Zustand.
 - v1.5.341: Zyklus-Import speichert einmal am Ende — kein halber Stand bei Fehlschlag, ein ↩-Schritt, keine Zwischenmeldungen; Hinweis auf die leeren Tage seit dem Keimstart.
 - v1.5.342: Zyklus-Import nennt den Plan, der wirklich genommen wird, und fragt bei abweichender Kopie (Vorlage / meine Kopie); Substrat muss zur Vorlage passen; von Hand angelegte Doppel werden erkannt.
 - v1.5.343: „Speicher geleert" — Escape/daneben heißt nicht mehr „Nicht speichern" (zweite Bestätigung), das Band zieht ein Backup statt neu zu laden; ein anderes Fenster wird beim Zurückspeichern nicht überschrieben.
+- v1.5.344: Der Rettungs-Download nimmt nur das Band der Speichersperre weg, nicht „Dieses Fenster speichert nicht mehr".
 
 **Bei der nächsten Bewertung** dieselbe Skala, dieselben Kategorie-IDs und dieselben Regeln aus `auftrag.md` nehmen und
 die Noten gegen diese Tabelle stellen.

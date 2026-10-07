@@ -2,6 +2,16 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-07 — v1.5.344
+
+- **Der Rettungs-Download räumte jedes Band ab** (Prüfer vor dem Hochladen, leicht). Wer den aufgehobenen alten Stand
+  herunterlud, hob damit die Speichersperre auf — und `_rettungHerunterladen` entfernte dabei auch ein Band „Dieses Fenster
+  speichert nicht mehr" (anderes Fenster, geleerter Speicher). Gespeichert wurde danach trotzdem nicht, nur ohne jeden
+  Hinweis außer dem roten Punkt.
+- **Jetzt** nimmt der Download nur das Band der Sperre selbst weg; der rote Punkt bleibt, solange ein anderer Grund gilt.
+- Test: `test_speichern.js` Abschnitt M (2 Prüfungen, beide Zeitzonen; 1 fällt auf v1.5.343 um).
+
+
 ## 2026-10-07 — v1.5.343
 
 - **Escape oder ein Tipp daneben hieß „Nicht speichern"** (Prüfer vor dem Hochladen, mittel; ein Rückschritt aus
