@@ -4594,7 +4594,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.338';
+const APP_VERSION = 'v1.5.339';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -26480,13 +26480,17 @@ function _zyklenPaketPruefen(d) {
   const heute = todayISO();
   const isoOk = (x) => typeof x === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(x) && _localISO(new Date(x + 'T12:00:00')) === x;
   const ganz = (x, von, bis) => Number.isInteger(x) && x >= von && x <= bis;
-  const text = (x, max) => typeof x === 'string' && x.trim() !== '' && x.length <= max;
+  // (v1.5.339) Keine spitzen Klammern: Namen und Sorten landen an vielen Stellen ungefiltert im Seitenaufbau. Eine fremde
+  // Zyklus-Datei könnte sonst Programmcode in die App bringen. Wer selbst tippt, schadet nur sich; eine Datei kann jemand anderes schicken.
+  const sauber = (x) => !/[<>]/.test(x);
+  const text = (x, max) => typeof x === 'string' && x.trim() !== '' && x.length <= max && sauber(x);
+  const kurz = (x, max) => x === undefined || (typeof x === 'string' && x.length <= max && sauber(x));
   const paketId = (typeof d.paketId === 'string' && d.paketId.trim() && d.paketId.length <= 60) ? d.paketId.trim() : null;
   const zyklen = [];
   for (let i = 0; i < d.zyklen.length; i++) {
     const z = d.zyklen[i], nr = `Zyklus ${i + 1}`;
     if (!_istObjekt(z)) return nein(`${nr} ist kein Eintrag`);
-    if (!text(z.name, 60)) return nein(`${nr}: Name fehlt oder ist länger als 60 Zeichen`);
+    if (!text(z.name, 60)) return nein(`${nr}: Name fehlt, ist länger als 60 Zeichen oder enthält < >`);
     if (!isoOk(z.startDate) || z.startDate < '2020-01-01' || z.startDate > isoPlus(heute, 60)) return nein(`${z.name}: Startdatum ungültig`);
     if (!['auto', 'fem', 'reg'].includes(z.seedType)) return nein(`${z.name}: Samentyp unbekannt`);
     if (!['indoor', 'outdoor'].includes(z.growType)) return nein(`${z.name}: drinnen/draußen unbekannt`);
@@ -26499,18 +26503,18 @@ function _zyklenPaketPruefen(d) {
     if (z.lightVeg !== undefined && !['18/6', '20/4', '24/0', '16/8'].includes(z.lightVeg)) return nein(`${z.name}: Licht in der Anzucht unbekannt`);
     if (z.lightBloom !== undefined && !['12/12', '18/6', '20/4', '24/0'].includes(z.lightBloom)) return nein(`${z.name}: Licht in der Blüte unbekannt`);
     if (z.fertPreset !== undefined && !_vorlageWaehlbar(z.fertPreset)) return nein(`${z.name}: Düngeplan-Vorlage unbekannt`);
-    if (z.strain !== undefined && !(typeof z.strain === 'string' && z.strain.length <= 80)) return nein(`${z.name}: Sorte zu lang`);
+    if (!kurz(z.strain, 80)) return nein(`${z.name}: Sorte zu lang oder mit < >`);
     if (!Array.isArray(z.pflanzen) || !z.pflanzen.length || z.pflanzen.length > 20) return nein(`${z.name}: Pflanzen fehlen (1 bis 20)`);
     for (const p of z.pflanzen) {
-      if (!_istObjekt(p) || !text(p.label, 60)) return nein(`${z.name}: eine Pflanze ohne Namen`);
-      if (p.strain !== undefined && !(typeof p.strain === 'string' && p.strain.length <= 80)) return nein(`${z.name}: Sorte einer Pflanze zu lang`);
+      if (!_istObjekt(p) || !text(p.label, 60)) return nein(`${z.name}: eine Pflanze ohne Namen oder mit < >`);
+      if (!kurz(p.strain, 80)) return nein(`${z.name}: Sorte einer Pflanze zu lang oder mit < >`);
     }
     const notizen = {};
     if (z.notizen !== undefined) {
       if (!_istObjekt(z.notizen)) return nein(`${z.name}: Notizen unlesbar`);
       for (const [tag, t] of Object.entries(z.notizen)) {
         if (!isoOk(tag) || tag < z.startDate || tag > heute) return nein(`${z.name}: Notiz am ${tag} liegt vor dem Start oder in der Zukunft`);
-        if (!text(t, 2000)) return nein(`${z.name}: Notiz am ${tag} leer oder zu lang`);
+        if (!text(t, 2000)) return nein(`${z.name}: Notiz am ${tag} leer, zu lang oder mit < >`);
         notizen[tag] = t.trim();
       }
     }

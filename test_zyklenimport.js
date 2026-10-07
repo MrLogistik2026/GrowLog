@@ -111,6 +111,12 @@ function pruef(name, bedingung, info) {
       ['Anzucht unsinnig', (p) => { p.zyklen[0].anzuchtDays = 2; }],
       ['Licht unbekannt', (p) => { p.zyklen[0].lightVeg = '25/0'; }],
       ['keine Zyklen', (p) => { p.zyklen = []; }],
+      // (v1.5.339) Kein HTML: Namen landen ungefiltert im Seitenaufbau
+      ['Zyklusname mit HTML', (p) => { p.zyklen[0].name = 'A<img src=x onerror=alert(1)>'; }],
+      ['Pflanzenname mit HTML', (p) => { p.zyklen[0].pflanzen[0].label = '<b>fett</b>'; }],
+      ['Sorte mit spitzer Klammer', (p) => { p.zyklen[0].pflanzen[0].strain = 'X > Y'; }],
+      ['Zyklus-Sorte mit HTML', (p) => { p.zyklen[0].strain = '<svg onload=alert(1)>'; }],
+      ['Notiz mit Skript', (p) => { p.zyklen[0].notizen['2026-09-22'] = '<script>alert(1)</script>'; }],
     ];
     for (const [name, mach] of kaputt) {
       const p = JSON.parse(JSON.stringify(PAKET)); mach(p);
@@ -118,6 +124,9 @@ function pruef(name, bedingung, info) {
       const r = await a.laden(p);
       pruef(`U ${name}: abgelehnt mit Grund, Stand unverändert`, r === false && a.E('JSON.stringify(S)') === vorher && a.toasts.some(t => /lässt sich nicht laden \(/.test(t) && /unverändert/.test(t)), a.toasts);
     }
+    const p = JSON.parse(JSON.stringify(PAKET)); p.paketId = 'zeichen'; p.zyklen = [zyklus('Gruppe "A" & B · 1', '2026-09-20', 1)];
+    const r = await a.laden(p);
+    pruef('U Anführungszeichen, & und · sind erlaubt', r === true && a.E("S.cycles.some(c => c.name === 'Gruppe \"A\" & B · 1')"));
   }
 
   console.log('\nS - Kein Hinzufügen nur im Arbeitsspeicher');

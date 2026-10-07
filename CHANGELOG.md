@@ -2,6 +2,18 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-07 — v1.5.339
+
+- **Eine Zyklus-Datei konnte Programmcode in die App bringen** (beim Durchsehen von v1.5.337 gefunden, bevor es
+  ausgeliefert war). Zyklus- und Pflanzennamen landen an vielen Stellen ungefiltert im Seitenaufbau. Wer selbst tippt,
+  schadet nur sich; eine Zyklus-Datei kann aber jemand anderes schicken — gemessen auf v1.5.338: ein Name
+  `A<img src=x onerror=…>` wurde angelegt.
+- **Jetzt** lehnt die Prüfung jeden Text mit `<` oder `>` ab (Zyklusname, Pflanzenname, Sorte, Notiz), mit Grund.
+  Anführungszeichen, `&` und `·` bleiben erlaubt. Die Anzeige überall zu maskieren wäre der größere Umbau; die Datei ist
+  der einzige Weg, auf dem fremder Text hereinkommt.
+- Test: `test_zyklenimport.js` Abschnitt U um 6 Prüfungen erweitert (34, beide Zeitzonen; 5 fallen auf v1.5.338 um).
+
+
 ## 2026-10-07 — v1.5.338
 
 - **In der Anzucht stand „Blüte Wo.3"** (beim Durchspielen von Run 02 gefunden: Tag 18, mitten in der Anzucht).
