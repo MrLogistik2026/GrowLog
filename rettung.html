@@ -8,12 +8,14 @@
   body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
        background:#0d1117;color:#e6edf3;margin:0;padding:18px;line-height:1.6;font-size:15px}
   h1{font-size:1.1rem;color:#4caf70;margin:0 0 14px}
+  h2{font-size:.95rem;margin:0 0 4px}
   .box{background:#161b22;border:1px solid #21262d;border-radius:10px;padding:14px;margin-bottom:12px}
   .ok{border-color:#4caf70}
   .warn{border-color:#d4a017}
   .err{border-color:#db4545}
   button{width:100%;padding:14px;font-size:15px;font-weight:600;border-radius:10px;
          border:none;background:#4caf70;color:#0d1117;margin-top:10px;font-family:inherit}
+  button.zweit{background:#30363d;color:#e6edf3}
   button:disabled{background:#30363d;color:#7d8590}
   pre{white-space:pre-wrap;word-break:break-all;font-size:11px;color:#8b949e;
       max-height:190px;overflow:auto;background:#0d1117;padding:9px;border-radius:7px}
@@ -23,88 +25,113 @@
 <body>
 <h1>🌱 GrowSmart · Datenrettung</h1>
 <div id="status" class="box">Suche nach gespeicherten Daten …</div>
-<div id="aktion"></div>
+<div id="staende"></div>
 <div class="box">
-  <div class="k">Findet diese Datei nichts, liegen deine Daten in einem anderen Speicherbereich
-  der Vorschau. Dann hilft nur, die Vorschau der großen Datei wieder zum Laufen zu bringen.
-  <b>Lösche in keinem Fall die App-Daten oder den Cache der Claude-App</b> — dort liegt dein Grow.</div>
+  <div class="k">Findet diese Seite nichts, liegen deine Daten vielleicht in einem anderen Browser oder auf einem
+  anderen Gerät — öffne die Seite dort. <b>Lösche auf keinen Fall die Website-Daten oder den Verlauf dieses Browsers
+  für diese Seite</b> — dort liegt dein Grow.</div>
 </div>
 
 <script>
+/*
+ * (v1.5.334) Die Seite ist der Weg zu den Daten, wenn GrowSmart selbst nicht mehr startet. Bis v1.5.331 las sie nur
+ * growsmart_v4 — die Tageskopien, den beim Start aufgehobenen alten Stand und Schlüssel älterer Versionen bot sie nicht
+ * an, und unten stand noch ein Hinweis auf die „Vorschau der Claude-App" aus der Zeit vor GitHub Pages.
+ * Die Liste der Schlüssel ist eine zweite Stelle neben app.js (SK, RETTUNG_KEY, BAK_KEY, BAK2_KEY) — neue Schlüssel
+ * dort auch hier eintragen.
+ */
 (function () {
   var st = document.getElementById('status');
-  var akt = document.getElementById('aktion');
-  var KEY = 'growsmart_v4';
-  var roh = null;
+  var liste = document.getElementById('staende');
+  var STAENDE = [
+    { k: 'growsmart_v4', titel: 'Dein gespeicherter Stand', text: 'Mit Fotos.', haupt: true },
+    { k: 'growsmart_v4_rettung', titel: 'Aufgehobener alter Stand', text: 'Ließ sich beim Start von GrowSmart nicht benutzen und wurde deshalb hier aufgehoben.', kaputt: true },
+    { k: 'growsmart_v4_bak', titel: 'Automatische Tageskopie', text: 'Ohne Fotos.' },
+    { k: 'growsmart_v4_bak2', titel: 'Vorige Tageskopie', text: 'Ohne Fotos.' },
+    { k: 'growsmart_v4_vor_wiederherstellung', titel: 'Stand vor der letzten Wiederherstellung', text: 'Den hat wiederherstellung.html beim Einspielen aufgehoben.' },
+    { k: 'growsmart_v3', titel: 'Daten einer älteren GrowSmart-Version', text: '' },
+    { k: 'growsmart_v2', titel: 'Daten einer älteren GrowSmart-Version', text: '' },
+    { k: 'growsmart_data', titel: 'Daten einer älteren GrowSmart-Version', text: '' }
+  ];
 
-  try {
-    roh = localStorage.getItem(KEY);
-  } catch (e) {
-    st.className = 'box err';
-    st.innerHTML = '<b>Kein Zugriff auf den Speicher.</b><br>' + e.message;
-    return;
+  function heute() {   // lokales Datum, nicht UTC — sonst trägt die Datei nachts das Datum von gestern
+    var d = new Date();
+    return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2);
   }
-
-  // Auch nach anderen Schlüsseln schauen, falls der Name abweicht
-  var alle = [];
-  try {
-    for (var i = 0; i < localStorage.length; i++) alle.push(localStorage.key(i));
-  } catch (e) { /* ignorieren */ }
-
-  if (!roh) {
-    st.className = 'box warn';
-    st.innerHTML = '<b>Keine GrowSmart-Daten in diesem Speicherbereich.</b><br>'
-      + 'Gefundene Schlüssel: ' + (alle.length ? alle.join(', ') : 'keine')
-      + '<br><br>Das heißt <b>nicht</b>, dass deine Daten weg sind — nur, dass diese Datei sie '
-      + 'von hier aus nicht sieht.';
-    return;
-  }
-
-  var groesse = (roh.length / 1024).toFixed(0);
-  var info = '';
-  try {
-    var d = JSON.parse(roh);
-    var z = (d.cycles || []).length;
-    var e = Object.keys(d.entries || {}).length;
-    var aktiv = (d.cycles || []).filter(function (c) { return c.active && !c.archived; })[0];
-    info = '<br>Zyklen: <b>' + z + '</b> · Tageseinträge: <b>' + e + '</b>'
-      + (aktiv ? '<br>Aktiv: <b>' + (aktiv.name || 'ohne Namen') + '</b>, Start ' + (aktiv.startDate || '?') : '');
-  } catch (err) {
-    info = '<br><span style="color:#d4a017">Die Daten liegen vor, ließen sich aber nicht lesen — '
-      + 'sichere sie trotzdem.</span>';
-  }
-
-  st.className = 'box ok';
-  st.innerHTML = '<b>Daten gefunden.</b> ' + groesse + ' KB' + info;
-
-  var b1 = document.createElement('button');
-  b1.textContent = '💾 Sicherung herunterladen';
-  b1.onclick = function () {
+  function esc(t) { return String(t).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function herunterladen(roh, name, knopf) {
     try {
       var blob = new Blob([roh], { type: 'application/json' });
       var a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
-      a.download = 'growsmart-sicherung-' + new Date().toISOString().slice(0, 10) + '.json';
+      a.download = name;
       document.body.appendChild(a); a.click(); a.remove();
-      b1.textContent = '✓ Heruntergeladen — prüf deinen Download-Ordner';
+      knopf.textContent = '✓ Heruntergeladen — prüf deinen Download-Ordner';
     } catch (e) {
-      alert('Download nicht möglich: ' + e.message + '\n\nNutz stattdessen den Knopf darunter.');
+      alert('Download nicht möglich: ' + e.message + '\n\nNutz stattdessen „Daten anzeigen" und kopiere den Text.');
     }
-  };
-  akt.appendChild(b1);
+  }
 
-  var b2 = document.createElement('button');
-  b2.textContent = '📋 Daten anzeigen (zum Kopieren)';
-  b2.style.background = '#30363d';
-  b2.style.color = '#e6edf3';
-  b2.onclick = function () {
-    var pre = document.createElement('pre');
-    pre.textContent = roh;
-    akt.appendChild(pre);
-    b2.disabled = true;
-    try { navigator.clipboard.writeText(roh); } catch (e) { /* ohne Zwischenablage */ }
-  };
-  akt.appendChild(b2);
+  var gefunden = [];
+  try {
+    STAENDE.forEach(function (s) { var roh = localStorage.getItem(s.k); if (roh) gefunden.push({ s: s, roh: roh }); });
+  } catch (e) {
+    st.className = 'box err';
+    st.innerHTML = '<b>Der Browser lässt diese Seite nicht an den Speicher.</b><br>Meist sind Cookies und Website-Daten '
+      + 'für diese Seite blockiert, manchmal ist es ein privates Fenster. Erlaube Website-Daten und lade die Seite neu.';
+    return;
+  }
+
+  if (!gefunden.length) {
+    st.className = 'box warn';
+    st.innerHTML = '<b>Keine GrowSmart-Daten in diesem Browser.</b><br>Das heißt <b>nicht</b>, dass deine Daten weg '
+      + 'sind — nur, dass sie nicht in diesem Browser liegen. Öffne die Seite in dem Browser, in dem du GrowSmart benutzt.';
+    return;
+  }
+
+  st.className = 'box ok';
+  st.innerHTML = '<b>' + gefunden.length + (gefunden.length === 1 ? ' Stand gefunden.' : ' Stände gefunden.') + '</b> '
+    + 'Lade jeden herunter, den du behalten willst. Eine heruntergeladene Datei lädst du in GrowSmart unter '
+    + '<b>Einstellungen → Daten &amp; Sicherheit → Import</b>.';
+
+  gefunden.forEach(function (g) {
+    var box = document.createElement('div');
+    var info = '', lesbar = true;
+    try {
+      var d = JSON.parse(g.roh);
+      if (!d || typeof d !== 'object' || Array.isArray(d)) throw new Error('kein Stand');
+      var zyklen = Array.isArray(d.cycles) ? d.cycles.length : 0;
+      var eintraege = (d.entries && typeof d.entries === 'object' && !Array.isArray(d.entries)) ? Object.keys(d.entries).length : 0;
+      info = 'Zyklen: <b>' + zyklen + '</b> · Tageseinträge: <b>' + eintraege + '</b>' + (d._bakDate ? ' · vom ' + esc(d._bakDate) : '');
+    } catch (e) {
+      lesbar = false;
+      info = '<span style="color:#d4a017">Ließ sich nicht lesen — sichere ihn trotzdem.</span>';
+    }
+    var hinweis = (g.s.kaputt || !lesbar)
+      ? 'Lässt sich nicht direkt importieren. Heb die Datei auf — aus ihr lassen sich Einträge noch von Hand retten.'
+      : 'Importieren: GrowSmart → Einstellungen → Daten &amp; Sicherheit → Import.';
+    box.className = 'box ' + (g.s.kaputt || !lesbar ? 'warn' : 'ok');
+    box.innerHTML = '<h2>' + esc(g.s.titel) + '</h2><div class="k">' + esc(g.s.text) + ' ' + Math.round(g.roh.length / 1024) + ' KB</div>'
+      + '<div>' + info + '</div><div class="k" style="margin-top:6px">' + hinweis + '</div>';
+    var b1 = document.createElement('button');
+    b1.textContent = '💾 Herunterladen';
+    b1.onclick = function () { herunterladen(g.roh, (g.s.haupt ? 'growsmart-sicherung' : g.s.k) + '-' + heute() + '.json', b1); };
+    box.appendChild(b1);
+    if (g.s.haupt) {
+      var b2 = document.createElement('button');
+      b2.className = 'zweit';
+      b2.textContent = '📋 Daten anzeigen (zum Kopieren)';
+      b2.onclick = function () {
+        var pre = document.createElement('pre');
+        pre.textContent = g.roh;
+        box.appendChild(pre);
+        b2.disabled = true;
+        try { navigator.clipboard.writeText(g.roh); } catch (e) { /* ohne Zwischenablage */ }
+      };
+      box.appendChild(b2);
+    }
+    liste.appendChild(box);
+  });
 })();
 </script>
 </body>

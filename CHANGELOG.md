@@ -2,6 +2,22 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-07 — v1.5.334
+
+- **`rettung.html` bot nur den Hauptstand an** (Hebel 3, Punkt 7; Störfall „Zusatz B" aus dem Plan). Die Seite ist der
+  Weg zu den Daten, wenn GrowSmart selbst nicht mehr startet — sie las aber nur `growsmart_v4`. War der unlesbar, bot
+  sie genau diesen unlesbaren Stand an; die Tageskopie mit dem ganzen Grow, den beim Start aufgehobenen alten Stand und
+  Schlüssel älterer Versionen nannte sie nicht. Unten stand noch ein Hinweis auf die „Vorschau der Claude-App" aus der
+  Zeit vor GitHub Pages, und der Dateiname trug das UTC-Datum (nachts das von gestern).
+- **Jetzt** bietet sie jeden GrowSmart-Stand einzeln an — Hauptstand, aufgehobener alter Stand, beide Tageskopien, Stand
+  vor der letzten Wiederherstellung, ältere Versionen — je mit Größe, Zyklen, Einträgen, Datum der Kopie und eigenem
+  Download (Dateiname mit lokalem Datum). Jede Box sagt, was mit der Datei zu tun ist (Import in den Einstellungen) oder
+  dass sie sich nicht direkt importieren lässt. Bei gesperrtem Speicher nennt sie den Grund statt einer
+  Programm-Meldung. Der Fuß-Hinweis spricht vom Browser und Gerät statt von der Claude-App.
+- Die Liste der Schlüssel ist eine zweite Stelle neben app.js; der Kommentar in der Seite sagt das.
+- Test: neue Datei `test_hilfsseiten.js` Abschnitt R (11 Prüfungen, beide Zeitzonen; 9 fallen auf der alten Seite um).
+
+
 ## 2026-10-07 — v1.5.333
 
 - **↩, gleich weiterarbeiten, ↪ — die neue Änderung war weg** (Skeptiker, zweite Runde, Befund 2; schon vor v1.5.319
