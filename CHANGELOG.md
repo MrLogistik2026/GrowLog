@@ -2,6 +2,21 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-07 — v1.5.329
+
+- **Ein zerstörter Arbeitsstand wurde seit v1.5.320 geschrieben** (Skeptiker vor dem Hochladen, mittel). v1.5.320 schreibt
+  auch dann, wenn eine Vorarbeit in `saveS` wirft — richtig bei einem einzelnen kaputten Listeneintrag, falsch, wenn der
+  Stand selbst zerstört ist: Bei `cycles` oder `entries` = null überschrieb `saveS` den intakten Hauptstand, und
+  `_autoBackup` legte den kaputten Stand als heutige Tageskopie ab. Gemessen: Ohne Vortageskopie startete die App danach mit
+  0 Zyklen und 0 Einträgen. v1.5.319 hatte in diesem Fall gar nicht geschrieben. Wie der Stand im Betrieb so kaputt
+  wird, ist nicht gefunden — es bräuchte einen zweiten Fehler —, aber die Abhilfe ist billig.
+- **Jetzt** prüft `saveS` nach einer gescheiterten Vorarbeit den Stand mit `_standMangel` (derselben Regel wie beim
+  Start). Ist er zerstört, wird nichts geschrieben, und ein Band sagt „Nicht gespeichert — in GrowSmart ist ein Fehler
+  aufgetreten, deshalb bleibt dein gespeicherter Stand, wie er war. Tippe, um neu zu laden." Die Prüfung kostet nur im
+  Fehlerfall etwas.
+- Test: `test_speichern.js` Abschnitt H (6 Prüfungen, beide Zeitzonen; 6 fallen auf v1.5.328 um).
+
+
 ## 2026-10-07 — v1.5.328
 
 - **Über einer gescheiterten Speicherung stand „Gespeichert ✓"** (Skeptiker vor dem Hochladen von v1.5.320–323, schwer).

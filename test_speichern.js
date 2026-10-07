@@ -307,6 +307,19 @@ function pruef(name, bedingung, info) {
     pruef('G11 … und das Band steht mit „Tippe, um ein Backup zu ziehen"', !!b && /Backup zu ziehen/.test(b.textContent), b && b.textContent);
   }
 
+  // ===== H: Ein zerstörter Arbeitsstand wird nicht geschrieben (v1.5.329) =====
+  console.log('\nH - Zerstörter Arbeitsstand');
+  for (const [name, kaputt] of [['entries null', 'S.entries = null'], ['cycles null', 'S.cycles = null'], ['cycles als Objekt', 'S.cycles = {}']]) {
+    const k = await load({ [SK]: SICHERUNG });
+    k.E('saveS._lastUndo = 0; saveS()');   // gesunder Stand liegt im Speicher, Kopie von heute auch
+    const vorher = k.get(SK), kopie = k.get('growsmart_v4_bak');
+    k.E(`${kaputt}; saveS._lastUndo = 0;`);
+    const r = k.E('saveS()');
+    pruef(`H ${name}: nicht geschrieben, Hauptstand und Kopie unverändert`, r === false && k.get(SK) === vorher && k.get('growsmart_v4_bak') === kopie);
+    const b = k.window.document.getElementById('sperrband');
+    pruef(`H ${name}: Band „Nicht gespeichert … neu laden"`, !!b && /gespeicherter Stand, wie er war/.test(b.textContent) && k.rot());
+  }
+
   console.log('\n' + ok + ' OK, ' + fail + ' FEHL');
   if (fail) process.exit(1);
   process.exit(0);

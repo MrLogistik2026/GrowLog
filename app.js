@@ -3593,7 +3593,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.328';
+const APP_VERSION = 'v1.5.329';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -5920,6 +5920,18 @@ function saveS() {
     }
   } catch (e) {
     saveS._vorarbeitFehler = (e && e.message) || String(e);
+    // (v1.5.329) Warf die Vorarbeit, weil der Stand im Arbeitsspeicher selbst zerstört ist (cycles oder entries null,
+    // ein Zyklus ohne Kennung …), wird er nicht geschrieben. Seit v1.5.320 schrieb saveS trotz Fehler — dann auch so
+    // einen Stand, und _autoBackup legte ihn als Tageskopie ab (Skeptiker, 07.10.2026: ohne Vortageskopie war danach
+    // alles weg). Ein einzelner kaputter Listeneintrag zählt nicht als zerstört; dann wird weiter geschrieben.
+    let mangel = null;
+    try { mangel = _standMangel(S); } catch (e2) { mangel = 'nicht prüfbar'; }
+    if (mangel) {
+      saveS._fehler = 'beschaedigt';
+      _speicherStatusRot(true);
+      _sperrBand(true, '⚠ <b>Nicht gespeichert</b> — in GrowSmart ist ein Fehler aufgetreten, deshalb bleibt dein gespeicherter Stand, wie er war. Tippe, um neu zu laden.', () => window.location.reload(), 'fehler');
+      return false;
+    }
   }
   try {
     // (v1.5.288) Bei vollem Speicher macht der Hauptstand sich Platz, statt still zu scheitern.
