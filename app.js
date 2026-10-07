@@ -3593,7 +3593,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.325';
+const APP_VERSION = 'v1.5.326';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -6137,7 +6137,16 @@ function _refreshStorageEstimate() {
 function _storageInfo() {
   let ownBytes = 0;
   // (v1.5.288) Die zweite Kopie zählt mit — sonst meldet die Anzeige weniger, als wirklich belegt ist.
-  try { ownBytes = (localStorage.getItem(SK) || '').length + (localStorage.getItem(BAK_KEY) || '').length + (localStorage.getItem(BAK2_KEY) || '').length; } catch (e) { /* egal */ }
+  // (v1.5.326) Und alle anderen GrowSmart-Schlüssel auch: der Rettungsplatz, übernommene Schlüssel älterer Versionen
+  // (growsmart_v3/v2/data, sie werden nach dem Übernehmen nie gelöscht) und growsmart_v4_vor_wiederherstellung. Gemessen
+  // an v1.5.271: angezeigt 96 686 Zeichen, belegt 145 001 — die Anzeige unterschätzte genau dann, wenn es eng wird, und die
+  // Warnung „Speicher fast voll" kam zu spät. Der Browser zählt Schlüssel und Wert, deshalb hier beides.
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.startsWith('growsmart')) ownBytes += k.length + (localStorage.getItem(k) || '').length;
+    }
+  } catch (e) { /* egal */ }
   const est = _storageEstimate;
   const quota = est && est.quota ? Math.min(est.quota, 50 * 1024 * 1024) : LS_ASSUMED_LIMIT;
   const used = est && est.quota ? Math.max(est.used, ownBytes) : ownBytes;

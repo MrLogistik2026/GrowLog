@@ -2,6 +2,19 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-07 — v1.5.326
+
+- **Die Speicheranzeige zählte nur drei Schlüssel** (Hebel 3, Punkt 7). `_storageInfo` summierte Hauptstand und die
+  beiden Kopien. Der Rettungsplatz, übernommene Schlüssel älterer Versionen (`growsmart_v3`/`v2`/`data` — sie werden nach
+  dem Übernehmen nie gelöscht) und `growsmart_v4_vor_wiederherstellung` fehlten. Gemessen: angezeigt 48 253 Zeichen,
+  belegt 168 311. Die Anzeige unterschätzte genau dann, wenn es eng wird, und „Speicher fast voll" kam zu spät.
+- **Jetzt** zählt sie jeden Schlüssel, der mit `growsmart` beginnt, mit Schlüssel und Wert — so rechnet auch der Browser.
+  Fremde Schlüssel bleiben draußen.
+- **Offen, bewusst nicht gebaut:** Die alten Schlüssel aufzuräumen wäre eine neue Automatik, die Daten löscht — nach
+  der Lehre aus v1.5.289 erst mit eigener Prüfung und Rückweg.
+- Test: `test_speichern.js` Abschnitt E (3 Prüfungen, beide Zeitzonen; 1 fällt auf v1.5.325 um).
+
+
 ## 2026-10-07 — v1.5.325
 
 - **Der erste Tipp auf ↩ bewirkte nichts** (Hebel 3, Punkt 7; gemessen an v1.5.271, unverändert bis v1.5.324). `saveS`

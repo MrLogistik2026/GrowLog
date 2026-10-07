@@ -189,6 +189,18 @@ function pruef(name, bedingung, info) {
     pruef('D7 keine JS-Fehler', d.errors.length === 0 && e.errors.length === 0, d.errors[0] || e.errors[0]);
   }
 
+  // ===== E: Die Speicheranzeige zählt alle GrowSmart-Schlüssel (v1.5.326) =====
+  console.log('\nE - Speicheranzeige');
+  {
+    const alt = 'x'.repeat(60000);
+    const s = await load({ [SK]: SICHERUNG, growsmart_v3: alt, growsmart_v4_vor_wiederherstellung: alt, fremd_schluessel: alt });
+    const info = JSON.parse(s.E('JSON.stringify(_storageInfo())'));
+    const soll = JSON.parse(s.E("(() => { let n = 0; for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k.startsWith('growsmart')) n += k.length + localStorage.getItem(k).length; } return JSON.stringify(n); })()"));
+    pruef('E1 alte Schlüssel und die Vor-Wiederherstellungs-Kopie zählen mit', info.ownBytes === soll && info.ownBytes > SICHERUNG.length + 120000, [info.ownBytes, soll]);
+    pruef('E2 Schlüssel anderer Seiten zählen nicht', info.ownBytes < soll + 60000);
+    pruef('E3 keine JS-Fehler', s.errors.length === 0, s.errors[0]);
+  }
+
   console.log('\n' + ok + ' OK, ' + fail + ' FEHL');
   if (fail) process.exit(1);
   process.exit(0);
