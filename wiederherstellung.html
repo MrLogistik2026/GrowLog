@@ -52,6 +52,54 @@
  * und ein Stand mit entries: null "sah gut aus", wurde eingespielt, und danach stürzte GrowSmart beim Start ab.
  */
 function istObjekt(x) { return !!x && typeof x === 'object' && !Array.isArray(x); }
+// (v1.5.364) Kopie von _standUnsicher aus app.js: Kennungen, Schlüssel und Daten mit Zeichen, die GrowSmart dort nie
+// schreibt. Über solche Felder käme Programmcode in die App — eine solche Sicherung wird nicht eingespielt.
+var GIFT = /[<>"'`\\&\u0000-\u001f\u2028\u2029]/;
+function giftig(v) { return (typeof v === 'string' || typeof v === 'number') && GIFT.test(String(v)); }
+var ZYKLUS_DATUM = ['startDate', 'toppingDate', 'flushDryFrom', '_toppingOffsetBoundary', 'transplantDate', 'planHoldUntil',
+  'offsetDate', 'bloomStartDate', 'endDate', '_intBloomBoundary', 'bakedOffsetDate'];
+function standUnsicher(d) {
+  if (!istObjekt(d)) return null;
+  function liste(x) { return Array.isArray(x) ? x : []; }
+  function schluesselGiftig(o) { return istObjekt(o) && Object.keys(o).some(function (k) { return GIFT.test(k); }); }
+  function planGiftig(sch) { return istObjekt(sch) && (schluesselGiftig(sch) || Object.keys(sch).some(function (k) { return schluesselGiftig(sch[k]); })); }
+  var cs = liste(d.cycles), i, j;
+  for (i = 0; i < cs.length; i++) {
+    var c = cs[i];
+    if (!istObjekt(c)) continue;
+    if (giftig(c.id) || giftig(c.fertPlanId)) return 'Kennung eines Zyklus';
+    if (ZYKLUS_DATUM.some(function (k) { return giftig(c[k]); })) return 'Datum eines Zyklus';
+    if (liste(c.plants).some(function (p) { return istObjekt(p) && (giftig(p.id) || giftig(p.harvestedAt) || giftig(p.addedAt)); })) return 'Kennung oder Datum einer Pflanze';
+    if (liste(c.trainingEvents).some(function (t) { return istObjekt(t) && (giftig(t.id) || giftig(t.date)); })) return 'Datum eines Trainings';
+    if (liste(c.offsetHistory).some(function (o) { return istObjekt(o) && giftig(o.date); })) return 'Datum einer Verschiebung';
+    if (liste(c.skippedDays).some(giftig)) return 'übersprungener Tag';
+  }
+  var plaene = liste(d.fertPlans).filter(istObjekt);
+  if (plaene.some(function (p) { return giftig(p.id) || giftig(p.presetKey); })) return 'Kennung eines Düngeplans';
+  var produkte = liste(d.products).slice();
+  plaene.forEach(function (p) { produkte = produkte.concat(liste(p.products)); });
+  if (produkte.some(function (p) { return istObjekt(p) && giftig(p.id); })) return 'Kennung eines Produkts';
+  if (planGiftig(d.weekSchedule) || plaene.some(function (p) { return planGiftig(p.schedule); })) return 'Wochenplan';
+  if (giftig(d._activePlanId) || giftig(d.presetKey)) return 'Kennung des Düngeplans';
+  if (schluesselGiftig(d.customPresets)) return 'Kennung einer eigenen Vorlage';
+  if (istObjekt(d.customPresets) && Object.keys(d.customPresets).some(function (k) { var v = d.customPresets[k];
+    return istObjekt(v) && (liste(v.products).some(function (p) { return istObjekt(p) && giftig(p.id); }) || planGiftig(v.schedule)); })) return 'Produkt einer eigenen Vorlage';
+  if (istObjekt(d.entries)) {
+    if (schluesselGiftig(d.entries)) return 'Datum eines Eintrags';
+    var ks = Object.keys(d.entries);
+    for (i = 0; i < ks.length; i++) {
+      var e = d.entries[ks[i]];
+      if (!istObjekt(e) || !istObjekt(e.cycleData)) continue;
+      if (schluesselGiftig(e.cycleData)) return 'Kennung in einem Eintrag';
+      var ids = Object.keys(e.cycleData);
+      for (j = 0; j < ids.length; j++) {
+        var cd = e.cycleData[ids[j]];
+        if (istObjekt(cd) && Object.keys(cd).some(function (k) { return schluesselGiftig(cd[k]); })) return 'Kennung in einem Eintrag';
+      }
+    }
+  }
+  return null;
+}
 function standMangel(d) {
   if (!istObjekt(d)) return 'kein GrowSmart-Stand';
   if (d.cycles !== undefined && !Array.isArray(d.cycles)) return 'beschädigt';
@@ -69,6 +117,7 @@ function standMangel(d) {
     });
     if (daten > 0 && passend === 0) return 'beschädigt';
   }
+  if (standUnsicher(d)) return 'unsicher';
   return null;
 }
 

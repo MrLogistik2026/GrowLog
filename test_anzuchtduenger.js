@@ -95,7 +95,13 @@ const LAUF = (start) => `(function(){
     if (tage[0]) console.log('    Tag ' + tage[0].d + ': ' + tage[0].schritte.split(' | ').pop());
     pruef(start + ': Prüflage — Anzucht-Gießtage mit Plandosen', tage.length >= 2 && tage.some(t => t.dosen > 0), JSON.stringify(tage.map(t => [t.d, t.dosen])));
     pruef(start + ': kein „½ Dosis" und kein „noch keiner nötig" auf der Karte', tage.every(t => !/½ Dosis|noch keiner nötig/.test(t.schritte)), tage.map(t => t.schritte.split(' | ').pop()).slice(0, 2).join(' || '));
-    pruef(start + ': die Karte nennt die Zahl der Plan-Produkte dieser Woche', tage.every(t => t.dosen === 0 ? /kein Dünger/.test(t.schritte) : t.schritte.includes(`Dünger laut Plan (Woche ${t.wk}): ${t.dosen} Produkt`)), tage.map(t => t.dosen + ': ' + t.schritte.split(' | ').pop()).slice(0, 2).join(' || '));
+    // (v1.5.359) Die Karte nennt jedes Plan-Produkt mit Menge statt nur ihre Zahl.
+    const _mischung = (t) => { const kopf = `Dünger laut Plan (Woche ${t.wk}) für `; const i = t.schritte.indexOf(kopf); if (i < 0) return [];
+      const rest = t.schritte.slice(i + kopf.length).split(' | ')[0]; const dp = rest.indexOf(': '); if (dp < 0) return [];
+      return rest.slice(dp + 2).trim().split(' · ').filter(x => /\d (ml|g)$/.test(x.trim())); };
+    // (v1.5.365) Unter 1 L wird für 1 L gerechnet — keine „0 ml" und kein „für 0 L".
+    pruef(start + ': keine Menge „0 ml" und kein „für 0 L" auf der Karte', tage.every(t => !/für 0 L|(^|[^\d,])0 (ml|g)( ·| —|$|\s*\|)/.test(t.schritte)), tage.map(t => t.schritte.split(' | ').pop()).slice(0, 2).join(' || '));
+    pruef(start + ': die Karte nennt jedes Plan-Produkt dieser Woche mit Menge', tage.every(t => t.dosen === 0 ? /kein Dünger/.test(t.schritte) : _mischung(t).length === t.dosen), tage.map(t => t.dosen + ': ' + t.schritte.split(' | ').pop()).slice(0, 2).join(' || '));
     const mitPflege = tage.filter(t => t.pflege);
     pruef(start + ': Sämlings-Pflege nennt keine eigene Dünger-Regel, sondern den Plan', mitPflege.length > 0 && mitPflege.every(t => !/Frühestens Tag 10–14|nur 25% Dosis/.test(t.pflege) && (t.dosen === 0 ? /keinen vor/.test(t.pflege) : t.pflege.includes(`Dein Plan sieht diese Woche ${t.dosen} Produkt`))), mitPflege.map(t => (t.pflege.match(/Dünger:[^•]{0,120}/) || [''])[0]).slice(0, 1).join(''));
   }

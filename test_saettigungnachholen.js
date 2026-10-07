@@ -85,7 +85,12 @@ const NEU = `(function(){
   pruef('Der Zähler meldet alle Gießtage, auch Tag 1', a.zaehler === a.tage.length, a.zaehler + ' statt ' + a.tage.length);
 
   console.log('\nB - Der Nachhol-Assistent');
-  E(`backfillPast(S.cycles[0].id)`); await warte(40); E(`typeof _modalResolve === 'function' && _modalResolve(true)`); await warte(200);
+  // Unter Last (testlauf --parallel) öffnet der Dialog später: auf ihn warten statt fest 40 ms, danach auf den Eintrag.
+  E(`backfillPast(S.cycles[0].id)`);
+  for (let i = 0; i < 160 && !E(`typeof _modalResolve === 'function'`); i++) await warte(25);
+  E(`typeof _modalResolve === 'function' && _modalResolve(true)`);
+  for (let i = 0; i < 160 && !E(`!!(S.entries['${START}'] && S.entries['${START}'].cycleData && S.entries['${START}'].cycleData[S.cycles[0].id])`); i++) await warte(25);
+  await warte(200);
   const b = JSON.parse(E(`(function(){
     const c = S.cycles[0]; const iso = '${START}'; const cd = S.entries[iso] && S.entries[iso].cycleData && S.entries[iso].cycleData[c.id];
     const dosen = cd && cd.doses ? Object.values(cd.doses).filter(v => v > 0).length : null;

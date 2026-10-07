@@ -142,7 +142,8 @@ function cssBlock(quelltext, selektor) {
     '  window.__t.fertig = true;' +
     '})();');
 
-  for (let i = 0; i < 80 && !ev('window.__t.fertig'); i++) await schlaf(25);
+  // Unter Last bis zu 8 s statt 2 s warten (testlauf --parallel).
+  for (let i = 0; i < 320 && !ev('window.__t.fertig'); i++) await schlaf(25);
   const t = JSON.parse(ev('JSON.stringify(window.__t)'));
 
   if (!t.fertig) fail.push('Dialog-Ablauf nicht durchgelaufen (haengt)');
@@ -162,6 +163,7 @@ function cssBlock(quelltext, selektor) {
   console.log('Fluchtwege    : Escape', t.escapeZu ? 'ok' : 'FEHLT',
     '| Hintergrund', t.hintergrundZu ? 'ok' : 'FEHLT',
     '| Kasten haelt', t.kastenBleibtOffen ? 'ok' : 'FEHLT');
-  console.log(fail.length ? 'FAIL' + NL + '  ' + fail.join(NL + '  ') : 'OK dialog+namen');
+  // Jede Abweichung als eigene FEHL-Zeile — testlauf.js zeigt sonst nur die letzte.
+  console.log(fail.length ? 'FAIL' + NL + fail.map((f) => '  FEHL ' + f).join(NL) : 'OK dialog+namen');
   process.exit(fail.length ? 1 : 0);
 })();

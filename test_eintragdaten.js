@@ -11,6 +11,7 @@
 //   I (v1.5.359/360)  Startseite nennt Dünger mit Name und Menge; „Erledigt" bucht ihn am Düngertag als Vorschlag.
 //   J (v1.5.361)  Diagnose: gelbe untere Blätter in der späten Blüte zuerst als natürliche Reife.
 //   K (v1.5.362)  Einstellungen: „Damit ergibt sich" rechnet beim Tippen mit — derselbe Erntetag wie nach „Sichern".
+//   L (v1.5.363)  Nach „Speichern" bleibt der nächste Tipp im Feld; ein verlassener Eintrag wird nicht unsichtbar neu gebaut.
 //
 // GS_INDEX=<anderer Build> lässt den Test gegen einen alten Stand laufen; dort muss er umfallen.
 const fs = require('fs');
@@ -241,7 +242,7 @@ const tippe = (w, id, wert) => { const el = w.document.getElementById(id); if (!
       a.E(`S.entries = {}; setDebugDate('${tage.feed}'); S.beginnerMode = false; goTo('dash'); renderDash();`);
       const txt = a.w.document.getElementById('scr-dash').textContent;
       n++; pruefe(!/Produkte \(siehe Eintrag\)/.test(txt), 'I1 Startseite nennt weiter nur die Zahl der Produkte');
-      n++; pruefe(/Dünger Wo\. \d+ für [\d,]+ L: [^·]+ \d+(,\d)? (ml|g)/.test(txt), 'I2 Startseite nennt Dünger nicht mit Name und Menge');
+      n++; pruefe(/Dünger Wo\. \d+ für [\d,]+ L( anmischen \(heute brauchst du davon [^)]+ L\))?: [^·]+ \d+(,\d)? (ml|g)/.test(txt), 'I2 Startseite nennt Dünger nicht mit Name und Menge');
       a.E(`markTodayDone('${cid}', '${tage.feed}')`);
       const cd = JSON.parse(a.E(`JSON.stringify(S.entries['${tage.feed}'].cycleData['${cid}'])`));
       const gegeben = Object.keys(cd.doses || {}).filter((k) => parseFloat(cd.doses[k]) > 0);
@@ -282,6 +283,36 @@ const tippe = (w, id, wert) => { const el = w.document.getElementById(id); if (!
     await a.E(`(async function(){ await saveDraft(); })()`);
     const nach = JSON.parse(a.E(`(function(){ const c = S.cycles[0]; return JSON.stringify({ ernte: endspurtState(c, todayISO()).ernteTag }); })()`));
     n++; pruefe(ernteVorschau === nach.ernte, `K3 Vorschau nannte Ernte Tag ${ernteVorschau}, gesichert ist Tag ${nach.ernte}`);
+  }
+
+  // L · Nach „Speichern" (v1.5.363): der nächste Tipp bleibt im Feld; wer den Eintrag verlässt, bekommt ihn nicht unsichtbar neu gebaut
+  {
+    a.E(`S.entries = {}; goTo('entry'); openEntry(todayISO()); renderEntry(editISO);`);
+    await new Promise((r) => setTimeout(r, 60));
+    const d = a.w.document;
+    n++; pruefe(tippe(a.w, 'et', '24'), 'L0 Temperaturfeld fehlt');
+    a.toasts.length = 0;
+    a.E(`saveEntry()`);
+    n++; pruefe(a.toasts.some(t => /Gespeichert ✓/.test(t)), `L1 Speichern meldet nicht „Gespeichert ✓" (${a.toasts.join(' | ')})`);
+    const ph = d.querySelector(`#entry-body input[oninput*="'ph',this.value"]`);
+    n++; pruefe(!!ph, 'L2 pH-Feld fehlt');
+    if (ph) {
+      ph.focus(); ph.dispatchEvent(new a.w.MouseEvent('click', { bubbles: true }));
+      ph.value = '6.3'; ph.dispatchEvent(new a.w.Event('input', { bubbles: true }));
+      await new Promise((r) => setTimeout(r, 1700));
+      n++; pruefe(ph.isConnected && d.activeElement === ph, `L3 1,7 s nach „Speichern" ist das pH-Feld ersetzt oder ohne Fokus (ersetzt: ${!ph.isConnected})`);
+      n++; pruefe(ph.value === '6.3', `L4 Die eingetippte Zahl im pH-Feld ist weg („${ph.value}")`);
+      const vor = a.E('_entryRenderNr');
+      ph.blur();
+      await new Promise((r) => setTimeout(r, 1200));
+      n++; pruefe(a.E('_entryRenderNr') > vor, 'L5 Nach dem Verlassen des Felds wurde nicht neu gezeichnet');
+    }
+    // Speichern und sofort weg: kein Neuzeichnen im verborgenen Eintrag
+    tippe(a.w, 'er', '50');
+    a.E(`saveEntry(); goTo('dash')`);
+    const vor2 = a.E('_entryRenderNr');
+    await new Promise((r) => setTimeout(r, 1900));
+    n++; pruefe(a.E('_entryRenderNr') === vor2, 'L6 Der verlassene Eintrag wurde nach dem Speichern unsichtbar neu gebaut');
   }
 
   n++; pruefe(!a.errors.length, 'Skriptfehler: ' + a.errors.slice(0, 3).join(' | '));

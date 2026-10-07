@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.358** · index.html 2,56 MB · 781 Funktionen
+Stand: **v1.5.365** · index.html 2,56 MB · 781 Funktionen
 Zuletzt fortgeschrieben am 07.10.2026 (Nachtprüfung und Run 02 — Abschnitt 0o, „Stand Run 02"). Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
@@ -101,15 +101,15 @@ aus dem Gedächtnis bewertet, bewertet die Absicht, nicht den Stand. Für die n�
    `cycles: null` bricht den Start ab, `importData` (~25358) nimmt jede JSON-Datei und fährt keine Migrationen. Tests fehlen.
 4. **Umbau — Erntefenster als eine Quelle** nach Prüfplan 0m.2; darin ein Fehler: Ein höheres Bernstein-Ziel ergibt ein
    *früheres* Fenster (Rückfall von `harvestWindow` auf die Samentüte, ~10339).
-5. **Umbau — Vorschau vor dem Sichern** (Abschnitt 1, Schritt 1). Darin ein Fehler: Der Block „Damit ergibt sich"
-   rechnet beim Tippen nicht nach (`dd`, ~21540).
+5. **Umbau — Vorschau vor dem Sichern** (Abschnitt 1, Schritt 1). Der Fehler darin ist behoben: „Damit ergibt sich" rechnet
+   seit v1.5.362 beim Tippen mit (`_kettenVorschauHTML`). Offen bleibt die Vorschau für die übrigen koppelnden Funktionen.
 6. **Umbau — Gießtag-Eintrag im Einsteiger-Modus entschlacken** (Abschnitt 1): Einsteiger spart dort 3 Felder, 0 Knöpfe.
 7. **Fehler — Assistent:** kein ⓘ auf neun Bildschirmen, obwohl das Willkommen sie verspricht; „5 einfache Fragen" bei
    acht; „Feminisiert" als photoperiodisch erklärt (~22857). Ob Samentüten-Wochen einen Puffer bekommen, entscheidet Patrick.
 8. **Fehler — Düngeplan-Vorlagen fertig prüfen** (0n): Plagron, CANNA, Hesi ohne geklärten Dosis-Modus, Green Sensation,
    Produktnotizen mit Wirkungsversprechen, EC im Wachstum an drei Stellen verschieden.
-9. **Umbau — Lesbarkeit auf dem Handy:** Zoom-Sperre (head.html:5), Hinweisfarben 2,2:1 statt 4,5:1, 80 % des Textes
-   ≤ 11 px, helles Thema mit harten dunklen Flächen. Hebt die schwächste Note (T5 3,6) am stärksten.
+9. **Umbau — Lesbarkeit auf dem Handy:** Zoom-Sperre, Hinweisfarben und dunkle Flächen im hellen Thema sind behoben
+   (v1.5.354–356). Offen: 80 % des Textes ≤ 11 px, Tippflächen unter 44 px. Hebt die schwächste Note (T5 3,6) am stärksten.
 10. **Fehler — Begriffe-Prüfung Schritte 8–24:** „Dryback" 35×, „Grow" 8×, „Runoff" 14× sichtbar, Dezimalpunkt und -komma gemischt.
 
 **Reihenfolge ab jetzt:** Die Fehler aus den Hebeln 1–3 werden als Nächstes behoben, je mit eigener Version und Test —
@@ -232,10 +232,11 @@ wf_0586d0bf-d3d (vergänglich). **Offen, nach Nutzen geordnet** (Umbauten oder P
 4. Fachwörter ohne ⓘ im Assistenten und im Einsteiger-Eintrag; Einsteiger-Startseite ohne Erste-Hilfe-Karte (Profi hat sie).
 5. Toppen-Knopf für Automatics bis Blüte-Woche 3 gegen den eigenen Text; „2 Tage ohne Gießen nach dem Topping" ohne Beleg.
 6. Tag 1 verweist auf eine Mischliste, die es dort nicht gibt; „Deine nächsten Güsse" beginnt in der Anzucht erst bei Blüte.
-7. „Erledigt" bucht nur Wasser; Dünger abhaken sind 15 Einzel-Taps — Idee: „Alles wie im Plan" mit einem Tipp.
+7. Dünger abhaken sind im Eintrag 15 Einzel-Taps — Idee: „Alles wie im Plan" mit einem Tipp. („Erledigt" bucht den Plan-Dünger
+   seit v1.5.360 als Vorschlag mit.)
 8. Diagnose: bei „welk" und „weiß ausgebleicht" falsche Reihung; Sämlings-EC „SOFORT spülen" ohne Gültigkeitsprüfung.
-9. Zyklus-Vergleich ohne Ertrag, g je Pflanze, Tage bis Ernte; Einstellungen ohne Vorschau (H6); Barrierefreiheit (Zoom-Sperre,
-   Kontraste 2,2:1, Schrift ≤ 11 px); Fotos als Base64 füllen den Speicher (~30 Fotos); kein Test-Gate vor dem Veröffentlichen.
+9. Zyklus-Vergleich ohne Ertrag, g je Pflanze, Tage bis Ernte; Barrierefreiheit (Schrift ≤ 11 px,
+   Tippflächen); Fotos als Base64 füllen den Speicher (~30 Fotos); kein Test-Gate vor dem Veröffentlichen.
 Weitere Ideen der Prüfer: gemeinsamer Mischansatz für zwei Zyklen am selben Gießtag („zusammen 4800 ml"), Sicherungs-Erinnerung
 auf der Startseite ab 14 Tagen ohne Export, Plan-Abgleich beim Zuweisen und Substratwechsel, Diagnose beantwortet
 Unterscheidungsfragen aus dem eigenen Zustand.
@@ -299,6 +300,27 @@ Speicher-Befunde sind in v1.5.340–344 behoben. Rohdaten: Workflow wf_63d754b1-
 - v1.5.356: Helles Thema — Zyklus-Farbflächen als Variable je Thema (`--dk-g1…8`); vorher unsichtbarer Text auf der Startseite.
 - v1.5.357: Trichom-Karte — „Bernstein-Ziel erreicht" gelb mit „aber noch N % klar", solange Klar über 10 %; „Fast bereit" nennt den Grund.
 - v1.5.358: Trichom-Felder leer statt vorbelegt, Inhalt beim Antippen markiert, Milchig ist der Rest; kein verlorener Tipp nach dem ersten Feld.
+- v1.5.359: Die Startseite nennt den Dünger mit Namen und Mengen für die Anmisch-Menge (`_mischungKurz`) statt „3 Produkte (siehe Eintrag)".
+- v1.5.360: „Erledigt" bucht am Düngertag die Plan-Dosen als Vorschlag mit (wie Nachtragen); Wasser-Tage bleiben ohne Dünger.
+- v1.5.361: Gelbe untere Blätter in der späten Blüte: zuerst natürliche Reife, Stickstoff-Mangel mit Unterscheidungskriterium statt „erhöhen".
+- v1.5.362: „Damit ergibt sich" in den Einstellungen rechnet beim Tippen mit, samt Einrasten des Spülstarts, und nennt den bisherigen Erntetag.
+- v1.5.363: Nach „Speichern" bleibt der nächste Tipp im Feld; der Eintrag zeichnet erst neu, wenn kein Feld mehr den Fokus hat.
+- v1.5.364: **Sicherheit** — Eingangstore halten gefährliche Zeichen aus Kennungen, Schlüsseln, Daten, Zahlen, Auswahlfeldern und Fotos heraus (`_standUnsicher`, `_standEntgiften`, auch wiederherstellung.html und eigene Vorlagen). Auf v1.5.363 brachte eine präparierte Sicherung 914 Befehle und 1246 Elemente in die App.
+- v1.5.365: Die Dünger-Zeile der Startseite rechnet unter 1 L Anmisch-Menge für 1 L („für 1 L anmischen (heute brauchst du davon 0,2 L)") statt „für 0 L: CalMag 0 ml".
+
+**Sicherheitsprüfung 07.10.2026 abends (Workflow wf_086de9ab-b02, zwei Sonnet-Agenten, jsdom mit vergifteten Feldern).** Ergebnis
+und Werkzeug liegen in `.claude/notizen/xss/` (`ergebnis.txt`, `journal.jsonl`, `harness/probe.js` + `run.js` — vergiftet je eine
+Feldgruppe und sucht in ~45 Bildschirmen eingeschleuste Elemente und Befehle; liest `index_head.html` neben sich, vorher
+`index.html` dorthin kopieren). v1.5.364 schließt die Kennungen und Werte. **Offen, in dieser Reihenfolge:**
+1. Freitexte bei der Ausgabe maskieren: Zyklusname (40 Stellen), Produkt-Einheit/-Name/-Farbe, Plan-Name, Pflanzenname und
+   -sorte, Standort, `mixInfo`/`mixOrder`/`drainInfo`/`weekFocus`, Planname im `<option>`, `b.zurueck` (Plannamen) in der
+   Daten-Karte. Engpässe: `mediumName`, `_myProductsGroup`, `_planWochenFokus`, `metricRow`. Nicht maskieren, wo `textContent`
+   ausgibt (toast, customConfirm, Export als Text) — sonst stünde dort `&amp;`.
+2. Knopf-Befehle mit Produktnamen und Lexikon-Titeln maskieren auch den Backslash (Lexikon ~37363–37371, Tipps-Suche ~20242/20262).
+3. Bericht- und Kollage-Fenster (`exportReportPDF`, `exportCollage`: `window.open` + `document.write`, gleiche Herkunft).
+4. wiederherstellung.html setzt Zyklusname und Startdatum per `innerHTML` (Zeile ~116, ~140); `customPrompt` setzt `initial` roh in
+   `value`/`textarea`.
+5. Klein: CSV-Export ohne Schutz vor Formelzeichen (= + - @); keine Content-Security-Policy (die ~290 Inline-Befehle verhindern eine strenge).
 
 **Bei der nächsten Bewertung** dieselbe Skala, dieselben Kategorie-IDs und dieselben Regeln aus `auftrag.md` nehmen und
 die Noten gegen diese Tabelle stellen.
@@ -2012,6 +2034,11 @@ der echten Uhr fielen am 13.09.2026 15 Prüfungen in drei Dateien um — nicht w
 sondern weil sein Grow seit dem 09.09. geerntet ist. Neue Tests gegen seine Daten: Datum immer
 festlegen.
 
+**Getippte Werte stehen seit v1.5.347 sofort im Zustand** (Klima wie schon pH, EC, Gießmenge). Ein Test, der im Eintrag
+tippt und ihn offen lässt, verändert damit die Daten für alle folgenden Abschnitte — `test_klimaziel.js` J rechnete so
+mit 23,8 °C / 62 % aus Abschnitt H. Danach `_restoreEntrySnapshot()` aufrufen, wie „Verwerfen". Und **feste Wartezeiten
+auf Dialoge kippen unter Last** (`--parallel 4`): auf den Zustand warten (`_modalResolve`, ein Feld im DOM), nicht auf Millisekunden.
+
 **Datumsgrenzen brauchen einen Lauf über die Zeitumstellung** (29.03. und 25.10.2026). Kiritimati hat keine
 Umstellung, Berlin schon — weichen die beiden Läufe dort voneinander ab, ist das ein Befund, kein Testproblem.
 Patricks Zyklus ist eine Automatic ohne Blütestart-Datum und trifft `_datebasedPhase` nie; der Fehler aus
@@ -2178,17 +2205,3 @@ mit echtem Zustand sichtbar.
   auch die gerade aktive. Sie stehen weit auseinander und erfüllen verschiedene Zwecke.
   Nicht anfassen.
 
----
-
-## Zwischenstand 07.10.2026 abends (Sitzung am Nutzungslimit abgebrochen)
-
-Quellen stehen auf **v1.5.362**, lokal committet, **nicht hochgeladen**. CHANGELOG reicht bis v1.5.358; 359–362 fehlen dort
-noch (Inhalt: 359 Dünger-Mischung auf der Startseite `_mischungKurz`, 360 „Erledigt" bucht Plan-Dünger als Vorschlag,
-361 Diagnose späte Blüte → natürliche Reife zuerst, 362 Einstellungen „Damit ergibt sich" rechnet beim Tippen mit).
-Vor dem Hochladen offen:
-- `test_klimaziel.js` J: Gießvorschlag am 15.08. 16500 statt 15000 — auf v1.5.346 grün, kommt aus 347–353 (Verdacht v1.5.349,
-  Hebe-Test „vorher" bleibt stehen, oder 353 Vorschlags-Kennzeichen). Klären, ob richtig, dann Code oder Erwartung.
-- `test_speichern.js` G3–G6: v1.5.351 (leerer Eintrag wird nicht gespeichert) fängt den Speicherfehler-Fall ab.
-- `test_eintragdaten.js` H4/H6: `saveEntry` zeichnet 1300 ms nach dem Speichern neu und nimmt den Fokus — als v1.5.363 beheben.
-- `test_dialog_und_namen`, `test_saettigungnachholen` schon auf v1.5.346 rot — eigene Ursache suchen.
-- Sicherheits-Prüfung (XSS über Namen/Importe) lief als Workflow wf_086de9ab-b02; Ergebnis im Journal lesen, dann eigene Version.

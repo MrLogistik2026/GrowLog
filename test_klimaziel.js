@@ -217,7 +217,9 @@ const HELFER = `
       && /Temperatur auf 22–26 °C anheben/.test(live.kalt.kasten || ''), JSON.stringify(live.kalt));
     pruef('Beim Tippen von 62 %: 🚨 in der Zeile und „Schimmelgefahr (Botrytis)" in voller Breite darunter', /^🚨/.test(live.nass.rlf || '')
       && /Schimmelgefahr \(Botrytis\)/.test(live.nass.krit || '') && !/Botrytis/.test(live.nass.rlf || ''), JSON.stringify(live.nass));
-    E(`S.beginnerMode = false`);
+    // (v1.5.347) Getippte Klimawerte stehen sofort im Eintrag — wie „Verwerfen" den Stand beim Öffnen herstellen, sonst rechnet
+    // Abschnitt J mit 23,8 °C / 62 % am 11.08. statt mit Patricks Wert.
+    E(`_restoreEntrySnapshot(); S.beginnerMode = false`);
   });
 
   await abschnitt('I - Keine zwei Stellen sagen Verschiedenes (Patricks Klimatage)', async () => {

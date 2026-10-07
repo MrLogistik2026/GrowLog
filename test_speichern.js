@@ -279,7 +279,8 @@ function pruef(name, bedingung, info) {
     g.window.exportData = () => { backup++; };
     g.window.__kaputt = 'kaputt';
     g.toasts.length = 0;
-    g.E("_entryDirty = true; saveEntry()");
+    // (v1.5.351) Ein leerer Tag wird gar nicht gespeichert — der Fall braucht einen eingetragenen Wert.
+    g.E(`if (!S.entries['${heute}']) S.entries['${heute}'] = { temp: '', humidity: '', cycleData: {} }; S.entries['${heute}'].note = 'Testnotiz'; _entryDirty = true; saveEntry()`);
     const band = () => g.window.document.getElementById('sperrband');
     const knoepfe = Array.from(g.window.document.querySelectorAll('.big-save, .save-pill')).map(b => b.textContent);
     pruef('G1 Eintrag speichern scheitert: kein „Gespeichert ✓"', !g.toasts.some(t => /Gespeichert ✓/.test(t)), g.toasts);

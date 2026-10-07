@@ -4223,6 +4223,9 @@ function importCustomPreset(jsonStr) {
     if (!data.name || typeof data.name !== 'string') throw new Error('Name fehlt');
     if (!Array.isArray(data.products)) throw new Error('Produkte fehlen');
     if (typeof data.schedule !== 'object') throw new Error('Schedule fehlt');
+    // (v1.5.364) Kennungen und Wochenplan-Schlüssel ohne Zeichen, die GrowSmart nie schreibt; Farben, Einheiten, Dosen gereinigt.
+    if (_standUnsicher({ customPresets: { x: { products: data.products, schedule: data.schedule } } })) throw new Error('unzulässige Zeichen');
+    _standEntgiften({ customPresets: { x: data } });
 
     const id = nextCustomPresetId();
     if (!S.customPresets) S.customPresets = {};
@@ -4613,7 +4616,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.362';
+const APP_VERSION = 'v1.5.365';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -5498,6 +5501,111 @@ function _speicherStatusRot(an) {
 }
 
 /**
+ * (v1.5.364) Zeichen, die GrowSmart in Kennungen, Schlüsseln, Datums-, Zahlen-, Farb- und Auswahlfeldern nie schreibt.
+ * Diese Felder stehen in der Oberfläche ungemaskt in Knopf-Befehlen (onclick="f('${c.id}')") und Attributen — rund 300
+ * Stellen. Eine fremde oder veränderte Sicherung konnte darüber Programmcode in die App bringen, und der hätte alle Daten
+ * lesen können (Sicherheitsprüfung vom 07.10.2026, in jsdom nachgestellt). Statt 300 Stellen einzeln zu maskieren, halten
+ * die Eingangstore — Backup-Import, Start, Tageskopien, eigene Vorlagen, wiederherstellung.html — diese Zeichen aus genau
+ * diesen Feldern heraus. Freitexte (Namen, Notizen, Plan-Texte) dürfen sie enthalten; sie werden bei der Ausgabe maskiert.
+ */
+const _GIFT_ZEICHEN = /[<>"'`\\&\u0000-\u001f\u2028\u2029]/;
+function _giftig(v) { return (typeof v === 'string' || typeof v === 'number') && _GIFT_ZEICHEN.test(String(v)); }
+const _ZYKLUS_DATUM = ['startDate', 'toppingDate', 'flushDryFrom', '_toppingOffsetBoundary', 'transplantDate', 'planHoldUntil',
+  'offsetDate', 'bloomStartDate', 'endDate', '_intBloomBoundary', 'bakedOffsetDate'];
+const _ZYKLUS_WERTE = ['medium', 'growType', 'seedType', 'lightVeg', 'lightBloom', 'symbol', 'colorId', 'startMethod', 'weightMode',
+  'hemisphere', 'phaseMode', 'germMethod', 'fwPattern', 'plantCount', 'seedWeeks', 'reservePct', 'saturatedWeight', 'toppingPause',
+  'targetAmber', 'dayOffset', 'ripeOffset', 'leafOffset'];
+const _EINTRAG_WERTE = ['water', 'ph', 'ec', 'runoffPh', 'runoffEc', 'drainMl', 'restPct', 'liftAfterPct', 'waterTemp',
+  'plantsAtWatering', 'plantCount', 'liftFeel', 'weight', 'weightG'];
+
+/**
+ * Wo eine Kennung, ein Schlüssel oder ein Datum ein solches Zeichen trägt — null, wenn nirgends. Diese Felder lassen sich
+ * nicht einfach löschen (Tagebuch, Pläne und Dosen hängen an ihnen); ein solcher Stand stammt nicht aus GrowSmart und
+ * wird deshalb abgelehnt wie ein beschädigter.
+ */
+function _standUnsicher(d) {
+  if (!_istObjekt(d)) return null;
+  const liste = (x) => Array.isArray(x) ? x : [];
+  const schluesselGiftig = (o) => _istObjekt(o) && Object.keys(o).some(k => _GIFT_ZEICHEN.test(k));
+  const planGiftig = (sch) => _istObjekt(sch) && (schluesselGiftig(sch) || Object.values(sch).some(schluesselGiftig));
+  for (const c of liste(d.cycles)) {
+    if (!_istObjekt(c)) continue;
+    if (_giftig(c.id) || _giftig(c.fertPlanId)) return 'Kennung eines Zyklus';
+    if (_ZYKLUS_DATUM.some(k => _giftig(c[k]))) return 'Datum eines Zyklus';
+    if (liste(c.plants).some(p => _istObjekt(p) && (_giftig(p.id) || _giftig(p.harvestedAt) || _giftig(p.addedAt)))) return 'Kennung oder Datum einer Pflanze';
+    if (liste(c.trainingEvents).some(t => _istObjekt(t) && (_giftig(t.id) || _giftig(t.date)))) return 'Datum eines Trainings';
+    if (liste(c.offsetHistory).some(o => _istObjekt(o) && _giftig(o.date))) return 'Datum einer Verschiebung';
+    if (liste(c.skippedDays).some(_giftig)) return 'übersprungener Tag';
+  }
+  const plaene = liste(d.fertPlans).filter(_istObjekt);
+  if (plaene.some(p => _giftig(p.id) || _giftig(p.presetKey))) return 'Kennung eines Düngeplans';
+  if ([...liste(d.products), ...plaene.flatMap(p => liste(p.products))].some(p => _istObjekt(p) && _giftig(p.id))) return 'Kennung eines Produkts';
+  if (planGiftig(d.weekSchedule) || plaene.some(p => planGiftig(p.schedule))) return 'Wochenplan';
+  if (_giftig(d._activePlanId) || _giftig(d.presetKey)) return 'Kennung des Düngeplans';
+  if (schluesselGiftig(d.customPresets)) return 'Kennung einer eigenen Vorlage';
+  if (_istObjekt(d.customPresets) && Object.values(d.customPresets).some(v => _istObjekt(v)
+    && (liste(v.products).some(p => _istObjekt(p) && _giftig(p.id)) || planGiftig(v.schedule)))) return 'Produkt einer eigenen Vorlage';
+  if (_istObjekt(d.entries)) {
+    if (schluesselGiftig(d.entries)) return 'Datum eines Eintrags';
+    for (const e of Object.values(d.entries)) {
+      if (!_istObjekt(e) || !_istObjekt(e.cycleData)) continue;
+      if (schluesselGiftig(e.cycleData)) return 'Kennung in einem Eintrag';
+      for (const cd of Object.values(e.cycleData)) {
+        if (_istObjekt(cd) && Object.values(cd).some(schluesselGiftig)) return 'Kennung in einem Eintrag';
+      }
+    }
+  }
+  return null;
+}
+
+/**
+ * Werte mit einem solchen Zeichen (Zahlen, Auswahlfelder, Farben, Messwerte, Fotos) werden entfernt — die App setzt dafür
+ * ihre Vorgabe ein. Gibt die Zahl der entfernten Werte zurück. Freitexte bleiben unberührt.
+ */
+function _standEntgiften(d) {
+  if (!_istObjekt(d)) return 0;
+  let n = 0;
+  const liste = (x) => Array.isArray(x) ? x : [];
+  const weg = (o, k) => { if (_istObjekt(o) && _giftig(o[k])) { delete o[k]; n++; } };
+  // Die Topfgröße steht als Zahl im Programmtext der ±-Knöpfe — dort zählt jedes Zeichen, nicht nur die gefährlichen.
+  const keineZahl = (v) => v !== undefined && v !== null && v !== '' && !(typeof v === 'number' || /^\s*\d+([.,]\d+)?\s*$/.test(String(v)));
+  const schedule = (sch) => { if (_istObjekt(sch)) Object.values(sch).forEach(w => { if (_istObjekt(w)) Object.keys(w).forEach(k => weg(w, k)); }); };
+  const produkt = (p) => { weg(p, 'color'); weg(p, 'unit'); };
+  if (keineZahl(d.potSize)) { delete d.potSize; n++; }
+  weg(d, 'galleryFilter'); weg(d, 'ecUnit');
+  for (const c of liste(d.cycles)) {
+    if (!_istObjekt(c)) continue;
+    Object.keys(c).forEach(k => { if (_ZYKLUS_WERTE.includes(k) || /^int[A-Z]/.test(k) || /Days$/.test(k)) weg(c, k); });
+    if (keineZahl(c.potSize)) { delete c.potSize; n++; }
+    liste(c.plants).forEach(p => ['color', 'yieldWet', 'yieldDry', 'ripeOffset'].forEach(k => weg(p, k)));
+    liste(c.trainingEvents).forEach(t => weg(t, 'type'));
+  }
+  liste(d.products).forEach(produkt);
+  schedule(d.weekSchedule);
+  for (const pl of liste(d.fertPlans)) {
+    if (!_istObjekt(pl)) continue;
+    liste(pl.products).forEach(produkt); weg(pl, 'doseMode'); schedule(pl.schedule);
+  }
+  if (_istObjekt(d.customPresets)) Object.values(d.customPresets).forEach(v => {
+    if (!_istObjekt(v)) return;
+    liste(v.products).forEach(produkt); weg(v, 'doseMode'); schedule(v.schedule);
+  });
+  if (_istObjekt(d.entries)) for (const e of Object.values(d.entries)) {
+    if (!_istObjekt(e)) continue;
+    weg(e, 'temp'); weg(e, 'humidity');
+    if (!_istObjekt(e.cycleData)) continue;
+    for (const cd of Object.values(e.cycleData)) {
+      if (!_istObjekt(cd)) continue;
+      _EINTRAG_WERTE.forEach(k => weg(cd, k));
+      if (_istObjekt(cd.doses)) Object.keys(cd.doses).forEach(k => weg(cd.doses, k));
+      if (_istObjekt(cd.trichomes)) ['clear', 'milky', 'amber'].forEach(k => weg(cd.trichomes, k));
+      if (Array.isArray(cd.photos)) { const vor = cd.photos.length; cd.photos = cd.photos.filter(x => !_giftig(x)); n += vor - cd.photos.length; }
+    }
+  }
+  return n;
+}
+
+/**
  * Warum ein gelesener Stand nicht benutzbar ist — null, wenn er es ist.
  *
  * (v1.5.291) Die Form wird mitgeprüft. „Ist ein Objekt" reichte nicht: Ein Stand mit
@@ -5529,6 +5637,8 @@ function _standMangel(d) {
     });
     if (daten > 0 && passend === 0) return 'beschädigt';
   }
+  // (v1.5.364) Kennungen, Schlüssel und Daten mit Zeichen, die GrowSmart dort nie schreibt — siehe _standUnsicher.
+  if (_standUnsicher(d)) return 'unsicher';
   return null;
 }
 
@@ -5558,6 +5668,7 @@ function _standMangel(d) {
 // Und Behälter mit falschem Typ werden ausgepackt statt gelöscht — eine gelöschte Verschiebungsliste zog den
 // Erntetag still um drei Tage vor.
 let _lueckenBeimStart = null;
+let _giftBeimStart = 0;   // (v1.5.364) beim Start entfernte Werte mit unzulässigen Zeichen
 function _standLueckenEntfernen(d) {
   const bericht = { leer: 0, zurueck: [], verloren: [] };
   if (!_istObjekt(d)) return bericht;
@@ -5963,6 +6074,8 @@ function loadS() {
   _standVorfall(gelesen);
   // (v1.5.295) Leere Stellen in den Listen entfernen, bevor Migrationen und erstes Bild sie anfassen.
   try { const b = _standLueckenEntfernen(S); _lueckenBeimStart = b.leer ? b : null; } catch (e) { _lueckenBeimStart = null; }
+  // (v1.5.364) Werte mit Zeichen, die GrowSmart dort nie schreibt, kommen nicht in die Oberfläche.
+  try { _giftBeimStart = _standEntgiften(S); } catch (e) { _giftBeimStart = 0; }
 
   // (v1.5.296) Die Migrationen laufen in drei Abschnitten, jeder für sich abgesichert, die Zyklen einzeln. Bis hier
   // brach ein einziger Fehler loadS ab — gemessen an v1.5.271: sichtbar blieb nur die Kopfzeile, jedes Speichern
@@ -13023,16 +13136,24 @@ function waterStats(c) {
  */
 function _mischungKurz(c, paare, waterMl) {
   const rf = reserveFactor(c);
-  const liter = Math.round((parseFloat(waterMl) || 0) * rf / 100) / 10;
+  // (v1.5.365) Unter einem Liter Anmisch-Menge wird für 1 L gerechnet. Bei Sämlingen stand sonst „für 0 L: CalMag 0 ml" —
+  // 0,04 ml lassen sich nicht abmessen, und eine Null liest sich wie „kein Dünger". Die Mengen gelten dann je Liter;
+  // gebraucht wird davon nur ein Teil, und der steht dabei.
+  const anmisch = (parseFloat(waterMl) || 0) * rf;
+  const jeLiter = anmisch < 1000;
+  const basis = jeLiter ? 1000 : anmisch;
+  const liter = Math.round(basis / 100) / 10;
+  const bedarf = anmisch < 100 ? 'weniger als 0,1' : String(Math.round(anmisch / 100) / 10).replace('.', ',');
   const reihe = (_planAnsicht(c).products || []).map(pr => pr.id);
   const sortiert = paare.filter(([, v]) => parseFloat(v) > 0).sort((a, b) => (reihe.indexOf(a[0]) + 1 || 999) - (reihe.indexOf(b[0]) + 1 || 999));
   const teile = sortiert.map(([id, plan]) => {
     const pr = _produktFuer(c, id);
-    const menge = calcDose(parseFloat(plan), (parseFloat(waterMl) || 0) * rf, pr && pr.unit);
+    const menge = calcDose(parseFloat(plan), basis, pr && pr.unit);
     const einheit = /^g/i.test(String((pr && pr.unit) || '')) ? 'g' : 'ml';
     return `${(pr && pr.name) || id} ${String(menge).replace('.', ',')} ${einheit}`;
   });
-  return { text: teile.join(' · '), liter: String(liter).replace('.', ','), anzahl: teile.length };
+  const fuer = jeLiter ? `für 1 L anmischen (heute brauchst du davon ${bedarf} L)` : `für ${String(liter).replace('.', ',')} L`;
+  return { text: teile.join(' · '), liter: String(liter).replace('.', ','), anzahl: teile.length, jeLiter, fuer };
 }
 
 function reserveFactor(c) {
@@ -18058,13 +18179,13 @@ function getTodayAction(c, p, a, iso) {
       ] : isOutdoor ? [
         'Topf anheben: leicht? → gießen. Schwer? → warten.',
         `Falls gießen: ca. <b>${waterMl} ml</b> lauwarmes Wasser (pH ${pht.mid.toFixed(1)})`,
-        activeDoses.length > 0 ? (() => { const _m = _mischungKurz(c, activeDoses, waterMl); return `Dünger laut Plan (Woche ${fertWk}) für ${_m.liter} L: ${_m.text}`; })() : 'Laut Plan diese Woche kein Dünger',
+        activeDoses.length > 0 ? (() => { const _m = _mischungKurz(c, activeDoses, waterMl); return `Dünger laut Plan (Woche ${fertWk}) ${_m.fuer}: ${_m.text}`; })() : 'Laut Plan diese Woche kein Dünger',
       ] : [
         `Ca. <b>${waterMl} ml</b> lauwarmes Wasser (pH ${pht.mid.toFixed(1)})`,
         p.day <= KEIMUNG.auflaufenBis ? 'Ring um die Stelle, an der der Samen liegt — nicht direkt darauf'
           : p.day <= 10 ? 'Ring um den Keimling, nicht direkt drauf'
           : 'Radius allmählich vergrößern',
-        activeDoses.length > 0 ? (() => { const _m = _mischungKurz(c, activeDoses, waterMl); return `Dünger laut Plan (Woche ${fertWk}) für ${_m.liter} L: ${_m.text}`; })() : 'Laut Plan diese Woche kein Dünger',
+        activeDoses.length > 0 ? (() => { const _m = _mischungKurz(c, activeDoses, waterMl); return `Dünger laut Plan (Woche ${fertWk}) ${_m.fuer}: ${_m.text}`; })() : 'Laut Plan diese Woche kein Dünger',
       ],
       hint: isVorzucht
         ? 'Pflanze noch drinnen — wetterunabhängig gießen. Sie wird dann abgehärtet bevor sie raus kommt.'
@@ -18087,9 +18208,9 @@ function getTodayAction(c, p, a, iso) {
     const _erhaltung = _wasserTag ? (_planAnsicht(c).products || []).filter(pr => parseFloat(pr.waterDayDose) > 0) : [];
     const _duengerZeile = _wasserTag
       ? (_erhaltung.length
-          ? (() => { const _m = _mischungKurz(c, _erhaltung.map(pr => [pr.id, pr.waterDayDose]), waterMl); return `Wasser-Tag laut Plan: kein Dünger, nur ${_m.text} (für ${_m.liter} L)`; })()
+          ? (() => { const _m = _mischungKurz(c, _erhaltung.map(pr => [pr.id, pr.waterDayDose]), waterMl); return `Wasser-Tag laut Plan: kein Dünger, nur ${_m.text} (${_m.fuer})`; })()
           : 'Wasser-Tag laut Plan: nur Wasser, kein Dünger')
-      : (activeDoses.length > 0 ? (() => { const _m = _mischungKurz(c, activeDoses, waterMl); return `Dünger Wo. ${fertWk} für ${_m.liter} L: ${_m.text}`; })() : 'Kein Plan für diese Woche');
+      : (activeDoses.length > 0 ? (() => { const _m = _mischungKurz(c, activeDoses, waterMl); return `Dünger Wo. ${fertWk} ${_m.fuer}: ${_m.text}`; })() : 'Kein Plan für diese Woche');
     // (v1.5.153) Ablaufziel aus DRAIN_ZIEL — derselbe Schritt sagte „bis ~10% Drain“, der Hinweis
     // darunter „15–20%“. EC-Ziel aus dem Plan statt fest 0,8–2,0; an einem Wasser-Tag gibt es keins.
     const _ecZ = _wasserTag ? null : _ecTargetFor(c, iso);
@@ -23540,9 +23661,9 @@ function renderSet() {
           ${S._setUI.cyc_basics ? _basicsSubToggle('b_pot','🪴','Topfgröße') : ''}
           ${S._setUI.cyc_basics && S._setUI.b_pot ? `<div style="margin-top:4px;padding:12px 14px 8px;background:var(--card);border:0.5px solid var(--border);border-left:2px solid var(--green);border-radius:10px">
           <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
-            <button onclick="_setScrollY=document.getElementById('set-body').scrollTop;dd('potSize',Math.max(1,(parseFloat(draft.potSize)||${S.potSize || 11})-1));renderSet()" style="width:44px;height:44px;border-radius:8px;background:var(--card2);border:0.5px solid var(--border);color:var(--text);font-size:18px;cursor:pointer;font-family:var(--mono)">−</button>
-            <input type="number" min="1" max="100" step="0.5" value="${d.potSize || S.potSize || 11}" oninput="dd('potSize',Math.max(1,parseFloat(this.value)||${S.potSize || 11}))" onchange="_setScrollY=document.getElementById('set-body').scrollTop;renderSet()" style="flex:1;text-align:center;background:var(--card2);border:0.5px solid var(--border);border-radius:8px;padding:8px;color:var(--text);font-size:18px;font-weight:600;font-family:var(--mono);outline:none"/>
-            <button onclick="_setScrollY=document.getElementById('set-body').scrollTop;dd('potSize',Math.min(100,(parseFloat(draft.potSize)||${S.potSize || 11})+1));renderSet()" style="width:44px;height:44px;border-radius:8px;background:var(--card2);border:0.5px solid var(--border);color:var(--text);font-size:18px;cursor:pointer;font-family:var(--mono)">+</button>
+            <button onclick="_setScrollY=document.getElementById('set-body').scrollTop;dd('potSize',Math.max(1,(parseFloat(draft.potSize)||${parseFloat(S.potSize) || 11})-1));renderSet()" style="width:44px;height:44px;border-radius:8px;background:var(--card2);border:0.5px solid var(--border);color:var(--text);font-size:18px;cursor:pointer;font-family:var(--mono)">−</button>
+            <input type="number" min="1" max="100" step="0.5" value="${parseFloat(d.potSize) || parseFloat(S.potSize) || 11}" oninput="dd('potSize',Math.max(1,parseFloat(this.value)||${parseFloat(S.potSize) || 11}))" onchange="_setScrollY=document.getElementById('set-body').scrollTop;renderSet()" style="flex:1;text-align:center;background:var(--card2);border:0.5px solid var(--border);border-radius:8px;padding:8px;color:var(--text);font-size:18px;font-weight:600;font-family:var(--mono);outline:none"/>
+            <button onclick="_setScrollY=document.getElementById('set-body').scrollTop;dd('potSize',Math.min(100,(parseFloat(draft.potSize)||${parseFloat(S.potSize) || 11})+1));renderSet()" style="width:44px;height:44px;border-radius:8px;background:var(--card2);border:0.5px solid var(--border);color:var(--text);font-size:18px;cursor:pointer;font-family:var(--mono)">+</button>
             <span style="font-size:12px;color:var(--text-muted);min-width:60px">Liter</span>
           </div>
           <div style="font-size:10px;color:var(--text-hint);line-height:1.45;padding:4px 4px 0">Zähl, was wirklich im Topf ist: Aufgehäuft hält ein 11-L-Stofftopf 14–16 L Substrat. Bestimmt die Gießmengen und den Hebe-Test für <b>diesen</b> Zyklus. Hast du mehrere Zyklen in unterschiedlich großen Töpfen, kannst du das hier pro Zyklus einstellen. Standard kommt aus den App-Einstellungen (${S.potSize || 11} L).</div>
@@ -23966,7 +24087,7 @@ function renderSet() {
       <div class="sect-head">⚙️ Grundeinstellungen</div>
       <div class="row2" style="align-items:flex-end">
         <div class="inp-wrap"><div class="inp-label">Standard-Topfgröße (Liter)</div>
-          <input class="inp-field" type="number" value="${S.potSize || 11}" oninput="S.potSize=Number(this.value)||11;saveS()"/>
+          <input class="inp-field" type="number" value="${parseFloat(S.potSize) || 11}" oninput="S.potSize=Number(this.value)||11;saveS()"/>
         </div>
         <div style="flex:1;font-size:11px;color:var(--text-muted);padding-bottom:10px;line-height:1.5">
           → ~${waterSuggestion(null, { ph: 'bloom', day: 35 })} ml pro Guss (in der Blüte).<br><span style="color:var(--text-hint)">Nur die Vorgabe für <b>neue</b> Zyklen. Die Topfgröße eines laufenden Zyklus stellst du in dessen „Grundausstattung" ein.</span>
@@ -24128,6 +24249,7 @@ function renderSet() {
     <div class="card" style="gap:8px;display:flex;flex-direction:column">
       <div class="sect-head">💾 Daten sichern</div>
       ${_rettungKarte()}
+      ${_giftBeimStart ? `<div style="font-size:11px;color:var(--yellow);line-height:1.5;margin-bottom:8px">⚠️ Beim Start standen in ${_giftBeimStart} ${_giftBeimStart === 1 ? 'Feld' : 'Feldern'} (Zahlen, Auswahl, Messwerte oder Fotos) Zeichen, die GrowSmart dort nie schreibt — meist aus einer fremden oder von Hand veränderten Datei. GrowSmart hat diese Werte entfernt und setzt dort seine Vorgaben ein.</div>` : ''}
       ${(() => {
         const b = _lueckenBeimStart;
         if (!b) return '';
@@ -28582,6 +28704,10 @@ async function importData() {
       }
       if (_istObjekt(d) && d._type === 'growsmart_preset') { toast('⚠ Das ist ein Düngeplan, keine Sicherung. Düngepläne lädst du im Bereich Dünger über „📥 Import". ' + wegweiser, 7000); return; }
       if (!_istObjekt(d) || (d.cycles === undefined && d.entries === undefined)) { toast('⚠ Diese Datei ist keine GrowSmart-Sicherung. ' + wegweiser, 7000); return; }
+      // (v1.5.364) Kennungen oder Daten mit Zeichen, die GrowSmart nie schreibt: Die Datei wurde verändert oder stammt nicht
+      // aus GrowSmart — über solche Felder käme Programmcode in die App. Nicht reparieren, ablehnen.
+      const _unsicher = _standUnsicher(d);
+      if (_unsicher) { toast('⚠ Diese Datei wird nicht geladen: In einer ' + _unsicher + ' stehen Zeichen, die GrowSmart dort nie schreibt — sie wurde verändert oder stammt nicht aus GrowSmart, und so könnte Programmcode in die App kommen. ' + wegweiser, 9000); return; }
       let repariert = null;
       if (_standMangel(d)) {
         // Lesbar, aber an einer Stelle beschädigt: dieselbe Reparatur wie beim Start. Geht sie nicht, lieber ablehnen
@@ -28592,6 +28718,7 @@ async function importData() {
         d = rep.d; repariert = rep.liste;
       }
       delete d._bakDate;
+      const _gift = _standEntgiften(d);
       const neuU = _kopieUmfang(d), jetzt = _kopieUmfang(S);
       const kleiner = _deutlichKleiner(neuU, jetzt);
       const zahl = (u) => `${u.zyklen} ${u.zyklen === 1 ? 'Zyklus' : 'Zyklen'} mit ${u.eintraege} Einträgen`;
@@ -28599,6 +28726,7 @@ async function importData() {
         'Backup laden?',
         `In der Datei: ${zahl(neuU)}.\nJetzt in der App: ${zahl(jetzt)}.\n\n`
         + (repariert ? `Die Datei war an einer Stelle beschädigt (${repariert.join(', ')}); GrowSmart hat das repariert.\n\n` : '')
+        + (_gift ? `In ${_gift} ${_gift === 1 ? 'Feld' : 'Feldern'} (Zahlen, Auswahl, Messwerte oder Fotos) standen Zeichen, die GrowSmart dort nie schreibt — diese Werte werden nicht übernommen.\n\n` : '')
         + (kleiner ? 'Achtung: Die Datei enthält deutlich weniger als dein jetziger Stand. ' : '')
         + 'Dein jetziger Stand wird ersetzt. Willst du ihn behalten, tippe auf Abbrechen und zieh vorher ein Backup.',
         'Laden', kleiner ? 'var(--red)' : 'var(--green)');
@@ -35510,7 +35638,15 @@ function saveEntry() {
     }, 1200);
   });
   // Re-render to activate VPD display with saved temp/humidity
-  setTimeout(() => renderEntry(editISO), 1300);
+  // (v1.5.363) Erst nach dem grünen Knopf, nur auf demselben offenen Eintrag und erst, wenn kein Feld mehr den Fokus hat
+  // (_entryNeuNachFeld). Vorher zeichnete ein fester Takt nach 1,3 s neu — wer nach „Speichern" gleich ins nächste Feld
+  // tippte, verlor Cursor, Tastatur und die angefangene Zahl; wer schon weg war, bekam den Eintrag unsichtbar neu gebaut.
+  const _nr = _entryRenderNr, _iso = editISO;
+  setTimeout(() => {
+    const scr = document.getElementById('scr-entry');
+    if (_entryRenderNr !== _nr || editISO !== _iso || !scr || !scr.classList.contains('active')) return;
+    _entryNeuNachFeld();
+  }, 1300);
 }
 
 /**

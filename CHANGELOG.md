@@ -2,6 +2,100 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-07 — v1.5.365
+
+- **Die Dünger-Zeile der Startseite zeigte bei Sämlingen „für 0 L: CalMag 0 ml"** (seit v1.5.359, gefunden im Gesamtlauf).
+  Bei wenigen hundert Millilitern rundeten die Mengen auf null — eine Null liest sich wie „kein Dünger", und 0,04 ml lassen
+  sich ohnehin nicht abmessen.
+- **Jetzt** rechnet die Zeile unter einem Liter Anmisch-Menge für 1 L: „Dünger laut Plan (Woche 1) für 1 L anmischen (heute
+  brauchst du davon 0,2 L): CalMag 0,2 ml · Root·Juice 4 ml". Ab einem Liter bleibt sie wie in v1.5.359.
+- Test: `test_anzuchtduenger.js` (neue Prüfung: kein „0 ml", kein „für 0 L"); `test_wassertagstart.js` und
+  `test_eintragdaten.js` I kennen beide Schreibweisen. Die beiden ersten Tests waren seit v1.5.359 rot (sie erwarteten noch
+  „N Produkte") — beim Ausliefern von v1.5.359 liefen sie nicht mit.
+
+
+## 2026-10-07 — v1.5.364
+
+- **Eine fremde oder veränderte Sicherung konnte Programmcode in die App bringen** (Sicherheitsprüfung vom 07.10.2026, zwei
+  Agenten, jsdom). Kennungen von Zyklen, Pflanzen, Produkten und Plänen stehen an rund 300 Stellen ungemaskt in Knopf-Befehlen
+  (`onclick="f('…')"`), Datums-, Zahlen- und Auswahlfelder in Attributen, die Topfgröße sogar ohne Anführungszeichen im
+  Programmtext der ±-Knöpfe. Geprüft wurde beim Import nur die Form der Datei. Gemessen an v1.5.363 mit präparierter
+  Sicherung: 914 ausgeführte eingeschleuste Befehle über die Zyklus-Kennung, 1246 eingeschleuste Elemente über Werte. So ein
+  Befehl hätte alle Daten lesen können. Patrick gibt den Link weiter — wer eine Sicherung von jemand anderem lädt, war offen.
+- **Jetzt** halten die Eingangstore spitze Klammern, Anführungszeichen, Apostroph, Backtick, Backslash, das Und-Zeichen und
+  Steuerzeichen (`_GIFT_ZEICHEN`) aus genau diesen Feldern heraus — ein
+  Mechanismus statt 300 einzelner Masken:
+  - Kennungen, Schlüssel und Daten (`_standUnsicher`): Ein Stand damit stammt nicht aus GrowSmart und gilt als beschädigt —
+    der Backup-Import lehnt ihn mit eigenem Satz ab, beim Start greift der Rettungsweg, wiederherstellung.html spielt ihn
+    nicht ein, eine eigene Vorlage aus der Zwischenablage wird abgelehnt.
+  - Zahlen, Auswahlfelder, Farben, Messwerte und Fotos (`_standEntgiften`): werden entfernt, die App setzt ihre Vorgabe ein.
+    Der Import nennt die Zahl im Dialog, nach dem Start stehen sie in den Einstellungen unter „Daten sichern".
+  - Die Topfgröße steht im Knopf-Befehl nur noch als Zahl (`parseFloat`).
+  Freitexte (Namen, Notizen, Plan-Texte) bleiben, wie sie sind; sie dürfen solche Zeichen enthalten und werden bei der Ausgabe
+  maskiert (folgt als eigene Version).
+- **Patricks Daten sind nicht betroffen:** In seiner Sicherung steht in keinem dieser Felder eines der Zeichen (nachgezählt),
+  ebenso nicht in einem neu angelegten Zyklus und im Demo-Zyklus.
+- Test: neu `test_eingangstore.js` (62 Prüfungen; auf v1.5.363 laufen die Abschnitte C–E und fallen um).
+
+
+## 2026-10-07 — v1.5.363
+
+- **Nach „Speichern" ging der nächste Tipp verloren.** 1,3 s nach dem Speichern zeichnete der Eintrag fest neu — wer gleich
+  ins nächste Feld tippte (pH nach der Temperatur), verlor Cursor, Tastatur und die angefangene Zahl. Wer den Eintrag in der
+  Zeit schon verlassen hatte, bekam ihn unsichtbar neu gebaut. Gefunden, weil `test_eintragdaten.js` H je nach Last rot war.
+- **Jetzt** zeichnet der Eintrag nach dem grünen Knopf nur neu, wenn er noch offen ist und kein Feld mehr den Fokus hat —
+  derselbe Weg wie nach der Gießmenge (`_entryNeuNachFeld`, v1.5.348).
+- Test: `test_eintragdaten.js` Abschnitt L (7 Prüfungen; 3 fallen auf v1.5.362 um).
+- **Tests nachgezogen, ohne App-Änderung:** `test_klimaziel.js` J rechnete mit Klimawerten, die Abschnitt H im offenen
+  Eintrag stehen ließ (seit v1.5.347 stehen getippte Werte sofort im Eintrag) — H verwirft jetzt wie „Verwerfen".
+  `test_speichern.js` G trägt einen Wert ein, bevor es den Speicherfehler prüft (v1.5.351 speichert leere Tage nicht).
+  `test_saettigungnachholen.js` und `test_dialog_und_namen.js` warten auf den Dialog statt fest 40 ms bzw. 2 s — unter
+  `testlauf.js --parallel 4` waren sie rot, auch auf v1.5.346, einzeln grün.
+
+
+## 2026-10-07 — v1.5.362
+
+- **„Damit ergibt sich" in den Einstellungen rechnete beim Tippen nicht nach** (Bewertung 17.09., Hebel 5; Neubau-Prüfung,
+  Profi und Anfänger). Wer die Blütedauer änderte, sah die neue Kette erst nach „Änderungen sichern".
+- **Jetzt** zieht der Block bei jeder Eingabe nach, sagt „(noch nicht gesichert)", nennt den bisherigen Erntetag daneben und
+  rechnet das Einrasten des Spülstarts aus v1.5.346 mit — es steht also dieselbe Ernte da, die „Sichern" ablegt. Rastet die
+  Blüte um, sagt ein Satz warum („Das Spülen beginnt am nächsten Gießtag …"). Die Vorschau rechnet an einer Kopie und
+  speichert nichts (`_kettenVorschauHTML`, `_endspurtAnchor(…, { ohneSpeichern })`). Im Einsteiger-Modus steht sie unter
+  den Phasendauern, sobald diese aufgeklappt sind.
+- Test: `test_eintragdaten.js` Abschnitt K (4 Prüfungen).
+
+
+## 2026-10-07 — v1.5.361
+
+- **Gelbe untere Blätter in der späten Blüte ergaben „Stickstoff-Mangel 72 % — Stickstoff erhöhen"** (Neubau-Prüfung, Profi
+  und Anfänger). Die natürliche Verfärbung stand erst auf Rang 4. Nach `ANBAU.md` 6.4 ist Vergilbung von unten im letzten
+  Drittel der Blüte meist Seneszenz — wer dagegen andüngt, verlängert den Zyklus ohne Gewinn.
+- **Jetzt** bekommt die natürliche Verfärbung in der späten Blüte (`bluetestufe` = spät, dieselbe Stufe wie Klima und
+  Schimmel-Deckel) einen Kontext-Bonus, der Stickstoff-Mangel einen Abschlag, und dessen Handlung beginnt mit dem
+  Unterscheidungskriterium (langsam, gleichmäßig von unten, Blüten schwellen weiter → nicht andüngen). Beide Einträge bleiben
+  in der Liste (Regel 3).
+- Test: `test_eintragdaten.js` Abschnitt J (3 Prüfungen).
+
+
+## 2026-10-07 — v1.5.360
+
+- **„Erledigt" auf der Startseite buchte nur Wasser** (Nachtprüfung 07.10., Punkt 7; Neubau-Prüfung). Derselbe Guss stand
+  nach „Nachtragen" mit Wasser und Dünger im Tag, nach „Erledigt" ohne Dünger — die Dünger-Bilanz lief auseinander.
+- **Jetzt** bucht „Erledigt" am Düngertag auch die Plan-Dosen, gekennzeichnet als Vorschlag (`_suggestedDoses`, wie beim
+  Nachtragen seit v1.5.306). Ein Wasser-Tag laut Plan bleibt ohne Dünger, eingetragene Dosen werden nie überschrieben.
+- Test: `test_eintragdaten.js` Abschnitt I (3 Prüfungen).
+
+
+## 2026-10-07 — v1.5.359
+
+- **Die Startseite nannte am Düngertag „3 Produkte (siehe Eintrag)"** (Neubau-Prüfung, Profi und Anfänger). Was in die Kanne
+  gehört, stand erst im Eintrag.
+- **Jetzt** steht die Mischung in einer Zeile: „Dünger Wo. 5 für 6,6 L: CalMag 6,9 ml · Bio·Bloom 14,9 ml" — dieselbe
+  Rechnung wie die Mischliste im Eintrag (`calcDose` auf die Anmisch-Menge mit Reserve, `_mischungKurz`), in der Reihenfolge
+  des Plans. Am Erhaltungstag eines Wasser-Plans, in der Anzucht und draußen ebenso.
+- Test: `test_eintragdaten.js` Abschnitt I (2 Prüfungen).
+
+
 ## 2026-10-07 — v1.5.358
 
 - **Die Trichom-Felder im Eintrag führten zu falschen Zahlen** (Neubau-Prüfung, Anfänger, mit echtem Tippen gemessen).

@@ -91,9 +91,10 @@ const LAUF = (key) => `(function(){
     console.log('    Wasser-Tage: ' + wasser.map(t => t.d).join(', ') + ' · Feed-Tage: ' + feed.length);
     if (wasser[0]) console.log('    Tag ' + wasser[0].d + ': ' + wasser[0].steps);
     pruef(key + ': Prüflage — Wasser- und Feed-Tage vorhanden', wasser.length >= 2 && feed.length >= 2, wasser.length + '/' + feed.length);
-    pruef(key + ': an Wasser-Tagen kein „Nährstoffe Wo.", sondern „Wasser-Tag laut Plan"', wasser.every(t => !/Nährstoffe Wo\./.test(t.steps) && /Wasser-Tag laut Plan/.test(t.steps)), wasser.map(t => t.d + ': ' + t.steps.split(' | ').pop()).slice(0, 2).join(' || '));
+    // (v1.5.359) Die Feed-Zeile heißt „Dünger Wo. N für X L: Name Menge · …" statt „Nährstoffe Wo. N: … Produkte".
+    pruef(key + ': an Wasser-Tagen keine Dünger-Zeile, sondern „Wasser-Tag laut Plan"', wasser.every(t => !/(Nährstoffe|Dünger) Wo\./.test(t.steps) && /Wasser-Tag laut Plan/.test(t.steps)), wasser.map(t => t.d + ': ' + t.steps.split(' | ').pop()).slice(0, 2).join(' || '));
     pruef(key + ': an Wasser-Tagen kein EC-Ziel', wasser.every(t => !/EC im Ziel/.test(t.steps)), wasser.map(t => t.steps).slice(0, 1).join(''));
-    pruef(key + ': Gegenprobe Feed-Tage nennen die Nährstoffe', feed.every(t => /Nährstoffe Wo\./.test(t.steps)), feed.map(t => t.steps).slice(0, 1).join(''));
+    pruef(key + ': Gegenprobe Feed-Tage nennen den Dünger mit Menge', feed.every(t => /Dünger Wo\. \d+ für [\d,]+ L( anmischen \(heute brauchst du davon [^)]+ L\))?: [^|]+ \d+(,\d)? (ml|g)/.test(t.steps)), feed.map(t => t.steps).slice(0, 1).join(''));
     pruef(key + ': Feed-Tage nennen das EC-Ziel des Plans', feed.every(t => !t.ecMin || t.steps.includes(`EC im Ziel ${t.ecMin}–${t.ecMax}`)), feed.map(t => t.steps + ' / ' + t.ecMin + '–' + t.ecMax).slice(0, 1).join(''));
     pruef(key + ': kein „~10%" in Schritt oder Hinweis', tage.every(t => !/10\s?%/.test(t.steps + t.hint)), tage.filter(t => /10\s?%/.test(t.steps + t.hint)).map(t => t.d).join(', '));
     pruef(key + ': ab Tag 25 nennen Schritt und Hinweis dasselbe Ziel 15–20 %', tage.filter(t => t.d >= 25).every(t => /15–20 % unten ablaufen/.test(t.steps) && /15–20 % Drain/.test(t.hint)), tage.filter(t => t.d >= 25).map(t => t.steps.split(' | ')[0]).slice(0, 1).join(''));
