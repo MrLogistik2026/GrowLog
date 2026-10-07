@@ -201,6 +201,69 @@ function pruef(name, bedingung, info) {
     pruef('E3 keine JS-Fehler', s.errors.length === 0, s.errors[0]);
   }
 
+  // ===== F: Ein anderes Fenster wird nicht überschrieben (v1.5.327) =====
+  console.log('\nF - Zweites Fenster');
+  const fremdStand = () => { const st = JSON.parse(SICHERUNG); st.entries['2026-09-28'] = { note: 'aus dem anderen Fenster' }; return JSON.stringify(st); };
+  const ereignis = (x, key) => x.window.dispatchEvent(new x.window.StorageEvent('storage', { key }));
+  {
+    // Zweiter Tab schreibt, das Ereignis kommt an
+    const f = await load({ [SK]: SICHERUNG });
+    const fremd = fremdStand();
+    f.window.localStorage.setItem(SK, fremd); f.window.localStorage.setItem('growsmart_v4_gen', 'anderer-tab');
+    ereignis(f, SK);
+    await new Promise((r) => setTimeout(r, 50));
+    pruef('F1 Ereignis aus einem anderen Tab: Hinweis „woanders geändert" mit „Neu laden"', f.dialoge.some(d => /woanders geändert/.test(d) && /Lade neu/.test(d)), f.dialoge);
+    pruef('F2 … rotes Band „Dieses Fenster speichert nicht mehr"', /Dieses Fenster speichert nicht mehr/.test(f.window.document.getElementById('sperrband')?.textContent || ''));
+    f.toasts.length = 0;
+    f.E("S.entries['2026-09-27'] = { note: 'alter Tab' }; saveS()");
+    pruef('F3 der alte Tab überschreibt nicht; Band und roter Punkt stehen weiter', f.get(SK) === fremd && f.rot() && !!f.window.document.getElementById('sperrband'), f.toasts);
+    f.toasts.length = 0;
+    f.E('doUndo()');
+    pruef('F4 auch ↩ schreibt nicht darüber und meldet keinen Erfolg', f.get(SK) === fremd && !f.toasts.some(t => /^↩ Rückgängig \(/.test(t)), f.toasts);
+    // Die Tür: Import ersetzt bewusst alles
+    f.E(`_standErsetzenUndNeuLaden(${JSON.stringify(SICHERUNG)}, 'Backup geladen')`);
+    pruef('F5 Import bleibt möglich (ersetzt bewusst alles)', f.get(SK) === SICHERUNG);
+    pruef('F6 keine JS-Fehler', f.errors.length === 0, f.errors[0]);
+  }
+  {
+    // Eingefrorener Tab: kein Ereignis, aber die Kennung ist neu
+    const g = await load({ [SK]: SICHERUNG });
+    const fremd = fremdStand();
+    g.window.localStorage.setItem(SK, fremd); g.window.localStorage.setItem('growsmart_v4_gen', 'anderer-tab');
+    g.E("S.entries['2026-09-27'] = { note: 'alter Tab' }; saveS()");
+    pruef('F7 ohne Ereignis (eingefrorener Tab): die neue Kennung reicht, nichts wird überschrieben', g.get(SK) === fremd && g.dialoge.some(d => /woanders geändert/.test(d)));
+  }
+  {
+    // Zurück-Taste aus wiederherstellung.html: Stand neu, Kennung unverändert, kein Ereignis — beim Zurückkehren prüfen
+    const h = await load({ [SK]: SICHERUNG });
+    const fremd = fremdStand();
+    h.window.localStorage.setItem(SK, fremd);
+    h.window.document.dispatchEvent(new h.window.Event('visibilitychange'));
+    pruef('F8 beim Zurückkehren ins Fenster wird der ganze Stand verglichen', h.dialoge.some(d => /woanders geändert/.test(d)), h.dialoge);
+    h.E("S.entries['2026-09-27'] = { note: 'alter Tab' }; saveS()");
+    pruef('F9 … und dann nicht überschrieben', h.get(SK) === fremd);
+  }
+  {
+    // Fehlalarm-Schutz: anderer Tab schreibt denselben Stand neu
+    const k = await load({ [SK]: SICHERUNG });
+    k.E("saveS._lastUndo = 0; saveS()");
+    const gleich = k.get(SK);
+    k.window.localStorage.setItem(SK, gleich); k.window.localStorage.setItem('growsmart_v4_gen', 'anderer-tab');
+    ereignis(k, SK);
+    ereignis(k, 'fremder_schluessel');
+    k.E("S.entries['2026-09-27'] = { note: 'darf gespeichert werden' }; saveS()");
+    pruef('F10 derselbe Stand mit neuer Kennung ist kein Konflikt: kein Hinweis, es wird gespeichert', !k.dialoge.some(d => /woanders geändert/.test(d)) && (k.get(SK) || '').includes('darf gespeichert werden'), k.dialoge);
+    pruef('F11 keine JS-Fehler', k.errors.length === 0, k.errors[0]);
+  }
+  {
+    // Werkseinstellung in einem anderen Fenster: der Speicher ist leer, dieses Fenster schreibt nichts zurück
+    const m = await load({ [SK]: SICHERUNG });
+    m.window.localStorage.clear();
+    ereignis(m, null);
+    m.E("S.entries['2026-09-27'] = { note: 'alter Tab' }; saveS()");
+    pruef('F12 nach „alles löschen" im anderen Fenster schreibt dieses Fenster die Daten nicht zurück', m.get(SK) === null);
+  }
+
   console.log('\n' + ok + ' OK, ' + fail + ' FEHL');
   if (fail) process.exit(1);
   process.exit(0);

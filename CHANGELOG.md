@@ -2,6 +2,28 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-07 — v1.5.327
+
+- **Ein zweites Fenster überschrieb unbemerkt, was ein anderes geschrieben hatte** (Hebel 3, Punkt 7; Nachtprüfung
+  07.10.2026). Zwei GrowSmart-Tabs, oder ein Tab plus `wiederherstellung.html`: Der alte Tab schrieb beim nächsten Tipp
+  seinen eigenen, älteren Stand zurück. Gemessen an v1.5.271: eine eben eingespielte Sicherung war nach einem Tipp im
+  alten Tab wieder weg, ohne jeden Hinweis.
+- **Jetzt** schreibt ein Fenster nicht mehr über einen fremden Stand. Drei Wege, weil keiner allein reicht: das
+  storage-Ereignis (kommt in den anderen Fenstern an), eine Kennung je Schreibvorgang (`growsmart_v4_gen` — sie fängt
+  Fenster, die das Ereignis verpasst haben, etwa eingefroren im Hintergrund) und beim Zurückkehren ins Fenster ein
+  Vergleich des ganzen Stands (fängt die Zurück-Taste aus `wiederherstellung.html`). Steht im Speicher genau das, was
+  dieses Fenster zuletzt gelesen oder geschrieben hat, ist das kein Konflikt — auch bei neuer Kennung.
+- Der Nutzer sieht einmal den Hinweis „GrowSmart wurde woanders geändert" mit „Neu laden" / „Später", danach ein
+  stehendes rotes Band „Dieses Fenster speichert nicht mehr … tippe, um neu zu laden" und den roten Punkt; Speichern und
+  ↩ melden keinen Erfolg. **Die Tür:** Import und „Kopie laden" ersetzen bewusst alles und laden danach neu — sie bleiben
+  möglich (`_skSchreiben(…, ersetzen)`). Das Band aus v1.5.291 nimmt dafür einen eigenen Text und eine eigene Handlung.
+- Im Browser mit zwei echten Tabs durchgespielt: Änderung in Tab 2 → Tab 1 zeigt sofort Hinweis und Band, ein
+  Speicherversuch dort überschreibt nichts, Tippen aufs Band lädt neu und zeigt die Änderung aus Tab 2.
+- **Grenze:** Ein Fenster mit einer App-Fassung vor v1.5.327 kennt die Kennung nicht; solange es offen ist, schützt nur
+  das storage-Ereignis.
+- Test: `test_speichern.js` Abschnitt F (12 Prüfungen, beide Zeitzonen; 8 fallen auf v1.5.326 um).
+
+
 ## 2026-10-07 — v1.5.326
 
 - **Die Speicheranzeige zählte nur drei Schlüssel** (Hebel 3, Punkt 7). `_storageInfo` summierte Hauptstand und die

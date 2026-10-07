@@ -3593,7 +3593,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.326';
+const APP_VERSION = 'v1.5.327';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -4244,14 +4244,81 @@ function _rettungParken(roh, info) {
  * `'SpeicherSperre'`, und der Nutzer erfährt es **jedes Mal**: Eine Drosselung hat in der Messung
  * genau die Meldung verschluckt, auf die es ankam.
  */
-function _skSchreiben(text, umfangNeu) {
+function _skSchreiben(text, umfangNeu, ersetzen) {
   if (_neuladenAnsteht) { const e = new Error('Neuladen'); e.name = 'SpeicherSperre'; throw e; }
   if (_speicherSperre) {
     _speicherSperreMelden();
     const e = new Error('Speichersperre'); e.name = 'SpeicherSperre';
     throw e;
   }
-  return _hauptstandSchreiben(text, umfangNeu);
+  // (v1.5.327) Hat ein anderes Fenster geschrieben, schreibt dieses nicht darüber. Ein ganzer Stand, der bewusst alles
+  // ersetzt (Import, Kopie laden), ist die Tür: Er lädt danach neu.
+  if (!ersetzen && _fremdGeaendert(false)) {
+    _fremdMelden();
+    const e = new Error('Anderes Fenster'); e.name = 'SpeicherSperre';
+    throw e;
+  }
+  const wie = _hauptstandSchreiben(text, umfangNeu);
+  if (wie) _fremdMerken(text);
+  return wie;
+}
+
+/**
+ * (v1.5.327) ANDERES FENSTER. Ein zweiter GrowSmart-Tab oder wiederherstellung.html schreibt denselben Speicher. Vorher
+ * überschrieb ein offenes Fenster das beim nächsten Tipp mit seinem eigenen, älteren Stand — gemessen an v1.5.271: eine
+ * eben eingespielte Sicherung war nach einem Tipp im alten Tab wieder weg, ohne Hinweis.
+ *
+ * Drei Wege, weil keiner allein reicht: das storage-Ereignis (kommt nur in den ANDEREN Fenstern an, nie bei eigenen
+ * Schreibvorgängen), eine Kennung je Schreibvorgang (growsmart_v4_gen, billig vor jedem Schreiben zu lesen — sie fängt
+ * Fenster, die das Ereignis verpasst haben, etwa eingefroren im Hintergrund) und beim Zurückkehren ins Fenster ein
+ * Vergleich des ganzen Stands (fängt Seiten, die die Kennung nicht kennen, und die Zurück-Taste aus
+ * wiederherstellung.html). Fehlalarm-Schutz: Steht im Speicher genau das, was dieses Fenster zuletzt gelesen oder
+ * geschrieben hat, ist nichts passiert — auch wenn die Kennung neu ist.
+ */
+const SK_GEN_KEY = 'growsmart_v4_gen';
+let _fremdGeschrieben = false;
+let _skLetzter;            // was dieses Fenster zuletzt in growsmart_v4 gelesen oder geschrieben hat (undefined: noch nichts)
+let _meineGen = null;
+function _fremdMerken(text) {
+  _skLetzter = text;
+  const neu = Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+  // Scheitert das (voll), steht dort weiter die alte Kennung — dieselbe, die dieses Fenster kennt. Kein Fehlalarm.
+  try { localStorage.setItem(SK_GEN_KEY, neu); _meineGen = neu; } catch (e) { /* egal */ }
+}
+function _fremdStartMerken() {
+  try { _skLetzter = localStorage.getItem(SK); _meineGen = localStorage.getItem(SK_GEN_KEY); } catch (e) { /* gesperrt: nichts zu vergleichen */ }
+}
+function _fremdGeaendert(gruendlich) {
+  if (_fremdGeschrieben) return true;
+  if (_skLetzter === undefined) return false;
+  let gen = null, roh = null;
+  try {
+    gen = localStorage.getItem(SK_GEN_KEY);
+    if (!gruendlich && gen === _meineGen) return false;
+    roh = localStorage.getItem(SK);
+  } catch (e) { return false; }
+  if (roh === _skLetzter) { _meineGen = gen; return false; }
+  _fremdGeschrieben = true;
+  return true;
+}
+function _fremdMelden() {
+  _speicherStatusRot(true);
+  _sperrBand(true, '⚠ <b>Dieses Fenster speichert nicht mehr.</b> GrowSmart wurde woanders geändert — tippe, um neu zu laden.', () => window.location.reload());
+  const jetzt = Date.now();
+  if (!_fremdMelden._am || jetzt - _fremdMelden._am > 10000) {
+    _fremdMelden._am = jetzt;
+    toast('⚠ Nicht gespeichert: GrowSmart wurde in einem anderen Fenster geändert. Lade neu, damit dort nichts überschrieben wird.', 6000);
+  }
+  if (!_fremdMelden._gefragt) {
+    _fremdMelden._gefragt = true;
+    customConfirm('GrowSmart wurde woanders geändert',
+      'Deine Daten wurden in einem anderen Fenster geändert — in einem zweiten GrowSmart-Tab, oder es wurde eine Sicherung eingespielt. Damit davon nichts überschrieben wird, speichert dieses Fenster ab jetzt nichts mehr.\n\nLade neu, um den aktuellen Stand zu sehen. Was du hier seit dem letzten Speichern eingetragen hast, ist dann nicht dabei.',
+      'Neu laden', 'var(--green)', 'Später').then(ok => { if (ok) window.location.reload(); });
+  }
+}
+function _fremdPruefenJetzt() {
+  if (_fremdGeschrieben || _neuladenAnsteht) return;
+  if (_fremdGeaendert(true)) _fremdMelden();
 }
 
 function _speicherSperreMelden() {
@@ -4266,9 +4333,11 @@ function _speicherSperreMelden() {
  * nächsten Erfolgsmeldung überschrieben (gemessen: „Geladen ✓" über einem Import, der nicht
  * gespeichert wurde). Das Band ist antippbar und führt zum Download.
  */
-function _sperrBand(an) {
+function _sperrBand(an, inhalt, aktion) {
   try {
     let b = document.getElementById('sperrband');
+    // (v1.5.327) Auch für „anderes Fenster": eigener Text, eigene Handlung (neu laden statt herunterladen).
+    if (an && b && inhalt) { b.innerHTML = inhalt; b.onclick = aktion; return; }
     if (!an) {
       if (b) b.remove();
       try { document.body.style.paddingTop = ''; } catch (e2) { /* egal */ }
@@ -4278,8 +4347,8 @@ function _sperrBand(an) {
       b = document.createElement('div');
       b.id = 'sperrband';
       b.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9998;background:var(--red);color:#fff;font-family:var(--font);font-size:12px;line-height:1.4;padding:calc(env(safe-area-inset-top) + 8px) 12px 8px;text-align:center;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.4)';
-      b.innerHTML = '⚠ <b>GrowSmart speichert gerade nichts.</b> Dein alter Stand liegt nur noch hier — tippe, um ihn herunterzuladen.';
-      b.onclick = () => { try { _rettungHerunterladen(); } catch (e) { /* der Weg steht auch in den Einstellungen */ } };
+      b.innerHTML = inhalt || '⚠ <b>GrowSmart speichert gerade nichts.</b> Dein alter Stand liegt nur noch hier — tippe, um ihn herunterzuladen.';
+      b.onclick = aktion || (() => { try { _rettungHerunterladen(); } catch (e) { /* der Weg steht auch in den Einstellungen */ } });
       document.body.appendChild(b);
       // Das Band darf die Kopfzeile nicht verdecken — dort liegen Rückgängig, Wiederherstellen und „＋".
       try { document.body.style.paddingTop = b.offsetHeight + 'px'; } catch (e2) { /* egal */ }
@@ -4771,6 +4840,7 @@ function loadS() {
   if (_startFehler.length) _standVorfallMigration();
   // (v1.5.325) Ausgangsstand für den ersten Rückgängig-Schritt dieser Sitzung.
   try { saveS._stand = JSON.stringify(S); } catch (e) { /* dann nimmt der erste Schritt den Stand nach der Änderung */ }
+  _fremdStartMerken();   // (v1.5.327)
 }
 
 let _startFehler = [];
@@ -26972,7 +27042,7 @@ let _neuladenAnsteht = false;
 function _standErsetzenUndNeuLaden(text, meldung) {
   let wie, umfang = null;
   try { umfang = _kopieUmfang(JSON.parse(text)); } catch (e) { umfang = null; }
-  try { wie = _skSchreiben(text, umfang); } catch (e) {
+  try { wie = _skSchreiben(text, umfang, true); } catch (e) {
     if (e && e.name === 'SpeicherSperre') return false;   // die Sperre hat sich selbst gemeldet
     wie = false;
   }
@@ -38276,6 +38346,10 @@ if (!S._disclaimerAcceptedAt) {
 // (v1.5.290) Was beim Laden passiert ist (Kopie geladen, alter Stand aufgehoben), sagt die App jetzt —
 // nach dem Haftungsausschluss, damit nicht zwei Dialoge übereinanderliegen.
 setTimeout(_startHinweiseZeigen, 300);
+// (v1.5.327) Ein anderes Fenster hat geschrieben — oder dieses Fenster kommt zurück und weiß es noch nicht.
+window.addEventListener('storage', (e) => { if (e.key === SK || e.key === SK_GEN_KEY || e.key === null) _fremdPruefenJetzt(); });
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') _fremdPruefenJetzt(); });
+window.addEventListener('pageshow', (e) => { if (e.persisted) _fremdPruefenJetzt(); });
 const _perfTotal = _perfMark('first-render');
 // Sichtbarer Toast wenn Init länger als 800ms dauert — sonst still bleiben.
 // Hilft uns zu sehen ob Optimierungen tatsächlich wirken.
