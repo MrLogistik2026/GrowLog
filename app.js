@@ -3593,7 +3593,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.339';
+const APP_VERSION = 'v1.5.340';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -15528,7 +15528,8 @@ function _keimMethode(c) {
   // dauerhaft verloren, und die Keimwurzel ist nach dem Durchbruch nicht mehr austrocknungsfest
   // (Pereira et al. 2018). Vorher stand hier „Papiertuch" — der Weg mit den meisten Handgriffen
   // und dem einzigen Schritt, an dem ein Anfaenger die Wurzel zerstoeren kann.
-  return (c && c.germMethod && GERM_GUIDES[c.germMethod]) ? c.germMethod : 'direct';
+  // (v1.5.340) Nur eigene Einträge: 'constructor' war sonst eine gültige Keimmethode, und der Keimtag stürzte ab.
+  return (c && c.germMethod && Object.prototype.hasOwnProperty.call(GERM_GUIDES, c.germMethod)) ? c.germMethod : 'direct';
 }
 
 // Keimmethoden-Anleitungen — methoden-spezifische Schritte für die Keimphase.
@@ -18238,7 +18239,7 @@ function renderCal() {
     // ist; das Antippen öffnet ohnehin den Tag mit allen Zyklen.
     const weitereAktionen = dayInfo.filter(x => x.a && x !== actionDay);
     const weitereHTML = weitereAktionen.length
-      ? `<span title="${weitereAktionen.map(x => x.c.name + ': ' + (ACT_NAME[x.a] || x.a)).join(' · ')}"
+      ? `<span title="${escHtml(weitereAktionen.map(x => x.c.name + ': ' + (ACT_NAME[x.a] || x.a)).join(' · '))}"
            style="position:absolute;top:2px;right:3px;display:flex;gap:2px;pointer-events:none">
           ${weitereAktionen.map(x => `<span style="width:5px;height:5px;border-radius:50%;background:${col(x.c).hex};display:block"></span>`).join('')}
         </span>`
@@ -22830,7 +22831,7 @@ function renderSet() {
           ${((S._setUI && S._setUI.cyc_identity) || (typeof Tour !== 'undefined' && Tour._state && Tour._state().active)) ? `<div style="margin-top:4px;padding:12px 14px 8px;background:var(--card);border:0.5px solid var(--border);border-left:2px solid var(--green);border-radius:10px;display:flex;flex-direction:column;gap:10px">
           <div class="inp-wrap">
             <div class="inp-label">Name</div>
-            <input id="cyc-name-input" class="inp-field" value="${d.name || ''}" oninput="dd('name',this.value)" style="border-color:${cl.hex}44"/>
+            <input id="cyc-name-input" class="inp-field" value="${escHtml(d.name || '')}" oninput="dd('name',this.value)" style="border-color:${cl.hex}44"/>
           </div>
           <div class="inp-wrap">
             <div class="inp-label">Standort / Zelt</div>
@@ -25476,6 +25477,12 @@ function _zyklenPaketPruefen(d) {
   const nein = (warum) => ({ ok: false, fehler: warum });
   if (!_istObjekt(d) || d._type !== ZYKLEN_PAKET_TYP) return nein('keine Zyklus-Datei');
   if (!Array.isArray(d.zyklen) || !d.zyklen.length || d.zyklen.length > 10) return nein('keine oder zu viele Zyklen (1 bis 10)');
+  // (v1.5.340) Schlüssel wie __proto__ setzen beim Übernehmen den Prototyp und schmuggeln geerbte Werte an jeder Prüfung
+  // vorbei (Prüfer, 07.10.2026: Licht mit Programmcode, eine Vorlage, an der der Import still abbrach). Solche Schlüssel
+  // haben in einer GrowSmart-Datei nichts zu suchen.
+  const boese = (x, tiefe) => tiefe > 6 || (x && typeof x === 'object' && Object.keys(x).some(k => k === '__proto__' || k === 'constructor' || k === 'prototype' || boese(x[k], tiefe + 1)));
+  if (boese(d, 0)) return nein('unzulässiger Schlüssel in der Datei');
+  const eigen = (o, k) => typeof k === 'string' && Object.prototype.hasOwnProperty.call(o, k);
   const heute = todayISO();
   const isoOk = (x) => typeof x === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(x) && _localISO(new Date(x + 'T12:00:00')) === x;
   const ganz = (x, von, bis) => Number.isInteger(x) && x >= von && x <= bis;
@@ -25493,15 +25500,15 @@ function _zyklenPaketPruefen(d) {
     if (!isoOk(z.startDate) || z.startDate < '2020-01-01' || z.startDate > isoPlus(heute, 60)) return nein(`${z.name}: Startdatum ungültig`);
     if (!['auto', 'fem', 'reg'].includes(z.seedType)) return nein(`${z.name}: Samentyp unbekannt`);
     if (!['indoor', 'outdoor'].includes(z.growType)) return nein(`${z.name}: drinnen/draußen unbekannt`);
-    if (!MEDIUM_NAMEN[z.medium]) return nein(`${z.name}: Substrat unbekannt`);
+    if (!eigen(MEDIUM_NAMEN, z.medium)) return nein(`${z.name}: Substrat unbekannt`);
     if (!(typeof z.potSize === 'number' && z.potSize >= 1 && z.potSize <= 200)) return nein(`${z.name}: Topfgröße ungültig`);
     if (!ganz(z.anzuchtDays, 7, 60)) return nein(`${z.name}: Anzucht-Tage ungültig (7 bis 60)`);
     if (!ganz(z.bloomDays, 21, 150)) return nein(`${z.name}: Blüte-Tage ungültig (21 bis 150)`);
     if (!['direct', 'saturated'].includes(z.startMethod)) return nein(`${z.name}: Start-Methode unbekannt`);
-    if (z.germMethod !== undefined && !GERM_GUIDES[z.germMethod]) return nein(`${z.name}: Keimmethode unbekannt`);
+    if (z.germMethod !== undefined && !eigen(GERM_GUIDES, z.germMethod)) return nein(`${z.name}: Keimmethode unbekannt`);
     if (z.lightVeg !== undefined && !['18/6', '20/4', '24/0', '16/8'].includes(z.lightVeg)) return nein(`${z.name}: Licht in der Anzucht unbekannt`);
     if (z.lightBloom !== undefined && !['12/12', '18/6', '20/4', '24/0'].includes(z.lightBloom)) return nein(`${z.name}: Licht in der Blüte unbekannt`);
-    if (z.fertPreset !== undefined && !_vorlageWaehlbar(z.fertPreset)) return nein(`${z.name}: Düngeplan-Vorlage unbekannt`);
+    if (z.fertPreset !== undefined && !(eigen(FERT_PRESETS, z.fertPreset) && _vorlageWaehlbar(z.fertPreset))) return nein(`${z.name}: Düngeplan-Vorlage unbekannt`);
     if (!kurz(z.strain, 80)) return nein(`${z.name}: Sorte zu lang oder mit < >`);
     if (!Array.isArray(z.pflanzen) || !z.pflanzen.length || z.pflanzen.length > 20) return nein(`${z.name}: Pflanzen fehlen (1 bis 20)`);
     for (const p of z.pflanzen) {
@@ -25517,7 +25524,15 @@ function _zyklenPaketPruefen(d) {
         notizen[tag] = t.trim();
       }
     }
-    zyklen.push(Object.assign({}, z, { name: z.name.trim(), notizen }));
+    // (v1.5.340) Genau die bekannten Felder übernehmen — nie das Eingangsobjekt kopieren.
+    zyklen.push({
+      name: z.name.trim(), startDate: z.startDate, seedType: z.seedType, growType: z.growType, medium: z.medium,
+      potSize: z.potSize, anzuchtDays: z.anzuchtDays, bloomDays: z.bloomDays, startMethod: z.startMethod,
+      germMethod: z.germMethod, lightVeg: z.lightVeg, lightBloom: z.lightBloom, fertPreset: z.fertPreset,
+      strain: z.strain === undefined ? undefined : z.strain.trim(),
+      pflanzen: z.pflanzen.map(p => ({ label: p.label.trim(), strain: p.strain === undefined ? '' : p.strain.trim() })),
+      notizen,
+    });
   }
   const namen = zyklen.map(z => z.name);
   if (new Set(namen).size !== namen.length) return nein('zwei Zyklen mit demselben Namen');
@@ -27363,7 +27378,10 @@ async function importData() {
       try { d = JSON.parse(ev.target.result); } catch (err) { d = undefined; }
       if (d === undefined || d === null) { toast('⚠ Diese Datei ist keine lesbare Sicherung — sie ist leer oder unvollständig. ' + wegweiser, 7000); return; }
       // (v1.5.337) Eine Zyklus-Datei fügt hinzu, statt zu ersetzen.
-      if (_istObjekt(d) && d._type === ZYKLEN_PAKET_TYP) { await _zyklenPaketLaden(d); return; }
+      if (_istObjekt(d) && d._type === ZYKLEN_PAKET_TYP) {
+        try { await _zyklenPaketLaden(d); } catch (e) { toast('⚠ Diese Zyklus-Datei lässt sich nicht laden (' + ((e && e.message) || e) + '). Dein Stand ist unverändert.', 7000); }
+        return;
+      }
       if (_istObjekt(d) && d._type === 'growsmart_preset') { toast('⚠ Das ist ein Düngeplan, keine Sicherung. Düngepläne lädst du im Bereich Dünger über „📥 Import". ' + wegweiser, 7000); return; }
       if (!_istObjekt(d) || (d.cycles === undefined && d.entries === undefined)) { toast('⚠ Diese Datei ist keine GrowSmart-Sicherung. ' + wegweiser, 7000); return; }
       let repariert = null;

@@ -2,6 +2,24 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-07 — v1.5.340
+
+- **Eine präparierte Zyklus-Datei konnte trotz v1.5.339 Programmcode in die App bringen** (Prüfer vor dem Hochladen,
+  zweimal „schwer"; Patricks echte Datei war nicht betroffen). Zwei Wege:
+  - **Anführungszeichen im Zyklusnamen:** Das Namensfeld in den Einstellungen und der Kalender-Hinweis „weitere Aktionen"
+    setzten den Namen ungefiltert in ein HTML-Attribut. `Z" onfocus="…"` brachte ein eigenes Attribut mit — gemessen auf
+    v1.5.339. Dieselbe Stelle traf auch einen selbst getippten Namen.
+  - **`__proto__` in der Datei:** Beim Übernehmen per `Object.assign` setzte dieser Schlüssel den Prototyp, und geerbte
+    Werte (Licht mit Programmcode, eine unbekannte Vorlage) liefen an jeder Prüfung vorbei; mit der unbekannten Vorlage brach
+    der Import-Knopf still ab.
+- **Dazu (mittel):** Die Auswahllisten für Substrat und Keimmethode akzeptierten geerbte Namen wie `constructor` oder
+  `toString`; mit Keimmethode `constructor` stürzte der Eintrag am Keimtag ab. `_keimMethode` hatte dieselbe Schwäche.
+- **Jetzt:** Beide Attribut-Stellen laufen durch `escHtml`. Die Prüfung lehnt `__proto__`, `constructor` und `prototype`
+  als Schlüssel ab, prüft Auswahllisten nur gegen eigene Einträge und baut das Ergebnis aus genau den bekannten Feldern neu,
+  statt das Eingangsobjekt zu kopieren. Wirft das Laden trotzdem, sagt der Knopf „Import" es, statt still zu bleiben.
+- Test: `test_zyklenimport.js` Abschnitt H (11 Prüfungen, beide Zeitzonen; 10 fallen auf v1.5.339 um).
+
+
 ## 2026-10-07 — v1.5.339
 
 - **Eine Zyklus-Datei konnte Programmcode in die App bringen** (beim Durchsehen von v1.5.337 gefunden, bevor es

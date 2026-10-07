@@ -64,6 +64,9 @@ function pruef(name, bedingung, info) {
   else { fail++; console.log('  FEHL ' + name + (info !== undefined ? '  -> ' + JSON.stringify(info).slice(0, 300) : '')); }
 }
 
+// Eine nicht abgefangene Ausnahme im Import (alter Stand) soll als Befund zählen, nicht den Lauf abbrechen.
+process.on('unhandledRejection', (e) => { console.log('  (nicht abgefangen: ' + ((e && e.message) || e) + ')'); });
+
 (async () => {
   console.log('TZ=' + (process.env.TZ || '(System)'));
 
@@ -127,6 +130,47 @@ function pruef(name, bedingung, info) {
     const p = JSON.parse(JSON.stringify(PAKET)); p.paketId = 'zeichen'; p.zyklen = [zyklus('Gruppe "A" & B · 1', '2026-09-20', 1)];
     const r = await a.laden(p);
     pruef('U Anführungszeichen, & und · sind erlaubt', r === true && a.E("S.cycles.some(c => c.name === 'Gruppe \"A\" & B · 1')"));
+  }
+
+  console.log('\nH - Härtung gegen präparierte Dateien (v1.5.340)');
+  {
+    const a = await load();
+    const vorher = a.E('JSON.stringify(S)');
+    const roh = (zyk) => JSON.parse(JSON.stringify({ _type: 'growsmart_zyklen', paketId: 'h', zyklen: [zyk] }));
+    const mitProto = (extra) => { const t = JSON.stringify(zyklus('Gruppe H', '2026-09-20', 1)); return JSON.parse(t.replace(/^\{/, '{"__proto__":' + JSON.stringify(extra) + ',')); };
+    for (const [name, z] of [
+      ['__proto__ mit Licht-Nutzlast', mitProto({ lightVeg: '<img src=x onerror=window.__pwn=1>' })],
+      ['__proto__ mit unbekannter Vorlage', mitProto({ fertPreset: 'nix' })],
+      ['Substrat „constructor"', Object.assign(zyklus('Gruppe H', '2026-09-20', 1), { medium: 'constructor' })],
+      ['Substrat „toString"', Object.assign(zyklus('Gruppe H', '2026-09-20', 1), { medium: 'toString' })],
+      ['Keimmethode „constructor"', Object.assign(zyklus('Gruppe H', '2026-09-20', 1), { germMethod: 'constructor' })],
+      ['Vorlage „constructor"', Object.assign(zyklus('Gruppe H', '2026-09-20', 1), { fertPreset: 'constructor' })],
+    ]) {
+      a.toasts.length = 0;
+      const r = await a.laden(roh(z));
+      pruef(`H ${name}: abgelehnt mit Grund, Stand unverändert`, r === false && a.E('JSON.stringify(S)') === vorher && a.toasts.some(t => /lässt sich nicht laden/.test(t)), a.toasts);
+    }
+    pruef('H _keimMethode nimmt nur eigene Einträge', a.E("_keimMethode({ germMethod: 'constructor' })") === 'direct' && a.E("_keimMethode({ germMethod: 'water' })") === 'water');
+    // Anführungszeichen im Namen: kein eingeschleustes Attribut in Einstellungen und Kalender
+    const name = 'Z" data-pwn="1" onfocus="window.__pwn=1" x="';
+    const r = await a.laden({ _type: 'growsmart_zyklen', paketId: 'q', zyklen: [zyklus(name, '2026-09-20', 1), zyklus('Q2', '2026-09-20', 1)] });
+    a.E("(() => { const c = S.cycles.find(x => x.name.startsWith('Z\"')); selId = c.id; draft = { ...c }; S._setUI = S._setUI || {}; S._setUI.cyc_identity = true; goTo('set'); renderSet(); })()");
+    const feld = a.w.document.getElementById('cyc-name-input');
+    pruef('H Name mit Anführungszeichen: angelegt, das Namensfeld trägt keine fremden Attribute', r === true && !!feld && !feld.hasAttribute('data-pwn') && !feld.hasAttribute('onfocus') && feld.value === name, feld && feld.outerHTML.slice(0, 160));
+    a.E("goTo('cal'); renderCal()");
+    pruef('H … und auch im Kalender nicht', !a.w.document.querySelector('[data-pwn], [ontouchstart*="__pwn"], [onfocus*="__pwn"]'));
+    // Über den Knopf „Import": eine Datei, die beim Laden wirft, meldet sich statt still zu bleiben
+    let inp = null;
+    const ce = a.w.document.createElement.bind(a.w.document);
+    a.w.document.createElement = (t) => { const el = ce(t); if (t === 'input') { inp = el; el.click = () => {}; } return el; };
+    a.E("window.__alt = _zyklenPaketLaden; _zyklenPaketLaden = () => { throw new Error('Testfehler'); }");
+    a.toasts.length = 0;
+    a.E('importData()');
+    await inp.onchange({ target: { files: [new a.w.File([JSON.stringify(PAKET)], 'z.json', { type: 'application/json' })] } });
+    await new Promise((res) => setTimeout(res, 300));
+    a.E('_zyklenPaketLaden = window.__alt');
+    pruef('H wirft das Laden, sagt der Knopf „Import" es', a.toasts.some(t => /lässt sich nicht laden \(Testfehler\)/.test(t)), a.toasts);
+    pruef('H keine JS-Fehler', a.errors.length === 0, a.errors[0]);
   }
 
   console.log('\nS - Kein Hinzufügen nur im Arbeitsspeicher');
