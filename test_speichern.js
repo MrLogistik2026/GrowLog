@@ -404,6 +404,31 @@ function pruef(name, bedingung, info) {
     pruef(`K${antwort ? 6 : 7} keine JS-Fehler`, k.errors.length === 0, k.errors[0]);
   }
 
+  // ===== L: ↩, dann gleich weiterarbeiten — ↪ überschreibt nichts (v1.5.333) =====
+  console.log('\nL - Rückgängig und danach weiterarbeiten');
+  {
+    const l = await load({ [SK]: SICHERUNG });
+    const tag = l.E('Object.keys(S.entries).sort()[4]');
+    l.E(`S.entries['${tag}'].note = 'EINS'; saveS._lastUndo = 0; saveS()`);
+    l.E('doUndo()');
+    l.E(`S.entries['${tag}'].note = 'ZWEI'; saveS()`);   // sofort, ohne 2 s Pause
+    l.toasts.length = 0;
+    l.E('doRedo()');
+    pruef('L1 neue Änderung direkt nach ↩: ↪ überschreibt sie nicht', l.E(`S.entries['${tag}'].note`) === 'ZWEI' && JSON.parse(l.get(SK)).entries[tag].note === 'ZWEI', [l.E(`S.entries['${tag}'].note`), l.toasts]);
+    // Speichern ohne Änderung nach ↩ lässt ↪ stehen
+    l.E(`S.entries['${tag}'].note = 'DREI'; saveS._lastUndo = 0; saveS()`);
+    l.E('doUndo()');
+    l.E('saveS._lastUndo = 0; saveS()');   // etwa nach einem Backup: nichts geändert
+    l.E('doRedo()');
+    pruef('L2 ein Speichern ohne Änderung nach ↩ lässt ↪ stehen', l.E(`S.entries['${tag}'].note`) === 'DREI', l.E(`S.entries['${tag}'].note`));
+    l.E('doUndo()');
+    pruef('L3 … und ↩ danach wirkt beim ersten Tipp', l.E(`S.entries['${tag}'].note`) === 'ZWEI', l.E(`S.entries['${tag}'].note`));
+    l.E('saveS._lastUndo = 0; saveS()'); const t1 = l.get(SK);
+    l.E('saveS._lastUndo = 0; saveS()'); const t2 = l.get(SK);
+    pruef('L5 zweimal speichern ohne Änderung: derselbe Text (kein neuer Zeitstempel am Plan)', t1 === t2);
+    pruef('L4 keine JS-Fehler', l.errors.length === 0, l.errors[0]);
+  }
+
   console.log('\n' + ok + ' OK, ' + fail + ' FEHL');
   if (fail) process.exit(1);
   process.exit(0);

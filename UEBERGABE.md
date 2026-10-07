@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.332** · index.html 2,54 MB · 776 Funktionen
+Stand: **v1.5.333** · index.html 2,54 MB · 776 Funktionen
 Zuletzt fortgeschrieben am 07.10.2026 (Nachtprüfung und Run 02 — Abschnitt 0o, „Stand Run 02"). Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
@@ -253,6 +253,7 @@ Unterscheidungsfragen aus dem eigenen Zustand.
 - v1.5.330: War der Speicher beim Start nicht lesbar, wird er auch nicht beschrieben — der ungelesene Stand bleibt (Skeptiker-Befund 3).
 - v1.5.331: Meldungen nennen den echten Grund — ↩ sagt, wenn eine Kopie weichen musste; Import „abgelehnt" statt „zu groß"; „kaum Speicherplatz" statt „alte Fotos löschen" bei kleinem Stand (Skeptiker-Befunde 4, 5, 7).
 - v1.5.332: Ein bei offener App geleerter Speicher gilt nicht mehr als „anderes Fenster" — die App fragt „Wieder speichern / Nicht speichern" statt neu zu laden und den Stand zu verlieren (Skeptiker Runde 2, Befund 1).
+- v1.5.333: ↩ und gleich weiterarbeiten — ↪ überschreibt die neue Änderung nicht mehr; Speichern ohne Änderung leert ↪ nicht; der Plan-Zeitstempel ändert sich nur bei echter Änderung (Skeptiker Runde 2, Befund 2).
 
 **Bei der nächsten Bewertung** dieselbe Skala, dieselben Kategorie-IDs und dieselben Regeln aus `auftrag.md` nehmen und
 die Noten gegen diese Tabelle stellen.

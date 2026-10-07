@@ -4594,7 +4594,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.332';
+const APP_VERSION = 'v1.5.333';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -6926,6 +6926,11 @@ function syncActivePlanToGlobals() {
 function syncGlobalsToActivePlan() {
   const plan = getActivePlan();
   if (!plan) return;
+  // (v1.5.333) Der Zeitstempel ändert sich nur, wenn sich am Plan etwas ändert. Vorher stempelte jedes Speichern ein neues
+  // updatedAt — dadurch sah jedes Speichern wie eine Änderung aus: ↪ ging nach einem Speichern ohne Änderung verloren,
+  // und ein zweiter Tab, der denselben Stand nur neu ablegte, hätte als fremder Schreibvorgang gegolten (v1.5.327).
+  const _inhalt = () => JSON.stringify([plan.products, plan.schedule, plan.mixOrder, plan.mixInfo, plan.drainInfo, plan.presetKey]);
+  const _vorher = _inhalt();
   plan.products = (S.products || []).map(p => ({...p}));
   // Extract 'global_wN' → 'wN' for plan storage
   const sched = {};
@@ -6937,7 +6942,7 @@ function syncGlobalsToActivePlan() {
   plan.mixInfo = S.mixInfo || '';
   plan.drainInfo = S.drainInfo || null;
   plan.presetKey = S.presetKey || null;
-  plan.updatedAt = Date.now();
+  if (_inhalt() !== _vorher || !plan.updatedAt) plan.updatedAt = Date.now();
 }
 
 /**
@@ -6948,6 +6953,7 @@ function syncGlobalsToActivePlan() {
  * und jeden anderen Fehler gar nicht.
  */
 function saveS() {
+  saveS._neuStand = null;   // (v1.5.333) nie einen Text aus einem früheren Aufruf schreiben
   try {
     // Feed/Water-Guss-Index-Cache verwerfen — der State ändert sich gleich.
     if (typeof clearFeedWaterCache === 'function') clearFeedWaterCache();
@@ -6990,8 +6996,10 @@ function saveS() {
           });
         }
       });
-      pushUndo(saveS._stand);
-      saveS._lastUndo = now;
+      // (v1.5.333) Nur wenn sich etwas geändert hat. Vorher legte ein Speichern ohne Änderung (etwa nach einem Backup)
+      // den Stand ein zweites Mal ab und leerte ↪ — der nächste Tipp auf ↩ bewirkte dann nichts (Skeptiker).
+      saveS._neuStand = JSON.stringify(S);
+      if (saveS._neuStand !== saveS._stand) { pushUndo(saveS._stand); saveS._lastUndo = now; }
     }
   } catch (e) {
     saveS._vorarbeitFehler = (e && e.message) || String(e);
@@ -7011,7 +7019,8 @@ function saveS() {
   try {
     // (v1.5.288) Bei vollem Speicher macht der Hauptstand sich Platz, statt still zu scheitern.
     // (v1.5.290) Und er ist gesperrt, solange ein unbrauchbarer Stand nur dort liegt.
-    const stand = JSON.stringify(S);
+    const stand = saveS._neuStand || JSON.stringify(S);   // (v1.5.333) eben schon gerechnet: nicht zweimal
+    saveS._neuStand = null;
     saveS._stand = stand;   // (v1.5.325) Ausgangspunkt für den nächsten Rückgängig-Schritt
     const wie = _skSchreiben(stand);
     if (wie === false) {
@@ -9082,6 +9091,9 @@ function pushUndo(stand) {
 function _undoSchreiben(aktion) {
   let wie;
   saveS._stand = JSON.stringify(S);   // (v1.5.325) die nächste Änderung lässt sich bis hierher zurücknehmen
+  // (v1.5.333) Und die nächste Änderung legt einen eigenen Schritt an, auch innerhalb von 2 s — sonst leerte sie ↪ nicht,
+  // und ↪ überschrieb sie danach mit dem alten Stand (Skeptiker, 07.10.2026: die neue Notiz war weg).
+  saveS._lastUndo = 0;
   try { wie = _skSchreiben(saveS._stand); }
   catch (e) {
     if (e && e.name === 'SpeicherSperre') { _speicherStatusRot(true); return false; }   // die Sperre nennt ihren Grund selbst

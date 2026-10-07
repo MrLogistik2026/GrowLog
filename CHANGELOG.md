@@ -2,6 +2,24 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-07 — v1.5.333
+
+- **↩, gleich weiterarbeiten, ↪ — die neue Änderung war weg** (Skeptiker, zweite Runde, Befund 2; schon vor v1.5.319
+  vorhanden). `saveS` legt einen Rückgängig-Schritt höchstens alle 2 Sekunden an; ↩ setzte diese Frist nicht zurück. Wer
+  nach ↩ sofort etwas änderte, bekam keinen neuen Schritt, ↪ blieb gefüllt — und ↪ schrieb danach den alten Stand über
+  die neue Änderung (gemessen: Notiz „ZWEI" → „EINS", auch im Speicher). Jetzt setzt ↩/↪ die Frist zurück, die nächste
+  Änderung legt ihren eigenen Schritt an und leert ↪.
+- **Mitgenommen (Randbefund):** Ein Speichern ohne Änderung nach ↩ — etwa nach einem Backup — legte den Stand ein
+  zweites Mal ab und leerte ↪; der nächste Tipp auf ↩ bewirkte dann nichts. `saveS` legt jetzt nur einen Schritt an,
+  wenn sich der Stand geändert hat, und rechnet den Text dafür nur einmal.
+- **Die Ursache dahinter, mitbehoben:** `syncGlobalsToActivePlan` stempelte bei jedem Speichern ein neues `updatedAt` an
+  den Plan, auch ohne Änderung — dadurch sah jedes Speichern wie eine Änderung aus. Das traf auch v1.5.327: Ein zweiter
+  Tab, der denselben Stand nur neu ablegte, hätte als fremder Schreibvorgang gegolten. Der Stempel ändert sich jetzt nur,
+  wenn sich am Plan etwas ändert; gelesen wird er ohnehin nirgends.
+- Test: `test_speichern.js` Abschnitt L (5 Prüfungen, beide Zeitzonen; 3 fallen auf v1.5.332 um). Dazu die 42 Dateien,
+  die Pläne und Vorlagen prüfen, in beiden Zeitzonen grün.
+
+
 ## 2026-10-07 — v1.5.332
 
 - **Ein geleerter Speicher galt als „anderes Fenster" — und „Neu laden" hätte den Grow gelöscht** (Skeptiker, zweite
