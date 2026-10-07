@@ -3593,7 +3593,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.323';
+const APP_VERSION = 'v1.5.324';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -10637,6 +10637,11 @@ function _planStatusLine(c, iso, nurLesen) {
   const plan = getPlanForCycle(c);
   if (!plan || (!planHasSkeleton(c) && (!Array.isArray(plan.weekDayBounds) || !plan.weekDayBounds.length))) return '';
   const p = phase(iso, c);
+  // (v1.5.324) Nach der Ernte gibt es keinen Düngeplan mehr. Vorher stand im Trocknen und Curing weiter „Düngeplan:
+  // Woche 12 · IceFlush · Ernte Tag 105–119" (Patricks Bild vom 07.10.2026, Tag 122) — und an einem Trocknungstag, der
+  // heute ist, dazu ＋3/−3 „Ernte 3 Tage später" für eine Ernte, die schon war. Steht die Pflanze noch (ernteOffen),
+  // bleibt die Zeile: Dann verschiebt ＋3 die Ernte, die noch kommt.
+  if (p && (p.ph === 'dry' || p.ph === 'cure') && !p.ernteOffen) return '';
   const wk = p ? fertPlanWeek(c, iso, p) : null;
   if (!wk) return '';
   // weekFocus liefert ein Objekt { phase, tip } — nur die kurze Phasen-Bezeichnung nutzen.

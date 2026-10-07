@@ -2,6 +2,17 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-07 — v1.5.324
+
+- **Im Trocknen und Curing stand weiter die Düngeplan-Zeile im Eintrag** (Patricks Bild vom 07.10.2026: Tag 122,
+  „🧪 Düngeplan: Woche 12 · IceFlush · Ernte Tag 105–119"). `_planStatusLine` prüfte nur, ob es eine Plan-Woche gibt —
+  und die letzte Woche gilt bis zum Ende des Zyklus. War der Trocknungstag „heute", standen dazu ＋3/−3 mit „Ernte 3 Tage
+  später", die eine Ernte verschoben hätten, die schon war (`holdPlanWeek` schiebt den ganzen Plan).
+- **Jetzt** endet die Zeile mit der Ernte: im Trocknen und Curing keine Plan-Zeile und keine Knöpfe. Steht die Pflanze
+  nach dem Plan-Erntetag noch (`ernteOffen`, v1.5.265), bleibt sie — dann verschiebt ＋3 eine Ernte, die noch kommt.
+- Test: `test_zyklus2.js` Abschnitt X (6 Prüfungen, beide Zeitzonen; 3 fallen auf v1.5.323 um).
+
+
 ## 2026-10-07 — v1.5.323
 
 - **Die Kalender-Kopfzeile sagte „Curing · abgeschlossen", obwohl der Zyklus nicht abgeschlossen war** (Patricks Meldung

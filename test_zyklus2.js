@@ -700,6 +700,21 @@ function pruef(name, bedingung, info) {
     pruef('W6 keine JS-Fehler', a.errors.length === 0, a.errors[0]);
   }
 
+  // ===== X: Nach der Ernte keine Düngeplan-Zeile mehr im Eintrag (v1.5.324) =====
+  console.log('\nX - Düngeplan-Zeile im Trocknen und Curing');
+  {
+    const a = await load(null, { datum: '2026-09-12' });
+    const eintrag = (iso) => { a.E(`openEntry('${iso}')`); return (a.window.document.getElementById('scr-entry')?.textContent || '').replace(/\s+/g, ' '); };
+    const ph = (iso) => a.E(`(phase('${iso}', S.cycles[0]) || {}).ph`);
+    pruef('X0 Lage: 12.09. ist Trocknen, 20.09. Curing, 10.08. Blüte', ph('2026-09-12') === 'dry' && ph('2026-09-20') === 'cure' && ph('2026-08-10') === 'bloom', [ph('2026-09-12'), ph('2026-09-20'), ph('2026-08-10')]);
+    const heute = eintrag('2026-09-12');
+    pruef('X1 Trocknungstag heute: keine „Düngeplan: Woche"-Zeile', !/Düngeplan: Woche/.test(heute));
+    pruef('X2 … und kein ＋3 „Ernte 3 Tage später"', !a.window.document.querySelector('#scr-entry button[title^="Ernte 3 Tage später"]'));
+    pruef('X3 Curing-Tag: keine Düngeplan-Zeile', !/Düngeplan: Woche/.test(eintrag('2026-09-20')));
+    pruef('X4 Blütetag: die Zeile bleibt', /Düngeplan: Woche/.test(eintrag('2026-08-10')));
+    pruef('X5 keine JS-Fehler', a.errors.length === 0, a.errors[0]);
+  }
+
   console.log('\n' + ok + ' OK, ' + fail + ' FEHL');
   if (fail) process.exit(1);
 })().catch((e) => { console.log('FEHLER: ' + (e && e.stack || e)); process.exit(1); });

@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.323** · index.html 2,53 MB · 765 Funktionen
+Stand: **v1.5.324** · index.html 2,53 MB · 765 Funktionen
 Zuletzt fortgeschrieben am 07.10.2026 (Nachtprüfung und Run 02 — Abschnitt 0o, „Stand Run 02"). Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
@@ -242,6 +242,7 @@ Unterscheidungsfragen aus dem eigenen Zustand.
 - v1.5.321: Gesperrter Browser-Speicher wird beim Start und bei jedem Speichern gemeldet, statt wie ein leerer Erststart auszusehen (Hebel 3, Punkt 7). Offen: ein privates Fenster, das vorübergehend speichert, erkennt die App nicht.
 - v1.5.322: ↩ und ↪ melden, wenn der Stand nicht gespeichert wurde, mit dem echten Grund; im Neulade-Fenster nach einem Import tun sie nichts (Hebel 3, Punkt 7).
 - v1.5.323: Kalender-Kopfzeile sagt nach dem Curing „✓ fertig" statt „abgeschlossen" und bietet „🏁 Zyklus abschließen" an (Patricks Meldung vom 07.10.).
+- v1.5.324: Nach der Ernte keine Düngeplan-Zeile und keine ＋3/−3-Knöpfe mehr im Eintrag (Patricks Bild vom 07.10., Tag 122).
 
 **Bei der nächsten Bewertung** dieselbe Skala, dieselben Kategorie-IDs und dieselben Regeln aus `auftrag.md` nehmen und
 die Noten gegen diese Tabelle stellen.
