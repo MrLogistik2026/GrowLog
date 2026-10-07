@@ -1272,7 +1272,7 @@ const T = {
       `💡 <b>Vor dem Toppen gießen!</b> 2–4 Stunden vorher volles Gießen mit Dünger — das macht die Pflanze turgor-prall für einen sauberen Schnitt und versorgt die Wundheilung. Nach dem Topping: ${pauseDays} Tage Ruhe ohne Gießen.<br><span style="color:var(--text-hint);font-size:10px">Tag ${currentDay}: gute Zeit zum Toppen über dem 4.–5. Nodium (sichtbar durchzählen von unten).</span>`,
 
     tooLateAuto: ({ week }) =>
-      `⏰ <b>Toppen nicht mehr empfohlen</b> – Blüte Woche ${week}. Bei Automatics gehört ein Schnitt vor den Blühbeginn: Sie blühen nach Kalender, und die Tage, die er kostet, holt die Pflanze nicht wieder auf. Sanftes Herunterbinden (LST) geht noch.<br><span style="color:var(--text-hint);font-size:10px">Beim nächsten Zyklus: rechtzeitig toppen (Anzucht ab Tag 15 bis Blüte Wo.3).</span>`,
+      `⏰ <b>Toppen nicht mehr empfohlen</b> – Blüte Woche ${week}. Bei Automatics gehört ein Schnitt vor den Blühbeginn: Sie blühen nach Kalender, und die Tage, die er kostet, holt die Pflanze nicht wieder auf. Sanftes Herunterbinden (LST) geht noch.<br><span style="color:var(--text-hint);font-size:10px">Beim nächsten Zyklus: rechtzeitig toppen — bei Automatics in der Anzucht ab Tag 15, vor dem Blühbeginn.</span>`,
 
     tooEarly: ({ day }) =>
       `Tag ${day}: Pflanze ist noch zu jung zum Toppen. Warte bis mindestens Tag 15, wenn 4–5 Nodien sichtbar sind.`,
@@ -4219,12 +4219,12 @@ function importCustomPreset(jsonStr) {
   try {
     const data = JSON.parse(jsonStr);
     // Basis-Validierung
-    if (data._type !== 'growsmart_preset') throw new Error('Falsches Format');
-    if (!data.name || typeof data.name !== 'string') throw new Error('Name fehlt');
-    if (!Array.isArray(data.products)) throw new Error('Produkte fehlen');
-    if (typeof data.schedule !== 'object') throw new Error('Schedule fehlt');
+    if (data._type !== 'growsmart_preset') throw new Error('das ist keine GrowSmart-Vorlage');
+    if (!data.name || typeof data.name !== 'string') throw new Error('der Vorlage fehlt ein Name');
+    if (!Array.isArray(data.products)) throw new Error('der Vorlage fehlen die Produkte');
+    if (typeof data.schedule !== 'object') throw new Error('der Vorlage fehlt der Wochenplan');
     // (v1.5.364) Kennungen und Wochenplan-Schlüssel ohne Zeichen, die GrowSmart nie schreibt; Farben, Einheiten, Dosen gereinigt.
-    if (_standUnsicher({ customPresets: { x: { products: data.products, schedule: data.schedule } } })) throw new Error('unzulässige Zeichen');
+    if (_standUnsicher({ customPresets: { x: { products: data.products, schedule: data.schedule } } })) throw new Error('unzulässige Zeichen in einer Produkt-Kennung');
     _standEntgiften({ customPresets: { x: data } });
 
     const id = nextCustomPresetId();
@@ -4242,8 +4242,10 @@ function importCustomPreset(jsonStr) {
       _importedAt: new Date().toISOString(),
     };
     saveS();
+    importCustomPreset._grund = null;
     return id;
   } catch (e) {
+    importCustomPreset._grund = (e && e.message) || null;   // (v1.5.380) der Grund für die Meldung
     return null;
   }
 }
@@ -4318,7 +4320,9 @@ async function promptImportPreset() {
     vibrate(15);
     if (typeof renderSet === 'function') renderSet();
   } else {
-    toast('❌ Import fehlgeschlagen — ungültiges Format?');
+    // (v1.5.380) Den Grund nennen statt „ungültiges Format?" — vorher blieb offen, was an der Vorlage nicht stimmte.
+    const _g = importCustomPreset._grund;
+    toast(_g && !/JSON|Unexpected|token/i.test(_g) ? `❌ Import fehlgeschlagen: ${_g}. Dein Stand ist unverändert.` : '❌ Import fehlgeschlagen — der Text ist keine lesbare Vorlage. Kopiere ihn noch einmal vollständig aus dem Export.', 6000);
   }
 }
 
@@ -4616,7 +4620,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.377';
+const APP_VERSION = 'v1.5.386';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -5512,9 +5516,6 @@ const _GIFT_ZEICHEN = /[<>"'`\\&\u0000-\u001f\u2028\u2029]/;
 function _giftig(v) { return (typeof v === 'string' || typeof v === 'number') && _GIFT_ZEICHEN.test(String(v)); }
 const _ZYKLUS_DATUM = ['startDate', 'toppingDate', 'flushDryFrom', '_toppingOffsetBoundary', 'transplantDate', 'planHoldUntil',
   'offsetDate', 'bloomStartDate', 'endDate', '_intBloomBoundary', 'bakedOffsetDate'];
-const _ZYKLUS_WERTE = ['medium', 'growType', 'seedType', 'lightVeg', 'lightBloom', 'symbol', 'colorId', 'startMethod', 'weightMode',
-  'hemisphere', 'phaseMode', 'germMethod', 'fwPattern', 'plantCount', 'seedWeeks', 'reservePct', 'saturatedWeight', 'toppingPause',
-  'targetAmber', 'dayOffset', 'ripeOffset', 'leafOffset'];
 const _EINTRAG_WERTE = ['water', 'ph', 'ec', 'runoffPh', 'runoffEc', 'drainMl', 'restPct', 'liftAfterPct', 'waterTemp',
   'plantsAtWatering', 'plantCount', 'liftFeel', 'weight', 'weightG'];
 
@@ -5523,8 +5524,27 @@ const _EINTRAG_WERTE = ['water', 'ph', 'ec', 'runoffPh', 'runoffEc', 'drainMl', 
  * nicht einfach löschen (Tagebuch, Pläne und Dosen hängen an ihnen); ein solcher Stand stammt nicht aus GrowSmart und
  * wird deshalb abgelehnt wie ein beschädigter.
  */
+/**
+ * (v1.5.385) Schlüssel, die in JavaScript den Bauplan eines Objekts ändern. JSON.parse legt „__proto__" als gewöhnlichen
+ * Schlüssel an; erst Object.assign beim Start machte daraus den Prototyp des Arbeitsstands — so kamen Pläne, die in keinem
+ * geprüften Feld standen, an beiden Toren vorbei in die Oberfläche (Gegenprüfung v1.5.364, nachgestellt über den Import).
+ * GrowSmart schreibt solche Schlüssel nie.
+ */
+const _BAUPLAN_SCHLUESSEL = new Set(['__proto__', 'constructor', 'prototype']);
+function _hatBauplanSchluessel(o, tiefe) {
+  if (!o || typeof o !== 'object' || (tiefe || 0) > 12) return false;
+  return Object.keys(o).some(k => _BAUPLAN_SCHLUESSEL.has(k) || _hatBauplanSchluessel(o[k], (tiefe || 0) + 1));
+}
+/** (v1.5.385) Ein Stand als Arbeitsstand: Vorgaben, dann die eigenen Felder des Stands — ohne Object.assign, ohne Bauplan-Schlüssel. */
+function _standAlsArbeitsstand(vorgaben, d) {
+  const out = Object.assign({}, vorgaben);
+  if (_istObjekt(d)) Object.keys(d).forEach(k => { if (!_BAUPLAN_SCHLUESSEL.has(k)) out[k] = d[k]; });
+  return out;
+}
+
 function _standUnsicher(d) {
   if (!_istObjekt(d)) return null;
+  if (_hatBauplanSchluessel(d)) return '__proto__';
   const liste = (x) => Array.isArray(x) ? x : [];
   const schluesselGiftig = (o) => _istObjekt(o) && Object.keys(o).some(k => _GIFT_ZEICHEN.test(k));
   const planGiftig = (sch) => _istObjekt(sch) && (schluesselGiftig(sch) || Object.values(sch).some(schluesselGiftig));
@@ -5543,8 +5563,11 @@ function _standUnsicher(d) {
   if (planGiftig(d.weekSchedule) || plaene.some(p => planGiftig(p.schedule))) return 'im Wochenplan';
   if (_giftig(d._activePlanId) || _giftig(d.presetKey)) return 'in der Kennung des gewählten Düngeplans';
   if (schluesselGiftig(d.customPresets)) return 'in der Kennung einer eigenen Vorlage';
+  // (v1.5.380) In eigenen Vorlagen dürfen die Schlüssel in den Wochen Produktnamen sein („Jack's Bloom", „Calcium & Magnesium") —
+  // Freitext, den _standFreitexteSauber umsetzt. Geprüft werden nur die Wochen selbst und die Produkt-Kennungen. Vorher lehnte
+  // das Tor solche Vorlagen ab, und ein schon gespeicherter Plan dieser Art hätte beim Start den ganzen Stand verworfen.
   if (_istObjekt(d.customPresets) && Object.values(d.customPresets).some(v => _istObjekt(v)
-    && (liste(v.products).some(p => _istObjekt(p) && _giftig(p.id)) || planGiftig(v.schedule)))) return 'bei einem Produkt einer eigenen Vorlage';
+    && (liste(v.products).some(p => _istObjekt(p) && _giftig(p.id)) || schluesselGiftig(v.schedule)))) return 'bei einem Produkt einer eigenen Vorlage';
   if (_istObjekt(d.entries)) {
     if (schluesselGiftig(d.entries)) return 'im Datum eines Tagebuch-Eintrags';
     for (const e of Object.values(d.entries)) {
@@ -5573,12 +5596,31 @@ function _standEntgiften(d) {
   const produkt = (p) => { weg(p, 'color'); weg(p, 'unit'); };
   if (keineZahl(d.potSize)) { delete d.potSize; n++; }
   weg(d, 'galleryFilter'); weg(d, 'ecUnit');
+  // (v1.5.379) Ein Zyklus wird ganz durchgegangen, samt verschachtelter Teile (Pflanzen, Trainings, Gießmengen-Korridor …):
+  // Jeder Wert mit einem solchen Zeichen fällt weg, außer in den Freitext-Feldern, in die ein Nutzer tippt — die setzt
+  // _freitextSauber um. Vorher stand hier eine Liste; waterRange.*.min/max und seedWeeksLo/Hi fehlten darin und kamen
+  // ungeprüft in Eingabefelder (Gegenprüfung v1.5.364). Kennungen und Daten prüft schon _standUnsicher — ein Stand mit
+  // solchen dort erreicht diese Stelle nicht. Die Fehlalarm-Prüfung fand in 33 App-Fassungen seit v1.1.0 kein Feld außer den
+  // Freitexten, das eines dieser Zeichen trägt.
+  const ZYKLUS_FREI = new Set(['name', 'location', 'strain', 'notes', 'note', 'label', 'paketId']);
+  const zyklusTeil = (o, tiefe) => {
+    if (!o || typeof o !== 'object' || tiefe > 6) return;
+    if (Array.isArray(o)) {
+      for (let i = o.length - 1; i >= 0; i--) {
+        if (typeof o[i] === 'string' && _giftig(o[i])) { o.splice(i, 1); n++; } else zyklusTeil(o[i], tiefe + 1);
+      }
+      return;
+    }
+    for (const k of Object.keys(o)) {
+      const v = o[k];
+      if ((typeof v === 'string' || typeof v === 'number') && !ZYKLUS_FREI.has(k)) { if (_giftig(v)) { delete o[k]; n++; } }
+      else if (v && typeof v === 'object') zyklusTeil(v, tiefe + 1);
+    }
+  };
   for (const c of liste(d.cycles)) {
     if (!_istObjekt(c)) continue;
-    Object.keys(c).forEach(k => { if (_ZYKLUS_WERTE.includes(k) || /^int[A-Z]/.test(k) || /Days$/.test(k)) weg(c, k); });
+    zyklusTeil(c, 0);
     if (keineZahl(c.potSize)) { delete c.potSize; n++; }
-    liste(c.plants).forEach(p => ['color', 'yieldWet', 'yieldDry', 'ripeOffset'].forEach(k => weg(p, k)));
-    liste(c.trainingEvents).forEach(t => weg(t, 'type'));
   }
   liste(d.products).forEach(produkt);
   schedule(d.weekSchedule);
@@ -5627,9 +5669,14 @@ function _standFreitexteSauber(d) {
   const fixListe = (o, k) => { if (_istObjekt(o) && Array.isArray(o[k])) o[k] = o[k].map(x => { const v = _freitextSauber(x); if (v !== x) n++; return v; }); };
   const werte = (x) => Array.isArray(x) ? x : (_istObjekt(x) ? Object.values(x) : []);
   const produkt = (p) => { fix(p, 'name'); fix(p, 'note'); };
+  // (v1.5.380) Schlüssel in den Wochen eines Plans sind Produkt-Kennungen oder — in eigenen Vorlagen — Produktnamen. Namen werden
+  // genauso umgesetzt wie products[].name, sonst fände die Vorlage ihre Dosen nicht mehr; Kennungen ändern sich dabei nicht.
+  const wochenSchluessel = (sch) => { if (_istObjekt(sch)) Object.values(sch).forEach(w => { if (!_istObjekt(w)) return;
+    Object.keys(w).forEach(k => { const neu = _freitextSauber(k); if (neu !== k) { if (!(neu in w)) w[neu] = w[k]; delete w[k]; n++; } }); }); };
   const plan = (p) => {
     if (!_istObjekt(p)) return;
     ['name', 'subtitle', 'mixInfo', 'drainInfo'].forEach(k => fix(p, k));
+    wochenSchluessel(p.schedule);
     fixListe(p, 'mixOrder');
     werte(p.weekFocus).forEach(w => { fix(w, 'phase'); fix(w, 'tip'); });
     werte(p.ecTargets).forEach(e => fix(e, 'label'));
@@ -5956,7 +6003,11 @@ function _vorfallText(i) {
   const alterStand = i.grund === 'fehlte' ? ''
     : (i.aufgehoben === false
       ? '\n\nWichtig: Dein alter Stand ist noch nirgends aufgehoben, im Browser ist kein Platz dafür. Lade ihn jetzt herunter. Bis dahin speichert GrowSmart nichts, damit er nicht überschrieben wird.'
-      : '\n\nDein alter Stand ist nicht gelöscht, sondern aufgehoben. Lade ihn herunter und bewahre die Datei auf: GrowSmart kann sie selbst nicht wieder einlesen, aber aus ihr lassen sich Einträge von Hand retten.');
+      // (v1.5.381) Ein unsicherer Stand ist lesbar, nur nicht vertrauenswürdig — „GrowSmart kann sie nicht wieder einlesen" klang
+      // wie ein beschädigter Grow (Gegenprüfung v1.5.364, Befund 4). Bei einem Fehlalarm wäre genau dieser Satz der Schaden gewesen.
+      : (i.grund === 'unsicher'
+        ? '\n\nDein alter Stand ist nicht gelöscht, sondern aufgehoben. Er ist lesbar, aber GrowSmart lädt ihn wegen dieser Zeichen nicht mehr. Lade ihn herunter und bewahre die Datei auf — stammt er aus einer Datei, die dir jemand geschickt hat, lösch sie lieber.'
+        : '\n\nDein alter Stand ist nicht gelöscht, sondern aufgehoben. Lade ihn herunter und bewahre die Datei auf: GrowSmart kann sie selbst nicht wieder einlesen, aber aus ihr lassen sich Einträge von Hand retten.'));
   if (i.geladen === 'kopie') {
     const weitere = (_backupInfo().kopien || []).find(k => k.key !== i.quelle && k.entries > i.eintraege);
     return { titel: '🛟 Sicherungskopie geladen',
@@ -6109,10 +6160,10 @@ function loadS() {
   if (gelesen.d) {
     gelesen.kopieVom = gelesen.d._bakDate || null;
     delete gelesen.d._bakDate;
-    S = Object.assign({
+    S = _standAlsArbeitsstand({
       cycles: [], entries: {}, products: [], weekSchedule: {},
       potSize: 11, presetKey: null, mixOrder: null, mixInfo: null,
-    }, gelesen.d);
+    }, gelesen.d);   // (v1.5.385) ohne Object.assign — siehe _BAUPLAN_SCHLUESSEL
   }
   _standVorfall(gelesen);
   // (v1.5.295) Leere Stellen in den Listen entfernen, bevor Migrationen und erstes Bild sie anfassen.
@@ -7041,6 +7092,11 @@ function getFeedWaterType(c, p, iso) {
     const td = isoDiff(iso, c.startDate);
     wk = Math.max(1, Math.min(Math.floor(td / 7) + 1, 10));
   }
+  // (v1.5.382) Ein Plan ohne Rhythmus kommt hierher, sobald ein einziger Guss von Hand umgeschaltet wurde (c.fwOverrides lässt
+  // den frühen Ausstieg oben nicht mehr greifen). Vorher warf plan.feedWaterRhythm[...] dann bei jedem anderen Gießtag —
+  // Kalender und Gieß-Fahrplan blieben leer, auch nach dem Neustart. Betraf fünf Vorlagen (Plagron, CANNA, Hesi, CANNA Coco,
+  // GHE); gefunden von der Fehlalarm-Prüfung am 07.10.2026, vorhanden schon vor v1.5.362.
+  if (!plan.feedWaterRhythm) return null;
   const pattern = plan.feedWaterRhythm[String(wk)];
   if (!pattern || pattern === '-') return null;
   const idx = feedWaterGussIndex(c, iso);
@@ -9348,7 +9404,7 @@ function doUndo() {
     if (redoStack.length > UNDO_MAX) redoStack.shift();
 
     const prev = JSON.parse(undoStack.pop());
-    S = Object.assign({
+    S = _standAlsArbeitsstand({
       cycles: [], entries: {}, products: [], weekSchedule: {}, potSize: 11,
     }, prev);
     S.cycles.forEach(c => {
@@ -9376,7 +9432,7 @@ function doRedo() {
     if (undoStack.length > UNDO_MAX) undoStack.shift();
 
     const next = JSON.parse(redoStack.pop());
-    S = Object.assign({
+    S = _standAlsArbeitsstand({
       cycles: [], entries: {}, products: [], weekSchedule: {}, potSize: 11,
     }, next);
     S.cycles.forEach(c => {
@@ -18815,7 +18871,11 @@ function renderDash() {
       // Düngeplan-Woche zentral über fertPlanWeek (achtet auf plan-eigene Tag-Spannen,
       // sonst identisch zur festen 7-Tage-Rechnung).
       const fertWk = p ? fertPlanWeek(c, today, p) : 1;
-      const weekNames = {1:'Keimling',2:'Frühes Wachstum',3:'Vegetation',4:'Vorblüte',5:'Übergang',6:'Stacking',7:'Bud-Entw.',8:'Peak Bloom',9:'Finale Reife',10:'Herbst',11:'Spülen',12:'Ernte'};
+      // (v1.5.383) Der Name der Plan-Woche aus dem Plan selbst (_planWochenFokus — eigener weekFocus, sonst aus dem Rückgrat).
+      // Vorher stand eine feste Tabelle für 12 Wochen da: Beim Rainbow-Plan hieß Plan-Woche 6 „Stacking" statt „Frühblüte",
+      // ab Woche 13 stand gar nichts (Run-02-Prüfung, F09). Auf der Startseite der erste Teil vor „·", damit die Zeile kurz bleibt.
+      const _wf = p ? _planWochenFokus(getPlanForCycle(c), fertWk) : null;
+      const _wochenName = _wf && _wf.phase ? String(_wf.phase).split(' · ')[0] : '';
       // Beginner: nur Phase + Tag. Profi: alle Infos inkl. Düngeplan-Woche.
       // Nach der Ernte (Ernte/Trocknen/Curing) gibt es keine Düngewoche mehr — dann
       // nur Phase + Tag zeigen (wie im Beginner-Modus), sonst stünde irreführend z.B.
@@ -18825,7 +18885,7 @@ function renderDash() {
       const subLine = (!p && c.startDate && c.startDate <= today) ? '✓ Fertig — alle Phasen vorbei'
         : (S.beginnerMode || hideFertWk)
         ? `${_phasenAnzeige(p).icon} ${_phasenAnzeige(p).name} · ${phaseDayLabel(p)}`
-        : `${_phasenAnzeige(p).icon} ${_phasenAnzeige(p).name} · ${phaseDayLabel(p)} · <span style="color:${cl.hex}">Wo${fertWk}</span> ${weekNames[fertWk] || ''}`;
+        : `${_phasenAnzeige(p).icon} ${_phasenAnzeige(p).name} · ${phaseDayLabel(p)} · <span style="color:${cl.hex}">Wo${fertWk}</span> ${_wochenName}`;
       return `<div style="display:flex;align-items:center;gap:8px;padding:3px 0">
         <span style="font-size:16px">${sym(c)}</span>
         <div style="flex:1">
@@ -22342,12 +22402,19 @@ function _planSheet(c, prods, weekNames, activeFocus) {
     ? plan.weekPhases.length
     : Math.max(12, Object.keys(plan?.schedule || {}).length);
   const edit = !!S._planEdit;
-  const jetzt = (c && c.startDate) ? fertPlanWeek(c, todayISO()) : null;
+  // (v1.5.384) Jeder Zyklus, der den Plan gerade nutzt, mit seiner Woche — vorher nur einer (_zyklusFuerPlan). Bei zwei Gruppen
+  // in Run 02 fehlte die Woche der zweiten, obwohl beide denselben Plan haben (Run-02-Prüfung, F07).
+  const _heute = todayISO();
+  const _nutzer = (plan ? active().filter(z => z.fertPlanId === plan.id && z.startDate && !_duengungVorbei(z, _heute)) : []);
+  if (c && c.startDate && !_nutzer.includes(c)) _nutzer.unshift(c);
+  const _wochen = _nutzer.map(z => ({ z, wk: fertPlanWeek(z, _heute) })).filter(x => x.wk > 0);
+  const jetzt = _wochen.length ? _wochen[0].wk : null;
+  const _imWoche = (w) => _wochen.filter(x => x.wk === w);
 
-  // Einsteiger sehen standardmäßig nur die laufende und die nächste Woche.
+  // Einsteiger sehen standardmäßig nur die laufende und die nächste Woche (je Zyklus).
   const alle = !!S._planAlleWochen || !S.beginnerMode || !jetzt;
   const sichtbar = [];
-  for (let w = 1; w <= wochen; w++) if (alle || w === jetzt || w === jetzt + 1) sichtbar.push(w);
+  for (let w = 1; w <= wochen; w++) if (alle || _wochen.some(x => w === x.wk || w === x.wk + 1)) sichtbar.push(w);
 
   const kopf = prods.map(p => `<th onclick="${edit ? `editProduct('${p.id}')` : `openLexikonEntry('${String(fertClassFor(p.name) || '').replace(/'/g, "\\'")}')`}"
       title="${edit ? 'Produkt bearbeiten' : 'Was ist das?'}"
@@ -22357,7 +22424,8 @@ function _planSheet(c, prods, weekNames, activeFocus) {
 
   const zeilen = sichtbar.map(w => {
     const sch = S.weekSchedule['global_w' + w] || {};
-    const ist = jetzt === w;
+    const ist = _imWoche(w).length > 0;
+    const _wer = (ist && _wochen.length > 1) ? _imWoche(w).map(x => x.z.name).join(', ') : '';
     const focus = activeFocus?.[w] || _planWochenFokus(plan, w);
     const phTag = plan && plan.weekPhases ? plan.weekPhases[w - 1] : null;
     const phName = { anzucht: 'Anzucht', bloom: 'Blüte', flush: 'Spülen', ice: 'IceFlush' }[phTag] || '';
@@ -22375,15 +22443,20 @@ function _planSheet(c, prods, weekNames, activeFocus) {
       <td title="${focus ? String(focus.tip || '').replace(/<[^>]+>/g, '').replace(/"/g, '') : ''}"
           style="position:sticky;left:0;background:var(--card);padding:5px 6px;border-bottom:0.5px solid var(--border);white-space:nowrap${ist ? ';background:rgba(76,175,112,0.12)' : ''}">
         <div style="font-size:11px;font-weight:${ist ? '700' : '500'};color:${ist ? 'var(--green)' : 'var(--text)'}">Wo ${w}${ist ? ' ●' : ''}</div>
+        ${_wer ? `<div style="font-size:8px;color:var(--green);max-width:90px;overflow:hidden;text-overflow:ellipsis">${_wer}</div>` : ''}
         <div style="font-size:8px;color:var(--text-hint)">${(focus && focus.phase) || phName}</div>
       </td>${zellen}</tr>`;
   }).join('');
 
   // (v1.5.236) Hat der Plan keinen eigenen Wochen-Tipp, kommt der abgeleitete — sonst stand hier nichts.
-  const _fokusJetzt = (jetzt && sichtbar.includes(jetzt)) ? (activeFocus?.[jetzt] || _planWochenFokus(plan, jetzt)) : null;
-  const hinweis = (_fokusJetzt && _fokusJetzt.tip)
-    ? `<div style="font-size:11px;color:var(--yellow);line-height:1.5;background:rgba(240,208,80,0.06);border-left:2px solid var(--yellow);border-radius:0 8px 8px 0;padding:8px 10px;margin-top:10px">💡 <b>Woche ${jetzt}:</b> ${_fokusJetzt.tip}</div>`
-    : '';
+  // (v1.5.384) Ein Tipp je laufender Woche — bei zwei Gruppen in verschiedenen Wochen beide, mit dem Namen der Gruppe.
+  const _tippWochen = [...new Set(_wochen.map(x => x.wk))].filter(w => sichtbar.includes(w));
+  const hinweis = _tippWochen.map(w => {
+    const _f = activeFocus?.[w] || _planWochenFokus(plan, w);
+    if (!_f || !_f.tip) return '';
+    const _fuer = _wochen.length > 1 ? ` (${_imWoche(w).map(x => x.z.name).join(', ')})` : '';
+    return `<div style="font-size:11px;color:var(--yellow);line-height:1.5;background:rgba(240,208,80,0.06);border-left:2px solid var(--yellow);border-radius:0 8px 8px 0;padding:8px 10px;margin-top:10px">💡 <b>Woche ${w}${_fuer}:</b> ${_f.tip}</div>`;
+  }).join('');
 
   const mix = (S.mixOrder && S.mixOrder.length) ? `<div style="margin-top:12px">
       <div class="sect-head">Mischreihenfolge</div>
@@ -28814,7 +28887,7 @@ async function importData() {
       // aus GrowSmart — über solche Felder käme Programmcode in die App. Nicht reparieren, ablehnen.
       const _unsicher = _standUnsicher(d);
       // (v1.5.377) Grund als ganzer Satzteil, ohne Fachwort; und was tun, wenn es das eigene Backup ist (Gegenprüfung v1.5.364).
-      if (_unsicher) { toast('⚠ Diese Datei wird nicht geladen: ' + _unsicher.charAt(0).toUpperCase() + _unsicher.slice(1) + ' stehen Zeichen, die GrowSmart dort nie schreibt. Die Datei wurde verändert oder stammt nicht aus GrowSmart — über solche Felder könnten fremde Befehle in die App kommen. Ist es dein eigenes Backup, nimm das jüngste, das du selbst heruntergeladen hast. Dein Stand bleibt unverändert.', 10000); return; }
+      if (_unsicher) { toast('⚠ Diese Datei wird nicht geladen: ' + (_unsicher === '__proto__' ? 'Sie enthält einen Schlüssel („__proto__“), den GrowSmart nie schreibt.' : _unsicher.charAt(0).toUpperCase() + _unsicher.slice(1) + ' stehen Zeichen, die GrowSmart dort nie schreibt.') + ' Die Datei wurde verändert oder stammt nicht aus GrowSmart — über solche Felder könnten fremde Befehle in die App kommen. Ist es dein eigenes Backup, nimm das jüngste, das du selbst heruntergeladen hast. Dein Stand bleibt unverändert.', 10000); return; }
       let repariert = null;
       if (_standMangel(d)) {
         // Lesbar, aber an einer Stelle beschädigt: dieselbe Reparatur wie beim Start. Geht sie nicht, lieber ablehnen
@@ -29474,6 +29547,19 @@ function renderEntry(iso) {
     const a = getAction(iso, c);
     const cl = col(c), s = sym(c);
     const cd = saved.cycleData?.[c.id] || {};
+    // (v1.5.378) Alle Phasen vorbei oder abgeschlossen: keine Gieß-, pH- und Trainingsfelder mehr, kein „Plan Wo.1". Vorher stand
+    // Run 01 nach dem Curing in jedem Eintrag von Run 02 mit „Gießmenge (ml)/Pflanze", pH und „Training hinzufügen" — als wäre er
+    // in der Anzucht. Die Notizen darunter bleiben: Wer nach dem Curing etwas über Geschmack oder Ertrag schreiben will, kann es.
+    if (!p && c.startDate && iso >= c.startDate) {
+      return `<div style="background:${cl.dk};border:1px solid ${cl.hex}44;border-radius:14px;padding:12px 14px;margin-top:8px;margin-bottom:6px;display:flex;align-items:center;gap:10px">
+        <span style="font-size:22px">${s}</span>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:14px;font-weight:700;color:${cl.hex};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.name}</div>
+          <div style="font-size:11px;color:var(--text-sub);margin-top:2px;line-height:1.4">${c.endDate ? '✓ Abgeschlossen' : '✓ Fertig — alle Phasen vorbei'}. Hier wird nichts mehr gegossen oder gedüngt.</div>
+        </div>
+        ${c.endDate ? '' : `<button onclick="archiveCycle('${c.id}')" style="flex-shrink:0;background:${cl.hex}14;border:0.5px solid ${cl.hex}55;border-radius:8px;padding:8px 10px;font-size:12px;color:${cl.hex};cursor:pointer;font-family:var(--font);min-height:40px">🏁 Abschließen</button>`}
+      </div>`;
+    }
     // EC-Ziel für diesen Tag (Default + Spanne, Gesamt-Wochen-Tabelle). Steuert
     // Platzhalter und Spanne-Anzeige beim EC-Feld — statt des alten fixen "1.4".
     const ecT = (typeof getEcTarget === 'function') ? getEcTarget(c, p, iso) : null;
@@ -29808,7 +29894,7 @@ function renderEntry(iso) {
         </button>`
       : showTopTooLateHint
       ? `<div style="background:rgba(240,208,80,0.06);border:0.5px solid rgba(240,208,80,0.25);border-radius:10px;padding:10px 12px;margin-bottom:8px;font-size:11px;color:var(--text-sub);line-height:1.5">
-          ⏰ <b style="color:var(--yellow)">Toppen nicht mehr empfohlen</b> – Blüte Woche ${p.week}. Bei Automatics gehört ein Schnitt vor den Blühbeginn: Sie blühen nach Kalender, und die Tage, die er kostet, holt die Pflanze nicht wieder auf. Sanftes Herunterbinden (LST) geht noch.<br><span style="color:var(--text-hint);font-size:10px">Beim nächsten Zyklus: rechtzeitig toppen (Anzucht ab Tag 21 bis Blüte Wo.3).</span>
+          ⏰ <b style="color:var(--yellow)">Toppen nicht mehr empfohlen</b> – Blüte Woche ${p.week}. Bei Automatics gehört ein Schnitt vor den Blühbeginn: Sie blühen nach Kalender, und die Tage, die er kostet, holt die Pflanze nicht wieder auf. Sanftes Herunterbinden (LST) geht noch.<br><span style="color:var(--text-hint);font-size:10px">Beim nächsten Zyklus: rechtzeitig toppen — bei Automatics in der Anzucht ab Tag 15, vor dem Blühbeginn.</span>
         </div>`
       : showUndoTop
       ? `<div style="background:rgba(176,106,200,0.06);border:0.5px solid rgba(176,106,200,0.2);border-radius:10px;padding:10px 12px;margin-bottom:8px">
@@ -30550,7 +30636,7 @@ function renderEntry(iso) {
             </div>
           </div>
           <div style="flex:1;text-align:right;font-size:10px;color:var(--text-hint);line-height:1.5">
-            ${S.beginnerMode ? `pH ${pht.label} ist optimal` : `Ziel: pH ${pht.mid.toFixed(1)}${ecT ? ` · EC ${!ecT.waterOnly ? ecRange : `${ecFmt(0.3)}–${ecFmt(0.4)} (Wasser-Tag)`} ${ecUnitLabel()}` : ''}<br>Drain entsorgen!`}
+            ${S.beginnerMode ? `pH ${pht.label} ist optimal` : `Ziel: pH ${pht.mid.toFixed(1)}${ecT ? ` · EC ${!ecT.waterOnly ? ecRange : `${ecFmt(0.3)}–${ecFmt(0.4)} (Wasser-Tag)`} ${ecUnitLabel()}` : ''}${_drainMoeglich(p) ? '<br>Drain entsorgen!' : ''}`}   <!-- (v1.5.386) wie die Zielzeile (v1.5.372): vor Tag 25 kein Drain -->
           </div>
         </div>
         ${phEcCritWarnHTML}

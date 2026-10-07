@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.377** · index.html 2,56 MB · 781 Funktionen
+Stand: **v1.5.386** · index.html 2,56 MB · 781 Funktionen
 Zuletzt fortgeschrieben am 07.10.2026 (Nachtprüfung und Run 02 — Abschnitt 0o, „Stand Run 02"). Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
@@ -276,7 +276,6 @@ Speicher-Befunde sind in v1.5.340–344 behoben. Rohdaten: Workflow wf_63d754b1-
 - F02 erster Guss der Plan-Woche 3 als „Feed" empfohlen, die Wasserguss-Anweisung steht nur am Wochenstart (~10941).
 - F10 zwei Gruppen im Zelt: Klima nach der weiter entwickelten Gruppe, die Sämlings-Stufe der anderen fällt durch (~15006).
 - F11 Gießmenge: Vorschlag und Drain-Aussage widersprechen sich in Plan-Woche 4/5 (~29401, ~28924).
-- F07 Düngeplan markiert nur eine Plan-Woche bei zwei Gruppen (`_zyklusFuerPlan` ~21553); F09 feste Wochen-Namen ab Plan-Woche 6 (~17511).
 - Leicht: F08 Einsteiger-Fahrplan ohne Anzucht-Güsse, F12 Plan-Tag im Eintragskopf, F13 „Guss fehlt" vor dem Durchbruch
   (~25930, ~14331), F14 pH 6.4 fest neben 6,35 der Plan-Woche, F15 „lauwarm" statt 20–22 °C (~16755), F16 jeder
   Bildschirm wählt eine andere Standardgruppe (~20356, ~22671), F17 Klima-Zielzeile mit Dezimalen (~15348), F18 Kalender
@@ -317,6 +316,21 @@ Speicher-Befunde sind in v1.5.340–344 behoben. Rohdaten: Workflow wf_63d754b1-
 - v1.5.375: Eine unsichere Tageskopie gilt als nicht vorhanden (`_kopieLesen`) — vorher ließ sie sich laden und ersetzte den sauberen Hauptstand (Gegenprüfung v1.5.364).
 - v1.5.376: Dünger-Zeile der Startseite mit der Einheit des Produkts (Tropfen!), feste Mengen nie auf 1 L, 1 L nur, wo nicht abmessbar (Gegenprüfung v1.5.365).
 - v1.5.377: Die Meldungen zu unsicheren Dateien in ganzen Sätzen, ohne „Programmcode", mit Rat fürs eigene Backup.
+- v1.5.378: Ein fertiger Zyklus (alle Phasen vorbei) steht im Eintrag als kurze Karte „✓ Fertig" mit „Abschließen" statt mit Gieß-, pH- und Trainingsfeldern.
+- v1.5.379: Das Tor geht einen Zyklus ganz durch (verschachtelte Teile, keine Feldliste mehr) — `waterRange` und `seedWeeksLo/Hi` liefen vorbei.
+- v1.5.380: Eigene Vorlagen dürfen Produktnamen als Wochenplan-Schlüssel tragen („Jack’s Bloom“); sie werden umgesetzt statt abgelehnt.
+- v1.5.381: Der Start-Hinweis zu einem unsicheren Stand sagt „lesbar, aber nicht geladen“ statt „nicht wieder einlesbar“.
+- v1.5.382: „Düngen ⇄ Wasser“ umschalten legt bei Plänen ohne Rhythmus (Plagron, CANNA, Hesi, CANNA Coco, GHE) Kalender und Gieß-Fahrplan nicht mehr lahm.
+- v1.5.383: F09 erledigt — die Startseite nennt die Plan-Woche mit dem Namen aus dem Plan („Wo6 Frühblüte“).
+- v1.5.384: F07 erledigt — das Plan-Blatt markiert die Woche jeder Gruppe, die den Plan nutzt, mit Namen und eigenem Tipp.
+- v1.5.385: Ein Schlüssel „__proto__“ (auch „constructor“, „prototype“) in einem Stand wird überall abgelehnt; Start, ↩ und ↪ bauen den Arbeitsstand ohne `Object.assign` (Gegenprüfer: 280 eingeschleuste Befehle auf v1.5.384).
+- v1.5.386: Auch die Zielzeile im Wasser-Kasten sagt vor Tag 25 nicht „Drain entsorgen!“ (Rest von F06).
+
+**Gegenprüfung von v1.5.364/365 (07.10.2026 nachts, Workflow wf_4cf817bf-629, drei Sonnet-Prüfer + Gegenprüfer).** Kein Fehlalarm
+in 33 App-Fassungen, allen Vorlagen und über 2800 Klicks; die schweren Befunde (unsichere Kopie zerstört den Hauptstand, Tropfen als
+ml, absolute Mengen auf 1 L, zwei Felder am Tor vorbei, Absturz nach dem Umschalten) sind in v1.5.375–382 und 385 behoben (Urteil des Gegenprüfers für v1.5.377: „nicht hochladen, bevor __proto__ und die Zahlenfelder geschlossen sind“ — beides ist zu). Skripte der Prüfer:
+`.claude/tmp/review365/` (vergänglich). Offen, leicht: entfernte Werte beim Start werden nur in den Einstellungen gemeldet,
+der Rohstand davor wird nicht aufgehoben (Befund S7).
 
 **Sicherheitsprüfung 07.10.2026 abends (Workflow wf_086de9ab-b02, zwei Sonnet-Agenten, jsdom mit vergifteten Feldern).** Ergebnis
 und Werkzeug liegen in `.claude/notizen/xss/` (`ergebnis.txt`, `journal.jsonl`, `harness/probe.js` + `run.js` — vergiftet je eine
@@ -2041,6 +2055,12 @@ festlegen.
 tippt und ihn offen lässt, verändert damit die Daten für alle folgenden Abschnitte — `test_klimaziel.js` J rechnete so
 mit 23,8 °C / 62 % aus Abschnitt H. Danach `_restoreEntrySnapshot()` aufrufen, wie „Verwerfen". Und **feste Wartezeiten
 auf Dialoge kippen unter Last** (`--parallel 4`): auf den Zustand warten (`_modalResolve`, ein Feld im DOM), nicht auf Millisekunden.
+
+**Seit v1.5.368 warten Dialoge aufeinander.** Ein Test, der eine Rückfrage öffnet, muss sie beantworten (`_modalResolve(false)`,
+wie ein Nutzer, der abbricht) — sonst geht seine nächste Antwort an diese Rückfrage. Vorher wurde die offene still verdrängt, und
+`test_endspurt.js` hing genau an diesem Fehler. `audit_lib.js` stellt deshalb eine schon benutzte App nach
+(`S._seedlingProtocolShown = true`), sonst öffnet `addCyc` 800 ms später das Sämlings-Protokoll. Und: **Nicht `index.html` neu
+bauen, während `testlauf.js` läuft** — Kandidaten nach `$TEMP/index_NNN.html` bauen und mit `GS_INDEX` prüfen.
 
 **Datumsgrenzen brauchen einen Lauf über die Zeitumstellung** (29.03. und 25.10.2026). Kiritimati hat keine
 Umstellung, Berlin schon — weichen die beiden Läufe dort voneinander ab, ist das ein Befund, kein Testproblem.

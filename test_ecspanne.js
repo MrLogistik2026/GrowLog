@@ -74,7 +74,7 @@ const LAUF = (key, bloom, bedingung) => `(function(){
     setDebugDate(iso); openEntry(iso);
     const t = document.getElementById('scr-entry').textContent.replace(/\\s+/g, ' ');
     return JSON.stringify({ tag: d, wk, ph: p.ph, ec: ec ? { min: ecFmt(ec.min), max: ecFmt(ec.max), waterOnly: !!ec.waterOnly } : null,
-      ziel: (t.match(/🎯 pH:[^]{0,80}?%/) || [''])[0], rechts: (t.match(/Ziel: pH [^]{0,60}?Drain entsorgen/) || [''])[0], fest: /0\\.8–2\\.0/.test(t) });
+      ziel: (t.match(/🎯 pH:[^]{0,80}?(?:%|mS\\/cm)/) || [''])[0]   /* (v1.5.372) vor Tag 25 ohne „Drain: … %" */, rechts: (t.match(/Ziel: pH [^]{0,60}?Drain entsorgen/) || [''])[0], fest: /0\\.8–2\\.0/.test(t) });
   }
   return JSON.stringify({ fehlt: true });
 })()`;
@@ -94,7 +94,8 @@ const LAUF = (key, bloom, bedingung) => `(function(){
     if (!r.fehlt) {
       console.log(`    Tag ${r.tag} (${r.ph}, Woche ${r.wk}) · Ziel des Plans ${r.ec.min}–${r.ec.max} · „${r.ziel}" · „${r.rechts}"`);
       pruef('Zielzeile unter den Nährstoffen nennt das Plan-Ziel', r.ziel.includes(`EC: ${r.ec.min}–${r.ec.max}`), r.ziel);
-      pruef('… und das Ablaufziel 15–20 %', r.ziel.includes('Drain: 15–20 %'), r.ziel);
+      // (v1.5.372/386) Das Ablaufziel erst ab Tag 25 (_drainMoeglich) — davor kann unten nichts ankommen.
+      pruef('… und das Ablaufziel 15–20 % genau ab Tag 25', r.tag >= 25 ? r.ziel.includes('Drain: 15–20 %') : !/Drain/.test(r.ziel + r.rechts), r.ziel + ' | ' + r.rechts);
       pruef('Keine feste Spanne 0.8–2.0 im Eintrag', r.fest === false);
     }
   }

@@ -7,6 +7,11 @@
 //   F06 (v1.5.372)  Vor dem ersten Durchgießen nennt die Gießanleitung keine Vollsättigung und keinen Drain.
 //   N8  (v1.5.373)  Nachtprüfung Punkt 8: im Sämlingstopf weder „SOFORT spülen" noch „nachgießen, bis unten etwas kommt".
 //   N3  (v1.5.374)  Nachtprüfung Punkt 3: EC deutlich über dem Ziel der Plan-Woche wird gewarnt.
+//   M   (v1.5.376)  Dünger-Zeile der Startseite: Einheit des Produkts, feste Mengen nie auf 1 L.
+//   Z   (v1.5.378)  Ein Zyklus ohne Phase bekommt im Eintrag „✓ Fertig" statt Gieß-, pH- und Trainingsfeldern.
+//   W   (v1.5.382)  „Düngen ⇄ Wasser" bei Plänen ohne Rhythmus legt Kalender und Fahrplan nicht lahm.
+//   F09 (v1.5.383)  Der Name der Plan-Woche auf der Startseite kommt aus dem Plan.
+//   F07 (v1.5.384)  Das Plan-Blatt markiert die Woche jeder Gruppe, die den Plan nutzt.
 //
 // GS_INDEX=<anderer Build> lässt den Test gegen einen alten Stand laufen; dort muss er umfallen.
 const fs = require('fs');
@@ -95,7 +100,7 @@ async function starte() {
       // Der Eintrag am ersten Blütetag: kein Knopf „Jetzt Toppen"
       setDebugDate(bl); openEntry(bl); renderEntry(bl);
       out.knopf = /Jetzt Toppen/.test(document.getElementById('entry-body').textContent);
-      out.textNeu = /gehört ein Schnitt vor den Blühbeginn/.test(T.topping.tooLateAuto({ week: 1 }));
+      out.textNeu = /gehört ein Schnitt vor den Blühbeginn/.test(T.topping.tooLateAuto({ week: 1 })) && !/bis Blüte Wo.3/.test(T.topping.tooLateAuto({ week: 1 }));
       setDebugDate('');
       return JSON.stringify(out); })()`));
     pruefe(r.bl && r.ve, 'F01-0 Prüflage: kein Blüte- oder Wachstumstag gefunden');
@@ -106,7 +111,7 @@ async function starte() {
       pruefe(r.fitLstBl === 'jetzt', `F01-4 LST in Blütewoche 1 nicht mehr angeboten (${r.fitLstBl})`);
       pruefe(r.femFit === 'spaet', `F01-5 photoperiodische Sorte in Blütewoche 1 verändert (${r.femFit} statt „spaet")`);
       pruefe(!r.knopf, 'F01-6 der Eintrag am ersten Blütetag zeigt „Jetzt Toppen"');
-      pruefe(r.textNeu, 'F01-7 der Hinweis nennt noch die alte Grenze „erste 3 Blüte-Wochen"');
+      pruefe(r.textNeu, 'F01-7 der Hinweis nennt noch die alte Grenze „erste 3 Blüte-Wochen" oder „bis Blüte Wo.3" (v1.5.378)');
     }
   }
 
@@ -128,7 +133,7 @@ async function starte() {
       const nF = gießtag(9, DRAIN_AB_TAG - 1), nS = gießtag(DRAIN_AB_TAG, DRAIN_AB_TAG + 20);
       const frueh = nF ? text(nF) : '', spaet = nS ? text(nS) : '';
       return JSON.stringify({ ab: DRAIN_AB_TAG, nF, nS,
-        fruehVoll: /Vollsättigung/.test(frueh), fruehDrain: /Drain bei jedem Guss|Drain: \\d/.test(frueh), fruehHinweis: /Noch nicht durchgießen/.test(frueh),
+        fruehVoll: /Vollsättigung/.test(frueh), fruehDrain: /Drain bei jedem Guss|Drain: \\d|Drain entsorgen/.test(frueh), fruehHinweis: /Noch nicht durchgießen/.test(frueh),
         fruehMisch: /Mischen:/.test(frueh), spaetVoll: /Vollsättigung/.test(spaet), spaetDrain: /Drain bei jedem Guss/.test(spaet) }); })()`));
     pruefe(!r.fruehVoll && !r.fruehDrain, `F06-1 Tag ${r.nF} (vor Tag ${r.ab}): Gießanleitung nennt Vollsättigung oder Drain (${JSON.stringify(r)})`);
     pruefe(r.fruehHinweis && r.fruehMisch, `F06-2 Tag ${r.nF}: „Noch nicht durchgießen" oder die Mischen-Zeile fehlt (${JSON.stringify(r)})`);
@@ -179,6 +184,72 @@ async function starte() {
     pruefe(!r.messbar.jeLiter && /^für 0,5 L$/.test(r.messbar.fuer) && /LiterTest 1,8 ml/.test(r.messbar.text), `M3 abmessbare Menge unter 1 L trotzdem auf 1 L: ${r.messbar.fuer}: ${r.messbar.text}`);
     pruefe(r.klein.jeLiter && /den Rest nicht aufheben/.test(r.klein.fuer) && /LiterTest 0,3 ml/.test(r.klein.text), `M4 nicht abmessbare Menge: ${r.klein.fuer}: ${r.klein.text}`);
     pruefe(!r.gemischt.jeLiter && !/ 0 ml/.test(r.gemischt.text), `M5 mit fester Menge daneben: kein 1 L und keine Null: ${r.gemischt.fuer}: ${r.gemischt.text}`);
+  }
+
+  // Z (v1.5.378) · Ein Zyklus ohne Phase (alle Phasen vorbei) bekommt im Eintrag keine Felder, sondern „✓ Fertig" mit „Abschließen"
+  {
+    const r = JSON.parse(a.E(`(function(){ S.beginnerMode = false;
+      const alt = addCyc({ name: 'Alter Zyklus', startDate: isoPlus(todayISO(), -220), seedType: 'auto', growType: 'indoor', medium: 'erde',
+        potSize: 11, plantCount: 2, startMethod: 'direct', fertPlanId: S.cycles[0].fertPlanId }, { still: true }); saveS();
+      const iso = todayISO(); setDebugDate(iso); openEntry(iso); renderEntry(iso);
+      const body = document.getElementById('entry-body');
+      const karte = [...body.children].find(x => x.textContent.includes('Alter Zyklus'));
+      const out = { phase: phase(iso, alt), karte: karte ? karte.textContent.replace(/\\s+/g, ' ').trim().slice(0, 200) : null,
+        felder: !!body.querySelector('[oninput*="' + alt.id + '\\',\\'water"],[oninput*="' + alt.id + '\\',\\'ph"]'),
+        training: karte ? /Training hinzufügen/.test(karte.textContent) : null, planWo: karte ? /Plan Wo\\./.test(karte.textContent) : null,
+        knopf: karte ? !!karte.querySelector('[onclick*="archiveCycle"]') : false, notiz: !!document.getElementById('note-' + alt.id),
+        laufend: [...body.children].some(x => x.textContent.includes('Prüfzyklus') && !/alle Phasen vorbei/.test(x.textContent)) };
+      S.cycles = S.cycles.filter(c => c.id !== alt.id); saveS(); setDebugDate('');
+      return JSON.stringify(out); })()`));
+    pruefe(r.phase === null && r.karte && /alle Phasen vorbei/.test(r.karte) && r.knopf, `Z1 fertiger Zyklus ohne Karte „✓ Fertig" mit Abschließen: ${r.karte}`);
+    pruefe(!r.felder && !r.training && !r.planWo, `Z2 fertiger Zyklus mit Gieß-/pH-Feldern, Training oder „Plan Wo.": ${JSON.stringify(r)}`);
+    pruefe(r.notiz && r.laufend, `Z3 Notizfeld des fertigen Zyklus fehlt oder der laufende Zyklus ist betroffen: ${JSON.stringify(r)}`);
+  }
+
+  // W (v1.5.382) · Einen Guss „Düngen ⇄ Wasser" umschalten legt bei Plänen ohne Rhythmus nichts lahm
+  {
+    const r = JSON.parse(a.E(`(function(){ const vorher = S.cycles.slice(); S.beginnerMode = false;
+      const pid = _planFuerVorlage('canna_coco');
+      const c = addCyc({ name: 'Coco-Gruppe', startDate: isoPlus(todayISO(), -40), seedType: 'auto', growType: 'indoor', medium: 'coco',
+        potSize: 11, plantCount: 2, startMethod: 'direct', fertPlanId: pid }, { still: true }); saveS();
+      const tage = []; for (let i = 0; i < 160 && tage.length < 3; i++) { const iso = isoPlus(c.startDate, i); const p = phase(iso, c);
+        if (p && p.ph === 'bloom' && getAction(iso, c) === 'giess') tage.push(iso); }
+      const out = { tage: tage.length, fehler: [] };
+      try { _gussplanZyklusId = c.id; openGussplan(); toggleFwDay(tage[0]); } catch (e) { out.fehler.push('toggle: ' + e.message); }
+      out.override = !!(c.fwOverrides && Object.keys(c.fwOverrides).length);
+      for (const iso of tage.slice(1)) { try { getFeedWaterType(c, phase(iso, c), iso); } catch (e) { out.fehler.push('typ: ' + e.message); } }
+      try { goTo('cal'); renderCal(); } catch (e) { out.fehler.push('Kalender: ' + e.message); }
+      try { openGussplan(); } catch (e) { out.fehler.push('Fahrplan: ' + e.message); }
+      out.fahrplan = (document.getElementById('scr-gussplan') || {}).textContent ? document.getElementById('scr-gussplan').textContent.length : 0;
+      S.cycles = vorher; saveS();
+      return JSON.stringify(out); })()`));
+    pruefe(r.tage >= 3 && r.override, `W0 Prüflage: ${JSON.stringify(r)}`);
+    pruefe(!r.fehler.length && r.fahrplan > 200, `W1 nach dem Umschalten: ${r.fehler.join(' | ') || 'Fahrplan leer'}`);
+  }
+
+  // F09 (v1.5.383) · Der Name der Plan-Woche auf der Startseite kommt aus dem Plan
+  {
+    const r = JSON.parse(a.E(`(function(){ S.beginnerMode = false; const c = S.cycles[0]; const iso = todayISO(); const p = phase(iso, c);
+      const wk = fertPlanWeek(c, iso, p); const soll = String((FERT_PRESETS.rainbow_auto.weekFocus[wk] || {}).phase || '').split(' · ')[0];
+      goTo('dash'); renderDash(); const t = document.getElementById('scr-dash').textContent.replace(/\\s+/g, ' ');
+      const m = t.match(new RegExp('Wo' + wk + ' ([^·]{0,40})'));
+      return JSON.stringify({ wk, soll, ist: m ? m[1].trim() : null }); })()`));
+    pruefe(r.soll && r.ist && r.ist.startsWith(r.soll), `F09 Startseite nennt Plan-Woche ${r.wk} „${r.ist}" statt „${r.soll}"`);
+  }
+
+  // F07 (v1.5.384) · Das Plan-Blatt markiert die Woche jeder Gruppe, die den Plan nutzt
+  {
+    const r = JSON.parse(a.E(`(function(){ const vorher = S.cycles.slice(); S.beginnerMode = false;
+      const pid = S.cycles[0].fertPlanId;
+      const b = addCyc({ name: 'Gruppe B', startDate: isoPlus(todayISO(), -20), seedType: 'auto', growType: 'indoor', medium: 'erde',
+        potSize: 11, plantCount: 3, startMethod: 'direct', fertPlanId: pid }, { still: true }); saveS();
+      const wA = fertPlanWeek(S.cycles[0], todayISO()), wB = fertPlanWeek(b, todayISO());
+      if (typeof switchFertPlan === 'function') switchFertPlan(pid); S._planAlleWochen = true; openDuenger(); renderDuenger();
+      const t = document.getElementById('scr-duenger').textContent.replace(/\\s+/g, ' ');
+      const out = { wA, wB, punkte: (t.match(/Wo \\d+ ●/g) || []), namen: /Prüfzyklus/.test(t) && /Gruppe B/.test(t), tipps: (t.match(/💡 Woche \\d+ \\(/g) || []).length };
+      S.cycles = vorher; saveS(); return JSON.stringify(out); })()`));
+    pruefe(r.wA !== r.wB && r.punkte.includes('Wo ' + r.wA + ' ●') && r.punkte.includes('Wo ' + r.wB + ' ●'), `F07-1 Plan-Blatt markiert nicht beide Wochen (${r.wA}, ${r.wB}): ${r.punkte.join(', ')}`);
+    pruefe(r.namen && r.tipps === 2, `F07-2 Namen der Gruppen oder ein Tipp je Woche fehlen: ${JSON.stringify(r)}`);
   }
 
   pruefe(!a.errors.length, 'Skriptfehler: ' + a.errors.slice(0, 3).join(' | '));

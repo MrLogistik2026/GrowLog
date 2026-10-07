@@ -2,6 +2,109 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-08 — v1.5.386
+
+- **Der Rest von F06: Im Wasser-Kasten des Eintrags stand vor Tag 25 weiter „Drain entsorgen!"** (gefunden, als
+  `test_ecspanne.js` nach v1.5.372 seine Zielzeile nicht mehr fand). v1.5.372 hatte Gießanleitung und Zielkasten umgestellt,
+  die Zielzeile rechts neben pH und EC nicht.
+- **Jetzt** steht „Drain entsorgen!" dort nur, wenn Ablauf entstehen kann (`_drainMoeglich`, ab Tag 25), wie überall sonst im
+  Eintrag.
+- Test: `test_runzwei.js` F06-1 prüft jetzt auch diese Zeile (fällt auf v1.5.385 um); `test_ecspanne.js` erwartet das
+  Ablaufziel genau ab Tag 25.
+
+
+## 2026-10-08 — v1.5.385
+
+- **Ein Schlüssel „__proto__" in einer Sicherung ging an beiden Toren vorbei** (Gegenprüfung von v1.5.364, Gegenprüfer, schwer,
+  über den echten Import nachgestellt). `JSON.parse` legt ihn als gewöhnlichen Schlüssel an, die Tore sahen ihn nicht; beim Start
+  machte `Object.assign` daraus den Prototyp des Arbeitsstands. Pläne und Produkte, die dort standen, erschienen in der App,
+  ohne je geprüft worden zu sein — gemessen an v1.5.384: 280 ausgeführte eingeschleuste Befehle.
+- **Jetzt** gilt ein Stand mit „__proto__", „constructor" oder „prototype" als Schlüssel (in jeder Tiefe) als unsicher — Import,
+  Start, Tageskopien und wiederherstellung.html lehnen ihn ab („Sie enthält einen Schlüssel („__proto__"), den GrowSmart nie
+  schreibt"). Start, ↩ und ↪ bauen den Arbeitsstand ohne `Object.assign` und übernehmen solche Schlüssel nie
+  (`_standAlsArbeitsstand`). GrowSmart selbst schreibt sie nie.
+- Test: `test_eingangstore.js` Abschnitt P (4 Prüfungen; 3 fallen auf v1.5.384 um).
+
+
+## 2026-10-07 — v1.5.384
+
+- **Das Plan-Blatt markierte bei zwei Gruppen nur die Woche einer Gruppe** (Run-02-Prüfung, F07). `_zyklusFuerPlan` gab den
+  ersten Zyklus zurück, der den Plan nutzt; die zweite Gruppe von Run 02 — gleicher Rainbow-Plan, andere Woche — kam im Blatt
+  nicht vor, ihr Wochen-Tipp auch nicht.
+- **Jetzt** trägt jede laufende Woche ihren Punkt, bei mehreren Gruppen mit deren Namen darunter, und jede bekommt ihren Tipp
+  („💡 Woche 3 (Gruppe B): …"). Im Einsteiger-Modus sind die laufende und die nächste Woche jeder Gruppe sichtbar.
+- Test: `test_runzwei.js` F07 (2 Prüfungen; fallen auf v1.5.383 um).
+
+
+## 2026-10-07 — v1.5.383
+
+- **Die Startseite benannte die Plan-Woche nach einer festen Tabelle** (Run-02-Prüfung, F09): „Wo6 Stacking", während der
+  Rainbow-Plan dieselbe Woche „Frühblüte · Bio-Bloom startet" nennt; ab Plan-Woche 13 stand gar kein Name.
+- **Jetzt** kommt der Name aus dem Plan (`_planWochenFokus` — eigener Wochen-Tipp, sonst aus dem Rückgrat), auf der Startseite
+  der erste Teil vor „·": „Wo6 Frühblüte".
+- Test: `test_runzwei.js` F09 (fällt auf v1.5.382 um: „Peak Bloom" statt „Bulk-Start").
+
+
+## 2026-10-07 — v1.5.382
+
+- **Einmal „Düngen ⇄ Wasser" umschalten legte Kalender und Gieß-Fahrplan dauerhaft lahm** (Fehlalarm-Prüfung vom 07.10.2026,
+  nachgestellt; schon vor v1.5.362 vorhanden). Bei Plänen ohne Dünger/Wasser-Rhythmus — Plagron, CANNA, Hesi, CANNA Coco, GHE —
+  griff nach dem ersten Umschalten der frühe Ausstieg in `getFeedWaterType` nicht mehr, und jeder andere Gießtag warf beim Lesen
+  des fehlenden Rhythmus. Der Kalender blieb leer, der Fahrplan auch, und nach dem Neustart wieder, weil die Umschaltung
+  gespeichert war.
+- **Jetzt** fragt die Funktion vorher, ob der Plan einen Rhythmus hat; ohne gilt der Guss als Düngerguss wie bisher, nur der
+  umgeschaltete folgt der Wahl.
+- Test: `test_runzwei.js` W (2 Prüfungen; auf v1.5.381 werfen Umschalten, Kalender und Fahrplan).
+
+
+## 2026-10-07 — v1.5.381
+
+- **Der Start-Hinweis zu einem unsicheren Stand klang wie ein zerstörter Grow** (Gegenprüfung v1.5.364, Fehlalarm-Prüfer,
+  Befund 4): „GrowSmart kann sie selbst nicht wieder einlesen, aber aus ihr lassen sich Einträge von Hand retten". Der Stand ist
+  aber lesbar; er wird nur wegen der Zeichen nicht geladen. Bei einem Fehlalarm wäre genau dieser Satz der Schaden gewesen.
+- **Jetzt:** „Er ist lesbar, aber GrowSmart lädt ihn wegen dieser Zeichen nicht mehr. Lade ihn herunter und bewahre die Datei
+  auf — stammt er aus einer Datei, die dir jemand geschickt hat, lösch sie lieber." Für beschädigte Stände bleibt der alte Satz.
+- Test: `test_eingangstore.js` D3.
+
+
+## 2026-10-07 — v1.5.380
+
+- **Eigene Vorlagen mit Produktnamen wie „Jack's Bloom" oder „Calcium & Magnesium" wurden abgelehnt** (Gegenprüfung v1.5.364,
+  Fehlalarm-Prüfer, Befund 3, nachgestellt; schlechter als vorher). Im Format der eingebauten Vorlagen sind die Schlüssel im
+  Wochenplan Produktnamen, keine Kennungen — das Tor aus v1.5.364 prüfte sie wie Kennungen. Schlimmer: Ein schon gespeicherter
+  Plan dieser Art hätte beim Start den ganzen Stand als unsicher verworfen. Die Meldung lautete nur „ungültiges Format?".
+- **Jetzt** prüft das Tor bei eigenen Vorlagen nur die Wochen und die Produkt-Kennungen. Namen im Wochenplan setzt
+  `_standFreitexteSauber` genauso um wie die Produktnamen (’), damit die Vorlage ihre Dosen weiter findet. Schlägt ein Import
+  fehl, nennt die Meldung den Grund („der Vorlage fehlt der Wochenplan" …). wiederherstellung.html folgt derselben Regel.
+- Test: `test_eingangstore.js` F3–F5 (auf v1.5.379 wird die Vorlage abgelehnt).
+
+
+## 2026-10-07 — v1.5.379
+
+- **Zwei Zahlenfelder eines Zyklus liefen am Tor vorbei** (Gegenprüfung v1.5.364, Fehlalarm-Prüfer, Befund 2, nachgestellt):
+  der Gießmengen-Korridor (`waterRange.*.min/max`, im Gieß-Fahrplan) und die Samentüten-Wochen (`seedWeeksLo/Hi`, in den
+  Einstellungen). Beide standen nicht auf der Liste, die `_standEntgiften` abarbeitete, und kamen ungeprüft in Eingabefelder —
+  gemessen 68 eingeschleuste Elemente.
+- **Jetzt** geht das Tor einen Zyklus ganz durch, samt verschachtelter Teile: Jeder Wert mit einem gefährlichen Zeichen fällt
+  weg, außer in den Freitext-Feldern (Name, Standort, Sorte, Pflanzen-Bezeichnung, Notizen), die `_freitextSauber` umsetzt.
+  Keine Liste mehr, die man pflegen muss. Die Fehlalarm-Prüfung fand in 33 App-Fassungen seit v1.1.0, in allen Vorlagen und in
+  über 2800 Klicks kein anderes Feld mit einem dieser Zeichen.
+- Test: `test_eingangstore.js` E (vergiftete `waterRange` und `seedWeeksLo/Hi`; auf v1.5.378 E4/E5 rot).
+
+
+## 2026-10-07 — v1.5.378
+
+- **Ein fertiger Zyklus stand im Eintrag wie einer in der Anzucht** (beim Durchklicken im Browser gefunden). Sind alle Phasen
+  vorbei, hat ein Zyklus keine Phase mehr — der Eintrag zeigte trotzdem „Gießmenge (ml)/Pflanze", pH, „Training hinzufügen" und
+  „🧪 Plan Wo.1". Bei Patrick betrifft das Run 01 in jedem Eintrag von Run 02, solange er Run 01 nicht abgeschlossen hat.
+- **Jetzt** steht dort eine kurze Karte „✓ Fertig — alle Phasen vorbei. Hier wird nichts mehr gegossen oder gedüngt." mit dem
+  Knopf „🏁 Abschließen" (dieselbe Funktion wie auf der Startseite). Das Notizfeld darunter bleibt — wer nach dem Curing etwas
+  über Geschmack oder Ertrag schreiben will, kann es.
+- Dazu der Rest aus v1.5.370: Der Hinweis „Toppen nicht mehr empfohlen" endete noch mit „rechtzeitig toppen (Anzucht ab Tag 21
+  bis Blüte Wo.3)" — jetzt „bei Automatics in der Anzucht ab Tag 15, vor dem Blühbeginn". Gefunden ebenfalls im Browser.
+- Test: `test_runzwei.js` Z (3 Prüfungen; 2 fallen auf v1.5.376 um) und F01-7.
+
+
 ## 2026-10-07 — v1.5.377
 
 - **Die Meldungen zu einer unsicheren Datei waren schwer zu lesen** (Gegenprüfung v1.5.364, Skeptiker). Der Import setzte den

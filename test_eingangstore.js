@@ -10,6 +10,7 @@
 //   G  (v1.5.366) Freitexte — Namen, Standort, Sorte, Pflanzen, Produkte, Pläne — typografisch umgesetzt, nichts eingeschleust.
 //   H  (v1.5.367) wiederherstellung.html zeigt Name und Start der Sicherung maskiert.
 //   I  (v1.5.375) Eine unsichere Tageskopie wird nicht angeboten, nicht geladen und beim nächsten Speichern ersetzt.
+//   P  (v1.5.385) Ein Schlüssel „__proto__" geht an keinem Tor vorbei; der Arbeitsstand erbt nichts.
 //
 // GS_INDEX=<anderer Build> lässt den Test gegen einen alten Stand laufen; dort muss er umfallen.
 const fs = require('fs');
@@ -161,6 +162,9 @@ async function eingeschleust(a) {
     pruefe(!d.E(`(S.cycles || []).some(c => String(c.id).includes('__pwn'))`), 'D1 die vergiftete Kennung ist im Arbeitsstand');
     const r = await eingeschleust(d);
     pruefe(r.dom === 0 && r.js === 0, `D2 eingeschleust: ${r.dom} Elemente, ${r.js}× Programmcode`);
+    // (v1.5.375/381) Der Start-Hinweis erklärt den Grund und behauptet keinen beschädigten Grow
+    const hw = d.E(`(typeof _vorfallText === 'function' && _startHinweis) ? (_vorfallText(_startHinweis) || {}).text || '' : ''`);
+    pruefe(hatTor ? (/Zeichen, die GrowSmart dort nie schreibt/.test(hw) && /Er ist lesbar/.test(hw) && !/nicht wieder einlesen/.test(hw)) : false, 'D3 Start-Hinweis zum unsicheren Stand: ' + String(hw).slice(0, 260));
   }
 
   // E · Start mit vergifteten Werten: entfernt, gemeldet, nichts eingeschleust
@@ -170,6 +174,8 @@ async function eingeschleust(a) {
     d.cycles[0].potSize = '11)+(__pwn++)+(1';
     d.cycles[0].medium = GIFT; d.cycles[0].lightVeg = GIFT; d.cycles[0].symbol = GIFT; d.cycles[0].intBloom = GIFT; d.cycles[0].bloomDays = GIFT;
     d.cycles[0].plants[0].color = GIFT;
+    // (v1.5.379) verschachtelte und übersehene Felder: Gießmengen-Korridor und Samentüten-Wochen
+    d.cycles[0].waterRange = { stretch: { min: GIFT, max: 900 }, flush: { min: 1000, max: GIFT } }; d.cycles[0].seedWeeksLo = GIFT; d.cycles[0].seedWeeksHi = GIFT;
     d.fertPlans.forEach(p => (p.products || []).forEach(x => { x.color = GIFT; x.unit = GIFT; }));
     const tage = Object.keys(d.entries).sort();
     tage.forEach(t => { const e = d.entries[t]; e.temp = GIFT; Object.values(e.cycleData || {}).forEach(cd => { cd.ph = GIFT; cd.water = GIFT; cd.photos = [GIFT]; }); });
@@ -257,6 +263,23 @@ async function eingeschleust(a) {
     pruefe(!String(i.w.localStorage.getItem('growsmart_v4_bak')).includes('__pwn'), 'I3 die unsichere Kopie steht nach dem nächsten Speichern noch da');
   }
 
+  // P · (v1.5.385) Ein Schlüssel „__proto__" geht an keinem Tor vorbei: abgelehnt, und der Arbeitsstand erbt nichts
+  {
+    const rest = klon(basis); const plaene = rest.fertPlans; delete rest.fertPlans;
+    // Wie der Angriff des Gegenprüfers: Kennungen der Zyklen sauber, das Gift nur im „geerbten" Plan
+    const boes = klon(plaene); boes.forEach(p => (p.products || []).forEach(x => { x.id = x.id + GIFT_JS; x.name = GIFT; }));
+    const roh = '{"__proto__":' + JSON.stringify({ fertPlans: boes }) + ',' + JSON.stringify(rest).slice(1);
+    if (hatTor) pruefe(a.E(`_standUnsicher(JSON.parse(${JSON.stringify(roh)}))`) === '__proto__', 'P1 „__proto__" wird nicht als unsicher erkannt');
+    const pp = await starte(roh);
+    pruefe(pp.E(`Object.getPrototypeOf(S) === Object.prototype && !(S.fertPlans || []).some(p => String(p.id).includes('__pwn'))`), 'P2 der Arbeitsstand erbt Pläne über „__proto__"');
+    const r = await eingeschleust(pp);
+    pruefe(r.dom === 0 && r.js === 0, `P3 eingeschleust über „__proto__": ${r.dom} Elemente, ${r.js}× Programmcode`);
+    const seite = new JSDOM(WIEDER, { runScripts: 'dangerously', url: 'https://growsmart.test/wiederherstellung.html' });
+    seite.window.document.getElementById('feld').value = roh;
+    seite.window.document.getElementById('pruefen').click();
+    pruefe(/__proto__/.test(seite.window.document.getElementById('pruef').textContent), 'P4 wiederherstellung.html lehnt „__proto__" nicht ab');
+  }
+
   // F · Eigene Vorlage aus der Zwischenablage
   if (hatTor) {
     const ok = { _type: 'growsmart_preset', name: 'Meine Vorlage', products: [{ id: 'p1', name: 'A', unit: 'ml', color: GIFT }], schedule: { 1: { p1: 1 } } };
@@ -264,6 +287,17 @@ async function eingeschleust(a) {
     pruefe(!!id && !JSON.stringify(a.E(`JSON.stringify(S.customPresets[${JSON.stringify(id)}])`)).includes('data-pwn'), 'F1 vergiftete Farbe einer Vorlage nicht entfernt');
     const boes = { _type: 'growsmart_preset', name: 'Böse', products: [{ id: GIFT_JS, name: 'A', unit: 'ml' }], schedule: { 1: { [GIFT_JS]: 1 } } };
     pruefe(a.E(`importCustomPreset(${JSON.stringify(JSON.stringify(boes))})`) === null, 'F2 Vorlage mit vergifteter Produkt-Kennung angenommen');
+    // (v1.5.380) Produktnamen als Wochenplan-Schlüssel (Format der eingebauten Vorlagen) sind Freitext: angenommen, Name und Schlüssel gleich umgesetzt
+    const namen = { _type: 'growsmart_preset', name: 'Namensplan', products: [{ name: "Jack's Bloom", unit: 'ml/L' }, { name: 'Calcium & Magnesium', unit: 'ml/L' }],
+      schedule: { 1: { "Jack's Bloom": 2, 'Calcium & Magnesium': 0.5 } } };
+    const nid = a.E(`importCustomPreset(${JSON.stringify(JSON.stringify(namen))})`);
+    pruefe(!!nid, 'F3 Vorlage mit Produktnamen „Jack’s Bloom" und „Calcium & Magnesium" im Wochenplan abgelehnt: ' + a.E('importCustomPreset._grund'));
+    if (nid) {
+      const v = JSON.parse(a.E(`JSON.stringify(S.customPresets[${JSON.stringify(nid)}])`));
+      const pn = v.products.map(p => p.name).sort().join('|'), sk = Object.keys(v.schedule[1] || v.schedule['1']).sort().join('|');
+      pruefe(pn === sk && /Jack’s Bloom/.test(pn) && /Calcium & Magnesium/.test(pn), `F4 Produktnamen und Wochenplan-Schlüssel passen nicht zusammen: ${pn} / ${sk}`);
+      pruefe(a.E('_standUnsicher(JSON.parse(JSON.stringify(S)))') === null, 'F5 ein Stand mit dieser Vorlage gilt als unsicher');
+    }
   }
 
   pruefe(!a.errors.length, 'Skriptfehler: ' + a.errors.slice(0, 3).join(' | '));

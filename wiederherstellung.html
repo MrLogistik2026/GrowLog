@@ -61,8 +61,14 @@ var GIFT = /[<>"'`\\&\u0000-\u001f\u2028\u2029]/;
 function giftig(v) { return (typeof v === 'string' || typeof v === 'number') && GIFT.test(String(v)); }
 var ZYKLUS_DATUM = ['startDate', 'toppingDate', 'flushDryFrom', '_toppingOffsetBoundary', 'transplantDate', 'planHoldUntil',
   'offsetDate', 'bloomStartDate', 'endDate', '_intBloomBoundary', 'bakedOffsetDate'];
+// (v1.5.385) Schlüssel, die den Bauplan eines Objekts ändern — GrowSmart schreibt sie nie.
+function hatBauplanSchluessel(o, tiefe) {
+  if (!o || typeof o !== 'object' || (tiefe || 0) > 12) return false;
+  return Object.keys(o).some(function (k) { return k === '__proto__' || k === 'constructor' || k === 'prototype' || hatBauplanSchluessel(o[k], (tiefe || 0) + 1); });
+}
 function standUnsicher(d) {
   if (!istObjekt(d)) return null;
+  if (hatBauplanSchluessel(d)) return '__proto__';
   function liste(x) { return Array.isArray(x) ? x : []; }
   function schluesselGiftig(o) { return istObjekt(o) && Object.keys(o).some(function (k) { return GIFT.test(k); }); }
   function planGiftig(sch) { return istObjekt(sch) && (schluesselGiftig(sch) || Object.keys(sch).some(function (k) { return schluesselGiftig(sch[k]); })); }
@@ -86,7 +92,7 @@ function standUnsicher(d) {
   if (giftig(d._activePlanId) || giftig(d.presetKey)) return 'in der Kennung des gewählten Düngeplans';
   if (schluesselGiftig(d.customPresets)) return 'in der Kennung einer eigenen Vorlage';
   if (istObjekt(d.customPresets) && Object.keys(d.customPresets).some(function (k) { var v = d.customPresets[k];
-    return istObjekt(v) && (liste(v.products).some(function (p) { return istObjekt(p) && giftig(p.id); }) || planGiftig(v.schedule)); })) return 'bei einem Produkt einer eigenen Vorlage';
+    return istObjekt(v) && (liste(v.products).some(function (p) { return istObjekt(p) && giftig(p.id); }) || schluesselGiftig(v.schedule)); })) return 'bei einem Produkt einer eigenen Vorlage';   // (v1.5.380) Namen in den Wochen sind Freitext
   if (istObjekt(d.entries)) {
     if (schluesselGiftig(d.entries)) return 'im Datum eines Tagebuch-Eintrags';
     var ks = Object.keys(d.entries);
@@ -143,7 +149,7 @@ function standMangel(d) {
       var d = JSON.parse(txt);
       var m = standMangel(d);
       // (v1.5.377) Der Grund „unsicher" als Satz — vorher stand nur das Wort in Klammern.
-      if (m === 'unsicher') return { ok: false, mangel: true, fehler: 'Diese Sicherung enthält ' + standUnsicher(d) + ' Zeichen, die GrowSmart dort nie schreibt — sie wurde verändert oder stammt nicht aus GrowSmart.' };
+      if (m === 'unsicher') { var wo = standUnsicher(d); return { ok: false, mangel: true, fehler: (wo === '__proto__' ? 'Diese Sicherung enthält einen Schlüssel („__proto__“), den GrowSmart nie schreibt' : 'Diese Sicherung enthält ' + wo + ' Zeichen, die GrowSmart dort nie schreibt') + ' — sie wurde verändert oder stammt nicht aus GrowSmart.' }; }
       if (m) return { ok: false, mangel: true, fehler: 'Das ist keine GrowSmart-Sicherung (' + m + ').' };
       var z = (d.cycles || []).length;
       var e = Object.keys(d.entries || {}).length;
