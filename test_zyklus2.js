@@ -725,6 +725,21 @@ function pruef(name, bedingung, info) {
     pruef('Y3 keine JS-Fehler', a.errors.length === 0, a.errors[0]);
   }
 
+  // ===== Z: „Blüte Wo." nur in der Blüte (v1.5.338) =====
+  console.log('\nZ - Blütewoche nur in der Blüte');
+  {
+    const a = await load(null, { datum: '2026-10-07' });
+    a.E("S.beginnerMode = false; S.cycles[0].archived = true; S.cycles[0].active = false; addCyc({ name: 'Zelt', startDate: '2026-09-20', potSize: 15, plantCount: 4 }); (() => { const c = S.cycles.find(x => x.name === 'Zelt'); c.anzuchtDays = 26; c.bloomDays = 70; })()");
+    const kopf = (iso) => { a.E(`setDebugDate('${iso}'); openEntry('${iso}')`); return (a.window.document.getElementById('scr-entry')?.textContent || '').replace(/\s+/g, ' '); };
+    pruef('Z0 Lage: 07.10. Anzucht Tag 18, 20.10. Blüte', a.E("phase('2026-10-07', S.cycles.find(x => x.name === 'Zelt')).ph") === 'anzucht' && a.E("phase('2026-10-20', S.cycles.find(x => x.name === 'Zelt')).ph") === 'bloom');
+    pruef('Z1 Anzucht-Tag 18: kein „Blüte Wo." im Eintrag', !/Blüte Wo\./.test(kopf('2026-10-07')));
+    pruef('Z2 Blüte: „Blüte Wo.1" steht weiter da', /Blüte Wo\.1/.test(kopf('2026-10-20')));
+    a.E("setDebugDate('2026-10-07')");
+    const d = a.E("lexCycleNote('Vegetationsphase')").replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
+    pruef('Z3 Lexikon „Dein Zyklus · Tag 18 …" in der Anzucht ohne „(Blüte Wo.)"', /Dein Zyklus · Tag 18/.test(d) && !/Blüte Wo\./.test(d), d.slice(0, 200));
+    pruef('Z4 keine JS-Fehler', a.errors.length === 0, a.errors[0]);
+  }
+
   console.log('\n' + ok + ' OK, ' + fail + ' FEHL');
   if (fail) process.exit(1);
 })().catch((e) => { console.log('FEHLER: ' + (e && e.stack || e)); process.exit(1); });

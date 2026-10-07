@@ -4594,7 +4594,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.337';
+const APP_VERSION = 'v1.5.338';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -30841,7 +30841,9 @@ function renderEntry(iso) {
                 // Plan-Woche folgt den Tag-Spannen des Düngeplans und ist oft länger.
                 // Am selben Tag können sie auseinanderliegen — deshalb steht jetzt dran,
                 // welche gemeint ist. Ohne Düngeplan gibt es nur die Blütewoche.
-                const _bw = p && p.week ? `<span style="font-size:11px;color:var(--text-muted)">Blüte Wo.${p.week}</span>` : '';
+                // (v1.5.338) Nur in der Blüte: phase().week zählt in der Anzucht die Anzucht-Wochen — dort stand „Blüte Wo.3"
+                // an Tag 18 (Patricks Run 02). Eine dritte Wochenzahl neben Tag und Plan-Woche hilft in der Anzucht nicht.
+                const _bw = p && p.ph === 'bloom' && p.week ? `<span style="font-size:11px;color:var(--text-muted)">Blüte Wo.${p.week}</span>` : '';
                 if (!hasFertPlan(c)) return _bw;
                 const _sp = fertPlanWeekSpan(c, iso);
                 const _tt = _sp && _sp.bis ? `Düngeplan-Woche ${wk} läuft von Tag ${_sp.von} bis ${_sp.bis}` : `Woche ${wk} des Düngeplans`;
@@ -31030,7 +31032,7 @@ function renderEntry(iso) {
           <span style="font-size:14px">🔬</span>
           <span style="font-size:12px;font-weight:600;color:var(--text)">Trichom-Check${S.beginnerMode ? infoBtn('trichome') : ''}</span>
           <span style="font-size:10px;color:var(--text-muted);margin-left:auto">${
-            p.week ? `Blüte Wo.${p.week}`
+            p.ph === 'bloom' && p.week ? `Blüte Wo.${p.week}`
             : p.ph === 'flush' ? 'Spülphase'
             : p.ph === 'ice' ? 'IceFlush'
             : p.ph === 'harvest' ? 'Erntetag'
@@ -37881,7 +37883,7 @@ function lexCycleNote(itemTitle) {
   const pt = getPhaseTargets(p);
   const dayNum = (isoDiff(today, c.startDate) || 0) + 1;
   const phaseLabel = (pt && pt.label) ? pt.label : (p.ph || '');
-  const stand = `Tag ${dayNum}${p.week ? ` · ${phaseLabel} (Blüte Wo.${p.week})` : (phaseLabel ? ` · ${phaseLabel}` : '')}`;
+  const stand = `Tag ${dayNum}${p.ph === 'bloom' && p.week ? ` · ${phaseLabel} (Blüte Wo.${p.week})` : (phaseLabel ? ` · ${phaseLabel}` : '')}`;   // (v1.5.338) Blütewoche nur in der Blüte
 
   const wrap = (body) => `<div style="margin:0 0 12px;padding:10px 12px;border-radius:10px;background:rgba(76,175,112,0.10);border:0.5px solid rgba(76,175,112,0.30);font-size:12px;color:var(--text-sub);line-height:1.55"><span style="color:var(--green);font-weight:700">🌱 Dein Zyklus · ${stand}</span><br>${body}</div>`;
 

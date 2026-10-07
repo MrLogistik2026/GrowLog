@@ -2,6 +2,17 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-07 — v1.5.338
+
+- **In der Anzucht stand „Blüte Wo.3"** (beim Durchspielen von Run 02 gefunden: Tag 18, mitten in der Anzucht).
+  `phase().week` zählt in der Anzucht die Anzucht-Wochen; Eintragskopf, Trichom-Karte und der Lexikon-Satz „Dein Zyklus ·
+  Tag 18 · Anzucht (Blüte Wo.3)" beschrifteten diese Zahl trotzdem als Blütewoche. Für einen Anfänger heißt das: Die Pflanze
+  blüht schon — und daneben stand eine zweite, andere Wochenzahl („Plan Wo.2").
+- **Jetzt** steht „Blüte Wo." nur in der Blüte. In der Anzucht bleiben Tag und Plan-Woche — eine dritte Wochenzahl hilft
+  dort nicht.
+- Test: `test_zyklus2.js` Abschnitt Z (5 Prüfungen, beide Zeitzonen; 2 fallen auf v1.5.337 um).
+
+
 ## 2026-10-07 — v1.5.337
 
 - **Neu: Eine Zyklus-Datei fügt Zyklen hinzu, statt den Stand zu ersetzen** (Patrick, 07.10.2026: „Ich schließe den Zyklus
