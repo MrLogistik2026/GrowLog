@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.330** · index.html 2,53 MB · 772 Funktionen
+Stand: **v1.5.331** · index.html 2,54 MB · 774 Funktionen
 Zuletzt fortgeschrieben am 07.10.2026 (Nachtprüfung und Run 02 — Abschnitt 0o, „Stand Run 02"). Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
@@ -249,6 +249,7 @@ Unterscheidungsfragen aus dem eigenen Zustand.
 - v1.5.328: Scheitert das Speichern, steht ein Band „NICHT gespeichert" (Antippen = Backup) bis zum nächsten Erfolg; Eintrag, Plan und Produkt sagen „Gespeichert ✓" nur nach Erfolg (Skeptiker-Befund 1 und 6).
 - v1.5.329: Ein zerstörter Arbeitsstand (cycles/entries null) wird nicht mehr geschrieben, auch nicht als Tageskopie; Band „neu laden" (Skeptiker-Befund 2).
 - v1.5.330: War der Speicher beim Start nicht lesbar, wird er auch nicht beschrieben — der ungelesene Stand bleibt (Skeptiker-Befund 3).
+- v1.5.331: Meldungen nennen den echten Grund — ↩ sagt, wenn eine Kopie weichen musste; Import „abgelehnt" statt „zu groß"; „kaum Speicherplatz" statt „alte Fotos löschen" bei kleinem Stand (Skeptiker-Befunde 4, 5, 7).
 
 **Bei der nächsten Bewertung** dieselbe Skala, dieselben Kategorie-IDs und dieselben Regeln aus `auftrag.md` nehmen und
 die Noten gegen diese Tabelle stellen.

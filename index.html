@@ -4594,7 +4594,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.330';
+const APP_VERSION = 'v1.5.331';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -5370,6 +5370,37 @@ function _sperrBand(an, inhalt, aktion, art) {
 }
 
 /**
+ * (v1.5.331) Eine Sicherungskopie musste weichen, damit der Hauptstand passt. Aus saveS herausgelöst, damit ↩/↪ dasselbe
+ * sagen — vorher meldete ↩ in diesem Fall nur „↩ Rückgängig (0 übrig)", und die Kopie war still weg (Skeptiker).
+ */
+function _platzMelden() {
+  const z = _hauptstandSchreiben.zuletzt || { befreit: 1, kopienDanach: 0 };
+  _autoBackup._fehler = 'voll';
+  _autoBackup._fehlerAm = Date.now();
+  const now = Date.now();
+  // (v1.5.289) Bleibt gar keine Kopie übrig, wird das jedes Mal gesagt. Die Fünf-Minuten-Drosselung
+  // hat in der Messung genau die Meldung verschluckt, auf die es ankam.
+  if (z.kopienDanach === 0 || !saveS._lastPlatzToast || now - saveS._lastPlatzToast > 300000) {
+    saveS._lastPlatzToast = now;
+    toast(z.kopienDanach === 0
+      ? '⚠ Deine Änderung ist gespeichert — dafür musste die letzte Sicherungskopie weichen. Es gibt jetzt keine mehr. Zieh jetzt ein Backup (Einstellungen → Daten & Sicherheit) und lösche alte Fotos.'
+      : 'Platz war knapp — deine Änderung ist gespeichert, dafür wurde die kleinere Sicherungskopie entfernt. Lösche alte Fotos und zieh ein Backup.', 7000);
+    return true;
+  }
+  return false;
+}
+
+/**
+ * (v1.5.331) „Voll" bei einem kleinen Stand heißt nicht „zu viele Fotos": Der Browser gibt GrowSmart kaum Platz — oft in
+ * einem privaten Fenster, oder der Gerätespeicher ist voll. Vorher hieß es auch dann „lösche alte Fotos" (Skeptiker:
+ * neuer Nutzer ohne ein einziges Foto). Unter 500 000 Zeichen — einem Zehntel dessen, was Browser üblicherweise geben.
+ */
+function _vollArt() {
+  // Gezählt wird alles, was GrowSmart belegt (_storageInfo) — füllen alte GrowSmart-Schlüssel den Speicher, ist er voll.
+  try { return _storageInfo().ownBytes < 500000 ? 'kaumplatz' : 'voll'; } catch (e) { return 'voll'; }
+}
+
+/**
  * (v1.5.328) Scheitert das Speichern, steht ein Band oben, bis wieder gespeichert ist. Vorher kam die Warnung als Toast —
  * und der Speichern-Knopf zeigte gleich danach „Gespeichert ✓" und wurde grün (Prüfer, 07.10.2026). Sichtbar blieb nur
  * der unbeschriftete rote Punkt. Ein Band überschreibt keine spätere Meldung, und es ist die Tür: Antippen zieht ein
@@ -5379,6 +5410,8 @@ function _fehlerBand(art) {
   if (_neuladenAnsteht) return;
   const text = art === 'voll'
     ? '⚠ <b>Letzte Änderung NICHT gespeichert</b> — der Speicher ist voll. Tippe, um ein Backup zu ziehen; danach alte Fotos löschen.'
+    : art === 'kaumplatz'
+      ? '⚠ <b>Nicht gespeichert</b> — der Browser gibt GrowSmart kaum Speicherplatz (oft in einem privaten Fenster, oder der Gerätespeicher ist voll). Tippe, um ein Backup zu ziehen.'
     : art === 'gesperrt'
       ? '⚠ <b>Nicht gespeichert</b> — der Browser lässt GrowSmart nicht an den Speicher. Tippe, um ein Backup zu ziehen.'
       : '⚠ <b>Letzte Änderung NICHT gespeichert.</b> Tippe, um ein Backup zu ziehen, und öffne GrowSmart danach neu.';
@@ -6957,18 +6990,7 @@ function saveS() {
     }
     if (wie === 'ok-befreit') {
       // Jetzt keine neue Kopie anlegen — sie nähme den eben freigeräumten Platz sofort wieder weg.
-      const z = _hauptstandSchreiben.zuletzt || { befreit: 1, kopienDanach: 0 };
-      _autoBackup._fehler = 'voll';
-      _autoBackup._fehlerAm = Date.now();
-      const now = Date.now();
-      // (v1.5.289) Bleibt gar keine Kopie übrig, wird das jedes Mal gesagt. Die Fünf-Minuten-Drosselung
-      // hat in der Messung genau die Meldung verschluckt, auf die es ankam.
-      if (z.kopienDanach === 0 || !saveS._lastPlatzToast || now - saveS._lastPlatzToast > 300000) {
-        saveS._lastPlatzToast = now;
-        toast(z.kopienDanach === 0
-          ? '⚠ Dein Eintrag ist gespeichert — dafür musste die letzte Sicherungskopie weichen. Es gibt jetzt keine mehr. Zieh jetzt ein Backup (Einstellungen → Daten & Sicherheit) und lösche alte Fotos.'
-          : 'Platz war knapp — dein Eintrag ist gespeichert, dafür wurde die kleinere Sicherungskopie entfernt. Lösche alte Fotos und zieh ein Backup.');
-      }
+      _platzMelden();
       _flashSaved();
     } else {
       // (v1.4.83) Tägliche Sicherungskopie + einmalig dauerhaften Speicher anfordern.
@@ -6986,12 +7008,15 @@ function saveS() {
     const voll = !!(e && (e.name === 'QuotaExceededError' || e.code === 22));
     saveS._fehler = voll ? 'voll' : ((e && (e.name || e.message)) || 'fehler');
     _speicherStatusRot(true);
-    _fehlerBand(voll ? 'voll' : (_speicherGesperrt ? 'gesperrt' : 'fehler'));
+    const art = voll ? _vollArt() : (_speicherGesperrt ? 'gesperrt' : 'fehler');
+    _fehlerBand(art);
     // Höchstens einmal je Minute — dazwischen steht der rote Punkt. Vorher alle 5 Minuten, und nur bei „voll".
     const now = Date.now();
     if (!saveS._lastQuotaErr || now - saveS._lastQuotaErr > 60000) {
       saveS._lastQuotaErr = now;
-      toast(voll
+      toast(art === 'kaumplatz'
+        ? '⚠ Nicht gespeichert — der Browser gibt GrowSmart kaum Speicherplatz, oft in einem privaten Fenster oder bei vollem Gerätespeicher. Öffne GrowSmart in einem normalen Fenster oder schaff Platz auf dem Gerät; was du hier eingetragen hast, rettest du mit einem Backup (Einstellungen → Daten & Sicherheit).'
+        : voll
         ? '⚠ Speicher voll — deine letzte Änderung ist NICHT gespeichert. Zieh ein Backup (Einstellungen → Daten & Sicherheit) und lösche danach alte Fotos (Galerie, ×).'
         : (typeof _speicherGesperrt !== 'undefined' && _speicherGesperrt
           ? '⚠ Nicht gespeichert — der Browser lässt GrowSmart nicht an den Speicher, meist weil Website-Daten für diese Seite blockiert sind (manchmal auch in einem privaten Fenster). Erlaube Website-Daten oder öffne GrowSmart in einem normalen Fenster. Was du hier eingetragen hast, rettest du mit einem Backup (Einstellungen → Daten & Sicherheit).'
@@ -9032,16 +9057,19 @@ function _undoSchreiben(aktion) {
     wie = (e && (e.name === 'QuotaExceededError' || e.code === 22)) ? false : 'fehler';
   }
   if (wie === 'ok' || wie === 'ok-befreit') {
-    if (wie === 'ok-befreit') { _autoBackup._fehler = 'voll'; _autoBackup._fehlerAm = Date.now(); }
     saveS._fehler = null;
     if (!_speicherSperre) _speicherStatusRot(false);
     _fehlerBandWeg();
     _flashSaved();
+    // (v1.5.331) Musste dafür eine Sicherungskopie weichen, sagt ↩ das wie saveS — die Platz-Meldung geht vor.
+    if (wie === 'ok-befreit' && _platzMelden()) return 'gemeldet';
     return true;
   }
   _speicherStatusRot(true);
-  _fehlerBand(wie === false ? 'voll' : (_speicherGesperrt ? 'gesperrt' : 'fehler'));
-  const grund = wie === false ? 'Der Speicher ist voll. Zieh ein Backup (Einstellungen → Daten & Sicherheit) und lösche danach alte Fotos (Galerie, ×).'
+  const art = wie === false ? _vollArt() : (_speicherGesperrt ? 'gesperrt' : 'fehler');
+  _fehlerBand(art);
+  const grund = art === 'kaumplatz' ? 'Der Browser gibt GrowSmart kaum Speicherplatz — oft in einem privaten Fenster oder bei vollem Gerätespeicher.'
+    : wie === false ? 'Der Speicher ist voll. Zieh ein Backup (Einstellungen → Daten & Sicherheit) und lösche danach alte Fotos (Galerie, ×).'
     : _speicherGesperrt ? 'Der Browser lässt GrowSmart nicht an den Speicher. Erlaube Website-Daten für diese Seite oder öffne GrowSmart in einem normalen Fenster.'
     : 'Zieh ein Backup (Einstellungen → Daten & Sicherheit) und öffne GrowSmart neu.';
   toast(`⚠ ${aktion}, aber NICHT gespeichert — beim nächsten Öffnen ist der vorige Stand wieder da. ${grund}`, 7000);
@@ -9073,7 +9101,7 @@ function doUndo() {
     });
     const gesichert = _undoSchreiben('Rückgängig gemacht');
     vibrate();
-    if (gesichert) toast(`↩ Rückgängig (${undoStack.length} übrig)`);
+    if (gesichert === true) toast(`↩ Rückgängig (${undoStack.length} übrig)`);
     _rerender();
   } catch (e) { toast('⚠ Rückgängig fehlgeschlagen — App schließen und neu öffnen, dann erneut versuchen.', 4500); }
 }
@@ -9101,7 +9129,7 @@ function doRedo() {
     });
     const gesichert = _undoSchreiben('Wiederhergestellt');
     vibrate();
-    if (gesichert) toast(`↪ Wiederhergestellt (${redoStack.length} übrig)`);
+    if (gesichert === true) toast(`↪ Wiederhergestellt (${redoStack.length} übrig)`);
     _rerender();
   } catch (e) { toast('⚠ Wiederherstellen fehlgeschlagen — App schließen und neu öffnen, dann erneut versuchen.', 4500); }
 }
@@ -28093,9 +28121,16 @@ function _standErsetzenUndNeuLaden(text, meldung) {
   try { umfang = _kopieUmfang(JSON.parse(text)); } catch (e) { umfang = null; }
   try { wie = _skSchreiben(text, umfang, true); } catch (e) {
     if (e && e.name === 'SpeicherSperre') return false;   // die Sperre hat sich selbst gemeldet
+    // (v1.5.331) Nur „voll" heißt „zu groß". Vorher stand bei jedem anderen Fehler „Die Datei ist zu groß … Fotos" da.
+    if (!(e && (e.name === 'QuotaExceededError' || e.code === 22))) {
+      _speicherStatusRot(true);
+      toast('⚠ Nicht geladen — der Browser hat das Speichern abgelehnt (' + ((e && (e.name || e.message)) || 'Fehler') + '). Dein bisheriger Stand ist unverändert. Öffne GrowSmart neu und versuch es noch einmal.', 8000);
+      return false;
+    }
     wie = false;
   }
   if (wie === false) {
+    _speicherStatusRot(true);
     // (Prüfer, 29.09.2026) „Alte Fotos löschen" hilft hier nicht — der alte Stand wird ja als Ganzes ersetzt.
     toast('⚠ Die Datei ist zu groß für den Speicher dieses Geräts (vermutlich wegen vieler Fotos). Dein bisheriger Stand ist unverändert.', 8000);
     return false;

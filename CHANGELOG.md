@@ -2,6 +2,24 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-07 — v1.5.331
+
+- **Drei Meldungen nannten den falschen Grund** (Skeptiker vor dem Hochladen, Befunde 4, 5 und 7, jeweils leicht).
+  - **↩/↪ mit freigeräumter Kopie:** Passte der Stand nur, weil eine Sicherungskopie weichen musste, meldete ↩ bloß
+    „↩ Rückgängig (0 übrig)"; die Kopie war still weg. `saveS` sagte es. Jetzt steckt die Meldung in `_platzMelden`, und
+    beide Wege nutzen sie — die Platz-Meldung geht vor der Erfolgsmeldung.
+  - **Import:** Bei jedem Fehler außer „voll" stand „Die Datei ist zu groß … vermutlich wegen vieler Fotos". Jetzt heißt
+    nur „voll" „zu groß"; sonst „der Browser hat das Speichern abgelehnt", mit rotem Punkt.
+  - **„Speicher voll … lösche alte Fotos" bei einem neuen Nutzer ohne Fotos:** Belegt GrowSmart insgesamt unter
+    500 000 Zeichen (ein Zehntel dessen, was Browser üblicherweise geben) und der Speicher ist trotzdem voll, gibt der
+    Browser kaum Platz — oft in einem privaten Fenster oder bei vollem Gerätespeicher. Dann sagen Band, Toast und ↩
+    genau das (`_vollArt`). Gezählt wird alles, was GrowSmart belegt: Füllen alte GrowSmart-Schlüssel den Speicher,
+    bleibt es „voll".
+- `test_kopien.js` F3, J4, K5 verkleinern den Speicher auf wenige hundert KB — dort ist „kaum Platz" jetzt die richtige
+  Meldung; die Prüfungen lassen beide Wortlaute zu, ihr Zweck („der Nutzer erfährt es") bleibt.
+- Test: `test_speichern.js` Abschnitt J (6 Prüfungen, beide Zeitzonen; 3 fallen auf v1.5.330 um).
+
+
 ## 2026-10-07 — v1.5.330
 
 - **Durfte der Browser nur nicht lesen, überschrieb die App den ungelesenen Stand** (Skeptiker vor dem Hochladen,

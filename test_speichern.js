@@ -144,7 +144,7 @@ function pruef(name, bedingung, info) {
     c.toasts.length = 0;
     c.E('doUndo()');
     pruef('C1 ↩ bei vollem Speicher: im Arbeitsspeicher zurück', c.E(`!!S.entries['${tag}']`));
-    pruef('C2 … und der Toast sagt „NICHT gespeichert" mit dem Grund', c.toasts.some(t => /Rückgängig gemacht, aber NICHT gespeichert/.test(t) && /Speicher ist voll/.test(t)), c.toasts);
+    pruef('C2 … und der Toast sagt „NICHT gespeichert" mit dem Grund', c.toasts.some(t => /Rückgängig gemacht, aber NICHT gespeichert/.test(t) && /Speicher ist voll|kaum Speicherplatz/.test(t)), c.toasts);
     pruef('C3 … keine Erfolgsmeldung „↩ Rückgängig (…)"', !c.toasts.some(t => /^↩ Rückgängig \(/.test(t)), c.toasts);
     pruef('C4 … und der rote Punkt steht', c.rot());
     c.window.__kaputt = 'kaputt';
@@ -337,6 +337,47 @@ function pruef(name, bedingung, info) {
     const b = m.window.document.getElementById('sperrband');
     pruef('I2 Band mit Backup-Tür steht', !!b && /Backup zu ziehen/.test(b.textContent), b && b.textContent);
     pruef('I3 kein grüner Erfolg: roter Punkt an', m.rot());
+  }
+
+  // ===== J: Gründe stimmen — kaum Platz, Kopie gewichen, Import (v1.5.331) =====
+  console.log('\nJ - Meldungen nennen den echten Grund');
+  {
+    // Neuer Nutzer, der Browser gibt kaum Platz: kein „alte Fotos löschen"
+    const k = await load({ [SK]: SICHERUNG });
+    k.window.__kaputt = 'voll';
+    k.toasts.length = 0;
+    k.E("S.entries['2026-09-30'] = { note: 'x' }; saveS._lastQuotaErr = 0; saveS()");
+    const b = k.window.document.getElementById('sperrband');
+    pruef('J1 kleiner Stand, „voll": Band und Toast sagen „kaum Speicherplatz", nicht „alte Fotos löschen"',
+      !!b && /kaum Speicherplatz/.test(b.textContent) && k.toasts.some(t => /kaum Speicherplatz/.test(t)) && !k.toasts.some(t => /lösche danach alte Fotos/.test(t)), [b && b.textContent, k.toasts]);
+    k.window.__kaputt = null;
+    // Viel GrowSmart-Speicher belegt: dann ist es „voll"
+    const v = await load({ [SK]: SICHERUNG, growsmart_v3: 'x'.repeat(600000) });
+    v.window.__kaputt = 'voll';
+    v.E("S.entries['2026-09-30'] = { note: 'x' }; saveS()");
+    const vb = v.window.document.getElementById('sperrband');
+    pruef('J2 viel belegt (alte Schlüssel): Band sagt „Speicher ist voll"', !!vb && /Speicher ist voll/.test(vb.textContent), vb && vb.textContent);
+    v.window.__kaputt = null;
+    // Import mit einem Fehler, der nicht „voll" ist
+    v.window.__kaputt = 'kaputt';
+    v.toasts.length = 0;
+    v.E(`_standErsetzenUndNeuLaden(${JSON.stringify(SICHERUNG)}, 'Backup geladen')`);
+    pruef('J3 Import mit anderem Fehler: nicht „zu groß … Fotos", sondern „abgelehnt"', v.toasts.some(t => /Speichern abgelehnt/.test(t)) && !v.toasts.some(t => /zu groß/.test(t)), v.toasts);
+    v.window.__kaputt = null;
+    pruef('J4 keine JS-Fehler', k.errors.length === 0 && v.errors.length === 0, k.errors[0] || v.errors[0]);
+  }
+  {
+    // ↩ bei knappem Platz, wenn dafür eine Kopie weichen muss: dieselbe Meldung wie saveS
+    const q = await load({ [SK]: SICHERUNG });
+    const tag = q.E('Object.keys(S.entries).sort()[3]');
+    q.E(`undoStack.length = 0; undoStack.push(JSON.stringify(S)); S.entries['${tag}'].note = 'geändert'; saveS._lastUndo = Date.now(); saveS()`);
+    // Lage herstellen: Der Hauptstand passt nur, weil die letzte Kopie weicht
+    q.E("window._hauptstandSchreiben = function (t) { _hauptstandSchreiben.zuletzt = { befreit: 1, kopienDanach: 0 }; localStorage.removeItem('growsmart_v4_bak'); localStorage.setItem(SK, t); return 'ok-befreit'; }; saveS._lastPlatzToast = 0");
+    q.toasts.length = 0;
+    q.E('doUndo()');
+    pruef('J5 ↩, für das die letzte Sicherungskopie weichen musste: Toast sagt es, keine reine Erfolgsmeldung',
+      q.toasts.some(t => /letzte Sicherungskopie weichen/.test(t)) && !q.toasts.some(t => /^↩ Rückgängig \(/.test(t)), q.toasts);
+    pruef('J6 … und der Stand ist trotzdem gespeichert', JSON.parse(q.get(SK)).entries[tag].note !== 'geändert');
   }
 
   console.log('\n' + ok + ' OK, ' + fail + ' FEHL');
