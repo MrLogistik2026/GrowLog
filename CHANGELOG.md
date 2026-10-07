@@ -2,6 +2,23 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-07 — v1.5.320
+
+- **Speichern scheiterte still bei jedem Fehler außer „Speicher voll"** (Hebel 3, Punkt 7; in der Nachtprüfung vom
+  07.10.2026 erneut gemessen). `saveS` meldete nur einen vollen Speicher, und das höchstens alle 5 Minuten; jeden anderen
+  Schreibfehler verschluckte es mit dem Kommentar „nothing sensible we can do". Dazu stand alles in einem einzigen Block:
+  Warf eine Vorarbeit — etwa der Plan-Abgleich bei einem beschädigten Plan —, wurde gar nicht geschrieben, und die
+  Eingabe war weg, ohne dass es jemand merkte.
+- **Jetzt** hat `saveS` zwei Blöcke: Eine scheiternde Vorarbeit wird vermerkt (`saveS._vorarbeitFehler`), geschrieben wird
+  trotzdem. Scheitert das Schreiben selbst, kommt bei jedem Grund eine Meldung — „deine letzte Änderung ist NICHT
+  gespeichert" mit dem nächsten Schritt —, höchstens einmal je Minute, und der rote Punkt oben rechts bleibt stehen, bis
+  wieder gespeichert wurde. Der nächste erfolgreiche Speichervorgang nimmt ihn weg.
+- **Mitgenommen (Korrektur des Skeptikers zum Entwurf):** Das Aufräumen verwaister Tagesdaten löscht nie mehr als 10 auf
+  einmal. `delCyc` räumt die Daten eines gelöschten Zyklus selbst weg; mehr Reste sind ein Zeichen für einen Schaden und
+  bleiben stehen (vermerkt), statt still zu verschwinden.
+- Test: neue Datei `test_speichern.js` Abschnitt A (8 Prüfungen, beide Zeitzonen; 5 fallen auf v1.5.319 um).
+
+
 ## 2026-10-07 — v1.5.319
 
 - **Drei kleine Anzeigefehler** (Nachtprüfung vom 07.10.2026; zwei davon aus meinen eigenen Versionen von gestern):

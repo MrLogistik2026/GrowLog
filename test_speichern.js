@@ -1,0 +1,109 @@
+/**
+ * Hebel 3, Punkt 7 — die letzten Speicher-Störfälle (07.10.2026, ab v1.5.320).
+ *
+ * Jeder Abschnitt gehört zu einer Version und stellt zuerst die Lage her, in der die App früher still verlor:
+ * ein Schreibfehler, der nicht „voll" heißt, eine Vorarbeit, die wirft, ein gesperrter Browser-Speicher,
+ * Rückgängig bei vollem Speicher, ein zweites Fenster, die Speicheranzeige, der Versatz von ↩.
+ * Läuft über GS_INDEX auch gegen einen älteren Build und fällt dort um.
+ */
+const fs = require('fs');
+const path = require('path');
+const { JSDOM, VirtualConsole } = require('jsdom');
+
+const HTML = fs.readFileSync(path.join(__dirname, process.env.GS_INDEX || 'index.html'), 'utf8');
+const SICHERUNG = fs.readFileSync(path.join(__dirname, 'growsmart-sicherung-2026-09-04.txt'), 'utf8');
+const SK = 'growsmart_v4';
+
+function fakeCtx() {
+  const noop = () => {};
+  return { canvas: null, fillStyle: '', strokeStyle: '', lineWidth: 1, font: '', textAlign: '', textBaseline: '', globalAlpha: 1,
+    lineCap: '', lineJoin: '', shadowBlur: 0, shadowColor: '', beginPath: noop, closePath: noop, moveTo: noop, lineTo: noop, arc: noop,
+    arcTo: noop, rect: noop, fill: noop, stroke: noop, fillRect: noop, clearRect: noop, strokeRect: noop, save: noop, restore: noop,
+    translate: noop, rotate: noop, scale: noop, setTransform: noop, fillText: noop, strokeText: noop, drawImage: noop, clip: noop,
+    setLineDash: noop, quadraticCurveTo: noop, bezierCurveTo: noop, measureText: () => ({ width: 0 }),
+    createLinearGradient: () => ({ addColorStop: noop }), createRadialGradient: () => ({ addColorStop: noop }), getImageData: () => ({ data: [] }) };
+}
+
+async function load(speicher, opts = {}) {
+  const errors = [];
+  const vc = new VirtualConsole();
+  const sammle = (m) => { if (!/Not implemented/i.test(m)) errors.push(m); };
+  vc.on('jsdomError', (e) => sammle(String((e && e.message) || e)));
+  vc.on('error', (...a) => sammle(a.map(String).join(' ')));
+  const dom = new JSDOM(HTML, {
+    url: 'https://growsmart.test/', runScripts: 'dangerously', pretendToBeVisual: true, virtualConsole: vc,
+    ...(opts.quota ? { storageQuota: opts.quota } : {}),
+    beforeParse(w) {
+      w.HTMLCanvasElement.prototype.getContext = function () { const c = fakeCtx(); c.canvas = this; return c; };
+      w.HTMLCanvasElement.prototype.toDataURL = () => 'data:,';
+      w.navigator.vibrate = () => true; w.scrollTo = () => {}; w.HTMLElement.prototype.scrollIntoView = function () {};
+      w.alert = () => {}; w.print = () => {};
+      Object.keys(speicher || {}).forEach(k => w.localStorage.setItem(k, speicher[k]));
+      // Fehler auf Zuruf: w.__kaputt = 'kaputt' lässt das Schreiben von growsmart_v4 mit einem Nicht-Quota-Fehler scheitern.
+      const orig = w.Storage.prototype.setItem;
+      w.Storage.prototype.setItem = function (k, v) {
+        if (k === SK && w.__kaputt) { const e = new Error(w.__kaputt); e.name = 'Error'; throw e; }
+        return orig.call(this, k, v);
+      };
+      if (opts.gesperrt) {
+        Object.defineProperty(w, 'localStorage', { configurable: true, get() { const e = new w.DOMException('The operation is insecure.', 'SecurityError'); throw e; } });
+      }
+    },
+  });
+  const w = dom.window;
+  if (w.document.readyState !== 'complete') await new Promise((r) => { w.addEventListener('load', r, { once: true }); setTimeout(r, 5000); });
+  await new Promise((r) => setTimeout(r, 60));
+  const dialoge = [], toasts = [];
+  w.customConfirm = (titel, text) => { dialoge.push(String(titel) + '\n' + String(text)); return Promise.resolve(!!opts.antwort); };
+  w.toast = (t) => { toasts.push(String(t)); };
+  await new Promise((r) => setTimeout(r, opts.warten === undefined ? 400 : opts.warten));
+  const rot = () => { const els = Array.from(w.document.body.children).filter(el => /background:\s*var\(--red\)/.test(el.style.cssText) && el.style.width === '8px'); return els.some(el => el.style.opacity === '1'); };
+  return { window: w, errors, dialoge, toasts, rot, E: (s) => w.eval(s), get: (k) => { try { return w.localStorage.getItem(k); } catch (e) { return null; } } };
+}
+
+let ok = 0, fail = 0;
+function pruef(name, bedingung, info) {
+  if (bedingung) { ok++; console.log('  OK   ' + name); }
+  else { fail++; console.log('  FEHL ' + name + (info !== undefined ? '  -> ' + JSON.stringify(info) : '')); }
+}
+
+(async () => {
+  console.log('TZ=' + (process.env.TZ || '(System)'));
+
+  // ===== A: Speichern scheitert nie still (v1.5.320) =====
+  console.log('\nA - Ein Schreibfehler, der nicht „voll" heißt');
+  {
+    const a = await load({ [SK]: SICHERUNG });
+    pruef('A0 Start ohne JS-Fehler', a.errors.length === 0, a.errors[0]);
+    a.window.__kaputt = 'kaputt';
+    a.toasts.length = 0;
+    a.E("S.entries['2026-09-30'] = { note: 'nicht gespeichert' }; saveS()");
+    pruef('A1 ein anderer Fehler als „voll" wird gemeldet', a.toasts.some(t => /Speichern fehlgeschlagen — deine letzte Änderung ist NICHT gespeichert/.test(t)), a.toasts);
+    pruef('A2 der rote Punkt steht', a.rot());
+    a.toasts.length = 0;
+    a.E("S.entries['2026-09-30'].note = 'zweiter Versuch'; saveS()");
+    pruef('A3 gleich danach kein zweiter Toast, der Punkt bleibt rot', a.toasts.length === 0 && a.rot());
+    a.window.__kaputt = null;
+    a.E('saveS()');
+    pruef('A4 klappt das Speichern wieder, geht der Punkt aus', !a.rot() && (a.get(SK) || '').includes('zweiter Versuch'));
+    // Vorarbeit wirft: trotzdem schreiben
+    a.E("window.syncGlobalsToActivePlan = () => { throw new Error('Plan kaputt'); }; S.entries['2026-09-29'] = { note: 'trotz Vorarbeit' }; saveS._lastUndo = 0; saveS()");
+    pruef('A5 wirft eine Vorarbeit, wird trotzdem geschrieben', (a.get(SK) || '').includes('trotz Vorarbeit') && !!a.E('saveS._vorarbeitFehler'), a.E('saveS._vorarbeitFehler'));
+  }
+  {
+    // Viele verwaiste Tagesdaten auf einmal werden nicht gelöscht
+    const st = JSON.parse(SICHERUNG);
+    const tage = Object.keys(st.entries).slice(0, 15);
+    tage.forEach(d => { st.entries[d].cycleData = st.entries[d].cycleData || {}; st.entries[d].cycleData['verloren'] = { water: '500' }; });
+    const b = await load({ [SK]: JSON.stringify(st) });
+    b.E('saveS._lastUndo = 0; saveS()');
+    const rest = JSON.parse(b.get(SK));
+    pruef('A6 15 verwaiste Tagesdaten auf einmal: stehen lassen und vermerken statt still löschen',
+      Object.values(rest.entries).filter(e => e.cycleData && e.cycleData.verloren).length === 15 && /verwaiste Tagesdaten: 15/.test(b.E('saveS._vorarbeitFehler') || ''));
+    pruef('A7 keine JS-Fehler', b.errors.length === 0, b.errors[0]);
+  }
+
+  console.log('\n' + ok + ' OK, ' + fail + ' FEHL');
+  if (fail) process.exit(1);
+  process.exit(0);
+})().catch((e) => { console.log('FEHLER: ' + (e && e.stack || e)); process.exit(1); });

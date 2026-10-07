@@ -4594,7 +4594,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.319';
+const APP_VERSION = 'v1.5.320';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -6752,6 +6752,13 @@ function syncGlobalsToActivePlan() {
   plan.updatedAt = Date.now();
 }
 
+/**
+ * (v1.5.320) Speichern scheitert nie still (Hebel 3, Punkt 7). Zwei Blöcke: Scheitert eine Vorarbeit (Plan-Abgleich,
+ * Verschiebungen zusammenfassen, Aufräumen), wird trotzdem geschrieben — vorher ging dann die ganze Eingabe verloren.
+ * Scheitert das Schreiben selbst, kommt bei jedem Grund eine Meldung (höchstens einmal je Minute), und der rote Punkt
+ * oben rechts bleibt stehen, bis wieder gespeichert wurde. Vorher meldete die App nur „Speicher voll", alle 5 Minuten,
+ * und jeden anderen Fehler gar nicht.
+ */
 function saveS() {
   try {
     // Feed/Water-Guss-Index-Cache verwerfen — der State ändert sich gleich.
@@ -6782,7 +6789,11 @@ function saveS() {
       // Gemessen: ein Zyklus ohne Kennung, und das nächste Speichern löschte alle 111 Tagebuch-Einträge.
       let _daten = 0, _passend = 0;
       Object.values(S.entries).forEach(e => { if (e?.cycleData) Object.keys(e.cycleData).forEach(id => { _daten++; if (cycleIds.has(id)) _passend++; }); });
-      const _aufraeumen = !S.cycles.some(c => !c.id) && !(_daten > 0 && _passend === 0);
+      // (v1.5.320) Und nie mehr als 10 Tagesdaten auf einmal: delCyc räumt die Daten eines gelöschten Zyklus selbst weg,
+      // hier bleiben nur Reste. Sind es mehr, ist das ein Schaden — dann lieber stehen lassen und vermerken.
+      const _verwaist = _daten - _passend;
+      if (_verwaist > 10) saveS._vorarbeitFehler = 'verwaiste Tagesdaten: ' + _verwaist;
+      const _aufraeumen = !S.cycles.some(c => !c.id) && !(_daten > 0 && _passend === 0) && _verwaist <= 10;
       if (_aufraeumen) Object.keys(S.entries).forEach(d => {
         const e = S.entries[d];
         if (e?.cycleData) {
@@ -6794,6 +6805,10 @@ function saveS() {
       pushUndo();
       saveS._lastUndo = now;
     }
+  } catch (e) {
+    saveS._vorarbeitFehler = (e && e.message) || String(e);
+  }
+  try {
     // (v1.5.288) Bei vollem Speicher macht der Hauptstand sich Platz, statt still zu scheitern.
     // (v1.5.290) Und er ist gesperrt, solange ein unbrauchbarer Stand nur dort liegt.
     const wie = _skSchreiben(JSON.stringify(S));
@@ -6823,21 +6838,25 @@ function saveS() {
       if (typeof _autoBackup === 'function') _autoBackup();
       _flashSaved();
     }
+    saveS._fehler = null;
+    if (!_speicherSperre) _speicherStatusRot(false);
     return true;
   } catch (e) {
     // (v1.5.290) Die Sperre meldet sich selbst — hier bleibt nur der rote Punkt, der stehen bleibt.
     if (e && e.name === 'SpeicherSperre') { if (!_neuladenAnsteht) _speicherStatusRot(true); return false; }
-    // Quota exceeded is the critical case we need to surface to the user
-    if (e && (e.name === 'QuotaExceededError' || e.code === 22)) {
-      // Rate-limit: only warn once per 5min (same throttle as maybeWarnStorageQuota)
-      const now = Date.now();
-      if (!saveS._lastQuotaErr || now - saveS._lastQuotaErr > 300000) {
-        saveS._lastQuotaErr = now;
-        toast('⚠ Speicher voll — Eintrag nicht gesichert! Lösche alte Fotos (Einstellungen → Daten & Sicherheit) und zieh dort ein Backup.');
-      }
+    const voll = !!(e && (e.name === 'QuotaExceededError' || e.code === 22));
+    saveS._fehler = voll ? 'voll' : ((e && (e.name || e.message)) || 'fehler');
+    _speicherStatusRot(true);
+    // Höchstens einmal je Minute — dazwischen steht der rote Punkt. Vorher alle 5 Minuten, und nur bei „voll".
+    const now = Date.now();
+    if (!saveS._lastQuotaErr || now - saveS._lastQuotaErr > 60000) {
+      saveS._lastQuotaErr = now;
+      toast(voll
+        ? '⚠ Speicher voll — deine letzte Änderung ist NICHT gespeichert. Zieh ein Backup (Einstellungen → Daten & Sicherheit) und lösche danach alte Fotos (Galerie, ×).'
+        : (typeof _speicherGesperrt !== 'undefined' && _speicherGesperrt
+          ? '⚠ Nicht gespeichert — der Browser lässt GrowSmart nicht an den Speicher, meist weil Website-Daten für diese Seite blockiert sind (manchmal auch in einem privaten Fenster). Erlaube Website-Daten oder öffne GrowSmart in einem normalen Fenster.'
+          : '⚠ Speichern fehlgeschlagen — deine letzte Änderung ist NICHT gespeichert. Zieh ein Backup (Einstellungen → Daten & Sicherheit) und öffne GrowSmart neu.'), 7000);
     }
-    // Other errors (DOMException in private mode, etc.) silently ignored —
-    // nothing sensible we can do, and we don't want to spam toasts.
     return false;
   }
 }
