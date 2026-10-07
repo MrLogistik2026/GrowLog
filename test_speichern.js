@@ -42,7 +42,7 @@ async function load(speicher, opts = {}) {
       // Fehler auf Zuruf: w.__kaputt = 'kaputt' lässt das Schreiben von growsmart_v4 mit einem Nicht-Quota-Fehler scheitern.
       const orig = w.Storage.prototype.setItem;
       w.Storage.prototype.setItem = function (k, v) {
-        if (k === SK && w.__kaputt) { const e = new Error(w.__kaputt); e.name = 'Error'; throw e; }
+        if (k === SK && w.__kaputt) { const e = new Error(w.__kaputt); e.name = w.__kaputt === 'voll' ? 'QuotaExceededError' : 'Error'; throw e; }
         return orig.call(this, k, v);
       };
       if (opts.gesperrt) {
@@ -126,6 +126,37 @@ function pruef(name, bedingung, info) {
     const n = await load({}, { warten: 1500 });
     pruef('B7 normaler leerer Speicher gilt nicht als gesperrt', n.E("typeof _speicherGesperrt === 'undefined' ? false : _speicherGesperrt") === false && !n.dialoge.some(x => /kann hier nichts speichern/.test(x)), n.dialoge);
     pruef('B8 keine JS-Fehler', n.errors.length === 0, n.errors[0]);
+  }
+
+  // ===== C: Rückgängig und Wiederherstellen melden einen Fehlschlag (v1.5.322) =====
+  console.log('\nC - ↩ und ↪, wenn das Speichern scheitert');
+  {
+    const c = await load({ [SK]: SICHERUNG });
+    const tag = c.E('Object.keys(S.entries).sort()[0]');
+    // Stand vor dem Löschen merken, dann löschen und speichern
+    c.E(`undoStack.length = 0; redoStack.length = 0; undoStack.push(JSON.stringify(S)); delete S.entries['${tag}']; _skSchreiben(JSON.stringify(S));`);
+    c.window.__kaputt = 'voll';
+    c.toasts.length = 0;
+    c.E('doUndo()');
+    pruef('C1 ↩ bei vollem Speicher: im Arbeitsspeicher zurück', c.E(`!!S.entries['${tag}']`));
+    pruef('C2 … und der Toast sagt „NICHT gespeichert" mit dem Grund', c.toasts.some(t => /Rückgängig gemacht, aber NICHT gespeichert/.test(t) && /Speicher ist voll/.test(t)), c.toasts);
+    pruef('C3 … keine Erfolgsmeldung „↩ Rückgängig (…)"', !c.toasts.some(t => /^↩ Rückgängig \(/.test(t)), c.toasts);
+    pruef('C4 … und der rote Punkt steht', c.rot());
+    c.window.__kaputt = 'kaputt';
+    c.toasts.length = 0;
+    c.E('doRedo()');
+    pruef('C5 ↪ bei anderem Schreibfehler: Toast „Wiederhergestellt, aber NICHT gespeichert"', c.toasts.some(t => /Wiederhergestellt, aber NICHT gespeichert/.test(t)) && !c.toasts.some(t => /^↪ Wiederhergestellt \(/.test(t)), c.toasts);
+    c.window.__kaputt = null;
+    c.toasts.length = 0;
+    c.E('doUndo()');
+    pruef('C6 klappt das Schreiben wieder: Erfolgsmeldung, Punkt aus, Eintrag gespeichert',
+      c.toasts.some(t => /^↩ Rückgängig \(/.test(t)) && !c.rot() && !!JSON.parse(c.get(SK)).entries[tag], c.toasts);
+    // Nach einem Import lädt die App gleich neu: ↩ darf dann nichts ändern
+    c.E(`undoStack.push(JSON.stringify(S)); S.entries['2026-09-30'] = { note: 'vor dem Neuladen' }; _neuladenAnsteht = true;`);
+    c.toasts.length = 0;
+    c.E('doUndo()');
+    pruef('C7 ↩ im Neulade-Fenster ändert nichts und sagt warum', c.E(`!!S.entries['2026-09-30']`) && c.toasts.some(t => /lädt gleich neu/.test(t)), c.toasts);
+    pruef('C8 keine JS-Fehler', c.errors.length === 0, c.errors[0]);
   }
 
   console.log('\n' + ok + ' OK, ' + fail + ' FEHL');

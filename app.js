@@ -3593,7 +3593,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.321';
+const APP_VERSION = 'v1.5.322';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -7882,8 +7882,38 @@ function pushUndo() {
   } catch (e) {}
 }
 
+/**
+ * (v1.5.322) Schreibt den Stand nach ↩/↪ und sagt, ob es geklappt hat. Vorher kam „↩ Rückgängig (n übrig)" in jedem
+ * Fall: Bei vollem Speicher gibt _hauptstandSchreiben nur false zurück, und das prüfte niemand; die Warnung bei
+ * anderen Fehlern überschrieb die Erfolgsmeldung in derselben Millisekunde. Beim nächsten Öffnen war der vorige Stand
+ * wieder da. Rückgabe true = gespeichert.
+ */
+function _undoSchreiben(aktion) {
+  let wie;
+  try { wie = _skSchreiben(JSON.stringify(S)); }
+  catch (e) {
+    if (e && e.name === 'SpeicherSperre') { _speicherStatusRot(true); return false; }   // die Sperre nennt ihren Grund selbst
+    wie = (e && (e.name === 'QuotaExceededError' || e.code === 22)) ? false : 'fehler';
+  }
+  if (wie === 'ok' || wie === 'ok-befreit') {
+    if (wie === 'ok-befreit') { _autoBackup._fehler = 'voll'; _autoBackup._fehlerAm = Date.now(); }
+    saveS._fehler = null;
+    if (!_speicherSperre) _speicherStatusRot(false);
+    _flashSaved();
+    return true;
+  }
+  _speicherStatusRot(true);
+  const grund = wie === false ? 'Der Speicher ist voll. Zieh ein Backup (Einstellungen → Daten & Sicherheit) und lösche danach alte Fotos (Galerie, ×).'
+    : _speicherGesperrt ? 'Der Browser lässt GrowSmart nicht an den Speicher. Erlaube Website-Daten für diese Seite oder öffne GrowSmart in einem normalen Fenster.'
+    : 'Zieh ein Backup (Einstellungen → Daten & Sicherheit) und öffne GrowSmart neu.';
+  toast(`⚠ ${aktion}, aber NICHT gespeichert — beim nächsten Öffnen ist der vorige Stand wieder da. ${grund}`, 7000);
+  return false;
+}
+
 /** Rückgängig – Pop last state, push current to redo */
 function doUndo() {
+  // (v1.5.322) Nach einem Import lädt die App gleich neu; ein ↩ in diesem Moment änderte nur den Arbeitsspeicher.
+  if (_neuladenAnsteht) { toast('↩ Geht gerade nicht — GrowSmart lädt gleich neu, um das Backup zu übernehmen.'); return; }
   if (undoStack.length === 0) {
     toast('↩ Nichts zum Rückgängig machen');
     return;
@@ -7903,15 +7933,16 @@ function doUndo() {
       if (!c.skippedDays) c.skippedDays = [];
       delete c.dayOffset; delete c.offsetDate;
     });
-    try { _skSchreiben(JSON.stringify(S)); } catch (e2) { if (e2 && e2.name !== 'SpeicherSperre') toast('⚠ Rückgängig gemacht, gespeichert wurde es nicht — der Speicher ist voll.'); }
+    const gesichert = _undoSchreiben('Rückgängig gemacht');
     vibrate();
-    toast(`↩ Rückgängig (${undoStack.length} übrig)`);
+    if (gesichert) toast(`↩ Rückgängig (${undoStack.length} übrig)`);
     _rerender();
   } catch (e) { toast('⚠ Rückgängig fehlgeschlagen — App schließen und neu öffnen, dann erneut versuchen.', 4500); }
 }
 
 /** Wiederherstellen – Pop from redo, push current to undo */
 function doRedo() {
+  if (_neuladenAnsteht) { toast('↪ Geht gerade nicht — GrowSmart lädt gleich neu, um das Backup zu übernehmen.'); return; }
   if (redoStack.length === 0) {
     toast('↪ Nichts zum Wiederherstellen');
     return;
@@ -7930,9 +7961,9 @@ function doRedo() {
       if (!c.skippedDays) c.skippedDays = [];
       delete c.dayOffset; delete c.offsetDate;
     });
-    try { _skSchreiben(JSON.stringify(S)); } catch (e2) { if (e2 && e2.name !== 'SpeicherSperre') toast('⚠ Wiederhergestellt, gespeichert wurde es nicht — der Speicher ist voll.'); }
+    const gesichert = _undoSchreiben('Wiederhergestellt');
     vibrate();
-    toast(`↪ Wiederhergestellt (${redoStack.length} übrig)`);
+    if (gesichert) toast(`↪ Wiederhergestellt (${redoStack.length} übrig)`);
     _rerender();
   } catch (e) { toast('⚠ Wiederherstellen fehlgeschlagen — App schließen und neu öffnen, dann erneut versuchen.', 4500); }
 }

@@ -2,6 +2,21 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-07 — v1.5.322
+
+- **↩ und ↪ meldeten Erfolg, auch wenn nichts gespeichert wurde** (Hebel 3, Punkt 7). Bei vollem Speicher gibt
+  `_hauptstandSchreiben` nur `false` zurück — das prüfte niemand, und es kam „↩ Rückgängig (n übrig)". Bei jedem anderen
+  Schreibfehler stand die Warnung „der Speicher ist voll" da (auch wenn er es nicht war) und wurde in derselben
+  Millisekunde von der Erfolgsmeldung überschrieben. Beim nächsten Öffnen war der vorige Stand wieder da.
+- **Jetzt** schreibt `_undoSchreiben` den Stand und entscheidet über die Meldung: Erfolg wie bisher, sonst „Rückgängig
+  gemacht, aber NICHT gespeichert — beim nächsten Öffnen ist der vorige Stand wieder da" mit dem echten Grund (voll,
+  Browser-Speicher gesperrt oder anderer Fehler) und dem nächsten Schritt; der rote Punkt bleibt stehen.
+- **Mitgenommen (Lücke aus dem Skeptiker-Bericht zu v1.5.297):** Ein ↩ in der knappen Sekunde nach einem Import, bevor
+  die App neu lädt, änderte nur den Arbeitsspeicher. Jetzt sagt es „Geht gerade nicht — GrowSmart lädt gleich neu" und
+  lässt alles, wie es ist.
+- Test: `test_speichern.js` Abschnitt C (8 Prüfungen, beide Zeitzonen; 5 fallen auf v1.5.321 um).
+
+
 ## 2026-10-07 — v1.5.321
 
 - **Ein gesperrter Browser-Speicher sah aus wie ein neuer Nutzer** (Hebel 3, Punkt 7). Blockiert der Browser die
