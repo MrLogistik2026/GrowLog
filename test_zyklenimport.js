@@ -267,6 +267,27 @@ process.on('unhandledRejection', (e) => { console.log('  (nicht abgefangen: ' + 
     pruef('P7 keine JS-Fehler', a.errors.length === 0 && b.errors.length === 0 && c.errors.length === 0, a.errors[0] || b.errors[0] || c.errors[0]);
   }
 
+  console.log('\nV - Mehrere Vorlagen in einer Datei (v1.5.345)');
+  {
+    const a = await load();
+    const keys = JSON.parse(a.E("JSON.stringify(Object.keys(FERT_PRESETS).filter(k => _vorlageWaehlbar(k) && FERT_PRESETS[k].medium === 'erde' && !S.fertPlans.some(p => p.presetKey === k)).slice(0, 4))"));
+    const p = { _type: 'growsmart_zyklen', paketId: 'vier', zyklen: keys.map((k, i) => Object.assign(zyklus('V' + i, '2026-09-20', 1), { fertPreset: k })) };
+    a.E("window.__dn = Date.now; Date.now = () => 1791000000000");   // alle in derselben Millisekunde
+    const r = await a.laden(p);
+    a.E('Date.now = window.__dn');
+    const ok4 = JSON.parse(a.E(`JSON.stringify(${JSON.stringify(keys)}.map((k, i) => { const c = S.cycles.find(x => x.name === 'V' + i); const pl = S.fertPlans.find(x => x.id === c.fertPlanId); return pl && pl.presetKey === k; }))`));
+    pruef(`V1 ${keys.length} Vorlagen in derselben Millisekunde: jeder Zyklus am Plan seiner Vorlage`, r === true && keys.length === 4 && ok4.every(Boolean), { keys, ok4 });
+    pruef('V2 alle Plan-Kennungen und Produkt-Kennungen verschieden', a.E('new Set(S.fertPlans.map(p => p.id)).size === S.fertPlans.length')
+      && a.E('(() => { const ids = S.fertPlans.flatMap(p => (p.products || []).map(x => x.id)); return new Set(ids).size === ids.length; })()'));
+    // Nach dem Speichern wirft nur das Zeichnen: keine Meldung „unverändert"
+    const b = await load();
+    b.E("window.__goTo = goTo; goTo = () => { throw new Error('Zeichenfehler'); }");
+    b.toasts.length = 0;
+    const rb = await b.laden(PAKET);
+    b.E('goTo = window.__goTo');
+    pruef('V3 scheitert nur das Zeichnen nach dem Speichern: Erfolg gemeldet, gespeichert', rb === true && !b.toasts.some(t => /unverändert/.test(t)) && JSON.parse(b.w.localStorage.getItem(SK)).cycles.some(c => c.name === 'Gruppe A'), b.toasts);
+  }
+
   console.log('\nI - Der Knopf „Import" erkennt die Zyklus-Datei');
   {
     const a = await load();

@@ -2,6 +2,21 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-07 — v1.5.345
+
+- **Zwei Pläne konnten dieselbe Kennung bekommen** (Gegenprüfung vor dem Hochladen, mittel; ein Rückschritt aus v1.5.341).
+  `_planFuerVorlage` nahm `'fp_' + Date.now()` als Kennung. Solange der Import nach jedem Zyklus speicherte, lag dazwischen
+  genug Zeit; seit er still anlegt, entstanden Pläne in derselben Millisekunde. Mit vier verschiedenen Vorlagen in einer
+  Datei hing gemessen in 8 von 15 Läufen ein Zyklus am Plan einer anderen Vorlage. Run 02 war nicht betroffen (beide Gruppen
+  Rainbow).
+- **Jetzt** zählt die Kennung wie bei Zyklen (v1.5.336) weiter, bis sie frei ist; die Produkt-Kennungen leiten sich davon ab.
+- **Mitgenommen (leicht):** Scheiterte nach dem erfolgreichen Speichern nur das Zeichnen der Startseite, meldete der
+  Import-Knopf „lässt sich nicht laden … unverändert", obwohl die Zyklen gespeichert waren. Das Zeichnen ist jetzt eigens
+  abgefangen.
+- Test: `test_zyklenimport.js` Abschnitt V (3 Prüfungen, beide Zeitzonen; fällt auf v1.5.344 um). Alle Plan- und
+  Vorlagen-Tests in beiden Zeitzonen grün.
+
+
 ## 2026-10-07 — v1.5.344
 
 - **Der Rettungs-Download räumte jedes Band ab** (Prüfer vor dem Hochladen, leicht). Wer den aufgehobenen alten Stand

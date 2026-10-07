@@ -4594,7 +4594,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.344';
+const APP_VERSION = 'v1.5.345';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -26449,8 +26449,13 @@ function _planFuerVorlage(key, opts) {
   const existing = (S.fertPlans || []).find(p => p.presetKey === key);
   if (existing && !(opts && opts.neu)) return existing.id;   // (v1.5.342) neu: eine frische Kopie, auch wenn schon eine da ist
   if (!S.fertPlans) S.fertPlans = [];
-  const newId = 'fp_' + Date.now();
-  const products = pr.products.map((p, i) => ({ id: 'p' + Date.now() + '_' + i, ...p }));
+  // (v1.5.345) Eindeutige Kennung wie bei Zyklen (_neueZyklusId). Seit der Import still anlegt (v1.5.341), entstanden zwei
+  // Pläne oft in derselben Millisekunde und bekamen dieselbe Kennung — ein Zyklus hing dann am Plan einer anderen Vorlage
+  // (Prüfer, 07.10.2026: 8 von 15 Läufen bei vier Vorlagen in einer Datei).
+  let n = Date.now();
+  while (S.fertPlans.some(p => p && p.id === 'fp_' + n)) n++;
+  const newId = 'fp_' + n;
+  const products = pr.products.map((p, i) => ({ id: 'p' + n + '_' + i, ...p }));
   const schedule = {};
   Object.entries(pr.schedule || {}).forEach(([w, doses]) => {
     const mapped = {};
@@ -26671,7 +26676,8 @@ async function _zyklenPaketLaden(d) {
     return false;
   }
   vibrate();
-  if (typeof goTo === 'function') goTo('dash');
+  // (v1.5.345) Ab hier ist gespeichert — scheitert nur das Zeichnen, darf die Meldung nicht „unverändert" sagen.
+  try { if (typeof goTo === 'function') goTo('dash'); } catch (e) { /* die Zyklen sind gespeichert; das Bild kommt beim nächsten Wechsel */ }
   // (v1.5.341) Gleich danach meldet die Startseite die leeren Tage seit dem Keimstart als verpasst — das ist richtig, die
   // Datei enthält bewusst keine Messwerte. Der Satz sagt vorher, was zu tun ist.
   toast(`🌱 ${angelegt.length} ${angelegt.length === 1 ? 'Zyklus' : 'Zyklen'} angelegt: ${angelegt.map(c => c.name).join(', ')}. Die Tage seit dem Keimstart sind noch leer — trag nach, was du gegossen und gemessen hast (Kalender → Tag antippen).`, 8000);

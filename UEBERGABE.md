@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.344** · index.html 2,56 MB · 781 Funktionen
+Stand: **v1.5.345** · index.html 2,56 MB · 781 Funktionen
 Zuletzt fortgeschrieben am 07.10.2026 (Nachtprüfung und Run 02 — Abschnitt 0o, „Stand Run 02"). Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
@@ -287,6 +287,7 @@ Speicher-Befunde sind in v1.5.340–344 behoben. Rohdaten: Workflow wf_63d754b1-
 - Speicher, leicht: rettung.html bietet „Daten anzeigen" nur beim Hauptstand (SK-5); wiederherstellung.html überschreibt
   den Rückweg beim zweiten Einspielen, „Zurückholen" ohne Ablage des aktuellen Stands, Quota-Fehler roh (SK-6, wie in 319);
   aus Runde 2: Fremd-Band verdrängt das Sperr-Band, `_fremdMelden` verdrängt einen offenen Dialog, ~24 „✓"-Toasts prüfen saveS nicht.
+- v1.5.345: Neue Pläne bekommen eine eindeutige Kennung (mehrere Vorlagen in einer Zyklus-Datei hingen sonst am falschen Plan); scheitert nach dem Speichern nur das Zeichnen, meldet der Import Erfolg.
 
 **Bei der nächsten Bewertung** dieselbe Skala, dieselben Kategorie-IDs und dieselben Regeln aus `auftrag.md` nehmen und
 die Noten gegen diese Tabelle stellen.
