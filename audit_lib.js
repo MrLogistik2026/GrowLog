@@ -12,6 +12,9 @@ async function boot(debugDate, extra) {
   await new Promise(r => setTimeout(r, 40));
   ev(`
     const _plan = S.fertPlans[0];
+    // (v1.5.368) Eine schon benutzte App: Das Sämlings-Protokoll (einmal je Installation, 800 ms nach dem Anlegen) bliebe sonst
+    // offen, und seit Dialoge warten statt sich zu verdrängen, ginge die nächste Antwort eines Tests an das Protokoll.
+    S._seedlingProtocolShown = true;
     const c = addCyc({ name:'Amnesia XXL', seedType:'auto', strain:'Sensi Amnesia XXL Auto', medium:'erde' });
     c.fertPlanId = _plan ? _plan.id : null;
     c.startDate = isoPlus(todayISO(), -84);

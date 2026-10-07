@@ -2,6 +2,161 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-07 — v1.5.377
+
+- **Die Meldungen zu einer unsicheren Datei waren schwer zu lesen** (Gegenprüfung v1.5.364, Skeptiker). Der Import setzte den
+  Grund in „In einer … stehen Zeichen" ein — sechs der vierzehn Gründe ergaben Sätze wie „In einer Datum eines Zyklus". Das Wort
+  „Programmcode" ist für Einsteiger ein Fachwort, und es fehlte, was zu tun ist, wenn es das eigene Backup war.
+  wiederherstellung.html schrieb nur „(unsicher)".
+- **Jetzt:** „Diese Datei wird nicht geladen: In der Kennung eines Zyklus stehen Zeichen, die GrowSmart dort nie schreibt. Die
+  Datei wurde verändert oder stammt nicht aus GrowSmart — über solche Felder könnten fremde Befehle in die App kommen. Ist es
+  dein eigenes Backup, nimm das jüngste, das du selbst heruntergeladen hast. Dein Stand bleibt unverändert." Alle Gründe sind
+  ganze Satzteile, die Wiederherstellungs-Seite nennt ihren in einem Satz.
+- Test: `test_eingangstore.js` C1 und H3.
+
+
+## 2026-10-07 — v1.5.376
+
+- **Die Dünger-Zeile der Startseite nannte Tropfen als „ml" und rechnete feste Mengen wie Liter-Dosen** (Gegenprüfung v1.5.365,
+  Skeptiker, nachgestellt). Seit v1.5.359 stand die Einheit fest auf „ml" (außer Gramm): Hesi SuperVit (Tropfen je Liter) hieß
+  „11,6 ml" statt 11,6 Tropfen — rund zwanzigfach gelesen, und Überdüngung ist einer der tödlichen Fehler (`ANBAU.md` 13.2).
+  Seit v1.5.365 rechnete die Zeile unter einem Liter für 1 L — auch für feste Mengen je Guss: „für 1 L anmischen (heute brauchst
+  du davon 0,2 L): Root·Juice 5 ml" hätte nur ein Fünftel der Menge gegeben. Und weil die Umstellung unter jedem Liter galt,
+  nannte die Startseite andere Mengen als die Mischliste im Eintrag desselben Tages (4 statt 2 ml).
+- **Jetzt** trägt jede Menge die Einheit des Produkts (`displayUnit`: ml, g, Tr). Auf 1 L umgerechnet wird nur, wo eine Menge
+  sonst nicht abmessbar wäre (unter 0,2 ml bzw. g oder unter einem Tropfen) und alle Mengen je Liter gelten — dann mit „den Rest
+  nicht aufheben" (`ANBAU.md` 10: nicht auf Vorrat mischen). Sonst dieselbe Menge wie im Eintrag, eine winzige als „0,04 ml"
+  statt einer Null.
+- Test: `test_runzwei.js` M (5 Prüfungen; alle fallen auf v1.5.375 um).
+
+
+## 2026-10-07 — v1.5.375
+
+- **Eine unsichere Tageskopie konnte den sauberen Hauptstand zerstören** (Gegenprüfung von v1.5.364, Skeptiker, nachgestellt;
+  schlechter als vorher). Das Tor aus v1.5.364 saß nur am Start: Die Einstellungen boten eine Kopie mit präparierten Kennungen
+  weiter zum Laden an, das Laden schrieb sie in den Hauptstand — und beim Neustart lehnte das Tor sie ab. Der gute Stand war
+  dann nirgends mehr. Dazu konnte eine solche Kopie beim Nachrücken die saubere zweite Generation verdrängen. Vorbedingung: eine
+  früher importierte präparierte Datei.
+- **Jetzt** gilt eine Kopie mit Kennungen oder Daten, die GrowSmart nie schreibt, als nicht vorhanden (`_kopieLesen`): nicht
+  angeboten, nicht geladen, nicht nachgerückt, beim nächsten Speichern durch eine saubere ersetzt. Der Start-Hinweis nennt den
+  Grund in einem Satz statt „(unsicher)".
+- Test: `test_eingangstore.js` Abschnitt I (3 Prüfungen; 2 fallen auf v1.5.374 um).
+
+
+## 2026-10-07 — v1.5.374
+
+- **Ein EC weit über dem Ziel der Plan-Woche blieb im Eintrag stumm** (Nachtprüfung 07.10., Punkt 3), solange er unter der
+  allgemeinen Obergrenze des Substrats lag: Blüte-Woche 9 mit EC 2,4 bei einem Ziel von 1,1–1,25, im Sämling alles bis 1,2.
+  Überdüngung gehört zu den Fehlern, die Pflanzen töten (`ANBAU.md` 13.2).
+- **Jetzt** warnt der Eintrag ab einem Drittel über dem Ziel der Plan-Woche („deutlich über dem Ziel dieser Plan-Woche
+  (1,1–1,25 mS/cm)") und nennt die ersten Ursachen: die Menge in der Kanne und den Eigen-EC des Leitungswassers (`ANBAU.md` 3),
+  dazu den Drain-EC als Bestätigung. Das Drittel ist eine Konvention wie die Korridore selbst. Knapp darüber bleibt still,
+  und neben dem Sämlings-Notfall (ab 1,2) steht keine zweite Warnung.
+- Test: `test_runzwei.js` N3 (5 Prüfungen; 2 fallen auf v1.5.373 um).
+
+
+## 2026-10-07 — v1.5.373
+
+- **Bei zu hohem EC im Sämling hieß es „SOFORT mit klarem Wasser (pH 6.4) spülen"** (Nachtprüfung 07.10., Punkt 8), und ein
+  pH-Notfall riet auch im Sämlingstopf „nachgießen, bis unten 15–20 % herauslaufen". Ein Sämlingstopf voller Wasser ohne
+  aufnehmende Wurzeln ist genau die Bedingung, unter der Pythium keimende Pflanzen befällt (`ANBAU.md` 13.1, 16) — der Rat
+  hätte den einen Schaden durch den anderen ersetzt. Dazu ist 6,4 nur der Erd-Wert.
+- **Jetzt:** Noch nicht gegossen → mit klarem Wasser verdünnen, bis der EC unter 0,8 liegt. Schon gegossen → nicht
+  durchspülen, der nächste Guss nur mit klarem Wasser (pH aus dem Substrat). Zuerst die Messung prüfen (Kalibrierung, EC des
+  Leitungswassers). Beim pH-Notfall gilt vor dem ersten Durchgießen (`_drainMoeglich`) „nicht nachspülen", danach wie bisher.
+- Test: `test_runzwei.js` N8 (3 Prüfungen; 2 fallen auf v1.5.372 um).
+
+
+## 2026-10-07 — v1.5.372
+
+- **Die Gießanleitung im Anzucht-Eintrag sagte „① Vollsättigung: gießen, bis 15–20 % unten ablaufen" und „Drain bei jedem Guss"**
+  (Run-02-Prüfung, F06) — auch an Tag 10, an dem die App selbst noch kein Ablauf-Feld zeigt, weil vor Tag 25 kein Ablauf
+  entstehen kann (`_drainMoeglich`, v1.5.167). Ein Anfänger hätte den Sämlingstopf durchgegossen, bis unten Wasser kommt —
+  genau die nasse Erde ohne aufnehmende Wurzel, unter der Pythium keimende Pflanzen befällt (`ANBAU.md` 16, 13.1).
+- **Jetzt** steht vor dem ersten Durchgießen „① Noch nicht durchgießen: … Gieß an den Gießtagen der App ihre Menge im Ring um
+  den Stamm — unten läuft noch nichts ab, und das ist richtig. Ab Tag 25 wird durchgegossen". Gießpunkt und Sweet Spot tragen
+  „Ab Tag 25", Drain-Zeile und „Drain: 15–20 %" im Zielkasten entfallen bis dahin. Dieselben Sätze wie im Sämlings-Protokoll.
+- Test: `test_runzwei.js` F06 (3 Prüfungen; 2 fallen auf v1.5.371 um).
+
+
+## 2026-10-07 — v1.5.371
+
+- **Der Meilenstein zum Blühbeginn sagte „Ab jetzt kein Stickstoff mehr hochdrehen"** (Run-02-Prüfung, F03) — in Blütewoche 1,
+  während der Rainbow-Plan Bio·Grow gerade anhebt. Nach `ANBAU.md` 5 ist ein verfrühter Stickstoff-Stopp der teurere Fehler: Die
+  Pflanze baut bis zuletzt Blütenmasse auf und braucht dafür Stickstoff; im Stretch ist der Bedarf hoch.
+- **Jetzt:** „In den nächsten 2–3 Wochen streckt sich die Pflanze noch und braucht viel — weiter nach Plan düngen. Stickstoff
+  nimmt der Plan erst gegen Ende zurück."
+- Test: `test_runzwei.js` F03.
+
+
+## 2026-10-07 — v1.5.370
+
+- **Bei Automatics bot die App das Toppen bis Blütewoche 3 an** (Run-02-Prüfung, F01) — Knopf „Jetzt Toppen" im Eintrag, „noch
+  im Rahmen" in der Trainings-Auswahl, „Zeit fürs Topping" am Tag 21. Daneben sagten der eigene Hinweis „bei Automatics nur jetzt"
+  (in der Wachstumsphase) und das Lexikon „Nicht bei Automatics". Nach `ANBAU.md` 9 blühen Automatics nach Kalender und holen die
+  Tage, die ein Schnitt kostet, nicht wieder auf.
+- **Jetzt** endet das Fenster bei Automatics mit dem Blühbeginn: kein Knopf mehr, der Hinweis „nicht mehr empfohlen" steht ab
+  dem ersten Blütetag (vorher ab Woche 4) und nennt LST als Weg, der noch geht; Topping und FIM stehen in der Trainings-Auswahl
+  unter „vorbei", LST bleibt. Der Meilenstein am Tag 21 unterscheidet Automatics. Photoperiodische Sorten bleiben, wie sie waren.
+- Test: `test_runzwei.js` F01 (8 Prüfungen); Patricks sieben Trainings aus Run 01 gelten weiter als passend (`test_training.js`).
+
+
+## 2026-10-07 — v1.5.369
+
+- **Ein EC im Korridor der Plan-Woche hieß „EC unter 0.8 — Dosis leicht erhöhen"** (Run-02-Prüfung, F04). Die Untergrenze war
+  fest 0,8 mS/cm. Der Rainbow-Plan setzt in Plan-Woche 3–6 einen Korridor von 0,6–0,8 — in der frühen Blüte von Run 02 hätte die
+  App also bei jeder Messung zu mehr Dünger geraten, gegen den eigenen Plan. Dazu ist „mehr düngen" bei organischem Dünger oft
+  falsch: EC zählt nur geladene Teilchen, organische Nährstoffe zeigt er nur zum Teil (`ANBAU.md` 5).
+- **Jetzt** gilt die Untergrenze der Plan-Woche (`getEcTarget`, dieselbe Spanne wie „EC im Ziel" im Eintrag), 0,8 nur ohne
+  Ziel. Darunter heißt der Hinweis „unter dem Ziel dieser Plan-Woche (0,65–0,8 mS/cm)", fragt, ob alles aus dem Plan in der
+  Kanne war, und sagt, dass mehr als die Plan-Dosis nicht nötig ist.
+- Test: neu `test_runzwei.js` F04 (8 Prüfungen; 6 fallen auf v1.5.368 um).
+
+
+## 2026-10-07 — v1.5.368
+
+- **Ein zweiter Dialog verdrängte den offenen** (gefunden beim Nachmessen, warum `test_dialog_und_namen.js` unter Last rot
+  war: 3 von 4 Läufen). Das „🌱 Sämlings-Protokoll" erscheint 800 ms nach dem Anlegen eines Zyklus. Stand in dem Moment schon
+  eine Rückfrage offen, nahm es deren Platz ein: Text und Antwort gingen an das Protokoll, und der Ablauf, der auf die erste
+  Rückfrage wartete, wartete für immer. Dasselbe galt für den Hinweis „anderes Fenster" über einem offenen Dialog — in der
+  Übergabe stand das seit der Prüfrunde vom 07.10. vormittags offen.
+- **Jetzt** wartet ein zweiter Dialog, bis der erste beantwortet ist, und erscheint dann (`_modalWarten`). Ein Dialog, der
+  auf diese Weise beantwortet wird, gibt den Platz von selbst frei.
+- Test: `test_dialog_und_namen.js` Abschnitt e (4 Prüfungen; auf v1.5.366 hängt der erste Dialog). Der Test legt seinen
+  Zyklus jetzt ohne das Protokoll an — der Dialog ist nicht sein Gegenstand —, und jede Abweichung steht als eigene FEHL-Zeile.
+- **Tests, die Rückfragen offen ließen, beantworten sie jetzt:** `audit_lib.js` stellt eine schon benutzte App nach (Sämlings-
+  Protokoll gilt als gezeigt), `test_endspurt.js` beantwortet „Rückwirkend setzen?" mit Abbrechen und prüft, dass dabei nichts
+  geändert wird. Vorher wurde die offene Rückfrage vom nächsten Dialog verdrängt — der Test hing an genau dem Fehler, den diese
+  Version behebt.
+
+
+## 2026-10-07 — v1.5.367
+
+- **wiederherstellung.html setzte Name und Startdatum der eingefügten Sicherung ungemaskt in die Seite** (Sicherheitsprüfung
+  07.10.2026). Die Seite liegt auf derselben Adresse wie die App, also am selben Speicher — ein Zyklusname mit eingeschleustem
+  Element lief dort, bevor die App ihn je sah.
+- **Jetzt** maskiert die Seite beides (`esc`), beim gespeicherten wie beim eingefügten Stand.
+- Test: `test_eingangstore.js` Abschnitt H (2 Prüfungen; mit der alten Seite über `GS_WIEDER` rot).
+
+
+## 2026-10-07 — v1.5.366
+
+- **Namen und Plan-Texte konnten aus der Seite ausbrechen** (Sicherheitsprüfung vom 07.10.2026, offener Punkt 1–3). Zyklusname
+  (40 Stellen), Pflanzenname und -sorte, Standort, Produktname und -notiz, Plan-Name, Misch- und Ablauf-Info, Wochen-Tipps und
+  eigene Vorlagen stehen ungemaskt im Seitenaufbau, in Attributen und teils in Knopf-Befehlen, auch im Bericht- und
+  Kollage-Fenster. Gemessen an v1.5.365 mit präparierter Sicherung: 1842 eingeschleuste Elemente.
+- **Jetzt** werden in diesen Freitexten die wenigen Zeichen, mit denen ein Text ausbricht, typografisch umgesetzt
+  (`_freitextSauber`): Apostroph → ’, gerades Anführungszeichen → ”, spitze Klammern → ‹ ›, Backslash → ∖, ein & vor einer
+  HTML-Schreibweise (wie &#39;) → ＆. Das geschieht beim Start, bei jedem Speichern (also auch für Getipptes) und beim
+  Zyklus-Datei-Import. Ein Mechanismus statt rund 200 Masken — und neue Anzeigen sind ohne eigene Maske sicher.
+- **Was man sieht:** „Patrick's Grow" heißt danach „Patrick’s Grow" — das ist die richtige Schreibweise. Ein „&" zwischen
+  Wörtern („Calcium & Magnesium") bleibt. Tagebuch-Notizen bleiben unverändert; sie werden schon bei der Ausgabe maskiert.
+- Dazu tragen sechs Vorlagentexte (Plagron, CANNA, Hesi, BioBizz konservativ, CANNA Coco, GHE) das typografische
+  Schlusszeichen „…“ statt eines geraden — sonst wiche jede gespeicherte Kopie nach dem ersten Speichern von ihrer Vorlage ab.
+- Test: `test_eingangstore.js` Abschnitt G (8 Prüfungen; auf v1.5.365 kommen 1842 Elemente durch); `test_duengeplantexte.js`
+  kennt das typografische Schlusszeichen, `test_zyklenimport.js` den umgesetzten Namen („Gruppe ”A” & B · 1").
+
+
 ## 2026-10-07 — v1.5.365
 
 - **Die Dünger-Zeile der Startseite zeigte bei Sämlingen „für 0 L: CalMag 0 ml"** (seit v1.5.359, gefunden im Gesamtlauf).

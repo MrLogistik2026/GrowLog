@@ -7,6 +7,9 @@
 //   D  Start mit vergifteter Kennung im Speicher: der Stand kommt nicht in die Oberfläche (kein eingeschleustes Element).
 //   E  Start mit vergifteten Werten (Topfgröße im Knopf-Befehl, Substrat, Messwerte, Foto): entfernt, gemeldet, nichts eingeschleust.
 //   F  Eigene Vorlage aus der Zwischenablage: vergiftete Produkt-Kennung abgelehnt, Farbe gereinigt.
+//   G  (v1.5.366) Freitexte — Namen, Standort, Sorte, Pflanzen, Produkte, Pläne — typografisch umgesetzt, nichts eingeschleust.
+//   H  (v1.5.367) wiederherstellung.html zeigt Name und Start der Sicherung maskiert.
+//   I  (v1.5.375) Eine unsichere Tageskopie wird nicht angeboten, nicht geladen und beim nächsten Speichern ersetzt.
 //
 // GS_INDEX=<anderer Build> lässt den Test gegen einen alten Stand laufen; dort muss er umfallen.
 const fs = require('fs');
@@ -14,7 +17,7 @@ const path = require('path');
 const { JSDOM, VirtualConsole } = require('jsdom');
 const HTML = fs.readFileSync(process.env.GS_INDEX || path.join(__dirname, 'index.html'), 'utf8');
 const SICHERUNG = fs.readFileSync(path.join(__dirname, 'growsmart-sicherung-2026-09-04.txt'), 'utf8');
-const WIEDER = fs.readFileSync(path.join(__dirname, 'wiederherstellung.html'), 'utf8');
+const WIEDER = fs.readFileSync(process.env.GS_WIEDER || path.join(__dirname, 'wiederherstellung.html'), 'utf8');   // GS_WIEDER: alte Seite
 
 function fakeCtx() {
   const noop = () => {};
@@ -39,6 +42,9 @@ async function starte(speicher) {
       w.navigator.vibrate = () => true; w.scrollTo = () => {}; w.HTMLElement.prototype.scrollIntoView = function () {};
       w.alert = () => {}; w.print = () => {};
       w.__pwn = 0;
+      // Bericht- und Kollage-Fenster (window.open + document.write) mitschreiben
+      w.__gedruckt = [];
+      w.open = () => ({ document: { write: (h) => { w.__gedruckt.push(String(h)); }, close() {}, open() {} }, focus() {}, print() {}, close() {} });
       if (speicher) w.localStorage.setItem('growsmart_v4', speicher);
     },
   });
@@ -58,7 +64,11 @@ const GIFT_JS = "x');__pwn++;//";
 async function eingeschleust(a) {
   const tage = a.E(`(S.cycles[0] && S.cycles[0].startDate) ? [1, 30, 60, 90, 104, 110].map(n => isoPlus(S.cycles[0].startDate, n - 1)) : [todayISO()]`);
   const schritte = [`goTo('dash')`, `goTo('cal')`, `goTo('tips')`, `goTo('set')`, `openDuenger && openDuenger()`, `openGussplan && openGussplan()`,
-    `openGallery && openGallery()`, ...tage.map(t => `setDebugDate('${t}'); openEntry('${t}')`)];
+    `openGallery && openGallery()`, `openLexikon()`, `S._lexActiveCat = '\ud83e\uddf4 Meine Produkte'; renderLexikon(); S._lexActiveCat = null`,
+    `openDuenger(); S._planEdit = true; S._planAlleWochen = true; renderDuenger(); S._planEdit = false`,
+    `S.cycles[1] && openCycleCompare(S.cycles[0].id, S.cycles[1].id)`, `openPlantSheet(S.cycles[0].id, todayISO())`,
+    `goTo('tips'); _onTipsSearchInput('a')`, `exportReportPDF(S.cycles[0].id)`, `exportCollage(S.cycles[0].id)`,
+    ...tage.map(t => `setDebugDate('${t}'); openEntry('${t}')`)];
   let dom = 0;
   for (const s of schritte) {
     try { a.E(s); } catch (e) { /* ein Bildschirm, der nicht aufgeht, schleust auch nichts ein */ }
@@ -70,6 +80,7 @@ async function eingeschleust(a) {
     });
   }
   try { a.E(`setDebugDate('')`); } catch (e) {}
+  for (const h of a.w.__gedruckt.splice(0)) dom += new JSDOM(h).window.document.querySelectorAll('[data-pwn]').length;
   return { dom, js: a.w.__pwn };
 }
 
@@ -138,8 +149,9 @@ async function eingeschleust(a) {
     const datei = new a.w.File([JSON.stringify(gift['Zyklus-Kennung'])], 'growsmart_2026-10-07.json', { type: 'application/json' });
     Object.defineProperty(inp, 'files', { value: [datei] });
     await inp.onchange({ target: inp });
-    for (let i = 0; i < 80 && !a.toasts.length; i++) await new Promise((r) => setTimeout(r, 25));
-    pruefe(a.toasts.some(t => /wird nicht geladen/.test(t) && /Programmcode/.test(t)), `C1 Import einer unsicheren Datei nicht abgelehnt (${a.toasts.join(' | ').slice(0, 160)})`);
+    for (let i = 0; i < 120 && !a.toasts.some(t => /nicht geladen/.test(t)); i++) await new Promise((r) => setTimeout(r, 25));
+    // (v1.5.377) ganzer Satz ohne Fachwort, mit Rat fürs eigene Backup
+    pruefe(a.toasts.some(t => /wird nicht geladen: In der Kennung eines Zyklus stehen Zeichen/.test(t) && /fremde Befehle/.test(t) && /eigenes Backup/.test(t) && /Stand bleibt unverändert/.test(t)), `C1 Import einer unsicheren Datei nicht abgelehnt (${a.toasts.join(' | ').slice(0, 160)})`);
     pruefe(a.E(`JSON.stringify(S.cycles.map(c => c.id))`) === vorher, 'C2 der Stand hat sich nach dem abgelehnten Import verändert');
   }
 
@@ -170,6 +182,79 @@ async function eingeschleust(a) {
     pruefe(r.dom === 0 && r.js === 0, `E5 eingeschleust: ${r.dom} Elemente, ${r.js}× Programmcode`);
     e.E(`if (!S._setUI) S._setUI = {}; S._setUI.data = true; goTo('set'); renderSet();`);
     pruefe(/Zeichen, die GrowSmart dort nie schreibt/.test(e.w.document.getElementById('scr-set').textContent), 'E6 die Einstellungen nennen die entfernten Werte nicht');
+  }
+
+  // G · Freitexte (v1.5.366): typografisch umgesetzt, nichts eingeschleust — Namen, Standort, Sorte, Pflanzen, Produkte, Pläne
+  const hatSauber = a.E(`typeof _freitextSauber`) === 'function';
+  pruefe(hatSauber, 'G0 _freitextSauber fehlt');
+  if (hatSauber) {
+    const probe = `_freitextSauber(${JSON.stringify("Patrick's \"Grow\" <1> a\\b &#39; &lt; Calcium & Magnesium")})`;
+    pruefe(a.E(probe) === 'Patrick’s ”Grow” ‹1› a∖b ＆#39; ＆lt; Calcium & Magnesium', 'G1 Umsetzung: ' + a.E(probe));
+  }
+  {
+    const d = klon(basis);
+    const zweiter = klon(d.cycles[0]); zweiter.id = 'zweiter_1'; zweiter.startDate = '2026-08-20'; zweiter.archived = false; zweiter.active = true;
+    zweiter.plants = (zweiter.plants || []).map((p, i) => Object.assign({}, p, { id: 'zp' + i, harvestedAt: undefined }));
+    d.cycles.push(zweiter);
+    d.cycles.forEach(c => { c.name = GIFT + GIFT_JS; c.location = GIFT; c.strain = GIFT;
+      (c.plants || []).forEach(p => { p.label = GIFT + GIFT_JS; p.strain = GIFT; });
+      c.trainingEvents = [{ date: c.startDate, type: 'lst', notes: GIFT }]; });
+    const allesProdukt = (x) => { x.name = GIFT + GIFT_JS; x.note = GIFT; };
+    (d.products || []).forEach(allesProdukt);
+    d.fertPlans.forEach(p => { p.name = GIFT + GIFT_JS; p.mixInfo = GIFT; p.drainInfo = GIFT; p.mixOrder = [GIFT, GIFT_JS];
+      p.weekFocus = { 1: { phase: GIFT, tip: GIFT } }; (p.products || []).forEach(allesProdukt); });
+    d.mixOrder = [GIFT]; d.mixInfo = GIFT; d.drainInfo = GIFT;
+    d.customPresets = { custom_1: { name: GIFT + GIFT_JS, subtitle: GIFT, products: [], schedule: {}, weekFocus: {} } };
+    const g = await starte(JSON.stringify(d));
+    pruefe(g.E(`S.cycles.length`) === d.cycles.length, 'G2 der Stand mit vergifteten Namen wurde nicht geladen');
+    const r = await eingeschleust(g);
+    pruefe(r.dom === 0 && r.js === 0, `G3 eingeschleust über Freitexte: ${r.dom} Elemente, ${r.js}× Programmcode`);
+    if (hatSauber) {
+      pruefe(!g.E(`/["'<>]/.test(S.cycles[0].name + S.cycles[0].location + S.fertPlans[0].name + (S.fertPlans[0].products[0] || {}).name)`), 'G4 Freitexte nach dem Start nicht umgesetzt');
+      // Was der Nutzer selbst tippt, wird beim Speichern umgesetzt
+      g.E(`S.cycles[0].name = "Patrick's Grow"; saveS();`);
+      pruefe(g.E(`S.cycles[0].name`) === 'Patrick’s Grow', 'G5 getippter Name nach dem Speichern nicht umgesetzt: ' + g.E(`S.cycles[0].name`));
+      // Patricks echte Daten: nur Satzzeichen ändern sich, nichts geht verloren
+      const p = await starte(SICHERUNG);
+      pruefe(p.E(`S.cycles.length`) === basis.cycles.length && p.E(`Object.keys(S.entries).length`) === Object.keys(basis.entries).length, 'G6 mit Patricks Daten fehlt nach dem Start etwas');
+      pruefe(p.E(`S.cycles.every((c, i) => c.name.replace(/[’”‹›∖＆]/g, '') === ${JSON.stringify(basis.cycles.map(c => c.name))}[i].replace(/['"<>\\&]/g, ''))`), 'G7 Zyklusnamen über die Satzzeichen hinaus verändert');
+    }
+  }
+
+  // H · wiederherstellung.html (v1.5.367): Name und Start der Sicherung gehen maskiert in die Seite — gespeichert und eingefügt
+  {
+    const d = klon(basis);
+    d.cycles.forEach(c => { c.active = true; c.archived = false; c.name = GIFT; });
+    const seite = new JSDOM(WIEDER, { runScripts: 'dangerously', url: 'https://growsmart.test/wiederherstellung.html',
+      beforeParse(w) { w.localStorage.setItem('growsmart_v4', JSON.stringify(d)); } });
+    const doc = seite.window.document;
+    pruefe(doc.querySelectorAll('[data-pwn]').length === 0 && /Aktiv:/.test(doc.getElementById('jetzt').textContent), 'H1 der gespeicherte Name schleust auf der Wiederherstellungs-Seite ein Element ein');
+    doc.getElementById('feld').value = JSON.stringify(d);
+    doc.getElementById('pruefen').click();
+    pruefe(doc.querySelectorAll('[data-pwn]').length === 0 && /Sicherung sieht gut aus/.test(doc.getElementById('pruef').textContent), 'H2 der eingefügte Name schleust auf der Wiederherstellungs-Seite ein Element ein');
+    // (v1.5.377) Eine unsichere Sicherung: ein Satz statt „(unsicher)"
+    doc.getElementById('feld').value = JSON.stringify(gift['Zyklus-Kennung']);
+    doc.getElementById('pruefen').click();
+    const pt = doc.getElementById('pruef').textContent;
+    pruefe(/in der Kennung eines Zyklus Zeichen, die GrowSmart dort nie schreibt/.test(pt) && !/(unsicher)/.test(pt), 'H3 Wiederherstellungs-Seite erklärt den unsicheren Stand nicht: ' + pt.slice(0, 160));
+  }
+
+  // I · (v1.5.375) Eine unsichere Tageskopie wird nicht angeboten, nicht geladen und beim nächsten Speichern ersetzt
+  if (hatTor) {
+    const unsicher = klon(gift['Zyklus-Kennung']); unsicher._bakDate = '2026-10-01';
+    const i = await starte(SICHERUNG);
+    i.w.localStorage.setItem('growsmart_v4_bak', JSON.stringify(unsicher));
+    const kopien = i.E(`JSON.stringify((_backupInfo().kopien || []).map(k => k.key))`);
+    pruefe(!/growsmart_v4_bak"/.test(kopien), `I1 die unsichere Kopie wird zum Laden angeboten (${kopien})`);
+    const vorher = i.w.localStorage.getItem('growsmart_v4');
+    i.toasts.length = 0;
+    // Wer laden will, bestätigt — auf einem alten Stand ersetzt die Kopie dann den Hauptstand
+    i.E(`window.__echtConfirm = customConfirm; customConfirm = () => Promise.resolve(true);`);
+    await i.E(`restoreAutoBackup('growsmart_v4_bak')`);
+    i.E(`customConfirm = window.__echtConfirm;`);
+    pruefe(i.w.localStorage.getItem('growsmart_v4') === vorher, 'I2 das Laden der unsicheren Kopie hat den Hauptstand ersetzt');
+    i.E(`_autoBackup._fehlerAm = 0; _autoBackup()`);
+    pruefe(!String(i.w.localStorage.getItem('growsmart_v4_bak')).includes('__pwn'), 'I3 die unsichere Kopie steht nach dem nächsten Speichern noch da');
   }
 
   // F · Eigene Vorlage aus der Zwischenablage

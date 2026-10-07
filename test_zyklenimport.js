@@ -129,7 +129,8 @@ process.on('unhandledRejection', (e) => { console.log('  (nicht abgefangen: ' + 
     }
     const p = JSON.parse(JSON.stringify(PAKET)); p.paketId = 'zeichen'; p.zyklen = [zyklus('Gruppe "A" & B · 1', '2026-09-20', 1)];
     const r = await a.laden(p);
-    pruef('U Anführungszeichen, & und · sind erlaubt', r === true && a.E("S.cycles.some(c => c.name === 'Gruppe \"A\" & B · 1')"));
+    // (v1.5.366) Erlaubt, aber typografisch umgesetzt: das gerade Anführungszeichen wird ”, & und · bleiben.
+    pruef('U Anführungszeichen, & und · sind erlaubt', r === true && a.E("S.cycles.some(c => c.name === 'Gruppe ”A” & B · 1')"), a.E("JSON.stringify(S.cycles.map(c => c.name))"));
   }
 
   console.log('\nH - Härtung gegen präparierte Dateien (v1.5.340)');
@@ -154,9 +155,10 @@ process.on('unhandledRejection', (e) => { console.log('  (nicht abgefangen: ' + 
     // Anführungszeichen im Namen: kein eingeschleustes Attribut in Einstellungen und Kalender
     const name = 'Z" data-pwn="1" onfocus="window.__pwn=1" x="';
     const r = await a.laden({ _type: 'growsmart_zyklen', paketId: 'q', zyklen: [zyklus(name, '2026-09-20', 1), zyklus('Q2', '2026-09-20', 1)] });
-    a.E("(() => { const c = S.cycles.find(x => x.name.startsWith('Z\"')); selId = c.id; draft = { ...c }; S._setUI = S._setUI || {}; S._setUI.cyc_identity = true; goTo('set'); renderSet(); })()");
+    // (v1.5.366) Der Name wird typografisch umgesetzt (" → ”) — gesucht wird deshalb über den Anfang „Z" und den zweiten Buchstaben.
+    a.E("(() => { const c = S.cycles.find(x => /^Z[\"”]/.test(x.name)); selId = c.id; draft = { ...c }; S._setUI = S._setUI || {}; S._setUI.cyc_identity = true; goTo('set'); renderSet(); })()");
     const feld = a.w.document.getElementById('cyc-name-input');
-    pruef('H Name mit Anführungszeichen: angelegt, das Namensfeld trägt keine fremden Attribute', r === true && !!feld && !feld.hasAttribute('data-pwn') && !feld.hasAttribute('onfocus') && feld.value === name, feld && feld.outerHTML.slice(0, 160));
+    pruef('H Name mit Anführungszeichen: angelegt, das Namensfeld trägt keine fremden Attribute', r === true && !!feld && !feld.hasAttribute('data-pwn') && !feld.hasAttribute('onfocus') && feld.value === a.E(`typeof _freitextSauber === 'function' ? _freitextSauber(${JSON.stringify(name)}) : ${JSON.stringify(name)}`), feld && feld.outerHTML.slice(0, 160));
     a.E("goTo('cal'); renderCal()");
     pruef('H … und auch im Kalender nicht', !a.w.document.querySelector('[data-pwn], [ontouchstart*="__pwn"], [onfocus*="__pwn"]'));
     // Über den Knopf „Import": eine Datei, die beim Laden wirft, meldet sich statt still zu bleiben

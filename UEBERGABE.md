@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.365** · index.html 2,56 MB · 781 Funktionen
+Stand: **v1.5.377** · index.html 2,56 MB · 781 Funktionen
 Zuletzt fortgeschrieben am 07.10.2026 (Nachtprüfung und Run 02 — Abschnitt 0o, „Stand Run 02"). Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
@@ -227,14 +227,16 @@ wf_0586d0bf-d3d (vergänglich). **Offen, nach Nutzen geordnet** (Umbauten oder P
 1. Hebel 3 Punkt 7: erledigt in v1.5.320–335 und 340–344; Reste (leicht) unter „Prüfrunde 07.10.2026 vormittags".
 2. Gießtag-Eintrag im Einsteiger-Modus so dicht wie im Profi-Modus (46 Felder bei zwei Zyklen), fünf Zahlen für „wie viel
    gieße ich" im Anzucht-Eintrag, Wochenwechsel-Block 2530 Zeichen ohne ⓘ — Umbau „Tageseintrag entschlacken".
-3. EC-Bewertung ignoriert den Korridor der Plan-Woche (Sämling erst ab 1,2, Blüte Woche 9 bei 2,4 stumm) — Idee: eine
-   Messwert-Ampel aus dem Plan für Eintrag und Startseite.
+3. EC-Bewertung nach dem Korridor der Plan-Woche: im Eintrag erledigt (v1.5.369 unten, v1.5.374 oben). Offen: dieselbe
+   Ampel auf der Startseite.
 4. Fachwörter ohne ⓘ im Assistenten und im Einsteiger-Eintrag; Einsteiger-Startseite ohne Erste-Hilfe-Karte (Profi hat sie).
-5. Toppen-Knopf für Automatics bis Blüte-Woche 3 gegen den eigenen Text; „2 Tage ohne Gießen nach dem Topping" ohne Beleg.
+5. „2 Tage ohne Gießen nach dem Topping" (`toppingPause`, verschiebt den Gießplan) und „2–4 h vorher volles Gießen mit Dünger … für
+   die Wundheilung" (`T.topping.preWaterHint`) ohne Beleg — der Gießzeitpunkt folgt dem Gießpunkt (`ANBAU.md` 1.2). (Der Knopf bis
+   Blütewoche 3 ist seit v1.5.370 behoben.)
 6. Tag 1 verweist auf eine Mischliste, die es dort nicht gibt; „Deine nächsten Güsse" beginnt in der Anzucht erst bei Blüte.
 7. Dünger abhaken sind im Eintrag 15 Einzel-Taps — Idee: „Alles wie im Plan" mit einem Tipp. („Erledigt" bucht den Plan-Dünger
    seit v1.5.360 als Vorschlag mit.)
-8. Diagnose: bei „welk" und „weiß ausgebleicht" falsche Reihung; Sämlings-EC „SOFORT spülen" ohne Gültigkeitsprüfung.
+8. Diagnose: bei „welk" und „weiß ausgebleicht" falsche Reihung. (Sämlings-EC „SOFORT spülen" seit v1.5.373 behoben.)
 9. Zyklus-Vergleich ohne Ertrag, g je Pflanze, Tage bis Ernte; Barrierefreiheit (Schrift ≤ 11 px,
    Tippflächen); Fotos als Base64 füllen den Speicher (~30 Fotos); kein Test-Gate vor dem Veröffentlichen.
 Weitere Ideen der Prüfer: gemeinsamer Mischansatz für zwei Zyklen am selben Gießtag („zusammen 4800 ml"), Sicherungs-Erinnerung
@@ -271,10 +273,6 @@ Run 02 fachlich und Bedienung mit Patricks echter Datei, ein Gegenprüfer).** Ur
 keiner schlechter als v1.5.319. Die zwei schweren (Einschleusen über Anführungszeichen und `__proto__`) und die Import- und
 Speicher-Befunde sind in v1.5.340–344 behoben. Rohdaten: Workflow wf_63d754b1-be1 (journal.jsonl), Skripte unter
 `.claude/tmp/review339/` (vergänglich). **Offen, alle schon in v1.5.319 vorhanden, nach Nutzen für Run 02:**
-- F04 EC im Plan-Korridor löst „EC unter 0.8 — Dosis erhöhen" aus (~16109): Untergrenze aus der Plan-Woche nehmen.
-- F03 Meilenstein „kein Stickstoff mehr hochdrehen" in Blütewoche 1, während Rainbow Bio-Grow anhebt (~14897).
-- F01 Toppen-Knopf und -Hinweis bei Automatics bis Blütewoche 3 (~28333, ~14811), gegen Plan, FIM-Notiz und eigenen Satz.
-- F06 Anzucht-Eintrag: Drain-Zeilen und Vollsättigung trotz `_drainMoeglich` (~28443, 29059–29416).
 - F02 erster Guss der Plan-Woche 3 als „Feed" empfohlen, die Wasserguss-Anweisung steht nur am Wochenstart (~10941).
 - F10 zwei Gruppen im Zelt: Klima nach der weiter entwickelten Gruppe, die Sämlings-Stufe der anderen fällt durch (~15006).
 - F11 Gießmenge: Vorschlag und Drain-Aussage widersprechen sich in Plan-Woche 4/5 (~29401, ~28924).
@@ -285,7 +283,7 @@ Speicher-Befunde sind in v1.5.340–344 behoben. Rohdaten: Workflow wf_63d754b1-
   zeigt bei zwei Aktionen nur eine (~18082), F19 Import übernimmt Spül-, Eis- und Trocknungstage nicht aus dem Plan.
 - Speicher, leicht: rettung.html bietet „Daten anzeigen" nur beim Hauptstand (SK-5); wiederherstellung.html überschreibt
   den Rückweg beim zweiten Einspielen, „Zurückholen" ohne Ablage des aktuellen Stands, Quota-Fehler roh (SK-6, wie in 319);
-  aus Runde 2: Fremd-Band verdrängt das Sperr-Band, `_fremdMelden` verdrängt einen offenen Dialog, ~24 „✓"-Toasts prüfen saveS nicht.
+  aus Runde 2: Fremd-Band verdrängt das Sperr-Band, ~24 „✓"-Toasts prüfen saveS nicht.
 - v1.5.345: Neue Pläne bekommen eine eindeutige Kennung (mehrere Vorlagen in einer Zyklus-Datei hingen sonst am falschen Plan); scheitert nach dem Speichern nur das Zeichnen, meldet der Import Erfolg.
 - v1.5.346: Der Spülstart rastet beim Sichern der Einstellungen ein, nicht erst still beim nächsten Start (Erntetag sprang über Nacht 17.11. → 19.11.); ein selbst gesetzter Spülstart oder Erntetag bleibt stehen (`_spuelStartFest`), bis ein echter Guss den Rhythmus verschiebt. Test `test_spuelrast.js` startet die App wirklich neu.
 - v1.5.347: Temperatur und Luftfeuchte gehen beim Neuzeichnen des Eintrags nicht mehr verloren (`uEnv` schreibt sofort).
@@ -307,20 +305,25 @@ Speicher-Befunde sind in v1.5.340–344 behoben. Rohdaten: Workflow wf_63d754b1-
 - v1.5.363: Nach „Speichern" bleibt der nächste Tipp im Feld; der Eintrag zeichnet erst neu, wenn kein Feld mehr den Fokus hat.
 - v1.5.364: **Sicherheit** — Eingangstore halten gefährliche Zeichen aus Kennungen, Schlüsseln, Daten, Zahlen, Auswahlfeldern und Fotos heraus (`_standUnsicher`, `_standEntgiften`, auch wiederherstellung.html und eigene Vorlagen). Auf v1.5.363 brachte eine präparierte Sicherung 914 Befehle und 1246 Elemente in die App.
 - v1.5.365: Die Dünger-Zeile der Startseite rechnet unter 1 L Anmisch-Menge für 1 L („für 1 L anmischen (heute brauchst du davon 0,2 L)") statt „für 0 L: CalMag 0 ml".
+- v1.5.366: **Sicherheit** — Freitexte (Namen, Standort, Sorte, Produkt- und Plan-Texte) werden an den Toren und beim Speichern typografisch umgesetzt (`_freitextSauber`: ’ ” ‹ › ∖ ＆) statt ~200 Ausgabestellen einzeln zu maskieren. **Wer ein neues Freitext-Feld anlegt, nimmt es in `_standFreitexteSauber` auf.** Tagebuch-Notizen bleiben und werden bei der Ausgabe maskiert (escHtml).
+- v1.5.367: wiederherstellung.html maskiert Name und Startdatum der Sicherung (`esc`).
+- v1.5.368: Ein zweiter Dialog wartet, bis der offene beantwortet ist (`_modalWarten`) — vorher verdrängte er ihn, und wer auf den ersten wartete, hing (Sämlings-Protokoll 800 ms nach dem Anlegen, Hinweis „anderes Fenster").
+- v1.5.369: F04 erledigt — der EC-Hinweis nimmt die Untergrenze der Plan-Woche (Rainbow Woche 3–6: 0,65–0,8) und rät nicht mehr zu mehr Dünger.
+- v1.5.370: F01 erledigt — Toppen bei Automatics nur vor dem Blühbeginn (Knopf, Hinweis ab Blütetag 1, Trainings-Auswahl, Meilenstein Tag 21).
+- v1.5.371: F03 erledigt — der Meilenstein zum Blühbeginn sagt „weiter nach Plan düngen" statt „kein Stickstoff mehr hochdrehen".
+- v1.5.372: F06 erledigt — die Gießanleitung im Anzucht-Eintrag nennt vor Tag 25 keine Vollsättigung und keinen Drain („Noch nicht durchgießen").
+- v1.5.373: Kein „SOFORT spülen" bei zu hohem Sämlings-EC und kein „nachgießen bis Drain" im Sämlingstopf (Nachtprüfung Punkt 8, zweiter Teil).
+- v1.5.374: EC deutlich (über ein Drittel) über dem Ziel der Plan-Woche wird im Eintrag gewarnt, mit Kanne und Leitungswasser als erste Ursachen (Nachtprüfung Punkt 3; die Unterseite seit v1.5.369).
+- v1.5.375: Eine unsichere Tageskopie gilt als nicht vorhanden (`_kopieLesen`) — vorher ließ sie sich laden und ersetzte den sauberen Hauptstand (Gegenprüfung v1.5.364).
+- v1.5.376: Dünger-Zeile der Startseite mit der Einheit des Produkts (Tropfen!), feste Mengen nie auf 1 L, 1 L nur, wo nicht abmessbar (Gegenprüfung v1.5.365).
+- v1.5.377: Die Meldungen zu unsicheren Dateien in ganzen Sätzen, ohne „Programmcode", mit Rat fürs eigene Backup.
 
 **Sicherheitsprüfung 07.10.2026 abends (Workflow wf_086de9ab-b02, zwei Sonnet-Agenten, jsdom mit vergifteten Feldern).** Ergebnis
 und Werkzeug liegen in `.claude/notizen/xss/` (`ergebnis.txt`, `journal.jsonl`, `harness/probe.js` + `run.js` — vergiftet je eine
 Feldgruppe und sucht in ~45 Bildschirmen eingeschleuste Elemente und Befehle; liest `index_head.html` neben sich, vorher
-`index.html` dorthin kopieren). v1.5.364 schließt die Kennungen und Werte. **Offen, in dieser Reihenfolge:**
-1. Freitexte bei der Ausgabe maskieren: Zyklusname (40 Stellen), Produkt-Einheit/-Name/-Farbe, Plan-Name, Pflanzenname und
-   -sorte, Standort, `mixInfo`/`mixOrder`/`drainInfo`/`weekFocus`, Planname im `<option>`, `b.zurueck` (Plannamen) in der
-   Daten-Karte. Engpässe: `mediumName`, `_myProductsGroup`, `_planWochenFokus`, `metricRow`. Nicht maskieren, wo `textContent`
-   ausgibt (toast, customConfirm, Export als Text) — sonst stünde dort `&amp;`.
-2. Knopf-Befehle mit Produktnamen und Lexikon-Titeln maskieren auch den Backslash (Lexikon ~37363–37371, Tipps-Suche ~20242/20262).
-3. Bericht- und Kollage-Fenster (`exportReportPDF`, `exportCollage`: `window.open` + `document.write`, gleiche Herkunft).
-4. wiederherstellung.html setzt Zyklusname und Startdatum per `innerHTML` (Zeile ~116, ~140); `customPrompt` setzt `initial` roh in
-   `value`/`textarea`.
-5. Klein: CSV-Export ohne Schutz vor Formelzeichen (= + - @); keine Content-Security-Policy (die ~290 Inline-Befehle verhindern eine strenge).
+`index.html` dorthin kopieren). v1.5.364 schließt Kennungen und Werte, v1.5.366 die Freitexte (auch im Bericht- und Kollage-Fenster und in Knopf-Befehlen mit
+Produktnamen). **Offen:** CSV-Export ohne Schutz vor Formelzeichen (= + - @); keine Content-Security-Policy (die ~290 Inline-Befehle
+verhindern eine strenge).
 
 **Bei der nächsten Bewertung** dieselbe Skala, dieselben Kategorie-IDs und dieselben Regeln aus `auftrag.md` nehmen und
 die Noten gegen diese Tabelle stellen.

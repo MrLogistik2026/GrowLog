@@ -78,6 +78,11 @@ const { boot } = require('./audit_lib');
   await new Promise(x => setTimeout(x, 60));
   out.schutz = st();
   if (out.schutz.spuelStart < out.schutz.heuteTag + 2) fehler.push('Spülstart wurde in die Vergangenheit gelegt');
+  // (v1.5.368) Die Rückfrage „Rückwirkend setzen?" beantworten wie ein Nutzer, der nicht will — vorher blieb sie offen und wurde
+  // vom nächsten Dialog still verdrängt; seit Dialoge warten, ginge die nächste Antwort des Tests an sie.
+  ev(`_modalResolve && _modalResolve(false)`);
+  await new Promise(x => setTimeout(x, 20));
+  if (st().spuelStart !== out.schutz.spuelStart) fehler.push('Abbrechen der Rückfrage hat trotzdem geändert');
 
   // (v1.5.73) Spüldauer und IceFlush direkt in der Kette · Karte nur im Fahrplan
   setup();

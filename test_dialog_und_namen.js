@@ -64,7 +64,7 @@ function cssBlock(quelltext, selektor) {
     'var problems = [], gesehen = {};' +
     'var echt = getAction;' +
     'S.cycles = []; S.entries = {}; S.beginnerMode = true;' +
-    'var c = addCyc({ name: "Testzyklus", seedType: "auto", medium: "erde" });' +
+    'var c = addCyc({ name: "Testzyklus", seedType: "auto", medium: "erde" }, { still: true });' +
     'c.startDate = todayISO(); c.plants = 1; c.potSize = 11;' +
     'saveS();' +
     'var liste = ' + JSON.stringify(AKTIONEN) + ';' +
@@ -139,6 +139,16 @@ function cssBlock(quelltext, selektor) {
     '  window.__t.umbruchImText = document.getElementById("modal-msg").textContent.indexOf(NL) >= 0;' +
     '  document.getElementById("modal-ok").click();' +
     '  window.__t.okAntwort = await p;' +
+    // e) (v1.5.368) Ein zweiter Dialog wartet, bis der erste beantwortet ist — vorher überschrieb er ihn, und der erste hing.
+    '  p = customConfirm("Erster", "A", "OK");' +
+    '  var q = customConfirm("Zweiter", "B", "OK");' +
+    '  window.__t.zweiterWartet = document.getElementById("modal-title").textContent === "Erster";' +
+    '  document.getElementById("modal-ok").click();' +
+    '  window.__t.ersterAntwort = await p;' +
+    '  await new Promise(function (r) { setTimeout(r, 30); });' +
+    '  window.__t.zweiterDa = document.getElementById("modal-title").textContent === "Zweiter" && ov.classList.contains("show");' +
+    '  document.getElementById("modal-cancel").click();' +
+    '  window.__t.zweiterAntwort = await q;' +
     '  window.__t.fertig = true;' +
     '})();');
 
@@ -154,6 +164,10 @@ function cssBlock(quelltext, selektor) {
   if (!t.kastenBleibtOffen) fail.push('Tippen im Kasten schliesst den Dialog faelschlich');
   if (t.okAntwort !== true) fail.push('OK-Knopf liefert nicht "bestaetigt"');
   if (!t.umbruchImText) fail.push('Zeilenumbruch kommt nicht im Textfeld an');
+  if (!t.zweiterWartet) fail.push('Ein zweiter Dialog überschreibt den offenen (v1.5.368)');
+  if (t.ersterAntwort !== true) fail.push('Der erste Dialog liefert seine Antwort nicht');
+  if (!t.zweiterDa) fail.push('Der zweite Dialog erscheint nach dem ersten nicht');
+  if (t.zweiterAntwort !== false) fail.push('Der zweite Dialog liefert seine Antwort nicht');
 
   console.log('Aufgaben-Namen:', AKTIONEN.map((a) => a + '=' + (namen ? namen[a] : '?')).join(', '));
   console.log('Auf der Startseite sichtbar:', AKTIONEN.filter((a) => gerendert.gesehen[a]).length + '/' + AKTIONEN.length);

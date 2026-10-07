@@ -1272,7 +1272,7 @@ const T = {
       `💡 <b>Vor dem Toppen gießen!</b> 2–4 Stunden vorher volles Gießen mit Dünger — das macht die Pflanze turgor-prall für einen sauberen Schnitt und versorgt die Wundheilung. Nach dem Topping: ${pauseDays} Tage Ruhe ohne Gießen.<br><span style="color:var(--text-hint);font-size:10px">Tag ${currentDay}: gute Zeit zum Toppen über dem 4.–5. Nodium (sichtbar durchzählen von unten).</span>`,
 
     tooLateAuto: ({ week }) =>
-      `⏰ <b>Toppen nicht mehr empfohlen</b> – Blüte Woche ${week}. Bei Automatics ist das Zeitfenster in den ersten 3 Blüte-Wochen vorbei; ein Schnitt jetzt würde die Blüte zurückwerfen statt Ertrag zu bringen.<br><span style="color:var(--text-hint);font-size:10px">Beim nächsten Zyklus: rechtzeitig toppen (Anzucht ab Tag 15 bis Blüte Wo.3).</span>`,
+      `⏰ <b>Toppen nicht mehr empfohlen</b> – Blüte Woche ${week}. Bei Automatics gehört ein Schnitt vor den Blühbeginn: Sie blühen nach Kalender, und die Tage, die er kostet, holt die Pflanze nicht wieder auf. Sanftes Herunterbinden (LST) geht noch.<br><span style="color:var(--text-hint);font-size:10px">Beim nächsten Zyklus: rechtzeitig toppen (Anzucht ab Tag 15 bis Blüte Wo.3).</span>`,
 
     tooEarly: ({ day }) =>
       `Tag ${day}: Pflanze ist noch zu jung zum Toppen. Warte bis mindestens Tag 15, wenn 4–5 Nodien sichtbar sind.`,
@@ -3622,7 +3622,7 @@ const FERT_PRESETS = {
     name: 'Plagron Terra',
     medium: 'erde',   // Terra-Linie
     subtitle: 'Mineralisch · Terra Grow + Terra Bloom · 10 Wochen',
-    drainInfo: 'Dieser Plan führt kein Calcium/Magnesium-Mittel: Gekalkte Erde bringt beides von Haus aus mit — im Dolomitkalk stecken Calcium und Magnesium —, hartes Leitungswasser zusätzlich. Bei weichem Wasser fällt der zweite Teil weg: unter etwa 8 °dH, dein EC-Gerät zeigt im puren Leitungswasser dann rund 0,3 mS/cm oder weniger. Nimm dann ein Cal/Mag-Mittel dazu; wie viel, steht auf der Flasche deines Produkts — dieser Plan gibt dafür keine Zahl vor. Es gehört früh ins Gießwasser, vor die Basisdünger, sonst fällt das Calcium mit Phosphaten und Sulfaten als weiße Flocken aus und ist verloren. Die Zeile „Mischen" im Tageseintrag beginnt weiter mit dem Basisdünger — sie kennt nur die Produkte, die im Plan stehen. Mit dem Blüte-Booster Green Sensation steigt außerdem der Kalium-Anteil, und viel Kalium bremst die Aufnahme von Magnesium und Calcium an der Wurzel: Werden die unteren und mittleren Blätter zwischen den grünen Adern gelb, setz erst den Booster aus, prüf dann den pH, und gib erst danach gezielt Bittersalz — noch mehr Cal/Mag verschiebt das Verhältnis nur weiter. Ausführlich im Lexikon unter „CalMag".',
+    drainInfo: 'Dieser Plan führt kein Calcium/Magnesium-Mittel: Gekalkte Erde bringt beides von Haus aus mit — im Dolomitkalk stecken Calcium und Magnesium —, hartes Leitungswasser zusätzlich. Bei weichem Wasser fällt der zweite Teil weg: unter etwa 8 °dH, dein EC-Gerät zeigt im puren Leitungswasser dann rund 0,3 mS/cm oder weniger. Nimm dann ein Cal/Mag-Mittel dazu; wie viel, steht auf der Flasche deines Produkts — dieser Plan gibt dafür keine Zahl vor. Es gehört früh ins Gießwasser, vor die Basisdünger, sonst fällt das Calcium mit Phosphaten und Sulfaten als weiße Flocken aus und ist verloren. Die Zeile „Mischen“ im Tageseintrag beginnt weiter mit dem Basisdünger — sie kennt nur die Produkte, die im Plan stehen. Mit dem Blüte-Booster Green Sensation steigt außerdem der Kalium-Anteil, und viel Kalium bremst die Aufnahme von Magnesium und Calcium an der Wurzel: Werden die unteren und mittleren Blätter zwischen den grünen Adern gelb, setz erst den Booster aus, prüf dann den pH, und gib erst danach gezielt Bittersalz — noch mehr Cal/Mag verschiebt das Verhältnis nur weiter. Ausführlich im Lexikon unter „CalMag“.',
     mixOrder: ['Terra Grow','Terra Bloom','Power Roots','Pure Zym','Green Sensation'],
     mixInfo: '1. Basisdünger zuerst (mineralisch, löst sich sofort). 2. Wurzelstimulator & Enzyme (biologisch aktiv, ins stabile Milieu). 3. Green Sensation zuletzt (PK-Booster mit Chelat-Wirkung). pH ' + phTargetFor('erde').label + '.',
     products: [
@@ -3649,7 +3649,7 @@ const FERT_PRESETS = {
     name: 'CANNA Terra',
     medium: 'erde',   // Terra-Linie
     subtitle: 'Mineralisch · Terra Vega + Terra Flores · 10 Wochen',
-    drainInfo: 'Dieser Plan führt kein Calcium/Magnesium-Mittel: Gekalkte Erde bringt beides von Haus aus mit — im Dolomitkalk stecken Calcium und Magnesium —, hartes Leitungswasser zusätzlich. Bei weichem Wasser fällt der zweite Teil weg: unter etwa 8 °dH, dein EC-Gerät zeigt im puren Leitungswasser dann rund 0,3 mS/cm oder weniger. Nimm dann ein Cal/Mag-Mittel dazu; wie viel, steht auf der Flasche deines Produkts — dieser Plan gibt dafür keine Zahl vor. Es gehört früh ins Gießwasser, vor die Basisdünger, sonst fällt das Calcium mit Phosphaten und Sulfaten als weiße Flocken aus und ist verloren. Die Zeile „Mischen" im Tageseintrag beginnt weiter mit dem Basisdünger — sie kennt nur die Produkte, die im Plan stehen. Mit dem Blüte-Booster PK 13/14 steigt außerdem der Kalium-Anteil, und viel Kalium bremst die Aufnahme von Magnesium und Calcium an der Wurzel: Werden die unteren und mittleren Blätter zwischen den grünen Adern gelb, setz erst den Booster aus, prüf dann den pH, und gib erst danach gezielt Bittersalz — noch mehr Cal/Mag verschiebt das Verhältnis nur weiter. Ausführlich im Lexikon unter „CalMag".',
+    drainInfo: 'Dieser Plan führt kein Calcium/Magnesium-Mittel: Gekalkte Erde bringt beides von Haus aus mit — im Dolomitkalk stecken Calcium und Magnesium —, hartes Leitungswasser zusätzlich. Bei weichem Wasser fällt der zweite Teil weg: unter etwa 8 °dH, dein EC-Gerät zeigt im puren Leitungswasser dann rund 0,3 mS/cm oder weniger. Nimm dann ein Cal/Mag-Mittel dazu; wie viel, steht auf der Flasche deines Produkts — dieser Plan gibt dafür keine Zahl vor. Es gehört früh ins Gießwasser, vor die Basisdünger, sonst fällt das Calcium mit Phosphaten und Sulfaten als weiße Flocken aus und ist verloren. Die Zeile „Mischen“ im Tageseintrag beginnt weiter mit dem Basisdünger — sie kennt nur die Produkte, die im Plan stehen. Mit dem Blüte-Booster PK 13/14 steigt außerdem der Kalium-Anteil, und viel Kalium bremst die Aufnahme von Magnesium und Calcium an der Wurzel: Werden die unteren und mittleren Blätter zwischen den grünen Adern gelb, setz erst den Booster aus, prüf dann den pH, und gib erst danach gezielt Bittersalz — noch mehr Cal/Mag verschiebt das Verhältnis nur weiter. Ausführlich im Lexikon unter „CalMag“.',
     mixOrder: ['CANNA Terra Vega','CANNA Terra Flores','PK 13/14','RHIZOTONIC','CANNAZYM'],
     mixInfo: '1. Basisdünger zuerst (Vega oder Flores je nach Phase). 2. PK 13/14 nur Wo 4-6 der Blüte (Phosphor/Kalium-Booster). 3. RHIZOTONIC & CANNAZYM zuletzt (biologische Additive ins stabile Milieu). pH ' + phTargetFor('erde').label + '.',
     products: [
@@ -3680,7 +3680,7 @@ const FERT_PRESETS = {
     name: 'Hesi (Erde)',
     medium: 'erde',
     subtitle: 'TNT Complex + Blüh Complex · 10 Wochen',
-    drainInfo: 'Dieser Plan führt kein Calcium/Magnesium-Mittel: Gekalkte Erde bringt beides von Haus aus mit — im Dolomitkalk stecken Calcium und Magnesium —, hartes Leitungswasser zusätzlich. Bei weichem Wasser fällt der zweite Teil weg: unter etwa 8 °dH, dein EC-Gerät zeigt im puren Leitungswasser dann rund 0,3 mS/cm oder weniger. Nimm dann ein Cal/Mag-Mittel dazu; wie viel, steht auf der Flasche deines Produkts — dieser Plan gibt dafür keine Zahl vor. Es gehört früh ins Gießwasser, vor die Basisdünger, sonst fällt das Calcium mit Phosphaten und Sulfaten als weiße Flocken aus und ist verloren. Die Zeile „Mischen" im Tageseintrag beginnt weiter mit dem Basisdünger — sie kennt nur die Produkte, die im Plan stehen. Mit dem PK-Booster Phosphor Plus steigt außerdem der Kalium-Anteil, und viel Kalium bremst die Aufnahme von Magnesium und Calcium an der Wurzel: Werden die unteren und mittleren Blätter zwischen den grünen Adern gelb, setz erst den Booster aus, prüf dann den pH, und gib erst danach gezielt Bittersalz — noch mehr Cal/Mag verschiebt das Verhältnis nur weiter. Ausführlich im Lexikon unter „CalMag".',
+    drainInfo: 'Dieser Plan führt kein Calcium/Magnesium-Mittel: Gekalkte Erde bringt beides von Haus aus mit — im Dolomitkalk stecken Calcium und Magnesium —, hartes Leitungswasser zusätzlich. Bei weichem Wasser fällt der zweite Teil weg: unter etwa 8 °dH, dein EC-Gerät zeigt im puren Leitungswasser dann rund 0,3 mS/cm oder weniger. Nimm dann ein Cal/Mag-Mittel dazu; wie viel, steht auf der Flasche deines Produkts — dieser Plan gibt dafür keine Zahl vor. Es gehört früh ins Gießwasser, vor die Basisdünger, sonst fällt das Calcium mit Phosphaten und Sulfaten als weiße Flocken aus und ist verloren. Die Zeile „Mischen“ im Tageseintrag beginnt weiter mit dem Basisdünger — sie kennt nur die Produkte, die im Plan stehen. Mit dem PK-Booster Phosphor Plus steigt außerdem der Kalium-Anteil, und viel Kalium bremst die Aufnahme von Magnesium und Calcium an der Wurzel: Werden die unteren und mittleren Blätter zwischen den grünen Adern gelb, setz erst den Booster aus, prüf dann den pH, und gib erst danach gezielt Bittersalz — noch mehr Cal/Mag verschiebt das Verhältnis nur weiter. Ausführlich im Lexikon unter „CalMag“.',
     mixOrder: ['TNT Complex','Blüh Complex','Phosphor Plus','Wurzel Complex','PowerZyme','Boost','SuperVit'],
     mixInfo: '1. Basisdünger zuerst (TNT oder Blüh Complex – stärkste pH/EC-Veränderung). 2. PK-Booster (Phosphor Plus). 3. Bio-Additive (Wurzel Complex, PowerZyme, Boost). 4. SuperVit ganz zuletzt (hochkonzentriert, 1 Tropfen/4L!). pH reguliert sich meist durch Blüh Complex.',
     products: [
@@ -3731,7 +3731,7 @@ const FERT_PRESETS = {
       8:  { phase: 'Blüte III',   tip: 'Reifung. Bio·Grow ist raus, Bio·Bloom bleibt auf 1.8 ml/L, Top·Max auf 3.' },
       9:  { phase: 'Reifung I',   tip: 'Bio·Bloom hoch (1.8), Top·Max weiter. Bio·Grow ist raus. Drain-EC überwachen.' },
       10: { phase: 'Reifung II',  tip: 'Bloom ausschleichen (0.6), Top·Max noch dabei. Echte Spülung ab Wo 11.' },
-      11: { phase: 'Hard Dryback', tip: 'Nicht mehr gießen, bis der Topf den Gießpunkt erreicht (Hebe-Test „Knapp"). Vorbereitung IceFlush oder Ernte.' },
+      11: { phase: 'Hard Dryback', tip: 'Nicht mehr gießen, bis der Topf den Gießpunkt erreicht (Hebe-Test „Knapp“). Vorbereitung IceFlush oder Ernte.' },
       12: { phase: 'IceFlush/Ernte', tip: 'IceFlush mit 1 L Crushed Ice je Topf. Dunkelphase 24–36 h, dann Ernte. Beliebte Grower-Technik — ein Trichom-Plus ist nicht belegt.' },
     },
     products: [
@@ -3784,7 +3784,7 @@ const FERT_PRESETS = {
       8:  { phase: 'Reifung I', tip: 'A+B reduzieren. Reine Reifung.' },
       9:  { phase: 'Reifung II', tip: 'Trichome checken. CANNAZYM weiterführen.' },
       10: { phase: 'Spülung',   tip: '7 Tage spülen mit reinem CalMag-Wasser. Das Spülende setzt der Plan, nicht der Drain-EC.' },
-      11: { phase: 'Hard Dryback', tip: 'Nicht mehr gießen, bis der Topf den Gießpunkt erreicht (Hebe-Test „' + GIESSPUNKT.coco.knopf + '"). Coco trocknet schneller als Erde — darunter meldet die App „Zu trocken für Coco". Vorbereitung IceFlush oder Ernte.' },
+      11: { phase: 'Hard Dryback', tip: 'Nicht mehr gießen, bis der Topf den Gießpunkt erreicht (Hebe-Test „' + GIESSPUNKT.coco.knopf + '“). Coco trocknet schneller als Erde — darunter meldet die App „Zu trocken für Coco". Vorbereitung IceFlush oder Ernte.' },
       12: { phase: 'Ernte',     tip: 'Ernte vor dem Lichtangang. Trichom-Profil bestimmt Zeitpunkt.' },
     },
     products: [
@@ -3835,7 +3835,7 @@ const FERT_PRESETS = {
       8:  { phase: 'Reifung I', tip: 'Bloom maximal, Grow ausschleichen.' },
       9:  { phase: 'Reifung II', tip: 'Ripen startet (letzte 2 Wochen vor Spülung).' },
       10: { phase: 'Spülung',  tip: 'Reines Wasser mit pH ' + phTargetFor('coco').mid.toFixed(1) + '. Salze raus.' },
-      11: { phase: 'Hard Dryback', tip: 'Nicht mehr gießen, bis der Topf den Gießpunkt erreicht (Hebe-Test „' + GIESSPUNKT.coco.knopf + '"). Coco trocknet schneller als Erde — darunter meldet die App „Zu trocken für Coco". Vorbereitung IceFlush oder Ernte.' },
+      11: { phase: 'Hard Dryback', tip: 'Nicht mehr gießen, bis der Topf den Gießpunkt erreicht (Hebe-Test „' + GIESSPUNKT.coco.knopf + '“). Coco trocknet schneller als Erde — darunter meldet die App „Zu trocken für Coco". Vorbereitung IceFlush oder Ernte.' },
       12: { phase: 'Ernte',    tip: 'Ernte vor dem Lichtangang.' },
     },
     products: [
@@ -4616,7 +4616,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.365';
+const APP_VERSION = 'v1.5.377';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -5530,28 +5530,28 @@ function _standUnsicher(d) {
   const planGiftig = (sch) => _istObjekt(sch) && (schluesselGiftig(sch) || Object.values(sch).some(schluesselGiftig));
   for (const c of liste(d.cycles)) {
     if (!_istObjekt(c)) continue;
-    if (_giftig(c.id) || _giftig(c.fertPlanId)) return 'Kennung eines Zyklus';
-    if (_ZYKLUS_DATUM.some(k => _giftig(c[k]))) return 'Datum eines Zyklus';
-    if (liste(c.plants).some(p => _istObjekt(p) && (_giftig(p.id) || _giftig(p.harvestedAt) || _giftig(p.addedAt)))) return 'Kennung oder Datum einer Pflanze';
-    if (liste(c.trainingEvents).some(t => _istObjekt(t) && (_giftig(t.id) || _giftig(t.date)))) return 'Datum eines Trainings';
-    if (liste(c.offsetHistory).some(o => _istObjekt(o) && _giftig(o.date))) return 'Datum einer Verschiebung';
-    if (liste(c.skippedDays).some(_giftig)) return 'übersprungener Tag';
+    if (_giftig(c.id) || _giftig(c.fertPlanId)) return 'in der Kennung eines Zyklus';
+    if (_ZYKLUS_DATUM.some(k => _giftig(c[k]))) return 'in einem Datum eines Zyklus';
+    if (liste(c.plants).some(p => _istObjekt(p) && (_giftig(p.id) || _giftig(p.harvestedAt) || _giftig(p.addedAt)))) return 'in der Kennung oder einem Datum einer Pflanze';
+    if (liste(c.trainingEvents).some(t => _istObjekt(t) && (_giftig(t.id) || _giftig(t.date)))) return 'im Datum eines Trainings';
+    if (liste(c.offsetHistory).some(o => _istObjekt(o) && _giftig(o.date))) return 'im Datum einer Verschiebung';
+    if (liste(c.skippedDays).some(_giftig)) return 'bei einem übersprungenen Tag';
   }
   const plaene = liste(d.fertPlans).filter(_istObjekt);
-  if (plaene.some(p => _giftig(p.id) || _giftig(p.presetKey))) return 'Kennung eines Düngeplans';
-  if ([...liste(d.products), ...plaene.flatMap(p => liste(p.products))].some(p => _istObjekt(p) && _giftig(p.id))) return 'Kennung eines Produkts';
-  if (planGiftig(d.weekSchedule) || plaene.some(p => planGiftig(p.schedule))) return 'Wochenplan';
-  if (_giftig(d._activePlanId) || _giftig(d.presetKey)) return 'Kennung des Düngeplans';
-  if (schluesselGiftig(d.customPresets)) return 'Kennung einer eigenen Vorlage';
+  if (plaene.some(p => _giftig(p.id) || _giftig(p.presetKey))) return 'in der Kennung eines Düngeplans';
+  if ([...liste(d.products), ...plaene.flatMap(p => liste(p.products))].some(p => _istObjekt(p) && _giftig(p.id))) return 'in der Kennung eines Produkts';
+  if (planGiftig(d.weekSchedule) || plaene.some(p => planGiftig(p.schedule))) return 'im Wochenplan';
+  if (_giftig(d._activePlanId) || _giftig(d.presetKey)) return 'in der Kennung des gewählten Düngeplans';
+  if (schluesselGiftig(d.customPresets)) return 'in der Kennung einer eigenen Vorlage';
   if (_istObjekt(d.customPresets) && Object.values(d.customPresets).some(v => _istObjekt(v)
-    && (liste(v.products).some(p => _istObjekt(p) && _giftig(p.id)) || planGiftig(v.schedule)))) return 'Produkt einer eigenen Vorlage';
+    && (liste(v.products).some(p => _istObjekt(p) && _giftig(p.id)) || planGiftig(v.schedule)))) return 'bei einem Produkt einer eigenen Vorlage';
   if (_istObjekt(d.entries)) {
-    if (schluesselGiftig(d.entries)) return 'Datum eines Eintrags';
+    if (schluesselGiftig(d.entries)) return 'im Datum eines Tagebuch-Eintrags';
     for (const e of Object.values(d.entries)) {
       if (!_istObjekt(e) || !_istObjekt(e.cycleData)) continue;
-      if (schluesselGiftig(e.cycleData)) return 'Kennung in einem Eintrag';
+      if (schluesselGiftig(e.cycleData)) return 'in einer Kennung im Tagebuch';
       for (const cd of Object.values(e.cycleData)) {
-        if (_istObjekt(cd) && Object.values(cd).some(schluesselGiftig)) return 'Kennung in einem Eintrag';
+        if (_istObjekt(cd) && Object.values(cd).some(schluesselGiftig)) return 'in einer Kennung im Tagebuch';
       }
     }
   }
@@ -5602,6 +5602,49 @@ function _standEntgiften(d) {
       if (Array.isArray(cd.photos)) { const vor = cd.photos.length; cd.photos = cd.photos.filter(x => !_giftig(x)); n += vor - cd.photos.length; }
     }
   }
+  return n;
+}
+
+/**
+ * (v1.5.366) Freitexte — Namen von Zyklen, Pflanzen, Produkten und Plänen, Standort, Sorte, Plan-Texte, Trainings-Notizen —
+ * stehen an rund 200 Stellen ungemaskt im Seitenaufbau, in Attributen und in Knopf-Befehlen (Sicherheitsprüfung vom 07.10.2026:
+ * Zyklusname 40, Produktname 16, Plan-Name 12 Stellen …). Statt jede Stelle zu maskieren, werden die wenigen Zeichen, mit denen
+ * ein Text aus HTML, Attribut oder Befehl ausbricht, typografisch umgesetzt: ' → ’, " → ”, < → ‹, > → ›, \ → ∖, ein & vor
+ * einer HTML-Schreibweise (&#39; &lt;) → ＆, Steuerzeichen → Leerzeichen. Für einen Leser ändert sich nichts Wesentliches
+ * („Patrick’s Grow" ist sogar die richtige Schreibweise), und neue Anzeigen sind ohne eigene Maske sicher.
+ * Notizen im Tagebuch bleiben, wie sie sind — sie werden bei der Ausgabe maskiert (escHtml).
+ */
+function _freitextSauber(t) {
+  if (typeof t !== 'string') return t;
+  return t.replace(/'/g, '’').replace(/"/g, '”').replace(/</g, '‹').replace(/>/g, '›').replace(/\\/g, '∖')
+    .replace(/&(?=#|[A-Za-z][A-Za-z0-9]*;)/g, '＆').replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u2028\u2029]/g, ' ');
+}
+function _standFreitexteSauber(d) {
+  if (!_istObjekt(d)) return 0;
+  let n = 0;
+  const liste = (x) => Array.isArray(x) ? x : [];
+  const fix = (o, k) => { if (_istObjekt(o) && typeof o[k] === 'string') { const v = _freitextSauber(o[k]); if (v !== o[k]) { o[k] = v; n++; } } };
+  const fixListe = (o, k) => { if (_istObjekt(o) && Array.isArray(o[k])) o[k] = o[k].map(x => { const v = _freitextSauber(x); if (v !== x) n++; return v; }); };
+  const werte = (x) => Array.isArray(x) ? x : (_istObjekt(x) ? Object.values(x) : []);
+  const produkt = (p) => { fix(p, 'name'); fix(p, 'note'); };
+  const plan = (p) => {
+    if (!_istObjekt(p)) return;
+    ['name', 'subtitle', 'mixInfo', 'drainInfo'].forEach(k => fix(p, k));
+    fixListe(p, 'mixOrder');
+    werte(p.weekFocus).forEach(w => { fix(w, 'phase'); fix(w, 'tip'); });
+    werte(p.ecTargets).forEach(e => fix(e, 'label'));
+    liste(p.products).forEach(produkt);
+  };
+  for (const c of liste(d.cycles)) {
+    if (!_istObjekt(c)) continue;
+    ['name', 'location', 'strain', 'paketId'].forEach(k => fix(c, k));
+    liste(c.plants).forEach(p => { fix(p, 'label'); fix(p, 'strain'); fix(p, 'name'); });
+    liste(c.trainingEvents).forEach(t => { fix(t, 'notes'); fix(t, 'note'); });
+  }
+  liste(d.products).forEach(produkt);
+  liste(d.fertPlans).forEach(plan);
+  werte(d.customPresets).forEach(plan);
+  fix(d, 'mixInfo'); fix(d, 'drainInfo'); fixListe(d, 'mixOrder');
   return n;
 }
 
@@ -5907,7 +5950,7 @@ function _vorfallText(i) {
   const umfang = `${zahl(i.zyklen, 'Zyklus', 'Zyklen')}, ${zahl(i.eintraege, 'Eintrag', 'Einträge')}`;
   const anfang = i.grund === 'fehlte'
     ? 'Beim Start fehlte dein gespeicherter Stand.'
-    : `Beim Start ließ sich dein gespeicherter Stand nicht benutzen (${i.grund}).`;
+    : `Beim Start ließ sich dein gespeicherter Stand nicht benutzen (${i.grund === 'unsicher' ? 'er enthält in Kennungen oder Daten Zeichen, die GrowSmart dort nie schreibt — meist aus einer veränderten oder fremden Datei' : i.grund}).`;
   // Ehrlich bleiben: GrowSmart kann diese Datei selbst nicht wieder einlesen (sie ist ja beschädigt).
   // Das Versprechen „daraus retten wir dir die Einträge" hielt in der Messung keiner der drei Wege.
   const alterStand = i.grund === 'fehlte' ? ''
@@ -6076,6 +6119,7 @@ function loadS() {
   try { const b = _standLueckenEntfernen(S); _lueckenBeimStart = b.leer ? b : null; } catch (e) { _lueckenBeimStart = null; }
   // (v1.5.364) Werte mit Zeichen, die GrowSmart dort nie schreibt, kommen nicht in die Oberfläche.
   try { _giftBeimStart = _standEntgiften(S); } catch (e) { _giftBeimStart = 0; }
+  try { _standFreitexteSauber(S); } catch (e) { /* (v1.5.366) dann eben beim nächsten Speichern */ }
 
   // (v1.5.296) Die Migrationen laufen in drei Abschnitten, jeder für sich abgesichert, die Zyklen einzeln. Bis hier
   // brach ein einziger Fehler loadS ab — gemessen an v1.5.271: sichtbar blieb nur die Kopfzeile, jedes Speichern
@@ -7122,6 +7166,8 @@ function saveS() {
           .sort((a, b) => a.date.localeCompare(b.date));
       }
     });
+    // (v1.5.366) Freitexte typografisch umsetzen (_freitextSauber) — auch, was der Nutzer selbst getippt hat.
+    _standFreitexteSauber(S);
 
     // Orphan cleanup only on debounced saves (not on every keystroke)
     const now = Date.now();
@@ -7293,7 +7339,12 @@ function _kopieLesen(key) {
     const roh = localStorage.getItem(key);
     if (!roh) return null;
     const d = JSON.parse(roh);
-    return _istObjekt(d) ? { key, roh, d } : null;
+    // (v1.5.375) Eine Kopie mit Kennungen oder Daten, die GrowSmart nie schreibt (_standUnsicher), gilt als nicht vorhanden: Sie
+    // wird nicht zum Laden angeboten, nicht nachgerückt und beim nächsten Speichern durch eine saubere ersetzt. Vorher bot die
+    // App sie an, und das Laden ersetzte den sauberen Hauptstand — nach dem Neustart lehnte das Tor sie ab, der gute Stand war
+    // weg (Gegenprüfung v1.5.364, nachgestellt). Vorbedingung: eine früher importierte präparierte Datei.
+    if (!_istObjekt(d) || _standUnsicher(d)) return null;
+    return { key, roh, d };
   } catch (e) { return null; }
 }
 
@@ -7624,23 +7675,37 @@ function _flashSaved() {
 //  [SEKTION]: CUSTOM CONFIRM MODAL (replaces native confirm())
 // =====================================================================
 let _modalResolve = null;
+// (v1.5.368) Wartende Dialoge. Vorher überschrieb ein zweiter Aufruf den offenen Dialog: Text und Antwort gingen an den
+// zweiten, und wer auf den ersten wartete, wartete für immer. Gemessen: Das „🌱 Sämlings-Protokoll" erscheint 800 ms nach dem
+// Anlegen eines Zyklus — kam in der Zeit eine andere Rückfrage, blieb sie hängen (test_dialog_und_namen unter Last, 3 von 4
+// Läufen). Dasselbe galt für den Hinweis „anderes Fenster" (_fremdMelden) über einem offenen Dialog.
+const _modalWarten = [];
+function _modalNaechster() {
+  if (_modalResolve || !_modalWarten.length) return;
+  _modalWarten.shift()();
+}
 
 /**
  * Show a custom confirm dialog. Returns a Promise<boolean>.
  * Usage: const ok = await customConfirm('Titel', 'Nachricht', 'Löschen', '#e06060');
+ * Ist schon ein Dialog offen, erscheint dieser danach (v1.5.368).
  */
 function customConfirm(title, msg, okText = 'OK', okColor = 'var(--red)', cancelText = 'Abbrechen') {
   return new Promise((resolve) => {
-    _modalResolve = resolve;
-    document.getElementById('modal-title').textContent = title;
-    document.getElementById('modal-msg').textContent = msg;
-    const okBtn = document.getElementById('modal-ok');
-    okBtn.textContent = okText;
-    okBtn.style.background = okColor;
-    // Cancel-Text individuell setzbar — vermeidet UX-Kollision wenn der primäre
-    // Button-Text auch "Abbrechen" wäre (z.B. bei "Zyklus abbrechen?" Dialog).
-    document.getElementById('modal-cancel').textContent = cancelText;
-    document.getElementById('modal-overlay').classList.add('show');
+    const zeigen = () => {
+      const fertig = (v) => { if (_modalResolve === fertig) _modalResolve = null; resolve(v); setTimeout(_modalNaechster, 0); };
+      _modalResolve = fertig;
+      document.getElementById('modal-title').textContent = title;
+      document.getElementById('modal-msg').textContent = msg;
+      const okBtn = document.getElementById('modal-ok');
+      okBtn.textContent = okText;
+      okBtn.style.background = okColor;
+      // Cancel-Text individuell setzbar — vermeidet UX-Kollision wenn der primäre
+      // Button-Text auch "Abbrechen" wäre (z.B. bei "Zyklus abbrechen?" Dialog).
+      document.getElementById('modal-cancel').textContent = cancelText;
+      document.getElementById('modal-overlay').classList.add('show');
+    };
+    if (_modalResolve) _modalWarten.push(zeigen); else zeigen();
   });
 }
 
@@ -9932,12 +9997,15 @@ function contextFor(c, iso) {
   const needsManualLightSwitch = isFeminized && isIndoor;
 
   // Topping-Zeitfenster: Tag 15+ bis Blüte Wo.3
+  // (v1.5.370) Bei Automatics nur vor dem Blühbeginn: Sie blühen nach Kalender und holen die Tage, die ein Schnitt kostet,
+  // nicht wieder auf (ANBAU.md 9). Vorher bot die App den Schnitt bis Blütewoche 3 an — gegen den eigenen Hinweis
+  // „bei Automatics nur jetzt" und das Lexikon (Run-02-Prüfung, F01).
   const canTop = !c.toppingDate && p.day >= 15 &&
-                 (isVegi || (isBloom && p.week <= 3));
+                 (isVegi || (isBloom && p.week <= 3 && !isAutomatic));
 
   // Ist das Toppen schon "zu spät"? (Hinweis nur bei Automatics sinnvoll —
   // Feminisiert kann die Vegi beliebig verlängern durch Licht-Steuerung.)
-  const toppingTooLate = !c.toppingDate && isAutomatic && isBloom && p.week >= 4;
+  const toppingTooLate = !c.toppingDate && isAutomatic && isBloom;
 
   // Ist der User noch "zu früh" zum Toppen?
   const toppingTooEarly = !c.toppingDate && p.day < 15 && isVegi;
@@ -13136,24 +13204,30 @@ function waterStats(c) {
  */
 function _mischungKurz(c, paare, waterMl) {
   const rf = reserveFactor(c);
-  // (v1.5.365) Unter einem Liter Anmisch-Menge wird für 1 L gerechnet. Bei Sämlingen stand sonst „für 0 L: CalMag 0 ml" —
-  // 0,04 ml lassen sich nicht abmessen, und eine Null liest sich wie „kein Dünger". Die Mengen gelten dann je Liter;
-  // gebraucht wird davon nur ein Teil, und der steht dabei.
   const anmisch = (parseFloat(waterMl) || 0) * rf;
-  const jeLiter = anmisch < 1000;
-  const basis = jeLiter ? 1000 : anmisch;
-  const liter = Math.round(basis / 100) / 10;
-  const bedarf = anmisch < 100 ? 'weniger als 0,1' : String(Math.round(anmisch / 100) / 10).replace('.', ',');
   const reihe = (_planAnsicht(c).products || []).map(pr => pr.id);
   const sortiert = paare.filter(([, v]) => parseFloat(v) > 0).sort((a, b) => (reihe.indexOf(a[0]) + 1 || 999) - (reihe.indexOf(b[0]) + 1 || 999));
-  const teile = sortiert.map(([id, plan]) => {
-    const pr = _produktFuer(c, id);
-    const menge = calcDose(parseFloat(plan), basis, pr && pr.unit);
-    const einheit = /^g/i.test(String((pr && pr.unit) || '')) ? 'g' : 'ml';
-    return `${(pr && pr.name) || id} ${String(menge).replace('.', ',')} ${einheit}`;
+  const posten = sortiert.map(([id, plan]) => { const pr = _produktFuer(c, id); return { id, plan: parseFloat(plan), name: (pr && pr.name) || id, unit: (pr && pr.unit) || '' }; });
+  // (v1.5.365) Unter einem Liter rechnet die Zeile für 1 L, damit keine „0 ml" dasteht. (v1.5.376) Aber nur, wo eine Menge sonst
+  // nicht abmessbar wäre (unter 0,2 ml bzw. g, unter einem Tropfen) und nur, wenn alle Mengen je Liter gelten: Eine feste Menge je
+  // Guss in 1 L gerührt und davon 0,2 L gegossen, gäbe nur ein Fünftel davon. Vorher galt die Umstellung unter jedem Liter — die
+  // Startseite nannte dann andere Mengen als die Mischliste im Eintrag (4 statt 2 ml), und Tropfen hießen „ml" (Hesi SuperVit:
+  // „11,6 ml" statt 11,6 Tropfen, rund 20-fach). Gegenprüfung v1.5.365.
+  const tropfen = (x) => /^(tr|tropfen)/i.test(displayUnit(x.unit));
+  const nichtMessbar = (x) => isPerLitre(x.unit) && calcDose(x.plan, anmisch, x.unit, 2) < (tropfen(x) ? 1 : 0.2);
+  const jeLiter = anmisch > 0 && anmisch < 1000 && posten.some(nichtMessbar) && posten.every(x => isPerLitre(x.unit));
+  const basis = jeLiter ? 1000 : anmisch;
+  const zahl = (v) => String(v).replace('.', ',');
+  const teile = posten.map(x => {
+    let menge = calcDose(x.plan, basis, x.unit);
+    if (menge === 0) menge = calcDose(x.plan, basis, x.unit, 2);   // lieber 0,04 als eine Null, die wie „kein Dünger" aussieht
+    return `${x.name} ${zahl(menge)} ${displayUnit(x.unit)}`;
   });
-  const fuer = jeLiter ? `für 1 L anmischen (heute brauchst du davon ${bedarf} L)` : `für ${String(liter).replace('.', ',')} L`;
-  return { text: teile.join(' · '), liter: String(liter).replace('.', ','), anzahl: teile.length, jeLiter, fuer };
+  const liter = Math.round(basis / 100) / 10;
+  const bedarf = anmisch < 100 ? 'weniger als 0,1' : zahl(Math.round(anmisch / 100) / 10);
+  // ANBAU.md 10: nicht auf Vorrat mischen — der Rest einer kleinen Mischung wird nicht aufgehoben.
+  const fuer = jeLiter ? `für 1 L anmischen (heute brauchst du davon ${bedarf} L, den Rest nicht aufheben)` : `für ${anmisch < 100 ? 'weniger als 0,1' : zahl(liter)} L`;
+  return { text: teile.join(' · '), liter: zahl(liter), anzahl: teile.length, jeLiter, fuer };
 }
 
 function reserveFactor(c) {
@@ -16089,12 +16163,19 @@ function getAlerts(c) {
   if (daysSinceStart === 3) milestones.push({ key: 'd3', icon: '🌱', text: 'Tag 3 — erste Blättchen kommen raus! Jetzt nur ganz wenig gießen.', type: 'milestone' });
   if (daysSinceStart === 7) milestones.push({ key: 'd7', icon: '🎉', text: 'Eine Woche geschafft! Typisch: erstes echtes Laubblatt-Paar.', type: 'milestone' });
   if (daysSinceStart === 14) milestones.push({ key: 'd14', icon: '💪', text: '2 Wochen! Jetzt passiert das meiste unter der Erde — Wurzeln wachsen wie verrückt.', type: 'milestone' });
-  if (daysSinceStart === 21) milestones.push({ key: 'd21', icon: '🌿', text: '3 Wochen! Die Pflanze sollte jetzt buschiger werden. Zeit fürs Topping (wenn gewünscht).', type: 'milestone' });
+  if (daysSinceStart === 21) milestones.push({ key: 'd21', icon: '🌿', text: (c.seedType === 'auto' && p.ph === 'bloom')
+    ? '3 Wochen! Die Pflanze sollte jetzt buschiger werden. Fürs Toppen ist es bei Automatics jetzt zu spät — sanftes Herunterbinden (LST) geht noch.'
+    : (c.seedType === 'auto'
+      ? '3 Wochen! Die Pflanze sollte jetzt buschiger werden. Toppen geht bei Automatics nur noch vor dem Blühbeginn und nur bei kräftigen Pflanzen — sanftes Herunterbinden (LST) kostet weniger Zeit.'
+      : '3 Wochen! Die Pflanze sollte jetzt buschiger werden. Zeit fürs Topping (wenn gewünscht).'), type: 'milestone' });   // (v1.5.370)
   // (v1.2.61) Vorher: p.day === 1 — p.day ist aber der GESAMT-Tag, am ersten
   // Blütetag also anzuchtDays+1 (typisch 22). Der Milestone konnte nie feuern.
   // Jetzt Wochen-Fenster wie bloom_wk4: ganze Blüte-Woche 1 sichtbar (per ✕
   // abhakbar), gilt für beide Phasen-Pfade, da p.week blüte-relativ zählt.
-  if (p.ph === 'bloom' && p.week === 1) milestones.push({ key: 'bloom_start', icon: '🌸', text: 'Blütenphase startet! Ab jetzt kein Stickstoff mehr hochdrehen, die Pflanze stretcht noch 2-3 Wochen.', type: 'milestone' });
+  if (p.ph === 'bloom' && p.week === 1) milestones.push({ key: 'bloom_start', icon: '🌸', text: 'Blütenphase startet! In den nächsten 2–3 Wochen streckt sich die Pflanze noch und braucht viel — weiter nach Plan düngen. Stickstoff nimmt der Plan erst gegen Ende zurück.', type: 'milestone' });
+  // (v1.5.371) Vorher „Ab jetzt kein Stickstoff mehr hochdrehen" — in Blütewoche 1, während der Plan (Rainbow) Bio·Grow gerade anhebt
+  // (Run-02-Prüfung, F03). Ein verfrühter Stickstoff-Stopp ist der teurere Fehler: Die Pflanze baut bis zuletzt Blütenmasse auf
+  // und braucht dafür Stickstoff (ANBAU.md 5).
   if (p.ph === 'bloom' && daysSinceStart && p.week === 4) milestones.push({ key: 'bloom_wk4', icon: '✨', text: 'Woche 4 Blüte — die ersten echten Blütenansätze werden sichtbar!', type: 'milestone' });
 
   // PHASE-ÜBERGANG-VORSCHAU: 3 Tage vor einem wichtigen Phasenwechsel rechtzeitig hinweisen.
@@ -16922,7 +17003,11 @@ function getCriticalWarning(category, value, p, c, t) {
     // (v1.5.317) Ziel aus phTargetFor statt fest 6,4 (für Coco und Hydro falsch), keine Spülmenge ohne Quelle („2× Topfvolumen"),
     // und zuerst die Validität: Ein Wert so weit daneben ist oft ein Messfehler (ANBAU.md Regel 2).
     const _phNot = phTargetFor(c && c.medium);
-    const _nachgiessen = `Ist schon gegossen: mit richtig eingestelltem Wasser nachgießen, bis unten ${DRAIN_ZIEL.min}–${DRAIN_ZIEL.max} % herauslaufen, und den Drain-pH messen.`;
+    // (v1.5.373) Vor dem ersten Durchgießen (_drainMoeglich) nie nachgießen, bis unten etwas kommt: Ein Sämlingstopf voller Wasser
+    // ohne aufnehmende Wurzeln ist die Bedingung für Wurzelfäule (ANBAU.md 13.1, 16). Dort genügt der nächste Guss richtig eingestellt.
+    const _nachgiessen = (p && !_drainMoeglich(p))
+      ? 'Ist schon gegossen: nicht nachspülen — der junge Topf verträgt kein zusätzliches Wasser. Der nächste Guss kommt richtig eingestellt.'
+      : `Ist schon gegossen: mit richtig eingestelltem Wasser nachgießen, bis unten ${DRAIN_ZIEL.min}–${DRAIN_ZIEL.max} % herauslaufen, und den Drain-pH messen.`;
     if (value < 4.5) {
       return {
         level: 'critical',
@@ -16966,7 +17051,10 @@ function getCriticalWarning(category, value, p, c, t) {
         level: 'critical',
         icon: '🚨',
         title: `EC ${ecFmt(value)} ${_u} ist viel zu hoch für Sämling`,
-        action: `Sämlinge brauchen EC < ${ecFmt(0.8)} ${_u}. Bei ${ecFmt(1.2)}+ droht Verbrennung der jungen Wurzeln. SOFORT mit klarem Wasser (pH 6.4) spülen, kein Dünger.`,
+        // (v1.5.373) Vorher „SOFORT mit klarem Wasser (pH 6.4) spülen" — im Sämlingstopf ist Durchspülen genau die nasse Erde ohne
+        // aufnehmende Wurzel, unter der Pythium keimende Pflanzen befällt (ANBAU.md 13.1, 16), und 6,4 ist nur der Erd-Wert.
+        // Gemessen wird das Gießwasser: Es wird verdünnt, bevor es in den Topf kommt; dazu zuerst die Messung prüfen (Regel 2).
+        action: `Sämlinge brauchen EC unter ${ecFmt(0.8)} ${_u}; bei ${ecFmt(1.2)} und mehr verbrennen die jungen Wurzeln. Noch nicht gegossen: mit klarem Wasser verdünnen, bis der Wert darunter liegt. Schon gegossen: nicht durchspülen — ein Sämlingstopf voller Wasser ist die Bedingung für Wurzelfäule —, der nächste Guss nur mit klarem Wasser (pH ${phTargetFor(c && c.medium).labelComma}). Vorher prüfen: Ist das Messgerät kalibriert, und wie viel EC bringt dein Leitungswasser selbst mit?`,
       };
     }
     if (ph === 'anzucht' && value > 1.8) {
@@ -17300,21 +17388,39 @@ function getEntryWarnings(cd, p, e, c, iso) {
   // (v1.2.63) Decke medium-bewusst aus _ecHighCeilFor statt hart 2.5 —
   // gleiche Quelle wie Kritik-Warnung und Dashboard-Alert.
   const ecCeil = _ecHighCeilFor(c);
+  // (v1.5.369) Untergrenze aus dem Ziel der Plan-Woche (getEcTarget) statt fest 0,8 — dieselbe Spanne, die der Eintrag als
+  // „EC im Ziel" nennt. Vorher meldete ein Wert im Korridor „EC unter 0.8 — Dosis leicht erhöhen" (Run-02-Prüfung F04).
+  const _ecZ = (iso && typeof _ecTargetFor === 'function') ? _ecTargetFor(c, iso) : null;
+  const ecUnten = (_ecZ && isFinite(_ecZ.min) && _ecZ.min > 0) ? _ecZ.min : 0.8;
   if (ecVal > ecCeil) {
     const text = S.beginnerMode
       ? '⚠ Dünger-Wert zu hoch — nächstes Mal weniger düngen. Bei Bedarf: nur Wasser geben.'
       : `⚠️ EC über ${ecCeil}! Überdüngung möglich. Nächstes Mal weniger düngen, ggf. Zwischenguss mit reinem Wasser.`;
     out.push({ type: 'err', text });
-  } else if (ecVal > 0 && ecVal < 0.8 && p && p.ph === 'bloom'
+  } else if (ecVal > 0 && ecVal < ecUnten && p && p.ph === 'bloom'
              // (v1.2.60) Am Wasser-Tag ist niedriger EC das ZIEL (0.3–0.4), kein
              // Mangel — der "mehr düngen"-Hinweis widersprach dort der EC-Ziel-
              // Anzeige und verleitete Anfänger, ausgerechnet am Wasser-Tag zu
              // düngen. Greift nur mit bekanntem Tag (iso); ohne iso wie bisher.
              && !(iso && getFeedWaterEffective(c, p, iso, cd) === 'water')) {
+    // Kein „mehr düngen": Mit organischem Dünger misst EC nur einen Teil der Nährstoffe (ANBAU.md 5) — dort ist ein niedrigerer
+    // Wert normal. Und mehr als die Plan-Dosis ist nie der sichere Schritt (ANBAU.md 15).
+    const _spanne = _ecZ ? `${ecFmt(_ecZ.min)}–${ecFmt(_ecZ.max)} ${ecUnitLabel()}` : `ab ${ecFmt(0.8)} ${ecUnitLabel()}`;
     const text = S.beginnerMode
-      ? 'ℹ Dünger-Wert niedrig — du könntest etwas mehr düngen.'
-      : 'ℹ️ EC unter 0.8 — Pflanze kann mehr vertragen. Dosis leicht erhöhen.';
+      ? `ℹ Dünger-Wert unter dem Ziel dieser Woche (${_spanne}). Prüfe, ob alle Mittel aus dem Plan in der Kanne waren. Bei Bio-Dünger ist ein niedrigerer Wert normal.`
+      : `ℹ️ EC ${ecFmt(ecVal)} unter dem Ziel dieser Plan-Woche (${_spanne}). Kam alles aus dem Plan in die Kanne? Organischer Dünger zeigt sich im EC nur zum Teil — dann ist das kein Mangel; mehr als die Plan-Dosis ist nicht nötig.`;
     out.push({ type: 'info', text });
+  } else if (_ecZ && isFinite(_ecZ.max) && _ecZ.max > 0 && ecVal > _ecZ.max * 1.3 && p && p.ph !== 'flush' && p.ph !== 'ice'
+             && !getCriticalWarning('ec', ecVal, p, c)) {
+    // (v1.5.374) Deutlich über dem Ziel der Plan-Woche (mehr als ein Drittel darüber — eine Konvention, wie die Korridore selbst,
+    // ANBAU.md 5). Vorher blieb der Eintrag stumm, solange die allgemeine Obergrenze nicht erreicht war: Blüte-Woche 9 bei EC 2,4
+    // gegen ein Ziel von 1,1–1,25, im Sämling bis 1,2 (Nachtprüfung 07.10.2026, Punkt 3). Überdüngung ist einer der Fehler, die
+    // Pflanzen töten (13.2). Erste Ursachen sind Menge in der Kanne und der Eigen-EC des Leitungswassers (3) — die nennt der Satz.
+    const _spanne = `${ecFmt(_ecZ.min)}–${ecFmt(_ecZ.max)} ${ecUnitLabel()}`;
+    const text = S.beginnerMode
+      ? `⚠ Dünger-Wert deutlich über dem Ziel dieser Woche (${_spanne}). Prüfe die Menge in der Kanne — und miss einmal dein Leitungswasser pur: Es bringt selbst etwas mit.`
+      : `⚠ EC ${ecFmt(ecVal)} deutlich über dem Ziel dieser Plan-Woche (${_spanne}). Mehr in der Kanne als im Plan? Leitungswasser bringt eigenen EC mit — einmal pur messen und abziehen. Steigt auch der Drain-EC (bei mindestens ${DRAIN_ZIEL.min} % Ablauf), den nächsten Guss mit weniger Dünger.`;
+    out.push({ type: 'warn', text });
   }
 
   // Temperature (environment) — Schwellen abhängig von Grow-Typ
@@ -18208,7 +18314,7 @@ function getTodayAction(c, p, a, iso) {
     const _erhaltung = _wasserTag ? (_planAnsicht(c).products || []).filter(pr => parseFloat(pr.waterDayDose) > 0) : [];
     const _duengerZeile = _wasserTag
       ? (_erhaltung.length
-          ? (() => { const _m = _mischungKurz(c, _erhaltung.map(pr => [pr.id, pr.waterDayDose]), waterMl); return `Wasser-Tag laut Plan: kein Dünger, nur ${_m.text} (${_m.fuer})`; })()
+          ? (() => { const _m = _mischungKurz(c, _erhaltung.map(pr => [pr.id, pr.waterDayDose]), waterMl); return `Wasser-Tag laut Plan: kein Dünger, nur ${_m.text} — ${_m.fuer}`; })()
           : 'Wasser-Tag laut Plan: nur Wasser, kein Dünger')
       : (activeDoses.length > 0 ? (() => { const _m = _mischungKurz(c, activeDoses, waterMl); return `Dünger Wo. ${fertWk} ${_m.fuer}: ${_m.text}`; })() : 'Kein Plan für diese Woche');
     // (v1.5.153) Ablaufziel aus DRAIN_ZIEL — derselbe Schritt sagte „bis ~10% Drain“, der Hinweis
@@ -20658,7 +20764,7 @@ function _trainingFit(c, iso, type) {
   // Ab hier entscheidet das `phase`-Feld der Methode.
   if (meta.phase === 'vegi') {
     if (vorBluete) return ja('Gute Zeit dafür — die Pflanze hat danach Ruhe zum Erholen.');
-    if (inBluete && bWoche != null && bWoche <= 2) {
+    if (inBluete && bWoche != null && bWoche <= 2 && c.seedType !== 'auto') {   // (v1.5.370) Automatics: mit der Blüte vorbei
       return nein('spaet', `Die Blüte läuft schon (Woche ${bWoche}).`,
         'In den ersten Blütewochen streckt sich die Pflanze noch, ein Eingriff ist gerade so vertretbar — sie wirft dich aber um einige Tage zurück.' + autoHinweis);
     }
@@ -26758,7 +26864,7 @@ function _zyklenPaketPruefen(d) {
   const sauber = (x) => !/[<>]/.test(x);
   const text = (x, max) => typeof x === 'string' && x.trim() !== '' && x.length <= max && sauber(x);
   const kurz = (x, max) => x === undefined || (typeof x === 'string' && x.length <= max && sauber(x));
-  const paketId = (typeof d.paketId === 'string' && d.paketId.trim() && d.paketId.length <= 60) ? d.paketId.trim() : null;
+  const paketId = (typeof d.paketId === 'string' && d.paketId.trim() && d.paketId.length <= 60) ? _freitextSauber(d.paketId.trim()) : null;
   const zyklen = [];
   for (let i = 0; i < d.zyklen.length; i++) {
     const z = d.zyklen[i], nr = `Zyklus ${i + 1}`;
@@ -26795,11 +26901,11 @@ function _zyklenPaketPruefen(d) {
     }
     // (v1.5.340) Genau die bekannten Felder übernehmen — nie das Eingangsobjekt kopieren.
     zyklen.push({
-      name: z.name.trim(), startDate: z.startDate, seedType: z.seedType, growType: z.growType, medium: z.medium,
+      name: _freitextSauber(z.name.trim()), startDate: z.startDate, seedType: z.seedType, growType: z.growType, medium: z.medium,
       potSize: z.potSize, anzuchtDays: z.anzuchtDays, bloomDays: z.bloomDays, startMethod: z.startMethod,
       germMethod: z.germMethod, lightVeg: z.lightVeg, lightBloom: z.lightBloom, fertPreset: z.fertPreset,
-      strain: z.strain === undefined ? undefined : z.strain.trim(),
-      pflanzen: z.pflanzen.map(p => ({ label: p.label.trim(), strain: p.strain === undefined ? '' : p.strain.trim() })),
+      strain: z.strain === undefined ? undefined : _freitextSauber(z.strain.trim()),
+      pflanzen: z.pflanzen.map(p => ({ label: _freitextSauber(p.label.trim()), strain: p.strain === undefined ? '' : _freitextSauber(p.strain.trim()) })),
       notizen,
     });
   }
@@ -28707,7 +28813,8 @@ async function importData() {
       // (v1.5.364) Kennungen oder Daten mit Zeichen, die GrowSmart nie schreibt: Die Datei wurde verändert oder stammt nicht
       // aus GrowSmart — über solche Felder käme Programmcode in die App. Nicht reparieren, ablehnen.
       const _unsicher = _standUnsicher(d);
-      if (_unsicher) { toast('⚠ Diese Datei wird nicht geladen: In einer ' + _unsicher + ' stehen Zeichen, die GrowSmart dort nie schreibt — sie wurde verändert oder stammt nicht aus GrowSmart, und so könnte Programmcode in die App kommen. ' + wegweiser, 9000); return; }
+      // (v1.5.377) Grund als ganzer Satzteil, ohne Fachwort; und was tun, wenn es das eigene Backup ist (Gegenprüfung v1.5.364).
+      if (_unsicher) { toast('⚠ Diese Datei wird nicht geladen: ' + _unsicher.charAt(0).toUpperCase() + _unsicher.slice(1) + ' stehen Zeichen, die GrowSmart dort nie schreibt. Die Datei wurde verändert oder stammt nicht aus GrowSmart — über solche Felder könnten fremde Befehle in die App kommen. Ist es dein eigenes Backup, nimm das jüngste, das du selbst heruntergeladen hast. Dein Stand bleibt unverändert.', 10000); return; }
       let repariert = null;
       if (_standMangel(d)) {
         // Lesbar, aber an einer Stelle beschädigt: dieselbe Reparatur wie beim Start. Geht sie nicht, lieber ablehnen
@@ -29677,20 +29784,20 @@ function renderEntry(iso) {
     // ist bereits vergangen (faellt unter iso>=todayISO) -> es gaebe nirgends einen Knopf.
     const toppingIsBackfill = iso < todayISO();
     const canTop = (isWaterDay || wateredToday || iso === todayISO()) && !c.toppingDate && p && p.day >= 15
-      && (isVegiPhase(p.ph) || (p.ph === 'bloom' && p.week <= 3))
+      && (isVegiPhase(p.ph) || (p.ph === 'bloom' && p.week <= 3 && c.seedType !== 'auto'))   // (v1.5.370) Automatics: nur vor der Blüte
       && iso <= todayISO();
     // Undo Topping button: show on the topping day itself OR on any rest day after topping
     const isToppingDay = c.toppingDate === iso;
     const isToppingRest = c.toppingDate && isoDiff(iso, c.toppingDate) >= 1 && isoDiff(iso, c.toppingDate) <= (c.toppingPause || 2);
     const showUndoTop = isToppingDay || isToppingRest;
 
-    // Hinweis warum Toppen nicht mehr möglich ist — nur bei Automatics in der Blüte ab Woche 4.
+    // Hinweis warum Toppen nicht mehr möglich ist — nur bei Automatics, ab dem ersten Blütetag (v1.5.370; vorher ab Woche 4).
     // Bei Feminisierten (Photoperiode) entscheidet der User selbst über den Blüte-Start via 12/12,
     // daher ist die Blüte-Wochen-Grenze dort nicht als "zu spät" interpretierbar.
     const showTopTooLateHint = !canTop && !c.toppingDate && iso >= todayISO()
       && (isWaterDay || wateredToday)
       && c.seedType === 'auto'
-      && p && p.ph === 'bloom' && p.week >= 4;
+      && p && p.ph === 'bloom';
 
     const toppingBtn = canTop
       ? `<div style="background:rgba(76,175,112,0.08);border:0.5px solid rgba(76,175,112,0.25);border-radius:10px;padding:10px 12px;margin-bottom:8px;font-size:11px;color:var(--green);line-height:1.5">
@@ -29701,7 +29808,7 @@ function renderEntry(iso) {
         </button>`
       : showTopTooLateHint
       ? `<div style="background:rgba(240,208,80,0.06);border:0.5px solid rgba(240,208,80,0.25);border-radius:10px;padding:10px 12px;margin-bottom:8px;font-size:11px;color:var(--text-sub);line-height:1.5">
-          ⏰ <b style="color:var(--yellow)">Toppen nicht mehr empfohlen</b> – Blüte Woche ${p.week}. Bei Automatics ist das Zeitfenster in den ersten 3 Blüte-Wochen vorbei; ein Schnitt jetzt würde die Blüte zurückwerfen statt Ertrag zu bringen.<br><span style="color:var(--text-hint);font-size:10px">Beim nächsten Zyklus: rechtzeitig toppen (Anzucht ab Tag 21 bis Blüte Wo.3).</span>
+          ⏰ <b style="color:var(--yellow)">Toppen nicht mehr empfohlen</b> – Blüte Woche ${p.week}. Bei Automatics gehört ein Schnitt vor den Blühbeginn: Sie blühen nach Kalender, und die Tage, die er kostet, holt die Pflanze nicht wieder auf. Sanftes Herunterbinden (LST) geht noch.<br><span style="color:var(--text-hint);font-size:10px">Beim nächsten Zyklus: rechtzeitig toppen (Anzucht ab Tag 21 bis Blüte Wo.3).</span>
         </div>`
       : showUndoTop
       ? `<div style="background:rgba(176,106,200,0.06);border:0.5px solid rgba(176,106,200,0.2);border-radius:10px;padding:10px 12px;margin-bottom:8px">
@@ -30755,7 +30862,7 @@ function renderEntry(iso) {
             ${prodRows || `<div style="padding:10px 12px;font-size:12px;color:var(--text-muted)">Keine Dünger konfiguriert. <span style="color:var(--blue);cursor:pointer" onclick="openDuenger()">Dünger einrichten →</span></div>`}
           </div>
           ${mixSteps}
-          ${S.beginnerMode ? '' : `<div class="ph-hint">🎯 pH: ${pht.mid.toFixed(1)}${ecT && !ecT.waterOnly ? ` · EC: ${ecRange} ${ecUnitLabel()}` : ''} · Drain: ${DRAIN_ZIEL.min}–${DRAIN_ZIEL.max} %</div>`}
+          ${S.beginnerMode ? '' : `<div class="ph-hint">🎯 pH: ${pht.mid.toFixed(1)}${ecT && !ecT.waterOnly ? ` · EC: ${ecRange} ${ecUnitLabel()}` : ''}${_drainMoeglich(p) ? ` · Drain: ${DRAIN_ZIEL.min}–${DRAIN_ZIEL.max} %` : ''}</div>`}
           ${c.medium === 'hydro' ? hydroResBlock : `<div style="background:var(--card);border:0.5px solid var(--border);border-radius:10px;overflow:hidden;margin-top:6px">
             <div onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none';this.querySelector('.gtgl').textContent=this.nextElementSibling.style.display==='none'?'▸':'▾'" style="padding:8px 12px;cursor:pointer;display:flex;align-items:center;gap:6px">
               <span style="font-size:13px">🚰</span>
@@ -30765,12 +30872,14 @@ function renderEntry(iso) {
             <div style="display:none;padding:0 12px 10px">
               <div style="display:flex;flex-direction:column;gap:6px;font-size:10px;color:var(--text-sub);line-height:1.5">
                 <div style="background:rgba(224,96,96,0.06);border-radius:6px;padding:6px 8px;color:var(--red)">⚠️ <b>Regel Nr. 1:</b> Nach Topfgewicht gießen, nicht nach Kalender!</div>
-                <div><b style="color:var(--blue)">① Vollsättigung:</b> Langsam gießen, bis ${DRAIN_ZIEL.min}–${DRAIN_ZIEL.max} % unten ablaufen${waterSug > 0 ? ` (~${waterSug} ml)` : ''}. Topfgewicht merken = 100% Referenz.</div>
+                ${_drainMoeglich(p)
+                  ? `<div><b style="color:var(--blue)">① Vollsättigung:</b> Langsam gießen, bis ${DRAIN_ZIEL.min}–${DRAIN_ZIEL.max} % unten ablaufen${waterSug > 0 ? ` (~${waterSug} ml)` : ''}. Topfgewicht merken = 100% Referenz.</div>`
+                  : `<div><b style="color:var(--blue)">① Noch nicht durchgießen:</b> Bis Tag ${DRAIN_AB_TAG - 1} hat die junge Pflanze kaum Wurzeln im Topf. Gieß an den Gießtagen der App ihre Menge${waterSug > 0 ? ` (~${waterSug} ml)` : ''} im Ring um den Stamm — unten läuft noch nichts ab, und das ist richtig. Ab Tag ${DRAIN_AB_TAG} wird durchgegossen, bis ${DRAIN_ZIEL.min}–${DRAIN_ZIEL.max} % unten ablaufen.</div>`}   <!-- (v1.5.372) F06 -->
                 <div>${c.medium === 'coco' ? '<b style="color:var(--teal)">② Feucht halten:</b> Coco nie ganz austrocknen lassen — nur leicht abtrocknen, dann wieder gießen. Die Wurzeln mögen es gleichmäßig feucht.' : '<b style="color:var(--teal)">② Rücktrocknung:</b> Finger weg! Trocknung zieht O₂ in die Wurzelzone = Motor für Wachstum.'}</div>
-                <div>${c.medium === 'coco' ? `<b style="color:var(--green)">③ Gießpunkt:</b> Gießen sobald der Topf merklich leichter wird (Hebe-Test „${GIESSPUNKT.coco.knopf}“, ${GIESSPUNKT.coco.von}–${GIESSPUNKT.coco.bis} % Restgewicht) — jedes Mal mit Nährlösung. (${getInt(c, p?.ph || 'bloom') <= 1 ? 'meist täglich' : '~alle ' + getInt(c, p?.ph || 'bloom') + ' Tage'})` : `<b style="color:var(--green)">③ Sweetspot:</b> Gießen im Sweet Spot bei ${GIESSPUNKT.erde.von}–${GIESSPUNKT.erde.bis} % Restgewicht (Hebe-Test „Knapp“). Obere 3–5 cm trocken. (~alle ${getInt(c, p?.ph || 'bloom')} Tage)`}</div>
+                <div>${c.medium === 'coco' ? `<b style="color:var(--green)">③ Gießpunkt:</b> ${_drainMoeglich(p) ? '' : `Ab Tag ${DRAIN_AB_TAG}: `}Gießen sobald der Topf merklich leichter wird (Hebe-Test „${GIESSPUNKT.coco.knopf}“, ${GIESSPUNKT.coco.von}–${GIESSPUNKT.coco.bis} % Restgewicht) — jedes Mal mit Nährlösung. (${getInt(c, p?.ph || 'bloom') <= 1 ? 'meist täglich' : '~alle ' + getInt(c, p?.ph || 'bloom') + ' Tage'})` : `<b style="color:var(--green)">③ Sweetspot:</b> ${_drainMoeglich(p) ? '' : `Ab Tag ${DRAIN_AB_TAG}: `}Gießen im Sweet Spot bei ${GIESSPUNKT.erde.von}–${GIESSPUNKT.erde.bis} % Restgewicht (Hebe-Test „Knapp“). Obere 3–5 cm trocken. (~alle ${getInt(c, p?.ph || 'bloom')} Tage)`}</div>
                 <div style="background:rgba(240,208,80,0.06);border-radius:6px;padding:6px 8px;color:var(--yellow)">${c.medium === 'coco' ? '💡 <b>Tipp:</b> In Coco lieber etwas früher gießen als zu spät — Coco verzeiht Austrocknen schlecht. Staunässe trotzdem vermeiden, aber nie knochentrocken werden lassen.' : '💡 <b>Unsicher?</b> Morgen wieder anheben — nicht warten, bis die Blätter hängen: Dann steht die Photosynthese schon. Nass macht zu häufiges Gießen oder Wasser im Untersetzer, nicht eine volle Menge mit Drain.'}</div>
                 <div><b style="color:var(--orange)">🧪 Mischen:</b> ${(() => { const _mo = (_planAnsicht(c).mixOrder || []); return _mo.length ? `${_mo[0]} zuerst → umrühren → dann der Rest in der Reihenfolge deines Plans` : 'ein Silikat zuerst, falls du eins nutzt → dann CalMag → umrühren → Basisdünger → Additive'; })()} → pH auf ${pht.mid.toFixed(1)}</div>
-                <div><b style="color:var(--orange)">🚿 Drain:</b> ${DRAIN_ZIEL.min}–${DRAIN_ZIEL.max} % Drain bei jedem Guss. Drain-Wasser sofort entsorgen!</div>
+                ${_drainMoeglich(p) ? `<div><b style="color:var(--orange)">🚿 Drain:</b> ${DRAIN_ZIEL.min}–${DRAIN_ZIEL.max} % Drain bei jedem Guss. Drain-Wasser sofort entsorgen!</div>` : ''}
               </div>
             </div>
           </div>`}`;

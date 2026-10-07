@@ -159,11 +159,11 @@ function pruef(name, bedingung, info) {
       return JSON.stringify({ coco: w11('canna_coco'), ghe: w11('ghe_flora'), erde: w11('biobizz_konservativ'),
         knopfCoco: GIESSPUNKT.coco.knopf, knopfErde: GIESSPUNKT.erde.knopf });
     })()`));
-    const cocoOk = (t) => new RegExp('Hebe-Test „' + r.knopfCoco + '"').test(t) && /Zu trocken für Coco/.test(t) && !/trocknen lassen/i.test(t);
+    const cocoOk = (t) => new RegExp('Hebe-Test „' + r.knopfCoco + '["“]').test(t) && /Zu trocken für Coco/.test(t) && !/trocknen lassen/i.test(t);
     pruef(`canna_coco Woche 11 nennt den Coco-Gießpunkt („${r.knopfCoco}")`, cocoOk(r.coco), r.coco);
     pruef(`ghe_flora Woche 11 ebenso`, cocoOk(r.ghe), r.ghe);
     pruef(`Der Erd-Plan bleibt beim Erd-Gießpunkt („${r.knopfErde}") — die Quelle unterscheidet die beiden`,
-      new RegExp('Hebe-Test „' + r.knopfErde + '"').test(r.erde), r.erde);
+      new RegExp('Hebe-Test „' + r.knopfErde + '["“]').test(r.erde), r.erde);
     pruef('Im Quelltext lädt kein Plan mehr zum Trockenlaufen ein',
       !/Coco trocknen lassen/.test(code) && !/'Trocknen lassen, Ernte vorbereiten\.'/.test(code));
   }
