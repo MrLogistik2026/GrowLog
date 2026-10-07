@@ -212,9 +212,9 @@ process.on('unhandledRejection', (e) => { console.log('  (nicht abgefangen: ' + 
     // Ausnahme mitten im Anlegen
     const b = await load();
     const roh = b.w.localStorage.getItem(SK);
-    b.E("window.__n = 0; window.__orig = _planFuerVorlage; _planFuerVorlage = (k) => { if (++window.__n === 2) throw new Error('Testfehler'); return window.__orig(k); }");
+    b.E("window.__n = 0; window.__orig = addCyc; addCyc = (o, opt) => { if (++window.__n === 2) throw new Error('Testfehler'); return window.__orig(o, opt); }");
     const r = await b.laden(PAKET);
-    b.E('_planFuerVorlage = window.__orig');
+    b.E('addCyc = window.__orig');
     pruef('R5 Ausnahme beim zweiten Zyklus: nichts Halbes im Speicher, nichts im Arbeitsstand', r === false && b.w.localStorage.getItem(SK) === roh && !b.E("S.cycles.some(c => c.name === 'Gruppe A')"));
     const r2 = await b.laden(PAKET);
     pruef('R6 danach noch einmal laden: beide Zyklen, keiner doppelt', r2 === true && b.E("S.cycles.filter(c => c.name === 'Gruppe A').length") === 1 && b.E("S.cycles.filter(c => c.name === 'Gruppe B').length") === 1);
@@ -229,6 +229,42 @@ process.on('unhandledRejection', (e) => { console.log('  (nicht abgefangen: ' + 
     c.E('doUndo()');
     pruef('R7 langsamer Import: ein ↩ nimmt ihn ganz zurück', r === true && c.E('S.cycles.length') === z, c.E('S.cycles.map(x => x.name)'));
     pruef('R8 keine JS-Fehler', c.errors.length === 0, c.errors[0]);
+  }
+
+  console.log('\nP - Plan, Substrat und Doppelte (v1.5.342)');
+  {
+    // Eine selbst geänderte Kopie der Vorlage liegt schon da
+    const a = await load();
+    a.E("(() => { const id = _planFuerVorlage('rainbow_auto'); const p = S.fertPlans.find(x => x.id === id); p.name = 'Rainbow Düngeplan (v1.0)'; const w = p.schedule.w3; const k = Object.keys(w)[0]; w[k] = 9.9; window.__kopie = id; saveS(); })()");
+    pruef('P0 die geänderte Kopie gilt nicht als gleich der Vorlage, eine frische schon', a.E('_planGleichVorlage(S.fertPlans.find(x => x.id === window.__kopie))') === false
+      && a.E("(() => { const id = _planFuerVorlage('rainbow_auto', { neu: true }); const r = _planGleichVorlage(S.fertPlans.find(x => x.id === id)); S.fertPlans = S.fertPlans.filter(x => x.id !== id); return r; })()") === true);
+    a.dialoge.length = 0;
+    const r = await a.laden(PAKET);   // customConfirm antwortet „ja" = Vorlage nehmen
+    const A = JSON.parse(a.E("JSON.stringify(S.cycles.find(c => c.name === 'Gruppe A'))")), B = JSON.parse(a.E("JSON.stringify(S.cycles.find(c => c.name === 'Gruppe B'))"));
+    pruef('P1 abweichende Kopie: vorher die Frage „weicht ab"', a.dialoge.some(d => /weicht ab/.test(d) && /Vorlage nehmen/.test(d) && /Meine Kopie/.test(d)), a.dialoge.map(d => d.slice(0, 60)));
+    pruef('P2 „Vorlage nehmen": eine frische Kopie für beide Zyklen, die eigene bleibt', r === true && A.fertPlanId === B.fertPlanId && A.fertPlanId !== a.E('window.__kopie')
+      && a.E("S.fertPlans.filter(p => p.presetKey === 'rainbow_auto').length") === 2 && a.E(`_planGleichVorlage(S.fertPlans.find(p => p.id === '${A.fertPlanId}'))`) === true);
+    pruef('P3 der Dialog nennt den Plan, der genommen wird', a.dialoge.some(d => /Zyklen hinzufügen/.test(d) && /frische Kopie/.test(d)));
+    const b = await load({ antwort: false });
+    b.E("(() => { const id = _planFuerVorlage('rainbow_auto'); const p = S.fertPlans.find(x => x.id === id); const w = p.schedule.w3; w[Object.keys(w)[0]] = 9.9; window.__kopie = id; saveS(); })()");
+    // erste Frage („weicht ab") → nein = meine Kopie; der Hinzufügen-Dialog bekäme auch nein — deshalb einzeln antworten
+    let n = 0; b.w.customConfirm = (t, m) => { b.dialoge.push(t + '\n' + m); n++; return Promise.resolve(n !== 1); };
+    const rb = await b.laden(PAKET);
+    pruef('P4 „Meine Kopie": die neuen Zyklen bekommen die eigene Kopie, keine zweite', rb === true && b.E("S.cycles.find(c => c.name === 'Gruppe A').fertPlanId") === b.E('window.__kopie') && b.E("S.fertPlans.filter(p => p.presetKey === 'rainbow_auto').length") === 1
+      && b.dialoge.some(d => /mit deinen Dosen/.test(d)));
+    // Substrat passt nicht zur Vorlage
+    const c = await load();
+    const roh = JSON.parse(JSON.stringify(PAKET)); roh.zyklen[0].medium = 'coco';
+    c.toasts.length = 0;
+    const rc = await c.laden(roh);
+    pruef('P5 Coco-Zyklus mit Erd-Plan: abgelehnt mit Grund', rc === false && c.toasts.some(t => /Düngeplan ist für Erde, der Zyklus läuft in Coco/.test(t)), c.toasts);
+    // Von Hand angelegt, gleicher Name und Start
+    c.E("addCyc({ name: 'Gruppe A', startDate: '2026-09-20', potSize: 15, plantCount: 4 })");
+    const z = c.E('S.cycles.length');
+    const rd = await c.laden(PAKET);
+    pruef('P6 von Hand angelegter Zyklus gleichen Namens und Starts: nicht doppelt, der andere kommt dazu', rd === true && c.E('S.cycles.length') === z + 1 && c.E("S.cycles.filter(x => x.name === 'Gruppe A').length") === 1
+      && c.dialoge.some(d => /Schon angelegt und übersprungen: Gruppe A/.test(d)));
+    pruef('P7 keine JS-Fehler', a.errors.length === 0 && b.errors.length === 0 && c.errors.length === 0, a.errors[0] || b.errors[0] || c.errors[0]);
   }
 
   console.log('\nI - Der Knopf „Import" erkennt die Zyklus-Datei');

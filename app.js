@@ -3593,7 +3593,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.341';
+const APP_VERSION = 'v1.5.342';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -25425,11 +25425,11 @@ function _pickMode(beginner) {
  * Aus _wizFinish herausgelöst, damit der Zyklus-Import denselben Weg geht — eine zweite Kopie des Anlege-Codes hatte
  * schon einmal das Rückgrat und den Dünger/Wasser-Rhythmus verpasst (v1.5.137).
  */
-function _planFuerVorlage(key) {
+function _planFuerVorlage(key, opts) {
   const pr = FERT_PRESETS[key];
   if (!pr) return null;
   const existing = (S.fertPlans || []).find(p => p.presetKey === key);
-  if (existing) return existing.id;
+  if (existing && !(opts && opts.neu)) return existing.id;   // (v1.5.342) neu: eine frische Kopie, auch wenn schon eine da ist
   if (!S.fertPlans) S.fertPlans = [];
   const newId = 'fp_' + Date.now();
   const products = pr.products.map((p, i) => ({ id: 'p' + Date.now() + '_' + i, ...p }));
@@ -25460,6 +25460,27 @@ function _planFuerVorlage(key) {
   S._activePlanId = newId;
   syncActivePlanToGlobals();
   return newId;
+}
+
+/**
+ * (v1.5.342) Trägt eine Plan-Kopie noch die Dosen ihrer Vorlage? Verglichen werden alle Wochen über die Produktnamen,
+ * nur Dosen über 0. Die Rainbow-eigene Prüfung (_rainbowWochenplanGleich) kannte nur Rainbow; der Zyklus-Import braucht
+ * dieselbe Frage für jede Vorlage.
+ */
+function _planGleichVorlage(plan) {
+  const pr = plan && FERT_PRESETS[plan.presetKey];
+  if (!pr || !Array.isArray(plan.products) || !_istObjekt(plan.schedule)) return false;
+  const nameVon = {};
+  plan.products.forEach(p => { if (p && p.id) nameVon[p.id] = p.name; });
+  const wochen = new Set([...Object.keys(pr.schedule || {}).map(w => 'w' + w), ...Object.keys(plan.schedule)]);
+  for (const w of wochen) {
+    const ist = {}, soll = {};
+    Object.entries(plan.schedule[w] || {}).forEach(([id, v]) => { if (nameVon[id] && parseFloat(v) > 0) ist[nameVon[id]] = parseFloat(v); });
+    Object.entries((pr.schedule || {})[w.slice(1)] || {}).forEach(([n, v]) => { if (parseFloat(v) > 0) soll[n] = parseFloat(v); });
+    const ki = Object.keys(ist).sort(), ks = Object.keys(soll).sort();
+    if (ki.length !== ks.length || ki.some((k, i) => k !== ks[i] || Math.abs(ist[k] - soll[k]) > 1e-9)) return false;
+  }
+  return true;
 }
 
 /**
@@ -25509,6 +25530,8 @@ function _zyklenPaketPruefen(d) {
     if (z.lightVeg !== undefined && !['18/6', '20/4', '24/0', '16/8'].includes(z.lightVeg)) return nein(`${z.name}: Licht in der Anzucht unbekannt`);
     if (z.lightBloom !== undefined && !['12/12', '18/6', '20/4', '24/0'].includes(z.lightBloom)) return nein(`${z.name}: Licht in der Blüte unbekannt`);
     if (z.fertPreset !== undefined && !(eigen(FERT_PRESETS, z.fertPreset) && _vorlageWaehlbar(z.fertPreset))) return nein(`${z.name}: Düngeplan-Vorlage unbekannt`);
+    // (v1.5.342) Ein Coco-Plan in Erde düngt über, ein Erd-Plan in Coco unter (presetMediumMismatch) — CLAUDE.md Regel 1.
+    if (z.fertPreset !== undefined && FERT_PRESETS[z.fertPreset].medium && FERT_PRESETS[z.fertPreset].medium !== z.medium) return nein(`${z.name}: der Düngeplan ist für ${mediumName(FERT_PRESETS[z.fertPreset].medium)}, der Zyklus läuft in ${mediumName(z.medium)}`);
     if (!kurz(z.strain, 80)) return nein(`${z.name}: Sorte zu lang oder mit < >`);
     if (!Array.isArray(z.pflanzen) || !z.pflanzen.length || z.pflanzen.length > 20) return nein(`${z.name}: Pflanzen fehlen (1 bis 20)`);
     for (const p of z.pflanzen) {
@@ -25547,11 +25570,25 @@ async function _zyklenPaketLaden(d) {
     toast('⚠ Gerade kann GrowSmart nicht speichern (siehe das rote Band oben). Die Zyklen kommen dazu, sobald wieder gespeichert wird — lade die Datei dann noch einmal.', 7000);
     return false;
   }
-  const schon = (z) => (S.cycles || []).some(c => c && c.name === z.name && (g.paketId ? c.paketId === g.paketId : c.startDate === z.startDate));
+  // (v1.5.342) Auch ein von Hand angelegter Zyklus mit gleichem Namen und Start gilt als vorhanden — vorher entstand er doppelt.
+  const schon = (z) => (S.cycles || []).some(c => c && c.name === z.name && (c.startDate === z.startDate || (g.paketId && c.paketId === g.paketId)));
   const neu = g.zyklen.filter(z => !schon(z)), doppelt = g.zyklen.filter(schon);
   if (!neu.length) { toast(`Diese Zyklen sind schon angelegt: ${doppelt.map(z => z.name).join(', ')}. Es kommt nichts doppelt dazu.`, 6000); return false; }
+  // (v1.5.342) Der Dialog nennt den Plan, der wirklich genommen wird. Liegt schon eine Kopie der Vorlage da, nimmt der
+  // Import sie wie der Assistent — trägt sie eigene Dosen, wird vorher gefragt (Prüfer: der Dialog nannte „v2.1", die
+  // Zyklen hingen still an einer geänderten v1.0-Kopie). Abbrechen heißt „meine Kopie": nichts Eigenes geht verloren.
+  const wahl = {};
+  for (const key of [...new Set(neu.map(z => z.fertPreset).filter(Boolean))]) {
+    const vorhanden = (S.fertPlans || []).find(p => p.presetKey === key);
+    if (!vorhanden) { wahl[key] = { neu: true, name: FERT_PRESETS[key].name + ' (wird angelegt)' }; continue; }
+    if (_planGleichVorlage(vorhanden)) { wahl[key] = { neu: false, name: `dein Plan „${vorhanden.name}"` }; continue; }
+    const vorlage = await customConfirm(`Deine Kopie „${vorhanden.name}" weicht ab`,
+      `Für die neuen Zyklen ist die Vorlage „${FERT_PRESETS[key].name}" vorgesehen. Deine Kopie im Düngeplan trägt eigene Dosen.\n\nVorlage nehmen: GrowSmart legt eine frische Kopie der Vorlage an, die neuen Zyklen bekommen sie. Deine Kopie bleibt, wie sie ist.\n\nMeine Kopie: Die neuen Zyklen bekommen deine Kopie mit deinen Dosen.`,
+      'Vorlage nehmen', 'var(--green)', 'Meine Kopie');
+    wahl[key] = vorlage ? { neu: true, name: FERT_PRESETS[key].name + ' (frische Kopie)' } : { neu: false, name: `dein Plan „${vorhanden.name}" (mit deinen Dosen)` };
+  }
   const zeile = (z) => {
-    const plan = z.fertPreset ? FERT_PRESETS[z.fertPreset].name : 'ohne Düngeplan';
+    const plan = z.fertPreset ? wahl[z.fertPreset].name : 'ohne Düngeplan';
     return `• ${z.name}: Keimstart ${fmtDE(z.startDate, { day: '2-digit', month: '2-digit', year: 'numeric' })}, ${z.pflanzen.length} ${z.pflanzen.length === 1 ? 'Pflanze' : 'Pflanzen'}, ${z.potSize} L ${mediumName(z.medium)}, ${plan}`;
   };
   const notizZahl = neu.reduce((n, z) => n + Object.keys(z.notizen).length, 0);
@@ -25579,7 +25616,9 @@ async function _zyklenPaketLaden(d) {
   const angelegt = [];
   try {
     for (const z of neu) {
-      const fertPlanId = z.fertPreset ? _planFuerVorlage(z.fertPreset) : null;
+      // (v1.5.342) Eine frische Kopie je Vorlage, nicht je Zyklus
+      const w = z.fertPreset ? wahl[z.fertPreset] : null;
+      const fertPlanId = !w ? null : (w.neu ? (w.planId || (w.planId = _planFuerVorlage(z.fertPreset, { neu: true }))) : _planFuerVorlage(z.fertPreset));
       addCyc({
         name: z.name, startDate: z.startDate, seedType: z.seedType, growType: z.growType, medium: z.medium,
         potSize: z.potSize, plantCount: z.pflanzen.length, startMethod: z.startMethod, strain: z.strain || undefined,

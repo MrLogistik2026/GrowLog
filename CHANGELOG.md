@@ -2,6 +2,23 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-07 — v1.5.342
+
+- **Der Import nannte „Rainbow v2.1", hängte die Zyklen aber still an eine geänderte v1.0-Kopie** (Prüfer vor dem
+  Hochladen, mittel; dazu zwei weitere). Wie der Assistent nimmt der Import einen schon vorhandenen Plan mit derselben
+  Vorlage. Trägt diese Kopie eigene Dosen, bekamen die neuen Zyklen sie — der Dialog sagte trotzdem „Rainbow Düngeplan
+  (v2.1)", und der Hinweis „Kopie weicht ab" steht nur im Düngeplan-Bildschirm.
+- **Jetzt** nennt der Dialog den Plan, der wirklich genommen wird („dein Plan „…"", „wird angelegt", „frische Kopie").
+  Weicht die vorhandene Kopie von ihrer Vorlage ab (`_planGleichVorlage`, für jede Vorlage — die Rainbow-Prüfung kannte nur
+  Rainbow), fragt der Import vorher: **Vorlage nehmen** legt eine frische Kopie an, **Meine Kopie** nimmt die eigene.
+  Abbrechen heißt „Meine Kopie" — so verliert niemand seine eigenen Dosen.
+- **Mitgenommen:** Substrat und Vorlage werden gegeneinander geprüft — ein Coco-Zyklus mit Erd-Plan (oder umgekehrt) wird
+  mit Grund abgelehnt (`presetMediumMismatch` sagt, warum das Über- oder Unterdüngung heißt). Ein von Hand angelegter Zyklus
+  mit gleichem Namen und Start gilt als vorhanden; vorher entstand er doppelt.
+- Test: `test_zyklenimport.js` Abschnitt P (8 Prüfungen, beide Zeitzonen; fällt auf v1.5.341 um). Patricks echte Datei
+  weiter 16 von 16.
+
+
 ## 2026-10-07 — v1.5.341
 
 - **Ein gescheiterter Import ließ einen halben Stand zurück** (Prüfer vor dem Hochladen, mittel; dazu zwei leichte). Jedes
