@@ -159,6 +159,36 @@ function pruef(name, bedingung, info) {
     pruef('C8 keine JS-Fehler', c.errors.length === 0, c.errors[0]);
   }
 
+  // ===== D: Der erste Tipp auf ↩ nimmt die letzte Änderung zurück (v1.5.325) =====
+  console.log('\nD - Rückgängig ohne Versatz');
+  {
+    const d = await load({ [SK]: SICHERUNG });
+    const tag = d.E('Object.keys(S.entries).sort()[5]');
+    const da = () => d.E(`!!S.entries['${tag}']`);
+    const imSpeicher = () => !!JSON.parse(d.get(SK)).entries[tag];
+    d.E(`saveS._lastUndo = 0; delete S.entries['${tag}']; saveS()`);
+    d.E('doUndo()');
+    pruef('D1 Eintrag löschen, ein Tipp auf ↩: wieder da, auch im Speicher', da() && imSpeicher());
+    d.E('doRedo()');
+    pruef('D2 ↪: wieder gelöscht', !da() && !imSpeicher());
+    d.E('doUndo()');
+    pruef('D3 ↩: wieder da', da());
+    // Aufrufer, die vor der Änderung selbst pushUndo() rufen, plus saveS danach: nur ein Schritt
+    d.E(`S.entries['${tag}'] = S.entries['${tag}'] || {}; saveS._lastUndo = 0; saveS()`);   // gegen den alten Stand: Eintrag sicher da
+    const vorher = d.E('undoStack.length');
+    d.E(`pushUndo(); S.entries['${tag}'].note = 'geändert'; saveS._lastUndo = 0; saveS()`);
+    pruef('D4 pushUndo() vor der Änderung plus saveS: ein Schritt, nicht zwei', d.E('undoStack.length') === vorher + 1, [vorher, d.E('undoStack.length')]);
+    d.E('doUndo()');
+    pruef('D5 … und ein Tipp nimmt die Änderung zurück', d.E(`S.entries['${tag}'].note !== 'geändert'`));
+    // Erste Änderung nach dem Start: ein Tipp genügt (frisch geladen)
+    const e = await load({ [SK]: SICHERUNG });
+    const t2 = e.E('Object.keys(S.entries).sort()[7]');
+    e.E(`delete S.entries['${t2}']; saveS()`);
+    e.E('doUndo()');
+    pruef('D6 erste Änderung nach dem Start: ein Tipp genügt', e.E(`!!S.entries['${t2}']`));
+    pruef('D7 keine JS-Fehler', d.errors.length === 0 && e.errors.length === 0, d.errors[0] || e.errors[0]);
+  }
+
   console.log('\n' + ok + ' OK, ' + fail + ' FEHL');
   if (fail) process.exit(1);
   process.exit(0);

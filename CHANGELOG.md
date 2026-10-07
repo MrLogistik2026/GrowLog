@@ -2,6 +2,18 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-07 — v1.5.325
+
+- **Der erste Tipp auf ↩ bewirkte nichts** (Hebel 3, Punkt 7; gemessen an v1.5.271, unverändert bis v1.5.324). `saveS`
+  legte den Stand NACH der Änderung auf den Rückgängig-Stapel. Wer einen Eintrag löschte und ↩ tippte, bekam
+  „↩ Rückgängig (1 übrig)" und denselben Stand; erst der zweite Tipp holte den Eintrag zurück. Rief eine Funktion vor
+  ihrer Änderung selbst `pushUndo()`, landeten zwei Schritte auf dem Stapel.
+- **Jetzt** merkt sich `saveS` den zuletzt geschriebenen Stand (`saveS._stand`) und legt beim nächsten Speichern diesen
+  ab — den Stand vor der Änderung. Gleiche Stände kommen nur einmal auf den Stapel. Nach dem Laden und nach ↩/↪ ist der
+  dann gültige Stand der Ausgangspunkt. Änderungen innerhalb von zwei Sekunden bleiben wie bisher ein Schritt.
+- Test: `test_speichern.js` Abschnitt D (7 Prüfungen, beide Zeitzonen; 5 fallen auf v1.5.324 um).
+
+
 ## 2026-10-07 — v1.5.324
 
 - **Im Trocknen und Curing stand weiter die Düngeplan-Zeile im Eintrag** (Patricks Bild vom 07.10.2026: Tag 122,

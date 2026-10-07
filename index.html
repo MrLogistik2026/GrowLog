@@ -4594,7 +4594,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.324';
+const APP_VERSION = 'v1.5.325';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -5770,6 +5770,8 @@ function loadS() {
   _startSchritt('Zyklen', _ladenZyklen);
   _startSchritt('Düngepläne', _ladenPlaene);
   if (_startFehler.length) _standVorfallMigration();
+  // (v1.5.325) Ausgangsstand für den ersten Rückgängig-Schritt dieser Sitzung.
+  try { saveS._stand = JSON.stringify(S); } catch (e) { /* dann nimmt der erste Schritt den Stand nach der Änderung */ }
 }
 
 let _startFehler = [];
@@ -6822,7 +6824,7 @@ function saveS() {
           });
         }
       });
-      pushUndo();
+      pushUndo(saveS._stand);
       saveS._lastUndo = now;
     }
   } catch (e) {
@@ -6831,7 +6833,9 @@ function saveS() {
   try {
     // (v1.5.288) Bei vollem Speicher macht der Hauptstand sich Platz, statt still zu scheitern.
     // (v1.5.290) Und er ist gesperrt, solange ein unbrauchbarer Stand nur dort liegt.
-    const wie = _skSchreiben(JSON.stringify(S));
+    const stand = JSON.stringify(S);
+    saveS._stand = stand;   // (v1.5.325) Ausgangspunkt für den nächsten Rückgängig-Schritt
+    const wie = _skSchreiben(stand);
     if (wie === false) {
       const err = new Error('Speicher voll');
       err.name = 'QuotaExceededError';
@@ -8875,9 +8879,14 @@ let undoStack = [];
 let redoStack = [];
 
 /** Push current state onto undo stack (call BEFORE making changes) */
-function pushUndo() {
+function pushUndo(stand) {
   try {
-    undoStack.push(JSON.stringify(S));
+    // (v1.5.325) saveS legt den Stand VOR der Änderung ab — den zuletzt gespeicherten —, nicht den danach. Gemessen an
+    // v1.5.271 und noch an v1.5.324: Der erste Tipp auf ↩ stellte nichts wieder her, erst der zweite. Aufrufer, die vor
+    // ihrer Änderung selbst pushUndo() rufen, und saveS danach landen nur einmal auf dem Stapel.
+    if (typeof stand !== 'string') stand = JSON.stringify(S);
+    if (undoStack.length && undoStack[undoStack.length - 1] === stand) return;
+    undoStack.push(stand);
     if (undoStack.length > UNDO_MAX) undoStack.shift();
     redoStack = []; // neue Aktion löscht Redo-History
   } catch (e) {}
@@ -8891,7 +8900,8 @@ function pushUndo() {
  */
 function _undoSchreiben(aktion) {
   let wie;
-  try { wie = _skSchreiben(JSON.stringify(S)); }
+  saveS._stand = JSON.stringify(S);   // (v1.5.325) die nächste Änderung lässt sich bis hierher zurücknehmen
+  try { wie = _skSchreiben(saveS._stand); }
   catch (e) {
     if (e && e.name === 'SpeicherSperre') { _speicherStatusRot(true); return false; }   // die Sperre nennt ihren Grund selbst
     wie = (e && (e.name === 'QuotaExceededError' || e.code === 22)) ? false : 'fehler';
