@@ -380,6 +380,30 @@ function pruef(name, bedingung, info) {
     pruef('J6 … und der Stand ist trotzdem gespeichert', JSON.parse(q.get(SK)).entries[tag].note !== 'geändert');
   }
 
+  // ===== K: Ein geleerter Speicher ist kein anderes Fenster (v1.5.332) =====
+  console.log('\nK - Speicher bei offener App geleert');
+  for (const antwort of [true, false]) {
+    const k = await load({ [SK]: SICHERUNG }, { antwort });
+    const eintraege = k.E('Object.keys(S.entries).length');
+    k.E('saveS._lastUndo = 0; saveS()');   // ein Schreibvorgang, damit eine Kennung existiert
+    k.window.localStorage.removeItem(SK); k.window.localStorage.removeItem('growsmart_v4_gen');
+    k.window.document.dispatchEvent(new k.window.Event('visibilitychange'));
+    await new Promise((r) => setTimeout(r, 100));
+    const d = k.dialoge.join('\n');
+    pruef(`K${antwort ? 1 : 4} Hinweis „Der Speicher wurde geleert", nicht „woanders geändert"`, /Der Speicher wurde geleert/.test(d) && !/woanders geändert/.test(d), k.dialoge);
+    if (antwort) {
+      const roh = k.get(SK);
+      pruef('K2 „Wieder speichern": der ganze Stand liegt wieder im Speicher', !!roh && Object.keys(JSON.parse(roh).entries).length === eintraege, roh && Object.keys(JSON.parse(roh).entries).length);
+      k.E("S.entries['2026-09-27'] = { note: 'danach' }; saveS()");
+      pruef('K3 … und danach wird normal weiter gespeichert, Band weg', (k.get(SK) || '').includes('danach') && !k.window.document.getElementById('sperrband'));
+    } else {
+      k.E("S.entries['2026-09-27'] = { note: 'alter Tab' }; saveS()");
+      const b = k.window.document.getElementById('sperrband');
+      pruef('K5 „Nicht speichern": der Speicher bleibt leer, das Band sagt es', k.get(SK) === null && !!b && /speichert nicht mehr/.test(b.textContent), b && b.textContent);
+    }
+    pruef(`K${antwort ? 6 : 7} keine JS-Fehler`, k.errors.length === 0, k.errors[0]);
+  }
+
   console.log('\n' + ok + ' OK, ' + fail + ' FEHL');
   if (fail) process.exit(1);
   process.exit(0);

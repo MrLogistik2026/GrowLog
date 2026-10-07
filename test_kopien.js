@@ -225,7 +225,7 @@ function pruef(name, bedingung, info) {
     a.E(`S.entries['2026-09-17'] = { note: 'y'.repeat(4000) }; saveS()`);
     pruef('F2 die Kopie mit 111 Einträgen steht noch', a.beschreibe(BAK).eintraege === 111, a.beschreibe(BAK));
     pruef('F3 und der Nutzer bekommt die Speicher-voll-Meldung',
-      a.toasts.some(t => /Speicher voll|kaum Speicherplatz/.test(t)), a.toasts);   // (v1.5.331) verkleinerter Speicher: „kaum Platz" ist hier die richtige Meldung
+      a.toasts.some(t => /kaum Speicherplatz/.test(t)), a.toasts);   // (v1.5.331) verkleinerter Speicher, wenig belegt: „kaum Platz" ist die richtige Meldung
   }
 
   // ================= G · Laden einer bestimmten Kopie =================
@@ -271,7 +271,7 @@ function pruef(name, bedingung, info) {
     // als der ganze Grow. Vor v1.5.289 wäre stattdessen die Kopie mit den 111 Einträgen gefallen.
     pruef('J3 die leere Kopie ist wieder da, nichts wurde umsonst geopfert', a.get(BAK) !== null, a.beschreibe(BAK));
     pruef('J4 und der Nutzer erfährt, dass nicht gespeichert wurde',
-      a.toasts.some(t => /Speicher voll|kaum Speicherplatz/.test(t)), a.toasts);   // (v1.5.331) verkleinerter Speicher: „kaum Platz" ist hier die richtige Meldung
+      a.toasts.some(t => /kaum Speicherplatz/.test(t)), a.toasts);   // (v1.5.331) verkleinerter Speicher, wenig belegt: „kaum Platz" ist die richtige Meldung
     // Gegenprobe am Mechanismus: Wäre der Stand nicht deutlich kleiner, dürfte die reiche Kopie weichen.
     pruef('J5 eine Kopie mit deutlich mehr Inhalt ist nie Kandidat',
       a.E('_deutlichKleiner(_kopieUmfang(S), {zyklen:1,eintraege:111,daten:111})') === true);
@@ -288,7 +288,7 @@ function pruef(name, bedingung, info) {
     pruef('K2 der Eintrag passt nicht — der Hauptstand bleibt, wie er war', a.beschreibe(SK).len === vorher, a.beschreibe(SK).len);
     pruef('K3 die jüngste Kopie ist zurück', a.beschreibe(BAK).eintraege === 111, a.beschreibe(BAK));
     pruef('K4 die zweite Kopie ist zurück', a.beschreibe(BAK2).eintraege === 111, a.beschreibe(BAK2));
-    pruef('K5 und der Nutzer hört davon', a.toasts.some(t => /Speicher voll|kaum Speicherplatz/.test(t)), a.toasts);   // (v1.5.331) verkleinerter Speicher: „kaum Platz" ist hier die richtige Meldung
+    pruef('K5 und der Nutzer hört davon', a.toasts.some(t => /kaum Speicherplatz/.test(t)), a.toasts);   // (v1.5.331) verkleinerter Speicher, wenig belegt: „kaum Platz" ist die richtige Meldung
   }
 
   console.log('\nL - Knapper Platz erzeugt keine zwei gleichen Kopien');

@@ -4594,7 +4594,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.331';
+const APP_VERSION = 'v1.5.332';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -5265,8 +5265,8 @@ function _skSchreiben(text, umfangNeu, ersetzen) {
   // (v1.5.327) Hat ein anderes Fenster geschrieben, schreibt dieses nicht darüber. Ein ganzer Stand, der bewusst alles
   // ersetzt (Import, Kopie laden), ist die Tür: Er lädt danach neu.
   if (!ersetzen && _fremdGeaendert(false)) {
-    _fremdMelden();
-    const e = new Error('Anderes Fenster'); e.name = 'SpeicherSperre';
+    if (_speicherGeleert) _geleertMelden(); else if (!_speicherGeleertAbgelehnt) _fremdMelden(); else _speicherStatusRot(true);
+    const e = new Error(_speicherGeleert ? 'Speicher geleert' : 'Anderes Fenster'); e.name = 'SpeicherSperre';
     throw e;
   }
   const wie = _hauptstandSchreiben(text, umfangNeu);
@@ -5300,7 +5300,7 @@ function _fremdStartMerken() {
   try { _skLetzter = localStorage.getItem(SK); _meineGen = localStorage.getItem(SK_GEN_KEY); } catch (e) { /* gesperrt: nichts zu vergleichen */ }
 }
 function _fremdGeaendert(gruendlich) {
-  if (_fremdGeschrieben) return true;
+  if (_fremdGeschrieben || _speicherGeleert) return true;   // (v1.5.332) bis entschieden ist, ob wieder gespeichert wird
   if (_skLetzter === undefined) return false;
   let gen = null, roh = null;
   try {
@@ -5309,8 +5309,39 @@ function _fremdGeaendert(gruendlich) {
     roh = localStorage.getItem(SK);
   } catch (e) { return false; }
   if (roh === _skLetzter) { _meineGen = gen; return false; }
+  // (v1.5.332) Fehlt der Stand ganz, hat niemand etwas Neues geschrieben — der Speicher wurde geleert (Website-Daten
+  // gelöscht, Speicherdruck, „alles löschen" in einem anderen Tab). Vorher galt das als „anderes Fenster": Das Band lud
+  // neu, und die App startete leer, obwohl der ganze Grow noch in diesem Fenster offen war (Skeptiker, 07.10.2026; bis
+  // v1.5.326 schrieb die App ihn einfach zurück). Jetzt fragt sie, ob sie ihn wieder speichern soll.
+  if (roh === null) { if (!_speicherGeleertAbgelehnt) _speicherGeleert = true; return true; }
   _fremdGeschrieben = true;
   return true;
+}
+let _speicherGeleert = false, _speicherGeleertAbgelehnt = false;
+function _geleertMelden() {
+  _speicherStatusRot(true);
+  _sperrBand(true, '⚠ <b>Der Speicher wurde geleert.</b> Deine Daten sind in diesem Fenster noch offen — tippe, um sie wieder zu speichern.', _geleertFragen, 'fremd');
+  if (!_geleertMelden._gefragt) { _geleertMelden._gefragt = true; _geleertFragen(); }
+}
+async function _geleertFragen() {
+  const ja = await customConfirm('Der Speicher wurde geleert',
+    'Die gespeicherten GrowSmart-Daten in diesem Browser sind gerade gelöscht worden — durch „Website-Daten löschen", weil der Browser Platz brauchte, oder durch „alles löschen" in einem anderen Tab. In diesem Fenster ist dein Stand noch offen.\n\nWieder speichern: GrowSmart legt ihn sofort wieder ab.\nNicht speichern: Hast du absichtlich gelöscht, bleibt der Speicher leer. Willst du den Stand trotzdem behalten, zieh vorher ein Backup (Einstellungen → Daten & Sicherheit).',
+    'Wieder speichern', 'var(--green)', 'Nicht speichern');
+  if (ja) {
+    _speicherGeleert = false;
+    _skLetzter = null; _meineGen = null;   // der leere Speicher ist jetzt der bekannte Ausgangspunkt
+    saveS._lastUndo = 0;
+    if (saveS()) {
+      const b = document.getElementById('sperrband');
+      if (b && b.dataset.art === 'fremd') _sperrBand(false);
+      toast('✓ Wieder gespeichert');
+    }
+  } else {
+    _speicherGeleertAbgelehnt = true;
+    _speicherGeleert = false;
+    _fremdGeschrieben = true;   // ab jetzt nichts mehr schreiben — der Speicher soll leer bleiben
+    _sperrBand(true, '⚠ <b>Dieses Fenster speichert nicht mehr</b> — der Speicher wurde geleert. Tippe, um neu zu laden.', () => window.location.reload(), 'fremd');
+  }
 }
 function _fremdMelden() {
   _speicherStatusRot(true);
@@ -5329,7 +5360,7 @@ function _fremdMelden() {
 }
 function _fremdPruefenJetzt() {
   if (_fremdGeschrieben || _neuladenAnsteht) return;
-  if (_fremdGeaendert(true)) _fremdMelden();
+  if (_fremdGeaendert(true)) { if (_speicherGeleert) _geleertMelden(); else _fremdMelden(); }
 }
 
 function _speicherSperreMelden() {

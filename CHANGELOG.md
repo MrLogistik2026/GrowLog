@@ -2,6 +2,23 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-07 — v1.5.332
+
+- **Ein geleerter Speicher galt als „anderes Fenster" — und „Neu laden" hätte den Grow gelöscht** (Skeptiker, zweite
+  Runde vor dem Hochladen, blockierend; ein Rückschritt aus v1.5.327). Werden bei offener App die Website-Daten
+  gelöscht — über das Browser-Menü, weil der Browser Platz braucht, oder mit „alles löschen" in einem anderen Tab —, fehlt
+  `growsmart_v4` plötzlich. v1.5.327 las das als fremden Schreibvorgang: Hinweis „woanders geändert", Band „tippe, um neu
+  zu laden" — und nach dem Neuladen startete die App leer, obwohl der ganze Stand noch in diesem Fenster offen war.
+  Bis v1.5.326 hatte die App ihn einfach zurückgeschrieben.
+- **Jetzt** gilt ein fehlender Stand nicht als fremd. Die App fragt: „Der Speicher wurde geleert … In diesem Fenster ist
+  dein Stand noch offen." — **Wieder speichern** legt ihn sofort zurück, **Nicht speichern** lässt den Speicher leer (für
+  den, der absichtlich gelöscht hat) und nennt das Backup als Weg, den Stand trotzdem zu behalten. Bis zur Antwort steht
+  ein Band, das dieselbe Frage öffnet.
+- `test_kopien.js` F3/J4/K5 prüfen wieder einen Wortlaut („kaum Speicherplatz") statt beide zuzulassen — die Lage dort
+  ist eindeutig (Hinweis des Skeptikers).
+- Test: `test_speichern.js` Abschnitt K (7 Prüfungen, beide Zeitzonen; 4 fallen auf v1.5.331 um).
+
+
 ## 2026-10-07 — v1.5.331
 
 - **Drei Meldungen nannten den falschen Grund** (Skeptiker vor dem Hochladen, Befunde 4, 5 und 7, jeweils leicht).
