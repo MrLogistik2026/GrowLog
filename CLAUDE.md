@@ -1,7 +1,14 @@
 # GrowSmart
 
-Single-File-PWA für Cannabis-Anbau. Vanilla JS, kein Build-Tool, soll in zehn Jahren
-noch laufen. Sprache im Projekt und im Gespräch: Deutsch, Du-Form, direkt, nüchtern.
+PWA für Cannabis-Anbau. Sprache im Projekt und im Gespräch: Deutsch, Du-Form, direkt, nüchtern.
+
+**Werkzeuge nach Bedarf** (Patrick, 07.10.2026): Die frühere Vorgabe „kein Build-Werkzeug, soll in zehn Jahren laufen"
+gilt nicht mehr. Gebaut wird, wie es für die Nutzer und die Arbeit am effizientesten ist — Build-Schritt, mehrere
+Dateien, Test-Werkzeuge sind erlaubt. Was installiert werden muss, wird Patrick gesagt.
+
+**Fundament ist die Wissenschaft, nicht Patricks eigener Grow** (07.10.2026): Vorgaben und Startwerte kommen aus
+Botanik und Fachliteratur, „nach Lehrplan und perfekten Verhältnissen" — nicht aus seinen Run-01-Daten. Seine
+Sicherung bleibt Testmaterial für echte Datenlagen, aber keine Quelle für Zahlen.
 
 Diese Datei bindet die Projektdokumente ein, damit sie bei jedem Sitzungsstart automatisch
 geladen werden. Wer hier etwas sucht, findet es dort:
