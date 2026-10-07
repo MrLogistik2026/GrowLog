@@ -1,15 +1,16 @@
 // =====================================================================
 //  [SEKTION]: CONSTANTS
 // =====================================================================
+// (v1.5.356) dk ist eine Variable je Thema (head.html: --dk-g1 … --dk-g8) — fest dunkel war der Text im hellen Thema unsichtbar.
 const COLORS = [
-  { id: 'g1', hex: '#4caf70', dk: '#071a0c' },
-  { id: 'g2', hex: '#5aabf0', dk: '#071422' },
-  { id: 'g3', hex: '#e8884a', dk: '#1e0e04' },
-  { id: 'g4', hex: '#b06ac8', dk: '#150820' },
-  { id: 'g5', hex: '#f0d050', dk: '#1e1a04' },
-  { id: 'g6', hex: '#e06060', dk: '#1e0606' },
-  { id: 'g7', hex: '#5adada', dk: '#041616' },
-  { id: 'g8', hex: '#a0c840', dk: '#101a04' },
+  { id: 'g1', hex: '#4caf70', dk: 'var(--dk-g1)' },
+  { id: 'g2', hex: '#5aabf0', dk: 'var(--dk-g2)' },
+  { id: 'g3', hex: '#e8884a', dk: 'var(--dk-g3)' },
+  { id: 'g4', hex: '#b06ac8', dk: 'var(--dk-g4)' },
+  { id: 'g5', hex: '#f0d050', dk: 'var(--dk-g5)' },
+  { id: 'g6', hex: '#e06060', dk: 'var(--dk-g6)' },
+  { id: 'g7', hex: '#5adada', dk: 'var(--dk-g7)' },
+  { id: 'g8', hex: '#a0c840', dk: 'var(--dk-g8)' },
 ];
 const SYMS = ['🌱','🪴','🌿','☘️','🍃','🌻','💧','🔬','💎','🍀'];
 const PROD_COLORS = ['#4caf70','#5aabf0','#e8884a','#b06ac8','#f0d050','#e06060','#5adada','#a0c840','#e0a0f0','#f0c080'];
@@ -1190,8 +1191,8 @@ const PROBLEMS = [
       shape: [],
     },
     description: 'Untere/ältere Blätter werden gleichmäßig hellgrün bis gelb, verwelken, fallen ab. Beginnt am Fuß der Pflanze, wandert nach oben.',
-    context: { phase: ['vegi', 'bloom'], ignoreInFlush: true },
-    action: 'Stickstoff erhöhen. In Vegi: Basisdünger + Blatt-Dünger. In Blüte bis Wo. 4-5 OK, danach wird N eh reduziert. Prüfe pH (6.2–6.4), bei Abweichung wird N schlecht aufgenommen.',
+    context: { phase: ['vegi', 'bloom'], ignoreInFlush: true, nichtInSpaetbluete: true },
+    action: 'Erst unterscheiden: In der späten Blüte ist Vergilbung von unten meist die natürliche Reife — langsam, gleichmäßig von unten nach oben, und die Blüten schwellen weiter. Dann nicht andüngen. Ein Mangel geht schneller, erfasst auch die mittlere Etage, und die Blüten legen nicht mehr zu. Dann: prüfen, ob die Plan-Dosis wirklich gegeben wurde, und den pH (6.2–6.4 in Erde) — bei Abweichung wird Stickstoff schlecht aufgenommen. In der Anzucht: Basisdünger nach Plan.',
     lexiconKey: 'n_deficiency',
   },
   {
@@ -1621,8 +1622,8 @@ const PROBLEMS = [
       color: ['yellow', 'purple', 'red'],
       shape: [],
     },
-    description: 'Blätter verfärben sich während Spülphase / finaler Blüte. Normal! Pflanze zieht Nährstoffe zurück in die Buds.',
-    context: { phase: ['flush', 'ice'], daysToHarvestLow: true },
+    description: 'Im letzten Drittel der Blüte zieht die Pflanze Stickstoff aus den unteren Blättern in die Blüten. Typisch: langsam, gleichmäßig, streng von unten nach oben, und die Blüten schwellen weiter. Normal und erwünscht.',
+    context: { phase: ['flush', 'ice'], daysToHarvestLow: true, spaetbluete: true },
     action: 'Keine Aktion nötig. Dies ist normale Seneszenz. Trichome-Check mit Lupe — wenn milchig/bernstein: bald ernten.',
     lexiconKey: 'normal_autumn_colors',
   },
@@ -1707,6 +1708,9 @@ function diagnoseProblems(symptoms, ctx = {}) {
     if (pCtx.ecLow && ctx.ecLow) { ctxBoost += 0.03; contextReasons.push('EC zu niedrig'); }
     if (pCtx.humidityHigh && ctx.humidityHigh) { ctxBoost += 0.05; contextReasons.push('Luftfeuchte zu hoch'); }
     if (pCtx.daysToHarvestLow && ctx.daysToHarvestLow) { ctxBoost += 0.05; contextReasons.push('Ernte-Fenster nahe'); }
+    // (v1.5.361) Späte Blüte (bluetestufe 'spaet', letztes Drittel): natürliche Reife ist dann die häufigere Erklärung (ANBAU.md 6.4).
+    if (pCtx.spaetbluete && ctx.spaetbluete) { ctxBoost += 0.08; contextReasons.push('späte Blüte — natürliche Reife wahrscheinlich'); }
+    if (pCtx.nichtInSpaetbluete && ctx.spaetbluete) { ctxBoost -= 0.05; contextReasons.push('in der späten Blüte erst die natürliche Reife ausschließen'); }
     if (pCtx.runoffDriftHigh && ctx.runoffDriftHigh) { ctxBoost += 0.08; contextReasons.push('Runoff-pH driftet hoch'); }
     if (pCtx.runoffDriftLow && ctx.runoffDriftLow) { ctxBoost += 0.08; contextReasons.push('Runoff-pH driftet niedrig'); }
     ctxBoost = Math.min(ctxBoost, 0.2);
@@ -1770,6 +1774,8 @@ function buildDiagnosticContext(c, iso = null) {
 
   // Ernte-Nähe
   if (hc && hc.daysRemaining <= 14) result.daysToHarvestLow = true;
+  // (v1.5.361) Letztes Drittel der Blüte — dieselbe Stufe wie Klima und Schimmel-Deckel
+  try { const _pD = phase(refISO, c); if (_pD && bluetestufe(_pD) === 'spaet') result.spaetbluete = true; } catch (e) {}
 
   // Letzte Entries prüfen (3 Tage rückwärts) für pH/Temp/Runoff-Hinweise
   const entries = [];
@@ -3593,7 +3599,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.346';
+const APP_VERSION = 'v1.5.362';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -3618,6 +3624,7 @@ let tab = 'dash', calDate = new Date(), editISO = null, entryFrom = 'dash';
 // geleert, damit die Liste beim Neu-Öffnen wieder aufgeräumt ist.
 let _mixTouched = new Set();
 let _entryDirty = false; // Tracks whether the current entry has unsaved changes
+let _entryRenderNr = 0;   // (v1.5.348) zählt jedes Neuzeichnen des Eintrags — siehe _entryNeuNachFeld
 let _entrySnapshot = null; // Deep-clone of entry state on openEntry — enables proper "Verwerfen" restore
 let _tipsSnapshot = []; // Snapshot of current tips for meta-search
 let selId = null, draft = {}, lastBack = 0, editProd = null;
@@ -9603,7 +9610,7 @@ function endspurtState(c, iso) {
  * @param {object} c
  * @param {number} [ankerTag] Tag des letzten Gusses; sonst aus c.flushDryFrom
  */
-function _endspurtAnchor(c, ankerTag, erlaubeVergangenheit) {
+function _endspurtAnchor(c, ankerTag, erlaubeVergangenheit, opt) {
   if (!c || !c.startDate) return false;
   const anker = ankerTag || (c.flushDryFrom ? isoDiff(c.flushDryFrom, c.startDate) + 1 : null);
   if (!anker) return false;
@@ -9619,7 +9626,7 @@ function _endspurtAnchor(c, ankerTag, erlaubeVergangenheit) {
   const neuBloom = spuel - 1 - anz;
   if (neuBloom < 1) return false;
   c.bloomDays = neuBloom;
-  saveS();
+  if (!(opt && opt.ohneSpeichern)) saveS();   // (v1.5.362) die Vorschau rechnet an einer Kopie und speichert nichts
   return true;
 }
 
@@ -9880,7 +9887,7 @@ async function endspurtNormal(cId) {
  *
  * @returns {boolean} true, wenn etwas gerückt ist
  */
-function _snapFlushToRhythm(c) {
+function _snapFlushToRhythm(c, opt) {
   if (!c || !c.startDate) return false;
   if (flushDryDays(c) > 0) return false;
   let st = null;
@@ -9903,7 +9910,7 @@ function _snapFlushToRhythm(c) {
   if (soll < st.spuelStart) return false;              // nie verkürzen
   if (soll - st.spuelStart > st.iv) return false;      // nur einrasten, kein Sprung
   if (soll <= st.heuteTag) return false;
-  return _endspurtAnchor(c, st.letzterGuss);
+  return _endspurtAnchor(c, st.letzterGuss, false, opt);
 }
 
 /** (v1.5.346) Merkt eine eigene Wahl des Spülstarts samt dem letzten Guss, von dem aus sie getroffen wurde. */
@@ -11995,6 +12002,25 @@ function waterStats(c) {
 // Pflanzen tatsächlich bekommen — als Reserve (Nachgießen, Verschütten, Puffer).
 // Dieser Faktor (>1 wenn aktiv) multipliziert die Anmisch- und Dosier-GESAMTMENGE.
 // Die gegebene Menge (cd.water, was die Pflanze kriegt) bleibt davon unberührt.
+/**
+ * (v1.5.359) Die Mischung eines Gießtags in einer Zeile — „CalMag 6,9 ml · Bio·Bloom 14,9 ml (für 6,6 L)". Dieselbe Rechnung
+ * wie die Mischliste im Eintrag (calcDose auf die Anmisch-Menge mit Reserve), in der Reihenfolge des Plans.
+ * paare: [[produktId, Plan-Dosis]] · waterMl: Gießmenge des Tags (alle Pflanzen).
+ */
+function _mischungKurz(c, paare, waterMl) {
+  const rf = reserveFactor(c);
+  const liter = Math.round((parseFloat(waterMl) || 0) * rf / 100) / 10;
+  const reihe = (_planAnsicht(c).products || []).map(pr => pr.id);
+  const sortiert = paare.filter(([, v]) => parseFloat(v) > 0).sort((a, b) => (reihe.indexOf(a[0]) + 1 || 999) - (reihe.indexOf(b[0]) + 1 || 999));
+  const teile = sortiert.map(([id, plan]) => {
+    const pr = _produktFuer(c, id);
+    const menge = calcDose(parseFloat(plan), (parseFloat(waterMl) || 0) * rf, pr && pr.unit);
+    const einheit = /^g/i.test(String((pr && pr.unit) || '')) ? 'g' : 'ml';
+    return `${(pr && pr.name) || id} ${String(menge).replace('.', ',')} ${einheit}`;
+  });
+  return { text: teile.join(' · '), liter: String(liter).replace('.', ','), anzahl: teile.length };
+}
+
 function reserveFactor(c) {
   if (!c || c.reserveEnabled === false) return 1;
   const pct = Number(c.reservePct);
@@ -17018,13 +17044,13 @@ function getTodayAction(c, p, a, iso) {
       ] : isOutdoor ? [
         'Topf anheben: leicht? → gießen. Schwer? → warten.',
         `Falls gießen: ca. <b>${waterMl} ml</b> lauwarmes Wasser (pH ${pht.mid.toFixed(1)})`,
-        activeDoses.length > 0 ? `Dünger laut Plan (Woche ${fertWk}): ${activeDoses.length} Produkt${activeDoses.length === 1 ? '' : 'e'} — Mengen im Eintrag` : 'Laut Plan diese Woche kein Dünger',
+        activeDoses.length > 0 ? (() => { const _m = _mischungKurz(c, activeDoses, waterMl); return `Dünger laut Plan (Woche ${fertWk}) für ${_m.liter} L: ${_m.text}`; })() : 'Laut Plan diese Woche kein Dünger',
       ] : [
         `Ca. <b>${waterMl} ml</b> lauwarmes Wasser (pH ${pht.mid.toFixed(1)})`,
         p.day <= KEIMUNG.auflaufenBis ? 'Ring um die Stelle, an der der Samen liegt — nicht direkt darauf'
           : p.day <= 10 ? 'Ring um den Keimling, nicht direkt drauf'
           : 'Radius allmählich vergrößern',
-        activeDoses.length > 0 ? `Dünger laut Plan (Woche ${fertWk}): ${activeDoses.length} Produkt${activeDoses.length === 1 ? '' : 'e'} — Mengen im Eintrag` : 'Laut Plan diese Woche kein Dünger',
+        activeDoses.length > 0 ? (() => { const _m = _mischungKurz(c, activeDoses, waterMl); return `Dünger laut Plan (Woche ${fertWk}) für ${_m.liter} L: ${_m.text}`; })() : 'Laut Plan diese Woche kein Dünger',
       ],
       hint: isVorzucht
         ? 'Pflanze noch drinnen — wetterunabhängig gießen. Sie wird dann abgehärtet bevor sie raus kommt.'
@@ -17047,9 +17073,9 @@ function getTodayAction(c, p, a, iso) {
     const _erhaltung = _wasserTag ? (_planAnsicht(c).products || []).filter(pr => parseFloat(pr.waterDayDose) > 0) : [];
     const _duengerZeile = _wasserTag
       ? (_erhaltung.length
-          ? `Wasser-Tag laut Plan: kein Dünger, nur ${_erhaltung.length} Erhaltungs-Produkt${_erhaltung.length === 1 ? '' : 'e'} (siehe Eintrag)`
+          ? (() => { const _m = _mischungKurz(c, _erhaltung.map(pr => [pr.id, pr.waterDayDose]), waterMl); return `Wasser-Tag laut Plan: kein Dünger, nur ${_m.text} (für ${_m.liter} L)`; })()
           : 'Wasser-Tag laut Plan: nur Wasser, kein Dünger')
-      : (activeDoses.length > 0 ? `Nährstoffe Wo. ${fertWk}: ${activeDoses.length} Produkte (siehe Eintrag)` : 'Kein Plan für diese Woche');
+      : (activeDoses.length > 0 ? (() => { const _m = _mischungKurz(c, activeDoses, waterMl); return `Dünger Wo. ${fertWk} für ${_m.liter} L: ${_m.text}`; })() : 'Kein Plan für diese Woche');
     // (v1.5.153) Ablaufziel aus DRAIN_ZIEL — derselbe Schritt sagte „bis ~10% Drain“, der Hinweis
     // darunter „15–20%“. EC-Ziel aus dem Plan statt fest 0,8–2,0; an einem Wasser-Tag gibt es keins.
     const _ecZ = _wasserTag ? null : _ecTargetFor(c, iso);
@@ -17723,7 +17749,9 @@ function renderDash() {
       if (!cd?.water) continue;
       totalWater += parseFloat(cd.water) || 0;
       const phVal = parseFloat(cd.ph);
-      if (phVal > 0) { phSum += phVal; phCount++; }
+      // (v1.5.353) Nur gemessene pH-Werte — ein Vorschlag (Ausfüllen, Nachtragen) ist keiner. Dieselbe Regel wie in der
+      // Zyklus-Bilanz der Einstellungen („× gem.") und im pH-Trend.
+      if (phVal > 0 && !(cd._suggested && cd._suggested.ph)) { phSum += phVal; phCount++; }
     }
     if (phCount > 0) avgPH = (phSum / phCount).toFixed(1);
     // (v1.5.279) Dieselbe Quelle wie „Ernte in" — die eigene Summe zählte draußen IceFlush-Tage mit, die es dort nicht gibt.
@@ -22800,6 +22828,7 @@ function renderSet() {
           <div class="dur-grid" style="margin-top:6px;display:${S._setUI.durManual ? 'grid' : 'none'}">${durs}</div>
           ${S._setUI.durManual ? `<div style="font-size:10px;color:var(--text-hint);line-height:1.5;margin-top:6px">„Spülen" ist hier die <b>gesamte</b> Spülphase inklusive der Abtrockentage vor dem IceFlush. Die beiden Teile stellst du getrennt im <b>Endspurt</b> ein (Gieß-Fahrplan) — dort steht auch, wie viele Spülgänge dabei herauskommen.</div>` : ''}
           ${anzuchtLockHint}
+          ${(S.beginnerMode && S._setUI.durManual) ? _kettenVorschauHTML(sel, d) : ''}
           ${(!S.beginnerMode && !(sel && sel.growType === 'outdoor')) ? `<div id="ice-dark-hint" style="font-size:10px;color:var(--text-hint);margin-top:8px;line-height:1.5;padding:6px 9px;background:var(--card2);border-radius:6px">${_iceDarkHint(d.iceDays !== undefined ? d.iceDays : PHASE_DEFAULTS.iceDays)}</div>` : ''}
           ${!S.beginnerMode ? `<div style="margin-top:10px;padding:10px 11px;background:var(--card2);border-radius:8px">
             <div style="font-size:11px;font-weight:600;color:var(--text);margin-bottom:3px">\ud83c\udf6f Ernten bei wie viel Bernstein?</div>
@@ -22826,27 +22855,7 @@ function renderSet() {
             <div class="dur-box"><div class="dur-lbl">Ernte</div><input class="dur-inp" type="number" value="${d.intErnte || 1}" oninput="dd('intErnte',this.value)"/></div>
             <div class="dur-box"><div class="dur-lbl">Trocknen</div><input class="dur-inp" type="number" value="${d.intDry || 1}" oninput="dd('intDry',this.value)"/></div>
           </div>
-          ${(() => {
-            // (v1.5.76) SOFORTIGE WIRKUNG ZEIGEN. Ein geändertes Intervall wirkt sich oft
-            // erst in Tagen aus, die im gerade sichtbaren Kalendermonat gar nicht vorkommen —
-            // dann sieht es aus, als passiere nichts. Hier steht das Ergebnis direkt unter
-            // dem Feld, mit Datum, damit man weiß, wo man nachschauen muss.
-            if (!sel || !sel.startDate) return '';
-            // Nur gesetzte Entwurfswerte überschreiben — sonst löscht ein undefined im
-            // Entwurf den echten Wert des Zyklus und die Vorschau rechnet mit Standards.
-            const _b = Object.assign({}, sel);
-            Object.keys(d || {}).forEach(k => { if (d[k] !== undefined && d[k] !== null && d[k] !== '') _b[k] = d[k]; });
-            let stx = null;
-            try { stx = endspurtState(_b, todayISO()); } catch (e) { return ''; }
-            if (!stx) return '';
-            const _dat = (t) => fmtDE(isoPlus(_b.startDate, t - 1));
-            return `<div style="font-size:10px;color:var(--text-sub);line-height:1.55;margin-top:8px;background:var(--card2);border-radius:8px;padding:8px 10px">
-              <b>Damit ergibt sich:</b><br>
-              Spülgänge ${stx.spuelGaenge.length ? stx.spuelGaenge.map(t => 'Tag ' + t + ' (' + _dat(t) + ')').join(' · ') : '—'}<br>
-              Hard-Dryback ${stx.iceDry} Tage · IceFlush ab Tag ${stx.iceStart} (${_dat(stx.iceStart)}) · Ernte Tag ${stx.ernteTag} (${_dat(stx.ernteTag)})
-              <br><span style="color:var(--text-hint)">Liegt ein Tag im nächsten Monat, im Kalender weiterblättern.</span>
-            </div>`;
-          })()}
+          ${_kettenVorschauHTML(sel, d)}   <!-- (v1.5.76/362) Wirkung sofort zeigen, beim Tippen nachgezogen -->
           `}
           </div>
           ` : ''}
@@ -23338,6 +23347,7 @@ function dd(k, v) {
   // nach Tab-Wechsel (Bug "muss raus und rein"). Targeted-Update statt renderSet()
   // damit Eingabefokus erhalten bleibt.
   _refreshSaveZone();
+  _refreshKettenVorschau();   // (v1.5.362) die Folge steht beim Tippen da, nicht erst nach dem Sichern
 }
 function ddS(k, v) { draft[k] = v; draftTouched[k] = true; renderSet(); }
 
@@ -23477,6 +23487,45 @@ function _onSeedTypeChange(value) {
 }
 
 /** Aktualisiert nur den Save-Button/Indicator-Bereich der Settings-Seite. */
+/**
+ * (v1.5.362) „Damit ergibt sich" — die Kette aus dem Entwurf, so wie „Sichern" sie ablegen wird (mit dem Einrasten des
+ * Spülstarts aus v1.5.346), neben dem bisherigen Erntetag. Vorher rechnete der Block nur beim Öffnen der Einstellungen:
+ * Wer die Blüte änderte, sah die Folge erst nach „Änderungen sichern" — Hebel 5 der Bewertung vom 17.09.2026.
+ */
+function _kettenVorschauHTML(sel, d) {
+  if (!sel || !sel.startDate) return '';
+  const _b = Object.assign({}, sel);
+  Object.keys(d || {}).forEach(k => { if (d[k] !== undefined && d[k] !== null && d[k] !== '') _b[k] = d[k]; });
+  const _felder = ['startDate', 'anzuchtDays', 'bloomDays', 'bloomStartDate', 'intAnzucht', 'intBloom', 'intFlush'];
+  const neu = _felder.some(k => _b[k] !== undefined && JSON.stringify(_b[k]) !== JSON.stringify(sel[k]));
+  const _bloomEingabe = _b.bloomDays;
+  if (neu) { delete _b._spuelStartFest; try { _snapFlushToRhythm(_b, { ohneSpeichern: true }); } catch (e) {} }
+  let stx = null, stAlt = null;
+  try { stx = endspurtState(_b, todayISO()); stAlt = endspurtState(sel, todayISO()); } catch (e) { return ''; }
+  if (!stx) return '';
+  const _dat = (c, t) => fmtDE(isoPlus(c.startDate, t - 1));
+  const vorher = (neu && stAlt && stAlt.ernteTag !== stx.ernteTag)
+    ? ` <span style="color:var(--text-hint)">— bisher Tag ${stAlt.ernteTag} (${_dat(sel, stAlt.ernteTag)})</span>` : '';
+  const rast = (neu && Number(_b.bloomDays) !== Number(_bloomEingabe))
+    ? `<br><span style="color:var(--yellow)">Blüte wird ${_b.bloomDays} statt ${_bloomEingabe} Tage: Das Spülen beginnt am nächsten Gießtag, nicht am Tag nach dem letzten Düngerguss.</span>` : '';
+  return `<div id="cyc-ketten-vorschau" style="font-size:10px;color:var(--text-sub);line-height:1.55;margin-top:8px;background:var(--card2);border-radius:8px;padding:8px 10px">
+    <b>Damit ergibt sich${neu ? ' (noch nicht gesichert)' : ''}:</b><br>
+    ${stx.letzterGuss ? `Letzter Düngerguss Tag ${stx.letzterGuss} (${_dat(_b, stx.letzterGuss)}) · ` : ''}Spülgänge ${stx.spuelGaenge.length ? stx.spuelGaenge.map(t => 'Tag ' + t + ' (' + _dat(_b, t) + ')').join(' · ') : '—'}<br>
+    Hard-Dryback ${stx.iceDry} Tage · IceFlush ab Tag ${stx.iceStart} (${_dat(_b, stx.iceStart)}) · <b>Ernte Tag ${stx.ernteTag} (${_dat(_b, stx.ernteTag)})</b>${vorher}${rast}
+    <br><span style="color:var(--text-hint)">Liegt ein Tag im nächsten Monat, im Kalender weiterblättern.</span>
+  </div>`;
+}
+function _refreshKettenVorschau() {
+  const el = document.getElementById('cyc-ketten-vorschau');
+  if (!el) return;
+  const sel = S.cycles.find(c => c.id === selId);
+  const html = _kettenVorschauHTML(sel, draft);
+  if (!html) return;
+  const t = document.createElement('div');
+  t.innerHTML = html;
+  if (t.firstElementChild) el.replaceWith(t.firstElementChild);
+}
+
 function _refreshSaveZone() {
   const topBtn = document.getElementById('set-save-top');
   const zone = document.getElementById('cyc-save-zone');
@@ -26310,6 +26359,23 @@ function markTodayDone(cId, iso) {
       // Pflanzenzahl-Stempel wie beim manuellen Eintippen (uEF): hält die
       // per-Pflanze-Rekonstruktion korrekt, falls die Pflanzenzahl später geändert wird.
       cd.plantsAtWatering = getEffectivePlantCount(c, iso);
+      // (v1.5.360) Am Düngertag auch der Plan-Dünger — als Vorschlag, wie beim Nachtragen (catchupApply): „Erledigt" heißt
+      // „wie geplant". Vorher stand nach „Erledigt" nur Wasser im Tag, nach „Nachtragen" Wasser und Dünger — derselbe Guss,
+      // zwei Bilder. Ein Wasser-Tag laut Plan bleibt ohne Dünger; eingetragene Dosen werden nie überschrieben.
+      const _w = parseFloat(cd.water) || 0;
+      if (_w > 0 && (a === 'giess' || a === 'giess_anz') && getFeedWaterEffective(c, p, iso, cd) !== 'water') {
+        const _dosen = getWeekDoses(c.id, fertPlanWeek(c, iso, p), c) || {};
+        if (!cd.doses) cd.doses = {};
+        if (!cd.mixChecks) cd.mixChecks = {};
+        if (!cd._suggestedDoses) cd._suggestedDoses = {};
+        Object.entries(_dosen).forEach(([prodId, plan]) => {
+          if (!(plan > 0) || parseFloat(cd.doses[prodId]) > 0) return;
+          const prod = _produktFuer(c, prodId);
+          cd.doses[prodId] = calcDose(plan, _w, prod && prod.unit);
+          cd.mixChecks[prodId] = true;
+          cd._suggestedDoses[prodId] = true;
+        });
+      }
     }
   }
 
@@ -28011,7 +28077,8 @@ function _updateEntryTitle(iso) {
   const act = active();
   const dayInfo = act.map(c => { const p = phase(iso, c); return p ? `Tag ${p.day}` : null; }).filter(Boolean);
   const titleExtra = dayInfo.length > 0 ? ' · ' + dayInfo.join(', ') : '';
-  document.getElementById('entry-ttl').textContent = fmtDE(iso, { day: '2-digit', month: '2-digit', year: 'numeric' }) + titleExtra;
+  // (v1.5.352) Wochentag statt Jahr — das Jahr steht im Kalender, und die Zeile passt so auf ein 390-px-Handy.
+  document.getElementById('entry-ttl').textContent = fmtDE(iso, { weekday: 'short', day: '2-digit', month: '2-digit' }) + titleExtra;
 }
 
 /** Navigate to prev/next day in entry screen */
@@ -28141,6 +28208,7 @@ async function entryNav(dir) {
 })();
 
 function renderEntry(iso) {
+  _entryRenderNr++;
   const act = active();
   const saved = S.entries[iso] || {};
   const temp = saved.temp || '';
@@ -28738,6 +28806,17 @@ function renderEntry(iso) {
               text: `Topf bei ~${Math.round(restVal)}% Restgewicht. Heute ist nach deinem ${getInt(c, p?.ph || 'anzucht')}-Tage-Rhythmus dran. Empfohlene Menge unten.`,
             };
           }
+          // (v1.5.349) Gemessen vor dem Guss, Guss schon eingetragen: der Wert bleibt stehen, als „vorher" beschriftet.
+          // Ohne diese Zeile stand nach dem Guss weiter „Heute gießen — geplanter Gieß-Tag" über dem Knopf „Knapp".
+          if (clf && savedRest !== null && savedRest < 85 && cd._restPctUserSet && parseFloat(cd.water) > 0 && !isIceFlushToday) {
+            const _wort = { full: 'Voll', medium: 'Mittel', soon: 'Bald', low: 'Knapp', dry: 'Trocken' }[getLiftFeelForPct(savedRest)] || '';
+            clf = {
+              status: 'vorher',
+              color: 'var(--green)',
+              label: `Vor dem Guss: ${_wort} (~${Math.round(savedRest)} %) · jetzt gegossen`,
+              text: 'Nach dem Guss ist der Topf voll. Der Wert von vorher bleibt gespeichert — daraus lernt die App, wie schnell dein Topf trocknet und wie viel hineinpasst.',
+            };
+          }
           // Topping-Tag: erst gießen (Hydrierung vor dem Schnitt), dann toppen — danach Pause
           if (clf && isToppingToday) {
             clf = {
@@ -29169,7 +29248,7 @@ function renderEntry(iso) {
                   data-plants="${effPlants}"
                   style="border-color:${cl.hex}44;width:80px;height:32px;font-size:15px;font-weight:600;font-family:var(--mono);text-align:center;padding:6px 2px"
                   oninput="updateCalc('${c.id}',${wk});uEFWater('${c.id}',this.value,${effPlants})"
-                  onchange="_rerenderEntryKeepScroll()"/>
+                  onchange="_entryNeuNachFeld()"/>
                 <button onclick="stepWater('${c.id}',50,${wk})" class="stepper-btn">+</button>
               </div>
             </div>
@@ -29207,7 +29286,7 @@ function renderEntry(iso) {
               <button onclick="stepPH('${c.id}',-0.01)" class="stepper-btn">−</button>
               <input class="inp-field${cd._suggested?.ph ? ' suggested' : ''}" type="number" step="0.01" min="4" max="9" id="ph-${c.id}" value="${cd.ph || ''}" placeholder="${pht.mid.toFixed(1)}"
                 style="width:52px;font-size:15px;font-weight:600;font-family:var(--mono);text-align:center;padding:6px 2px"
-                onfocus="if(!this.value)this.value='${pht.mid.toFixed(1)}'" oninput="uEF('${c.id}','ph',this.value)"/>
+                oninput="uEF('${c.id}','ph',this.value)"/>
               <button onclick="stepPH('${c.id}',0.01)" class="stepper-btn">+</button>
             </div>
           </div>
@@ -29943,10 +30022,10 @@ function renderEntry(iso) {
       : `${nonWaterDayBlock}<div class="row2" style="margin-top:8px">
           <div class="inp-wrap"><div class="inp-label">${_swLabel}</div>
             <input class="inp-field" type="number" value="${_swVal}" placeholder="–"
-              oninput="${_swOnInput}" onchange="_rerenderEntryKeepScroll()" style="border-color:${cl.hex}44"/>
+              oninput="${_swOnInput}" onchange="_entryNeuNachFeld()" style="border-color:${cl.hex}44"/>
           </div>
           <div style="width:78px;flex-shrink:0"><div class="inp-label">pH</div>
-            <input class="inp-field" type="number" step="0.01" min="4" max="9" value="${cd.ph || ''}" placeholder="${pht.mid.toFixed(1)}" onfocus="if(!this.value)this.value='${pht.mid.toFixed(1)}'" oninput="uEF('${c.id}','ph',this.value)"/>
+            <input class="inp-field" type="number" step="0.01" min="4" max="9" value="${cd.ph || ''}" placeholder="${pht.mid.toFixed(1)}" oninput="uEF('${c.id}','ph',this.value)"/>
           </div>
         </div>${_swTotalHint}${phEcCritWarnHTML}`;
 
@@ -30179,15 +30258,15 @@ function renderEntry(iso) {
           }</span>
         </div>
         ${S.beginnerMode ? `<div style="font-size:11px;color:var(--text-sub);line-height:1.5;padding:8px 10px;background:var(--card2);border-radius:8px;margin-bottom:8px">
-          💡 <b>Was ist das?</b> Die Harz-Tröpfchen auf den Blüten sagen dir wann geerntet werden muss. Mit einer <b>Lupe oder Handy-Makro</b> anschauen. Verteile die Prozente so dass sie zusammen 100% ergeben.
+          💡 <b>Was ist das?</b> Die Harz-Tröpfchen auf den Blüten sagen dir wann geerntet werden muss. Mit einer <b>Lupe oder Handy-Makro</b> anschauen. Trag ein, wie viel Prozent <b>klar</b> und wie viel <b>bernsteinfarben</b> sind — milchig ist der Rest, das rechnet die App.
         </div>` : ''}
         <div style="display:flex;gap:6px;margin-bottom:8px">
           <div style="flex:1;text-align:center"><div style="font-size:9px;color:var(--text-hint);margin-bottom:3px">Klar 💎${S.beginnerMode ? '<br>(zu früh)' : ''}</div>
-            <input type="number" min="0" max="100" step="0.1" value="${_tFmt(trich.clear).replace(',','.')}" style="width:100%;background:var(--card2);border:0.5px solid rgba(200,200,255,0.2);border-radius:6px;padding:6px;color:#aac;font-size:14px;font-weight:600;font-family:var(--mono);text-align:center;outline:none" onchange="uTrich('${c.id}','clear',this.value)"/></div>
-          <div style="flex:1;text-align:center"><div style="font-size:9px;color:var(--text-hint);margin-bottom:3px">Milchig 🥛${S.beginnerMode ? '<br>(höchster Wirkstoff)' : ''}</div>
-            <input type="number" min="0" max="100" step="0.1" value="${_tFmt(trich.milky).replace(',','.')}" style="width:100%;background:var(--card2);border:0.5px solid rgba(255,255,255,0.15);border-radius:6px;padding:6px;color:#eee;font-size:14px;font-weight:600;font-family:var(--mono);text-align:center;outline:none" onchange="uTrich('${c.id}','milky',this.value)"/></div>
+            <input type="number" min="0" max="100" step="0.1" id="trich-in-${c.id}-clear" value="${_trichHeute ? _tFmt(trich.clear).replace(',','.') : ''}" placeholder="${_tFmt(trich.clear).replace(',','.')}" onfocus="this.select()" style="width:100%;background:var(--card2);border:0.5px solid rgba(200,200,255,0.2);border-radius:6px;padding:6px;color:#aac;font-size:14px;font-weight:600;font-family:var(--mono);text-align:center;outline:none" onchange="uTrich('${c.id}','clear',this.value)"/></div>
+          <div style="flex:1;text-align:center"><div style="font-size:9px;color:var(--text-hint);margin-bottom:3px">Milchig 🥛 · Rest${S.beginnerMode ? '<br>(höchster Wirkstoff)' : ''}</div>
+            <input type="text" readonly tabindex="-1" aria-readonly="true" id="trich-in-${c.id}-milky" title="Milchig ist der Rest: 100 − klar − bernstein" value="${_trichHeute ? _tFmt(trich.milky) : ''}" placeholder="${_tFmt(trich.milky)}" style="width:100%;background:transparent;border:0.5px dashed rgba(255,255,255,0.15);border-radius:6px;padding:6px;color:#eee;font-size:14px;font-weight:600;font-family:var(--mono);text-align:center;outline:none"/></div>
           <div style="flex:1;text-align:center"><div style="font-size:9px;color:var(--text-hint);margin-bottom:3px">Bernstein 🍯${S.beginnerMode ? '<br>(beginnender Abbau)' : ''}</div>
-            <input type="number" min="0" max="100" step="0.1" value="${_tFmt(trich.amber).replace(',','.')}" style="width:100%;background:var(--card2);border:0.5px solid rgba(232,136,74,0.25);border-radius:6px;padding:6px;color:var(--orange);font-size:14px;font-weight:600;font-family:var(--mono);text-align:center;outline:none" onchange="uTrich('${c.id}','amber',this.value)"/></div>
+            <input type="number" min="0" max="100" step="0.1" id="trich-in-${c.id}-amber" value="${_trichHeute ? _tFmt(trich.amber).replace(',','.') : ''}" placeholder="${_tFmt(trich.amber).replace(',','.')}" onfocus="this.select()" style="width:100%;background:var(--card2);border:0.5px solid rgba(232,136,74,0.25);border-radius:6px;padding:6px;color:var(--orange);font-size:14px;font-weight:600;font-family:var(--mono);text-align:center;outline:none" onchange="uTrich('${c.id}','amber',this.value)"/></div>
         </div>
         <div style="display:flex;height:6px;border-radius:3px;overflow:hidden">
           <div style="width:${trich.clear}%;background:rgba(170,170,255,0.5)"></div>
@@ -30217,7 +30296,7 @@ function renderEntry(iso) {
         })() : ''}
         ${!_trichHeute ? '' : trich.clear <= RIPE_CLEAR_DONE && trich.amber >= _targetAmber(c) ? `<div style="font-size:11px;color:var(--green);margin-top:6px;text-align:center">✅ Erntereif — kaum noch klare Trichome, dein Bernstein-Ziel (${_targetAmber(c)} %) ist erreicht</div>`
           : trich.clear <= RIPE_CLEAR_DONE ? `<div style="font-size:11px;color:var(--green);margin-top:6px;text-align:center">✅ Milchig-dominant — reif · Bernstein ${_tFmt(trich.amber)} % von deinem Ziel ${_targetAmber(c)} %</div>` : 
-          trich.milky >= 50 ? '<div style="font-size:11px;color:var(--yellow);margin-top:6px;text-align:center">⏳ Fast bereit</div>' : 
+          trich.milky >= 50 ? `<div style="font-size:11px;color:var(--yellow);margin-top:6px;text-align:center">⏳ Fast bereit — noch ${_tFmt(trich.clear)} % klar, erntereif ab höchstens ${RIPE_CLEAR_DONE} % klar</div>` : 
           '<div style="font-size:11px;color:var(--text-muted);margin-top:6px;text-align:center">Noch zu viel klar — Geduld!</div>'}
         ${(() => {
           // (v1.5.268) Nur eine echte Messung, von heute oder übernommen — nicht die Vorgabe 70/25/5 ohne Messung.
@@ -30262,7 +30341,12 @@ function renderEntry(iso) {
                 _out += `<div style="font-size:10px;color:var(--text-hint);margin-top:6px;line-height:1.55;background:var(--card2);border-radius:6px;padding:7px 9px">⚠️ <b>${_fc.ignoredOlder} ältere Messung${_fc.ignoredOlder === 1 ? '' : 'en'} passt nicht zum heutigen Stand</b> — Trichome werden nicht wieder klar. Wahrscheinlich frühe Schätzungen. Sie fließen nicht in die Vorhersage ein. Unter „Messungen berichtigen" kannst du sie geraderücken oder entfernen.</div>`;
               }
             }
-            if (_fc.reached) {
+            // (v1.5.357) Bernstein-Ziel erreicht heißt nicht erntereif: Die Freigabe hängt an Klar ≤ RIPE_CLEAR_DONE (ANBAU.md 11).
+            // Vorher stand grün „Ziel erreicht — 10 % Bernstein (Ziel 5 %)" unter gelbem „Fast bereit", bei 15 % klar — ein
+            // Anfänger liest das als „jetzt schneiden".
+            if (_fc.reached && _fc.last && parseFloat(_fc.last.clear) > RIPE_CLEAR_DONE) {
+              _out += `<div style="font-size:10px;color:var(--yellow);margin-top:6px;text-align:center;line-height:1.5">🍯 <b>Bernstein-Ziel erreicht</b> (${_fc.last.amber} %, Ziel ${_tgt} %) — aber noch ${_tFmt(_fc.last.clear)} % klar. Geschnitten wird erst, wenn höchstens ${RIPE_CLEAR_DONE} % klar sind.</div>`;
+            } else if (_fc.reached) {
               _out += `<div style="font-size:10px;color:var(--green);margin-top:6px;text-align:center;line-height:1.5">🍯 <b>Ziel erreicht</b> \u2014 ${_fc.last.amber} % Bernstein (Ziel ${_tgt} %)${_fc.ageDays > 3 ? `, gemessen vor ${_fc.ageDays} Tagen` : ''}</div>`;
             } else if (_fc.curveOff) {
               _out += `<div style="font-size:10px;color:var(--text-hint);margin-top:6px;line-height:1.55;background:var(--card2);border-radius:6px;padding:7px 9px">\ud83c\udf6f <b>Noch keine Vorhersage m\u00f6glich.</b> Bei ${_tFmt(_fc.last.clear)} % klar w\u00e4ren nach dem \u00fcblichen Verlauf schon rund ${_tFmt(_fc.expected)} % Bernstein zu sehen \u2014 du misst ${_tFmt(_fc.last.amber)} %. <b>Deine Pflanze bildet sp\u00e4ter Bernstein als \u00fcblich</b>, das ist bei manchen Sorten normal. Sobald du die ersten Bernstein-Trichome siehst und zweimal eintr\u00e4gst, rechne ich mit <b>deinen</b> Werten statt mit einer Annahme.</div>`;
@@ -30929,6 +31013,43 @@ function stepPlantCount(cId, iso, delta) {
  * setzt und der Scroll dadurch auf 0 springen würde. Wird nach Gießmengen-Eingaben
  * verwendet, damit der Hebe-Test live auf "Voll" springt ohne den Sprung nach oben.
  */
+/**
+ * (v1.5.348) Neu zeichnen, nachdem die Gießmenge verlassen wurde — ohne den nächsten Tipp zu schlucken.
+ *
+ * Vorher zeichnete onchange sofort neu. „change" kommt beim Verlassen des Feldes, also genau in dem Moment, in dem der
+ * Finger schon auf dem nächsten Feld oder Knopf liegt: Das Ziel wurde ersetzt, bevor es den Tipp bekam. Gemessen: pH-Feld
+ * nach der Gießmenge angetippt → Fokus weg, „6,3" ging ins Leere; ein Hebe-Test-Knopf reagierte nicht. Jetzt wartet die
+ * Funktion den Tipp ab (Klick oder 400 ms), zeichnet nicht, wenn der Tipp selbst schon neu gezeichnet hat, und solange
+ * jemand im nächsten Feld weitertippt, erst wenn er die Felder verlässt. Der Wert selbst steht da längst im Zustand (oninput).
+ */
+function _entryNeuNachFeld() {
+  const nr = _entryRenderNr;
+  let erledigt = false;
+  const jetzt = () => {
+    if (erledigt) return;
+    erledigt = true;
+    document.removeEventListener('click', jetzt, true);
+    setTimeout(() => {
+      if (_entryRenderNr !== nr) return;                       // der Tipp hat schon neu gezeichnet
+      const body = document.getElementById('entry-body');
+      const a = document.activeElement;
+      const istFeld = (el) => !!(el && body && body.contains(el) && /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName));
+      if (istFeld(a)) {
+        const weiter = (ev) => {
+          if (istFeld(ev.relatedTarget)) return;                // ins nächste Feld: weiter warten
+          body.removeEventListener('focusout', weiter);
+          if (_entryRenderNr === nr) _entryNeuNachFeld();
+        };
+        body.addEventListener('focusout', weiter);
+        return;
+      }
+      _rerenderEntryKeepScroll();
+    }, 0);
+  };
+  document.addEventListener('click', jetzt, true);
+  setTimeout(jetzt, 400);
+}
+
 function _rerenderEntryKeepScroll() {
   const sb = document.getElementById('entry-body');
   const sy = sb ? sb.scrollTop : 0;
@@ -31774,6 +31895,15 @@ function stepMixDose(cId, prodId, wk, stepMl, waterAmt, isWaterDayDose) {
 
 function uEnv() {
   _entryDirty = true;
+  // (v1.5.347) Temperatur und Luftfeuchte gehen sofort in den Zustand, wie pH, EC und Gießmenge (uEF). Vorher standen sie nur
+  // im Feld und kamen erst mit „Speichern" an — jeder Tipp, der den Eintrag neu zeichnet (Hebe-Test, Mischhäkchen,
+  // ±-Knöpfe, Düngen/Nur Wasser), löschte beide Werte (gemessen 6 von 6). „Verwerfen" stellt weiter den Stand beim Öffnen her.
+  if (editISO) {
+    if (!S.entries[editISO]) S.entries[editISO] = { temp: '', humidity: '', cycleData: {} };
+    const _t = document.getElementById('et'), _r = document.getElementById('er');
+    if (_t) S.entries[editISO].temp = _t.value || '';
+    if (_r) S.entries[editISO].humidity = _r.value || '';
+  }
   // (v1.5.187) Beim Tippen zieht der ganze Umgebungsblock mit — Einsteiger-Satz oder Pille mit Zielzeile, Temperatur- und
   // Luftfeuchte-Zeile samt Warnung —, gebaut von derselben Funktion wie beim Öffnen (_klimaEntryTeile). Vorher änderte sich
   // nur die Profi-Pille; bei 18 °C stand darunter weiter „✓ Frühe Blüte: 23–27°C". Der Marker bleibt bei jedem Wert in der
@@ -32005,9 +32135,15 @@ function uEF(cId, f, v) {
   // User danach bewusst einen anderen Button, gewinnt der wieder (setLiftFeel setzt
   // _restPctUserSet). Wird das Wasser auf 0 gesetzt, gibt es keinen gespeicherten
   // Wert mehr → der Default rechnet ohnehin neu (Projektion).
+  // (v1.5.349) Aber nur einen Vorgabewert oder „Voll". Ein selbst getippter Hebe-Test unter „Voll" ist die Messung VOR dem Guss —
+  // genau so liest ihn die Rechnung (_waterConsumptionInfo: 'pre', wasserKapazitaet: „vor"). Vorher löschte das Eintippen der
+  // Menge ihn: Der Vorschlag sprang von „aus deinem heutigen Hebe-Test" (~7000 ml bei „Knapp") zurück auf den Startwert, und
+  // tagesAbnahme lernte im Hebe-Test-Modus fast nie, wie schnell der Topf trocknet. „Voll" am Gießtag heißt weiter „gerade
+  // gegossen" (setLiftFeel) und weicht wie bisher.
   if (f === 'water') {
     const wMl = parseFloat(v);
-    if (isFinite(wMl) && wMl > 0) {
+    const _vorherGemessen = !!cd._restPctUserSet && _gussZahl(cd.restPct) != null && parseFloat(cd.restPct) < 85;
+    if (isFinite(wMl) && wMl > 0 && !_vorherGemessen) {
       delete cd.restPct;
       delete cd._restPctUserSet;
     }
@@ -32774,9 +32910,18 @@ async function applyRecommended(cId, wk) {
   }
 
   // Wasser, pH, EC, liftAfterPct
-  if (tpl.water !== undefined) maybeSet(cd, 'water', tpl.water);
-  if (tpl.ph !== undefined) maybeSet(cd, 'ph', tpl.ph);
-  if (tpl.ec !== undefined) maybeSet(cd, 'ec', tpl.ec);
+  // (v1.5.353) Was das Ausfüllen einsetzt, ist ein Vorschlag aus Plan und Zielwerten, keine Messung (ANBAU.md 15) — es
+  // trägt _suggested wie „Erledigt" (26309) und das Nachtragen (catchupApply). Vorher stand pH 6,4 und EC 1,8 ohne
+  // Kennzeichen da: Die Startseite zeigte „Ø pH 6.4" aus einem Tag ohne Messung, die Einstellungen „1× gemessen", und am
+  // nächsten Gießtag lernte die App aus ihrem eigenen Vorschlag. Tippt man einen Wert an und ändert ihn, fällt das
+  // Kennzeichen wie bisher weg (uEF).
+  const _vorschlag = (key) => { if (!cd._suggested) cd._suggested = {}; cd._suggested[key] = true; };
+  const _fVor = filled;
+  if (tpl.water !== undefined) { maybeSet(cd, 'water', tpl.water); if (filled > _fVor) _vorschlag('water'); }
+  const _fPh = filled;
+  if (tpl.ph !== undefined) { maybeSet(cd, 'ph', tpl.ph); if (filled > _fPh) _vorschlag('ph'); }
+  const _fEc = filled;
+  if (tpl.ec !== undefined) { maybeSet(cd, 'ec', tpl.ec); if (filled > _fEc) _vorschlag('ec'); }
   if (tpl.liftAfterPct !== undefined) {
     if (cd.liftAfterPct === undefined || cd.liftAfterPct === null) {
       cd.liftAfterPct = tpl.liftAfterPct;
@@ -32819,6 +32964,8 @@ async function applyRecommended(cId, wk) {
           if (typeof calcDose === 'function') {
             cd.doses[prodId] = calcDose(plan, waterMl, prod?.unit);
             cd.mixChecks[prodId] = true;
+            if (!cd._suggestedDoses) cd._suggestedDoses = {};   // (v1.5.353) Vorschlag, keine Gabe — wie catchupApply
+            cd._suggestedDoses[prodId] = true;
             filled++;
           }
         } else if (plan > 0) {
@@ -32838,9 +32985,9 @@ async function applyRecommended(cId, wk) {
   } else if (filled === 0) {
     msg = `✋ Alle ${skipped} Werte schon befüllt`;
   } else if (skipped === 0) {
-    msg = `✨ ${filled} Werte ausgefüllt`;
+    msg = `✨ ${filled} Werte als Vorschlag ausgefüllt — gemessen? Dann den Wert antippen und eintragen`;
   } else {
-    msg = `✨ ${filled} ergänzt, ${skipped} unverändert gelassen`;
+    msg = `✨ ${filled} als Vorschlag ergänzt, ${skipped} unverändert gelassen`;
   }
   // Hinweis auf VPD-Justierung anhängen falls aktiv
   if (tpl._vpdAdjusted) {
@@ -34212,7 +34359,13 @@ function uTrich(cId, field, v, atIso) {
     });
     return;
   }
-  if (editISO && typeof _rerenderEntryKeepScroll === 'function') _rerenderEntryKeepScroll();
+  // (v1.5.358) Wie die Gießmenge: sofort neu zeichnen schluckte den Tipp aufs nächste Feld (Klar → Bernstein). Die
+  // Nachbarfelder ziehen direkt nach, der Rest des Eintrags, sobald die Felder verlassen sind.
+  ['clear', 'milky', 'amber'].forEach(k => {
+    const el = document.getElementById('trich-in-' + cId + '-' + k);
+    if (el && k !== field) el.value = k === 'milky' ? _tFmt(t[k]) : _tFmt(t[k]).replace(',', '.');
+  });
+  if (editISO && typeof _entryNeuNachFeld === 'function') _entryNeuNachFeld();
   else if (editISO && typeof renderEntry === 'function') renderEntry(editISO);
 }
 function uHarvest(cId, field, v) {
@@ -34256,6 +34409,20 @@ function addQN(cId, el, textArg) {
   toast('✓ ' + text);
 }
 
+/** (v1.5.351) Steht in einem Tageseintrag irgendetwas, das jemand eingetragen hat? Interne Felder (_…) und leere Gerüste zählen nicht. */
+function _eintragIstLeer(e) {
+  const leer = (v, k) => {
+    if (k && (k[0] === '_' || k === 'plantsAtWatering')) return true;
+    if (v === null || v === undefined || v === '' || v === false) return true;
+    if (typeof v === 'string') return v.trim() === '';
+    if (typeof v === 'number') return !isFinite(v);
+    if (Array.isArray(v)) return v.every((x) => leer(x));
+    if (typeof v === 'object') return Object.keys(v).every((kk) => leer(v[kk], kk));
+    return false;
+  };
+  return leer(e);
+}
+
 function saveEntry() {
   if (!editISO) return;
   if (S.cycles.length > 0) ensE(S.cycles[0].id);
@@ -34288,6 +34455,18 @@ function saveEntry() {
       }
     }
   });
+
+  // (v1.5.351) LEER GESPEICHERT HEISST NICHT „GESPEICHERT". Die grauen Zahlen in den Feldern sind Vorschläge (Platzhalter).
+  // Wer sie für eingetragen hielt und auf „Speichern" tippte, bekam dreimal „Gespeichert" — Knopf, Kopfzeile, Meldung —, und
+  // gespeichert war ein leeres Gerüst (water ""), die Chips blieben bei 0/6. Jetzt sagt die App, dass noch nichts drinsteht,
+  // und legt kein leeres Gerüst ab.
+  if (_eintragIstLeer(S.entries[editISO])) {
+    if (_entrySnapshot === null) delete S.entries[editISO];
+    _entryDirty = false;
+    vibrate(8);
+    toast('Noch nichts eingetragen — die grauen Zahlen sind nur Vorschläge. Tipp einen Wert ein oder nutze „Tag automatisch ausfüllen".', 4500);
+    return;
+  }
 
   // (v1.5.328) Scheitert das Speichern, bleibt der Eintrag „ungespeichert": kein „Gespeichert ✓", kein grüner Knopf.
   // Vorher überschrieben beide die Warnung, und _entryDirty = false ließ den Eintrag ohne Rückfrage verlassen.

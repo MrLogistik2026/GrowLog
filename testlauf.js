@@ -55,7 +55,7 @@ const SCHLECHT = /^\s*FEHL\b|FEHLER:|Uncaught|TypeError|ReferenceError|SyntaxErr
 // Zeitkritische Tests laufen danach, einzeln. test_dauerdruecken zählt Wiederholungen, die ein Timer in 1200 ms auslöst;
 // neben fünf parallelen jsdom-Läufen bekam der Timer keine Rechenzeit, und der Test war rot, obwohl die App stimmte
 // (gemessen am 17.09.2026: unter Last rot in beiden Zonen, einzeln grün an v1.5.264 und v1.5.265).
-const EINZELN = new Set(['test_dauerdruecken.js']);
+const EINZELN = new Set(['test_dauerdruecken.js', 'test_eintragdaten.js']);   // (v1.5.348) eintragdaten wartet auf den 400-ms-Zeitgeber der App
 const jobs = [];
 const einzeln = [];
 for (const z of zonen) for (const d of dateien) (EINZELN.has(d) ? einzeln : jobs).push({ zone: z, datei: d });

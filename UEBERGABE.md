@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.346** · index.html 2,56 MB · 781 Funktionen
+Stand: **v1.5.358** · index.html 2,56 MB · 781 Funktionen
 Zuletzt fortgeschrieben am 07.10.2026 (Nachtprüfung und Run 02 — Abschnitt 0o, „Stand Run 02"). Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
@@ -120,8 +120,7 @@ programmiere alles nach deinen belieben. Hauptsache wir erreichen die 10/10!"
 nicht mehr als geerntet (v1.5.265, `ernteOffen`), ihr Klima folgt der späten Blüte (v1.5.266). Ein voller Topf heißt auf der
 Startseite „heute nicht gießen" (v1.5.267), auch am Spültag (v1.5.272). Die stehende Pflanze heißt „Ernte offen" (v1.5.269). IceFlush und Dunkelphase stehen nicht mehr im Stadium „Trocknung" (v1.5.271). Ein eingetragener Guss zählt als erledigt (v1.5.273). Der Gieß-Fahrplan sagt nach dem Guss und bei vollem Topf nicht mehr „heute" (v1.5.274). Die Ernte-Kacheln nennen die Messung (v1.5.279–282). Am Gießtag entscheidet der gemessene Topf (v1.5.284–286), und ein gemessen
 ausgelassener Guss gilt nicht als verpasst (v1.5.287). Offen, in dieser Reihenfolge: an Tagen ohne Gießtag „heute gießen" bei
-erreichtem Gießpunkt (#11, Befund in `scratchpad/hebel1b/befund/_11.md`) · das Eintippen der Gießmenge löscht den Hebe-Test von
-vorher (`uEF`, dadurch lernt `tagesAbnahme` im Hebe-Test-Modus fast nie) · „Gießrhythmus schwankt … Gleichmäßiger = besser!"
+erreichtem Gießpunkt (#11, Befund in `scratchpad/hebel1b/befund/_11.md`) · „Gießrhythmus schwankt … Gleichmäßiger = besser!"
 widerspricht `ANBAU.md` 15 · alle Pflanzen einzeln geerntet (#12) · Kalender und Endspurt (#19) · IceFlush als Eistag in der
 Mitteilung (#18). Im Eintrag bleibt am vollen oder feuchten Tag der Mischrechner mit „0 ml gesamt" und der Düngerliste stehen —
 gehört zum Umbau „Tageseintrag entschlacken", nicht in einen Fehlerfix.
@@ -271,7 +270,6 @@ Run 02 fachlich und Bedienung mit Patricks echter Datei, ein Gegenprüfer).** Ur
 keiner schlechter als v1.5.319. Die zwei schweren (Einschleusen über Anführungszeichen und `__proto__`) und die Import- und
 Speicher-Befunde sind in v1.5.340–344 behoben. Rohdaten: Workflow wf_63d754b1-be1 (journal.jsonl), Skripte unter
 `.claude/tmp/review339/` (vergänglich). **Offen, alle schon in v1.5.319 vorhanden, nach Nutzen für Run 02:**
-- F05 „Tag automatisch ausfüllen" schreibt pH und EC als Eintrag ohne Kennzeichen (applyRecommended ~32642) — gegen ANBAU.md 15.
 - F04 EC im Plan-Korridor löst „EC unter 0.8 — Dosis erhöhen" aus (~16109): Untergrenze aus der Plan-Woche nehmen.
 - F03 Meilenstein „kein Stickstoff mehr hochdrehen" in Blütewoche 1, während Rainbow Bio-Grow anhebt (~14897).
 - F01 Toppen-Knopf und -Hinweis bei Automatics bis Blütewoche 3 (~28333, ~14811), gegen Plan, FIM-Notiz und eigenen Satz.
@@ -289,6 +287,18 @@ Speicher-Befunde sind in v1.5.340–344 behoben. Rohdaten: Workflow wf_63d754b1-
   aus Runde 2: Fremd-Band verdrängt das Sperr-Band, `_fremdMelden` verdrängt einen offenen Dialog, ~24 „✓"-Toasts prüfen saveS nicht.
 - v1.5.345: Neue Pläne bekommen eine eindeutige Kennung (mehrere Vorlagen in einer Zyklus-Datei hingen sonst am falschen Plan); scheitert nach dem Speichern nur das Zeichnen, meldet der Import Erfolg.
 - v1.5.346: Der Spülstart rastet beim Sichern der Einstellungen ein, nicht erst still beim nächsten Start (Erntetag sprang über Nacht 17.11. → 19.11.); ein selbst gesetzter Spülstart oder Erntetag bleibt stehen (`_spuelStartFest`), bis ein echter Guss den Rhythmus verschiebt. Test `test_spuelrast.js` startet die App wirklich neu.
+- v1.5.347: Temperatur und Luftfeuchte gehen beim Neuzeichnen des Eintrags nicht mehr verloren (`uEnv` schreibt sofort).
+- v1.5.348: Nach der Gießmenge geht der nächste Tipp nicht mehr verloren (`_entryNeuNachFeld` statt sofortigem Neuzeichnen).
+- v1.5.349: Die Gießmenge löscht den Hebe-Test von vor dem Guss nicht mehr (außer „Voll"); der Eintrag nennt ihn „Vor dem Guss".
+- v1.5.350: Das pH-Feld füllt sich beim Antippen nicht mehr mit einem nie gespeicherten Zielwert.
+- v1.5.351: Leer speichern meldet „Noch nichts eingetragen" statt „Gespeichert" und legt kein leeres Gerüst ab.
+- v1.5.352: Die Kopfzeile des Eintrags passt in 390 und 320 px („Speichern" ragte 22–54 px über den Rand); Titel mit Wochentag statt Jahr.
+- v1.5.353: „Tag automatisch ausfüllen" kennzeichnet Gießmenge, pH, EC und Dosen als Vorschlag; der Ø-pH der Startseite zählt nur Gemessenes (F05 erledigt).
+- v1.5.354: Nebentexte lesbar — `--text-muted` #999, `--text-hint` #888 (vorher 2,0–3,5 : 1, jetzt ≥ 4,6 : 1), helles Thema #666/#707070.
+- v1.5.355: Zoomen erlaubt (Zoom-Sperre aus head.html entfernt); Felder auf Touch-Geräten 16 px gegen den iOS-Zwangszoom.
+- v1.5.356: Helles Thema — Zyklus-Farbflächen als Variable je Thema (`--dk-g1…8`); vorher unsichtbarer Text auf der Startseite.
+- v1.5.357: Trichom-Karte — „Bernstein-Ziel erreicht" gelb mit „aber noch N % klar", solange Klar über 10 %; „Fast bereit" nennt den Grund.
+- v1.5.358: Trichom-Felder leer statt vorbelegt, Inhalt beim Antippen markiert, Milchig ist der Rest; kein verlorener Tipp nach dem ersten Feld.
 
 **Bei der nächsten Bewertung** dieselbe Skala, dieselben Kategorie-IDs und dieselben Regeln aus `auftrag.md` nehmen und
 die Noten gegen diese Tabelle stellen.
@@ -2167,3 +2177,18 @@ mit echtem Zustand sichtbar.
   die Vorlagen-Liste, die jede Vorlage mit ihrem Untertitel zeigt — darunter zwangsläufig
   auch die gerade aktive. Sie stehen weit auseinander und erfüllen verschiedene Zwecke.
   Nicht anfassen.
+
+---
+
+## Zwischenstand 07.10.2026 abends (Sitzung am Nutzungslimit abgebrochen)
+
+Quellen stehen auf **v1.5.362**, lokal committet, **nicht hochgeladen**. CHANGELOG reicht bis v1.5.358; 359–362 fehlen dort
+noch (Inhalt: 359 Dünger-Mischung auf der Startseite `_mischungKurz`, 360 „Erledigt" bucht Plan-Dünger als Vorschlag,
+361 Diagnose späte Blüte → natürliche Reife zuerst, 362 Einstellungen „Damit ergibt sich" rechnet beim Tippen mit).
+Vor dem Hochladen offen:
+- `test_klimaziel.js` J: Gießvorschlag am 15.08. 16500 statt 15000 — auf v1.5.346 grün, kommt aus 347–353 (Verdacht v1.5.349,
+  Hebe-Test „vorher" bleibt stehen, oder 353 Vorschlags-Kennzeichen). Klären, ob richtig, dann Code oder Erwartung.
+- `test_speichern.js` G3–G6: v1.5.351 (leerer Eintrag wird nicht gespeichert) fängt den Speicherfehler-Fall ab.
+- `test_eintragdaten.js` H4/H6: `saveEntry` zeichnet 1300 ms nach dem Speichern neu und nimmt den Fokus — als v1.5.363 beheben.
+- `test_dialog_und_namen`, `test_saettigungnachholen` schon auf v1.5.346 rot — eigene Ursache suchen.
+- Sicherheits-Prüfung (XSS über Namen/Importe) lief als Workflow wf_086de9ab-b02; Ergebnis im Journal lesen, dann eigene Version.

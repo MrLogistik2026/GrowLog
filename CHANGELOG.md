@@ -2,6 +2,142 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-07 — v1.5.358
+
+- **Die Trichom-Felder im Eintrag führten zu falschen Zahlen** (Neubau-Prüfung, Anfänger, mit echtem Tippen gemessen).
+  Die Felder waren mit dem letzten Stand (oder 70/25/5) vorbelegt und markierten ihren Inhalt beim Antippen nicht: „20" in Klar
+  ergab „7200". Wer alle drei Werte eintrug (20 / 70 / 10), bekam 25 / 65 / 10, weil jede Eingabe einen Nachbarn umrechnete.
+  Und nach dem ersten Feld zeichnete der Eintrag sofort neu — der Tipp aufs nächste Feld ging verloren (wie v1.5.348).
+- **Jetzt** sind Klar und Bernstein leer, solange heute nicht gemessen wurde (grau der letzte Stand), der Inhalt wird beim
+  Antippen markiert, und **Milchig ist der Rest** — angezeigt, nicht eingetippt. So zählt man unter der Lupe ohnehin, und so
+  rechnet die App seit v1.5.91. Die Nachbarfelder ziehen sofort nach, neu gezeichnet wird erst nach dem Verlassen der Felder.
+  Die Berichtigen-Liste vergangener Messungen bleibt, wie sie ist.
+- Test: `test_eintragdaten.js` Abschnitt H, Felder (7 Prüfungen).
+
+
+## 2026-10-07 — v1.5.357
+
+- **„Fast bereit" und „Ziel erreicht" standen nebeneinander** (Neubau-Prüfung, Anfänger und Profi). Bei 15 % klar und 10 %
+  Bernstein (Ziel 5 %) zeigte die Trichom-Karte gelb „Fast bereit" und darunter grün „Ziel erreicht" — ein Anfänger liest das
+  als „jetzt schneiden". Die Freigabe hängt aber an Klar ≤ 10 % (`RIPE_CLEAR_DONE`, `ANBAU.md` 11: zu früh ernten ist der
+  teuerste Fehler).
+- **Jetzt** sagt „Fast bereit" warum („noch 15 % klar, erntereif ab höchstens 10 % klar"), und „Bernstein-Ziel erreicht" ist
+  gelb mit dem Satz „aber noch 15 % klar. Geschnitten wird erst, wenn höchstens 10 % klar sind." Grün bleibt es nur mit
+  Klar ≤ 10 %.
+- Test: `test_eintragdaten.js` Abschnitt H, Aussage (2 Prüfungen; fallen auf v1.5.353 um).
+
+
+## 2026-10-07 — v1.5.356
+
+- **Im hellen Thema war der Text auf den Zyklus-Karten unsichtbar** (Neubau-Prüfung, Skeptiker: „Mein Grow", „58 %" auf der
+  Startseite). Die Zyklus-Farbflächen (`COLORS[].dk`) waren fest dunkel, die Schrift kam aus dem hellen Thema.
+- **Jetzt** ist jede Fläche eine Variable je Thema (`--dk-g1` … `--dk-g8` in head.html) — ein Mechanismus für alle zwölf
+  Stellen, an denen die Flächen stehen. Im dunklen Thema bleiben die Werte genau wie bisher; im hellen sind es zarte Töne der
+  Zyklusfarbe, Text darauf mindestens 7 : 1.
+- Test: neu `test_lesbarkeit.js` Abschnitt C (26 Prüfungen).
+
+
+## 2026-10-07 — v1.5.355
+
+- **Zoomen war gesperrt** (Neubau-Prüfung, alle drei Prüfer; WCAG 1.4.4). `maximum-scale=1, user-scalable=no` verhinderte das
+  Vergrößern mit zwei Fingern — bei Beschriftungen mit 7–11 px für viele nicht lesbar.
+- **Jetzt** ist Zoomen erlaubt. Damit iOS beim Antippen eines kleinen Feldes nicht von selbst hineinzoomt (das tut Safari
+  unter 16 px), haben Eingabefelder auf Touch-Geräten 16 px Schrift. Sonst ändert sich am Aussehen nichts.
+- Test: `test_lesbarkeit.js` Abschnitt B (2 Prüfungen).
+
+
+## 2026-10-07 — v1.5.354
+
+- **Nebentexte waren zu blass** (Neubau-Prüfung, Skeptiker: 28–64 % der Zeichen unter 4,5 : 1, fast alle aus zwei Farben).
+  `--text-muted` (#666) hatte auf den Karten 2,9–3,5 : 1, `--text-hint` (#505050) 2,0–2,3 : 1; im hellen Thema #aaa 2,3 : 1.
+- **Jetzt** `--text-muted` #999 und `--text-hint` #888 im dunklen Thema (4,6–6,9 : 1 auf allen vier Grundflächen), im
+  hellen #666 und #707070. Das Design bleibt — nur die zwei Grautöne sind lesbar; die Abstufung Text › sub › muted › hint
+  bleibt, sie ist enger.
+- Test: `test_lesbarkeit.js` Abschnitt A (20 Prüfungen, rechnet die Kontraste selbst nach; fallen auf v1.5.353 um).
+
+
+## 2026-10-07 — v1.5.353
+
+- **„Tag automatisch ausfüllen" trug pH und EC wie Messungen ein** (UEBERGABE F05; Neubau-Prüfung, Profi und Anfänger).
+  `applyRecommended` setzte Gießmenge, pH 6,4 (Zielmitte), EC 1,8 und die Plan-Dosen ohne Vorschlag-Kennzeichen — während
+  „Erledigt" und das Nachtragen dasselbe längst als Vorschlag führen. Folgen, gemessen: Die Startseite zeigte „Ø pH 6.4" aus
+  einem Tag ohne Messung, die Einstellungen „⌀ pH 6.40 · 1× gem.", und am nächsten Gießtag lernte die App aus ihrem eigenen
+  Vorschlag („aus deinem Guss vom …"). Nach `ANBAU.md` 15 ist das genau der Fall, vor dem die Regel schützt.
+- **Jetzt** trägt alles, was das Ausfüllen einsetzt, `_suggested` bzw. `_suggestedDoses`; die Felder stehen grau-kursiv da
+  (die Formatierung gab es schon), die Meldung sagt „als Vorschlag ausgefüllt — gemessen? Dann den Wert antippen und
+  eintragen". Wer einen Wert ändert, macht daraus eine Messung (`uEF`, wie bisher). Der Ø-pH der Startseite zählt nur noch
+  Gemessenes — dieselbe Regel wie in der Zyklus-Bilanz und im pH-Trend.
+- **Was bleibt, bewusst:** Patrick will mit einem Tipp den Tag nach Plan erledigen — das geht weiter. Der Tag zählt als
+  eingetragen, nur nicht als Messung.
+- Test: `test_eintragdaten.js` Abschnitt G (7 Prüfungen; 5 fallen auf v1.5.346 um).
+
+
+## 2026-10-07 — v1.5.352
+
+- **Die Kopfzeile des Eintrags war breiter als das Handy** (Neubau-Prüfung, Skeptiker und Anfänger, gemessen in Chromium).
+  Sie brauchte 412–414 px; bei 390 px (iPhone 13) ragte „Speichern" um 22–24 px über den Rand, bei 360 px um 52–54 px, und
+  die Seite ließ sich seitlich schieben.
+- **Jetzt** darf der Titel umbrechen (`min-width:0`) und nennt den Wochentag statt des Jahres („Mi., 07.10. · Tag 59"); die
+  Tag-Knöpfe sind schmaler, bleiben aber 40 px breit. Unter 370 px Breite stehen ↩/↪ nur noch auf der Startseite, sonst
+  bliebe für den Titel kein Platz. Nachgemessen: 390 und 320 px, eine und zwei Gruppen — „Speichern" endet 10 px vor dem Rand.
+- Test: `test_eintragdaten.js` Abschnitt F (3 Prüfungen; jsdom kennt kein Layout, die Pixel kommen aus Chromium).
+
+
+## 2026-10-07 — v1.5.351
+
+- **Leer speichern meldete dreimal „Gespeichert"** (Neubau-Prüfung, Anfänger). Die grauen Zahlen in den Feldern sind
+  Vorschläge (Platzhalter) — „3000" in der Gießmenge sieht eingetragen aus. Wer darauf „Speichern" tippte, bekam Knopf,
+  Kopfzeile und Meldung „Gespeichert", gespeichert war ein leeres Gerüst, die Chips blieben bei 0/6.
+- **Jetzt** sagt die App „Noch nichts eingetragen — die grauen Zahlen sind nur Vorschläge …" und legt kein leeres Gerüst ab
+  (`_eintragIstLeer`). Mit einem echten Wert speichert sie wie bisher.
+- Test: `test_eintragdaten.js` Abschnitt E (4 Prüfungen; 3 fallen auf v1.5.346 um).
+
+
+## 2026-10-07 — v1.5.350
+
+- **Das pH-Feld zeigte beim Antippen „6,4" und speicherte nichts** (Neubau-Prüfung, Profi). `onfocus` füllte den Zielwert
+  ins Feld, gespeichert wird aber erst beim Tippen (`uEF`). Wer nur angetippt hat und weitergegangen ist, sah einen pH-Wert,
+  der nirgends stand — nach `ANBAU.md` 15 gehört ein Zielwert als Platzhalter ins Feld, nicht als Eintrag.
+- **Jetzt** steht der Zielwert nur noch grau als Platzhalter da; die ±-Knöpfe zählen weiter von ihm aus.
+- Test: `test_eintragdaten.js` Abschnitt D (1 Prüfung; fällt auf v1.5.346 um).
+
+
+## 2026-10-07 — v1.5.349
+
+- **Die Gießmenge löschte den Hebe-Test von vor dem Guss** (Neubau-Prüfung, Anfänger und Profi; stand schon in der
+  Offen-Liste zu Hebel 1). Hebe-Test „Knapp" → Vorschlag „aus deinem heutigen Hebe-Test" ~3500 ml je Pflanze; beim Eintippen
+  der Menge löschte `uEF` den Wert, der Vorschlag sprang auf den Startwert 3000 zurück. Dabei liest die Rechnung genau diesen
+  Wert als „vor dem Guss" (`_waterConsumptionInfo` 'pre', `wasserKapazitaet`) — ohne ihn lernte `tagesAbnahme` im
+  Hebe-Test-Modus fast nie, wie schnell der Topf trocknet.
+- **Jetzt** bleibt ein selbst getippter Hebe-Test unter „Voll" stehen; der Eintrag beschriftet ihn nach dem Guss als
+  „Vor dem Guss: Knapp (~30 %) · jetzt gegossen" statt weiter „Heute gießen". „Voll" am Gießtag heißt wie bisher „gerade
+  gegossen" und weicht — sonst stünde ein Vorher-Wert von 95 % in der Rechnung und die Topf-Kapazität würde viel zu groß.
+- Test: `test_eintragdaten.js` Abschnitt C (6 Prüfungen; 3 fallen auf v1.5.346 um).
+
+
+## 2026-10-07 — v1.5.348
+
+- **Nach der Gießmenge ging der nächste Tipp verloren** (Neubau-Prüfung, Anfänger und Profi). Das Mengenfeld zeichnete beim
+  Verlassen (`onchange`) den ganzen Eintrag neu — genau in dem Moment, in dem der Finger schon auf dem nächsten Feld lag. Das
+  Ziel wurde ersetzt, bevor es den Tipp bekam: pH-Feld angetippt → Fokus weg, „6,3" ging ins Leere; ein Hebe-Test-Knopf
+  reagierte nicht.
+- **Jetzt** wartet `_entryNeuNachFeld` den Tipp ab (Klick oder 400 ms), zeichnet nicht, wenn der Tipp selbst schon neu
+  gezeichnet hat, und solange jemand im nächsten Feld weitertippt, erst wenn er die Felder verlässt. Der Wert steht da längst
+  im Zustand (`oninput`). Nachgeprüft mit echten Klicks im Chromium-Handyformat.
+- Test: `test_eintragdaten.js` Abschnitt B (10 Prüfungen, Gießtag und Tag ohne Guss; 6 fallen auf v1.5.346 um). Die Datei
+  läuft im Gesamtlauf einzeln (`EINZELN`), weil sie auf den Zeitgeber der App wartet.
+
+
+## 2026-10-07 — v1.5.347
+
+- **Temperatur und Luftfeuchte gingen verloren** (Neubau-Prüfung, Anfänger und Profi, gemessen 6 von 6). Beide standen nur
+  im Feld und kamen erst mit „Speichern" in den Zustand. Jeder Tipp, der den Eintrag neu zeichnet — Hebe-Test, Mischhäkchen,
+  ±-Knöpfe, Düngen/Nur Wasser, Chip „pH" —, löschte sie.
+- **Jetzt** schreibt `uEnv` sie beim Tippen in den Zustand, wie pH, EC und Gießmenge. „Verwerfen" stellt weiter den Stand
+  beim Öffnen her.
+- Test: neu `test_eintragdaten.js` Abschnitt A (5 Prüfungen; 3 fallen auf v1.5.346 um).
+
+
 ## 2026-10-07 — v1.5.346
 
 - **Der Erntetag verstellte sich über Nacht, und ein selbst gesetzter Spülstart sprang zurück** (gefunden bei der
