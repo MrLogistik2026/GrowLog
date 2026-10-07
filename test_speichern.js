@@ -382,16 +382,26 @@ function pruef(name, bedingung, info) {
 
   // ===== K: Ein geleerter Speicher ist kein anderes Fenster (v1.5.332) =====
   console.log('\nK - Speicher bei offener App geleert');
-  for (const antwort of [true, false]) {
-    const k = await load({ [SK]: SICHERUNG }, { antwort });
+  // Drei Antworten: „Wieder speichern" (true), „Nicht speichern" und bestätigt ('nicht'), Abbruch per Escape/daneben ('abbruch')
+  for (const antwort of [true, 'nicht', 'abbruch']) {
+    const k = await load({ [SK]: SICHERUNG }, { antwort: antwort === true });
+    if (antwort !== true) {
+      // v1.5.343: erste Frage nein; die zweite („Wirklich nicht speichern?") ja nur bei 'nicht', beim Abbruch nein
+      let n = 0;
+      k.window.customConfirm = (t, m) => { k.dialoge.push(String(t) + '\n' + String(m)); n++; return Promise.resolve(n === 1 ? false : antwort === 'nicht'); };
+    }
     const eintraege = k.E('Object.keys(S.entries).length');
     k.E('saveS._lastUndo = 0; saveS()');   // ein Schreibvorgang, damit eine Kennung existiert
     k.window.localStorage.removeItem(SK); k.window.localStorage.removeItem('growsmart_v4_gen');
     k.window.document.dispatchEvent(new k.window.Event('visibilitychange'));
     await new Promise((r) => setTimeout(r, 100));
     const d = k.dialoge.join('\n');
-    pruef(`K${antwort ? 1 : 4} Hinweis „Der Speicher wurde geleert", nicht „woanders geändert"`, /Der Speicher wurde geleert/.test(d) && !/woanders geändert/.test(d), k.dialoge);
-    if (antwort) {
+    const nr = antwort === true ? 'a' : (antwort === 'nicht' ? 'b' : 'c');
+    pruef(`K1${nr} Hinweis „Der Speicher wurde geleert", nicht „woanders geändert"`, /Der Speicher wurde geleert/.test(d) && !/woanders geändert/.test(d), k.dialoge);
+    if (antwort === 'abbruch') {
+      const roh = k.get(SK);
+      pruef('K8 Abbruch (Escape, daneben getippt): es wird wieder gespeichert, nichts geht verloren', !!roh && Object.keys(JSON.parse(roh).entries).length === eintraege && /Wirklich nicht speichern/.test(d), roh && Object.keys(JSON.parse(roh).entries).length);
+    } else if (antwort === true) {
       const roh = k.get(SK);
       pruef('K2 „Wieder speichern": der ganze Stand liegt wieder im Speicher', !!roh && Object.keys(JSON.parse(roh).entries).length === eintraege, roh && Object.keys(JSON.parse(roh).entries).length);
       k.E("S.entries['2026-09-27'] = { note: 'danach' }; saveS()");
@@ -399,9 +409,24 @@ function pruef(name, bedingung, info) {
     } else {
       k.E("S.entries['2026-09-27'] = { note: 'alter Tab' }; saveS()");
       const b = k.window.document.getElementById('sperrband');
-      pruef('K5 „Nicht speichern": der Speicher bleibt leer, das Band sagt es', k.get(SK) === null && !!b && /speichert nicht mehr/.test(b.textContent), b && b.textContent);
+      pruef('K5 „Nicht speichern" bestätigt: der Speicher bleibt leer, das Band sagt es', k.get(SK) === null && !!b && /speichert nicht mehr/.test(b.textContent), b && b.textContent);
+      let backup = 0; k.window.exportData = () => { backup++; };
+      if (b) b.click();
+      pruef('K9 … und das Band zieht ein Backup, statt neu zu laden', backup === 1 && /Backup zu ziehen/.test(b.textContent));
     }
-    pruef(`K${antwort ? 6 : 7} keine JS-Fehler`, k.errors.length === 0, k.errors[0]);
+    pruef(`K7${nr} keine JS-Fehler`, k.errors.length === 0, k.errors[0]);
+  }
+
+  {
+    // v1.5.343: Während der Dialog offen steht, schreibt ein anderes Fenster — „Wieder speichern" überschreibt das nicht
+    const k = await load({ [SK]: SICHERUNG }, { antwort: true });
+    k.E('saveS._lastUndo = 0; saveS()');
+    const fremd = (() => { const st = JSON.parse(SICHERUNG); st.entries['2026-09-28'] = { note: 'anderes Fenster' }; return JSON.stringify(st); })();
+    k.window.customConfirm = (t, m) => { k.dialoge.push(String(t)); if (/Speicher wurde geleert/.test(t)) k.window.localStorage.setItem(SK, fremd); return Promise.resolve(true); };
+    k.window.localStorage.removeItem(SK); k.window.localStorage.removeItem('growsmart_v4_gen');
+    k.window.document.dispatchEvent(new k.window.Event('visibilitychange'));
+    await new Promise((r) => setTimeout(r, 100));
+    pruef('K10 anderes Fenster schreibt während der Frage: „Wieder speichern" überschreibt es nicht, Hinweis „woanders geändert"', k.get(SK) === fremd && k.dialoge.some(d => /woanders geändert/.test(d)), k.dialoge);
   }
 
   // ===== L: ↩, dann gleich weiterarbeiten — ↪ überschreibt nichts (v1.5.333) =====

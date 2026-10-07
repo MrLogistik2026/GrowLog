@@ -3593,7 +3593,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.342';
+const APP_VERSION = 'v1.5.343';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -4326,7 +4326,18 @@ async function _geleertFragen() {
   const ja = await customConfirm('Der Speicher wurde geleert',
     'Die gespeicherten GrowSmart-Daten in diesem Browser sind gerade gelöscht worden — durch „Website-Daten löschen", weil der Browser Platz brauchte, oder durch „alles löschen" in einem anderen Tab. In diesem Fenster ist dein Stand noch offen.\n\nWieder speichern: GrowSmart legt ihn sofort wieder ab.\nNicht speichern: Hast du absichtlich gelöscht, bleibt der Speicher leer. Willst du den Stand trotzdem behalten, zieh vorher ein Backup (Einstellungen → Daten & Sicherheit).',
     'Wieder speichern', 'var(--green)', 'Nicht speichern');
-  if (ja) {
+  // (v1.5.343) Escape oder ein Tipp daneben beantworten den Dialog mit dem zweiten Knopf — hier wäre das „Nicht speichern"
+  // gewesen, und das Band danach lud neu und verwarf den einzigen Stand (Prüfer, 07.10.2026). Jetzt braucht „Nicht
+  // speichern" eine zweite, bewusste Bestätigung; dort ist der zweite Knopf das sichere „Wieder speichern".
+  const wirklichNicht = !ja && await customConfirm('Wirklich nicht speichern?',
+    'Dann bleibt der Speicher leer — schließt du dieses Fenster oder lädst neu, ist dein Stand weg. Willst du ihn behalten, tippe auf „Wieder speichern".',
+    'Nicht speichern', 'var(--red)', 'Wieder speichern');
+  if (!wirklichNicht) {
+    // (v1.5.343) Hat inzwischen ein anderes Fenster geschrieben, wird es nicht überschrieben (Prüfer: ein Fenster ohne
+    // Kennung verlor sonst seinen Stand).
+    let jetzt = null;
+    try { jetzt = localStorage.getItem(SK); } catch (e) { jetzt = null; }
+    if (jetzt !== null) { _speicherGeleert = false; _fremdGeschrieben = true; _fremdMelden(); return; }
     _speicherGeleert = false;
     _skLetzter = null; _meineGen = null;   // der leere Speicher ist jetzt der bekannte Ausgangspunkt
     saveS._lastUndo = 0;
@@ -4339,7 +4350,8 @@ async function _geleertFragen() {
     _speicherGeleertAbgelehnt = true;
     _speicherGeleert = false;
     _fremdGeschrieben = true;   // ab jetzt nichts mehr schreiben — der Speicher soll leer bleiben
-    _sperrBand(true, '⚠ <b>Dieses Fenster speichert nicht mehr</b> — der Speicher wurde geleert. Tippe, um neu zu laden.', () => window.location.reload(), 'fremd');
+    // (v1.5.343) Das Band zieht ein Backup, statt neu zu laden — Neuladen hieße: der offene Stand ist weg.
+    _sperrBand(true, '⚠ <b>Dieses Fenster speichert nicht mehr</b> — der Speicher wurde geleert. Tippe, um ein Backup zu ziehen; danach kannst du GrowSmart neu öffnen.', () => { try { exportData(); } catch (e) { toast('⚠ Backup ging nicht: ' + ((e && e.message) || e)); } }, 'fremd');
   }
 }
 function _fremdMelden() {

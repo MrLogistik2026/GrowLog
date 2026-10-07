@@ -2,6 +2,20 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-07 — v1.5.343
+
+- **Escape oder ein Tipp daneben hieß „Nicht speichern"** (Prüfer vor dem Hochladen, mittel; ein Rückschritt aus
+  v1.5.332). Der Dialog „Der Speicher wurde geleert" legt Escape und den Tipp auf den Hintergrund — wie jeder Dialog der
+  App — auf den zweiten Knopf, und das war „Nicht speichern". Das Band danach lud auf Antippen neu: Die App startete leer,
+  der Stand, der nur noch im offenen Fenster lag, war weg. v1.5.319 hatte ihn still zurückgeschrieben.
+- **Jetzt** braucht „Nicht speichern" eine zweite, bewusste Bestätigung („Wirklich nicht speichern? … ist dein Stand weg"),
+  deren zweiter Knopf das sichere „Wieder speichern" ist — ein Abbruch speichert also wieder. Nach bestätigtem „Nicht
+  speichern" zieht das Band ein Backup, statt neu zu laden.
+- **Mitgenommen (leicht):** Schreibt während der offenen Frage ein anderes Fenster, überschreibt „Wieder speichern" das
+  nicht mehr, sondern meldet „woanders geändert" (vorher traf es ein Fenster ohne Kennung).
+- Test: `test_speichern.js` Abschnitt K auf drei Antworten erweitert, dazu K8–K10 (beide Zeitzonen; 3 fallen auf v1.5.342 um).
+
+
 ## 2026-10-07 — v1.5.342
 
 - **Der Import nannte „Rainbow v2.1", hängte die Zyklen aber still an eine geänderte v1.0-Kopie** (Prüfer vor dem
