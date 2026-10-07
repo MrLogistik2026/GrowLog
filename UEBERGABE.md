@@ -175,9 +175,9 @@ Abgearbeitet wird die Liste in `.claude/notizen/REIHENFOLGE.md` von oben.
   gesperrt; Ersatzkarte fürs erste Bild. **Punkt 7 fast fertig (v1.5.297, 320–331):** Import prüft und lädt neu; Speichern scheitert nie still (Band „NICHT
   gespeichert“ mit Backup-Tür, kein „Gespeichert ✓“ über dem Fehler); gesperrter oder nur nicht lesbarer Speicher wird
   gemeldet und nicht überschrieben; ↩/↪ melden Fehlschläge und haben keinen Versatz mehr; die Speicheranzeige zählt alle
-  Schlüssel; ein zweites Fenster wird nicht überschrieben; ein zerstörter Arbeitsstand wird nicht geschrieben. Offen:
-  rettung.html und wiederherstellung.html (Entwürfe 13/14 in hebel3/patches/ — rettung.html spricht noch von der
-  „Vorschau der Claude-App“, wiederherstellung.html muss beim Einspielen growsmart_v4_gen neu setzen).
+  Schlüssel; ein zweites Fenster wird nicht überschrieben; ein zerstörter Arbeitsstand wird nicht geschrieben; rettung.html bietet jeden
+  Stand an, wiederherstellung.html prüft wie die App und setzt die Kennung (v1.5.334/335). Nach der Prüfrunde vom 07.10.
+  vormittags kamen 340–344 dazu (Härtung des Zyklus-Imports, geleerter Speicher). Reste, alle leicht, stehen dort.
 - **Offen aus Punkt 3:** Der Rückfall „Fassung ohne Fotos aufheben, statt zu sperren" (Skeptiker-Korrektur zu
   Entwurf 281) ist nicht gebaut — er betrifft die Fälle aus den Entwürfen 283/284, in denen `S` alle Daten trägt.
   Kommt mit Punkt 5/6.
@@ -225,7 +225,7 @@ Zwei-Zyklen-Führung (H3 6,8, F2 7,2, T1 7,9). Schwächste Stellen unverändert:
 Einstellungen 5,2, I5 Ernte 5,4, H5 Übersicht 5,8. 48 Befunde, 41 bestätigt, 7 abgeschwächt; die zwölf ohne Rückfrage
 behebbaren und drei kleine Anzeigefehler sind in v1.5.313–319 behoben. Rohdaten: Sitzungs-Scratchpad `pruefung/` und Workflow
 wf_0586d0bf-d3d (vergänglich). **Offen, nach Nutzen geordnet** (Umbauten oder Patricks Entscheidung):
-1. Hebel 3 Punkt 7, Rest: rettung.html und wiederherstellung.html (siehe „Stand Hebel 3“). Erledigt in v1.5.320–331.
+1. Hebel 3 Punkt 7: erledigt in v1.5.320–335 und 340–344; Reste (leicht) unter „Prüfrunde 07.10.2026 vormittags".
 2. Gießtag-Eintrag im Einsteiger-Modus so dicht wie im Profi-Modus (46 Felder bei zwei Zyklen), fünf Zahlen für „wie viel
    gieße ich" im Anzucht-Eintrag, Wochenwechsel-Block 2530 Zeichen ohne ⓘ — Umbau „Tageseintrag entschlacken".
 3. EC-Bewertung ignoriert den Korridor der Plan-Woche (Sämling erst ab 1,2, Blüte Woche 9 bei 2,4 stumm) — Idee: eine
@@ -265,6 +265,28 @@ Unterscheidungsfragen aus dem eigenen Zustand.
 - v1.5.342: Zyklus-Import nennt den Plan, der wirklich genommen wird, und fragt bei abweichender Kopie (Vorlage / meine Kopie); Substrat muss zur Vorlage passen; von Hand angelegte Doppel werden erkannt.
 - v1.5.343: „Speicher geleert" — Escape/daneben heißt nicht mehr „Nicht speichern" (zweite Bestätigung), das Band zieht ein Backup statt neu zu laden; ein anderes Fenster wird beim Zurückspeichern nicht überschrieben.
 - v1.5.344: Der Rettungs-Download nimmt nur das Band der Speichersperre weg, nicht „Dieses Fenster speichert nicht mehr".
+
+**Prüfrunde 07.10.2026 vormittags (v1.5.339, Workflow mit vier Sonnet-Agenten: Speicher 332–335, Zyklus-Import 336–339,
+Run 02 fachlich und Bedienung mit Patricks echter Datei, ein Gegenprüfer).** Urteil „hochladen" — 38 Befunde, 36 nachgemessen,
+keiner schlechter als v1.5.319. Die zwei schweren (Einschleusen über Anführungszeichen und `__proto__`) und die Import- und
+Speicher-Befunde sind in v1.5.340–344 behoben. Rohdaten: Workflow wf_63d754b1-be1 (journal.jsonl), Skripte unter
+`.claude/tmp/review339/` (vergänglich). **Offen, alle schon in v1.5.319 vorhanden, nach Nutzen für Run 02:**
+- F05 „Tag automatisch ausfüllen" schreibt pH und EC als Eintrag ohne Kennzeichen (applyRecommended ~32642) — gegen ANBAU.md 15.
+- F04 EC im Plan-Korridor löst „EC unter 0.8 — Dosis erhöhen" aus (~16109): Untergrenze aus der Plan-Woche nehmen.
+- F03 Meilenstein „kein Stickstoff mehr hochdrehen" in Blütewoche 1, während Rainbow Bio-Grow anhebt (~14897).
+- F01 Toppen-Knopf und -Hinweis bei Automatics bis Blütewoche 3 (~28333, ~14811), gegen Plan, FIM-Notiz und eigenen Satz.
+- F06 Anzucht-Eintrag: Drain-Zeilen und Vollsättigung trotz `_drainMoeglich` (~28443, 29059–29416).
+- F02 erster Guss der Plan-Woche 3 als „Feed" empfohlen, die Wasserguss-Anweisung steht nur am Wochenstart (~10941).
+- F10 zwei Gruppen im Zelt: Klima nach der weiter entwickelten Gruppe, die Sämlings-Stufe der anderen fällt durch (~15006).
+- F11 Gießmenge: Vorschlag und Drain-Aussage widersprechen sich in Plan-Woche 4/5 (~29401, ~28924).
+- F07 Düngeplan markiert nur eine Plan-Woche bei zwei Gruppen (`_zyklusFuerPlan` ~21553); F09 feste Wochen-Namen ab Plan-Woche 6 (~17511).
+- Leicht: F08 Einsteiger-Fahrplan ohne Anzucht-Güsse, F12 Plan-Tag im Eintragskopf, F13 „Guss fehlt" vor dem Durchbruch
+  (~25930, ~14331), F14 pH 6.4 fest neben 6,35 der Plan-Woche, F15 „lauwarm" statt 20–22 °C (~16755), F16 jeder
+  Bildschirm wählt eine andere Standardgruppe (~20356, ~22671), F17 Klima-Zielzeile mit Dezimalen (~15348), F18 Kalender
+  zeigt bei zwei Aktionen nur eine (~18082), F19 Import übernimmt Spül-, Eis- und Trocknungstage nicht aus dem Plan.
+- Speicher, leicht: rettung.html bietet „Daten anzeigen" nur beim Hauptstand (SK-5); wiederherstellung.html überschreibt
+  den Rückweg beim zweiten Einspielen, „Zurückholen" ohne Ablage des aktuellen Stands, Quota-Fehler roh (SK-6, wie in 319);
+  aus Runde 2: Fremd-Band verdrängt das Sperr-Band, `_fremdMelden` verdrängt einen offenen Dialog, ~24 „✓"-Toasts prüfen saveS nicht.
 
 **Bei der nächsten Bewertung** dieselbe Skala, dieselben Kategorie-IDs und dieselben Regeln aus `auftrag.md` nehmen und
 die Noten gegen diese Tabelle stellen.
