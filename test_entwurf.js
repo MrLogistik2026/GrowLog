@@ -46,7 +46,11 @@ const { boot } = require('./audit_lib');
   ev(`_modalResolve && _modalResolve(true)`);
   await new Promise(x => setTimeout(x, 60));
   out.bewusstGeaendert = ev(`S.cycles[0].bloomDays`);
-  if (out.bewusstGeaendert !== 90) fehler.push('bewusst geänderte Blütedauer kam nicht an (' + out.bewusstGeaendert + ')');
+  // (v1.5.346) Die 90 kommt an und rastet beim Sichern auf den Gießrhythmus ein (höchstens + Intervall − 1 Tage) —
+  // vorher stand hier genau 90, und der nächste App-Start machte still daraus 91 (test_spuelrast.js).
+  const _r = JSON.parse(ev(`(function(){ const c = S.cycles[0]; const st = endspurtState(c, todayISO()); return JSON.stringify({ sp: st.spuelStart, lg: st.letzterGuss, iv: st.iv }); })()`));
+  if (!(out.bewusstGeaendert >= 90 && out.bewusstGeaendert <= 90 + _r.iv - 1)) fehler.push('bewusst geänderte Blütedauer kam nicht an (' + out.bewusstGeaendert + ')');
+  if (_r.sp !== _r.lg + _r.iv) fehler.push('Spülstart nach dem Sichern nicht im Gießrhythmus (' + _r.lg + ' / ' + _r.sp + ')');
 
   Object.entries(out).forEach(([k, v]) => console.log('  ' + k + ': ' + JSON.stringify(v)));
   console.log(fehler.length ? 'FAIL\n  ' + fehler.join('\n  ') : 'OK entwurf');

@@ -3593,7 +3593,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.345';
+const APP_VERSION = 'v1.5.346';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -9702,6 +9702,7 @@ async function setEndspurtSpuelStart(cId) {
   if (c.flushDryFrom) delete c.flushDryFrom;
   c.flushDryDays = 0;
   c.bloomDays = neuBloom;
+  _spuelStartFestSetzen(c);   // (v1.5.346) eigene Wahl — _snapFlushToRhythm rückt sie nicht mehr
   saveS(); vibrate(8);
   toast(`Spülen ab Tag ${n}`);
   _rerenderEndspurt();
@@ -9856,6 +9857,7 @@ async function endspurtNormal(cId) {
   if (!ok) return;
   c.flushDryDays = iv;
   c.flushDryFrom = isoPlus(c.startDate, st.letzterGuss - 1);
+  delete c._spuelStartFest;   // (v1.5.346) zurück zur Regel
   saveS();
   if (!_endspurtAnchor(c)) { toast('Das ging nicht — der Spülstart läge in der Vergangenheit'); return; }
   vibrate(10);
@@ -9884,12 +9886,31 @@ function _snapFlushToRhythm(c) {
   let st = null;
   try { st = endspurtState(c, todayISO()); } catch (e) { return false; }
   if (!st || !st.letzterGuss) return false;
+  // (v1.5.346) EINE EIGENE WAHL BLEIBT STEHEN. Diese Regel läuft bei jedem Start (loadS) — sie fängt auch eine
+  // Gießrhythmus-Verschiebung durch echte Güsse ab. Sie schob aber genauso einen von Hand gesetzten Spülstart
+  // oder Erntetag still zurück: „Spülen ab Tag 80" stand nach dem nächsten Öffnen wieder auf Tag 82. Was der
+  // Grower selbst festlegt (setEndspurtSpuelStart, shiftPlanToDay), trägt _spuelStartFest mit dem letzten Guss,
+  // von dem aus er gewählt hat. Solange der gleich ist, wird nichts bewegt. Hat ein echter Guss den Rhythmus
+  // verschoben, galt die Wahl einer anderen Lage — dann greift die Regel wieder (v1.5.82: nie ein Düngerguss
+  // direkt vor dem Spülstart).
+  const _fest = c._spuelStartFest;
+  if (_fest) {
+    if (_fest === true || _fest.lg === st.letzterGuss) return false;
+    delete c._spuelStartFest;
+  }
   const soll = st.letzterGuss + st.iv;
   if (soll === st.spuelStart) return false;
   if (soll < st.spuelStart) return false;              // nie verkürzen
   if (soll - st.spuelStart > st.iv) return false;      // nur einrasten, kein Sprung
   if (soll <= st.heuteTag) return false;
   return _endspurtAnchor(c, st.letzterGuss);
+}
+
+/** (v1.5.346) Merkt eine eigene Wahl des Spülstarts samt dem letzten Guss, von dem aus sie getroffen wurde. */
+function _spuelStartFestSetzen(c) {
+  let lg = null;
+  try { const st = endspurtState(c, todayISO()); lg = st ? st.letzterGuss : null; } catch (e) {}
+  c._spuelStartFest = { lg };
 }
 
 /** Endspurt aufheben: keine erzwungene Abtrockenphase mehr, der Rhythmus läuft durch. */
@@ -10810,6 +10831,7 @@ async function shiftPlanToDay(cId, zielTag, ohneRueckfrage) {
   }
 
   c.bloomDays = neu;
+  _spuelStartFestSetzen(c);   // (v1.5.346) der Knopf nennt „Ernte Tag N" — dabei bleibt es auch nach dem nächsten Start
   // bloomBase mitziehen, sonst rechnet _syncPlanPause die Änderung beim nächsten Aufruf
   // wieder weg (es setzt bloomDays = bloomBase + Verschiebungstage).
   if (c.planPause && isFinite(parseInt(c.planPause.bloomBase, 10))) {
@@ -23547,10 +23569,27 @@ async function saveDraft() {
   // wieder auf den alten Stand gesprungen.
   //
   // Geschrieben wird deshalb nur, was im Entwurf auch angefasst wurde.
+  // (v1.5.346) Ändert sich dabei die Kette (Start, Anzucht, Blüte, Gießrhythmus), rastet der Spülstart gleich hier
+  // auf den Gießrhythmus ein — vorher geschah das erst beim nächsten App-Start: Blüte 60 → 67 zeigte Ernte 17.11.,
+  // mit dem ersten Spülguss einen Tag nach dem letzten Düngerguss, und am nächsten Tag stand still 19.11. da.
+  const _ketteFelder = ['startDate', 'anzuchtDays', 'bloomDays', 'bloomStartDate', 'intAnzucht', 'intBloom', 'intFlush'];
+  const _ketteNeu = _ketteFelder.some(k => draftTouched[k] && JSON.stringify(c[k]) !== JSON.stringify(draft[k]));
   Object.keys(draftTouched).forEach(k => {
     if (k === 'id') return;
     c[k] = draft[k];
   });
+  let _rastHinweis = '';
+  if (_ketteNeu) {
+    delete c._spuelStartFest;   // die Kette ist neu festgelegt — eine frühere eigene Wahl des Spülstarts gilt nicht mehr
+    const _bAlt = c.bloomDays;
+    try { _snapFlushToRhythm(c); } catch (e) {}
+    if (c.bloomDays !== _bAlt) {
+      let _sp = null;
+      try { _sp = endspurtState(c, todayISO()); } catch (e) {}
+      if (draft) draft.bloomDays = c.bloomDays;
+      _rastHinweis = ` · Blüte ${c.bloomDays} statt ${_bAlt} Tage: Das Spülen beginnt am nächsten Gießtag${_sp && _sp.spuelStart ? ' (Tag ' + _sp.spuelStart + ')' : ''}, nicht am Tag nach dem letzten Düngerguss`;
+    }
+  }
   // Felder, die über eigene Editoren im Entwurf leben (Pflanzenliste, Notizen, Trainings),
   // werden weiterhin vollständig übernommen — sie haben keinen dd()-Weg.
   ['plants', 'trainings', 'planNotes', 'products'].forEach(k => {
@@ -23618,7 +23657,7 @@ async function saveDraft() {
 
   saveS();
   vibrate();
-  toast(`${sym(c)} ${c.name} gespeichert ✓`);
+  toast(`${sym(c)} ${c.name} gespeichert ✓${_rastHinweis}`);
   renderSet();
 }
 

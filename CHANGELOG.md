@@ -2,6 +2,30 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-07 — v1.5.346
+
+- **Der Erntetag verstellte sich über Nacht, und ein selbst gesetzter Spülstart sprang zurück** (gefunden bei der
+  Neubau-Prüfung; nachgemessen im echten Browser). `_snapFlushToRhythm` lief bei **jedem** App-Start für jeden Zyklus.
+  Zwei Folgen:
+  - Blüte in den Einstellungen 60 → 67 Tage: Nach dem Sichern stand Ernte 10.11. → 17.11., der erste Spülguss lag einen
+    Tag nach dem letzten Düngerguss (zweimal Gießen hintereinander). Beim nächsten Öffnen machte die App still Blüte 69 und
+    Ernte 19.11. daraus.
+  - „Spülen ab Tag 80" (Endspurt) oder „Plan nachziehen — Ernte Tag N" (Trichom-Karte) galten nur bis zum nächsten Start;
+    dann rastete die Regel sie auf den Gießrhythmus zurück. Das ist der Fehler aus v1.5.87 („das verstellt sich von selbst")
+    an neuer Stelle.
+- **Jetzt** rastet `saveDraft` den Spülstart gleich beim Sichern ein, sobald sich Start, Anzucht, Blüte oder Gießrhythmus
+  ändern, und die Meldung sagt es („Blüte 69 statt 67 Tage: Das Spülen beginnt am nächsten Gießtag (Tag 91) …"). Nach dem
+  Neustart steht dasselbe da. Eine eigene Wahl (`setEndspurtSpuelStart`, `shiftPlanToDay`) trägt `_spuelStartFest` mit dem
+  letzten Guss, von dem aus sie getroffen wurde, und bleibt stehen — bis ein echter Guss den Rhythmus verschiebt; dann gilt
+  wieder die Regel aus v1.5.82 (nie ein Düngerguss direkt vor dem Spülstart). „Auf normalen Rhythmus stellen" hebt die
+  eigene Wahl auf.
+- **Warum vorwärts statt genau die getippte Zahl:** Die Regel verlängert nie und kürzt nie die Ernte nach vorn; zwei Tage
+  später ernten ist die sichere Seite (ANBAU.md 11, 15), zwei Güsse hintereinander nicht (ANBAU.md 1, 13.1).
+- Test: neu `test_spuelrast.js` (15 Prüfungen, startet die App mit dem gespeicherten Stand wirklich neu; 6 fallen auf
+  v1.5.345 um). `test_entwurf.js` erwartet statt genau 90 jetzt 90 oder bis zu Intervall − 1 Tage mehr, im Rhythmus.
+  Dazu 21 betroffene Tests in beiden Zeitzonen grün (Endspurt, Entwurf, IceFlush, Gieß-Fahrplan, Speicher, Import u. a.).
+
+
 ## 2026-10-07 — v1.5.345
 
 - **Zwei Pläne konnten dieselbe Kennung bekommen** (Gegenprüfung vor dem Hochladen, mittel; ein Rückschritt aus v1.5.341).
