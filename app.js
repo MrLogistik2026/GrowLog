@@ -3593,7 +3593,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.340';
+const APP_VERSION = 'v1.5.341';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -25559,10 +25559,22 @@ async function _zyklenPaketLaden(d) {
     `In der Datei:\n${neu.map(zeile).join('\n')}`
     + (notizZahl ? `\nDazu ${notizZahl} ${notizZahl === 1 ? 'Notiz' : 'Notizen'} im Tagebuch — nur Text, keine Messwerte.` : '')
     + (doppelt.length ? `\n\nSchon angelegt und übersprungen: ${doppelt.map(z => z.name).join(', ')}.` : '')
-    + '\n\nDein bisheriger Stand bleibt, wie er ist — die Zyklen kommen dazu. Mit ↩ lässt sich das zurücknehmen.',
+    + '\n\nDein bisheriger Stand bleibt, wie er ist — die Zyklen kommen dazu. Mit ↩ lässt sich das zurücknehmen.'
+    + '\n\nDie Tage seit dem Keimstart bleiben leer: Güsse und Messungen trägst du danach selbst nach.',
     'Hinzufügen', 'var(--green)', 'Abbrechen');
   if (!ok) return false;
   const vorher = JSON.stringify(S);
+  // (v1.5.341) Rückweg vollständig: Arbeitsstand, Merker für ↩ und die beiden Stapel. Angelegt wird still (addCyc ohne
+  // Speichern), gespeichert genau einmal am Ende — ein Rückgängig-Schritt, egal wie lange der Import dauert, und bei
+  // einem Fehlschlag liegt nichts Halbes im Speicher.
+  const standVorher = saveS._stand, undoVorher = undoStack.slice(), redoVorher = redoStack.slice();
+  const zurueck = () => {
+    S = JSON.parse(vorher);
+    saveS._stand = standVorher; saveS._neuStand = null; saveS._lastUndo = 0;
+    undoStack = undoVorher; redoStack = redoVorher;
+    if (typeof draft !== 'undefined' && draft && !S.cycles.some(c => c.id === draft.id)) { selId = null; draft = {}; }
+    _rerender();
+  };
   saveS._lastUndo = 0;   // ein eigener Rückgängig-Schritt für den ganzen Import
   const angelegt = [];
   try {
@@ -25572,7 +25584,7 @@ async function _zyklenPaketLaden(d) {
         name: z.name, startDate: z.startDate, seedType: z.seedType, growType: z.growType, medium: z.medium,
         potSize: z.potSize, plantCount: z.pflanzen.length, startMethod: z.startMethod, strain: z.strain || undefined,
         lightVeg: z.lightVeg, lightBloom: z.lightBloom, fertPlanId,
-      });
+      }, { still: true });
       const c = S.cycles[S.cycles.length - 1];
       // Was addCyc nicht kennt, wie es der Assistent danach setzt: Anzucht, Blüte, Keimmethode, Herkunft.
       c.anzuchtDays = z.anzuchtDays;
@@ -25591,20 +25603,21 @@ async function _zyklenPaketLaden(d) {
       angelegt.push(c);
     }
   } catch (e) {
-    S = JSON.parse(vorher);
+    zurueck();
     toast('⚠ Die Zyklen ließen sich nicht anlegen (' + ((e && e.message) || e) + '). Dein Stand ist unverändert.', 7000);
-    _rerender();
     return false;
   }
   if (!saveS()) {
     // Das Band „NICHT gespeichert" steht schon; dann lieber gar nicht hinzufügen als nur im Arbeitsspeicher.
-    S = JSON.parse(vorher);
-    _rerender();
+    zurueck();
+    toast('⚠ Nicht angelegt — GrowSmart konnte nicht speichern (siehe das Band oben). Dein Stand ist unverändert.', 7000);
     return false;
   }
   vibrate();
   if (typeof goTo === 'function') goTo('dash');
-  toast(`🌱 ${angelegt.length} ${angelegt.length === 1 ? 'Zyklus' : 'Zyklen'} angelegt: ${angelegt.map(c => c.name).join(', ')}`, 5000);
+  // (v1.5.341) Gleich danach meldet die Startseite die leeren Tage seit dem Keimstart als verpasst — das ist richtig, die
+  // Datei enthält bewusst keine Messwerte. Der Satz sagt vorher, was zu tun ist.
+  toast(`🌱 ${angelegt.length} ${angelegt.length === 1 ? 'Zyklus' : 'Zyklen'} angelegt: ${angelegt.map(c => c.name).join(', ')}. Die Tage seit dem Keimstart sind noch leer — trag nach, was du gegossen und gemessen hast (Kalender → Tag antippen).`, 8000);
   return true;
 }
 
@@ -25619,8 +25632,9 @@ function _neueZyklusId() {
   return String(n);
 }
 
-function addCyc(overrides) {
+function addCyc(overrides, opts) {
   const o = overrides || {};
+  const still = !!(opts && opts.still);   // (v1.5.341) für den Zyklus-Import: nicht speichern, nicht zeichnen, nichts melden
   const i = S.cycles.length;
   const mi = mediumIntervals(o.medium || 'erde');
   const c = {
@@ -25705,6 +25719,9 @@ function addCyc(overrides) {
   if (typeof _snapFlushToRhythm === 'function') { try { _snapFlushToRhythm(c); } catch (e) {} }
   selId = c.id;
   draft = { ...c };
+  // (v1.5.341) Der Import speichert einmal am Ende. Vorher speicherte jedes addCyc für sich: Scheiterte das letzte Schreiben,
+  // lag schon ein halber Import im Speicher, während die App „unverändert" meldete (Prüfer, 07.10.2026).
+  if (still) return c;
   saveS();
   // Nach Zyklus-Erstellung: Scroll an den Anfang der Settings-Seite,
   // damit der User den neu erstellten Zyklus direkt oben sieht und nicht

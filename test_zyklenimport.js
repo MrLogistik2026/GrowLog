@@ -192,6 +192,45 @@ process.on('unhandledRejection', (e) => { console.log('  (nicht abgefangen: ' + 
     pruef('S3 „Abbrechen": nichts kommt dazu', rc === false && c.E('S.cycles.length') === zc);
   }
 
+  console.log('\nR - Rückweg ohne Halbes (v1.5.341)');
+  {
+    // Speichern scheitert: Speicher, Arbeitsstand und Rückgängig-Stapel wie vorher
+    const a = await load();
+    const roh = a.w.localStorage.getItem(SK), st = a.E('JSON.stringify(S)'), stapel = a.E('undoStack.length');
+    a.w.__kaputt = true;
+    a.toasts.length = 0;
+    const r = await a.laden(PAKET);
+    a.w.__kaputt = false;
+    pruef('R1 Speichern scheitert: Speicher und Arbeitsstand unverändert, Meldung „Nicht angelegt"', r === false && a.w.localStorage.getItem(SK) === roh && a.E('JSON.stringify(S)') === st && a.toasts.some(t => /Nicht angelegt/.test(t)), a.toasts);
+    pruef('R2 … und keine Zwischenmeldung „… erstellt"', !a.toasts.some(t => /erstellt — Start/.test(t)), a.toasts);
+    pruef('R3 … und der Rückgängig-Stapel wie vorher', a.E('undoStack.length') === stapel);
+    a.E("S.entries['2026-10-06'] = { note: 'danach' }; saveS._lastUndo = 0; saveS()");
+    a.E('doUndo(); doUndo()');
+    pruef('R4 normal weiter, zweimal ↩: der nicht angelegte Zyklus taucht nicht auf', !a.E("S.cycles.some(c => c.name === 'Gruppe A')") && !JSON.parse(a.w.localStorage.getItem(SK)).cycles.some(c => c.name === 'Gruppe A'));
+  }
+  {
+    // Ausnahme mitten im Anlegen
+    const b = await load();
+    const roh = b.w.localStorage.getItem(SK);
+    b.E("window.__n = 0; window.__orig = _planFuerVorlage; _planFuerVorlage = (k) => { if (++window.__n === 2) throw new Error('Testfehler'); return window.__orig(k); }");
+    const r = await b.laden(PAKET);
+    b.E('_planFuerVorlage = window.__orig');
+    pruef('R5 Ausnahme beim zweiten Zyklus: nichts Halbes im Speicher, nichts im Arbeitsstand', r === false && b.w.localStorage.getItem(SK) === roh && !b.E("S.cycles.some(c => c.name === 'Gruppe A')"));
+    const r2 = await b.laden(PAKET);
+    pruef('R6 danach noch einmal laden: beide Zyklen, keiner doppelt', r2 === true && b.E("S.cycles.filter(c => c.name === 'Gruppe A').length") === 1 && b.E("S.cycles.filter(c => c.name === 'Gruppe B').length") === 1);
+  }
+  {
+    // Langsames Gerät: jeder Zyklus „dauert" 3 Sekunden — trotzdem ein Rückgängig-Schritt
+    const c = await load();
+    const z = c.E('S.cycles.length');
+    c.E("window.__dn = Date.now; window.__plus = 0; Date.now = () => window.__dn() + (window.__plus += 3000)");
+    const r = await c.laden(PAKET);
+    c.E('Date.now = window.__dn');
+    c.E('doUndo()');
+    pruef('R7 langsamer Import: ein ↩ nimmt ihn ganz zurück', r === true && c.E('S.cycles.length') === z, c.E('S.cycles.map(x => x.name)'));
+    pruef('R8 keine JS-Fehler', c.errors.length === 0, c.errors[0]);
+  }
+
   console.log('\nI - Der Knopf „Import" erkennt die Zyklus-Datei');
   {
     const a = await load();

@@ -2,6 +2,23 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-07 — v1.5.341
+
+- **Ein gescheiterter Import ließ einen halben Stand zurück** (Prüfer vor dem Hochladen, mittel; dazu zwei leichte). Jedes
+  `addCyc` speicherte für sich. Scheiterte erst das letzte Schreiben, lag schon der erste Zyklus im Speicher (mit
+  Anzucht 21 statt 26, ohne Herkunft) und ein zusätzlicher Plan, während die App „Dein Stand ist unverändert" meldete; nach
+  einem Neustart tauchte er auf, ein zweiter Import legte ihn doppelt an. Ein zurückgenommener Import konnte außerdem per ↩
+  wiederkommen, weil der Merker für den letzten Stand nicht zurückgesetzt wurde (gemessen: zweimal ↩, und der „nicht
+  angelegte" Zyklus stand im Speicher). Dauerte der Import länger als zwei Sekunden, zerfiel er in mehrere ↩-Schritte. Und
+  zwischendurch standen Meldungen „Gruppe B erstellt", auch wenn am Ende nichts angelegt war.
+- **Jetzt** legt der Import still an (`addCyc(…, { still: true })` speichert, zeichnet und meldet nichts) und speichert genau
+  einmal am Ende. Scheitert das, werden Arbeitsstand, ↩-Merker und beide Stapel auf den Stand davor gesetzt, und die Meldung
+  sagt „Nicht angelegt". Ein Import ist immer ein ↩-Schritt. Dialog und Schluss-Meldung sagen, dass die Tage seit dem
+  Keimstart leer bleiben und nachgetragen werden — die Startseite meldet sie gleich danach als verpasst.
+- Test: `test_zyklenimport.js` Abschnitt R (8 Prüfungen, beide Zeitzonen; 5 fallen auf v1.5.340 um). Alle Tests, die
+  `addCyc` aufrufen, in beiden Zeitzonen grün.
+
+
 ## 2026-10-07 — v1.5.340
 
 - **Eine präparierte Zyklus-Datei konnte trotz v1.5.339 Programmcode in die App bringen** (Prüfer vor dem Hochladen,

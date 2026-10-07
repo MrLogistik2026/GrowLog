@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.340** · index.html 2,55 MB · 780 Funktionen
+Stand: **v1.5.341** · index.html 2,55 MB · 780 Funktionen
 Zuletzt fortgeschrieben am 07.10.2026 (Nachtprüfung und Run 02 — Abschnitt 0o, „Stand Run 02"). Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
@@ -261,6 +261,7 @@ Unterscheidungsfragen aus dem eigenen Zustand.
 - v1.5.338: „Blüte Wo." nur noch in der Blüte — in der Anzucht stand an Tag 18 „Blüte Wo.3" (Eintragskopf, Trichom-Karte, Lexikon-Satz).
 - v1.5.339: Zyklus-Datei lehnt Texte mit < oder > ab — sonst hätte eine fremde Datei Programmcode in die App bringen können.
 - v1.5.340: Zyklus-Datei gehärtet — Namen im Attribut maskiert, __proto__/constructor abgelehnt, Auswahllisten nur über eigene Einträge, Ergebnis aus bekannten Feldern; Import-Knopf meldet Fehler (Prüfer, zweimal schwer).
+- v1.5.341: Zyklus-Import speichert einmal am Ende — kein halber Stand bei Fehlschlag, ein ↩-Schritt, keine Zwischenmeldungen; Hinweis auf die leeren Tage seit dem Keimstart.
 
 **Bei der nächsten Bewertung** dieselbe Skala, dieselben Kategorie-IDs und dieselben Regeln aus `auftrag.md` nehmen und
 die Noten gegen diese Tabelle stellen.
