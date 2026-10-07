@@ -3593,7 +3593,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.327';
+const APP_VERSION = 'v1.5.328';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -4333,11 +4333,12 @@ function _speicherSperreMelden() {
  * nächsten Erfolgsmeldung überschrieben (gemessen: „Geladen ✓" über einem Import, der nicht
  * gespeichert wurde). Das Band ist antippbar und führt zum Download.
  */
-function _sperrBand(an, inhalt, aktion) {
+function _sperrBand(an, inhalt, aktion, art) {
   try {
     let b = document.getElementById('sperrband');
     // (v1.5.327) Auch für „anderes Fenster": eigener Text, eigene Handlung (neu laden statt herunterladen).
-    if (an && b && inhalt) { b.innerHTML = inhalt; b.onclick = aktion; return; }
+    // (v1.5.328) Ein Fehler-Band verdrängt nie ein Sperr-Band — die Sperre ist die wichtigere Aussage.
+    if (an && b && inhalt) { if (art === 'fehler' && b.dataset.art !== 'fehler') return; b.innerHTML = inhalt; b.onclick = aktion; b.dataset.art = art || ''; return; }
     if (!an) {
       if (b) b.remove();
       try { document.body.style.paddingTop = ''; } catch (e2) { /* egal */ }
@@ -4349,11 +4350,32 @@ function _sperrBand(an, inhalt, aktion) {
       b.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9998;background:var(--red);color:#fff;font-family:var(--font);font-size:12px;line-height:1.4;padding:calc(env(safe-area-inset-top) + 8px) 12px 8px;text-align:center;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.4)';
       b.innerHTML = inhalt || '⚠ <b>GrowSmart speichert gerade nichts.</b> Dein alter Stand liegt nur noch hier — tippe, um ihn herunterzuladen.';
       b.onclick = aktion || (() => { try { _rettungHerunterladen(); } catch (e) { /* der Weg steht auch in den Einstellungen */ } });
+      b.dataset.art = art || '';
       document.body.appendChild(b);
       // Das Band darf die Kopfzeile nicht verdecken — dort liegen Rückgängig, Wiederherstellen und „＋".
       try { document.body.style.paddingTop = b.offsetHeight + 'px'; } catch (e2) { /* egal */ }
     }
   } catch (e) { /* vor dem ersten Bild gibt es noch keinen body */ }
+}
+
+/**
+ * (v1.5.328) Scheitert das Speichern, steht ein Band oben, bis wieder gespeichert ist. Vorher kam die Warnung als Toast —
+ * und der Speichern-Knopf zeigte gleich danach „Gespeichert ✓" und wurde grün (Prüfer, 07.10.2026). Sichtbar blieb nur
+ * der unbeschriftete rote Punkt. Ein Band überschreibt keine spätere Meldung, und es ist die Tür: Antippen zieht ein
+ * Backup — der einzige Weg, die Eingaben im Arbeitsspeicher zu retten.
+ */
+function _fehlerBand(art) {
+  if (_neuladenAnsteht) return;
+  const text = art === 'voll'
+    ? '⚠ <b>Letzte Änderung NICHT gespeichert</b> — der Speicher ist voll. Tippe, um ein Backup zu ziehen; danach alte Fotos löschen.'
+    : art === 'gesperrt'
+      ? '⚠ <b>Nicht gespeichert</b> — der Browser lässt GrowSmart nicht an den Speicher. Tippe, um ein Backup zu ziehen.'
+      : '⚠ <b>Letzte Änderung NICHT gespeichert.</b> Tippe, um ein Backup zu ziehen, und öffne GrowSmart danach neu.';
+  _sperrBand(true, text, () => { try { exportData(); } catch (e) { toast('⚠ Backup ging nicht: ' + ((e && e.message) || e)); } }, 'fehler');
+}
+function _fehlerBandWeg() {
+  const b = document.getElementById('sperrband');
+  if (b && b.dataset.art === 'fehler') _sperrBand(false);
 }
 
 /** Roter Punkt oben rechts — er bleibt stehen, solange nicht gespeichert wird. Gegenstück zu _flashSaved. */
@@ -4661,7 +4683,7 @@ function _vorfallText(i) {
   // flüchtig — die erkennt die App nicht (Lücke, in der UEBERGABE vermerkt). Deshalb „privates Fenster" nur als möglicher Fall.
   if (i && i.geladen === 'gesperrt') {
     return { titel: '⚠️ GrowSmart kann hier nichts speichern',
-      text: 'Der Browser lässt GrowSmart gerade nicht an den Speicher — meist, weil Cookies und Website-Daten für diese Seite blockiert sind, manchmal auch in einem privaten Fenster. Du kannst dich umsehen, aber alles, was du jetzt einträgst, ist beim Schließen weg.\n\nSo behebst du es: Erlaube in den Browser-Einstellungen Cookies und Website-Daten für diese Seite, oder öffne GrowSmart in einem normalen Fenster. Danach GrowSmart neu öffnen.\n\nHast du deinen Grow schon in einem anderen Browser angelegt? Dann liegen die Daten dort.' };
+      text: 'Der Browser lässt GrowSmart gerade nicht an den Speicher — meist, weil Cookies und Website-Daten für diese Seite blockiert sind, manchmal auch in einem privaten Fenster. Du kannst dich umsehen, aber alles, was du jetzt einträgst, ist beim Schließen weg.\n\nSo behebst du es: Erlaube in den Browser-Einstellungen Cookies und Website-Daten für diese Seite, oder öffne GrowSmart in einem normalen Fenster. Danach GrowSmart neu öffnen.\n\nTrägst du trotzdem etwas ein, rette es vor dem Schließen mit einem Backup (Einstellungen → Daten & Sicherheit) und lade es danach mit „Import".\n\nHast du deinen Grow schon in einem anderen Browser angelegt? Dann liegen die Daten dort.' };
   }
   const zahl = (n, eins, mehr) => `${n} ${n === 1 ? eins : mehr}`;
   const umfang = `${zahl(i.zyklen, 'Zyklus', 'Zyklen')}, ${zahl(i.eintraege, 'Eintrag', 'Einträge')}`;
@@ -5933,6 +5955,7 @@ function saveS() {
     }
     saveS._fehler = null;
     if (!_speicherSperre) _speicherStatusRot(false);
+    _fehlerBandWeg();
     return true;
   } catch (e) {
     // (v1.5.290) Die Sperre meldet sich selbst — hier bleibt nur der rote Punkt, der stehen bleibt.
@@ -5940,6 +5963,7 @@ function saveS() {
     const voll = !!(e && (e.name === 'QuotaExceededError' || e.code === 22));
     saveS._fehler = voll ? 'voll' : ((e && (e.name || e.message)) || 'fehler');
     _speicherStatusRot(true);
+    _fehlerBand(voll ? 'voll' : (_speicherGesperrt ? 'gesperrt' : 'fehler'));
     // Höchstens einmal je Minute — dazwischen steht der rote Punkt. Vorher alle 5 Minuten, und nur bei „voll".
     const now = Date.now();
     if (!saveS._lastQuotaErr || now - saveS._lastQuotaErr > 60000) {
@@ -5947,7 +5971,7 @@ function saveS() {
       toast(voll
         ? '⚠ Speicher voll — deine letzte Änderung ist NICHT gespeichert. Zieh ein Backup (Einstellungen → Daten & Sicherheit) und lösche danach alte Fotos (Galerie, ×).'
         : (typeof _speicherGesperrt !== 'undefined' && _speicherGesperrt
-          ? '⚠ Nicht gespeichert — der Browser lässt GrowSmart nicht an den Speicher, meist weil Website-Daten für diese Seite blockiert sind (manchmal auch in einem privaten Fenster). Erlaube Website-Daten oder öffne GrowSmart in einem normalen Fenster.'
+          ? '⚠ Nicht gespeichert — der Browser lässt GrowSmart nicht an den Speicher, meist weil Website-Daten für diese Seite blockiert sind (manchmal auch in einem privaten Fenster). Erlaube Website-Daten oder öffne GrowSmart in einem normalen Fenster. Was du hier eingetragen hast, rettest du mit einem Backup (Einstellungen → Daten & Sicherheit).'
           : '⚠ Speichern fehlgeschlagen — deine letzte Änderung ist NICHT gespeichert. Zieh ein Backup (Einstellungen → Daten & Sicherheit) und öffne GrowSmart neu.'), 7000);
     }
     return false;
@@ -7988,10 +8012,12 @@ function _undoSchreiben(aktion) {
     if (wie === 'ok-befreit') { _autoBackup._fehler = 'voll'; _autoBackup._fehlerAm = Date.now(); }
     saveS._fehler = null;
     if (!_speicherSperre) _speicherStatusRot(false);
+    _fehlerBandWeg();
     _flashSaved();
     return true;
   }
   _speicherStatusRot(true);
+  _fehlerBand(wie === false ? 'voll' : (_speicherGesperrt ? 'gesperrt' : 'fehler'));
   const grund = wie === false ? 'Der Speicher ist voll. Zieh ein Backup (Einstellungen → Daten & Sicherheit) und lösche danach alte Fotos (Galerie, ×).'
     : _speicherGesperrt ? 'Der Browser lässt GrowSmart nicht an den Speicher. Erlaube Website-Daten für diese Seite oder öffne GrowSmart in einem normalen Fenster.'
     : 'Zieh ein Backup (Einstellungen → Daten & Sicherheit) und öffne GrowSmart neu.';
@@ -21228,7 +21254,7 @@ function renderDuenger() {
         </div>
       </details>`;
     }).join('')}
-    <button class="sav-btn" style="background:var(--green-dk);margin-top:4px" onclick="saveS();toast('Gespeichert ✓')">💾 Plan speichern</button>
+    <button class="sav-btn" style="background:var(--green-dk);margin-top:4px" onclick="if (saveS()) toast('Gespeichert ✓')">💾 Plan speichern</button>
   </div>`;
 
   // Plan-Auswahl-Leiste: Übersicht über alle gespeicherten Pläne, mit
@@ -21368,7 +21394,7 @@ function renderDuenger() {
       <div style="font-size:10px;color:var(--text-hint);line-height:1.5;margin:2px 0 8px">Name, Einheit, Farbe und Notiz. Gelöschte Produkte verschwinden aus allen Wochen.</div>
       ${ef}
       <div style="display:flex;flex-direction:column;gap:8px">${rows || _emptyProds}${addBtnInline}</div>
-      <button class="sav-btn" style="background:var(--green-dk);margin-top:10px" onclick="saveS();toast('Gespeichert ✓')">💾 Plan speichern</button>
+      <button class="sav-btn" style="background:var(--green-dk);margin-top:10px" onclick="if (saveS()) toast('Gespeichert ✓')">💾 Plan speichern</button>
     </div>` : '';
 
   document.getElementById('duenger-body').innerHTML = `${assignBanner}${heroCard}${drawer}${drainHTML}${blatt}${werkzeuge}<div style="height:20px"></div>`;
@@ -21954,9 +21980,9 @@ function saveProd() {
     }
   }
   editProd = null;
-  saveS();
+  const _gesichert = saveS();   // (v1.5.328) nur bei Erfolg „Gespeichert ✓" — sonst steht das Band
   renderDuenger();
-  toast('Gespeichert ✓');
+  if (_gesichert) toast('Gespeichert ✓');
 }
 
 async function delProduct(id) {
@@ -33879,7 +33905,9 @@ function saveEntry() {
     }
   });
 
-  saveS();
+  // (v1.5.328) Scheitert das Speichern, bleibt der Eintrag „ungespeichert": kein „Gespeichert ✓", kein grüner Knopf.
+  // Vorher überschrieben beide die Warnung, und _entryDirty = false ließ den Eintrag ohne Rückfrage verlassen.
+  if (!saveS()) { vibrate(); return; }
 
   // (v1.4.22/23) Gieß-Rhythmus-Check über zentralen Helfer (auch von applyRecommended genutzt).
   _afterWateringSaved(editISO);

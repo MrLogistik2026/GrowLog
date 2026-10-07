@@ -264,6 +264,49 @@ function pruef(name, bedingung, info) {
     pruef('F12 nach „alles löschen" im anderen Fenster schreibt dieses Fenster die Daten nicht zurück', m.get(SK) === null);
   }
 
+  // ===== G: Kein „Gespeichert ✓" über einer gescheiterten Speicherung (v1.5.328) =====
+  console.log('\nG - Die Warnung bleibt stehen');
+  {
+    const g = await load({ [SK]: SICHERUNG });
+    const heute = g.E('todayISO()');
+    g.E(`openEntry('${heute}')`);
+    let backup = 0;
+    g.window.exportData = () => { backup++; };
+    g.window.__kaputt = 'kaputt';
+    g.toasts.length = 0;
+    g.E("_entryDirty = true; saveEntry()");
+    const band = () => g.window.document.getElementById('sperrband');
+    const knoepfe = Array.from(g.window.document.querySelectorAll('.big-save, .save-pill')).map(b => b.textContent);
+    pruef('G1 Eintrag speichern scheitert: kein „Gespeichert ✓"', !g.toasts.some(t => /Gespeichert ✓/.test(t)), g.toasts);
+    pruef('G2 … kein grüner Knopf „✓ Gespeichert"', !knoepfe.some(t => /✓ Gespeichert/.test(t)), knoepfe);
+    pruef('G3 … der Eintrag gilt weiter als ungespeichert', g.E('_entryDirty') === true);
+    pruef('G4 … oben steht ein Band „NICHT gespeichert"', !!band() && /NICHT gespeichert/.test(band().textContent), band() && band().textContent);
+    if (band()) band().click();
+    pruef('G5 Antippen des Bands zieht ein Backup', backup === 1);
+    g.window.__kaputt = null;
+    g.toasts.length = 0;
+    g.E('saveEntry()');
+    pruef('G6 klappt es wieder: „Gespeichert ✓", Band weg', g.toasts.some(t => /Gespeichert ✓/.test(t)) && !band(), g.toasts);
+    pruef('G7 „Plan speichern" und Produkt speichern sagen „Gespeichert ✓" nur nach Erfolg',
+      !/saveS\(\);toast\('Gespeichert ✓'\)/.test(HTML) && /if \(_gesichert\) toast/.test(g.E('String(saveProd)')));
+    // Ein Fehler-Band verdrängt kein Sperr-Band
+    g.E("_sperrBand(true, 'SPERRE', () => {}, 'fremd')");
+    g.window.__kaputt = 'kaputt';
+    g.E("saveS._lastUndo = 0; S.entries['2026-09-26'] = { note: 'x' }; saveS()");
+    pruef('G8 ein Fehler-Band verdrängt kein Sperr-Band', /SPERRE/.test(band() ? band().textContent : ''));
+    g.window.__kaputt = null;
+    pruef('G9 keine JS-Fehler', g.errors.length === 0, g.errors[0]);
+  }
+  {
+    const h = await load({}, { gesperrt: true, warten: 1500 });
+    h.E('_acceptDisclaimer()');
+    await new Promise((r) => setTimeout(r, 1000));
+    const d = h.dialoge.find(x => /kann hier nichts speichern/.test(x)) || '';
+    pruef('G10 gesperrter Speicher: der Hinweis nennt das Backup als Rettung', /Backup/.test(d), d.slice(0, 200));
+    const b = h.window.document.getElementById('sperrband');
+    pruef('G11 … und das Band steht mit „Tippe, um ein Backup zu ziehen"', !!b && /Backup zu ziehen/.test(b.textContent), b && b.textContent);
+  }
+
   console.log('\n' + ok + ' OK, ' + fail + ' FEHL');
   if (fail) process.exit(1);
   process.exit(0);

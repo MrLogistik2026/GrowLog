@@ -2,6 +2,25 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-07 — v1.5.328
+
+- **Über einer gescheiterten Speicherung stand „Gespeichert ✓"** (Skeptiker vor dem Hochladen von v1.5.320–323, schwer).
+  v1.5.320 meldete jeden Schreibfehler mit einem Toast — aber der Speichern-Knopf im Eintrag zeigte gleich danach
+  „Gespeichert ✓", beide Knöpfe wurden grün „✓ Gespeichert", und der Eintrag galt als gespeichert, ließ sich also ohne
+  Rückfrage verlassen. Ebenso „💾 Plan speichern" und „Produkt speichern". Sichtbar blieb nur der unbeschriftete rote Punkt;
+  beim gesperrten Speicher war die Warnung wegen der Minuten-Drossel oft schon verbraucht. Das ist die Regel aus v1.5.291:
+  Eine Meldung, die von der nächsten Erfolgsmeldung überschrieben wird, ist keine Meldung.
+- **Jetzt** steht bei jedem gescheiterten Speichern (saveS und ↩/↪) ein Band oben — „Letzte Änderung NICHT gespeichert",
+  mit dem Grund — bis wieder gespeichert ist. Es ist die Tür: Antippen zieht ein Backup, der einzige Weg, Eingaben aus
+  dem Arbeitsspeicher zu retten. Ein Mechanismus für alle rund 200 Stellen, die nach dem Speichern etwas melden; ein
+  Sperr-Band (alter Stand, anderes Fenster) verdrängt es nie.
+- Eintrag, „Plan speichern" und Produkt speichern sagen „Gespeichert ✓" nur noch, wenn `saveS()` Erfolg meldet; der
+  Eintrag bleibt sonst ungespeichert.
+- **Mitgenommen (Befund 6 desselben Berichts):** Bei gesperrtem Browser-Speicher nennen Start-Hinweis und Meldung jetzt das
+  Backup als Rettung — gemessen funktioniert der Download auch dann.
+- Test: `test_speichern.js` Abschnitt G (11 Prüfungen, beide Zeitzonen; 8 fallen auf v1.5.327 um).
+
+
 ## 2026-10-07 — v1.5.327
 
 - **Ein zweites Fenster überschrieb unbemerkt, was ein anderes geschrieben hatte** (Hebel 3, Punkt 7; Nachtprüfung
