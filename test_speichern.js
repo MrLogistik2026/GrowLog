@@ -103,6 +103,31 @@ function pruef(name, bedingung, info) {
     pruef('A7 keine JS-Fehler', b.errors.length === 0, b.errors[0]);
   }
 
+  // ===== B: Gesperrter Browser-Speicher wird gemeldet (v1.5.321) =====
+  console.log('\nB - Der Browser lässt GrowSmart nicht an den Speicher');
+  {
+    const b = await load({}, { gesperrt: true, warten: 1500 });
+    pruef('B0 Start ohne JS-Fehler', b.errors.length === 0, b.errors[0]);
+    pruef('B1 die App weiß, dass der Speicher gesperrt ist', b.E("typeof _speicherGesperrt !== 'undefined' && _speicherGesperrt") === true);
+    // Ohne Speicher erscheint der Haftungsausschluss bei jedem Start; der Hinweis folgt nach der Zustimmung.
+    b.E('_acceptDisclaimer()');
+    await new Promise((r) => setTimeout(r, 1000));
+    const d =b.dialoge.find(x => /kann hier nichts speichern/.test(x)) || '';
+    pruef('B2 beim Start erscheint ein Hinweis, der den Grund nennt', /Website-Daten/.test(d) && /beim Schließen weg/.test(d), b.dialoge);
+    pruef('B3 der Hinweis sagt, was zu tun ist', /So behebst du es/.test(d) && /normalen Fenster/.test(d));
+    pruef('B4 der Hinweis ist kein Download-Angebot', !/herunterlad/i.test(d));
+    b.toasts.length = 0;
+    b.E("S.entries['2026-09-30'] = { note: 'geht nicht' }; saveS._lastQuotaErr = 0; saveS()");
+    pruef('B5 ein Speicherversuch nennt den Grund statt „gespeichert"', b.toasts.some(t => /lässt GrowSmart nicht an den Speicher/.test(t)), b.toasts);
+    pruef('B6 der rote Punkt steht', b.rot());
+  }
+  {
+    // Gegenprobe: normaler, leerer Speicher bleibt ein normaler Erststart
+    const n = await load({}, { warten: 1500 });
+    pruef('B7 normaler leerer Speicher gilt nicht als gesperrt', n.E("typeof _speicherGesperrt === 'undefined' ? false : _speicherGesperrt") === false && !n.dialoge.some(x => /kann hier nichts speichern/.test(x)), n.dialoge);
+    pruef('B8 keine JS-Fehler', n.errors.length === 0, n.errors[0]);
+  }
+
   console.log('\n' + ok + ' OK, ' + fail + ' FEHL');
   if (fail) process.exit(1);
   process.exit(0);

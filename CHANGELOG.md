@@ -2,6 +2,24 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-07 — v1.5.321
+
+- **Ein gesperrter Browser-Speicher sah aus wie ein neuer Nutzer** (Hebel 3, Punkt 7). Blockiert der Browser die
+  Website-Daten für die Seite (manchmal auch in einem privaten Fenster), warf schon das Lesen. `_standLesen` nahm das als
+  „nichts gespeichert": Die App startete leer, ließ einen Grow oder den Demo-Zyklus anlegen und meldete beim Speichern nur
+  „Speichern fehlgeschlagen … öffne GrowSmart neu" — ein Neustart hilft dabei nicht, und alles Eingetragene war beim
+  Schließen weg.
+- **Jetzt** erkennt `_standLesen` den gesperrten Zugriff (`gesperrt: true`), und `_standVorfall` merkt ihn sich
+  (`_speicherGesperrt`). Nach dem Haftungsausschluss sagt ein Hinweis, was los ist, dass Eingaben beim Schließen verloren
+  gehen und wie es sich behebt (Website-Daten erlauben oder ein normales Fenster); der rote Punkt bleibt stehen. Jeder
+  Speicherversuch nennt denselben Grund statt „neu öffnen".
+- **Korrektur des Skeptikers zum Entwurf:** Der Hauptgrund heißt „Website-Daten blockiert", das private Fenster nur
+  „manchmal" — viele Browser speichern dort sehr wohl, nur vorübergehend.
+- **Grenze, bewusst offen:** Ein privates Fenster, das speichert und beim Schließen alles löscht, erkennt die App nicht —
+  der Browser verrät das nicht verlässlich.
+- Test: `test_speichern.js` Abschnitt B (9 Prüfungen, beide Zeitzonen; 4 fallen auf v1.5.320 um).
+
+
 ## 2026-10-07 — v1.5.320
 
 - **Speichern scheiterte still bei jedem Fehler außer „Speicher voll"** (Hebel 3, Punkt 7; in der Nachtprüfung vom

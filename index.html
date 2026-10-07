@@ -4594,7 +4594,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.320';
+const APP_VERSION = 'v1.5.321';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -5494,7 +5494,7 @@ function _standLesen() {
   const kopien = [], alte = [];
   for (const k of kandidaten) {
     let roh = null;
-    try { roh = localStorage.getItem(k); } catch (e) { return { k: null, d: null, haupt: null }; }
+    try { roh = localStorage.getItem(k); } catch (e) { return { k: null, d: null, haupt: null, gesperrt: true }; }   // (v1.5.321) gesperrt, nicht leer
     if (!roh) continue;
     let d = null, mangel;
     try { d = JSON.parse(roh); mangel = _standMangel(d); } catch (e) { mangel = 'nicht lesbar'; }
@@ -5548,7 +5548,15 @@ function _standLesen() {
 }
 
 /** Hält fest, was beim Start schieflief, und hebt den unbrauchbaren Hauptstand auf. */
+/**
+ * (v1.5.321) Wirft schon das Lesen des Browser-Speichers, kann GrowSmart nichts speichern — meist, weil Cookies und
+ * Website-Daten für die Seite blockiert sind. Vorher startete die App dann leer wie bei einem neuen Nutzer, ließ einen
+ * Demo-Zyklus anlegen und zeigte „gespeichert", während 0 Schlüssel im Speicher lagen (gemessen). Jetzt sagt sie es beim
+ * Start, und jeder Speicherversuch nennt den Grund (saveS).
+ */
+let _speicherGesperrt = false;
 function _standVorfall(g) {
+  if (g && g.gesperrt) { _speicherGesperrt = true; _startHinweis = { geladen: 'gesperrt', grund: 'fehlte', zyklen: 0, eintraege: 0, version: APP_VERSION }; return; }
   const kopie = g.k === BAK_KEY || g.k === BAK2_KEY;
   // (v1.5.292) Jeder Start, der nicht aus dem Hauptstand kommt, wird gemeldet. Vorher blieb der Fall
   // „Hauptstand fehlte, ein Schlüssel einer früheren App-Version wurde geladen" völlig stumm — der
@@ -5581,6 +5589,12 @@ function _standVorfall(g) {
 }
 
 function _vorfallText(i) {
+  // (v1.5.321) Hauptursache sind blockierte Website-Daten; aktuelle private Fenster werfen meist nicht, sondern speichern
+  // flüchtig — die erkennt die App nicht (Lücke, in der UEBERGABE vermerkt). Deshalb „privates Fenster" nur als möglicher Fall.
+  if (i && i.geladen === 'gesperrt') {
+    return { titel: '⚠️ GrowSmart kann hier nichts speichern',
+      text: 'Der Browser lässt GrowSmart gerade nicht an den Speicher — meist, weil Cookies und Website-Daten für diese Seite blockiert sind, manchmal auch in einem privaten Fenster. Du kannst dich umsehen, aber alles, was du jetzt einträgst, ist beim Schließen weg.\n\nSo behebst du es: Erlaube in den Browser-Einstellungen Cookies und Website-Daten für diese Seite, oder öffne GrowSmart in einem normalen Fenster. Danach GrowSmart neu öffnen.\n\nHast du deinen Grow schon in einem anderen Browser angelegt? Dann liegen die Daten dort.' };
+  }
   const zahl = (n, eins, mehr) => `${n} ${n === 1 ? eins : mehr}`;
   const umfang = `${zahl(i.zyklen, 'Zyklus', 'Zyklen')}, ${zahl(i.eintraege, 'Eintrag', 'Einträge')}`;
   const anfang = i.grund === 'fehlte'
@@ -5635,6 +5649,12 @@ async function _startHinweiseZeigen() {
   const wiedervorlage = !_startHinweis;
   _startHinweis = null;
   if (!i) return;
+  if (i.geladen === 'gesperrt') {   // (v1.5.321) nichts herunterzuladen, nur sagen, was los ist
+    const tg = _vorfallText(i);
+    await customConfirm(tg.titel, tg.text, 'Verstanden', 'var(--green)', 'Schließen');
+    _speicherStatusRot(true);
+    return;
+  }
   // (v1.5.291) Beim nächsten Start ist der Vorfall Vergangenheit. Vorher stand derselbe Text noch
   // Tage später im Präsens da — „deine Einträge seit der Kopie fehlen" —, obwohl der Hauptstand
   // längst wieder gesund war. Wer das las, griff nach einer Kopie und verlor dabei wirklich Daten.

@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.320** · index.html 2,52 MB · 764 Funktionen
+Stand: **v1.5.321** · index.html 2,52 MB · 764 Funktionen
 Zuletzt fortgeschrieben am 07.10.2026 (Nachtprüfung und Run 02 — Abschnitt 0o, „Stand Run 02"). Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
@@ -239,6 +239,7 @@ Weitere Ideen der Prüfer: gemeinsamer Mischansatz für zwei Zyklen am selben Gi
 auf der Startseite ab 14 Tagen ohne Export, Plan-Abgleich beim Zuweisen und Substratwechsel, Diagnose beantwortet
 Unterscheidungsfragen aus dem eigenen Zustand.
 - v1.5.320: Speichern scheitert nie still — jeder Schreibfehler wird gemeldet (rot bis zum nächsten Erfolg), eine scheiternde Vorarbeit verhindert das Schreiben nicht, höchstens 10 verwaiste Tagesdaten werden aufgeräumt (Hebel 3, Punkt 7).
+- v1.5.321: Gesperrter Browser-Speicher wird beim Start und bei jedem Speichern gemeldet, statt wie ein leerer Erststart auszusehen (Hebel 3, Punkt 7). Offen: ein privates Fenster, das vorübergehend speichert, erkennt die App nicht.
 
 **Bei der nächsten Bewertung** dieselbe Skala, dieselben Kategorie-IDs und dieselben Regeln aus `auftrag.md` nehmen und
 die Noten gegen diese Tabelle stellen.
