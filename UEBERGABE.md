@@ -172,9 +172,12 @@ Abgearbeitet wird die Liste in `.claude/notizen/REIHENFOLGE.md` von oben.
   Kennung hat oder kein Eintrag zu einem Zyklus passt. **Punkt 5 erledigt (v1.5.295):** leere Stellen in Listen werden beim Start aufgeräumt;
   was die Sicherungskopie noch hat (Plan, Pflanze), kommt von dort zurück, was nirgends mehr steht, wird gemeldet.
   **Punkt 6 erledigt (v1.5.296):** Migrationen in drei abgesicherten Abschnitten, Hinweis einmal je Version, nie
-  gesperrt; Ersatzkarte fürs erste Bild. **Punkt 7 begonnen:** Import prüft, ersetzt erst nach Bestätigung und lädt neu (v1.5.297). Weiter mit „Speichern
-  scheitert nie still", „gesperrter Browser-Speicher melden", „Rückgängig/Wiederherstellen melden Fehlschlag",
-  „anderes Fenster überschreibt nicht", Speicheranzeige, Rückgängig-Versatz, rettung.html, wiederherstellung.html.
+  gesperrt; Ersatzkarte fürs erste Bild. **Punkt 7 fast fertig (v1.5.297, 320–331):** Import prüft und lädt neu; Speichern scheitert nie still (Band „NICHT
+  gespeichert“ mit Backup-Tür, kein „Gespeichert ✓“ über dem Fehler); gesperrter oder nur nicht lesbarer Speicher wird
+  gemeldet und nicht überschrieben; ↩/↪ melden Fehlschläge und haben keinen Versatz mehr; die Speicheranzeige zählt alle
+  Schlüssel; ein zweites Fenster wird nicht überschrieben; ein zerstörter Arbeitsstand wird nicht geschrieben. Offen:
+  rettung.html und wiederherstellung.html (Entwürfe 13/14 in hebel3/patches/ — rettung.html spricht noch von der
+  „Vorschau der Claude-App“, wiederherstellung.html muss beim Einspielen growsmart_v4_gen neu setzen).
 - **Offen aus Punkt 3:** Der Rückfall „Fassung ohne Fotos aufheben, statt zu sperren" (Skeptiker-Korrektur zu
   Entwurf 281) ist nicht gebaut — er betrifft die Fälle aus den Entwürfen 283/284, in denen `S` alle Daten trägt.
   Kommt mit Punkt 5/6.
@@ -222,8 +225,7 @@ Zwei-Zyklen-Führung (H3 6,8, F2 7,2, T1 7,9). Schwächste Stellen unverändert:
 Einstellungen 5,2, I5 Ernte 5,4, H5 Übersicht 5,8. 48 Befunde, 41 bestätigt, 7 abgeschwächt; die zwölf ohne Rückfrage
 behebbaren und drei kleine Anzeigefehler sind in v1.5.313–319 behoben. Rohdaten: Sitzungs-Scratchpad `pruefung/` und Workflow
 wf_0586d0bf-d3d (vergänglich). **Offen, nach Nutzen geordnet** (Umbauten oder Patricks Entscheidung):
-1. Speichern scheitert still bei jedem Fehler außer „Speicher voll"; ein zweites Fenster überschreibt unbemerkt; gesperrter
-   Browser-Speicher startet leer ohne Hinweis — Hebel 3 Punkt 7 (REIHENFOLGE), Entwürfe in `hebel3/patches/`.
+1. Hebel 3 Punkt 7, Rest: rettung.html und wiederherstellung.html (siehe „Stand Hebel 3“). Erledigt in v1.5.320–331.
 2. Gießtag-Eintrag im Einsteiger-Modus so dicht wie im Profi-Modus (46 Felder bei zwei Zyklen), fünf Zahlen für „wie viel
    gieße ich" im Anzucht-Eintrag, Wochenwechsel-Block 2530 Zeichen ohne ⓘ — Umbau „Tageseintrag entschlacken".
 3. EC-Bewertung ignoriert den Korridor der Plan-Woche (Sämling erst ab 1,2, Blüte Woche 9 bei 2,4 stumm) — Idee: eine
