@@ -4594,7 +4594,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.322';
+const APP_VERSION = 'v1.5.323';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -12542,6 +12542,9 @@ function cycleOverviewStrip(c) {
     }
     runningDay += ph.days;
   }
+  // (v1.5.323) Sind alle Phasen vorbei, ist keine mehr die aktuelle — vorher stand dort weiter „Curing".
+  const vorbei = daysFromStart > total;
+  if (vorbei) currentPhaseName = null;
 
   // Segment-HTML
   const segmentsHTML = phases.map(ph => {
@@ -12561,8 +12564,11 @@ function cycleOverviewStrip(c) {
   let statusText, statusTooltip = '';
   if (daysFromStart < 1) {
     statusText = `startet in ${Math.abs(daysFromStart - 1)} T.`;
-  } else if (daysFromStart > total) {
-    statusText = 'abgeschlossen';
+  } else if (vorbei) {
+    // (v1.5.323) Hier stand „abgeschlossen", gemeint war nur „alle Phasen vorbei". Seit v1.5.308 ist das Abschließen ein
+    // eigener Schritt (`archiveCycle`) — Patrick las die Kopfzeile am 07.10.2026 so, als sei Run 01 schon abgeschlossen,
+    // und suchte, warum er trotzdem überall stand. Jetzt dieselben Worte wie die Startseite, mit dem Knopf dazu.
+    statusText = '✓ fertig';
   } else if (daysFromStart > (total - cure)) {
     const cureDayNow = daysFromStart - (total - cure);
     statusText = `🫙 Curing ${cureDayNow}/${cure}`;
@@ -12592,6 +12598,7 @@ function cycleOverviewStrip(c) {
       </div>
       <span title="${statusTooltip}" style="font-size:10px;color:var(--text-muted);font-family:var(--mono);white-space:nowrap${statusTooltip ? ';cursor:help' : ''}">${statusText}</span>
     </div>
+    ${vorbei && !c.archived ? `<button onclick="archiveCycle('${c.id}')" style="width:100%;background:rgba(90,171,240,0.06);border:0.5px solid rgba(90,171,240,0.25);border-radius:8px;padding:8px 10px;margin-bottom:6px;font-size:12px;color:var(--blue);cursor:pointer;font-family:var(--font);text-align:left">🏁 Zyklus abschließen — danach steht er nicht mehr im Kalender und auf der Startseite. Einträge, Erträge und Bilanz bleiben.</button>` : ''}
     <div style="position:relative;height:18px;border-radius:4px;overflow:visible;display:flex;background:var(--card2)">
       <div style="display:flex;width:100%;height:100%;border-radius:4px;overflow:hidden">${segmentsHTML}</div>
       ${todayMarker}

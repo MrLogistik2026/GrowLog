@@ -2,6 +2,22 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-07 — v1.5.323
+
+- **Die Kalender-Kopfzeile sagte „Curing · abgeschlossen", obwohl der Zyklus nicht abgeschlossen war** (Patricks Meldung
+  vom 07.10.2026: „Ich wollte den Zyklus anlegen, mir wird aber in der Übersicht noch die Sensi Amnesia angezeigt").
+  `cycleOverviewStrip` schrieb „abgeschlossen", sobald alle Phasen vorbei waren, und zeigte dazu weiter „Curing" als
+  aktuelle Phase. Seit v1.5.308 ist das Abschließen aber ein eigener Schritt mit Datum (`archiveCycle`) — wer die Kopfzeile
+  las, hielt Run 01 für erledigt und suchte, warum er trotzdem auf Startseite, Eintrag und Kalender stand. Der Weg zum
+  Abschließen lag nur auf der Startseite.
+- **Jetzt** steht dort „✓ fertig", keine Phase mehr hervorgehoben, und darunter der Knopf „🏁 Zyklus abschließen — danach
+  steht er nicht mehr im Kalender und auf der Startseite. Einträge, Erträge und Bilanz bleiben." Er öffnet dieselbe
+  Abfrage mit Datum wie auf der Startseite. Mitten im Zyklus erscheint er nicht.
+- Im Browser mit Patricks Sicherung durchgeklickt: Knopf → Datum (Vorschlag: letzter Eintrag) → Kalender leer, Startseite
+  „Noch kein aktiver Zyklus" mit „Zyklus jetzt anlegen".
+- Test: `test_zyklus2.js` Abschnitt W (6 Prüfungen, beide Zeitzonen; 4 fallen auf v1.5.321 um).
+
+
 ## 2026-10-07 — v1.5.322
 
 - **↩ und ↪ meldeten Erfolg, auch wenn nichts gespeichert wurde** (Hebel 3, Punkt 7). Bei vollem Speicher gibt

@@ -675,6 +675,31 @@ function pruef(name, bedingung, info) {
     pruef('V5 keine JS-Fehler', a.errors.length === 0, a.errors[0]);
   }
 
+  // ===== W: Die Kalender-Kopfzeile sagt nicht „abgeschlossen", solange der Zyklus nicht abgeschlossen ist (v1.5.323) =====
+  console.log('\nW - Kalender-Kopfzeile nach dem Curing');
+  {
+    const a = await load(null, { datum: '2026-10-20' });
+    const c0 = a.E('S.cycles[0].id');
+    a.E("goTo('cal'); renderCal()");
+    const kal = () => (a.window.document.getElementById('scr-cal')?.textContent || '').replace(/\s+/g, ' ');
+    const k = kal();
+    pruef('W1 alle Phasen vorbei: kein „abgeschlossen" und kein „Curing" mehr in der Kopfzeile', !/abgeschlossen Anz/.test(k) && !/Curing abgeschlossen/.test(k) && /✓ fertig/.test(k), k.slice(0, 200));
+    pruef('W2 die Kopfzeile bietet „🏁 Zyklus abschließen" an', /🏁 Zyklus abschließen — danach steht er nicht mehr im Kalender/.test(k));
+    // Mitten im Zyklus kein Knopf
+    a.E("setDebugDate('2026-08-10'); renderCal()");
+    pruef('W3 mitten im Zyklus: kein Abschließen-Knopf im Kalender', !/🏁 Zyklus abschließen — danach/.test(kal()));
+    // Abschließen über den Kalender-Knopf
+    a.E("setDebugDate('2026-10-20'); renderCal()");
+    a.window.customPrompt = () => Promise.resolve('2026-09-20');
+    const knopf = Array.from(a.window.document.querySelectorAll('#scr-cal button')).find(b => /🏁 Zyklus abschließen/.test(b.textContent));
+    if (knopf) knopf.click();
+    await new Promise((r) => setTimeout(r, 200));
+    const z = JSON.parse(a.E(`JSON.stringify(S.cycles.find(x => x.id === '${c0}'))`));
+    pruef('W4 der Knopf schließt ab, mit Datum', !!knopf && z.archived === true && z.endDate === '2026-09-20', { archived: z.archived, endDate: z.endDate });
+    pruef('W5 danach steht der Zyklus nicht mehr im Kalender', !/Sensi Amnesia/.test(kal()), kal().slice(0, 150));
+    pruef('W6 keine JS-Fehler', a.errors.length === 0, a.errors[0]);
+  }
+
   console.log('\n' + ok + ' OK, ' + fail + ' FEHL');
   if (fail) process.exit(1);
 })().catch((e) => { console.log('FEHLER: ' + (e && e.stack || e)); process.exit(1); });
