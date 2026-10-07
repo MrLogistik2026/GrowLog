@@ -2,6 +2,16 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-07 — v1.5.336
+
+- **Zwei Zyklen konnten dieselbe Kennung bekommen** (beim Bau des Zyklus-Imports gefunden). `addCyc` nahm `Date.now()` als
+  Kennung. Entstehen zwei Zyklen in derselben Millisekunde, tragen beide denselben Schlüssel — nachgestellt mit fester
+  Uhr: zweimal „1791000000000". Ab da laufen Tagebuch-Einträge, Plan-Zuordnung und Pflanzen beider Zyklen unter einem
+  Schlüssel zusammen. Von Hand tippt niemand so schnell; ein Import, der mehrere Zyklen auf einmal anlegt, schon.
+- **Jetzt** zählt `_neueZyklusId` weiter, bis die Kennung frei ist.
+- Test: `test_zyklus2.js` Abschnitt Y (3 Prüfungen, beide Zeitzonen; 2 fallen auf v1.5.335 um).
+
+
 ## 2026-10-07 — v1.5.335
 
 - **`wiederherstellung.html` spielte Stände ein, an denen GrowSmart danach abstürzte** (Hebel 3, Punkt 7; Störfall

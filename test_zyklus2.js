@@ -715,6 +715,16 @@ function pruef(name, bedingung, info) {
     pruef('X5 keine JS-Fehler', a.errors.length === 0, a.errors[0]);
   }
 
+  // ===== Y: Zwei Zyklen in derselben Millisekunde bekommen verschiedene Kennungen (v1.5.336) =====
+  console.log('\nY - Eindeutige Zyklus-Kennung');
+  {
+    const a = await load();
+    const ids = JSON.parse(a.E("(() => { const _dn = Date.now; Date.now = () => 1791000000000; try { addCyc({ name: 'Y1' }); addCyc({ name: 'Y2' }); } finally { Date.now = _dn; } return JSON.stringify(S.cycles.filter(c => /^Y[12]$/.test(c.name)).map(c => c.id)); })()"));
+    pruef('Y1 zwei Zyklen in derselben Millisekunde: zwei Kennungen', ids.length === 2 && ids[0] !== ids[1], ids);
+    pruef('Y2 alle Kennungen im Stand sind verschieden', a.E('new Set(S.cycles.map(c => c.id)).size === S.cycles.length'));
+    pruef('Y3 keine JS-Fehler', a.errors.length === 0, a.errors[0]);
+  }
+
   console.log('\n' + ok + ' OK, ' + fail + ' FEHL');
   if (fail) process.exit(1);
 })().catch((e) => { console.log('FEHLER: ' + (e && e.stack || e)); process.exit(1); });
