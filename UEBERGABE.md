@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.336** · index.html 2,54 MB · 777 Funktionen
+Stand: **v1.5.337** · index.html 2,55 MB · 780 Funktionen
 Zuletzt fortgeschrieben am 07.10.2026 (Nachtprüfung und Run 02 — Abschnitt 0o, „Stand Run 02"). Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
@@ -257,6 +257,7 @@ Unterscheidungsfragen aus dem eigenen Zustand.
 - v1.5.334: rettung.html bietet jeden GrowSmart-Stand einzeln an (Kopien, aufgehobener Stand, alte Versionen), sagt, was mit der Datei zu tun ist; kein Claude-App-Hinweis mehr.
 - v1.5.335: wiederherstellung.html prüft wie die App (standMangel, 17 Fälle gleich), ohne Programm-Meldungen, und setzt beim Einspielen growsmart_v4_gen neu.
 - v1.5.336: Zwei in derselben Millisekunde angelegte Zyklen bekommen verschiedene Kennungen (_neueZyklusId).
+- v1.5.337: Neu — „Import" erkennt eine Zyklus-Datei und fügt deren Zyklen hinzu, statt den Stand zu ersetzen (_zyklenPaketLaden, _planFuerVorlage). Für Run 02: Datei liegt privat in Patricks Google Drive, nicht im Repo.
 
 **Bei der nächsten Bewertung** dieselbe Skala, dieselben Kategorie-IDs und dieselben Regeln aus `auftrag.md` nehmen und
 die Noten gegen diese Tabelle stellen.

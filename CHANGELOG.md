@@ -2,6 +2,29 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-07 — v1.5.337
+
+- **Neu: Eine Zyklus-Datei fügt Zyklen hinzu, statt den Stand zu ersetzen** (Patrick, 07.10.2026: „Ich schließe den Zyklus
+  ab und du legst alles an"). Seine Daten liegen nur auf dem Handy; der Import ersetzt sonst alles. Jetzt erkennt derselbe
+  Knopf „Import" eine Datei mit `_type: 'growsmart_zyklen'` und legt ihre Zyklen **dazu**: Dialog „Zyklen hinzufügen?" mit
+  jedem Zyklus (Keimstart, Pflanzen, Topf, Substrat, Düngeplan) und dem Satz „Dein bisheriger Stand bleibt, wie er ist".
+- **Wie:** Angelegt wird über `addCyc`, also genau wie mit dem Assistenten; der Plan zur Vorlage kommt aus
+  `_planFuerVorlage` — aus `_wizFinish` herausgelöst, damit es keine zweite Kopie des Anlege-Codes gibt (die erste
+  hatte schon einmal Rückgrat und Dünger/Wasser-Rhythmus verpasst, v1.5.137). Ist schon ein Plan mit der Vorlage da,
+  wird er genommen. Die Datei trägt nur Stammdaten (Start, Topf, Substrat, Anzucht- und Blütetage, Keim- und
+  Startmethode, Licht, Plan-Vorlage, Pflanzen mit Namen und Sorte) und Notizen — nie Messwerte (`ANBAU.md` 15).
+- **Schutz:** Jeder Wert wird geprüft; ein unbekannter lehnt die ganze Datei mit Grund ab, statt still einen Vorgabewert
+  zu nehmen. Notizen nur zwischen Start und heute. Dieselben Zyklen kommen nie doppelt (Paket-Kennung und Name). Kann
+  gerade nicht gespeichert werden (Sperre, anderes Fenster, geleerter oder gesperrter Speicher), kommt nichts dazu;
+  scheitert das Speichern, wird zurückgenommen — nichts landet nur im Arbeitsspeicher. ↩ nimmt den ganzen Import in einem
+  Schritt zurück.
+- Mit Patricks echter Run-02-Datei gegen seine Sicherung durchgespielt (privat, nicht im Repo): zwei Zyklen dazu, Run 01
+  unverändert, am 07.10. Tag 18 und 12, die Wochenwechsel 2–5 auf den Tagen seiner Stammdaten, Startseite und Kalender
+  ohne die abgeschlossene Sensi.
+- Test: neue Datei `test_zyklenimport.js` (28 Prüfungen, beide Zeitzonen; fällt auf v1.5.336 um). Bewusst mit neutralen
+  Pflanzennamen.
+
+
 ## 2026-10-07 — v1.5.336
 
 - **Zwei Zyklen konnten dieselbe Kennung bekommen** (beim Bau des Zyklus-Imports gefunden). `addCyc` nahm `Date.now()` als

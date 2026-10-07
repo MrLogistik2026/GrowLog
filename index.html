@@ -4594,7 +4594,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.336';
+const APP_VERSION = 'v1.5.337';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -26289,49 +26289,8 @@ function _wizFinish() {
   // Wenn der User ein BioBizz-Preset gewählt hat, legen wir JETZT den Plan an
   // damit dein Zyklus direkt damit verknüpft wird. Kein Umweg über den Dünger-Screen.
   let resolvedPlanId = a.fertPlanId !== undefined ? a.fertPlanId : null;
-  if (a.fertPresetKey && FERT_PRESETS[a.fertPresetKey]) {
-    const key = a.fertPresetKey;
-    const pr = FERT_PRESETS[key];
-    // Falls bereits ein Plan mit diesem Preset existiert: nutzen
-    const existing = (S.fertPlans || []).find(p => p.presetKey === key);
-    if (existing) {
-      resolvedPlanId = existing.id;
-    } else {
-      // Neuen Plan aus Preset anlegen
-      if (!S.fertPlans) S.fertPlans = [];
-      const newId = 'fp_' + Date.now();
-      const products = pr.products.map((p, i) => ({ id: 'p' + Date.now() + '_' + i, ...p }));
-      const schedule = {};
-      Object.entries(pr.schedule || {}).forEach(([w, doses]) => {
-        const mapped = {};
-        Object.entries(doses || {}).forEach(([name, dose]) => {
-          const prod = products.find(p => p.name === name);
-          if (prod) mapped[prod.id] = dose;
-        });
-        schedule['w' + w] = mapped;
-      });
-      const neuerPlan = {
-        id: newId,
-        name: pr.name,
-        products, schedule,
-        mixOrder: pr.mixOrder ? [...pr.mixOrder] : [],
-        mixInfo: pr.mixInfo || '',
-        drainInfo: pr.drainInfo || null,
-        presetKey: key,
-        createdAt: Date.now(),
-      };
-      // (v1.5.137) Dasselbe Gerüst wie über „Vorlage laden": Rückgrat, Skelett, Tagesgrenzen,
-      // EC-Ziele und der Dünger/Wasser-Rhythmus. Dieser Weg hatte seine eigene, ältere Kopie
-      // des Anlege-Codes und bekam nichts davon mit — das Rückgrat kam erst beim nächsten Start
-      // über die Migration nach, der Rhythmus nie: Ein Plan mit Wasser-Tagen düngte bei jedem Guss.
-      _planRueckgratAuffrischen(neuerPlan, pr);
-      if (pr.feedWaterRhythm) neuerPlan.feedWaterRhythm = { ...pr.feedWaterRhythm };
-      S.fertPlans.push(neuerPlan);
-      S._activePlanId = newId;
-      syncActivePlanToGlobals();
-      resolvedPlanId = newId;
-    }
-  }
+  // (v1.5.337) Vorhandener Plan mit dieser Vorlage oder ein neuer — derselbe Weg wie der Zyklus-Import (_planFuerVorlage).
+  if (a.fertPresetKey && FERT_PRESETS[a.fertPresetKey]) resolvedPlanId = _planFuerVorlage(a.fertPresetKey);
 
   const overrides = {
     name: a.name || undefined,
@@ -26459,6 +26418,176 @@ function _pickMode(beginner) {
   document.querySelectorAll('[data-mode-dialog]').forEach(x => x.remove());
   closeWizard();
   toast(beginner ? '🌱 Einsteiger-Modus aktiv' : '⚡ Profi-Modus aktiv');
+}
+
+/**
+ * (v1.5.337) Plan zu einer Vorlage: einen schon angelegten Plan mit dieser Vorlage nehmen, sonst einen neuen anlegen.
+ * Aus _wizFinish herausgelöst, damit der Zyklus-Import denselben Weg geht — eine zweite Kopie des Anlege-Codes hatte
+ * schon einmal das Rückgrat und den Dünger/Wasser-Rhythmus verpasst (v1.5.137).
+ */
+function _planFuerVorlage(key) {
+  const pr = FERT_PRESETS[key];
+  if (!pr) return null;
+  const existing = (S.fertPlans || []).find(p => p.presetKey === key);
+  if (existing) return existing.id;
+  if (!S.fertPlans) S.fertPlans = [];
+  const newId = 'fp_' + Date.now();
+  const products = pr.products.map((p, i) => ({ id: 'p' + Date.now() + '_' + i, ...p }));
+  const schedule = {};
+  Object.entries(pr.schedule || {}).forEach(([w, doses]) => {
+    const mapped = {};
+    Object.entries(doses || {}).forEach(([name, dose]) => {
+      const prod = products.find(p => p.name === name);
+      if (prod) mapped[prod.id] = dose;
+    });
+    schedule['w' + w] = mapped;
+  });
+  const neuerPlan = {
+    id: newId,
+    name: pr.name,
+    products, schedule,
+    mixOrder: pr.mixOrder ? [...pr.mixOrder] : [],
+    mixInfo: pr.mixInfo || '',
+    drainInfo: pr.drainInfo || null,
+    presetKey: key,
+    createdAt: Date.now(),
+  };
+  // (v1.5.137) Dasselbe Gerüst wie über „Vorlage laden": Rückgrat, Skelett, Tagesgrenzen, EC-Ziele und der
+  // Dünger/Wasser-Rhythmus.
+  _planRueckgratAuffrischen(neuerPlan, pr);
+  if (pr.feedWaterRhythm) neuerPlan.feedWaterRhythm = { ...pr.feedWaterRhythm };
+  S.fertPlans.push(neuerPlan);
+  S._activePlanId = newId;
+  syncActivePlanToGlobals();
+  return newId;
+}
+
+/**
+ * (v1.5.337) ZYKLUS-DATEI. Legt Zyklen aus einer Datei an, ohne den bisherigen Stand anzurühren — der Import ersetzt
+ * sonst alles. Anlass: Patrick wollte Run 02 nicht selbst eintippen (07.10.2026), seine Daten liegen aber nur auf dem
+ * Handy. Die Datei sagt selbst, was sie ist (_type: 'growsmart_zyklen'); derselbe Knopf „Import" erkennt sie.
+ *
+ * Angelegt wird über addCyc, also genau wie mit dem Assistenten. Die Datei enthält nur Stammdaten (Start, Topf,
+ * Substrat, Plan-Vorlage, Pflanzen, Licht) und Notizen — nie Messwerte (ANBAU.md 15: Messwerte werden nicht geschätzt
+ * und eingetragen). Jeder Wert wird geprüft; ein unbekannter lehnt die ganze Datei ab, statt still einen Vorgabewert
+ * zu nehmen.
+ */
+const ZYKLEN_PAKET_TYP = 'growsmart_zyklen';
+function _zyklenPaketPruefen(d) {
+  const nein = (warum) => ({ ok: false, fehler: warum });
+  if (!_istObjekt(d) || d._type !== ZYKLEN_PAKET_TYP) return nein('keine Zyklus-Datei');
+  if (!Array.isArray(d.zyklen) || !d.zyklen.length || d.zyklen.length > 10) return nein('keine oder zu viele Zyklen (1 bis 10)');
+  const heute = todayISO();
+  const isoOk = (x) => typeof x === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(x) && _localISO(new Date(x + 'T12:00:00')) === x;
+  const ganz = (x, von, bis) => Number.isInteger(x) && x >= von && x <= bis;
+  const text = (x, max) => typeof x === 'string' && x.trim() !== '' && x.length <= max;
+  const paketId = (typeof d.paketId === 'string' && d.paketId.trim() && d.paketId.length <= 60) ? d.paketId.trim() : null;
+  const zyklen = [];
+  for (let i = 0; i < d.zyklen.length; i++) {
+    const z = d.zyklen[i], nr = `Zyklus ${i + 1}`;
+    if (!_istObjekt(z)) return nein(`${nr} ist kein Eintrag`);
+    if (!text(z.name, 60)) return nein(`${nr}: Name fehlt oder ist länger als 60 Zeichen`);
+    if (!isoOk(z.startDate) || z.startDate < '2020-01-01' || z.startDate > isoPlus(heute, 60)) return nein(`${z.name}: Startdatum ungültig`);
+    if (!['auto', 'fem', 'reg'].includes(z.seedType)) return nein(`${z.name}: Samentyp unbekannt`);
+    if (!['indoor', 'outdoor'].includes(z.growType)) return nein(`${z.name}: drinnen/draußen unbekannt`);
+    if (!MEDIUM_NAMEN[z.medium]) return nein(`${z.name}: Substrat unbekannt`);
+    if (!(typeof z.potSize === 'number' && z.potSize >= 1 && z.potSize <= 200)) return nein(`${z.name}: Topfgröße ungültig`);
+    if (!ganz(z.anzuchtDays, 7, 60)) return nein(`${z.name}: Anzucht-Tage ungültig (7 bis 60)`);
+    if (!ganz(z.bloomDays, 21, 150)) return nein(`${z.name}: Blüte-Tage ungültig (21 bis 150)`);
+    if (!['direct', 'saturated'].includes(z.startMethod)) return nein(`${z.name}: Start-Methode unbekannt`);
+    if (z.germMethod !== undefined && !GERM_GUIDES[z.germMethod]) return nein(`${z.name}: Keimmethode unbekannt`);
+    if (z.lightVeg !== undefined && !['18/6', '20/4', '24/0', '16/8'].includes(z.lightVeg)) return nein(`${z.name}: Licht in der Anzucht unbekannt`);
+    if (z.lightBloom !== undefined && !['12/12', '18/6', '20/4', '24/0'].includes(z.lightBloom)) return nein(`${z.name}: Licht in der Blüte unbekannt`);
+    if (z.fertPreset !== undefined && !_vorlageWaehlbar(z.fertPreset)) return nein(`${z.name}: Düngeplan-Vorlage unbekannt`);
+    if (z.strain !== undefined && !(typeof z.strain === 'string' && z.strain.length <= 80)) return nein(`${z.name}: Sorte zu lang`);
+    if (!Array.isArray(z.pflanzen) || !z.pflanzen.length || z.pflanzen.length > 20) return nein(`${z.name}: Pflanzen fehlen (1 bis 20)`);
+    for (const p of z.pflanzen) {
+      if (!_istObjekt(p) || !text(p.label, 60)) return nein(`${z.name}: eine Pflanze ohne Namen`);
+      if (p.strain !== undefined && !(typeof p.strain === 'string' && p.strain.length <= 80)) return nein(`${z.name}: Sorte einer Pflanze zu lang`);
+    }
+    const notizen = {};
+    if (z.notizen !== undefined) {
+      if (!_istObjekt(z.notizen)) return nein(`${z.name}: Notizen unlesbar`);
+      for (const [tag, t] of Object.entries(z.notizen)) {
+        if (!isoOk(tag) || tag < z.startDate || tag > heute) return nein(`${z.name}: Notiz am ${tag} liegt vor dem Start oder in der Zukunft`);
+        if (!text(t, 2000)) return nein(`${z.name}: Notiz am ${tag} leer oder zu lang`);
+        notizen[tag] = t.trim();
+      }
+    }
+    zyklen.push(Object.assign({}, z, { name: z.name.trim(), notizen }));
+  }
+  const namen = zyklen.map(z => z.name);
+  if (new Set(namen).size !== namen.length) return nein('zwei Zyklen mit demselben Namen');
+  return { ok: true, paketId, zyklen };
+}
+
+async function _zyklenPaketLaden(d) {
+  const g = _zyklenPaketPruefen(d);
+  if (!g.ok) { toast('⚠ Diese Zyklus-Datei lässt sich nicht laden (' + g.fehler + '). Dein Stand ist unverändert.', 7000); return false; }
+  // Kann gerade nicht gespeichert werden, kommt nichts dazu — sonst stünden die Zyklen nur im Arbeitsspeicher.
+  if (_neuladenAnsteht || _speicherSperre || _speicherGesperrt || _fremdGeschrieben || _speicherGeleert) {
+    toast('⚠ Gerade kann GrowSmart nicht speichern (siehe das rote Band oben). Die Zyklen kommen dazu, sobald wieder gespeichert wird — lade die Datei dann noch einmal.', 7000);
+    return false;
+  }
+  const schon = (z) => (S.cycles || []).some(c => c && c.name === z.name && (g.paketId ? c.paketId === g.paketId : c.startDate === z.startDate));
+  const neu = g.zyklen.filter(z => !schon(z)), doppelt = g.zyklen.filter(schon);
+  if (!neu.length) { toast(`Diese Zyklen sind schon angelegt: ${doppelt.map(z => z.name).join(', ')}. Es kommt nichts doppelt dazu.`, 6000); return false; }
+  const zeile = (z) => {
+    const plan = z.fertPreset ? FERT_PRESETS[z.fertPreset].name : 'ohne Düngeplan';
+    return `• ${z.name}: Keimstart ${fmtDE(z.startDate, { day: '2-digit', month: '2-digit', year: 'numeric' })}, ${z.pflanzen.length} ${z.pflanzen.length === 1 ? 'Pflanze' : 'Pflanzen'}, ${z.potSize} L ${mediumName(z.medium)}, ${plan}`;
+  };
+  const notizZahl = neu.reduce((n, z) => n + Object.keys(z.notizen).length, 0);
+  const ok = await customConfirm('Zyklen hinzufügen?',
+    `In der Datei:\n${neu.map(zeile).join('\n')}`
+    + (notizZahl ? `\nDazu ${notizZahl} ${notizZahl === 1 ? 'Notiz' : 'Notizen'} im Tagebuch — nur Text, keine Messwerte.` : '')
+    + (doppelt.length ? `\n\nSchon angelegt und übersprungen: ${doppelt.map(z => z.name).join(', ')}.` : '')
+    + '\n\nDein bisheriger Stand bleibt, wie er ist — die Zyklen kommen dazu. Mit ↩ lässt sich das zurücknehmen.',
+    'Hinzufügen', 'var(--green)', 'Abbrechen');
+  if (!ok) return false;
+  const vorher = JSON.stringify(S);
+  saveS._lastUndo = 0;   // ein eigener Rückgängig-Schritt für den ganzen Import
+  const angelegt = [];
+  try {
+    for (const z of neu) {
+      const fertPlanId = z.fertPreset ? _planFuerVorlage(z.fertPreset) : null;
+      addCyc({
+        name: z.name, startDate: z.startDate, seedType: z.seedType, growType: z.growType, medium: z.medium,
+        potSize: z.potSize, plantCount: z.pflanzen.length, startMethod: z.startMethod, strain: z.strain || undefined,
+        lightVeg: z.lightVeg, lightBloom: z.lightBloom, fertPlanId,
+      });
+      const c = S.cycles[S.cycles.length - 1];
+      // Was addCyc nicht kennt, wie es der Assistent danach setzt: Anzucht, Blüte, Keimmethode, Herkunft.
+      c.anzuchtDays = z.anzuchtDays;
+      c.bloomDays = z.bloomDays;
+      if (z.germMethod) c.germMethod = z.germMethod;
+      if (g.paketId) c.paketId = g.paketId;
+      if (typeof _snapFlushToRhythm === 'function') { try { _snapFlushToRhythm(c); } catch (e) { /* wie in addCyc */ } }
+      z.pflanzen.forEach((p, i) => { if (c.plants[i]) { c.plants[i].label = p.label.trim(); c.plants[i].strain = (p.strain || '').trim(); } });
+      Object.entries(z.notizen).forEach(([tag, t]) => {
+        if (!S.entries[tag]) S.entries[tag] = {};
+        if (!S.entries[tag].cycleData) S.entries[tag].cycleData = {};
+        const cd = S.entries[tag].cycleData[c.id] || (S.entries[tag].cycleData[c.id] = {});
+        cd.notes = cd.notes ? cd.notes + '\n' + t : t;
+      });
+      if (typeof draft !== 'undefined' && draft && draft.id === c.id) draft = { ...c };   // addCyc hat den Entwurf vor diesen Werten angelegt
+      angelegt.push(c);
+    }
+  } catch (e) {
+    S = JSON.parse(vorher);
+    toast('⚠ Die Zyklen ließen sich nicht anlegen (' + ((e && e.message) || e) + '). Dein Stand ist unverändert.', 7000);
+    _rerender();
+    return false;
+  }
+  if (!saveS()) {
+    // Das Band „NICHT gespeichert" steht schon; dann lieber gar nicht hinzufügen als nur im Arbeitsspeicher.
+    S = JSON.parse(vorher);
+    _rerender();
+    return false;
+  }
+  vibrate();
+  if (typeof goTo === 'function') goTo('dash');
+  toast(`🌱 ${angelegt.length} ${angelegt.length === 1 ? 'Zyklus' : 'Zyklen'} angelegt: ${angelegt.map(c => c.name).join(', ')}`, 5000);
+  return true;
 }
 
 /**
@@ -28230,6 +28359,8 @@ async function importData() {
       let d;
       try { d = JSON.parse(ev.target.result); } catch (err) { d = undefined; }
       if (d === undefined || d === null) { toast('⚠ Diese Datei ist keine lesbare Sicherung — sie ist leer oder unvollständig. ' + wegweiser, 7000); return; }
+      // (v1.5.337) Eine Zyklus-Datei fügt hinzu, statt zu ersetzen.
+      if (_istObjekt(d) && d._type === ZYKLEN_PAKET_TYP) { await _zyklenPaketLaden(d); return; }
       if (_istObjekt(d) && d._type === 'growsmart_preset') { toast('⚠ Das ist ein Düngeplan, keine Sicherung. Düngepläne lädst du im Bereich Dünger über „📥 Import". ' + wegweiser, 7000); return; }
       if (!_istObjekt(d) || (d.cycles === undefined && d.entries === undefined)) { toast('⚠ Diese Datei ist keine GrowSmart-Sicherung. ' + wegweiser, 7000); return; }
       let repariert = null;
