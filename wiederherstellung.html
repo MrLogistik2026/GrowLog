@@ -45,8 +45,39 @@
 <div id="zurueck"></div>
 
 <script>
+/*
+ * (v1.5.335) Dieselbe Regel wie _standMangel in app.js — die Seite kann app.js nicht laden, deshalb eine Kopie.
+ * Wer eine der beiden ändert, ändert die andere mit; test_hilfsseiten.js vergleicht beide Urteile Fall für Fall.
+ * Vorher prüfte die Seite nur JSON und die Zahl der Zyklen: {"cycles":[null]} brach mit einer Programm-Meldung ab,
+ * und ein Stand mit entries: null "sah gut aus", wurde eingespielt, und danach stürzte GrowSmart beim Start ab.
+ */
+function istObjekt(x) { return !!x && typeof x === 'object' && !Array.isArray(x); }
+function standMangel(d) {
+  if (!istObjekt(d)) return 'kein GrowSmart-Stand';
+  if (d.cycles !== undefined && !Array.isArray(d.cycles)) return 'beschädigt';
+  if (Array.isArray(d.cycles) && d.cycles.some(function (c) { return !istObjekt(c); })) return 'beschädigt';
+  if (d.entries !== undefined && !istObjekt(d.entries)) return 'beschädigt';
+  if (d.fertPlans !== undefined && !Array.isArray(d.fertPlans)) return 'beschädigt';
+  if (Array.isArray(d.cycles) && d.cycles.some(function (c) { return typeof c.id !== 'string' || !c.id; })) return 'beschädigt';
+  if (Array.isArray(d.cycles) && d.cycles.some(function (c) { return c.plants !== undefined && typeof c.plants !== 'number' && !Array.isArray(c.plants); })) return 'beschädigt';
+  if (Array.isArray(d.cycles) && istObjekt(d.entries)) {
+    var ids = {}; d.cycles.forEach(function (c) { ids[c.id] = true; });
+    var daten = 0, passend = 0;
+    Object.keys(d.entries).forEach(function (k) {
+      var e = d.entries[k];
+      if (e && istObjekt(e.cycleData)) Object.keys(e.cycleData).forEach(function (id) { daten++; if (ids[id]) passend++; });
+    });
+    if (daten > 0 && passend === 0) return 'beschädigt';
+  }
+  return null;
+}
+
 (function () {
   var KEY = 'growsmart_v4';
+  // (v1.5.335) Eine neue Kennung sagt einem offenen GrowSmart-Fenster, dass hier geschrieben wurde — auch wenn es das
+  // Ereignis verpasst hat (eingefroren im Hintergrund). Sonst überschriebe es die eingespielte Sicherung (v1.5.327).
+  var GEN = 'growsmart_v4_gen';
+  function kennungNeu() { try { localStorage.setItem(GEN, 'wiederherstellung-' + Date.now().toString(36)); } catch (e) { /* egal */ } }
   var SICHER = 'growsmart_v4_vor_wiederherstellung';
   var jetzt = document.getElementById('jetzt');
   var feld = document.getElementById('feld');
@@ -58,13 +89,16 @@
   function beschreibe(txt) {
     try {
       var d = JSON.parse(txt);
+      var m = standMangel(d);
+      if (m) return { ok: false, mangel: true, fehler: 'Das ist keine GrowSmart-Sicherung (' + m + ').' };
       var z = (d.cycles || []).length;
       var e = Object.keys(d.entries || {}).length;
       var a = (d.cycles || []).filter(function (c) { return c.active && !c.archived; })[0];
       return { ok: true, z: z, e: e, name: a ? (a.name || 'ohne Namen') : null,
                start: a ? a.startDate : null, groesse: (txt.length / 1024).toFixed(0) };
     } catch (err) {
-      return { ok: false, fehler: err.message };
+      // (v1.5.335) Keine Programm-Meldung wie „Unexpected end of JSON input“ — die sagt einem Anfänger nichts.
+      return { ok: false, fehler: 'Der Text lässt sich nicht lesen.' };
     }
   }
 
@@ -89,7 +123,9 @@
     var b = beschreibe(txt);
     if (!b.ok) {
       pruef.innerHTML = '<div class="box err" style="margin-top:10px"><b>Das ist keine gültige Sicherung.</b><br>'
-        + b.fehler + '<br><br>Häufigste Ursache: Der Text wurde nicht vollständig kopiert.</div>';
+        + b.fehler + (b.mangel
+          ? '<br><br>Nicht einspielen. Nimm den Text aus der Datei, die „Backup“ in GrowSmart heruntergeladen hat.'
+          : '<br><br>Häufigste Ursache: Der Text wurde nicht vollständig kopiert.') + '</div>';
       geprueft = null;
       return;
     }
@@ -109,7 +145,8 @@
       try {
         if (akt) localStorage.setItem(SICHER, akt);
         localStorage.setItem(KEY, geprueft);
-        b2.textContent = '✓ Eingespielt — GrowSmart öffnen und prüfen';
+        kennungNeu();
+        b2.textContent = '✓ Eingespielt — GrowSmart öffnen und prüfen. Ist GrowSmart noch in einem anderen Tab offen: dort neu laden.';
         b2.disabled = true;
       } catch (e) {
         alert('Konnte nicht schreiben: ' + e.message);
@@ -131,7 +168,8 @@
     b3.onclick = function () {
       try {
         localStorage.setItem(KEY, vorher);
-        b3.textContent = '✓ Zurückgeholt';
+        kennungNeu();
+        b3.textContent = '✓ Zurückgeholt — ist GrowSmart noch in einem anderen Tab offen: dort neu laden.';
         b3.disabled = true;
       } catch (e) { alert('Fehlgeschlagen: ' + e.message); }
     };

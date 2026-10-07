@@ -2,6 +2,21 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-07 — v1.5.335
+
+- **`wiederherstellung.html` spielte Stände ein, an denen GrowSmart danach abstürzte** (Hebel 3, Punkt 7; Störfall
+  „Zusatz B"). Sie prüfte nur, ob der Text JSON ist und Zyklen hat. `{"cycles":[null]}` brach mit „Cannot read properties
+  of null" ab, ein Stand mit `entries: null` oder einem Zyklus ohne Kennung „sah gut aus" und wurde eingespielt, und ein
+  abgeschnittener Text meldete „Unexpected end of JSON input". Dazu erfuhr ein offenes GrowSmart-Fenster nicht in jedem
+  Fall vom Einspielen: Hatte es das Ereignis verpasst, überschrieb es die Sicherung beim nächsten Tipp.
+- **Jetzt** prüft die Seite mit derselben Regel wie die App (`standMangel`, eine Kopie von `_standMangel`; der Test
+  vergleicht beide in 17 Fällen) und sagt bei Ablehnung „Das ist keine GrowSmart-Sicherung (beschädigt). Nicht
+  einspielen. Nimm den Text aus der Datei, die „Backup" in GrowSmart heruntergeladen hat." bzw. „Der Text lässt sich nicht
+  lesen" — ohne Programm-Meldung. Einspielen und Zurückholen setzen die Kennung `growsmart_v4_gen` neu (v1.5.327), und die
+  Erfolgsmeldung sagt, dass ein offener GrowSmart-Tab neu geladen werden muss.
+- Test: `test_hilfsseiten.js` Abschnitt W (10 Prüfungen, beide Zeitzonen; 8 fallen auf der alten Seite um).
+
+
 ## 2026-10-07 — v1.5.334
 
 - **`rettung.html` bot nur den Hauptstand an** (Hebel 3, Punkt 7; Störfall „Zusatz B" aus dem Plan). Die Seite ist der
