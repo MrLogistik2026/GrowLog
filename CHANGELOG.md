@@ -2,6 +2,23 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-08 — v1.5.391
+
+- **Die Gießwasser-Temperatur stand an zehn Stellen verschieden** (Run-02-Prüfung vom 07.10.2026, F15):
+  - Startseite und Anzucht-Karte sagten neunmal „lauwarmes Wasser“ — das fühlt sich wärmer an als 22 °C.
+  - Das Lexikon nannte 18–22 °C, dazu „Membranfunktion stoppt“ unter 18 °C und „über 22 °C sinkt der Sauerstoff drastisch,
+    Pythium wird aktiv“.
+
+  `ANBAU.md` 7.3 sagt: Gießwasser 20–22 °C. Wasser mit 12 °C kühlt die Wurzelzone für Stunden unter ihr Optimum von
+  18–24 °C. Der gelöste Sauerstoff sinkt von rund 9 auf rund 7,5 mg/L zwischen 20 und 30 °C, und der Pythium-Druck steigt erst
+  über 26 °C deutlich.
+- **Jetzt** gibt es eine Quelle: `GIESSWASSER` und `GIESSWASSER_TEXT` („Wasser mit 20–22 °C“). Der Lexikon-Eintrag
+  „Wassertemperatur“ erklärt Kälte und Wärme mit den Zahlen aus 7.3. Statt des Fingertests („lauwarm bis neutral“) empfiehlt
+  er ein Thermometer — für den Finger fühlen sich 20–22 °C leicht kühl an.
+- Die Reservoir-Temperatur bei Hydro (Ziel 18–21 °C) ist eine eigene Größe und bleibt.
+- Test: `test_runzwei.js` F15 (4 Prüfungen; alle 4 fallen auf v1.5.390 um).
+
+
 ## 2026-10-08 — v1.5.390
 
 - **Der Lexikon-Eintrag „Drain-Kontrolle“ widersprach sich selbst** (beim Bau von v1.5.389 gefunden). Oben stand „15–20 %

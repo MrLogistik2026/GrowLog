@@ -359,6 +359,19 @@ async function starte() {
     }
   }
 
+  // F15 (v1.5.391) · Gießwasser-Temperatur aus einer Quelle (ANBAU.md 7.3) statt „lauwarm"
+  {
+    const r = JSON.parse(a.E(`(function(){ const c = S.cycles[0]; const p = phase(todayISO(), c);
+      const satz = plainSentence('giess', c, p, 1500).replace(/<[^>]+>/g, '');
+      const lex = LEXIKON.flatMap(k => k.items || []).find(x => x.t === 'Wassertemperatur') || {};
+      return JSON.stringify({ satz, brief: lex.brief || '', practice: lex.practice || '', ziel: typeof GIESSWASSER === 'object' ? GIESSWASSER.tMin + '–' + GIESSWASSER.tMax + ' °C' : null }); })()`));
+    pruefe(r.ziel === '20–22 °C', `F15-0 GIESSWASSER fehlt oder weicht von ANBAU.md 7.3 ab: ${r.ziel}`);
+    pruefe(/Wasser mit 20–22 °C/.test(r.satz) && !/lauwarm/.test(r.satz), `F15-1 Startseite: ${r.satz}`);
+    pruefe(/20–22 °C/.test(r.brief) && !/18-22|18–22/.test(r.brief) && !/lauwarm/.test(r.practice), `F15-2 Lexikon „Wassertemperatur": ${r.brief}`);
+    const zeilen = HTML.split(/\r?\n/).filter(z => !/^\s*(\/\/|\*|\/\*)/.test(z) && /lauwarm/.test(z));
+    pruefe(zeilen.length === 0, `F15-3 „lauwarm" steht noch ${zeilen.length}× im ausgelieferten Text`);
+  }
+
   pruefe(!a.errors.length, 'Skriptfehler: ' + a.errors.slice(0, 3).join(' | '));
   if (fehler.length) { console.log(`test_runzwei: ${fehler.length} von ${n} Prüfungen rot`); fehler.forEach((f) => console.log('  ✗ ' + f)); process.exit(1); }
   console.log(`test_runzwei: alle ${n} Prüfungen grün`);

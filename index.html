@@ -1071,6 +1071,10 @@ const TROCKNEN_KLIMA = { tMin: 18, tMax: 20, rhMin: 55, rhMax: 62 };
 const KEIMUNG = { glasStdVon: 12, glasStdBis: 24, wurzelTageVon: 1, wurzelTageBis: 3, wurzelTageAufgeben: 7, wurzelMmVon: 2, wurzelMmBis: 5,
   tiefeCmVon: 0.5, tiefeCmBis: 1, tiefeCmMax: 2, auflaufenVon: 4, auflaufenBis: 7, nachsehenAbTag: 10 };
 const TROCKNEN_TEXT = `${TROCKNEN_KLIMA.tMin}–${TROCKNEN_KLIMA.tMax} °C, ${TROCKNEN_KLIMA.rhMin}–${TROCKNEN_KLIMA.rhMax} % RLF`;
+// (v1.5.391) Gießwasser 20–22 °C (ANBAU.md 7.3): Wasser mit 12 °C aus der Leitung kühlt die Wurzelzone für Stunden unter ihr Optimum
+// von 18–24 °C. Vorher stand an neun Stellen „lauwarm" — das fühlt sich wärmer an als 22 °C — und im Lexikon 18–22 °C.
+const GIESSWASSER = { tMin: 20, tMax: 22 };
+const GIESSWASSER_TEXT = `Wasser mit ${GIESSWASSER.tMin}–${GIESSWASSER.tMax} °C`;
 // Wie viel Prozent der Gießmenge unten ankommen sollen — Begründung bei drainAdjust (v1.5.112, ANBAU.md 5.1).
 // (v1.5.153) Hier oben, weil auch die Symptom-Liste beim Laden die Zahl braucht; drei Texte nannten noch ~10 %.
 const DRAIN_ZIEL = { min: 15, mid: 17.5, max: 20, obergrenze: 25 };
@@ -4621,7 +4625,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.390';
+const APP_VERSION = 'v1.5.391';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -18210,21 +18214,21 @@ function plainSentence(action, c, p, waterMl) {
   }
   if (action === 'giess_anz') {
     if (isVorzucht) {
-      return `Gib ${_n > 1 ? 'jeder vorgezogenen Pflanze' : 'deiner vorgezogenen Pflanze'} heute etwa <b>${_jeTopf(waterMl)} ml</b> lauwarmes Wasser${_zusammen(waterMl)} — sie ist noch drinnen, du musst nicht aufs Wetter achten.`;
+      return `Gib ${_n > 1 ? 'jeder vorgezogenen Pflanze' : 'deiner vorgezogenen Pflanze'} heute etwa <b>${_jeTopf(waterMl)} ml</b> ${GIESSWASSER_TEXT}${_zusammen(waterMl)} — sie ist noch drinnen, du musst nicht aufs Wetter achten.`;
     }
     return isOutdoor
-      ? `Prüf kurz den Topf — ist er leicht, gib ${_jeTopfWort}etwa <b>${_jeTopf(waterMl)} ml</b> lauwarmes Wasser${_zusammen(waterMl)} in einem Ring um die Pflanze.`
-      : `Gib ${_wem} heute ganz vorsichtig etwa <b>${_jeTopf(waterMl)} ml</b> lauwarmes Wasser${_zusammen(waterMl)} — ${(p && p.day <= KEIMUNG.auflaufenBis) ? 'im Ring um die Stelle, an der der Samen liegt' : 'nicht direkt auf den Stängel, sondern drumherum'}.`;
+      ? `Prüf kurz den Topf — ist er leicht, gib ${_jeTopfWort}etwa <b>${_jeTopf(waterMl)} ml</b> ${GIESSWASSER_TEXT}${_zusammen(waterMl)} in einem Ring um die Pflanze.`
+      : `Gib ${_wem} heute ganz vorsichtig etwa <b>${_jeTopf(waterMl)} ml</b> ${GIESSWASSER_TEXT}${_zusammen(waterMl)} — ${(p && p.day <= KEIMUNG.auflaufenBis) ? 'im Ring um die Stelle, an der der Samen liegt' : 'nicht direkt auf den Stängel, sondern drumherum'}.`;
   }
   if (action === 'giess') {
     if (isVegiOut) {
       return `Deine Pflanze steht draußen im Wachstum. Prüf den Topf — wenn leicht, gieß ${_jeTopfWort}etwa <b>${_jeTopf(waterMl)} ml</b>${_zusammen(waterMl)}. Nach Regentagen kannst du auch einfach einen Gießtag auslassen. <b>Bei Hitze (über 28°C):</b> ggf. morgens UND abends gießen, die Pflanze verdunstet dann deutlich mehr.`;
     }
     return isOutdoor
-      ? `Prüf ob der Topf sich leicht anfühlt. Wenn ja, gieß ${_jeTopfWort}etwa <b>${_jeTopf(waterMl)} ml</b> lauwarmes Wasser${_zusammen(waterMl)}. Wenn er schwer ist, warte bis morgen. <b>Bei Hitze:</b> Pflanze kann täglich (oder sogar 2×) Wasser brauchen.`
+      ? `Prüf ob der Topf sich leicht anfühlt. Wenn ja, gieß ${_jeTopfWort}etwa <b>${_jeTopf(waterMl)} ml</b> ${GIESSWASSER_TEXT}${_zusammen(waterMl)}. Wenn er schwer ist, warte bis morgen. <b>Bei Hitze:</b> Pflanze kann täglich (oder sogar 2×) Wasser brauchen.`
       : (() => { const _gS = gussMengeJePflanze(c, p, todayISO()); return (_gS && !_drainZuErwarten(c, todayISO(), _gS))   // (v1.5.389)
-        ? `Gib ${_wem} heute etwa <b>${_jeTopf(waterMl)} ml</b> lauwarmes Wasser${_zusammen(waterMl)}, langsam und über den ganzen Topf verteilt. ${_keinDrainSatz(_gS)}.`
-        : null; })() || `Gib ${_wem} heute etwa <b>${_jeTopf(waterMl)} ml</b> lauwarmes Wasser${_zusammen(waterMl)}. Langsam gießen, bis unten etwas herausläuft: ${DRAIN_ZIEL.min}–${DRAIN_ZIEL.max} % der Menge als Drain sind richtig so.`;
+        ? `Gib ${_wem} heute etwa <b>${_jeTopf(waterMl)} ml</b> ${GIESSWASSER_TEXT}${_zusammen(waterMl)}, langsam und über den ganzen Topf verteilt. ${_keinDrainSatz(_gS)}.`
+        : null; })() || `Gib ${_wem} heute etwa <b>${_jeTopf(waterMl)} ml</b> ${GIESSWASSER_TEXT}${_zusammen(waterMl)}. Langsam gießen, bis unten etwas herausläuft: ${DRAIN_ZIEL.min}–${DRAIN_ZIEL.max} % der Menge als Drain sind richtig so.`;
   }
   if (action === 'spuelen') {
     return `Heute nur klares Wasser ohne Dünger — davon ${_jeTopfWort}ungefähr <b>${_jeTopf(waterMl)} ml</b>${_zusammen(waterMl)}. Das spült die letzten Nährsalze aus der Erde.`;
@@ -18432,15 +18436,15 @@ function getTodayAction(c, p, a, iso) {
       icon: '💧',
       color: cl.hex,
       steps: isVorzucht ? [
-        `Ca. <b>${waterMl} ml</b> lauwarmes Wasser (pH ${pht.mid.toFixed(1)})`,
+        `Ca. <b>${waterMl} ml</b> ${GIESSWASSER_TEXT} (pH ${pht.mid.toFixed(1)})`,
         p.day <= 5 ? 'Ring um den Sämling, nicht direkt drauf' : 'Radius allmählich vergrößern',
         'Drinnen bleiben — bis zu den Eisheiligen/gewähltem Transplant-Datum',
       ] : isOutdoor ? [
         'Topf anheben: leicht? → gießen. Schwer? → warten.',
-        `Falls gießen: ca. <b>${waterMl} ml</b> lauwarmes Wasser (pH ${pht.mid.toFixed(1)})`,
+        `Falls gießen: ca. <b>${waterMl} ml</b> ${GIESSWASSER_TEXT} (pH ${pht.mid.toFixed(1)})`,
         activeDoses.length > 0 ? (() => { const _m = _mischungKurz(c, activeDoses, waterMl); return `Dünger laut Plan (Woche ${fertWk}) ${_m.fuer}: ${_m.text}`; })() : 'Laut Plan diese Woche kein Dünger',
       ] : [
-        `Ca. <b>${waterMl} ml</b> lauwarmes Wasser (pH ${pht.mid.toFixed(1)})`,
+        `Ca. <b>${waterMl} ml</b> ${GIESSWASSER_TEXT} (pH ${pht.mid.toFixed(1)})`,
         p.day <= KEIMUNG.auflaufenBis ? 'Ring um die Stelle, an der der Samen liegt — nicht direkt darauf'
           : p.day <= 10 ? 'Ring um den Keimling, nicht direkt drauf'
           : 'Radius allmählich vergrößern',
@@ -36441,9 +36445,11 @@ const LEXIKON = [
       practice: '<b>Messung:</b> Den ganzen Drain in einer breiten Wanne auffangen und die Menge messen, dann 5–10 ml davon mit dem EC-Meter.<br><br><b>So liest du den Wert:</b> ' + T.drainRegel() + '<br><br><b>Frequenz:</b> 1× pro Woche reicht, bei Problemen öfter.',
       pitfall: 'Erstmessung oft überraschend hoch (Substrat-eigene Salze). Erst nach 2–3 Güssen pendelt sich das System ein, dann vergleichen. Aus weniger als ' + DRAIN_ZIEL.min + ' % Drain misst du nur den Rand des Topfs — dann nicht werten.' },
     { t: 'Wassertemperatur',
-      brief: 'Gießwasser zwischen 18-22 °C. Kälter = Wurzelschock, wärmer = Sauerstoffmangel und Fäulnis-Risiko.',
-      mechanism: '<b>Unter 18 °C:</b> Wurzeln erleiden <b>Kälteschock</b>, Membranfunktion stoppt, Nährstoffaufnahme friert kurzzeitig ein. Nach wiederholten Kälteschocks: Wachstumsstau und Anfälligkeit.<br><br><b>Über 22 °C:</b> Gelöster <b>Sauerstoff sinkt drastisch</b>. <b>Pythium</b> (Wurzelfäule-Pilz) wird aktiv. Bei Hydro besonders kritisch, da keine Puffer.',
-      practice: '<b>Einfachste Methode:</b> Gießwasser am Vortag anmischen und im Zelt stehen lassen → passt sich Raumtemperatur automatisch an.<br><br><b>Winter/Keller:</b> Wenn Raum unter 18 °C, Wasser vor Gießen kurz auf Heizung stellen oder mit Aquarium-Heizstab vorwärmen.<br><br><b>Prüfen:</b> Finger rein — soll sich lauwarm bis neutral anfühlen, nicht kühl/kalt.',
+      // (v1.5.391) Zahlen aus GIESSWASSER und ANBAU.md 7.3 — vorher 18–22 °C, „Membranfunktion stoppt" und „über 22 °C sinkt der
+      // Sauerstoff drastisch, Pythium wird aktiv"; nach 7.3 sind es rund 9 mg/L bei 20 °C und 7,5 bei 30 °C, Pythium-Druck über 26 °C.
+      brief: 'Gießwasser mit ' + GIESSWASSER.tMin + '–' + GIESSWASSER.tMax + ' °C. Kaltes Wasser kühlt die Wurzeln für Stunden unter ihr Optimum, warmes hält weniger Sauerstoff.',
+      mechanism: '<b>Zu kalt:</b> Wasser mit 12 °C aus der Leitung kühlt die Wurzelzone für Stunden unter ihr Optimum von 18–24 °C. Unter 16 °C brechen die Aufnahme von Phosphor und Wasser ein, das Wachstum stockt.<br><br><b>Zu warm:</b> Warmes Wasser hält weniger Sauerstoff — rund 9 mg/L bei 20 °C, rund 7,5 mg/L bei 30 °C —, während Wurzeln und Bodenleben bei Wärme mehr davon veratmen. Über 26 °C in der Wurzelzone steigt der Druck durch <b>Pythium</b> (Wurzelfäule) deutlich. Bei Hydro besonders kritisch, da kein Substrat puffert.',
+      practice: '<b>Einfachste Methode:</b> Gießwasser am Vortag anmischen und im Zelt stehen lassen → passt sich Raumtemperatur automatisch an.<br><br><b>Winter/Keller:</b> Wenn Raum unter 18 °C, Wasser vor Gießen kurz auf Heizung stellen oder mit Aquarium-Heizstab vorwärmen.<br><br><b>Prüfen:</b> am besten mit einem Thermometer — für den Finger fühlen sich ' + GIESSWASSER.tMin + '–' + GIESSWASSER.tMax + ' °C eher leicht kühl an, nicht warm.',
       pitfall: 'Direkt von der Leitung gegossen = meist 10-15 °C = Schock. Das ist der häufigste „unsichtbare" Wachstums-Bremsklotz bei Anfängern. Besonders schlimm: Kalte Pflanze + kaltes Wasser an kaltem Tag.' },
     { t: '☀️ Outdoor-Gießen: Grundregeln',
       brief: 'Outdoor folgt keinem Kalender — das Wetter bestimmt. Die goldene Regel: Topf anheben, nicht nach Plan gießen.',
