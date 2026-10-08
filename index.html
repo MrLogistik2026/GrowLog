@@ -1101,6 +1101,20 @@ const STARTKURVE = { mlTag11L: 825, plateauAnteil: 0.6 };     // Tagesbedarf im 
 const GUSS_RAMPE = { runter: 0.75, rauf: 1.30 };              // höchstens −25 % / +30 % gegenüber dem jüngsten belastbaren Guss
 const KLIMA_VORLAGEN = { '21/40': 1, '24/55': 1, '25/60': 1 }; // Wertepaare der alten Autofill-Tabelle — keine Messung
 
+// (v1.5.404) LICHTMENGE AM BLATT JE PHASE (ANBAU.md 8): Sämling 150–300, Wachstum 400–600, Blüte 600–900 µmol/m²/s. Die
+// Tageslichtsumme folgt daraus (DLI = PPFD × Stunden × 0,0036) und wird nie als eigene Zahl geführt. Vorher stand an vier Stellen
+// „Anzucht 200–400" für die ganze Anzucht (dem Sämling zu viel, der wachsenden Pflanze zu wenig) und feste DLI-Zahlen.
+const LICHT_ZIEL = {
+  saemling: { ppfd: [150, 300], label: 'Sämling' },
+  wachstum: { ppfd: [400, 600], label: 'Wachstum' },
+  bluete:   { ppfd: [600, 900], label: 'Blüte' },
+};
+function _dliAus(ppfd, stunden) { return Math.round(ppfd * stunden * 0.0036); }
+/** (v1.5.404) Die drei Ziele in einer Zeile — für Lexikon und Lichtmesser. */
+function _lichtZielZeile(trenner) {
+  return ['saemling', 'wachstum', 'bluete'].map(k => `${LICHT_ZIEL[k].label} ${LICHT_ZIEL[k].ppfd[0]}–${LICHT_ZIEL[k].ppfd[1]}`).join(trenner || ' · ');
+}
+
 // (v1.5.187) KLIMA JE PHASE AUS EINER QUELLE (ANBAU.md 2.2; Patricks Entscheidung vom 15.09.2026: Option B). Fest sind zwei
 // Größen: das VPD am Blatt (Antrieb der Transpiration) und die Temperatur bei Licht an. Die Luftfeuchte folgt daraus
 // (klimaRlfFenster), der Schimmel-Deckel ist hart. Späte Blüte, Spülen und der IceFlush-Tag haben das Band der mittleren
@@ -4625,7 +4639,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.403';
+const APP_VERSION = 'v1.5.404';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -21621,7 +21635,7 @@ function renderTips() {
       <div id="ppfd-status" style="font-size:10px;color:var(--text-muted);margin-top:6px;text-align:center"></div>
       <div id="ppfd-target" style="font-size:11px;color:var(--text-sub);margin-top:8px;line-height:1.4;text-align:center;font-weight:600">${(function(){const t=_ppfdTargets();return `🎯 Ziel jetzt (${t.label}): ${t.ppfd[0]}–${t.ppfd[1]} PPFD · ${t.dli[0]}–${t.dli[1]} DLI`;})()}</div>
       <div style="font-size:9px;color:var(--text-hint);margin-top:4px;line-height:1.4;text-align:center">
-        Alle Phasen: Anzucht 200–400 · Vegi 400–600 · Blüte 600–900 PPFD<br>
+        Alle Phasen: ${_lichtZielZeile()} PPFD<br>
         💡 Sensor aktivieren: Chrome → <b>chrome://flags</b> → "Generic Sensor Extra Classes" → Enabled → Neustart
       </div>
       </div>
@@ -36334,7 +36348,7 @@ const LEXIKON = [
     { t: 'PPFD & DLI (Licht-Matrix)',
       brief: 'Zwei Messungen die zusammen sagen wie viel Photosynthese tatsächlich passiert. PPFD ist der Tacho, DLI der Tages-Tank.',
       mechanism: '<b>PPFD (Photosynthetische Photonenflussdichte):</b> Momentan-Dichte nutzbarer Photonen pro Sekunde pro m². Messung: µmol/m²/s. Zu hoch ohne passenden CO₂/Temperatur → Chlorophyll bleicht aus (Light Bleach).<br><br><b>DLI (Tageslichtintegral):</b> Kumulierte Photonen pro Tag, mol/m²/d. Jede Pflanze hat ein biologisches Tages-Limit — ist es erreicht, erzeugt sie keine weitere Biomasse mehr, egal wie hell es noch ist.',
-      practice: '<b>PPFD-Ziele:</b><br>• Anzucht: 200–400<br>• Vegi: 400–600<br>• Blüte: 600–900 µmol/m²/s<br><br><b>DLI-Ziele:</b><br>• Anzucht: 15–25<br>• Vegi: 25–35<br>• Blüte: 30–45 mol/m²/d<br><br>DLI = PPFD × Lichtstunden × 0.0036. Formel im Kopf: 500 PPFD bei 12h = 21.6 DLI.<br><br>Messen: Quantum-Meter (Apogee, Photone App mit Kalibrierung).',
+      practice: '<b>PPFD-Ziele:</b><br>• ' + _lichtZielZeile(' µmol/m²/s<br>• ') + ' µmol/m²/s (der Sämling in den ersten rund 10 Tagen)<br><br><b>DLI-Ziele bei 18 Stunden Licht:</b><br>• ' + ['saemling', 'wachstum', 'bluete'].map(k => LICHT_ZIEL[k].label + ' ' + _dliAus(LICHT_ZIEL[k].ppfd[0], 18) + '–' + _dliAus(LICHT_ZIEL[k].ppfd[1], 18)).join('<br>• ') + ' mol/m²/d<br>Bei 12 Stunden (Blüte photoperiodischer Pflanzen) sind es zwei Drittel davon.<br><br>DLI = PPFD × Lichtstunden × 0.0036. Formel im Kopf: 500 PPFD bei 12h = 21.6 DLI.<br><br>Messen: Quantum-Meter (Apogee, Photone App mit Kalibrierung).',
       // (v1.5.125) Zweite Fundstelle derselben falschen Decke — hier stand „Über 900 PPFD
       // ohne CO₂-Anreicherung ist verschenkte Energie". Nach `ANBAU.md` 8.1 ist das der
       // Sättigungswert des EINZELNEN Blattes; der Bestand steigt weiter, weil zusätzliches
@@ -36968,7 +36982,7 @@ const LEXIKON = [
     { t: 'Lichtabstand',
       brief: 'Der Abstand zwischen LED und Blätterspitze. Zu nah = Bleach, zu weit = Stretchen. Es gibt eine genaue Zahl.',
       mechanism: 'Lichtintensität (PPFD) sinkt <b>quadratisch</b> mit dem Abstand. Eine Verdopplung des Abstands = Viertel der Intensität. Zu nah: PPFD steigt über ~1200, Chlorophyll bleicht aus, Blätter werden weiß-gelblich (<b>Light Bleach</b>). Zu weit: Pflanze „sucht" nach Licht → lange dünne Zweige, große Nodien (<b>Stretching</b>).',
-      practice: '<b>Abstand je nach LED-Wattage (Blüte):</b><br>• 100 W: ~30 cm<br>• 150 W: ~40 cm<br>• 200 W: ~50 cm<br>• 300 W: ~60 cm<br>• 600 W: ~75 cm<br><br><b>Besser als Daumenregel:</b> Quantum-Meter/Lightmeter-App messen. Ziel je Phase:<br>• Anzucht: 200-400 PPFD<br>• Vegi: 400-600 PPFD<br>• Blüte: 600-900 PPFD<br><br><b>Handtest (keine Meter vorhanden):</b> Hand flach auf Höhe der obersten Blätter, 30 Sekunden. Zu heiß für die Haut = zu heiß für die Pflanze. LED höher oder dimmen.',
+      practice: '<b>Abstand je nach LED-Wattage (Blüte):</b><br>• 100 W: ~30 cm<br>• 150 W: ~40 cm<br>• 200 W: ~50 cm<br>• 300 W: ~60 cm<br>• 600 W: ~75 cm<br><br><b>Besser als Daumenregel:</b> Quantum-Meter/Lightmeter-App messen. Ziel je Phase:<br>• ' + _lichtZielZeile(' PPFD<br>• ') + ' PPFD<br><br><b>Handtest (keine Meter vorhanden):</b> Hand flach auf Höhe der obersten Blätter, 30 Sekunden. Zu heiß für die Haut = zu heiß für die Pflanze. LED höher oder dimmen.',
       pitfall: 'LED-Hersteller geben oft viel zu kurze Abstände an — Marketing. Bei billigen China-LEDs oft ineffizient + zu hoher Rot-Anteil → „Fühlt sich" okay an (nicht heiß), bleicht aber trotzdem. Immer mit PPFD-Meter oder App (Photone) kalibriert prüfen.' },
     { t: 'Lampen-Typen (LED / HPS / CFL)',
       brief: 'Der wichtigste Hardware-Unterschied in deinem Setup. LED ist Standard — aber nicht gleich LED.',
@@ -39343,7 +39357,7 @@ const HOWTO = [
     { t: 'Tipps',
       txt: 'Phasen-spezifische Kurztipps — je nach Zyklus-Stand zeigt die App relevante Hinweise (z.B. "Woche 3: Topping-Fenster offen!" oder "Blüte Wo 7: Trichome kontrollieren"). Viele Tipps sind antippbar und öffnen den Lexikon-Eintrag.' },
     { t: 'PPFD/DLI-Schätzer (nur Profi-Modus)',
-      txt: 'Misst die Licht-Intensität mit dem Lichtsensor deines Handys und rechnet in PPFD (µmol/m²/s) und DLI (mol/m²/d) um. Ziele: Anzucht 200–400, Blüte 600–900, DLI 30–45. Funktioniert nur wenn dein Handy einen Lichtsensor hat und Chrome mit aktiviertem "Generic Sensor Extra Classes"-Flag läuft.' },
+      txt: 'Misst die Licht-Intensität mit dem Lichtsensor deines Handys und rechnet in PPFD (µmol/m²/s) und DLI (mol/m²/d) um. Ziele: ' + _lichtZielZeile(', ') + ' µmol/m²/s; die Tageslichtsumme (DLI) folgt aus den Lichtstunden. Funktioniert nur wenn dein Handy einen Lichtsensor hat und Chrome mit aktiviertem "Generic Sensor Extra Classes"-Flag läuft.' },
   ]},
   { cat: '⚙️ Einstellungen & Datenpflege', items: [
     { t: 'Zyklus archivieren/löschen',
@@ -40288,25 +40302,23 @@ let _ppfdSensor = null;
 // (600–900 / 30–45) — für Sämling und Vegi damit irreführend (ein Sämling bei 700 PPFD
 // wäre „grün", obwohl das zu viel ist). Jetzt richtet sie sich nach der Phase des
 // ausgewählten (sonst aktiven) Zyklus. Werte identisch mit dem Lexikon-Eintrag „PPFD & DLI".
-function _ppfdTargets() {
-  const T = {
-    seedling: { ppfd: [200, 400], dli: [15, 25], label: 'Anzucht' },
-    veg:      { ppfd: [400, 600], dli: [25, 35], label: 'Vegi' },
-    bloom:    { ppfd: [600, 900], dli: [30, 45], label: 'Blüte' },
-  };
-  let key = 'bloom';
+function _ppfdTargets(stunden) {
+  // (v1.5.404) Ziel aus LICHT_ZIEL (ANBAU.md 8): der Sämling über klimaStufe (erste 10 Tage), die übrige Anzucht und Vegi als
+  // Wachstum. Die Tageslichtsumme aus den eingestellten Stunden statt einer eigenen Tabelle.
+  let key = 'bluete';
   const c = (S.cycles || []).find(x => x.id === selId) || (S.cycles || []).find(x => x.active);
   if (c) {
     try {
-      const p = phase(_localISO(new Date()), c);
+      const p = phase(todayISO(), c);
       if (p) {
-        if (p.ph === 'anzucht' || p.ph === 'vorzucht') key = 'seedling';
-        else if (p.ph === 'vegi' || p.ph === 'vegi_out') key = 'veg';
-        else if (p.ph === 'bloom' || p.ph === 'flush') key = 'bloom';
+        if (klimaStufe(p) === 'saemling') key = 'saemling';
+        else if (p.ph === 'anzucht' || p.ph === 'vorzucht' || p.ph === 'vegi' || p.ph === 'vegi_out') key = 'wachstum';
       }
-    } catch (e) { /* ohne gültige Phase → Blüte-Default */ }
+    } catch (e) { /* ohne gültige Phase → Blüte */ }
   }
-  return T[key];
+  const h = (isFinite(stunden) && stunden > 0) ? stunden : 18;
+  const z = LICHT_ZIEL[key];
+  return { ppfd: z.ppfd, dli: [_dliAus(z.ppfd[0], h), _dliAus(z.ppfd[1], h)], label: z.label, stunden: h };
 }
 
 function startPPFD() {
@@ -40324,7 +40336,7 @@ function startPPFD() {
     const factor = LUX_TO_PPFD[src] || 0.0185;
     const ppfd = Math.round(lux * factor);
     const dli = (ppfd * hours * 3600 / 1000000).toFixed(1);
-    const tgt = _ppfdTargets(), pLo = tgt.ppfd[0], pHi = tgt.ppfd[1], dLo = tgt.dli[0], dHi = tgt.dli[1];
+    const tgt = _ppfdTargets(hours), pLo = tgt.ppfd[0], pHi = tgt.ppfd[1], dLo = tgt.dli[0], dHi = tgt.dli[1];
     if (ppfdEl) { ppfdEl.textContent = ppfd; ppfdEl.style.color = ppfd >= pLo && ppfd <= pHi ? 'var(--green)' : ppfd > pHi ? 'var(--red)' : ppfd >= pLo * 0.5 ? 'var(--yellow)' : 'var(--text-muted)'; }
     if (luxEl && !luxEl.isContentEditable) luxEl.textContent = Math.round(lux);
     if (dliEl) { const d = parseFloat(dli); dliEl.textContent = dli; dliEl.style.color = d >= dLo && d <= dHi ? 'var(--green)' : d > dHi ? 'var(--orange)' : 'var(--teal)'; }

@@ -200,7 +200,7 @@ function pruef(name, bedingung, info) {
     pruef('Die Licht-Matrix nennt Ausbleichen als echtes Zuviel-Zeichen',
       /ausgebleichte|Photo-Bleaching/i.test(matrix), matrix.slice(-260));
     pruef('Ihre PPFD-Ziele bleiben unveraendert (Blüte 600–900)',
-      /Blüte: 600[–-]900/.test(matrix), matrix.slice(0, 300));
+      /Blüte:? 600[–-]900/.test(matrix)   /* (v1.5.404) Zeile aus LICHT_ZIEL, ohne Doppelpunkt */, matrix.slice(0, 300));
   }
 
   console.log('');

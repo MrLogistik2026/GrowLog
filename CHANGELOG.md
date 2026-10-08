@@ -2,6 +2,22 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-08 — v1.5.404
+
+- **Die Lichtziele für die Anzucht widersprachen `ANBAU.md` 8** (gefunden vom Prüfer der Einsteiger-Anleitung, 08.10.2026).
+  Lichtmesser, Lexikon „PPFD & DLI“, Lexikon „Lichtabstand“ und die Werkzeug-Beschreibung nannten für die ganze Anzucht
+  200–400 µmol/m²/s. `ANBAU.md` 8 sagt: Sämling 150–300, Wachstum 400–600.
+  - Für die ersten zehn Tage war das Ziel damit zu hoch: Der Lichtmesser färbte 350 µmol/m²/s am Sämling grün.
+  - Ab Tag 11 war es zu niedrig: 500 µmol/m²/s an der wachsenden Pflanze färbte er rot.
+  - Die Tageslichtsummen (DLI) standen als eigene Tabelle da (Anzucht 15–25, Vegi 25–35, Blüte 30–45). Die Blüte-Zahl passte
+    weder zu 18 Stunden (39–58) noch zu 12 Stunden (26–39).
+- **Jetzt** gibt es eine Quelle, `LICHT_ZIEL` (Sämling 150–300 über `klimaStufe`, die übrige Anzucht als Wachstum
+  400–600, Blüte 600–900). Die Tageslichtsumme wird immer aus Lichtstärke × Stunden gerechnet (`_dliAus`):
+  - im Lichtmesser mit den eingestellten Stunden;
+  - im Lexikon bei 18 Stunden, mit dem Hinweis auf zwei Drittel bei 12 Stunden.
+- Test: neu `test_lichtziel.js` (7 Prüfungen; 6 fallen auf v1.5.403 um).
+
+
 ## 2026-10-08 — v1.5.403
 
 - **„Nachtragen“ führte nur durch die erste Gruppe** (Run-02-Prüfung vom 07.10.2026, F13, zweiter Teil). Die Startseite meldete
