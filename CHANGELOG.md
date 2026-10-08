@@ -2,6 +2,18 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-08 — v1.5.433
+
+- **Wasser am Topping-Tag und beim ersten Guss danach galt für jeden Plan mit Rhythmus** (Topping-Prüfung T5, T12). Die
+  Regel stammte aus dem früheren Sensi-Plan V3.2 („48 h danach nur Wasser“). Sie steht nicht in `ANBAU.md` und widersprach
+  dem Rainbow-Blatt: Dort kommt Feed vor dem Eingriff und Wasser erst danach.
+- **Jetzt** folgt der Topping-Tag dem Düngeplan. Den reinen Wasserguss nach der Ruhe bekommt nur ein Plan, der ihn nach
+  einem Eingriff selbst verlangt (Kennzeichen `fimWasserguss` wie beim FIM, v1.5.387: Rainbow). Bei BioBizz & Co. folgt auch
+  der erste Guss nach dem Topping dem Plan (`_toppingWassergussVon`). Die Fahrplan-Texte sagen „Wasserguss nach dem Topping
+  (Regel des Plans)“ statt „rund ums Topping“. Die Pille „✂️ FIM“, die am gesperrten Topping-Tag hing, ist weg, weil der
+  Topping-Tag nicht mehr gesperrt ist.
+- Test: `test_topping.js` P7; P4 nimmt für den Wasser-Tag jetzt den FIM-Wasserguss.
+
 ## 2026-10-08 — v1.5.432
 
 - **Ruhe nach dem Topping als Untergrenze statt fester zwei Tage** (Patricks Freigabe vom 08.10.2026 abends; Topping-Prüfung
