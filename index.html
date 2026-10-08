@@ -4658,7 +4658,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.408';
+const APP_VERSION = 'v1.5.409';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -19388,7 +19388,7 @@ function renderDash() {
             <span style="font-size:14px;font-weight:600">${c.name}</span>
             ${c.location ? `<span style="font-size:11px;color:var(--text-muted)">· ${c.location}</span>` : ''}
           </div>
-          <div style="font-size:12px;color:${cl.hex};font-weight:500">${!p && c.startDate <= today ? '✓ Fertig — alle Phasen vorbei' : `${(p && p.ph === 'cure' && !p.ernteOffen) ? 'Curing' : (stgName || (p ? PN[p.ph] : '—'))}${!S.beginnerMode && p?.week ? ' · Wo. ' + p.week : ''} · ${phaseDayLabel(p)}`}</div>
+          <div style="font-size:12px;color:${cl.hex};font-weight:500">${!p && c.startDate <= today ? '✓ Fertig — alle Phasen vorbei' : `${(p && p.ph === 'cure' && !p.ernteOffen) ? 'Curing' : (stgName || (p ? PN[p.ph] : '—'))}${/* (v1.5.409, F12) Phasen-Woche nicht in der Anzucht (sie widerspricht der Plan-Woche oben — im Eintrag seit v1.5.338 ebenso), in der Blüte „Blüte Wo." wie im Eintrag */ !S.beginnerMode && p?.week && p.ph !== 'anzucht' ? ' · ' + (p.ph === 'bloom' ? 'Blüte ' : '') + 'Wo. ' + p.week : ''} · ${phaseDayLabel(p)}`}</div>
           ${S.beginnerMode ? '' : `<div style="display:flex;gap:8px;margin-top:3px;align-items:center">
             ${streak > 0 ? `<span class="streak">🔥 ${streak}</span>` : ''}
             <span style="font-size:10px;color:var(--text-muted)">Start ${sf}</span>

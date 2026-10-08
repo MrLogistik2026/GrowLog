@@ -2,6 +2,17 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-08 — v1.5.409
+
+- **Die Startseite nannte zwei verschiedene Wochenzahlen ohne Beschriftung** (Run-02-Prüfung vom 07.10.2026, F12, zweiter Teil).
+  Die obere Karte zeigte „Anzucht · Tag 18 · Wo2 Früh-Vegi“ (Plan-Woche, seit v1.5.383 mit dem Namen aus dem Plan), die
+  Zyklus-Karte darunter „Vegetation · Wo. 3 · Tag 18“ (Phasen-Woche, starr 7 Tage ab Keimstart). In der Blüte stand „Wo4
+  Stretch“ über „Frühe Blüte · Wo. 1“. Im Eintrag hatte v1.5.338 das schon so geregelt; die Startseite war nicht mitgenommen.
+- **Jetzt** entfällt die Phasen-Woche auf der Zyklus-Karte in der Anzucht, und in der Blüte heißt sie „Blüte Wo. N“ wie im
+  Eintrag. Die Plan-Woche oben ist unverändert. Einsteiger sehen weiter keine Wochenzahl.
+- Test: `test_runzwei.js` F12-10 bis 12 (3 Prüfungen; 2 fallen auf v1.5.408 um, die Gegenprobe für Einsteiger ist auf beiden grün).
+
+
 ## 2026-10-08 — v1.5.408
 
 - **Kein Bildschirm nannte den heutigen Plan-Tag, obwohl die Rainbow-Tipps ihre Termine so nennen** (Run-02-Prüfung vom

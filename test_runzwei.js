@@ -562,6 +562,11 @@ async function starte() {
     pruefe(r.davor[0] === null && r.davor[1] === null && r.davor[2] === 1, `F12-7 vor dem Durchbruch gibt es keinen Plan-Tag, Tag 6 ist Plan-Tag 1: ${JSON.stringify(r.davor)}`);
     pruefe(r.spuelen === null, `F12-8 im Spülen steht kein Plan-Tag mehr: ${JSON.stringify(r.spuelen)}`);
     pruefe(/Woche 2: \(heute Plan-Tag 13\)/.test(fl(r.t18p.blatt)), `F12-9 Plan-Blatt: der Wochen-Tipp nennt nicht den heutigen Plan-Tag: ${fl(r.t18p.blatt).slice(-900)}`);
+    // (v1.5.409)
+    // Zwei Wochenzählungen: Die Plan-Woche („Wo2 …") ist die der Startseite; die Phasen-Woche heißt in der Blüte „Blüte Wo.", in der Anzucht entfällt sie
+    pruefe(/Anzucht · Tag 18 · Wo2 /.test(fl(r.t18p.dash)) && !/ · Wo\. \d+ · Tag/.test(fl(r.t18p.dash)), `F12-10 Profi, Anzucht: neben der Plan-Woche „Wo2" steht noch eine unbeschriftete „Wo. 3": ${fl(r.t18p.dash).slice(0, 600)}`);
+    pruefe(/Blüte Wo\. 1 · Tag 33/.test(fl(r.t33p.dash)) && !/ · Wo\. \d+ · Tag/.test(fl(r.t33p.dash)), `F12-11 Profi, Blüte: die Phasen-Woche heißt nicht „Blüte Wo.": ${fl(r.t33p.dash).slice(0, 600)}`);
+    pruefe(!/ Wo\. \d+ · Tag/.test(fl(r.t18e.dash)), `F12-12 Einsteiger sieht keine Wochenzahl auf der Zyklus-Karte: ${fl(r.t18e.dash).slice(0, 400)}`);
   }
 
   pruefe(!a.errors.length, 'Skriptfehler: ' + a.errors.slice(0, 3).join(' | '));
