@@ -2,6 +2,18 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-08 — v1.5.429
+
+- **Startseite, Anzucht-Karte: „Dünger laut Plan“ an einem Wasser-Tag** (Topping-Prüfung, T5). Am Topping-Tag eines
+  Rainbow-Zyklus zeigte der Eintrag „nur Wasser … die Hauptdünger pausieren heute“. Die Startseite nannte zur selben Zeit die
+  ganze Mischung der Woche: „Dünger laut Plan (Woche 3) für 1 L anmischen … Silica Force 0,4 ml …“. Die Blüte-Karte fragt den
+  Wasser-Tag seit v1.5.153, die Anzucht-Karte nicht. Dasselbe galt für den Wasserguss nach dem FIM (v1.5.387) und für
+  Wasser-Tage im Rhythmus eines Plans.
+- **Jetzt** fragt auch die Anzucht-Karte `getFeedWaterEffective` und sagt dann „Wasser-Tag laut Plan: nur Wasser, kein
+  Dünger“, genau wie die Blüte-Karte und der Eintrag.
+- Test: `test_topping.js` P4 (die Datei kommt mit dieser Version ins Repo; auf v1.5.425 sind 4 von 7 Prüfungen rot, je
+  Version eine weniger).
+
 ## 2026-10-08 — v1.5.428
 
 - **„Jetzt Toppen“ ließ in der Blüte den heutigen Gießtag verschwinden oder neu entstehen** (Topping-Prüfung, T3).

@@ -4669,7 +4669,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.428';
+const APP_VERSION = 'v1.5.429';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -18574,6 +18574,12 @@ function getTodayAction(c, p, a, iso) {
   if (a === 'giess_anz') {
     const isOutdoor = c.growType === 'outdoor';
     const isVorzucht = p.ph === 'vorzucht';
+    // (v1.5.429) Wie die Blüte-Karte (v1.5.153): Die Dünger-Zeile fragt den Wasser-Tag des Plans (getFeedWaterEffective) —
+    // derselbe Guss hieß im Eintrag „nur Wasser“ (Topping-Tag, FIM-Wasserguss, Rhythmus) und hier „Dünger laut Plan“.
+    const _wasserTagA = getFeedWaterEffective(c, p, iso, _cdToday) === 'water';
+    const _wasserTagZeileA = () => { const erh = (_planAnsicht(c).products || []).filter(pr => parseFloat(pr.waterDayDose) > 0);
+      return erh.length ? (() => { const _m = _mischungKurz(c, erh.map(pr => [pr.id, pr.waterDayDose]), waterMl); return `Wasser-Tag laut Plan: kein Dünger, nur ${_m.text} — ${_m.fuer}`; })()
+        : 'Wasser-Tag laut Plan: nur Wasser, kein Dünger'; };
     return {
       title: isVorzucht ? '🌱 Heute: Vorzucht gießen' : isOutdoor ? '🌱 Heute: Topf prüfen (Anzucht)' : '🌱 Heute: Anzucht gießen',
       icon: '💧',
@@ -18585,13 +18591,13 @@ function getTodayAction(c, p, a, iso) {
       ] : isOutdoor ? [
         'Topf anheben: leicht? → gießen. Schwer? → warten.',
         `Falls gießen: ca. <b>${waterMl} ml</b> ${GIESSWASSER_TEXT} (pH ${pht.midText})`,
-        activeDoses.length > 0 ? (() => { const _m = _mischungKurz(c, activeDoses, waterMl); return `Dünger laut Plan (Woche ${fertWk}) ${_m.fuer}: ${_m.text}`; })() : 'Laut Plan diese Woche kein Dünger',
+        _wasserTagA ? _wasserTagZeileA() : (activeDoses.length > 0 ? (() => { const _m = _mischungKurz(c, activeDoses, waterMl); return `Dünger laut Plan (Woche ${fertWk}) ${_m.fuer}: ${_m.text}`; })() : 'Laut Plan diese Woche kein Dünger'),
       ] : [
         `Ca. <b>${waterMl} ml</b> ${GIESSWASSER_TEXT} (pH ${pht.midText})`,
         p.day <= KEIMUNG.auflaufenBis ? 'Ring um die Stelle, an der der Samen liegt — nicht direkt darauf'
           : p.day <= 10 ? 'Ring um den Keimling, nicht direkt drauf'
           : 'Radius allmählich vergrößern',
-        activeDoses.length > 0 ? (() => { const _m = _mischungKurz(c, activeDoses, waterMl); return `Dünger laut Plan (Woche ${fertWk}) ${_m.fuer}: ${_m.text}`; })() : 'Laut Plan diese Woche kein Dünger',
+        _wasserTagA ? _wasserTagZeileA() : (activeDoses.length > 0 ? (() => { const _m = _mischungKurz(c, activeDoses, waterMl); return `Dünger laut Plan (Woche ${fertWk}) ${_m.fuer}: ${_m.text}`; })() : 'Laut Plan diese Woche kein Dünger'),
       ],
       hint: isVorzucht
         ? 'Pflanze noch drinnen — wetterunabhängig gießen. Sie wird dann abgehärtet bevor sie raus kommt.'

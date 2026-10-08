@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.428** · index.html 2,56 MB · 781 Funktionen
+Stand: **v1.5.429** · index.html 2,56 MB · 781 Funktionen
 Zuletzt fortgeschrieben am 08.10.2026 (Nachtprüfung und Run 02 — Abschnitt 0o, „Stand Run 02"). Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
@@ -230,9 +230,19 @@ wf_0586d0bf-d3d (vergänglich). **Offen, nach Nutzen geordnet** (Umbauten oder P
 3. EC-Bewertung nach dem Korridor der Plan-Woche: im Eintrag erledigt (v1.5.369 unten, v1.5.374 oben). Offen: dieselbe
    Ampel auf der Startseite.
 4. Fachwörter ohne ⓘ im Assistenten und im Einsteiger-Eintrag; Einsteiger-Startseite ohne Erste-Hilfe-Karte (Profi hat sie).
-5. „2 Tage ohne Gießen nach dem Topping" (`toppingPause`, verschiebt den Gießplan) und „2–4 h vorher volles Gießen mit Dünger … für
-   die Wundheilung" (`T.topping.preWaterHint`) ohne Beleg — der Gießzeitpunkt folgt dem Gießpunkt (`ANBAU.md` 1.2). (Der Knopf bis
-   Blütewoche 3 ist seit v1.5.370 behoben.)
+5. Topping (Prüfung vom 08.10.2026, Bericht und Messskripte unter `.claude/tmp/w417/topping/`, vergänglich). Die vier Fehler sind
+   in v1.5.426–429 behoben (Datum des ersten Gusses, voller Topf, Gießtag kippt, Anzucht-Karte). **Offen, Texte (ohne Rückfrage,
+   aber mit Gegenprüfung vor dem Einbau):** „2–4 Stunden vorher volles Gießen mit Dünger … Wundheilung“ (Hinweis im Eintrag,
+   tote Kopie `T.topping.preWaterHint`), Dialog „Heute gießen + toppen“, „Heute gießen — dann toppen“ bei „Mittel“, Ruhe-Karte
+   „Kein Gießen“ neben „Wasserstress — sofort gießen“, „die Schnittstelle muss heilen“, Auto-Ausfüllen-Platzhalter, Demo-Notizen,
+   Lexikon „Turgordruck“, „Topping“, „Reihenfolge: Gießen vor Topping“ (3 Tage Ruhe gegen 2), Supercropping, FIM, Troubleshooter
+   „Nach Topping welk: Stress — Geduld“, FAQ „mehr Gesamtertrag“. Leicht: „Tag automatisch ausfüllen“ tut am Topping-Tag nichts,
+   Pille „✂️ FIM“ am Topping-Tag im Fahrplan. **Patricks Entscheidung:** (a) Soll der Topping-Tag auch bei Hebe-Test „Mittel“ der
+   Messung folgen (dann `test_giesspunkt` J ändern)? (b) Pause als Untergrenze „frühestens 48 h und Gießpunkt“ wie auf dem
+   Rainbow-Blatt, statt zwei gesperrter Tage? (c) Guss am Topping-Tag Wasser (heutige Regel aus Sensi V3.2) oder Feed (Blatt:
+   Feed vor dem Eingriff)? (d) Mehrere Toppings je Zyklus? (e) Lexikon „Nicht bei Automatics“ gegen App und Rainbow-Plan — überall
+   „nur früh und nur bei kräftigen Pflanzen“ (ANBAU.md 9)? (f) Vor Tag 25 heißt Hebe-Test „Voll“ an einem Gießtag weiter „gieß
+   350 ml“ — so lassen?
 6. Tag 1 verweist auf eine Mischliste, die es dort nicht gibt. („Deine nächsten Güsse" beginnt seit v1.5.406 in der Anzucht.)
 7. Dünger abhaken sind im Eintrag 15 Einzel-Taps — Idee: „Alles wie im Plan" mit einem Tipp. („Erledigt" bucht den Plan-Dünger
    seit v1.5.360 als Vorschlag mit.)
@@ -361,6 +371,7 @@ Speicher-Befunde sind in v1.5.340–344 behoben. Rohdaten: Workflow wf_63d754b1-
 - v1.5.426: Nach dem Toppen stimmt das genannte Datum des ersten Gusses mit dem Plan überein — `calcToppingOffset` fragt `getAction` statt das Raster nachzubauen (vorher im Standard-Start an Tag 15–18 zwei Tage daneben, 5–7 Tage ohne Guss).
 - v1.5.427: Voller Topf am Topping-Tag — kein „Heute gießen — dann toppen“ / „Erst gießen“ mehr neben „Topf ist voll“ (ANBAU.md 1.1, 13.1).
 - v1.5.428: „Jetzt Toppen“ ändert den heutigen Gießtag nicht mehr — Ausnahme `intervalIndex = dayInPhase` am Topping-Tag in `getAction` entfernt (vorher kippte der Gießtag an 6 von 10 Blütetagen).
+- v1.5.429: Startseite, Anzucht-Karte nennt am Wasser-Tag laut Plan „nur Wasser“ statt der Wochenmischung (Topping-Tag, FIM-Wasserguss, Plan-Rhythmus); Test `test_topping.js` für 426–429.
 
 **Gegenprüfung von v1.5.364/365 (07.10.2026 nachts, Workflow wf_4cf817bf-629, drei Sonnet-Prüfer + Gegenprüfer).** Kein Fehlalarm
 in 33 App-Fassungen, allen Vorlagen und über 2800 Klicks; die schweren Befunde (unsichere Kopie zerstört den Hauptstand, Tropfen als
