@@ -2,6 +2,25 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-08 — v1.5.388
+
+- **Zwei Gruppen im Zelt: Die Grenzen der jüngeren Gruppe fielen durch** (Run-02-Prüfung vom 07.10.2026, F10). Das Zeltklima
+  wird nach der weiter entwickelten Gruppe bewertet (`_fuehrenderZyklus`, v1.5.303), weil ihr Schimmel-Deckel der strengere
+  ist. Für Sämlinge der anderen Gruppe kam dabei nichts: Bei 24 °C und 35 % Luftfeuchte stand im Eintrag nur „Knapp trocken“
+  für die Blüte. Nach `ANBAU.md` 2.2 trocknet ein Sämling unter 40 % aus. Gemessen wurde außerdem: Steht die führende Gruppe
+  noch in der mittleren Blüte (Deckel 65 %) und die andere schon in der späten (60 %), zählte deren Deckel nicht.
+- **Jetzt** prüft die App dieselbe Luft auch gegen die anderen Gruppen im Zelt (`_klimaAndereGruppen`) und schreibt unter
+  „Bewertet nach …“, was sie für diese Gruppe heißt:
+  - Harte Grenzen als Warnung: der Deckel einer Gruppe, Nässe am Blatt und unter 40 % beim Sämling.
+  - Beim Sämling sein Ziel als Hinweis, mit dem örtlichen Ausgleich (`ANBAU.md` 16): Eine Haube hebt die Feuchte nur über
+    dem Sämling. Die Lüftungsschlitze bleiben offen, denn ganz geschlossen steigt sie über 90 %.
+
+  Die Zeilen ziehen beim Tippen mit und stehen auch in der Suche (Tipps).
+- **Bewusst nicht:** Die übrigen VPD-Bänder sind Konvention und überlappen, etwa Anzucht 0,8–1,2 und Blüte 1,0–1,5. Dort gilt
+  weiter die führende Gruppe, wie die Zeile „Bewertet nach …“ sagt. Ein Hinweis bei jeder Abweichung wäre Rauschen.
+- Test: `test_runzwei.js` F10 (7 Prüfungen; 4 fallen auf v1.5.387 um).
+
+
 ## 2026-10-08 — v1.5.387
 
 - **Den Wasserguss nach dem FIM musste man im Rainbow-Plan von Hand umstellen** (Run-02-Prüfung vom 07.10.2026, F02). Das Blatt

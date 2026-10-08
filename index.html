@@ -4621,7 +4621,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.387';
+const APP_VERSION = 'v1.5.388';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -16643,6 +16643,38 @@ function _wachsendeZyklen(act, iso) {
   return (act || []).filter(c => { const p = c && phase(iso, c); return !!p && (!!_KLIMA_RANG[p.ph] || !!p.ernteOffen); });
 }
 
+/**
+ * (v1.5.388) Dieselbe Luft gegen die anderen Gruppen im Zelt. Bewertet wird nach _fuehrenderZyklus — damit fielen die Grenzen
+ * der übrigen Gruppen durch: Sämlinge der jüngeren Gruppe bekamen unter 40 % Luftfeuchte keine Warnung, obwohl sie darunter
+ * austrocknen (ANBAU.md 2.2), und der strengere Deckel einer Gruppe in der späten Blüte zählte nicht, wenn die führende noch in
+ * der mittleren stand (Run-02-Prüfung 07.10.2026, F10). Gemeldet werden nur harte Grenzen (Deckel, Nässe, Sämlings-Boden) als
+ * Warnung und beim Sämling sein Band als Hinweis mit dem örtlichen Ausgleich: Eine Haube hebt die Feuchte nur über dem Sämling,
+ * ganz geschlossen steigt sie über 90 % (ANBAU.md 16). Die übrigen VPD-Bänder sind Konvention und überlappen — dort gilt die
+ * führende Gruppe, wie die Zeile „Bewertet nach …" sagt. Liefert [{ mark, text, lex }].
+ */
+function _klimaAndereGruppen(t, rh, act, iso, c0) {
+  if (!c0 || c0.growType === 'outdoor') return [];
+  const st0 = klimaStatus(t, rh, phase(iso, c0), c0);
+  const andere = _wachsendeZyklen(act, iso).filter(c => c !== c0 && c.growType !== 'outdoor');
+  const aus = [];
+  andere.forEach(c => {
+    const st = klimaStatus(t, rh, phase(iso, c), c);
+    if (!st || !st.s || (st0 && st.stufe === st0.stufe)) return;
+    const wer = `„${c.name}“ (${st.ziel.icon} ${st.ziel.name})`;
+    const fuehrt = `„${c0.name}“`;
+    if (st.s === 'nass' && !(st0 && st0.s === 'nass')) {
+      aus.push({ mark: '🚨', lex: 'Schimmel (Botrytis)', text: `${wer}: Am Blatt schlägt sich Wasser nieder — sofort entfeuchten und Luft bewegen.` });
+    } else if (st.s === 'schimmel' && !(st0 && (st0.s === 'schimmel' || st0.s === 'nass'))) {
+      aus.push({ mark: st.level === 'critical' ? '🚨' : '⚠', lex: 'Schimmel (Botrytis)', text: `${wer}: über ${st.ziel.deckel} % Luftfeuchte — für diese Gruppe ${st.ziel.bluete ? 'Schimmelgefahr' : 'Pilzrisiko'}. Im Zelt gilt der strengste Deckel: höchstens ${st.ziel.deckel} %.` });
+    } else if (st.stufe === 'saemling' && st.s === 'zu_trocken' && st.rh !== null && st.rh < st.ziel.boden) {
+      aus.push({ mark: '⚠', lex: 'Sämlings-Haube', text: `${wer}: Unter ${st.ziel.boden} % Luftfeuchte trocknet der Sämling aus. Das Zelt richtet sich nach ${fuehrt} — heb die Feuchte nur über dem Sämling: eine Haube mit offenen Lüftungsschlitzen.` });
+    } else if (st.stufe === 'saemling' && st.s === 'zu_trocken') {
+      aus.push({ mark: '💡', lex: 'Sämlings-Haube', text: `${wer}: Für den Sämling ist die Luft trockener als sein Ziel (${_klimaRlfSpanne(st.fenster)} bei ${_klimaZahl(st.fenster.t)} °C). Das Zelt bleibt beim Ziel von ${fuehrt}; eine Haube hebt die Feuchte nur über dem Sämling — Lüftungsschlitze offen lassen, ganz geschlossen steigt sie über 90 % und Wasser schlägt sich auf den Keimblättern nieder.` });
+    }
+  });
+  return aus;
+}
+
 function _klimaEntryTeile(tRaw, rhRaw, act, iso) {
   const t = parseFloat(tRaw), rh = parseFloat(rhRaw);
   const vpd = calcVPD(t, rh);
@@ -16699,6 +16731,10 @@ function _klimaEntryTeile(tRaw, rhRaw, act, iso) {
     // (v1.5.303) Wachsen mehrere Zyklen im selben Zelt, steht dabei, nach welchem bewertet wird.
     if (c0 && _wachsendeZyklen(act, iso).filter(c => c.growType !== 'outdoor').length > 1) {   // (v1.5.314) nur Zyklen im Zelt
       vpdBox += `<div style="font-size:10px;color:var(--text-hint);margin-top:4px;line-height:1.4">Bewertet nach „${c0.name}“ — am weitesten entwickelt, also mit den strengsten Grenzen.</div>`;
+      // (v1.5.388) … und was dieselbe Luft für die anderen Gruppen heißt (_klimaAndereGruppen).
+      _klimaAndereGruppen(t, rh, act, iso, c0).forEach(g => {
+        vpdBox += `<div class="klima-gruppe" style="font-size:11px;color:${farbe(g.mark === '💡' ? '' : g.mark)};margin-top:4px;line-height:1.45;display:flex;gap:5px"><span>${g.mark}</span><span>${g.text}</span></div>`;
+      });
     }
   }
 
@@ -21279,6 +21315,9 @@ function renderTips() {
   } else {
     tips.push({ icon: '🌡️', text: 'Trage Temp & RLF im Tageseintrag ein für VPD.', cat: 'Umgebung' });
   }
+  // (v1.5.388) Mehrere Gruppen im Zelt: was dieselbe Luft für die anderen heißt.
+  _klimaAndereGruppen(parseFloat(entry.temp), parseFloat(entry.humidity), act, today, _fz4vpd)
+    .forEach(g => tips.push({ icon: g.mark === '⚠' ? '⚠️' : g.mark, text: g.text, cat: 'Umgebung', lex: g.lex }));
 
   act.forEach(c => {
     const p = phase(today, c), tip = getSmartTip(c, p);

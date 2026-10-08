@@ -289,6 +289,40 @@ async function starte() {
       `F02-7 ein Plan ohne FIM-Wasserguss ändert sich durch das FIM: ${JSON.stringify(bb)}`);
   }
 
+  // F10 (v1.5.388) · Zwei Gruppen im Zelt: dieselbe Luft auch gegen den Sämling und den strengeren Deckel der anderen Gruppe
+  {
+    const r = JSON.parse(a.E(`(function(){ const vorher = S.cycles.slice(); S.beginnerMode = false; const heute = todayISO();
+      const pid = S.cycles[0].fertPlanId;
+      const neu = (name, tage, bloom) => { const c = addCyc({ name, startDate: isoPlus(heute, -tage), seedType: 'auto', growType: 'indoor', medium: 'erde',
+        potSize: 11, plantCount: 3, startMethod: 'direct', fertPlanId: pid }, { still: true }); if (bloom) c.bloomDays = bloom; return c; };
+      const stufe = (c) => { const st = klimaStatus(24, 50, phase(heute, c), c); return st ? st.stufe : null; };
+      const box = (t, rh) => _klimaEntryTeile(String(t), String(rh), active(), heute).vpdBox.replace(/<[^>]+>/g, ' ').replace(/\\s+/g, ' ');
+      const out = {};
+      // 1 · Blüte + Sämling
+      S.cycles = [vorher[0]]; const sa = neu('Gruppe Sämling', 3);
+      out.stufen = [stufe(vorher[0]), stufe(sa)];
+      out.b50 = box(24, 50); out.b35 = box(24, 35); out.b63 = box(24, 63);
+      S.cycles = [vorher[0]]; out.allein = box(24, 35);
+      S.cycles = [vorher[0]]; neu('Gruppe Sämling', 3);
+      S.entries[heute] = { temp: '24', humidity: '35', cycleData: {} }; goTo('tips'); renderTips();
+      out.tipps = (_tipsSnapshot || []).some(x => /trocknet der Sämling aus/.test(x.text));   /* die Tipps-Liste wird nur durchsucht, nicht angezeigt */ out.tippsSnap = (_tipsSnapshot || []).filter(x => x.cat === 'Umgebung').map(x => x.text.slice(0, 60));
+      // 2 · Führende Gruppe in der mittleren, andere schon in der späten Blüte (kürzere Blüte)
+      S.cycles = []; const fa = neu('Lange Blüte', 66, 90); const fb = neu('Kurze Blüte', 62, 42);
+      out.stufen2 = [stufe(fa), stufe(fb)]; out.fuehrt2 = (_fuehrenderZyklus(active(), heute) || {}).name;
+      out.d62 = box(24, 62);
+      delete S.entries[heute]; S.cycles = vorher; saveS();
+      return JSON.stringify(out); })()`));
+    pruefe(r.stufen[0] && r.stufen[0] !== 'saemling' && r.stufen[1] === 'saemling', `F10-0 Prüflage Blüte + Sämling: ${JSON.stringify(r.stufen)}`);
+    pruefe(/💡 „Gruppe Sämling“ \(🌱 Sämling\): Für den Sämling ist die Luft trockener/.test(r.b50) && /Haube/.test(r.b50), `F10-1 bei 50 % kein Sämlings-Hinweis: ${r.b50}`);
+    pruefe(/⚠ „Gruppe Sämling“ \(🌱 Sämling\): Unter 40 % Luftfeuchte trocknet der Sämling aus/.test(r.b35), `F10-2 bei 35 % keine Sämlings-Warnung: ${r.b35}`);
+    pruefe(!/Gruppe Sämling“ \(/.test(r.b63), `F10-3 bei 63 % (Sämling im Ziel) trotzdem eine Zeile: ${r.b63}`);
+    pruefe(!/Sämling/.test(r.allein), `F10-4 ohne zweite Gruppe eine Sämlings-Zeile: ${r.allein}`);
+    pruefe(r.tipps === true, 'F10-5 die Suche (Tipps) kennt die Sämlings-Warnung nicht: ' + JSON.stringify(r.tippsSnap));
+    if (r.stufen2[0] !== r.stufen2[1] && r.fuehrt2 === 'Lange Blüte' && /spaet/.test(r.stufen2[1]) && !/spaet/.test(r.stufen2[0])) {
+      pruefe(/„Kurze Blüte“ \(🍯 Späte Blüte\): über 60 % Luftfeuchte/.test(r.d62), `F10-6 strengerer Deckel der anderen Gruppe fehlt: ${r.d62}`);
+    } else pruefe(false, `F10-6 Prüflage Deckel: ${JSON.stringify({ s: r.stufen2, f: r.fuehrt2 })}`);
+  }
+
   pruefe(!a.errors.length, 'Skriptfehler: ' + a.errors.slice(0, 3).join(' | '));
   if (fehler.length) { console.log(`test_runzwei: ${fehler.length} von ${n} Prüfungen rot`); fehler.forEach((f) => console.log('  ✗ ' + f)); process.exit(1); }
   console.log(`test_runzwei: alle ${n} Prüfungen grün`);
