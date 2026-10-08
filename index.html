@@ -4625,7 +4625,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.395';
+const APP_VERSION = 'v1.5.396';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -9242,20 +9242,25 @@ const FIRST_GROW_STEPS = [
   },
   {
     icon: '🌸',
-    title: 'Schritt 6 — Blüte (Woche 6–12)',
-    duration: '6–10 Wochen',
+    // (v1.5.396) Vorher „Woche 6–12" im Titel, obwohl Automatics laut demselben Text nach 3–4 Wochen beginnen; „6–10 Wochen"
+    // (Samentüten sind systematisch optimistisch, ANBAU.md 9); „weniger Stickstoff" zum Blühbeginn (5: ein verfrühter N-Stop ist der
+    // teurere Fehler); „Unter 60 % drücken" für die ganze Blüte (Deckel aus KLIMA_ZIEL, 13.5); ohne Warnung vor Licht in der
+    // Dunkelphase (13.8). Erste Härchen markieren den Blühbeginn, nicht Woche 3; erinnert wird im letzten Drittel (bluetestufe).
+    title: 'Schritt 6 — Blüte',
+    duration: '8–12 Wochen, je nach Sorte',
     content: `
       <p><b>Autoflower:</b> Startet von selbst nach ~3–4 Wochen. Du musst nichts tun.</p>
-      <p><b>Photoperiode:</b> Licht auf <b>12 Std. AN / 12 Std. AUS</b> umstellen. Pflanze sollte halbe Endhöhe haben (sie verdoppelt sich noch).</p>
+      <p><b>Photoperiode:</b> Licht auf <b>12 Std. AN / 12 Std. AUS</b> umstellen. Pflanze sollte halbe Endhöhe haben (sie verdoppelt sich noch). <b>Die Dunkelphase muss wirklich dunkel sein:</b> Schon kurzes Licht in der Nacht stört die Blüte, bis hin zur Zwitterbildung.</p>
       <p><b>Was passiert:</b></p>
       <ul>
-        <li>Woche 1–2: „Stretch" — Pflanze wächst nochmal stark in die Höhe</li>
-        <li>Woche 3: Erste weiße „Härchen" zeigen sich (Stempel)</li>
-        <li>Woche 4–6: Buds werden dick und fett</li>
-        <li>Woche 7+: Trichome (Harzdrüsen) werden sichtbar</li>
+        <li>Zu Beginn: Erste weiße „Härchen" (Stempel) — daran erkennst du den Blühbeginn</li>
+        <li>Woche 1–2: „Stretch" — die Pflanze wächst nochmal stark in die Höhe</li>
+        <li>Danach: Die Blüten werden dick und dicht</li>
+        <li>Gegen Ende (etwa das letzte Drittel): Die Harzdrüsen (Trichome) zeigen mit der Lupe, wann die Pflanze reif ist — die App erinnert dich daran</li>
       </ul>
-      <p><b>Dünger:</b> Jetzt umsteigen auf Bloom-Dünger (weniger Stickstoff, mehr P/K). Die App zeigt dir das automatisch.</p>
-      <p><b>Luftfeuchte:</b> Unter 60% drücken! Hohe RLF + dicke Buds = Schimmel-Gefahr.</p>
+      <p><b>Dauer:</b> Die Wochen auf der Samentüte gelten für beste Bedingungen — zu Hause dauert es oft 30–50 % länger. Die App plant deshalb mit dem oberen Ende.</p>
+      <p><b>Dünger:</b> Der Plan wechselt auf blütebetonten Dünger mit mehr Phosphor und Kalium. Stickstoff braucht die Pflanze bis weit in die Blüte, erst in der späten Reifung geht er zurück. Die Mengen zeigt dir die App.</p>
+      <p><b>Luftfeuchte:</b> höchstens ${KLIMA_ZIEL.frueh.deckel} %, gegen Ende der Blüte und beim Spülen höchstens ${KLIMA_ZIEL.spaet.deckel} % — hohe Luftfeuchte in dichten Blüten heißt Schimmelgefahr. Miss nachts zur kühlsten Stunde: Beim Abkühlen steigt die Luftfeuchte von selbst. Den Ventilator weiter laufen lassen — die Luft muss auch zwischen den Blüten wehen.</p>
     `,
   },
   {
@@ -9328,7 +9333,7 @@ function openFirstGrowGuide() {
         <span style="font-size:28px">🌱</span>
         <div style="flex:1">
           <div style="font-size:16px;font-weight:700;color:var(--text)">Dein erster Grow</div>
-          <div style="font-size:11px;color:var(--text-muted)">Komplett-Anleitung · 8 Schritte · ~3–4 Monate</div>
+          <div style="font-size:11px;color:var(--text-muted)">Komplett-Anleitung · 8 Schritte · ~4–6 Monate bis ins Glas</div>
         </div>
         <button onclick="this.closest('[data-firstgrow]').remove()" style="background:none;border:none;color:var(--text-muted);font-size:22px;cursor:pointer;padding:0 4px">✕</button>
       </div>

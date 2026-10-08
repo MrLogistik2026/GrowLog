@@ -5,6 +5,7 @@
 //   S2 (v1.5.393)  Keimen und Einpflanzen folgen der Start-Methode der App: Erde vorbefeuchten, Start-Guss, Samen danach.
 //   S4 (v1.5.394)  Anzucht: Licht über die Lichtmenge, zwei Lichtschäden, Gießen nach der Start-Methode, Dünger nach Plan.
 //   S5 (v1.5.395)  Wachstum: Gießen, Dünger nach Plan mit pH, Toppen wie die App, Automatics nicht umtopfen.
+//   S6 (v1.5.396)  Blüte: Titel, Dunkelphase, Stickstoff, Schimmel-Deckel aus KLIMA_ZIEL.
 //
 // GS_INDEX=<anderer Build> lässt den Test gegen einen alten Stand laufen; dort muss er umfallen.
 const fs = require('fs');
@@ -84,6 +85,21 @@ async function starte() {
     pruefe(/trockenem Topf eher für Durst/.test(s5), 'S5-3 braune Spitzen ohne Unterscheidung (Regel 3)');
     pruefe(!/5–6 Blattetagen/.test(s5) && /4–5 Blattpaaren/.test(s5) && /Automatics ist das Fenster kurz/.test(s5) && /vor dem Blühbeginn/.test(s5), 'S5-4 Toppen widerspricht der App (INFO_TERMS, canTop)');
     pruefe(/Automatics gar nicht umtopfen/.test(s5) && !/Keine Umtopfung mehr ab Woche 4/.test(s5), 'S5-5 Umtopfen bei Automatics (ANBAU.md 7.4)');
+  }
+
+  // S6 (v1.5.396) · Blüte: Titel, Dunkelphase, Stickstoff, Schimmel-Deckel aus KLIMA_ZIEL
+  {
+    const s6 = schritt(5);
+    const dk = JSON.parse(a.E(`JSON.stringify([KLIMA_ZIEL.frueh.deckel, KLIMA_ZIEL.spaet.deckel])`));
+    pruefe(!/Woche 6–12/.test(titel[5]) && !/6–10 Wochen/.test(titel[5]), `S6-1 Titel/Dauer: ${titel[5]}`);
+    pruefe(/wirklich dunkel/.test(s6), 'S6-2 keine Warnung vor Licht in der Dunkelphase (ANBAU.md 13.8)');
+    pruefe(!/weniger Stickstoff/.test(s6) && /Stickstoff braucht die Pflanze bis weit in die Blüte/.test(s6), 'S6-3 Stickstoff zum Blühbeginn (ANBAU.md 5)');
+    pruefe(s6.includes(`höchstens ${dk[0]} %`) && s6.includes(`höchstens ${dk[1]} %`) && /nachts/.test(s6) && !/Unter 60% drücken/.test(s6), `S6-4 Luftfeuchte nicht aus KLIMA_ZIEL (${dk.join('/')})`);
+    pruefe(/zwischen den Blüten/.test(s6), 'S6-5 Luftbewegung an den Blüten fehlt (ANBAU.md 13.5)');
+    pruefe(!/Woche 7\+/.test(s6) && !/Woche 3: Erste/.test(s6), 'S6-6 feste Wochen für Härchen und Trichome');
+    const kopf = a.E(`(function(){ openFirstGrowGuide(); const o = document.querySelector('[data-firstgrow]'); const k = o ? o.textContent : '';
+      document.querySelectorAll('[data-firstgrow]').forEach(x => x.remove()); return k; })()`);
+    pruefe(!/~3–4 Monate/.test(kopf) && /4–6 Monate/.test(kopf), 'S6-7 Kopf der Anleitung: Gesamtdauer zu kurz (ANBAU.md 9)');
   }
 
   pruefe(!a.errors.length, 'Skriptfehler: ' + a.errors.slice(0, 3).join(' | '));

@@ -2,6 +2,27 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-08 — v1.5.396
+
+- **Anleitung „Dein erster Grow“, Schritt 6 (Blüte), widersprach `ANBAU.md`:**
+  - Titel „Woche 6–12“, obwohl Automatics laut demselben Text nach 3–4 Wochen beginnen.
+  - Dauer „6–10 Wochen“; Samentüten sind systematisch optimistisch, oft um 30–50 % (9).
+  - „Jetzt … weniger Stickstoff“: Ein verfrühter N-Stop ist der teurere Fehler, Stickstoff geht erst in der späten Reifung
+    zurück (5; derselbe Befund wie F03, v1.5.371).
+  - „Unter 60 % drücken“ für die ganze Blüte; der Deckel ist 65 %, am Ende 60 % (`KLIMA_ZIEL`, 13.5).
+  - Feste Wochen für die ersten Härchen (Woche 3) und die Trichome (Woche 7+). Die Härchen markieren den Blühbeginn, und
+    erinnert wird im letzten Drittel.
+  - Keine Warnung vor Licht in der Dunkelphase (13.8).
+  - Im Kopf „~3–4 Monate“.
+- **Jetzt** steht da:
+  - **Titel und Dauer:** „Schritt 6 — Blüte“, 8–12 Wochen je nach Sorte, mit dem Satz zur Samentüte.
+  - **Dünger:** Stickstoff bis weit in die Blüte.
+  - **Luftfeuchte:** Deckel aus `KLIMA_ZIEL`, nachts zur kühlsten Stunde messen, Luft zwischen den Blüten.
+  - **Dunkelphase:** muss wirklich dunkel sein.
+  - **Kopf:** „~4–6 Monate bis ins Glas“.
+- Test: `test_erstergrow.js` S6 (7 Prüfungen; alle fallen auf v1.5.395 um).
+
+
 ## 2026-10-08 — v1.5.395
 
 - **Anleitung „Dein erster Grow“, Schritt 5 (Wachstum), widersprach der App:**
