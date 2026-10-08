@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.402** · index.html 2,56 MB · 781 Funktionen
+Stand: **v1.5.403** · index.html 2,56 MB · 781 Funktionen
 Zuletzt fortgeschrieben am 07.10.2026 (Nachtprüfung und Run 02 — Abschnitt 0o, „Stand Run 02"). Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
@@ -273,8 +273,7 @@ Run 02 fachlich und Bedienung mit Patricks echter Datei, ein Gegenprüfer).** Ur
 keiner schlechter als v1.5.319. Die zwei schweren (Einschleusen über Anführungszeichen und `__proto__`) und die Import- und
 Speicher-Befunde sind in v1.5.340–344 behoben. Rohdaten: Workflow wf_63d754b1-be1 (journal.jsonl), Skripte unter
 `.claude/tmp/review339/` (vergänglich). **Offen, alle schon in v1.5.319 vorhanden, nach Nutzen für Run 02:**
-- Leicht: F08 Einsteiger-Fahrplan ohne Anzucht-Güsse, F12 Plan-Tag im Eintragskopf, F13 „Guss fehlt" vor dem Durchbruch
-  (~25930, ~14331), F14 pH 6.4 fest neben 6,35 der Plan-Woche, F16 jeder
+- Leicht: F08 Einsteiger-Fahrplan ohne Anzucht-Güsse, F12 Plan-Tag im Eintragskopf, F14 pH 6.4 fest neben 6,35 der Plan-Woche, F16 jeder
   Bildschirm wählt eine andere Standardgruppe (~20356, ~22671), F18 Kalender
   zeigt bei zwei Aktionen nur eine (~18082), F19 Import übernimmt Spül-, Eis- und Trocknungstage nicht aus dem Plan.
 - Speicher, leicht: rettung.html bietet „Daten anzeigen" nur beim Hauptstand (SK-5); wiederherstellung.html überschreibt
@@ -337,7 +336,8 @@ Speicher-Befunde sind in v1.5.340–344 behoben. Rohdaten: Workflow wf_63d754b1-
 - v1.5.399: Schritt 8 — kein „Keller ideal“, Knick-Test vor dem Glas, Hygrometer im Glas (58–62 %). Damit ist die ganze Anleitung gegen `ANBAU.md` gehalten. **Offen aus dem Prüferbericht:** Lexikon (~35893) und Licht-Werkzeug (~39215) nennen für die Anzucht 200–400 µmol/m²/s, `ANBAU.md` 8 nennt Sämling 150–300 und Wachstum 400–600; neun Texte empfehlen den Handtest für den Lichtabstand (1444, 1481, 7281, 7289, 7313, 7495, 7519, 35893, 37148/37164) — gegen 8.2 prüfen.
 - v1.5.400: Kommentar ohne den alten Satz „Samen in trockene Erde“ — `test_tag1mengen.js` war seit v1.5.393 rot (Gesamtlauf 288/290). Wer Texte ändert, lässt auch die Quelltext-Wächter laufen.
 - v1.5.401: Luftfeuchte-Spanne in Zielzeile und RLF-Zeile in ganzen Prozent (`_klimaRlfSpanne`, F17).
-- v1.5.402: Vor dem Durchbruch (Keim-Vorlauf) fehlt kein Guss — `_vorDemKeimling` in `gussFaellig` und `intervalDryDefault` (F13, erster Teil). Zweiter Teil folgt: „Nachtragen“ führt durch alle Gruppen.
+- v1.5.402: Vor dem Durchbruch (Keim-Vorlauf) fehlt kein Guss — `_vorDemKeimling` in `gussFaellig` und `intervalDryDefault` (F13, erster Teil).
+- v1.5.403: „Nachtragen“ geht nach der ersten Gruppe zur nächsten mit Lücken weiter (F13, zweiter Teil).
 
 **Gegenprüfung von v1.5.364/365 (07.10.2026 nachts, Workflow wf_4cf817bf-629, drei Sonnet-Prüfer + Gegenprüfer).** Kein Fehlalarm
 in 33 App-Fassungen, allen Vorlagen und über 2800 Klicks; die schweren Befunde (unsichere Kopie zerstört den Hauptstand, Tropfen als

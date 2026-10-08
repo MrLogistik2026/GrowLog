@@ -2,6 +2,17 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-08 — v1.5.403
+
+- **„Nachtragen“ führte nur durch die erste Gruppe** (Run-02-Prüfung vom 07.10.2026, F13, zweiter Teil). Die Startseite meldete
+  „4 Aktionen verpasst · 2 Zyklen betroffen“, der Knopf öffnete den Assistenten aber nur für den ersten Zyklus. Danach
+  schloss er sich mit „✓ … bearbeitet“, und die Lücken der zweiten Gruppe blieben stehen, ohne dass etwas darauf hinwies.
+- **Jetzt** geht der Assistent nach der letzten Lücke einer Gruppe zur nächsten Gruppe mit Lücken weiter („✓ A: 2 Tage
+  bearbeitet — weiter mit „B““). Jede Gruppe kommt einmal dran. Wer „Anders eintragen“ wählt, verlässt den Assistenten wie
+  bisher.
+- Test: `test_runzwei.js` F13b (2 Prüfungen; 1 fällt auf v1.5.402 um).
+
+
 ## 2026-10-08 — v1.5.402
 
 - **Vor dem Durchbruch des Keimlings galten geplante Güsse als fehlend** (Run-02-Prüfung vom 07.10.2026, F13; Patrick am

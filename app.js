@@ -3611,7 +3611,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.402';
+const APP_VERSION = 'v1.5.403';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -14830,6 +14830,16 @@ function _renderCatchupModal() {
   // Falls alle abgearbeitet → Bilanz und schließen
   if (candidates.length === 0) {
     const total = applied + skipped;
+    // (v1.5.403) Mehrere Gruppen: weiter mit der nächsten, die Lücken hat. Die Startseite meldete „4 Aktionen verpasst · 2 Zyklen
+    // betroffen", „Nachtragen" führte aber nur durch die erste Gruppe (Run-02-Prüfung 07.10.2026, F13). Jede Gruppe kommt einmal dran.
+    const fertig = (_catchupState.fertig || []).concat(cId);
+    const weiter = active().find(x => !fertig.includes(x.id) && getCatchupCandidates(x).length > 0);
+    if (weiter) {
+      toast(`✓ ${c.name}: ${total} Tag${total === 1 ? '' : 'e'} bearbeitet — weiter mit „${weiter.name}“`);
+      _catchupState = { cId: weiter.id, candidates: [...getCatchupCandidates(weiter)], applied: 0, skipped: 0, fertig };
+      _renderCatchupModal();
+      return;
+    }
     toast(`✓ ${total} Tag${total === 1 ? '' : 'e'} bearbeitet — ${applied} nachgetragen, ${skipped} übersprungen`);
     closeCatchupModal();
     if (typeof renderDash === 'function') renderDash();

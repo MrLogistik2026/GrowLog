@@ -418,6 +418,23 @@ async function starte() {
     pruefe(a3.tag1 && a3.faellig, `F13-4 der Start-Guss heute an Tag 1 ist nicht mehr fällig: ${JSON.stringify(a3)}`);
   }
 
+  // F13b (v1.5.403) · „Nachtragen" führt durch alle Gruppen mit Lücken, nicht nur durch die erste
+  {
+    const r = JSON.parse(a.E(`(function(){ const vorher = S.cycles.slice(); const eVorher = JSON.stringify(S.entries); const heute = todayISO();
+      const pid = S.cycles[0].fertPlanId; S.cycles = []; S.entries = {};
+      const neu = (name, tage) => addCyc({ name, startDate: isoPlus(heute, -tage), seedType: 'auto', growType: 'indoor', medium: 'erde', potSize: 11,
+        plantCount: 3, startMethod: 'saturated', fertPlanId: pid }, { still: true });
+      const ga = neu('Gruppe A', 40), gb = neu('Gruppe B', 30);
+      const vor = [getCatchupCandidates(ga).length, getCatchupCandidates(gb).length];
+      openCatchupWizard(ga.id); let schritte = 0;
+      while (_catchupState && schritte++ < 30) catchupApply('skipped');
+      const nach = [getCatchupCandidates(ga).length, getCatchupCandidates(gb).length];
+      S.entries = JSON.parse(eVorher); S.cycles = vorher; saveS();
+      return JSON.stringify({ vor, nach, schritte }); })()`));
+    pruefe(r.vor[0] > 0 && r.vor[1] > 0, `F13b-0 Prüflage: ${JSON.stringify(r)}`);
+    pruefe(r.nach[0] === 0 && r.nach[1] === 0, `F13b-1 nach „Nachtragen" bleiben Lücken in der zweiten Gruppe: ${JSON.stringify(r)}`);
+  }
+
   pruefe(!a.errors.length, 'Skriptfehler: ' + a.errors.slice(0, 3).join(' | '));
   if (fehler.length) { console.log(`test_runzwei: ${fehler.length} von ${n} Prüfungen rot`); fehler.forEach((f) => console.log('  ✗ ' + f)); process.exit(1); }
   console.log(`test_runzwei: alle ${n} Prüfungen grün`);
