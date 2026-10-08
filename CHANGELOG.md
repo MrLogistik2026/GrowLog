@@ -2,6 +2,17 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-08 — v1.5.427
+
+- **Voller Topf am Topping-Tag: „Heute gießen — dann toppen“ neben „Topf ist voll — heute nicht gießen“** (Topping-Prüfung,
+  T2). Startseite, Gieß-Fahrplan und die Gieß-Box im Eintrag sagten „nicht gießen“ (seit v1.5.267). Der Hebe-Test-Kasten
+  ersetzte am Topping-Tag aber jede Messung durch „Heute gießen — dann toppen … vor dem Schnitt wird gegossen“, und die
+  Topping-Box sagte „Erst gießen (Menge unten)“. In einen vollen Topf passt nichts (`ANBAU.md` 1.1), und nasse Wurzeln
+  ersticken (13.1).
+- **Jetzt** entfallen beide Aufforderungen, wenn der Topf voll ist (`_topfVollHeute`). Bei Hebe-Test „Mittel“ bleibt die
+  Ausnahme vorerst (v1.5.284, `test_giesspunkt` J); ob der Topping-Tag ganz der Messung folgen soll, entscheidet Patrick.
+- Test: `test_topping.js` P2.
+
 ## 2026-10-08 — v1.5.426
 
 - **Nach dem Toppen nannte die App ein falsches Datum für den ersten Guss** (Topping-Prüfung vom 08.10.2026, T1).
