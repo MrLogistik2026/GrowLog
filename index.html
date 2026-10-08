@@ -4625,7 +4625,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.393';
+const APP_VERSION = 'v1.5.394';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -9208,9 +9208,13 @@ const FIRST_GROW_STEPS = [
     duration: '2–3 Wochen',
     content: `
       <p><b>Licht:</b> 18 Stunden pro Tag AN, 6 Stunden AUS. Mit Timer automatisieren.</p>
-      <p><b>Lichtabstand:</b> 30–40 cm über den Blättern. Handtest: Deine Hand sollte es in Höhe der Pflanze 30 Sek. aushalten.</p>
-      <p><b>Gießen:</b> Nur wenig! Oberste Erde darf zwischen Güssen antrocknen. Lieber weniger als zu viel.</p>
-      <p><b>Dünger:</b> <b>KEINER</b> in den ersten 2–3 Wochen. Light-Mix-Erde hat genug.</p>
+      <!-- (v1.5.394) Vorher: fest 30–40 cm mit Hand-Hitzetest, „Oberste Erde darf antrocknen", „Dünger: KEINER". Unter LED zählt die
+           Lichtmenge am Blatt, nicht die Wärme (ANBAU.md 8, 8.2); gegossen wird nach der Start-Methode im Ring (16, 7.4); und die
+           Einsteiger-Vorlage dosiert schon in Plan-Woche 1–3 kleine Mengen (13.2: „praktisch nichts"). -->
+      <p><b>Lichtabstand:</b> Nimm die Angabe deines Lampenherstellers für Sämlinge. Steht nichts dabei: Lampe dimmen, eher zu hoch als zu tief hängen und in kleinen Schritten näher rücken. Es zählt die Lichtmenge am Blatt (PPFD, in µmol/m²/s, gemessen mit einem Lichtmesser): in den ersten rund 10 Tagen 150–300, danach 400–600 — etwa ein Viertel bis ein Drittel dessen, was die Blüte bekommt (600–900). Herstellerangaben gelten meist nur für die Mitte des Zelts.</p>
+      <p><b>Zu viel Licht oder zu heiß?</b> Bleichen die obersten Blätter hell bis weiß aus, ist es zu viel Licht. Werden die Ränder gelbbraun und wölben sich nach oben, ist es zu heiß. In beiden Fällen: Lampe höher hängen oder dimmen. Der Handtest zeigt nur Hitze, nicht die Lichtmenge — eine LED kann Blätter ausbleichen, ohne dass sich die Hand heiß anfühlt.</p>
+      <p><b>Gießen:</b> In den ersten Tagen nach dem Start-Guss nur sprühen, wenn die Erde direkt am Samen hell wird — welche Tage das sind, zeigt dir die App. Danach im Ring um den Sämling, mit der Menge, die die App am Gießtag nennt. Den Rest des Topfs nicht mitgießen: Nasse Erde ohne Wurzeln darin bleibt dauernass und ohne Luft.</p>
+      <p><b>Dünger:</b> Light-Mix ist vorgedüngt. In den ersten 2–3 Wochen gibst du höchstens die kleinen Mengen, die dein Plan nennt — nie mehr.</p>
       <p><b>Was du siehst:</b></p>
       <ul>
         <li>Tag ${KEIMUNG.auflaufenVon}–${KEIMUNG.auflaufenBis}: Der Keimling durchbricht die Erde</li>

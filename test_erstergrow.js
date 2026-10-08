@@ -3,6 +3,7 @@
 // Einbau ein Prüfer Satz für Satz gegen ANBAU.md und den Code gehalten (08.10.2026).
 //
 //   S2 (v1.5.393)  Keimen und Einpflanzen folgen der Start-Methode der App: Erde vorbefeuchten, Start-Guss, Samen danach.
+//   S4 (v1.5.394)  Anzucht: Licht über die Lichtmenge, zwei Lichtschäden, Gießen nach der Start-Methode, Dünger nach Plan.
 //
 // GS_INDEX=<anderer Build> lässt den Test gegen einen alten Stand laufen; dort muss er umfallen.
 const fs = require('fs');
@@ -62,6 +63,15 @@ async function starte() {
     pruefe(s2.indexOf('Wasserglas') > s2.indexOf('direkt in die Erde'), 'S2-4 das Wasserglas steht vor der empfohlenen Variante');
     pruefe(/nur bei Glas oder Tuch/i.test(titel[2]) || /nur bei Glas oder Tuch/i.test(s3), `S2-5 Schritt 3 sagt nicht, dass er nur für Glas und Tuch gilt: ${titel[2]}`);
     pruefe(!/ertränken/.test(s3), 'S2-6 Schritt 3: „ertränken" statt des Mechanismus');
+  }
+
+  // S4 (v1.5.394) · Anzucht: Licht über die Lichtmenge, zwei Lichtschäden, Gießen nach der Start-Methode, Dünger nach Plan
+  {
+    const s4 = schritt(3);
+    pruefe(!/30–40 cm/.test(s4) && /PPFD/.test(s4) && /150–300/.test(s4) && /400–600/.test(s4), `S4-1 Lichtabstand fest statt über die Lichtmenge (ANBAU.md 8): ${s4.slice(0, 260)}`);
+    pruefe(/Handtest zeigt nur Hitze/.test(s4) && /ausbleich/.test(s4) && /zu heiß/.test(s4), 'S4-2 Lichtschaden: Bleichen und Hitze nicht unterschieden (ANBAU.md 8.2)');
+    pruefe(/nur sprühen/.test(s4) && /Ring um den Sämling/.test(s4) && !/Oberste Erde darf/.test(s4), 'S4-3 Gießen folgt nicht der Start-Methode der App');
+    pruefe(!/KEINER/.test(s4) && /höchstens die kleinen Mengen, die dein Plan nennt/.test(s4), 'S4-4 Dünger: „KEINER" gegen die eigene Einsteiger-Vorlage');
   }
 
   pruefe(!a.errors.length, 'Skriptfehler: ' + a.errors.slice(0, 3).join(' | '));

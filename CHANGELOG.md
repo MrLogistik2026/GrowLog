@@ -2,6 +2,26 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-08 — v1.5.394
+
+- **Anleitung „Dein erster Grow“, Schritt 4 (Anzucht), widersprach `ANBAU.md` an vier Stellen:**
+  - **Licht:** „Lichtabstand 30–40 cm, Handtest 30 Sekunden“. Unter LED zählt die Lichtmenge am Blatt, nicht die Wärme
+    (ANBAU 8, 8.2). Die Rainbow-Vorlage nennt für Sämlinge 60–65 cm bei 25 %. 30–40 cm unter einer starken LED kann Sämlinge
+    ausbleichen, ohne dass die Hand etwas merkt.
+  - **Lichtschäden:** Bleichen und Hitze wurden nicht unterschieden (8.2, Regel 3).
+  - **Gießen:** „Oberste Erde darf zwischen Güssen antrocknen“ passt nicht dazu, wie die App führt (sprühen nach dem
+    Start-Guss, danach im Ring um den Sämling, ANBAU 16, 7.4).
+  - **Dünger:** „KEINER in den ersten 2–3 Wochen“. Die Einsteiger-Vorlage dosiert schon in Plan-Woche 1–3 kleine Mengen,
+    ANBAU 13.2 sagt „praktisch nichts“.
+- **Jetzt:**
+  - Lichtabstand nach der Herstellerangabe. Ohne Angabe: dimmen, eher zu hoch hängen, in kleinen Schritten näher.
+  - Die Lichtmenge mit Erklärung (PPFD, in µmol/m²/s): erste rund 10 Tage 150–300, danach 400–600 (ANBAU 8).
+  - Bleichen (zu viel Licht) und gelbbraune, gewölbte Ränder (zu heiß), dazu der Satz, dass der Handtest nur die Hitze zeigt.
+  - Gießen nach der Start-Methode.
+  - Dünger: höchstens die kleinen Mengen, die der Plan nennt.
+- Test: `test_erstergrow.js` S4 (4 Prüfungen; alle fallen auf v1.5.393 um).
+
+
 ## 2026-10-08 — v1.5.393
 
 - **Die Einsteiger-Anleitung „Dein erster Grow“ kannte die empfohlene Keimmethode nicht** (gefunden beim Bau von v1.5.390; die
