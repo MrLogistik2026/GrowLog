@@ -2,6 +2,21 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-08 — v1.5.431
+
+- **Der Topping-Tag folgt der Messung wie jeder Gießtag** (Patricks Freigabe vom 08.10.2026 abends: „so wie es für die User
+  am sinnvollsten wäre“; Topping-Prüfung T10, T9). Bis hierher hatte der Topping-Tag eine Ausnahme: Die Messung
+  (`giessenLautMessung`) schwieg, und der Hebe-Test-Kasten ersetzte jedes Ergebnis durch „Heute gießen — dann toppen … vor dem
+  Schnitt wird gegossen, dann ~2 Std. warten“. Das galt auch bei Hebe-Test „Mittel“, v1.5.427 hatte nur den vollen Topf
+  ausgenommen. „Vor dem Schnitt gießen“ steht nicht in `ANBAU.md`. Ein gemessen feuchter Topf wird auch an diesem Tag nicht
+  gegossen (1.2, 15). Am Topping-Tag tat zudem „Tag automatisch ausfüllen“ nichts („⚠ Kein Auto-Fill“), mit einem Kommentar,
+  die Pflanze habe „Turgor verloren und kann kein Wasser aufnehmen“.
+- **Jetzt** gilt am Topping-Tag dieselbe Messung wie sonst. Der Kasten sagt nur dazu, dass der Schnitt den Gießpunkt nicht
+  ändert. Die Topping-Box in der Gieß-Karte heißt „Topping-Tag“ und sagt: „Ob du heute gießt, entscheidet der Topf (Hebe-Test),
+  nicht der Schnitt.“ Das Auto-Ausfüllen läuft durch die normale Vorlage.
+- Test: `test_topping.js` P5; `test_giesspunkt.js` J erwartet jetzt am Topping-Tag dieselbe Aussage wie an jedem Gießtag
+  (vorher „keine Aussage“, v1.5.284) und liest `GS_INDEX`.
+
 ## 2026-10-08 — v1.5.430
 
 - **Ein Satz aus v1.5.420 ließ den Wächter in `test_lexikon.js` umfallen** (Gesamtlauf vom 08.10.2026). Im neuen Eintrag

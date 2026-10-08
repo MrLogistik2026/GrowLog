@@ -8,7 +8,7 @@ const fs = require('fs');
 const path = require('path');
 const { JSDOM, VirtualConsole } = require('jsdom');
 
-const HTML = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');
+const HTML = fs.readFileSync(process.env.GS_INDEX || path.join(__dirname, 'index.html'), 'utf8');
 
 function fakeCtx() {
   const noop = () => {};
@@ -220,7 +220,9 @@ const LAUF = (opt) => `(function(){
   const drau = lauf({ growType: 'outdoor', heute: { restPct: 90 } });
   if (!drau.fehlt) pruef('Outdoor: keine Aussage', drau.gm === null && !/noch feucht/.test(drau.titel), JSON.stringify(drau.gm) + ' ' + drau.titel);
   const top = lauf({ topping: true, heute: { restPct: 90 } });
-  if (!top.fehlt) pruef('Topping-Tag: keine Aussage, kein „noch feucht" auf Karte und Eintrag', top.gm === null && !/noch feucht/.test(top.titel + top.eintrag), JSON.stringify(top.gm) + ' ' + top.titel);
+  // (v1.5.431) Der Topping-Tag folgt der Messung wie jeder Gießtag — vorher (v1.5.284) bewusst ohne Aussage, weil „vor dem
+  // Schnitt gegossen“ werden sollte. Das steht nicht in ANBAU.md; 90 % heißt auch am Topping-Tag „noch feucht“.
+  if (!top.fehlt) pruef('Topping-Tag: dieselbe Aussage wie an jedem Gießtag („noch feucht“ bei 90 %)', top.gm && top.gm.grund === 'feucht' && /noch feucht/.test(top.titel) && !/dann toppen|Erst gießen/.test(top.eintrag), JSON.stringify(top.gm) + ' ' + top.titel);
   else pruef('Topping-Tag angelegt', false, top.fehlt);
   const frueh = lauf({ tagVon: 22, tagBis: 24, heute: { restPct: 90 } });
   if (!frueh.fehlt) pruef('Auto in der Blüte vor Tag 25: keine Aussage', frueh.gm === null && frueh.tag < 25 && !/noch feucht/.test(frueh.titel), frueh.tag + ' ' + JSON.stringify(frueh.gm));

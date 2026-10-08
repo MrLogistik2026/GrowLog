@@ -3654,7 +3654,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.430';
+const APP_VERSION = 'v1.5.431';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -13719,7 +13719,8 @@ function giessenLautMessung(c, iso) {
   const p = phase(iso, c);
   // Ab Tag 25 wie _reserveStatus und die Drain-Regel — auch bei Autos, deren Blüte schon an Tag 22 beginnt.
   if (!p || !(p.ph === 'bloom' || p.ph === 'anzucht') || (p.day || 1) < DRAIN_AB_TAG) return null;
-  if (c.toppingDate === iso) return null;   // Topping-Tag: erst gießen, dann toppen (Eintrag)
+  // (v1.5.431) Keine Ausnahme mehr für den Topping-Tag: „Vor dem Schnitt gießen“ steht nicht in ANBAU.md, und ein gemessen
+  // feuchter Topf wird auch an diesem Tag nicht gegossen (1.2, 15).
   const giesstag = isGiessTag(iso, c);
   const akt = getAction(iso, c);
   if (giesstag && akt !== 'giess' && akt !== 'giess_anz') return null;   // Spülen, IceFlush, Sättigung: der Plan
@@ -29418,14 +29419,14 @@ function renderEntry(iso) {
           // der Kalender. Vorher stand hier bei „Mittel" „Heute gießen — geplanter Gieß-Tag", und nach dem Guss warnte derselbe
           // Eintrag „Topf war noch feucht" (ANBAU.md 1.2, 15).
           const _gmE = ((a === 'giess' || a === 'giess_anz') && !(parseFloat(cd.water) > 0)) ? giessenLautMessung(c, iso) : null;
-          if (clf && _gmE && _gmE.grund === 'feucht' && !isToppingToday) {
+          if (clf && _gmE && _gmE.grund === 'feucht') {   // (v1.5.431) auch am Topping-Tag
             clf = {
               status: 'wait',
               color: 'var(--blue)',
               label: 'Gießtag — der Topf ist noch feucht: heute nicht gießen',
               text: `Topf bei ~${Math.round(_gmE.r)} % Restgewicht, über dem Gießpunkt (${_gmE.gp.von}–${_gmE.gp.bis} %, Hebe-Test „${_gmE.gp.knopf}"). Nach seinem Tempo bleibt er bis zum nächsten Gießtag darüber. ${_nichtGiessenWorte(c, iso, _gmE).wannSatz}`,
             };
-          } else if (clf && clf.status !== 'noWater' && a && ['giess','giess_anz','spuelen'].includes(a) && restVal < 85 && !isToppingToday) {
+          } else if (clf && clf.status !== 'noWater' && a && ['giess','giess_anz','spuelen'].includes(a) && restVal < 85) {   // (v1.5.431) auch am Topping-Tag
             clf = {
               status: 'waterToday',
               color: clf.color,
@@ -29444,16 +29445,11 @@ function renderEntry(iso) {
               text: 'Nach dem Guss ist der Topf voll. Der Wert von vorher bleibt gespeichert — daraus lernt die App, wie schnell dein Topf trocknet und wie viel hineinpasst.',
             };
           }
-          // Topping-Tag: erst gießen (Hydrierung vor dem Schnitt), dann toppen — danach Pause
-          // (v1.5.427) Nicht bei vollem Topf: Dort sagten Startseite, Fahrplan und Gieß-Box „heute nicht gießen“, und dieser Kasten
-          // daneben „Heute gießen — dann toppen“. In einen vollen Topf passt nichts (ANBAU.md 1.1), nasse Wurzeln ersticken (13.1).
-          if (clf && isToppingToday && !_topfVollHeute(c, p, iso)) {
-            clf = {
-              status: 'topping',
-              color: 'var(--purple)',
-              label: 'Heute gießen — dann toppen',
-              text: `Topf bei ~${Math.round(restVal)}% Restgewicht. Heute ist Gieß- + Topping-Tag: vor dem Schnitt wird gegossen, dann ~2 Std. warten und toppen. Danach ${(c.toppingPause || 2)} Tage trockene Pause — nicht erneut gießen.`,
-            };
+          // (v1.5.431) Am Topping-Tag gilt die Messung wie an jedem Tag. Bis hierher ersetzte ein eigener Kasten jede Messung durch
+          // „Heute gießen — dann toppen … vor dem Schnitt wird gegossen“ (v1.5.427 nahm nur den vollen Topf aus). Er sagt jetzt nur
+          // dazu, dass der Schnitt den Gießpunkt nicht ändert.
+          if (clf && isToppingToday) {
+            clf = Object.assign({}, clf, { text: (clf.text || '') + ' Du hast heute getoppt — das ändert den Gießpunkt nicht: Gegossen wird, wenn der Topf ihn erreicht.' });
           }
           // IceFlush-Tag: eigener Status-Text, weist auf Hard-Dryback und Anleitung hin
           if (clf && isIceFlushToday) {
@@ -29693,17 +29689,20 @@ function renderEntry(iso) {
       const isToppingTodayWD = c.toppingDate === iso;
       const isIceFlushTodayWD = a === 'ice';
       let waterDayHint = '';
-      if (isToppingTodayWD && !_topfVollHeute(c, p, iso)) {   // (v1.5.427) bei vollem Topf gilt die Gieß-Box „heute nicht gießen“
+      // (v1.5.431) Die Box sagte „Erst gießen (Menge unten), ~2 Std. warten, dann toppen“ — jetzt nur, wer entscheidet und wann der
+      // nächste Guss geplant ist. Gegossen wird nach dem Topf (Hebe-Test), nicht nach dem Schnitt.
+      if (isToppingTodayWD) {
+        const _pauseT = c.toppingPause || 2;
         waterDayHint = `<div style="background:rgba(180,120,220,0.08);border:0.5px solid rgba(180,120,220,0.3);border-radius:10px;padding:10px 12px">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
             <span style="font-size:14px">✂️</span>
-            <span style="font-size:11px;font-weight:600;color:var(--purple);text-transform:uppercase;letter-spacing:0.03em">Gieß- + Topping-Tag</span>
+            <span style="font-size:11px;font-weight:600;color:var(--purple);text-transform:uppercase;letter-spacing:0.03em">Topping-Tag</span>
           </div>
           <div style="font-size:13px;color:var(--text);line-height:1.4">
-            Erst gießen (Menge unten), ~2 Std. warten, dann toppen. Danach ${(c.toppingPause || 2)} Tage trockene Pause — nicht erneut gießen.
+            Ob du heute gießt, entscheidet der Topf (Hebe-Test), nicht der Schnitt. Danach plant die App ${_pauseT} Tag${_pauseT === 1 ? '' : 'e'} ohne Guss ein.
           </div>
           <div style="font-size:10px;color:var(--text-muted);margin-top:3px;line-height:1.4">
-            Nächster Guss: ${fmtDE(isoPlus(iso, (c.toppingPause || 2) + 1), {day:'2-digit', month:'2-digit'})}
+            Nächster geplanter Guss: ${fmtDE(isoPlus(iso, _pauseT + 1), {day:'2-digit', month:'2-digit'})}
           </div>
         </div>`;
       } else if (isIceFlushTodayWD) {
@@ -33237,20 +33236,9 @@ function getAutoFillTemplate(c, p, a, iso) {
   // sechsmal), 21/40 sogar in der mittleren Blüte. Ein geschätztes Klima ist keine Messung (ANBAU.md, Regel 2) —
   // dieselbe Regel wie beim Drain (v1.5.177). Die Zielwerte stehen weiter als grauer Platzhalter im Feld.
 
-  // SPEZIAL-FALL: Topping-Tag (User hat heute getoppt)
-  // Biophysik: Pflanze hat Turgor verloren, kann Wasser nicht aufnehmen.
-  // 2 Tage trockene Erholung sind besser als sofort gießen.
-  // WICHTIG: water bleibt LEER (nicht '0') — '0' würde als Wasser-Eintrag
-  // gespeichert und die UI als "Guss mit 0 ml" interpretieren. Stattdessen
-  // bleibt das Feld unangetastet, der User kann es sehen ("kein Wasser heute").
-  if (c.toppingDate === iso) {
-    // Kein water — Feld bleibt leer (user hat nicht gegossen am Topping-Tag)
-    tpl.doses = {}; // alle Dosen 0
-    tpl._allDosesZero = true;
-    tpl.notePlaceholder = 'Topping erfolgt. 2 Tage Pause — Pflanze nicht stressen, kein Wasser.';
-    tpl._actionType = 'topping';
-    return tpl;
-  }
+  // (v1.5.431) Kein Sonderfall mehr für den Topping-Tag: „Tag automatisch ausfüllen“ tat dort nichts („⚠ Kein Auto-Fill für
+  // diesen Tag“), direkt unter der Aufforderung zu gießen. Der Kommentar dazu behauptete, die Pflanze habe nach dem Schnitt
+  // „Turgor verloren und kann kein Wasser aufnehmen“ — nicht in ANBAU.md. Der Tag läuft jetzt durch die normale Vorlage.
 
   // SPEZIAL-FALL: Topping-Pause-Tag (1–2 Tage nach Topping, kein regulärer Gießtag)
   if (c.toppingDate) {
