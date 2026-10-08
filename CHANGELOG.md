@@ -2,6 +2,20 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-08 — v1.5.405
+
+- **Der Lichtmesser färbte in der Blüte jeden Wert über 900 µmol/m²/s rot** (beim Bau von v1.5.404 gefunden). Nach
+  `ANBAU.md` 8.1 ist 900–1000 die Sättigung des einzelnen Blattes. Der Bestand nutzt mehr Licht weiter, der Blütenertrag stieg in
+  kontrollierten Versuchen etwa linear bis rund 1800, und eine Warnung „zu viel Licht“ ab 900 wäre falsch. Das Lexikon sagt das
+  seit v1.5.125; der Lichtmesser daneben warnte trotzdem rot.
+- **Jetzt** färbt der Lichtmesser in der Blüte über dem Ziel gelb und erklärt, dass das kein Schaden ist und woran man ein echtes
+  Zuviel erkennt: Die obersten Blütenspitzen bleichen weiß aus. Rot wird es erst ab der Bleich-Schwelle von ~1500 (8.2, als
+  `bleichAb` an `LICHT_ZIEL.bluete`), mit „Leistung senken oder Lampe höher hängen“.
+- **Bewusst unverändert:** Sämling und Wachstum färben über dem Ziel weiter rot. Für diese Phasen nennt `ANBAU.md` keine
+  Schadensgrenze, und der junge Bestand hat die tiefen Etagen nicht, die mehr Licht aufnehmen (15: im Zweifel sicher).
+- Test: `test_lichtziel.js` L2 (3 Prüfungen; 2 fallen auf v1.5.404 um).
+
+
 ## 2026-10-08 — v1.5.404
 
 - **Die Lichtziele für die Anzucht widersprachen `ANBAU.md` 8** (gefunden vom Prüfer der Einsteiger-Anleitung, 08.10.2026).

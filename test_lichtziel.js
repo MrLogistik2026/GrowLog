@@ -1,6 +1,7 @@
 // Lichtziele je Phase aus einer Quelle (LICHT_ZIEL, ANBAU.md 8): Lichtmesser, Lexikon und Werkzeug-Beschreibung.
 //
 //   L1 (v1.5.404)  Sämling 150–300, Wachstum 400–600, Blüte 600–900 µmol/m²/s; DLI aus den Lichtstunden.
+//   L2 (v1.5.405)  Blüte über 900: gelb mit Erklärung, rot erst ab der Bleich-Schwelle (~1500).
 //
 // GS_INDEX=<anderer Build> lässt den Test gegen einen alten Stand laufen; dort muss er umfallen.
 const fs = require('fs');
@@ -67,6 +68,21 @@ async function starte() {
     pruefe(lex.length === 1 && /Sämling 150–300/.test(lex[0]) && /Wachstum 400–600/.test(lex[0]) && /Sämling 10–19/.test(lex[0]), `L1-4 Lexikon „PPFD & DLI": ${(lex[0] || '').slice(0, 200)}`);
     const zeilen = HTML.split(/\r?\n/).filter(z => !/^\s*(\/\/|\*|\/\*)/.test(z) && /Anzucht:? 200[–-]400/.test(z));
     pruefe(zeilen.length === 0, `L1-5 „Anzucht 200–400" steht noch ${zeilen.length}× im ausgelieferten Text`);
+  }
+
+  // L2 (v1.5.405) · Blüte: über 900 gelb mit Erklärung, erst ab der Bleich-Schwelle rot (ANBAU.md 8.1, 8.2)
+  {
+    const r = JSON.parse(a.E(`(function(){ S.cycles = []; S.entries = {}; const heute = todayISO();
+      const c = addCyc({ name: 'Licht', startDate: isoPlus(heute, -45), seedType: 'auto', growType: 'indoor', medium: 'erde', potSize: 11,
+        plantCount: 1, startMethod: 'saturated', fertPlanId: _planFuerVorlage('rainbow_auto') }, { still: true });
+      S.cycles = [c]; selId = c.id; S.beginnerMode = false; goTo('tips'); renderTips(); if (typeof _ppfdSensor !== 'undefined' && _ppfdSensor) stopPPFD(); startPPFD();
+      const lux = document.getElementById('lux-val'); const f = LUX_TO_PPFD['led_white'] || 0.0185;
+      const lies = (ppfd) => { lux.textContent = String(Math.round(ppfd / f)); lux.oninput();
+        return { wert: document.getElementById('ppfd-val').textContent, farbe: document.getElementById('ppfd-val').style.color, ziel: document.getElementById('ppfd-target').textContent }; };
+      return JSON.stringify({ ph: phase(heute, c).ph, im: lies(750), ueber: lies(1100), bleich: lies(1600) }); })()`));
+    pruefe(r.ph === 'bloom' && /green/.test(r.im.farbe), `L2-0 Prüflage: ${JSON.stringify(r)}`);
+    pruefe(/yellow/.test(r.ueber.farbe) && /kein Schaden/.test(r.ueber.ziel), `L2-1 1100 in der Blüte rot oder ohne Erklärung: ${JSON.stringify(r.ueber)}`);
+    pruefe(/red/.test(r.bleich.farbe) && /bleichen/.test(r.bleich.ziel), `L2-2 ab 1500 keine Warnung: ${JSON.stringify(r.bleich)}`);
   }
 
   pruefe(!a.errors.length, 'Skriptfehler: ' + a.errors.slice(0, 3).join(' | '));

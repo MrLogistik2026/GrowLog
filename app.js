@@ -93,7 +93,9 @@ const KLIMA_VORLAGEN = { '21/40': 1, '24/55': 1, '25/60': 1 }; // Wertepaare der
 const LICHT_ZIEL = {
   saemling: { ppfd: [150, 300], label: 'Sämling' },
   wachstum: { ppfd: [400, 600], label: 'Wachstum' },
-  bluete:   { ppfd: [600, 900], label: 'Blüte' },
+  // (v1.5.405) bleichAb: Der Bestand nutzt in der Blüte weit mehr Licht als 900 (ANBAU.md 8.1); Photobleaching — weiß
+  // ausgebleichte Blütenspitzen — praktisch ab ~1500 (8.2). Darunter ist „über dem Ziel“ kein Schaden.
+  bluete:   { ppfd: [600, 900], label: 'Blüte', bleichAb: 1500 },
 };
 function _dliAus(ppfd, stunden) { return Math.round(ppfd * stunden * 0.0036); }
 /** (v1.5.404) Die drei Ziele in einer Zeile — für Lexikon und Lichtmesser. */
@@ -3625,7 +3627,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.404';
+const APP_VERSION = 'v1.5.405';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -39304,7 +39306,7 @@ function _ppfdTargets(stunden) {
   }
   const h = (isFinite(stunden) && stunden > 0) ? stunden : 18;
   const z = LICHT_ZIEL[key];
-  return { ppfd: z.ppfd, dli: [_dliAus(z.ppfd[0], h), _dliAus(z.ppfd[1], h)], label: z.label, stunden: h };
+  return { ppfd: z.ppfd, dli: [_dliAus(z.ppfd[0], h), _dliAus(z.ppfd[1], h)], label: z.label, stunden: h, bleichAb: z.bleichAb || null };
 }
 
 function startPPFD() {
@@ -39323,11 +39325,16 @@ function startPPFD() {
     const ppfd = Math.round(lux * factor);
     const dli = (ppfd * hours * 3600 / 1000000).toFixed(1);
     const tgt = _ppfdTargets(hours), pLo = tgt.ppfd[0], pHi = tgt.ppfd[1], dLo = tgt.dli[0], dHi = tgt.dli[1];
-    if (ppfdEl) { ppfdEl.textContent = ppfd; ppfdEl.style.color = ppfd >= pLo && ppfd <= pHi ? 'var(--green)' : ppfd > pHi ? 'var(--red)' : ppfd >= pLo * 0.5 ? 'var(--yellow)' : 'var(--text-muted)'; }
+    // (v1.5.405) In der Blüte ist „über dem Ziel“ bis zur Bleich-Schwelle gelb statt rot — vorher war jeder Wert über 900 rot,
+    // gegen ANBAU.md 8.1 („Eine Warnung ‚zu viel Licht‘ ab 900 wäre falsch“).
+    const _bleich = tgt.bleichAb, _ueber = ppfd > pHi, _hell = _ueber && _bleich && ppfd < _bleich;
+    if (ppfdEl) { ppfdEl.textContent = ppfd; ppfdEl.style.color = ppfd >= pLo && ppfd <= pHi ? 'var(--green)' : _hell ? 'var(--yellow)' : ppfd > pHi ? 'var(--red)' : ppfd >= pLo * 0.5 ? 'var(--yellow)' : 'var(--text-muted)'; }
     if (luxEl && !luxEl.isContentEditable) luxEl.textContent = Math.round(lux);
     if (dliEl) { const d = parseFloat(dli); dliEl.textContent = dli; dliEl.style.color = d >= dLo && d <= dHi ? 'var(--green)' : d > dHi ? 'var(--orange)' : 'var(--teal)'; }
     const tEl = document.getElementById('ppfd-target');
-    if (tEl) tEl.textContent = `Ziel jetzt (${tgt.label}): ${pLo}–${pHi} PPFD · ${dLo}–${dHi} DLI`;
+    if (tEl) tEl.textContent = `Ziel jetzt (${tgt.label}): ${pLo}–${pHi} PPFD · ${dLo}–${dHi} DLI`
+      + (_hell ? ` · darüber kein Schaden: Mehr Licht bringt in der Blüte meist mehr Ertrag. Zu viel ist es erst, wenn die obersten Blütenspitzen weiß ausbleichen`
+        : (_bleich && ppfd >= _bleich) ? ` · ab ~${_bleich} bleichen die obersten Blütenspitzen weiß aus — Leistung senken oder Lampe höher hängen` : '');
   }
 
   function startSensor() {
