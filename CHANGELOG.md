@@ -2,6 +2,21 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-08 — v1.5.422
+
+- **Lexikon „Wasser-Härte“ setzte Härte mit Pufferkraft gleich** (`UEBERGABE.md` 10, Prüfbericht vom 08.10.2026). Der Eintrag
+  stufte hart/weich nach °dH ein, nannte das „Carbonat-Puffer-Wirkung“ und folgerte daraus „→ Lockouts“, ohne Substrat.
+  Weiter standen dort „CalMag-Mangel fast garantiert“, „2–3 Tage abstehen lassen (Kalk fällt teilweise aus)“ und ein Preis
+  für Umkehrosmose. Die FAQ „Ist mein Wasser zu hart?“ sagte „Härte erhöht den pH“ und „pH auf 6.4“, für jedes Substrat.
+- **Jetzt** nach `ANBAU.md` 3: Die Karbonathärte (KH) ist der Puffer, die Gesamthärte (GH) die Calcium- und
+  Magnesium-Versorgung. Ohne bekannte KH macht der Eintrag keine Aussage über die pH-Stabilität. Der Kalkpuffer gekalkter Erde
+  wird erklärt (4.1, 7.2). Der Eigen-EC gilt für jedes Wasser. Bei hartem Wasser nennt der Eintrag zuerst Klima und
+  Kalium-Booster als Ursache und ungepuffertes Coco als Ausnahme (1, 6.2, 7.1). „Abstehen lassen“ steht als nicht belegt
+  da. Die pH-Ziele kommen aus `phTargetFor`, die Grenzen 8/14 °dH sind als Konvention gekennzeichnet. Im CalMag-Eintrag
+  sagt der EC-Satz, dass ein EC-Meter weder GH von KH noch Calcium von Natrium trennt.
+- Gegengeprüft wie v1.5.420.
+- Test: `test_lichttexte.js` W1 bis W5.
+
 ## 2026-10-08 — v1.5.421
 
 - **Bleich-Schwelle „~1200“ und „über 600 W/m²“ an fünf Stellen** (Prüfbericht zu v1.5.399). Seit v1.5.405 warnt der
