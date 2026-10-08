@@ -3644,7 +3644,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.407';
+const APP_VERSION = 'v1.5.408';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -11401,6 +11401,22 @@ function _keimVorlauf(c, plan) {
   if (!Number.isFinite(soll) || soll <= 0) return 0;
   const v = anzuchtLenFor(c) - soll;
   return (v > 0 && v <= KEIM_VORLAUF_MAX) ? v : 0;
+}
+/**
+ * (v1.5.408, F12) Der Plan-Tag: der Tag, den ein Plan mit Phasen-Gerüst meint. Er zählt ab dem Keimling („Tag 1 = Sprout"), die App ab dem
+ * Keimstart — die Differenz ist der Keim-Vorlauf (_keimVorlauf). Die Rainbow-Wochen-Tipps nennen ihre Termine in Plan-Tagen
+ * („FIM-Stichtag Plan-Tag 13"), aber kein Bildschirm nannte den heutigen: Bei fünf Tagen Vorlauf liegt jede Rechnung im Kopf
+ * fünf Tage daneben. Nur in Anzucht und Blüte — dort stehen die Termine; ab dem Spülen nennt der Plan keine Plan-Tage mehr.
+ * @returns {number|null} null ohne Vorlauf (dann ist der Plan-Tag der Tag der App) und vor dem Durchbruch (Plan-Tag unter 1).
+ */
+function _planTagAbKeimling(c, iso) {
+  if (!c || !c.startDate || !iso) return null;
+  const v = _keimVorlauf(c, getPlanForCycle(c));
+  if (!(v > 0)) return null;
+  const p = phase(iso, c);
+  if (!p || (p.ph !== 'anzucht' && p.ph !== 'bloom')) return null;
+  const t = isoDiff(iso, c.startDate) + 1 - v;
+  return t >= 1 ? t : null;
 }
 
 function planWeekBounds(c) {
@@ -21661,7 +21677,10 @@ function _planSheet(c, prods, weekNames, activeFocus) {
     const _f = activeFocus?.[w] || _planWochenFokus(plan, w);
     if (!_f || !_f.tip) return '';
     const _fuer = _wochen.length > 1 ? ` (${_imWoche(w).map(x => x.z.name).join(', ')})` : '';
-    return `<div style="font-size:11px;color:var(--yellow);line-height:1.5;background:rgba(240,208,80,0.06);border-left:2px solid var(--yellow);border-radius:0 8px 8px 0;padding:8px 10px;margin-top:10px">💡 <b>Woche ${w}${_fuer}:</b> ${_f.tip}</div>`;
+    // (v1.5.408, F12) Die Tipps nennen Termine in Plan-Tagen („FIM-Stichtag Plan-Tag 13") — der heutige steht gleich dabei, wo der Plan ihn verlangt.
+    const _pTage = _imWoche(w).map(x => ({ n: x.z.name, t: _planTagAbKeimling(x.z, _heute) })).filter(x => x.t);
+    const _heutePt = _pTage.length ? ` <span style="color:var(--text-hint)">(heute Plan-Tag ${_pTage.map(x => (_wochen.length > 1 ? x.n + ': ' : '') + x.t).join(', ')})</span>` : '';
+    return `<div style="font-size:11px;color:var(--yellow);line-height:1.5;background:rgba(240,208,80,0.06);border-left:2px solid var(--yellow);border-radius:0 8px 8px 0;padding:8px 10px;margin-top:10px">💡 <b>Woche ${w}${_fuer}:</b>${_heutePt} ${_f.tip}</div>`;
   }).join('');
 
   const mix = (S.mixOrder && S.mixOrder.length) ? `<div style="margin-top:12px">
@@ -30588,6 +30607,12 @@ function renderEntry(iso) {
             <div style="display:flex;align-items:center;gap:6px;margin-top:3px;flex-wrap:wrap">
               <span style="background:${cl.hex}22;border:0.5px solid ${cl.hex}44;border-radius:6px;padding:2px 8px;font-size:11px;font-weight:600;color:${cl.hex}">${_phasenAnzeige(p).icon} ${_phasenAnzeige(p).name}</span>
               <span style="font-size:12px;color:var(--text-sub);font-weight:500">${phaseDayLabel(p)}</span>
+              ${(() => {
+                // (v1.5.408, F12) Zählt der Plan ab dem Keimling, steht der Plan-Tag neben dem Tag: Die Wochen-Tipps nennen ihre Termine so
+                // („FIM-Stichtag Plan-Tag 13"). Ohne Vorlauf (21 Anzucht-Tage) entfällt er, dann ist er der Tag der App.
+                const _pt = _planTagAbKeimling(c, iso);
+                return _pt ? `<span title="Dein Düngeplan zählt ab dem Keimling, die App ab dem Keimstart. Heute ist Plan-Tag ${_pt}." style="font-size:11px;color:rgba(90,171,240,0.9)">· Plan-Tag ${_pt} ab Keimling</span>` : '';
+              })()}
               ${(() => {
                 // (v1.5.55) Pflanzen-Einstieg auf JEDEM Tag, nicht nur an Gießtagen. Die
                 // Karte mit der Gießmenge gibt es nur, wenn auch gegossen wird — eine

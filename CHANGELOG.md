@@ -2,6 +2,22 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-08 — v1.5.408
+
+- **Kein Bildschirm nannte den heutigen Plan-Tag, obwohl die Rainbow-Tipps ihre Termine so nennen** (Run-02-Prüfung vom
+  07.10.2026, F12). Rainbow zählt ab dem Keimling („Tag 1 = Sprout“), die App ab dem Keimstart. Bei fünf Tagen Keim-Vorlauf
+  liegen beide fünf Tage auseinander. An Tag 13 stand im Eintrag die Wochenkarte „Plan-Woche 2 beginnt … FIM-Stichtag
+  (Plan-Tag 13)“, der Kopf daneben sagte „Tag 13“. Heute war aber Plan-Tag 8, der Stichtag kam erst an Tag 18. Wer beides
+  zusammenliest, nimmt den Wochenanfang als Stichtag, fünf Tage zu früh. Bei Automatics ist ein Eingriff zur falschen Zeit
+  dauerhaft (`ANBAU.md` 9).
+- **Jetzt** steht im Eintragskopf neben dem Tag „· Plan-Tag 13 ab Keimling“, in beiden Modi, nur in Anzucht und Blüte und nur,
+  wo der Plan ab dem Keimling zählt (`_planTagAbKeimling`, aus `_keimVorlauf`). Im Plan-Blatt steht beim Wochen-Tipp
+  „(heute Plan-Tag 13)“, bei zwei Gruppen mit Namen. Ohne Vorlauf, vor dem Durchbruch und ab dem Spülen erscheint nichts.
+- Geprüft im Browser auf 360 px: Die Kopfzeile bricht sauber um.
+- Vorgeschlagen und gemessen hat das ein Prüfer (Sonnet) auf v1.5.403.
+- Test: `test_runzwei.js` F12 (10 Prüfungen; 8 fallen auf v1.5.407 um).
+
+
 ## 2026-10-08 — v1.5.407
 
 - **Kalender mit zwei Gruppen: Die Zelle zeigte die Aufgabe des Zyklus, der in der Liste oben steht** (Run-02-Prüfung vom

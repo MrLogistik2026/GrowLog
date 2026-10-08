@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.407** · index.html 2,56 MB · 781 Funktionen
+Stand: **v1.5.408** · index.html 2,56 MB · 781 Funktionen
 Zuletzt fortgeschrieben am 07.10.2026 (Nachtprüfung und Run 02 — Abschnitt 0o, „Stand Run 02"). Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
@@ -341,6 +341,7 @@ Speicher-Befunde sind in v1.5.340–344 behoben. Rohdaten: Workflow wf_63d754b1-
 - v1.5.405: Lichtmesser in der Blüte über 900 gelb mit Erklärung, rot erst ab ~1500 (Bleich-Schwelle, ANBAU.md 8.1/8.2).
 - v1.5.406: Gieß-Fahrplan listet die Anzucht-Güsse ab heute mit (nur zum Ansehen, ohne Umschalter; `collectAnzuchtGusse`, F08).
 - v1.5.407: Kalender bei zwei Gruppen — die Zelle zeigt die folgenreichere Aufgabe (Ernte > IceFlush > Spülen > Guss > Trocknen, `_calHauptAktion`, F18). Offen, Patricks Entscheidung: beide Tag-Nummern in einer Zelle.
+- v1.5.408: Eintragskopf und Plan-Blatt nennen den heutigen Plan-Tag, wo der Plan ab dem Keimling zählt (`_planTagAbKeimling`, F12).
 
 **Gegenprüfung von v1.5.364/365 (07.10.2026 nachts, Workflow wf_4cf817bf-629, drei Sonnet-Prüfer + Gegenprüfer).** Kein Fehlalarm
 in 33 App-Fassungen, allen Vorlagen und über 2800 Klicks; die schweren Befunde (unsichere Kopie zerstört den Hauptstand, Tropfen als

@@ -522,6 +522,48 @@ async function starte() {
       `F18-6 eine Gruppe allein: IceFlush-Zelle verändert: ${JSON.stringify(r.solo)}`);
   }
 
+  // F12 · Zwei Wochenzählungen und kein heutiger Plan-Tag: Der Plan zählt ab dem Keimling, die App ab dem Keimstart.
+  // Mit 26 Anzucht-Tagen sind das 5 Tage Vorlauf; die Rainbow-Wochen-Tipps nennen ihre Termine in Plan-Tagen („FIM-Stichtag Plan-Tag 13").
+  {
+    const fl = (s) => String(s || '').split(/\s+/).join(' ');
+    const r = JSON.parse(a.E(`(function(){ const vorher = S.cycles.slice(); const eVorher = JSON.stringify(S.entries); const pid = S.cycles[0].fertPlanId;
+      const heute = todayISO();
+      const pt = (c, iso) => (typeof _planTagAbKeimling === 'function' ? _planTagAbKeimling(c, iso) : null);
+      const text = (id) => { const el = document.getElementById(id); return el ? el.textContent : ''; };
+      const lege = (tag, anz) => { S.cycles = []; S.entries = {};
+        const c = addCyc({ name: 'Vorlauf-Zyklus', startDate: isoPlus(heute, -(tag - 1)), seedType: 'auto', growType: 'indoor', medium: 'erde', potSize: 11,
+          plantCount: 3, startMethod: 'direct', fertPlanId: pid }, { still: true }); c.anzuchtDays = anz; c.bloomDays = 70; return c; };
+      const lies = (tag, anz, einsteiger) => { S.beginnerMode = einsteiger; const c = lege(tag, anz);
+        openEntry(heute); renderEntry(heute); const kopf = text('entry-body');
+        renderDash(); const dash = text('dash-body');
+        switchFertPlan(pid); goTo('duenger'); const blatt = text('duenger-body'); goTo('dash');
+        return { vorlauf: _keimVorlauf(c, getPlanForCycle(c)), planTag: pt(c, heute), kopf, dash, blatt }; };
+      const out = { t18p: lies(18, 26, false), t18e: lies(18, 26, true), t33p: lies(33, 26, false), ohne: lies(18, 21, false) };
+      // Die Tage, die die Wochen-Tipps nennen, liegen in der Plan-Woche, die sie nennen
+      const c = lege(60, 26); const am = (n) => { for (let i = 0; i < 120; i++) { const iso = isoPlus(c.startDate, i); if (pt(c, iso) === n) return iso; } return null; };
+      const i13 = am(13), i22 = am(22);
+      out.fim = { iso: i13, woche: i13 && fertPlanWeek(c, i13), ph: i13 && phase(i13, c).ph };
+      out.blueteNull = { iso: i22, woche: i22 && fertPlanWeek(c, i22), ph: i22 && phase(i22, c).ph };
+      // Vor dem Durchbruch gibt es keinen Plan-Tag; der erste ist der Tag nach dem Vorlauf
+      out.davor = [pt(c, isoPlus(c.startDate, 2)), pt(c, isoPlus(c.startDate, 4)), pt(c, isoPlus(c.startDate, 5))];
+      // Ab dem Spülen nennt der Plan keine Plan-Tage mehr
+      let spuelen = null; for (let i = 0; i < 160 && !spuelen; i++) { const iso = isoPlus(c.startDate, i); const p = phase(iso, c); if (p && p.ph === 'flush') spuelen = iso; }
+      out.spuelen = spuelen && pt(c, spuelen);
+      S.beginnerMode = false; S.entries = JSON.parse(eVorher); S.cycles = vorher; saveS();
+      return JSON.stringify(out); })()`));
+    pruefe(r.t18p.vorlauf === 5 && r.t18p.planTag === 13, `F12-0 Prüflage: Tag 18 mit 26 Anzucht-Tagen ist Plan-Tag 13 (Vorlauf ${r.t18p.vorlauf}, Plan-Tag ${r.t18p.planTag})`);
+    pruefe(/Anzucht Tag 18 · Plan-Tag 13 ab Keimling/.test(fl(r.t18p.kopf)), `F12-1 Profi: der Eintragskopf nennt an Tag 18 nicht „Plan-Tag 13": ${fl(r.t18p.kopf).slice(0, 400)}`);
+    pruefe(/Anzucht Tag 18 · Plan-Tag 13 ab Keimling/.test(fl(r.t18e.kopf)), `F12-2 Einsteiger: der Eintragskopf nennt an Tag 18 nicht „Plan-Tag 13": ${fl(r.t18e.kopf).slice(0, 400)}`);
+    pruefe(/Blüte Tag 33 · Plan-Tag 28 ab Keimling/.test(fl(r.t33p.kopf)), `F12-3 Blüte: der Eintragskopf nennt an Tag 33 nicht „Plan-Tag 28": ${fl(r.t33p.kopf).slice(0, 400)}`);
+    pruefe(r.ohne.vorlauf === 0 && r.ohne.planTag === null && !/Plan-Tag \d+ ab Keimling/.test(fl(r.ohne.kopf)) && !/heute Plan-Tag/.test(fl(r.ohne.blatt)),
+      `F12-4 ohne Vorlauf (21 Anzucht-Tage) steht kein Plan-Tag da — er wäre der Tag der App: ${fl(r.ohne.kopf).slice(0, 300)}`);
+    pruefe(r.fim.woche === 2 && r.fim.ph === 'anzucht', `F12-5 Plan-Tag 13 („FIM-Stichtag … fällt in diese Woche") liegt nicht in Plan-Woche 2: ${JSON.stringify(r.fim)}`);
+    pruefe(r.blueteNull.woche === 4 && r.blueteNull.ph === 'bloom', `F12-6 Plan-Tag 22 („Blütetag 0 in Woche 4") liegt nicht in Plan-Woche 4 der Blüte: ${JSON.stringify(r.blueteNull)}`);
+    pruefe(r.davor[0] === null && r.davor[1] === null && r.davor[2] === 1, `F12-7 vor dem Durchbruch gibt es keinen Plan-Tag, Tag 6 ist Plan-Tag 1: ${JSON.stringify(r.davor)}`);
+    pruefe(r.spuelen === null, `F12-8 im Spülen steht kein Plan-Tag mehr: ${JSON.stringify(r.spuelen)}`);
+    pruefe(/Woche 2: \(heute Plan-Tag 13\)/.test(fl(r.t18p.blatt)), `F12-9 Plan-Blatt: der Wochen-Tipp nennt nicht den heutigen Plan-Tag: ${fl(r.t18p.blatt).slice(-900)}`);
+  }
+
   pruefe(!a.errors.length, 'Skriptfehler: ' + a.errors.slice(0, 3).join(' | '));
   if (fehler.length) { console.log(`test_runzwei: ${fehler.length} von ${n} Prüfungen rot`); fehler.forEach((f) => console.log('  ✗ ' + f)); process.exit(1); }
   console.log(`test_runzwei: alle ${n} Prüfungen grün`);
