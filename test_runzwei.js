@@ -387,6 +387,37 @@ async function starte() {
     pruefe(r.spanne && r.rlf.includes(r.spanne + ' RLF') && !/°C d+,d+–/.test(r.rlf), `F17-2 RLF-Zeile: ${r.rlf}`);
   }
 
+  // F13 (v1.5.402) · Vor dem Durchbruch des Keimlings fehlt kein Guss (Keim-Vorlauf, ANBAU.md 16)
+  {
+    const r = JSON.parse(a.E(`(function(){ const vorher = S.cycles.slice(); const eVorher = JSON.stringify(S.entries); S.beginnerMode = false;
+      const heute = todayISO(); const pid = S.cycles[0].fertPlanId;
+      const neu = (anz) => { const c = addCyc({ name: 'Vorlauf ' + anz, startDate: isoPlus(heute, -10), seedType: 'auto', growType: 'indoor', medium: 'erde',
+        potSize: 11, plantCount: 3, startMethod: 'direct', fertPlanId: pid }, { still: true }); c.anzuchtDays = anz; return c; };
+      const messe = (c) => { const tage = []; for (let i = 0; i < 10; i++) { const iso = isoPlus(c.startDate, i); if (isGiessTag(iso, c)) tage.push(i + 1); }
+        const inter = intervalDryDefault(c, heute);
+        return { vorlauf: _keimVorlauf(c, getPlanForCycle(c)), tage, fehlend: countMissingPastWateringDays(c),
+          nachholen: getCatchupCandidates(c).map(x => x.dayNum), ziel: inter && inter.targetGussIso ? isoDiff(inter.targetGussIso, c.startDate) + 1 : null,
+          luecke: !!_gussLueckeStatus(c, inter), heuteFaellig: gussFaellig(c, isoPlus(c.startDate, 0)) }; };
+      S.cycles = []; const mit = neu(26); S.entries = {};
+      // Setzguss an Tag 1 eingetragen
+      S.entries[mit.startDate] = { temp: '', humidity: '', cycleData: { [mit.id]: { water: '50', doses: {}, photos: [] } } };
+      const a1 = messe(mit);
+      S.cycles = []; const ohne = neu(21); S.entries = {}; const a2 = messe(ohne);
+      // Heute ist Tag 1 eines Zyklus mit Vorlauf: der Start-Guss bleibt fällig
+      S.cycles = []; const frisch = addCyc({ name: 'Frisch', startDate: heute, seedType: 'auto', growType: 'indoor', medium: 'erde', potSize: 11, plantCount: 3,
+        startMethod: 'direct', fertPlanId: pid }, { still: true }); frisch.anzuchtDays = 26;
+      const a3 = { tag1: isGiessTag(heute, frisch), faellig: gussFaellig(frisch, heute) };
+      S.entries = JSON.parse(eVorher); S.cycles = vorher; saveS();
+      return JSON.stringify({ a1, a2, a3 }); })()`));
+    const { a1, a2, a3 } = r;
+    const vor = a1.tage.filter(t => t <= a1.vorlauf), nach = a1.tage.filter(t => t > a1.vorlauf);
+    pruefe(a1.vorlauf === 5 && vor.length >= 1 && nach.length >= 1, `F13-0 Prüflage: ${JSON.stringify(a1)}`);
+    pruefe(a1.fehlend === nach.length - 0 && !a1.nachholen.some(t => t <= a1.vorlauf), `F13-1 Gießtage vor dem Durchbruch gelten als fehlend: ${JSON.stringify(a1)}`);
+    pruefe(a1.ziel === null || a1.ziel > a1.vorlauf, `F13-2 Hebe-Test fragt nach einem Guss vor dem Durchbruch (Tag ${a1.ziel})`);
+    pruefe(a2.vorlauf === 0 && a2.fehlend === a2.tage.length, `F13-3 ohne Vorlauf zählt jeder vergangene Gießtag weiter: ${JSON.stringify(a2)}`);
+    pruefe(a3.tag1 && a3.faellig, `F13-4 der Start-Guss heute an Tag 1 ist nicht mehr fällig: ${JSON.stringify(a3)}`);
+  }
+
   pruefe(!a.errors.length, 'Skriptfehler: ' + a.errors.slice(0, 3).join(' | '));
   if (fehler.length) { console.log(`test_runzwei: ${fehler.length} von ${n} Prüfungen rot`); fehler.forEach((f) => console.log('  ✗ ' + f)); process.exit(1); }
   console.log(`test_runzwei: alle ${n} Prüfungen grün`);

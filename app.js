@@ -3611,7 +3611,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.401';
+const APP_VERSION = 'v1.5.402';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -13703,8 +13703,23 @@ function _nichtGiessenWorte(c, iso, gm) {
  * fehlender Gießtage und die Serie — dort galt ein gemessen ausgelassener Guss als verpasst.
  * Nie aus getAction, isGiessTag oder nextGiessTag aufrufen: giessenLautMessung fragt beide.
  */
+/**
+ * (v1.5.402) Liegt iso vor dem Durchbruch des Keimlings? Die App kennt ihn dort, wo der Plan ab dem Keimling zählt: Die Tage des
+ * Keim-Vorlaufs (_keimVorlauf, v1.5.301) liegen vor Plan-Tag 1 (Rainbow-Blatt: „Tag 1 = Sprout"). Ohne Vorlauf: nie.
+ */
+function _vorDemKeimling(c, iso) {
+  if (!c || !c.startDate || !iso) return false;
+  const v = _keimVorlauf(c, getPlanForCycle(c));
+  return v > 0 && isoDiff(iso, c.startDate) < v;
+}
+
 function gussFaellig(c, iso) {
   if (!isGiessTag(iso, c) || getAction(iso, c) === 'ice') return false;
+  // (v1.5.402) Ein vergangener Gießtag vor dem Durchbruch fehlt nicht: Der Samen lag im Glas, im Tuch oder ohne aufnehmende
+  // Wurzel in der Erde (ANBAU.md 16). Vorher zählten Einstellungen „6 Gießtage seit Start fehlen", „Auto-eintragen" schrieb
+  // dort 600 ml mit Plan-Dünger hinein, und der Hebe-Test fragte nach einem Guss an Tag 4 (Run-02-Prüfung 07.10.2026, F13).
+  // Heute und künftig gilt weiter der Plan — etwa der Start-Guss an Tag 1.
+  if (iso < todayISO() && _vorDemKeimling(c, iso)) return false;
   const gm = giessenLautMessung(c, iso);
   return !(gm && gm.giessen === false);
 }
@@ -32805,6 +32820,8 @@ function intervalDryDefault(c, iso) {
   for (let fwd = 1; fwd <= intDays + 10; fwd++) {
     const probe = isoPlus(lastWaterIso, fwd);
     const act = (typeof getAction === 'function') ? getAction(probe, c) : null;
+    // (v1.5.402) Ein Gießtag vor dem Durchbruch, der vor dem angesehenen Tag liegt, ist kein übersprungener Guss (gussFaellig).
+    if (probe < iso && _vorDemKeimling(c, probe)) continue;
     if (['giess', 'giess_anz', 'spuelen', 'ice', 'saettigung'].includes(act)) {
       targetGussIso = probe;
       break;

@@ -2,6 +2,25 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-08 — v1.5.402
+
+- **Vor dem Durchbruch des Keimlings galten geplante Güsse als fehlend** (Run-02-Prüfung vom 07.10.2026, F13; Patrick am
+  08.10.: „F13 kannst du auch gleich bauen“). Rainbow zählt seine Plan-Tage ab dem Keimling, die App kennt die Tage davor
+  als Keim-Vorlauf (`_keimVorlauf`, v1.5.301). Bei der Start-Methode „Ohne Vorbefeuchten“ plant sie dort trotzdem Gießtage.
+  In der Prüfung zeigte sich:
+  - Die Einstellungen meldeten „6 Gießtage seit Start fehlen“.
+  - „Auto-eintragen“ schrieb an Tag 1 600 ml mit drei Plan-Düngern hinein, obwohl der Samen im Wasserglas lag.
+  - Die Hebe-Test-Karte fragte nach einem Guss an Tag 4, zwei Tage vor dem Durchbruch.
+- **Jetzt** fehlt ein vergangener Gießtag vor dem Durchbruch nicht. Die Regel steht in `gussFaellig`, das Zählung,
+  Auto-eintragen, Nachholen, „überfällig“ und die Serie schon fragen, und genauso in der Restgewicht-Hochrechnung
+  (`intervalDryDefault`), die den übersprungenen Guss für die Hebe-Test-Karte sucht. Der Grund: Vor dem Durchbruch gibt es
+  keine aufnehmende Wurzel, ein nicht eingetragener Guss ist dort kein Befund (`ANBAU.md` 16).
+- **Unverändert:** Heute und künftig gilt der Plan, etwa der Start-Guss an Tag 1. Pläne ohne Keim-Vorlauf zählen wie bisher.
+- Geprüft in der Vorschau mit dem Rainbow-Zyklus dort, nur im Arbeitsspeicher auf 26 Anzucht-Tage gesetzt: „12 Gießtage seit
+  Start fehlen“ wird zu „10“, Tag 1 und Tag 4 fallen heraus.
+- Test: `test_runzwei.js` F13 (5 Prüfungen; 2 fallen auf v1.5.401 um).
+
+
 ## 2026-10-08 — v1.5.401
 
 - **Die Luftfeuchte-Spanne stand im Eintrag mit Nachkommastellen, der Satz daneben in ganzen Prozent** (Run-02-Prüfung vom
