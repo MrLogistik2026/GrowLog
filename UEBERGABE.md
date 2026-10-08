@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.424** · index.html 2,56 MB · 781 Funktionen
+Stand: **v1.5.425** · index.html 2,56 MB · 781 Funktionen
 Zuletzt fortgeschrieben am 08.10.2026 (Nachtprüfung und Run 02 — Abschnitt 0o, „Stand Run 02"). Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
@@ -357,6 +357,7 @@ Speicher-Befunde sind in v1.5.340–344 behoben. Rohdaten: Workflow wf_63d754b1-
 - v1.5.422: Lexikon „Wasser-Härte“ und FAQ „Ist mein Wasser zu hart?“ nach ANBAU.md 3 — Karbonathärte (Puffer) und Gesamthärte (Ca/Mg) getrennt, „abstehen, Kalk fällt aus“ als nicht belegt, pH-Ziel nach Substrat.
 - v1.5.423: Keimungs-Leitfaden Tag 4 ohne feste 30–40 cm — Herstellerangabe, kleine Schritte, Ziel aus `LICHT_ZIEL.saemling`.
 - v1.5.424: Lexikon „Wurzelzone Outdoor“ — Thermometer im Substrat statt Hand am Topf, Zahlen aus ANBAU.md 7.3 statt „31 °C“; Test `test_lichttexte.js` für 420–424.
+- v1.5.425: „✓“-Meldungen (25 Stellen) nur nach erfolgreichem Speichern; „Backup ✓“ bleibt, weil der Download geklappt hat (Test `test_haekchen.js`).
 
 **Gegenprüfung von v1.5.364/365 (07.10.2026 nachts, Workflow wf_4cf817bf-629, drei Sonnet-Prüfer + Gegenprüfer).** Kein Fehlalarm
 in 33 App-Fassungen, allen Vorlagen und über 2800 Klicks; die schweren Befunde (unsichere Kopie zerstört den Hauptstand, Tropfen als

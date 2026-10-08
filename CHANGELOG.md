@@ -2,6 +2,19 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-08 — v1.5.425
+
+- **25 „✓“-Meldungen erschienen auch, wenn das Speichern gescheitert war** (Prüfrunde vom 07.10.2026, Speicher, Rest aus
+  Runde 2). Ein Beispiel ist „✓ Erledigt!“ bei vollem Speicher. `saveS()` meldete den Fehler und zeigte das rote Band,
+  gleich danach überschrieb die Erfolgsmeldung die Fehlermeldung. v1.5.328 hatte das für Eintrag, Plan und Produkt behoben;
+  übrig waren Gießrhythmus, Hebe-Test/Waage, Verschiebungen, Plan wechseln, laden, anlegen, umbenennen, duplizieren,
+  löschen, Zyklus sichern, Auto-Eintragen, Notizen, Zurücksetzen, Erledigt, Aufräumen und Foto.
+- **Jetzt** steht das Häkchen nur noch nach echtem Speichern (`const _gesichert = saveS()`, dann `if (_gesichert)`). Scheitert
+  es, bleiben die Meldung des Speichers und das Band stehen. Ausnahme ist „Backup ✓“: Der Download hat dann geklappt, auch
+  wenn das Datum dazu nicht gespeichert werden konnte.
+- Test: `test_haekchen.js` H1 und H2 (fallen auf v1.5.424 um; H2 sucht im Quelltext nach jedem „✓“ hinter einem ungeprüften
+  `saveS()`).
+
 ## 2026-10-08 — v1.5.424
 
 - **Lexikon „Wurzelzone Outdoor“: Hand außen am Topf als Test, dazu „Wurzeln sterben bei 31 °C“, „bis zu 95 %“,

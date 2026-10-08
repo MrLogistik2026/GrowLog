@@ -4669,7 +4669,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.424';
+const APP_VERSION = 'v1.5.425';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -10064,9 +10064,9 @@ async function maybeSuggestIntervalChange(c, iso, sugOverride) {
     const stamp = `⚙ Gieß-Rhythmus ${sug.fromIv}→${sug.toIv} Tage ${isShort ? 'verkürzt' : 'verlängert'} (App-Vorschlag angenommen)`;
     cd.notes = (cd.notes && String(cd.notes).trim()) ? (cd.notes + '\n' + stamp) : stamp;
   }
-  saveS();
+  const _gesichert = saveS();   // (v1.5.425) „✓“ nur, wenn es wirklich gespeichert ist
   if (typeof vibrate === 'function') vibrate();
-  toast(`Rhythmus auf ${sug.toIv} Tage gesetzt ✓`, 3000);
+  if (_gesichert) toast(`Rhythmus auf ${sug.toIv} Tage gesetzt ✓`, 3000);
   if (typeof _rerender === 'function') setTimeout(() => _rerender(), 400);
 }
 
@@ -10435,8 +10435,8 @@ async function setWeightModeOff(c) {
 async function setWeightModeLift(c) {
   if (!c) return;
   c.weightMode = 'lift';
-  saveS();
-  toast('✓ Hebe-Test aktiviert — im Entry erscheint der Slider');
+  const _gesichert = saveS();   // (v1.5.425) „✓“ nur, wenn es wirklich gespeichert ist
+  if (_gesichert) toast('✓ Hebe-Test aktiviert — im Entry erscheint der Slider');
   renderSet();
 }
 
@@ -10455,8 +10455,8 @@ async function setWeightModeLift(c) {
 async function setWeightModeFinger(c) {
   if (!c) return;
   c.weightMode = 'finger';
-  saveS();
-  toast('✓ Fingertest aktiviert');
+  const _gesichert = saveS();   // (v1.5.425) „✓“ nur, wenn es wirklich gespeichert ist
+  if (_gesichert) toast('✓ Fingertest aktiviert');
   renderSet();
 }
 
@@ -10501,14 +10501,14 @@ async function setWeightModeScale(c) {
       c.dryWeight = null;
     }
   }
-  saveS();
+  const _gesichert = saveS();   // (v1.5.425) „✓“ nur, wenn es wirklich gespeichert ist
   vibrate();
 
   if (c.dryWeight) {
     const capacity = c.saturatedWeight - c.dryWeight;
-    toast(`✓ Waage aktiv · von voll bis zum Gießpunkt ${(capacity/1000).toFixed(1)} L Wasser`);
+    if (_gesichert) toast(`✓ Waage aktiv · von voll bis zum Gießpunkt ${(capacity/1000).toFixed(1)} L Wasser`);
   } else {
-    toast('✓ Volles Gewicht gespeichert — das Gewicht kurz vor dem Gießen später nachtragen');
+    if (_gesichert) toast('✓ Volles Gewicht gespeichert — das Gewicht kurz vor dem Gießen später nachtragen');
   }
   renderSet();
 }
@@ -20742,9 +20742,9 @@ async function resetOffsets(cId) {
   if (!ok) return;
   c.offsetHistory = [];
   c.skippedDays = [];
-  saveS();
+  const _gesichert = saveS();   // (v1.5.425) „✓“ nur, wenn es wirklich gespeichert ist
   vibrate(10);
-  toast(`✓ ${count} Verschiebung${count === 1 ? '' : 'en'} gelöscht`);
+  if (_gesichert) toast(`✓ ${count} Verschiebung${count === 1 ? '' : 'en'} gelöscht`);
   if (editISO) renderEntry(editISO);
   if (tab === 'cal') renderCal();
 }
@@ -20790,9 +20790,9 @@ async function removeOneOffset(cId, iso) {
   );
   if (!ok) return;
   c.offsetHistory = c.offsetHistory.filter(e => e.date !== iso);
-  saveS();
+  const _gesichert = saveS();   // (v1.5.425) „✓“ nur, wenn es wirklich gespeichert ist
   vibrate(10);
-  toast('✓ Verschiebung zurückgenommen');
+  if (_gesichert) toast('✓ Verschiebung zurückgenommen');
   if (editISO) renderEntry(editISO);
   if (tab === 'cal') renderCal();
 }
@@ -23186,8 +23186,8 @@ function assignActivePlanToCycle(cId) {
   c.fertPlanId = plan.id;
   if (selId === cId && draft) draft.fertPlanId = plan.id;
   vibrate();
-  saveS();
-  toast(`✓ „${c.name}" nutzt jetzt „${plan.name}"`);
+  const _gesichert = saveS();   // (v1.5.425) „✓“ nur, wenn es wirklich gespeichert ist
+  if (_gesichert) toast(`✓ „${c.name}" nutzt jetzt „${plan.name}"`);
   renderDuenger();
 }
 
@@ -23331,8 +23331,8 @@ async function rainbowKopieAufBlatt(planId) {
   if (!ok) return;
   _rainbowKopieHeben(plan);
   if (S._activePlanId === plan.id && typeof syncActivePlanToGlobals === 'function') syncActivePlanToGlobals();
-  saveS();
-  toast('✓ Auf Blatt v2.1 gebracht');
+  const _gesichert = saveS();   // (v1.5.425) „✓“ nur, wenn es wirklich gespeichert ist
+  if (_gesichert) toast('✓ Auf Blatt v2.1 gebracht');
   if (typeof renderDuenger === 'function') renderDuenger();
 }
 /** (v1.5.311) Den Hinweis „auf Blatt v2.1 gebracht" wegtippen. */
@@ -23442,9 +23442,9 @@ async function loadPreset(key) {
     S._activePlanId = existing.id;
     syncActivePlanToGlobals(); // aus dem Plan laden
     _cycleAufPlanZeigen(existing.id);
-    saveS();
+    const _gesichert = saveS();   // (v1.5.425) „✓“ nur, wenn es wirklich gespeichert ist
     renderDuenger();
-    toast(`✓ Zu "${existing.name}" gewechselt`);
+    if (_gesichert) toast(`✓ Zu "${existing.name}" gewechselt`);
     return;
   }
 
@@ -23478,9 +23478,9 @@ async function loadPreset(key) {
     else delete activePlan.feedWaterRhythm;
     syncActivePlanToGlobals(); // globals aktualisieren
     _cycleAufPlanZeigen(activePlan.id);
-    saveS();
+    const _gesichert = saveS();   // (v1.5.425) „✓“ nur, wenn es wirklich gespeichert ist
     renderDuenger();
-    toast(`✓ "${pr.name}" geladen`);
+    if (_gesichert) toast(`✓ "${pr.name}" geladen`);
     return;
   }
 
@@ -23515,9 +23515,9 @@ async function loadPreset(key) {
   S._activePlanId = newId;
   syncActivePlanToGlobals(); // globals aus dem neuen Plan laden
   _cycleAufPlanZeigen(newId);
-  saveS();
+  const _gesichert = saveS();   // (v1.5.425) „✓“ nur, wenn es wirklich gespeichert ist
   renderDuenger();
-  toast(`✓ "${pr.name}" angelegt`);
+  if (_gesichert) toast(`✓ "${pr.name}" angelegt`);
 }
 
 /**
@@ -23624,9 +23624,9 @@ async function addFertPlan() {
   });
   S._activePlanId = id;
   syncActivePlanToGlobals();
-  saveS();
+  const _gesichert = saveS();   // (v1.5.425) „✓“ nur, wenn es wirklich gespeichert ist
   renderDuenger();
-  toast(`✓ Plan "${name}" angelegt`);
+  if (_gesichert) toast(`✓ Plan "${name}" angelegt`);
 }
 
 /** Switch the active plan in the Dünger screen. */
@@ -23647,9 +23647,9 @@ async function renameFertPlan(id) {
   const newName = await _promptPlanName('Plan umbenennen', plan.name);
   if (!newName || newName === plan.name) return;
   plan.name = newName;
-  saveS();
+  const _gesichert = saveS();   // (v1.5.425) „✓“ nur, wenn es wirklich gespeichert ist
   renderDuenger();
-  toast(`✓ Umbenannt in "${newName}"`);
+  if (_gesichert) toast(`✓ Umbenannt in "${newName}"`);
 }
 
 /** Duplicate a plan and make the copy active. */
@@ -23666,9 +23666,9 @@ async function duplicateFertPlan(id) {
   S.fertPlans.push(copy);
   S._activePlanId = copy.id;
   syncActivePlanToGlobals();
-  saveS();
+  const _gesichert = saveS();   // (v1.5.425) „✓“ nur, wenn es wirklich gespeichert ist
   renderDuenger();
-  toast(`✓ Dupliziert als "${newName}"`);
+  if (_gesichert) toast(`✓ Dupliziert als "${newName}"`);
 }
 
 /** Delete a plan. Fails if any cycle uses it (confirms first). */
@@ -23697,9 +23697,9 @@ async function deleteFertPlan(id) {
   // If it was active, pick another
   if (S._activePlanId === id) S._activePlanId = fallback ? fallback.id : null;
   syncActivePlanToGlobals();
-  saveS();
+  const _gesichert = saveS();   // (v1.5.425) „✓“ nur, wenn es wirklich gespeichert ist
   renderDuenger();
-  toast(`✓ "${plan.name}" gelöscht`);
+  if (_gesichert) toast(`✓ "${plan.name}" gelöscht`);
 }
 
 function selPC(c) {
@@ -25316,9 +25316,9 @@ async function saveDraft() {
     c.plantCount = c.plants.length;  // immer synchron
   }
 
-  saveS();
+  const _gesichert = saveS();   // (v1.5.425) „✓“ nur, wenn es wirklich gespeichert ist
   vibrate();
-  toast(`${sym(c)} ${c.name} gespeichert ✓${_rastHinweis}`);
+  if (_gesichert) toast(`${sym(c)} ${c.name} gespeichert ✓${_rastHinweis}`);
   renderSet();
 }
 
@@ -27821,9 +27821,9 @@ async function backfillPast(id) {
     }
     iter = isoPlus(iter, 1);
   }
-  saveS();
+  const _gesichert = saveS();   // (v1.5.425) „✓“ nur, wenn es wirklich gespeichert ist
   vibrate(20);
-  toast(`✓ ${filled} Tage eingetragen`);
+  if (_gesichert) toast(`✓ ${filled} Tage eingetragen`);
   renderSet();
 }
 
@@ -27842,8 +27842,8 @@ async function resetNotes(id) {
       S.entries[d].cycleData[id].notes = '';
     }
   });
-  saveS();
-  toast('Notizen gelöscht ✓');
+  const _gesichert = saveS();   // (v1.5.425) „✓“ nur, wenn es wirklich gespeichert ist
+  if (_gesichert) toast('Notizen gelöscht ✓');
 }
 
 /** Reset ALL data for a cycle (notes, water, pH, photos, doses) but keep cycle config */
@@ -27870,9 +27870,9 @@ async function resetAll(id) {
   c.offsetHistory = [];
   c.toppingDate = null;
   c.skippedDays = [];
-  saveS();
+  const _gesichert = saveS();   // (v1.5.425) „✓“ nur, wenn es wirklich gespeichert ist
   renderSet();
-  toast('Zurückgesetzt ✓');
+  if (_gesichert) toast('Zurückgesetzt ✓');
 }
 
 /** Bulk: Remove notes from all inactive cycles */
@@ -27896,8 +27896,8 @@ async function resetInactive() {
       }
     });
   });
-  saveS();
-  toast(`✓ ${count} Notizen-Einträge geleert`);
+  const _gesichert = saveS();   // (v1.5.425) „✓“ nur, wenn es wirklich gespeichert ist
+  if (_gesichert) toast(`✓ ${count} Notizen-Einträge geleert`);
 }
 
 /** Bulk: Wipe all data from inactive cycles */
@@ -27927,9 +27927,9 @@ async function wipeInactive() {
   });
   // Reset offset/topping on the cycles themselves
   inactive.forEach(c => { c.offsetHistory = []; c.toppingDate = null; c.skippedDays = []; });
-  saveS();
+  const _gesichert = saveS();   // (v1.5.425) „✓“ nur, wenn es wirklich gespeichert ist
   renderSet();
-  toast(`✓ ${count} Einträge gelöscht`);
+  if (_gesichert) toast(`✓ ${count} Einträge gelöscht`);
 }
 
 /** Wipe absolutely ALL entries (for when no cycles exist) */
@@ -27996,10 +27996,10 @@ function markTodayDone(cId, iso) {
   // erst beim nächsten App-Start.
   if (typeof _snapFlushToRhythm === 'function') { try { _snapFlushToRhythm(c); } catch (e) {} }
 
-  saveS();
+  const _gesichert = saveS();   // (v1.5.425) „✓“ nur, wenn es wirklich gespeichert ist
   renderDash();
   vibrate(20);
-  toast('✓ Erledigt!');
+  if (_gesichert) toast('✓ Erledigt!');
 }
 
 /**
@@ -28150,9 +28150,9 @@ async function purgeOrphans() {
     }
   });
 
-  saveS();
+  const _gesichert = saveS();   // (v1.5.425) „✓“ nur, wenn es wirklich gespeichert ist
   renderSet();
-  toast(count > 0 ? `🧹 ${count} Einträge bereinigt` : '✓ Keine verwaisten Einträge');
+  if (_gesichert) toast(count > 0 ? `🧹 ${count} Einträge bereinigt` : '✓ Keine verwaisten Einträge');
 }
 
 async function delCyc(id) {
@@ -36267,9 +36267,9 @@ function addPhoto(cId) {
           return;
         }
         // Probe succeeded — commit via saveS (undo push, flash, etc.)
-        saveS();
+        const _gesichert = saveS();   // (v1.5.425) „✓“ nur, wenn es wirklich gespeichert ist
         renderEntry(editISO);
-        toast('✓ Foto gespeichert');
+        if (_gesichert) toast('✓ Foto gespeichert');
         maybeWarnStorageQuota();
       };
       img.onerror = () => toast('⚠ Foto konnte nicht geladen werden');
