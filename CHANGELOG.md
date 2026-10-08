@@ -2,6 +2,27 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-08 — v1.5.393
+
+- **Die Einsteiger-Anleitung „Dein erster Grow“ kannte die empfohlene Keimmethode nicht** (gefunden beim Bau von v1.5.390; die
+  Anleitung war in keiner Textprüfung Prüfgegenstand). Schritt 2 bot nur Wasserglas und Küchentuch an, obwohl die App „Direkt in
+  Erde“ vorwählt und empfiehlt (v1.5.214, `ANBAU.md` 16). Wer trotzdem direkt säte, fand keine Anleitung. Er legte den Samen in
+  trockene Erde und bekam an Tag 1 von der App einen Start-Guss — womöglich direkt auf den Samen. Schritt 3 („beim Einpflanzen
+  gegossen … kann den Samen ertränken“) galt für alle.
+- **Jetzt** steht in Schritt 2 „direkt in die Erde (empfohlen)“ zuerst, so wie die App den Start führt:
+  - am Vortag die Erde anfeuchten, bis sie sich wie ein ausgewrungener Schwamm anfühlt;
+  - an Tag 1 der Start-Guss in Etappen;
+  - danach die Schritte aus `GERM_GUIDES.direct` (Tiefe, Wärme, Sprühen, Auflaufen, nicht ausgraben).
+
+  Glas und Tuch bleiben als Varianten B und C. Schritt 3 gilt „nur bei Glas oder Tuch“ und nennt statt „ertränken“ den
+  Mechanismus: Nasse Erde ohne Wurzel ist die Bedingung, unter der Fäulnis-Erreger keimende Samen befallen (ANBAU.md 16).
+- Die Ersatztexte der ganzen Anleitung hat vor dem Einbau ein Prüfer (Sonnet) Satz für Satz gegen `ANBAU.md` und den Code
+  gehalten. Er beanstandete sieben Entwürfe und vier Sätze, die stehen bleiben sollten — eingearbeitet hier und in den
+  folgenden Versionen.
+- Test: neu `test_erstergrow.js` S2 (6 Prüfungen; 5 fallen auf v1.5.392 um). `test_tag1keimung.js` erkennt den neuen
+  Wortlaut „Tag 1 ist der Keimstart“.
+
+
 ## 2026-10-08 — v1.5.392
 
 - **Das Lexikon riet, das Gießwasser am Vortag anzumischen** (beim Bau von v1.5.391 gefunden, Eintrag „Wassertemperatur“).

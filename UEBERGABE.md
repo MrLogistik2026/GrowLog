@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.392** · index.html 2,56 MB · 781 Funktionen
+Stand: **v1.5.393** · index.html 2,56 MB · 781 Funktionen
 Zuletzt fortgeschrieben am 07.10.2026 (Nachtprüfung und Run 02 — Abschnitt 0o, „Stand Run 02"). Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
@@ -328,6 +328,7 @@ Speicher-Befunde sind in v1.5.340–344 behoben. Rohdaten: Workflow wf_63d754b1-
 - v1.5.390: Lexikon „Drain-Kontrolle“ nennt das Ziel aus `DRAIN_ZIEL` (vorher oben 15–20, unten 10–20 %) und wann Drain überhaupt kommt.
 - v1.5.391: Gießwasser „Wasser mit 20–22 °C“ aus einer Quelle (`GIESSWASSER`, ANBAU.md 7.3) statt „lauwarm“ und 18–22 °C (F15).
 - v1.5.392: Lexikon „Wassertemperatur“ — Wasser am Vortag bereitstellen, Dünger erst kurz vor dem Gießen (ANBAU.md 10).
+- v1.5.393: Einsteiger-Anleitung „Dein erster Grow“, Schritt 2/3 — „direkt in die Erde (empfohlen)“ wie die Start-Methode der App (`GERM_GUIDES.direct`); Test `test_erstergrow.js`. Die Schritte 4–8 folgen (Prüferbericht vom 08.10. eingearbeitet).
 
 **Gegenprüfung von v1.5.364/365 (07.10.2026 nachts, Workflow wf_4cf817bf-629, drei Sonnet-Prüfer + Gegenprüfer).** Kein Fehlalarm
 in 33 App-Fassungen, allen Vorlagen und über 2800 Klicks; die schweren Befunde (unsichere Kopie zerstört den Hauptstand, Tropfen als

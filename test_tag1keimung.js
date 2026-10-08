@@ -83,7 +83,7 @@ const text = (html) => String(html).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' '
   console.log('\nB - Die Anleitung legt den Zyklus am Keimstart an');
   {
     const r = JSON.parse(E('JSON.stringify(FIRST_GROW_STEPS.slice(1, 3).map(x => ({ t: x.title, d: x.duration, c: x.content })))'));
-    pruef('Schritt 2 (Keimen) legt den Zyklus an: „Heute ist Tag 1"', /Keimen|keimen/.test(r[0].t) && /Heute ist Tag 1/.test(r[0].c) && /Zyklus/.test(r[0].c), r[0].d);
+    pruef('Schritt 2 (Keimen) legt den Zyklus an: „Heute ist Tag 1"', /Keimen|keimen/.test(r[0].t) && /Tag 1 ist der Keimstart|Heute ist Tag 1/.test(r[0].c)   /* (v1.5.393) Wortlaut: Anfeuchten kommt am Vortag */ && /Zyklus/.test(r[0].c), r[0].d);
     pruef('Schritt 3 (Einpflanzen) ist nicht mehr „Tag 1" und legt keinen Zyklus an', r[1].d !== 'Tag 1' && !/neuen Zyklus anlegen mit heutigem Startdatum/.test(r[1].c), r[1].d);
   }
 
