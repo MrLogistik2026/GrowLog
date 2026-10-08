@@ -4625,7 +4625,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.394';
+const APP_VERSION = 'v1.5.395';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -9228,14 +9228,17 @@ const FIRST_GROW_STEPS = [
     icon: '🌿',
     title: 'Schritt 5 — Wachstum (Woche 3–6)',
     duration: '3 Wochen',
-    content: `
+    // (v1.5.395) Vorher „Halbe Dosis" (gegen die Haltung aus v1.5.248), Toppen „bei 5–6 Blattetagen" ohne die Grenze für Automatics —
+    // obwohl Schritt 1 Automatics empfiehlt und Schritt 6 sagt, dass sie nach 3–4 Wochen blühen (ANBAU.md 9, v1.5.370) —, und
+    // „keine Umtopfung ab Woche 4" (Automatics gar nicht, 7.4). Getter wegen phTargetFor-Text aus dem Zustand.
+    get content() { return `
       <p><b>Jetzt geht's los:</b> Pflanze wächst täglich sichtbar. Wurzeln arbeiten auf Hochtouren.</p>
-      <p><b>Gießen:</b> Alle 2–4 Tage, je nach Topfgewicht. <b>Topf anheben</b> — leicht = gießen, schwer = warten.</p>
-      <p><b>Dünger:</b> Jetzt anfangen, sehr vorsichtig. Halbe Dosis. Besser zu wenig als zu viel.</p>
+      <p><b>Gießen:</b> Bis etwa Tag 25 gießt du an den Gießtagen, die die App nennt. Danach gießt du den ganzen Topf, und der Topf entscheidet: <b>anheben</b> — fühlt er sich leicht an, wird gegossen, ist er schwer, wartest du.</p>
+      <p><b>Dünger:</b> Nach deinem Düngeplan — die App nennt dir an jedem Gießtag die Mengen. Unsicher? Sanfter starten und in kleinen Schritten bis zur Menge deines Plans steigern. Die fertige Mischung auf den pH-Wert einstellen, den die App für dein Substrat nennt (Erde: ${phTargetFor('erde').labelComma}). Braune, verbrannte Blattspitzen bei feuchtem Topf sprechen für zu viel Dünger — bei trockenem Topf eher für Durst, an den obersten Blättern direkt unter der Lampe eher für zu viel Licht oder Hitze.</p>
       <p><b>Luft:</b> Ventilator! Sanfter Wind macht die Stiele stark. Ohne Wind werden Pflanzen „dünn".</p>
-      <p><b>Optional — Toppen:</b> Bei ca. 5–6 Blattetagen kannst du die Spitze abschneiden für mehrere Haupttriebe. Machst du nicht, ist auch OK — dann gibt's <b>eine</b> große Cola statt mehrere kleine.</p>
-      <p><b>Zu vermeiden:</b> Stressige Eingriffe in der Vorblüte. Keine Umtopfung mehr ab Woche 4.</p>
-    `,
+      <p><b>Optional — Toppen:</b> Die Spitze abschneiden ergibt mehrere Haupttriebe. Bei Pflanzen mit Lichtumstellung (photoperiodisch) ab etwa 4–5 Blattpaaren. <b>Bei Automatics ist das Fenster kurz:</b> ab etwa Tag 15 und nur vor dem Blühbeginn — sie blühen nach Alter, und die Tage, die ein Schnitt kostet, holen sie nicht wieder auf. Im Zweifel bei Automatics nur herunterbinden (LST). Lässt du es, ist das auch OK — dann gibt es <b>eine</b> große Hauptblüte statt mehrerer kleiner.</p>
+      <p><b>Zu vermeiden:</b> Automatics gar nicht umtopfen — sie gehören vom ersten Tag in den Endtopf, jeder Umzug kostet Tage, die sie nicht aufholen. Und bei Automatics keine stressigen Eingriffe mehr, sobald die Blüte beginnt.</p>
+    `; },
   },
   {
     icon: '🌸',

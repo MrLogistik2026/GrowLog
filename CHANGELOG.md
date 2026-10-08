@@ -2,6 +2,24 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-08 — v1.5.395
+
+- **Anleitung „Dein erster Grow“, Schritt 5 (Wachstum), widersprach der App:**
+  - „Dünger: … Halbe Dosis“ gegen die Haltung zu Herstellermengen aus v1.5.248.
+  - Toppen „bei ca. 5–6 Blattetagen“ ohne Grenze für Automatics. Dabei empfiehlt Schritt 1 genau Automatics, und Schritt 6 sagt,
+    dass sie nach 3–4 Wochen blühen. Die App bietet ihnen den Schnitt nur vor dem Blühbeginn an (v1.5.370, ANBAU 9).
+  - Die App selbst nennt 4–5 Blattpaare.
+  - „Keine Umtopfung mehr ab Woche 4“ — Automatics gar nicht (ANBAU 7.4).
+  - „Alle 2–4 Tage, Topf anheben“ ohne die Grenze, ab der der Hebe-Test gilt.
+- **Jetzt:**
+  - **Gießen:** bis etwa Tag 25 an den Gießtagen der App, danach den ganzen Topf mit Hebe-Test.
+  - **Dünger:** nach Plan, sanfter starten und bis zur Planmenge steigern. Neu ist der pH der fertigen Mischung (aus
+    `phTargetFor`) und bei braunen Spitzen die Unterscheidung feucht / trocken / direkt unter der Lampe (Regel 3).
+  - **Toppen:** 4–5 Blattpaare; bei Automatics ab etwa Tag 15 und nur vor dem Blühbeginn, im Zweifel LST.
+  - **Umtopfen:** Automatics nie.
+- Test: `test_erstergrow.js` S5 (5 Prüfungen; alle fallen auf v1.5.394 um).
+
+
 ## 2026-10-08 — v1.5.394
 
 - **Anleitung „Dein erster Grow“, Schritt 4 (Anzucht), widersprach `ANBAU.md` an vier Stellen:**

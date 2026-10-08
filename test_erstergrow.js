@@ -4,6 +4,7 @@
 //
 //   S2 (v1.5.393)  Keimen und Einpflanzen folgen der Start-Methode der App: Erde vorbefeuchten, Start-Guss, Samen danach.
 //   S4 (v1.5.394)  Anzucht: Licht über die Lichtmenge, zwei Lichtschäden, Gießen nach der Start-Methode, Dünger nach Plan.
+//   S5 (v1.5.395)  Wachstum: Gießen, Dünger nach Plan mit pH, Toppen wie die App, Automatics nicht umtopfen.
 //
 // GS_INDEX=<anderer Build> lässt den Test gegen einen alten Stand laufen; dort muss er umfallen.
 const fs = require('fs');
@@ -72,6 +73,17 @@ async function starte() {
     pruefe(/Handtest zeigt nur Hitze/.test(s4) && /ausbleich/.test(s4) && /zu heiß/.test(s4), 'S4-2 Lichtschaden: Bleichen und Hitze nicht unterschieden (ANBAU.md 8.2)');
     pruefe(/nur sprühen/.test(s4) && /Ring um den Sämling/.test(s4) && !/Oberste Erde darf/.test(s4), 'S4-3 Gießen folgt nicht der Start-Methode der App');
     pruefe(!/KEINER/.test(s4) && /höchstens die kleinen Mengen, die dein Plan nennt/.test(s4), 'S4-4 Dünger: „KEINER" gegen die eigene Einsteiger-Vorlage');
+  }
+
+  // S5 (v1.5.395) · Wachstum: Gießen, Dünger nach Plan mit pH, Toppen wie die App, Automatics nicht umtopfen
+  {
+    const s5 = schritt(4);
+    const ph = a.E(`phTargetFor('erde').labelComma`);
+    pruefe(/Tag 25/.test(s5) && /anheben/.test(s5), 'S5-1 Gießen: Gießtage der App bis Tag 25, danach der Topf');
+    pruefe(!/Halbe Dosis/i.test(s5) && /Düngeplan/.test(s5) && s5.includes(ph), `S5-2 Dünger: „Halbe Dosis" statt Plan, oder pH ${ph} fehlt`);
+    pruefe(/trockenem Topf eher für Durst/.test(s5), 'S5-3 braune Spitzen ohne Unterscheidung (Regel 3)');
+    pruefe(!/5–6 Blattetagen/.test(s5) && /4–5 Blattpaaren/.test(s5) && /Automatics ist das Fenster kurz/.test(s5) && /vor dem Blühbeginn/.test(s5), 'S5-4 Toppen widerspricht der App (INFO_TERMS, canTop)');
+    pruefe(/Automatics gar nicht umtopfen/.test(s5) && !/Keine Umtopfung mehr ab Woche 4/.test(s5), 'S5-5 Umtopfen bei Automatics (ANBAU.md 7.4)');
   }
 
   pruefe(!a.errors.length, 'Skriptfehler: ' + a.errors.slice(0, 3).join(' | '));
