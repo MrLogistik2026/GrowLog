@@ -1330,7 +1330,7 @@ const PROBLEMS = [
     },
     description: 'Gelb zwischen den Blattadern, die Adern selbst bleiben grün — das Blatt wirkt wie ein grünes Netz auf gelbem Grund. Beginnt <b>unten</b> und wandert nach oben, weil die Pflanze Magnesium aus alten Blättern abzieht und ins neue Wachstum schickt. Später rollen die Ränder nach oben und werden brüchig. <b>Abgrenzung:</b> Steht dasselbe Muster an den <b>obersten</b> Blättern, ist es kein Magnesium — dann eher Eisen (pH zu hoch) oder Calcium.',
     context: { phase: ['vegi', 'bloom'], ecLow: true, phLow: true },
-    action: 'Erst die Ursache, dann das Mittel — in der Blüte fehlt meist gar nicht Magnesium, sondern zu viel Kalium verdrängt es an der Wurzel. <b>1.</b> Läuft ein Blüte-Booster (PK 13/14, MKP)? Dann diesen zuerst aussetzen, nicht zusätzlich düngen. <b>2.</b> pH prüfen — unter 6,0 in Erde nimmt die Pflanze Magnesium schlecht auf, das ist die häufigste zweite Ursache. <b>3.</b> Erst dann gezielt Bittersalz (Epsom, 0,3 g/L) geben. Ein CalMag-Mittel bringt auch Calcium mit, und Calcium verdrängt Magnesium ebenfalls — bei reinem Magnesium-Bild ist Bittersalz der sauberere Weg. In der Spätblüte gilt: gleichmäßiges Vergilben von unten ist normale Alterung, kein Mangel.',
+    action: 'Erst die Ursache, dann das Mittel — in der Blüte fehlt meist gar nicht Magnesium, sondern zu viel Kalium verdrängt es an der Wurzel. <b>1.</b> Läuft ein Blüte-Booster (PK 13/14, MKP)? Dann diesen zuerst aussetzen, nicht zusätzlich düngen. <b>2.</b> pH prüfen — in Erde unter etwa 5,5 wird Magnesium schlechter verfügbar (Ziel ' + phTargetFor('erde').labelComma + '), das ist die häufigste zweite Ursache. <b>3.</b> Erst dann gezielt Bittersalz (Epsom, 0,3 g/L) geben. Ein CalMag-Mittel bringt auch Calcium mit, und Calcium verdrängt Magnesium ebenfalls — bei reinem Magnesium-Bild ist Bittersalz der sauberere Weg. In der Spätblüte gilt: gleichmäßiges Vergilben von unten ist normale Alterung, kein Mangel.',
     lexiconKey: 'calmag_deficiency',
   },
   {
@@ -1345,7 +1345,7 @@ const PROBLEMS = [
     },
     description: 'Braune, trockene Flecken auf den <b>jüngsten</b> Blättern, dazu verdrehte oder verkrüppelte Triebspitzen und rostige Ränder. Steht immer oben, weil die Pflanze Calcium nach dem Einbau nicht mehr umlagern kann. <b>Abgrenzung:</b> Gelb zwischen den Adern <b>unten</b> ist Magnesium, nicht Calcium.',
     context: { phase: ['vegi', 'bloom'], phLow: true, humidityHigh: true },
-    action: 'Calcium kommt nur mit dem Verdunstungsstrom ins Blatt — steht die Luft oder ist sie zu feucht, verdunstet die Pflanze kaum, und das Calcium kommt oben nicht an, obwohl genug im Topf ist. <b>1.</b> Deshalb zuerst Umluft und Luftfeuchte prüfen (VPD im Zielbereich?), bevor mehr gedüngt wird. <b>2.</b> pH prüfen — unter 6,0 in Erde wird Calcium schlecht aufgenommen. <b>3.</b> Erst dann CalMag (1–2 ml/L), immer <b>vor</b> dem Basisdünger ins Wasser. Bei weichem Wasser und in Coco ist CalMag ohnehin Grundversorgung, kein Zusatz.',
+    action: 'Calcium kommt nur mit dem Verdunstungsstrom ins Blatt — steht die Luft oder ist sie zu feucht, verdunstet die Pflanze kaum, und das Calcium kommt oben nicht an, obwohl genug im Topf ist. <b>1.</b> Deshalb zuerst Umluft und Luftfeuchte prüfen (VPD im Zielbereich?), bevor mehr gedüngt wird. <b>2.</b> pH prüfen — in Erde unter etwa 5,5 wird Calcium schlechter verfügbar (Ziel ' + phTargetFor('erde').labelComma + '). <b>3.</b> Erst dann CalMag (Menge laut Düngeplan oder Flasche), vor dem Basisdünger ins Wasser; ein Silizium-Zusatz kommt noch davor. Gibst du CalMag schon, erhöhe es nicht, bevor Luft und pH stimmen — zu viel Calcium verdrängt Magnesium und Kalium. Bei weichem Wasser und in ungepuffertem Coco ist CalMag ohnehin Grundversorgung, kein Zusatz.',
     lexiconKey: 'calmag_deficiency',
   },
   {
@@ -2643,13 +2643,13 @@ const FERT_PRESETS = {
     weekPhases: ['anzucht','anzucht','anzucht','bloom','bloom','bloom','bloom','bloom','bloom','bloom','flush','ice'],
     name: 'BioBizz Light',
     medium: 'erde',   // organischer Erdduenger
-    subtitle: 'Master × 50% · CalMag voll für LED · für Einsteiger · EC ~0.3→0.8',
+    subtitle: 'Master × 50% · CalMag voll · für Einsteiger · EC ~0.3→0.8',
     doseMode: 'per-watering',
     bloomDaysHint: 49,
     ecPeak: 0.8,
     feedWaterRhythm: ARC_RHYTHM,
     mixOrder: ['CalMag','Bio·Grow','Bio·Bloom','Root·Juice','Bio·Heaven','Alg·A·Mic','Acti·Vera','Top·Max'],
-    mixInfo: 'Halbierte Dosen vom Master-Plan — mit einer Ausnahme: CalMag ist nicht reduziert, weil unter LED der Bedarf gleich hoch ist. Jedes Gießen düngen. Gut für Einsteiger, empfindliche Genetiken, oder wenn der Master-Plan zu stark ist.',
+    mixInfo: 'Halbierte Dosen vom Master-Plan — mit einer Ausnahme: CalMag ist nicht reduziert, weil sein Bedarf am Wasser hängt, nicht an der Stärke des Düngers — bei weichem Wasser ist es Grundversorgung. Jedes Gießen düngen. Gut für Einsteiger, empfindliche Genetiken, oder wenn der Master-Plan zu stark ist.',
     drainInfo: '⚠️ Wenn Pflanze gesund aussieht und kräftig wächst: kann über die Zeit Richtung Master-Dosen erhöht werden. Drain immer ' + DRAIN_ZIEL.min + '–' + DRAIN_ZIEL.max + ' %, Drain sofort entsorgen.',
     products: [
       { name: 'CalMag',      unit: 'ml/L', color: '#f0d050', note: '① Calcium & Magnesium (immer zuerst!)', waterDayDose: 0.3 },
@@ -3684,7 +3684,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.434';
+const APP_VERSION = 'v1.5.435';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -7146,8 +7146,8 @@ const INFO_TERMS = {
   },
   calmag: {
     title: 'CalMag (Calcium + Magnesium)',
-    text: 'CalMag liefert Calcium und Magnesium — oft der „vergessene" Baustein. Calcium baut stabile Zellwände, Magnesium steckt im Herzen des grünen Blattfarbstoffs. Wichtig bei Kokos-Substrat, weichem Leitungswasser, Umkehrosmose-Wasser (RO) und unter LED.',
-    tip: 'Reihenfolge: CalMag <b>immer zuerst</b> ins Wasser (vor dem Basisdünger). Sonst flockt es als weiße Krümel aus und das Calcium ist verloren. Dosierung je nach Wasserhärte etwa <b>0.3–0.5 ml/L</b>.',
+    text: 'CalMag liefert Calcium und Magnesium — oft der „vergessene" Baustein. Calcium baut stabile Zellwände, Magnesium steckt im Herzen des grünen Blattfarbstoffs. Wichtig bei weichem Leitungswasser (niedrige Wasserhärte, unter etwa 8 °dH), Umkehrosmose-Wasser (RO) und ungepuffertem Kokos-Substrat (Coco ohne den Hinweis „gepuffert“ auf dem Sack).',
+    tip: 'Reihenfolge: Ein Silizium-Zusatz (falls du einen nutzt) kommt zuerst ins Wasser, weil er mit schon gelöstem Calcium ausflockt. Dann CalMag, erst danach der Basisdünger — sonst fällt Calcium mit dem Phosphat aus und ist verloren. Die Menge steht in deinem Düngeplan oder auf der Flasche; bei weichem Wasser gehört CalMag zur Grundversorgung.',
     lex: 'CalMag',
   },
   mykorrhiza: {
@@ -30202,7 +30202,7 @@ function renderEntry(iso) {
         const mixSteps = activeMixProducts.length > 0
           ? `<div style="background:var(--card);border:0.5px solid var(--border);border-top:none;border-radius:0 0 10px 10px;padding:10px 12px">
               <div style="font-size:10px;color:var(--text-hint);margin-bottom:6px;font-weight:600">⚗️ MISCHREIHENFOLGE <span class="mix-header-water" data-cycle="${c.id}" style="color:var(--text-muted);font-weight:400">${waterAmt > 0 ? `· für ${fmtWater(waterAmt)}` : ''}</span></div>
-              ${c.medium === 'coco' ? `<div style="font-size:10px;color:var(--teal);background:rgba(90,200,180,0.08);border-radius:6px;padding:5px 8px;margin-bottom:6px;line-height:1.45">🥥 <b>Coco:</b> CalMag gehört in jede Mischung — Coco bindet Calcium &amp; Magnesium, darum ist CalMag hier Pflicht (nicht optional). Fehlt es, kommen schnell Mangelflecken.</div>` : ''}
+              ${c.medium === 'coco' ? `<div style="font-size:10px;color:var(--teal);background:rgba(90,200,180,0.08);border-radius:6px;padding:5px 8px;margin-bottom:6px;line-height:1.45">🥥 <b>Coco:</b> Ungepuffertes Coco bindet Calcium aus der Lösung — darum gehört CalMag dann in jede Mischung. Vorgepuffertes Coco (auf dem Sack steht „gepuffert“) ist mit Calcium vorbeladen und verhält sich anfangs neutraler.</div>` : ''}
               ${mixActive.length > 0
                 ? mixActive.map((n, i) => renderMixRow(n, i, true)).join('')
                 : `<div style="padding:14px 4px;text-align:center;font-size:11px;color:var(--text-hint);line-height:1.4">Keine Dünger diese Woche aktiv.<br><span style="font-size:10px">Schau in <b>Tipps → Dünger</b> oder erweitere unten ↓</span></div>`}
@@ -35717,33 +35717,31 @@ const LEXIKON = [
         '• <b>Bio und Mineral verwechselt</b> — die Verhältnisse sehen ähnlich aus, aber Bio wirkt zeitverzögert über Bodenleben, Mineral direkt. Nicht die gleiche Rezeptur fahren.<br><br>' +
         '<b>Goldene Regel:</b> Bist du unsicher, starte sanfter und steigere in kleinen Schritten, höchstens bis zur Menge deines Plans. Schau dir die Pflanze über die nächsten Güsse an, bevor du weiter steigerst — weniger geben darfst du jederzeit.' },
     { t: 'CalMag',
-      brief: 'Calcium + Magnesium — der „vergessene Dünger". Besonders kritisch bei LED, Coco und weichem Wasser. Wird oft falsch ergänzt — Reihenfolge entscheidet.',
+      brief: 'Calcium + Magnesium — der „vergessene Dünger". Besonders wichtig bei weichem Wasser, Osmosewasser und ungepuffertem Coco. Wird oft falsch ergänzt — Reihenfolge entscheidet.',
       mechanism: '<b>Calcium (Ca):</b> Baut Zellwände, ist Signalstoff für Wurzelspitzen-Wachstum, stabilisiert Pflanzenzell-Membranen. <b>Immobil</b> in der Pflanze — einmal eingelagert, bleibt es dort. Mangel zeigt sich daher immer an <b>neuen Trieben</b> (verkrüppelte Spitzen, braune Flecken auf jungen Blättern).<br><br>' +
         '<b>Magnesium (Mg):</b> Zentrales Atom des <b>Chlorophyll-Moleküls</b>. Ohne Mg keine Photosynthese, keine Energiegewinnung. Mobil — Pflanze verschiebt Mg aus alten Blättern in neue → Mangel zeigt sich <b>unten zuerst</b> als <b>Interveinalchlorose</b> (gelb zwischen den Blattadern, Adern bleiben grün).<br><br>' +
         '<b>Warum „gemeinsam"?</b><br>' +
-        '• Beide werden bei häufigem Gießen ausgewaschen<br>' +
-        '• Beide konkurrieren mit <b>Kalium (K)</b> um die Wurzelaufnahme — bei zu viel K im Substrat blockieren Ca und Mg sich gegenseitig<br>' +
-        '• Beide werden in vielen Substraten und Dünger-Linien systematisch <b>unterversorgt</b><br>' +
-        '• Eine getrennte Dosierung wäre praktisch unmöglich — daher die Kombi-Produkte<br><br>' +
+        '• Beide kommen mit weichem Wasser kaum an<br>' +
+        '• Zu viel <b>Kalium (K)</b> verdrängt beide an der Wurzel; zu viel Calcium verdrängt Magnesium und Kalium<br>' +
+        '• Darum gibt es Kombi-Produkte — wer nur Magnesium braucht, nimmt Bittersalz<br><br>' +
         '<b>Antagonismus mit Kalium (kritisch):</b><br>' +
         'Hohe K-Konzentrationen blockieren die Aufnahme von Ca und Mg. Häufiger Anfänger-Fehler: in der Mittelblüte mit K-Boostern arbeiten und den vermeintlichen CalMag-Mangel mit noch mehr CalMag beantworten. Das verschiebt das Verhältnis weiter — Calcium ist selbst ein Magnesium-Gegenspieler. Reihenfolge: erst den Blüte-Booster (PK 13/14, MKP) aussetzen oder reduzieren, dann den pH prüfen, und erst danach gezielt Magnesium (Bittersalz) geben.',
       practice: '<b>Wasserwerte als Entscheidungs-Grundlage:</b><br>' +
         '<table style="width:100%;border-collapse:collapse;font-size:13px;margin-top:6px">' +
-        '<tr style="background:rgba(255,255,255,0.04)"><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Wasser-Härte</b></td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Ca-Gehalt</b></td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>CalMag-Bedarf</b></td></tr>' +
+        '<tr style="background:rgba(255,255,255,0.04)"><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Gesamthärte (GH)</b></td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Ca-Gehalt</b></td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>CalMag-Bedarf</b></td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Weich (&lt;8°dH)</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">~25 mg/L Ca, ~5 mg/L Mg</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Hoch — 0.3–0.4 ml/L bei jedem Guss</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Mittel (8–14°dH)</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">~50–80 mg/L Ca</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Mittel — 0.2 ml/L oder bei Bedarf</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Hart (&gt;14°dH)</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">&gt;100 mg/L Ca</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Niedrig — nur bei Mangel-Symptomen</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">RO/Destilliert</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">0 mg/L</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Pflicht — 0.4–0.5 ml/L bei jedem Guss</td></tr>' +
         '</table>' +
-        '<br>' +
+        '<span style="font-size:11px;color:var(--text-hint)">Die Mengen sind Richtwerte, nicht belegt — maßgeblich sind dein Düngeplan und die Flasche deines Produkts. Die Härtegrenzen sind eine Konvention; die Calcium-Werte sind nur grobe Beispiele, denn Calcium ist nur ein Teil der Gesamthärte.</span><br><br>' +
         'Wasserhärte aus dem Trinkwasser-Bericht der Stadtwerke (online verfügbar). Ein EC/TDS-Meter zeigt nur grob, wie viel insgesamt gelöst ist (EC ~0.3 mS/cm eher weich, ~0.5 mittel, &gt;0.7 eher hart) — er trennt weder GH von KH noch Calcium von Natrium.<br><br>' +
         '<b>Pflicht-CalMag bei:</b><br>' +
-        '• <b>RO-/destilliertem Wasser</b> — kein einziges Mineral drin, ohne CalMag stirbt die Pflanze<br>' +
-        '• <b>Coco-Substrat</b> — Coco bindet aktiv Ca-Ionen aus dem Düngerwasser, ohne CalMag kommt keines an die Wurzeln<br>' +
-        '• <b>LED-Beleuchtung</b> mit hoher PPFD — beschleunigtes Wachstum braucht mehr Ca für Zellwand-Aufbau<br>' +
-        '• <b>Weichem Leitungswasser</b> (&lt;8°dH) — geographisch in Norddeutschland, Bayern-Süd, vielen Mittelgebirgsregionen üblich<br><br>' +
-        '<b>Nicht zwingend nötig bei:</b><br>' +
-        '• Hartem Leitungswasser plus All-Mix oder kalk-gepuffertem Substrat<br>' +
+        '• <b>RO-/destilliertem Wasser</b> — Calcium und Magnesium fehlen dort ganz<br>' +
+        '• <b>Ungepuffertem Coco-Substrat</b> — es bindet Calcium aus der Lösung. Vorgepuffertes Coco ist mit Calcium vorbeladen und verhält sich anfangs neutraler; steht auf dem Sack nicht „gepuffert“ bzw. „buffered“, geh von ungepuffert aus<br>' +
+        '• <b>Weichem Leitungswasser</b> (wenig Gesamthärte, grob unter 8 °dH) — wie weich dein Wasser ist, steht in der Analyse deines Wasserwerks<br><br>' +
+        '<b>Nicht zwingend nötig</b> — aber nur, wenn dein Wasser nicht weich ist; bei weichem Wasser ist CalMag Grundversorgung, unabhängig vom Substrat:<br>' +
+        '• Hartes Leitungswasser plus All-Mix oder kalk-gepuffertes Substrat<br>' +
         '• Living Soil mit Kalk-Kreide-Beimischung als Boden-Puffer<br>' +
         '• Erde-Mischungen mit Dolomitkalk-Anteil<br><br>' +
         '<b>Kritische Reihenfolge beim Anmischen:</b><br>' +
@@ -35765,11 +35763,11 @@ const LEXIKON = [
         '• <b>CalMag zu spät zugegeben</b> → weiße Flocken im Düngerwasser. Ca ist verloren, obwohl bezahlt. Reihenfolge ist Pflicht.<br>' +
         '• <b>CalMag mit Bittersalz ersetzen</b> als Spartipp → Bittersalz ist nur Magnesiumsulfat, also nur Mg, kein Ca. Ergebnis: weiterer Ca-Mangel<br>' +
         '• <b>Mg-Mangel der Mittelblüte mit mehr CalMag beantwortet</b> → meist verdrängt der K-Booster das Magnesium, und Calcium verdrängt es zusätzlich. Erst den Booster zurücknehmen, dann pH prüfen, dann gezielt Bittersalz<br>' +
-        '• <b>Hartes Leitungswasser + zusätzlich CalMag</b> → Überdosierung, Ca-Überschuss blockiert Mg/K. Wasserhärte vorher prüfen.<br>' +
+        '• <b>Hartes Leitungswasser + zusätzlich CalMag</b> → kann zu viel Calcium bringen; ein Ca-Überschuss verdrängt Mg und K. Wasserhärte vorher prüfen.<br>' +
         '• <b>Symptom-Bekämpfung statt Ursachen-Suche</b> — bei Mangel-Symptomen pH messen, bevor mehr CalMag gegeben wird — ein falscher pH erzeugt dasselbe Bild<br>' +
-        '• <b>Bei Coco kein CalMag</b> → garantierter Mangel innerhalb 1–2 Wochen<br>' +
+        '• <b>In ungepuffertem Coco kein CalMag</b> → Coco zieht Calcium aus der Lösung, ein Mangel ist dann wahrscheinlich<br>' +
         '• <b>Wasserwerte ignoriert</b> — pauschale „immer 0.4 ml/L" funktioniert nicht; Bedarf hängt direkt von Wasserhärte ab<br><br>' +
-        '<b>Goldene Regel:</b> Bei <b>RO-Wasser oder Coco</b> ist CalMag nicht optional sondern Pflicht. Bei hartem Leitungswasser oft nicht nötig — erst messen, dann ergänzen.' },
+        '<b>Goldene Regel:</b> Bei <b>RO-Wasser, weichem Leitungswasser oder ungepuffertem Coco</b> ist CalMag nicht optional, sondern Grundversorgung. Bei hartem Leitungswasser oft nicht nötig — erst messen, dann ergänzen.' },
     { t: 'Überdüngung',
       brief: 'Verbrannte Blattspitzen. Das häufigste Problem bei Einsteigern — „mehr hilft mehr" stimmt hier nicht.',
       mechanism: 'Bei zu hohem EC im Substrat kehrt sich der <b>osmotische Druck</b> um: Statt dass Wurzeln Wasser aufnehmen, <b>zieht das Substrat Wasser aus den Wurzeln raus</b>. Ergebnis: Die Pflanze „verbrennt" von innen — verdurstet in nasser Erde. Zuerst an den Blattspitzen sichtbar (dort verdunstet am meisten), dann weiter Richtung Blattmitte.',
@@ -36056,10 +36054,10 @@ const LEXIKON = [
       practice: 'Nur im Schwellfenster, meist zwei bis drei Wochen um die Blütemitte. MKP sehr niedrig ansetzen (0,2–0,3 g/L) und in warmem Wasser vorlösen. Nach dem Anmischen <b>immer EC messen</b> — PK-Booster heben ihn deutlich. Beispiele: GiDeli MKP, Canna PK 13/14, Hesi PK 13/14, Plagron Green Sensation, Advanced Nutrients Big Bud.',
       pitfall: 'Überdosis verbrennt: braune Blattspitzen, dann Lockout, weil zu viel P und K die Aufnahme von Calcium und Magnesium blockiert. Nicht zusätzlich zu einem Blütedünger geben, der schon PK-lastig ist — beides zusammen ist schnell doppelt.' },
     { t: 'CalMag (Calcium & Magnesium)',
-      brief: 'Ergänzt Calcium und Magnesium. Nötig bei weichem Leitungswasser, Osmosewasser, Coco und unter starker LED-Beleuchtung.',
-      mechanism: '<b>Calcium</b> baut Zellwände, <b>Magnesium</b> steckt im Blattgrün. Hartes Wasser bringt beides mit, weiches praktisch nicht. Coco bindet Calcium zusätzlich an sich ab, und starke LEDs treiben den Verbrauch hoch.',
-      practice: 'Wasserhärte prüfen: unter etwa 8 °dH ist CalMag sinnvoll, darüber selten. Typisch 0,2–1 ml/L, in Coco von Anfang an. <b>Nie direkt mit Silizium zusammenkippen</b> — erst Silizium, ein paar Minuten warten, dann CalMag. Beispiele: BioBizz CalMag, Canna Mono Calcium, Plagron Calcium Kick, Athena CaMg.',
-      pitfall: 'In hartem Wasser überflüssig und schädlich: Zu viel Calcium blockiert Kalium und Magnesium. Erst messen, dann dosieren — nicht vorsorglich.' },
+      brief: 'Ergänzt Calcium und Magnesium. Nötig bei weichem Leitungswasser, Osmosewasser und ungepuffertem Coco.',
+      mechanism: '<b>Calcium</b> baut Zellwände, <b>Magnesium</b> steckt im Blattgrün. Hartes Wasser (viel Gesamthärte) bringt beides mit, weiches kaum. Ungepuffertes Coco bindet Calcium zusätzlich an sich. Ob Calcium oben ankommt, hängt außerdem an der Verdunstung: Calcium wandert nur mit dem Wasserstrom ins Blatt.',
+      practice: 'Gesamthärte (GH = Calcium und Magnesium im Wasser; steht in der Analyse deines Wasserwerks) prüfen: unter etwa 8 °dH (Konvention) gehört CalMag zur Grundversorgung, zwischen 8 und 14 °dH nach Bedarf, darüber meist nicht. Die Menge steht in deinem Düngeplan, sonst auf der Flasche deines Produkts; in ungepuffertem Coco (auf dem Sack steht nicht „gepuffert“) von Anfang an. <b>Nie direkt mit Silizium zusammenkippen</b> — erst Silizium, ein paar Minuten warten, dann CalMag. Beispiele: BioBizz CalMag, Canna Mono Calcium, Plagron Calcium Kick, Athena CaMg.',
+      pitfall: 'In hartem Wasser (viel Gesamthärte) meist überflüssig: Zu viel Calcium verdrängt Kalium und Magnesium an der Wurzel. Erst die GH deines Wassers kennen, dann dosieren — nicht vorsorglich. Ausnahme ungepuffertes Coco: Dort ist CalMag Grundbedarf.' },
     { t: 'Magnesium (Epsom / Bittersalz)',
       brief: 'Reines Magnesiumsulfat, wenn nur Magnesium fehlt und nicht auch Calcium.',
       mechanism: 'Magnesium sitzt im Zentrum des <b>Chlorophyll-Moleküls</b>. Fehlt es, vergilbt das Blatt zwischen den Adern, während die Adern grün bleiben — meist zuerst an den unteren Blättern.',
@@ -37257,7 +37255,7 @@ const LEXIKON = [
         '<tr style="background:rgba(255,255,255,0.04)"><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)" width="32%"><b>Symptom</b></td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)" width="34%"><b>Wahrscheinlichste Ursache</b></td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Erste Aktion</b></td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Gelbe Blätter, beginnt UNTEN</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">N-Mangel oder natürliche Seneszenz (späte Blüte)</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">pH prüfen, dann ggf. N leicht erhöhen</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Gelbe Blätter, beginnt OBEN</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Eisen/Mangan-Mangel oder pH zu hoch</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">pH messen — bei >6.5 senken</td></tr>' +
-        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Gelb zwischen Blattadern (Adern grün)</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Magnesium-Mangel</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Epsom Salz 0.3 g/L oder CalMag erhöhen</td></tr>' +
+        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Gelb zwischen Blattadern (Adern grün)</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Magnesium-Mangel</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">erst Kalium-Booster und pH prüfen, dann Epsom Salz gezielt</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Braune Flecken mit gelbem Rand</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Septoria (Pilz) oder Magnesium-Mangel</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Lokalisation prüfen — unten + scharf umrandet → Septoria</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Trockene Flecken ohne gelben Rand</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Hitzeschaden oder Lichtbrand</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Lampen-Höhe und Temperatur prüfen</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Verbrannte Blattspitzen</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">N-Überschuss oder zu hoher EC</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">EC im Drain messen → bei zu hoch: spülen</td></tr>' +
@@ -38425,7 +38423,7 @@ const HOWTO = [
   ]},
   { cat: '🧪 Düngeplan wählen', items: [
     { t: 'Master, Light oder Official?',
-      txt: '<b>🏆 Master:</b> Premium, jedes Gießen volle Dosis. Früher & härter Stickstoff-Stopp (Wo 7 halbiert, Wo 8 komplett gestoppt) — viel Stickstoff hält die Pflanze im vegetativen Modus, die Blüten bleiben dann lockerer und blattreicher. Das ist der Standard-Plan für Erfahrene.<br><br><b>🌱 Light:</b> Master × 50%. Für Einsteiger oder empfindliche Genetiken. <b>Wichtig:</b> CalMag bleibt voll (nicht halbiert) weil LED-Licht den Bedarf nicht senkt.<br><br><b>📋 Official 2026:</b> Das BioBizz-Düngerschema 2026 für Light·Mix, Zahl für Zahl: Jeder Guss bekommt die Menge je Liter aus dem Blatt — nichts wird geteilt oder hochgerechnet. Die Wochen heißen wie im Blatt (Vermehrung, Wachstum, Blühwoche 1–8), so kannst du App und Blatt nebeneinanderlegen.' },
+      txt: '<b>🏆 Master:</b> Premium, jedes Gießen volle Dosis. Früher & härter Stickstoff-Stopp (Wo 7 halbiert, Wo 8 komplett gestoppt) — viel Stickstoff hält die Pflanze im vegetativen Modus, die Blüten bleiben dann lockerer und blattreicher. Das ist der Standard-Plan für Erfahrene.<br><br><b>🌱 Light:</b> Master × 50%. Für Einsteiger oder empfindliche Genetiken. <b>Wichtig:</b> CalMag bleibt voll (nicht halbiert): Sein Bedarf hängt am Wasser — bei weichem Wasser ist es Grundversorgung —, nicht an der Stärke des Düngers.<br><br><b>📋 Official 2026:</b> Das BioBizz-Düngerschema 2026 für Light·Mix, Zahl für Zahl: Jeder Guss bekommt die Menge je Liter aus dem Blatt — nichts wird geteilt oder hochgerechnet. Die Wochen heißen wie im Blatt (Vermehrung, Wachstum, Blühwoche 1–8), so kannst du App und Blatt nebeneinanderlegen.' },
     { t: 'Plan laden',
       txt: '<b>Einstellungen → Dünger & Wochenplan → „Plan wechseln · Vorlage laden“ → Vorlage antippen.</b> Die App legt daraus einen neuen Plan an, deine bestehenden Pläne bleiben erhalten — hast du dieselbe Vorlage schon, wechselt sie nur dorthin. Passt die Vorlage nicht zu deinem Substrat, fragt sie vorher nach. Ein aktiver Zyklus, der noch gedüngt wird, bekommt den neuen Plan; ab dem Spülen behält er seinen. Danach siehst du in der Mischreihenfolge, welche Produkte gebraucht werden, und den Wochenplan mit den Mengen je Liter.' },
     { t: 'Dosen anpassen',

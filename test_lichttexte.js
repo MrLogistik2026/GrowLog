@@ -4,6 +4,7 @@
 //   B (v1.5.421)  Bleich-Schwelle aus LICHT_ZIEL.bluete.bleichAb, nicht „~1200“ oder „W/m²“.
 //   W (v1.5.422)  Wasserhärte: Karbonathärte (Puffer) und Gesamthärte (Ca/Mg) getrennt; „abstehen, Kalk fällt aus“ nicht als Rat (ANBAU.md 3).
 //   K (v1.5.423)  Keimungs-Leitfaden Tag 4 ohne feste Lampenhöhe.
+//   C (v1.5.435)  CalMag: keine LED-Begründung und Regionen, Coco nur ungepuffert, Mengen laut Plan/Flasche, pH-Schwelle aus ANBAU.md 4.
 //   Z (v1.5.424)  Wurzelzone draußen: Thermometer statt Hand, Zahlen aus ANBAU.md 7.3.
 //
 // GS_INDEX=<anderer Build> lässt den Test gegen einen alten Stand laufen; dort muss er umfallen.
@@ -86,6 +87,20 @@ async function starte() {
     const wz = lex('Wurzelzone Outdoor (Topf-Hitze)');
     const alles = wz ? [wz.brief, wz.mechanism, wz.practice].join(' ') : '';
     pruefe(!/31 °C|bis zu 95 %|Hand auf die Außenseite/.test(alles) && /Thermometer/.test(alles) && /26 °C/.test(alles), 'Z1 Wurzelzone: alte Zahlen oder Hand statt Thermometer');
+  }
+
+  // C (v1.5.435) · CalMag: keine LED-Begründung, keine Regionen, Coco mit Bedingung, Mengen laut Flasche, Reihenfolge nach ANBAU.md 10
+  {
+    const c = finde(/LED-Beleuchtung<\/b> mit hoher PPFD|starke LEDs treiben|unter starker LED|und unter LED\.|Norddeutschland, Bayern-Süd|0\.3–0\.5 ml\/L|CalMag \(1–2 ml\/L\)|ohne CalMag stirbt/);
+    pruefe(c.length === 0, `C1 ${c.length} CalMag-Texte mit LED-Begründung, Regionen oder fester Dosis: ` + c.map(([p]) => p).slice(0, 4).join(', '));
+    const cm = lex('CalMag');
+    const prac = cm ? String(cm.practice) : '';
+    // (v1.5.435) Die Mischreihenfolge bleibt hier unberührt (offener Punkt: ANBAU.md 10 gegen Lexikon „Mischreihenfolge“ und
+    // BioBizz-Pläne). Geprüft wird die pH-Schwelle der Calcium- und Magnesium-Diagnose (ANBAU.md 4: unter 5,5 in Erde).
+    const diag = JSON.parse(a.E(`JSON.stringify(PROBLEMS.filter(p => /ca_|mg_|calcium|magnes/i.test(p.id)).map(p => p.action))`)).join(' ');
+    pruefe(!/unter 6,0 in Erde/.test(diag) && /unter etwa 5,5/.test(diag), 'C2 Calcium-/Magnesium-Diagnose mit pH-Schwelle 6,0 statt 5,5 (ANBAU.md 4)');
+    pruefe(!/CalMag voll für LED|unter LED der Bedarf|LED-Licht den Bedarf|Coco bindet Calcium &amp; Magnesium|oder CalMag erhöhen/.test(HTML), 'C4 Quelltext: LED-Begründung, Coco-Bindung von Magnesium oder „CalMag erhöhen“ bei Magnesium-Bild steht noch');
+    pruefe(/Richtwerte, nicht belegt/.test(prac) && /ungepuffertem Coco/i.test(prac), 'C3 Dosis-Tabelle ohne Kennzeichnung oder Coco ohne Bedingung');
   }
 
   pruefe(!a.errors.length, 'Skriptfehler: ' + a.errors.slice(0, 3).join(' | '));

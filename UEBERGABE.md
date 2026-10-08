@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.434** · index.html 2,56 MB · 781 Funktionen
+Stand: **v1.5.435** · index.html 2,56 MB · 781 Funktionen
 Zuletzt fortgeschrieben am 08.10.2026 (Nachtprüfung und Run 02 — Abschnitt 0o, „Stand Run 02"). Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
@@ -374,6 +374,7 @@ Speicher-Befunde sind in v1.5.340–344 behoben. Rohdaten: Workflow wf_63d754b1-
 - v1.5.432: Ruhe nach dem Topping bis zum nächsten geplanten Guss, frühestens am übernächsten Tag (`_toppingPauseFuer`); Ruhetag-Karte am Gießpunkt „gieß trotzdem“; Hinweis, Dialog und Toasts ohne Wundheilung und „vor dem Schnitt gießen“.
 - v1.5.433: Topping-Tag folgt dem Düngeplan; Wasserguss nach der Ruhe nur bei Plänen mit Eingriffs-Regel (Rainbow, `_toppingWassergussVon`).
 - v1.5.434: Topping-, FIM- und HST-Texte in Lexikon, Fehlersuche, FAQ und Demo ohne unbelegte Wirkungen; Automatics „nur früh und nur bei kräftigen Pflanzen“; kein zweites Topping.
+- v1.5.435: CalMag-Texte ohne LED-Begründung und Regionen, Coco nur ungepuffert (Merkmal „gepuffert“ auf dem Sack), Mengen „laut Düngeplan oder Flasche“, pH-Schwelle der Ca-/Mg-Diagnose 5,5 nach ANBAU.md 4 (schließt „vier CalMag-Dosen“ aus Abschnitt 10).
 
 **Gegenprüfung von v1.5.364/365 (07.10.2026 nachts, Workflow wf_4cf817bf-629, drei Sonnet-Prüfer + Gegenprüfer).** Kein Fehlalarm
 in 33 App-Fassungen, allen Vorlagen und über 2800 Klicks; die schweren Befunde (unsichere Kopie zerstört den Hauptstand, Tropfen als
@@ -2220,10 +2221,16 @@ mit echtem Zustand sichtbar.
 
 ## 10 · Kleinere offene Punkte
 
-- **Lexikon „Wasserhärte“ (gefunden beim Bau von v1.5.392, nicht behoben):** „Hartes Wasser: 2–3 Tage abstehen lassen (Kalk fällt
-  teilweise aus)“ steht nicht in `ANBAU.md` 3; „CalMag-Mangel fast garantiert“ bei weichem Wasser ist überzogen (3: Ca und Mg sind
-  knapp); hart/weich wird an der Gesamthärte (°dH) festgemacht, die Pufferung hängt aber an der Karbonathärte (3). Neu fassen aus
-  `ANBAU.md` 3, mit Gegenprüfung.
+- **Mischreihenfolge: `ANBAU.md` 10 gegen App (offen, gefunden bei der CalMag-Prüfung am 08.10.2026).** `ANBAU.md` 10 setzt
+  Chelate und Huminstoffe vor Phosphat-Zusätze und Basisdünger, lebende Produkte zuletzt, dazu Bittersalz direkt nach CalMag,
+  Wasser auf 20–22 °C, EC messen, pH einstellen, 5 Minuten warten, nachmessen. Der Lexikon-Eintrag „Mischreihenfolge“, die
+  Tabelle im Eintrag „CalMag“ und die BioBizz-Pläne (`mixOrder`/`mixInfo`: „Top·Max zuletzt“) setzen Huminstoffe ans Ende.
+  Vor einer Änderung klären, was BioBizz selbst angibt; Plan-Mischlisten nur mit Fingerabdruck-Test ändern.
+- **CalMag, Reste nach zwei Prüfrunden (08.10.2026):** Coco/inert ohne Bedingung „ungepuffert“ und mit fester Dosis (Lexikon
+  Anzucht „Ab Tag 1 leichte CalMag-Lösung (~0.3 ml/L)“, „Coco: Vom ersten Tag an Vegi-Dünger + CalMag“, Hinweis „inert: … bei
+  jedem Guss Dünger plus CalMag“); CANNA-Coco-Vorlage „Pflicht in Coco“; Symptom „generell blasse Blätter“ mit „CalMag + Schwefel
+  über Blattdünger“; Eisen-Erste-Hilfe „ein ausgewogenes CalMag-Produkt hilft“ (bei hohem pH hilft der pH, nicht CalMag,
+  `ANBAU.md` 4); CalMag-Gabe nach dem Umtopfen.
 
 - Outdoor-Photo: Der automatische Blütestart ist fest der 17. August (Südhalbkugel 17. Februar), frühestens 4 Wochen
   nach dem Start — ohne Breitengrad (`_computeBloomStartDate`). Gehört in den geplanten Outdoor-Bereich; bis dahin
@@ -2237,11 +2244,6 @@ mit echtem Zustand sichtbar.
   33852) — zwei verschiedene Größen, siehe `ANBAU.md` 4.1. Eine eigene Version wert, keine
   Nebenbei-Änderung: Liste erzeugen mit einem Zähl-Skript über die Muster `6[.,]2–6[.,]4`,
   `5[.,]8–6[.,]2`, `5[.,]5–6[.,]0`, `6[.,]0–6[.,]5`, Zeilen mit `phTargetFor` gelten als erledigt.
-- **Vier verschiedene CalMag-Dosen in der App** (beim Bau von v1.5.239 gezählt): „0.3–0.5 ml/L" im
-  Infotext, „0.3–0.4 bei jedem Guss" und „typisch 0,2–1" im Lexikon, „CalMag (1–2 ml/L)" in der
-  Calcium-Diagnose. Keine ist falsch, aber vier Zahlen für dieselbe Frage sind die bekannte Fehlerklasse.
-  Eine Quelle daraus machen — oder jede Zahl mit ihrer Gültigkeitsbedingung versehen (Wasserhärte,
-  Substrat), was nach `ANBAU.md` 15 die richtigere Form wäre.
 - **Coco und Kalium: `ANBAU.md` 7.1 widerspricht sich** (beim Gegencheck für v1.5.253–263 gefunden): „Es bindet Calcium
   und Kalium bevorzugt und gibt dafür Natrium und Kalium ab." Kalium kann nicht beides sein; Abschnitt 4 übernimmt die
   Bindung von Kalium. Üblich beschrieben wird, dass ungepuffertes Coco Kalium und Natrium abgibt und Calcium und Magnesium

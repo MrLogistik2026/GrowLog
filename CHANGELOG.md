@@ -2,6 +2,26 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-08 — v1.5.435
+
+- **CalMag-Texte widersprachen `ANBAU.md` an mehreren Stellen** (Gegenprüfung der Wasserhärte-Texte vom 08.10.2026,
+  `UEBERGABE.md` 10). „Pflicht bei LED-Beleuchtung mit hoher PPFD — beschleunigtes Wachstum braucht mehr Ca“ und „starke
+  LEDs treiben den Verbrauch hoch“: Calcium-Mangel entsteht nach `ANBAU.md` 1 durch zu wenig Verdunstung, nicht durch zu wenig
+  Zufuhr. „Coco bindet Ca, ohne CalMag kommt keines an“ fehlte die Bedingung „ungepuffert“ (7.1). „Nicht zwingend nötig bei
+  Dolomitkalk“ stand ohne die Bedingung, dass das Wasser nicht weich ist (3: Grundversorgung unabhängig vom Substrat). Dazu
+  kamen eine Regionenliste für weiches Wasser und „bei zu viel K blockieren Ca und Mg sich gegenseitig“ (falsch herum: Kalium
+  verdrängt beide, 6.2). Calcium- und Magnesium-Diagnose nannten „unter 6,0 in Erde“ als Grenze, `ANBAU.md` 4 nennt 5,5. Die
+  Tabelle „Gelb zwischen Adern“ riet „oder CalMag erhöhen“ (gegen 6.2), BioBizz Light und der Plan-Vergleich begründeten volles
+  CalMag mit LED, und die Coco-Box im Eintrag sagte „Coco bindet Calcium & Magnesium“ ohne Bedingung. Für dieselbe Frage
+  nannte die App vier Dosen: 0,3–0,5, 0,3–0,4, 0,2–1 und 1–2 ml/L.
+- **Jetzt:** keine LED-Begründung, der Bedarf hängt am Wasser. Coco steht als „ungepuffertes Coco“ da, mit einem Merkmal, das
+  man prüfen kann: Steht auf dem Sack nicht „gepuffert“, geh von ungepuffert aus. Weggelassen werden darf CalMag nur bei nicht
+  weichem Wasser. Die Mengen heißen „laut Düngeplan oder Flasche“, die Tabelle ist als Richtwert, nicht belegt gekennzeichnet,
+  ihre Spalte heißt „Gesamthärte (GH)“. Die pH-Schwelle in beiden Diagnosen ist 5,5. Wer CalMag schon gibt, bekommt den Rat,
+  es nicht zu erhöhen, bevor Luft und pH stimmen. Das schließt den offenen Punkt „vier CalMag-Dosen“ aus Abschnitt 10.
+  Zweimal gegengeprüft. Bewusst nicht angefasst: die Mischreihenfolge (eigener offener Punkt).
+- Test: `test_lichttexte.js` C1 bis C4 (fallen auf v1.5.434 um).
+
 ## 2026-10-08 — v1.5.434
 
 - **Lexikon, Fehlersuche und FAQ zum Topping versprachen Wirkungen ohne Beleg** (Topping-Prüfung T8). Behauptet wurde unter
