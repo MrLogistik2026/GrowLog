@@ -4625,7 +4625,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.396';
+const APP_VERSION = 'v1.5.397';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -9267,23 +9267,27 @@ const FIRST_GROW_STEPS = [
     icon: '🔬',
     title: 'Schritt 7 — Ernte',
     duration: '1 Tag',
-    content: `
-      <p><b>Wann ist die Pflanze reif?</b> Nicht das Datum, sondern die <b>Trichome</b> entscheiden.</p>
+    // (v1.5.397) Vorher „Standard-Empfehlung: ~80 % milchig, ~10–20 % bernstein" — v1.5.172 hatte jede feste Bernstein-Menge aus den
+    // Texten genommen, das Ziel ist Sache des Growers (c.targetAmber, ANBAU.md 11); „1 Woche vorher spülen", „letzte 2 Tage nicht
+    // gießen" statt des Endspurts der App; „die letzten 2 Wochen machen den größten Qualitätsunterschied" ohne Beleg (14).
+    // Als Getter, weil RIPE_CLEAR_DONE und TRICH_TARGET_DEFAULT erst weiter unten stehen.
+    get content() { return `
+      <p><b>Wann ist die Pflanze reif?</b> Nicht das Datum, sondern die <b>Trichome</b> entscheiden. Die App plant einen Erntetag — was die Lupe zeigt, geht vor: Am Plan-Erntetag sagt dir die App, ob die Trichome schon passen.</p>
       <p><b>Mit einer Lupe (oder Handy-Makro) schauen:</b></p>
       <ul>
         <li>🔹 <b>Klar/glasig</b> = zu früh</li>
-        <li>⚪ <b>Milchig</b> = perfekt (Normalernte)</li>
-        <li>🟡 <b>Bernsteinfarben</b> = sehr reif (entspannender)</li>
+        <li>⚪ <b>Milchig</b> = höchster Wirkstoffgehalt</li>
+        <li>🟡 <b>Bernsteinfarben</b> = beginnender Abbau, ruhigere Wirkung</li>
       </ul>
-      <p><b>Standard-Empfehlung:</b> ~80% milchig, ~10–20% bernstein.</p>
+      <p><b>Wo du schaust:</b> auf den Blüten selbst, nicht auf den kleinen Blättchen dazwischen — die reifen früher und täuschen Reife vor. Oben, in der Mitte und unten, jedes Mal an denselben Stellen. Die Farbe der Härchen sagt nichts über die Reife.</p>
+      <p><b>Wann schneiden:</b> erst, wenn kaum noch klare Köpfe da sind (höchstens ${RIPE_CLEAR_DONE} % klar). Wie viel Bernstein du abwartest, ist deine Wahl: mehr Bernstein, ruhigere Wirkung. Die App rechnet mit ${TRICH_TARGET_DEFAULT} %; im Profi-Modus stellst du dein eigenes Ziel in den Einstellungen ein.</p>
       <p><b>Ernten:</b></p>
       <ul>
-        <li>1 Woche vorher nur noch mit klarem Wasser gießen („Spülen")</li>
-        <li>Letzten 2 Tage gar nicht gießen</li>
-        <li>Pflanze abschneiden, Zweige kopfüber aufhängen</li>
+        <li>Spülen (in den letzten Tagen nur klares Wasser statt Dünger), Abtrocknen und den Erntetag plant die App im Endspurt — du siehst jeden Schritt mit Datum. Ein Geschmacksvorteil durchs Spülen ist nicht belegt; schaden tut es nicht.</li>
+        <li>Vor dem Lichtangang schneiden — kühl und dunkel, damit die Aromastoffe nicht verfliegen —, dann die Zweige kopfüber aufhängen</li>
       </ul>
-      <p><b>Fehler:</b> Zu früh ernten aus Ungeduld. Die letzten 2 Wochen machen den größten Qualitätsunterschied.</p>
-    `,
+      <p><b>Fehler:</b> Zu früh ernten aus Ungeduld. Ein paar Tage zu spät kosten wenig — zu früh kostet Ertrag und Wirkung und lässt sich nicht mehr korrigieren.</p>
+    `; },
   },
   {
     icon: '🍂',

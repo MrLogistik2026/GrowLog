@@ -6,6 +6,7 @@
 //   S4 (v1.5.394)  Anzucht: Licht über die Lichtmenge, zwei Lichtschäden, Gießen nach der Start-Methode, Dünger nach Plan.
 //   S5 (v1.5.395)  Wachstum: Gießen, Dünger nach Plan mit pH, Toppen wie die App, Automatics nicht umtopfen.
 //   S6 (v1.5.396)  Blüte: Titel, Dunkelphase, Stickstoff, Schimmel-Deckel aus KLIMA_ZIEL.
+//   S7 (v1.5.397)  Ernte: eigenes Bernstein-Ziel und Klar-Grenze aus der App, Messort, Spülen ehrlich, Schnitt im Dunkeln.
 //
 // GS_INDEX=<anderer Build> lässt den Test gegen einen alten Stand laufen; dort muss er umfallen.
 const fs = require('fs');
@@ -100,6 +101,17 @@ async function starte() {
     const kopf = a.E(`(function(){ openFirstGrowGuide(); const o = document.querySelector('[data-firstgrow]'); const k = o ? o.textContent : '';
       document.querySelectorAll('[data-firstgrow]').forEach(x => x.remove()); return k; })()`);
     pruefe(!/~3–4 Monate/.test(kopf) && /4–6 Monate/.test(kopf), 'S6-7 Kopf der Anleitung: Gesamtdauer zu kurz (ANBAU.md 9)');
+  }
+
+  // S7 (v1.5.397) · Ernte: eigenes Bernstein-Ziel und Klar-Grenze aus der App, Messort, Spülen ehrlich, Schnitt im Dunkeln
+  {
+    const s7 = schritt(6);
+    const z = JSON.parse(a.E(`JSON.stringify([RIPE_CLEAR_DONE, TRICH_TARGET_DEFAULT])`));
+    pruefe(!/80% milchig|10–20% bernstein/.test(s7) && s7.includes(`höchstens ${z[0]} % klar`) && s7.includes(`${z[1]} %`), `S7-1 feste Bernstein-Menge statt Klar-Grenze ${z[0]} % und Ziel ${z[1]} %`);
+    pruefe(/nicht auf den kleinen Blättchen/.test(s7) && /Farbe der Härchen sagt nichts/.test(s7), 'S7-2 Messort und Griffelfarbe fehlen (ANBAU.md 11)');
+    pruefe(!/1 Woche vorher/.test(s7) && !/Letzten 2 Tage/.test(s7) && /nicht belegt/.test(s7), 'S7-3 Spülen fest statt nach Plan, oder ohne „nicht belegt" (ANBAU.md 14)');
+    pruefe(/Vor dem Lichtangang/.test(s7) && !/größten Qualitätsunterschied/.test(s7), 'S7-4 Schnitt-Zeitpunkt oder unbelegte Qualitätsaussage');
+    pruefe(/Lupe zeigt, geht vor/.test(s7), 'S7-5 Messung schlägt Kalender (ANBAU.md 15) fehlt');
   }
 
   pruefe(!a.errors.length, 'Skriptfehler: ' + a.errors.slice(0, 3).join(' | '));

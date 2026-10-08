@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.396** · index.html 2,56 MB · 781 Funktionen
+Stand: **v1.5.397** · index.html 2,56 MB · 781 Funktionen
 Zuletzt fortgeschrieben am 07.10.2026 (Nachtprüfung und Run 02 — Abschnitt 0o, „Stand Run 02"). Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
@@ -332,6 +332,7 @@ Speicher-Befunde sind in v1.5.340–344 behoben. Rohdaten: Workflow wf_63d754b1-
 - v1.5.394: Schritt 4 — Licht über die Lichtmenge (PPFD) statt 30–40 cm, Bleichen und Hitze getrennt, Gießen nach der Start-Methode, Dünger nach Plan.
 - v1.5.395: Schritt 5 — Dünger nach Plan mit pH statt „halbe Dosis“, Toppen wie die App (Automatics nur vor dem Blühbeginn), Automatics nie umtopfen.
 - v1.5.396: Schritt 6 — Stickstoff nicht kappen, Deckel 65/60 % aus `KLIMA_ZIEL`, Dunkelphase wirklich dunkel, realistische Dauer (auch im Kopf: ~4–6 Monate).
+- v1.5.397: Schritt 7 — eigenes Bernstein-Ziel und Klar-Grenze statt „80 % milchig, 10–20 % bernstein“, Messort, Spülen nach Plan und als unbelegt gekennzeichnet.
 
 **Gegenprüfung von v1.5.364/365 (07.10.2026 nachts, Workflow wf_4cf817bf-629, drei Sonnet-Prüfer + Gegenprüfer).** Kein Fehlalarm
 in 33 App-Fassungen, allen Vorlagen und über 2800 Klicks; die schweren Befunde (unsichere Kopie zerstört den Hauptstand, Tropfen als

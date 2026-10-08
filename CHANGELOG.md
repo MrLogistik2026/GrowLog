@@ -2,6 +2,28 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-08 — v1.5.397
+
+- **Anleitung „Dein erster Grow“, Schritt 7 (Ernte), knüpfte die Ernte an eine feste Bernstein-Menge** („Standard-Empfehlung:
+  ~80 % milchig, ~10–20 % bernstein“). v1.5.172 hatte das an 13 Stellen entfernt, diese Stelle lag außerhalb der Suche. Das Ziel
+  ist Sache des Growers (`c.targetAmber`, Vorgabe 5 %; Patrick, 16.09.2026). Die Freigabe hängt an Klar ≤ 10 %
+  (`RIPE_CLEAR_DONE`, `ANBAU.md` 11). Außerdem standen da:
+  - „1 Woche vorher spülen“ und „Letzten 2 Tage gar nicht gießen“ statt des Endspurts der App;
+  - „Milchig = perfekt“;
+  - „die letzten 2 Wochen machen den größten Qualitätsunterschied“ (unbelegt, 14).
+- **Jetzt:**
+  - **Trichome:** Klar zu früh, milchig höchster Wirkstoffgehalt, Bernstein beginnender Abbau mit ruhigerer Wirkung.
+  - **Messort:** auf den Blüten, nicht auf den Blättchen, mehrere Etagen, dieselben Stellen; die Farbe der Härchen sagt
+    nichts (11).
+  - **Wann schneiden:** Klar-Grenze und Ziel aus der App; das eigene Ziel stellt man im Profi-Modus ein.
+  - **Plan und Lupe:** Spülen, Abtrocknen und Erntetag plant der Endspurt, und was die Lupe zeigt, geht vor (15). Spülen
+    bringt keinen belegten Geschmacksvorteil, schadet aber nicht (14).
+  - **Schnitt:** vor dem Lichtangang.
+  - **Fehler:** zu früh kostet, ein paar Tage zu spät wenig.
+- Test: `test_erstergrow.js` S7 (5 Prüfungen; alle fallen auf v1.5.396 um). `test_bernsteintexte.js` hatte die Stelle nicht
+  gefunden, weil die Anleitung nicht zu seinem Suchbereich gehörte.
+
+
 ## 2026-10-08 — v1.5.396
 
 - **Anleitung „Dein erster Grow“, Schritt 6 (Blüte), widersprach `ANBAU.md`:**
