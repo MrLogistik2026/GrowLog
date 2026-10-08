@@ -2,6 +2,16 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-08 — v1.5.392
+
+- **Das Lexikon riet, das Gießwasser am Vortag anzumischen** (beim Bau von v1.5.391 gefunden, Eintrag „Wassertemperatur“).
+  `ANBAU.md` 10 sagt das Gegenteil: Fertige Lösungen mit organischen Bestandteilen sind mikrobiell instabil, lebende Produkte
+  verlieren binnen Stunden. Die Pläne der App sagen selbst „Nicht auf Vorrat mischen“.
+- **Jetzt:** am Vortag nur das Wasser bereitstellen, damit es die Raumtemperatur annimmt, und den Dünger erst kurz vor dem Gießen
+  einrühren.
+- Test: `test_runzwei.js` W392 (fällt auf v1.5.391 um).
+
+
 ## 2026-10-08 — v1.5.391
 
 - **Die Gießwasser-Temperatur stand an zehn Stellen verschieden** (Run-02-Prüfung vom 07.10.2026, F15):

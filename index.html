@@ -4625,7 +4625,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.391';
+const APP_VERSION = 'v1.5.392';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -36449,7 +36449,8 @@ const LEXIKON = [
       // Sauerstoff drastisch, Pythium wird aktiv"; nach 7.3 sind es rund 9 mg/L bei 20 °C und 7,5 bei 30 °C, Pythium-Druck über 26 °C.
       brief: 'Gießwasser mit ' + GIESSWASSER.tMin + '–' + GIESSWASSER.tMax + ' °C. Kaltes Wasser kühlt die Wurzeln für Stunden unter ihr Optimum, warmes hält weniger Sauerstoff.',
       mechanism: '<b>Zu kalt:</b> Wasser mit 12 °C aus der Leitung kühlt die Wurzelzone für Stunden unter ihr Optimum von 18–24 °C. Unter 16 °C brechen die Aufnahme von Phosphor und Wasser ein, das Wachstum stockt.<br><br><b>Zu warm:</b> Warmes Wasser hält weniger Sauerstoff — rund 9 mg/L bei 20 °C, rund 7,5 mg/L bei 30 °C —, während Wurzeln und Bodenleben bei Wärme mehr davon veratmen. Über 26 °C in der Wurzelzone steigt der Druck durch <b>Pythium</b> (Wurzelfäule) deutlich. Bei Hydro besonders kritisch, da kein Substrat puffert.',
-      practice: '<b>Einfachste Methode:</b> Gießwasser am Vortag anmischen und im Zelt stehen lassen → passt sich Raumtemperatur automatisch an.<br><br><b>Winter/Keller:</b> Wenn Raum unter 18 °C, Wasser vor Gießen kurz auf Heizung stellen oder mit Aquarium-Heizstab vorwärmen.<br><br><b>Prüfen:</b> am besten mit einem Thermometer — für den Finger fühlen sich ' + GIESSWASSER.tMin + '–' + GIESSWASSER.tMax + ' °C eher leicht kühl an, nicht warm.',
+      // (v1.5.392) Vorher „Gießwasser am Vortag anmischen" — gegen ANBAU.md 10 und die eigenen Pläne („Nicht auf Vorrat mischen").
+      practice: '<b>Einfachste Methode:</b> Das Wasser am Vortag bereitstellen und im Zelt stehen lassen — es nimmt die Raumtemperatur an. <b>Den Dünger erst kurz vor dem Gießen einrühren:</b> Fertige Lösungen mit organischen Bestandteilen kippen, lebende Produkte verlieren binnen Stunden ihre Wirkung.<br><br><b>Winter/Keller:</b> Wenn Raum unter 18 °C, Wasser vor Gießen kurz auf Heizung stellen oder mit Aquarium-Heizstab vorwärmen.<br><br><b>Prüfen:</b> am besten mit einem Thermometer — für den Finger fühlen sich ' + GIESSWASSER.tMin + '–' + GIESSWASSER.tMax + ' °C eher leicht kühl an, nicht warm.',
       pitfall: 'Direkt von der Leitung gegossen = meist 10-15 °C = Schock. Das ist der häufigste „unsichtbare" Wachstums-Bremsklotz bei Anfängern. Besonders schlimm: Kalte Pflanze + kaltes Wasser an kaltem Tag.' },
     { t: '☀️ Outdoor-Gießen: Grundregeln',
       brief: 'Outdoor folgt keinem Kalender — das Wetter bestimmt. Die goldene Regel: Topf anheben, nicht nach Plan gießen.',

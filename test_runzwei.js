@@ -372,6 +372,12 @@ async function starte() {
     pruefe(zeilen.length === 0, `F15-3 „lauwarm" steht noch ${zeilen.length}× im ausgelieferten Text`);
   }
 
+  // (v1.5.392) · Lexikon „Wassertemperatur": Wasser am Vortag bereitstellen, Dünger erst kurz vor dem Gießen (ANBAU.md 10)
+  {
+    const p = a.E(`(LEXIKON.flatMap(k => k.items || []).find(x => x.t === 'Wassertemperatur') || {}).practice || ''`);
+    pruefe(!/am Vortag anmischen/.test(p) && /Dünger erst kurz vor dem Gießen/.test(p), `W392 Lexikon rät, Gießwasser auf Vorrat zu mischen: ${p.slice(0, 160)}`);
+  }
+
   pruefe(!a.errors.length, 'Skriptfehler: ' + a.errors.slice(0, 3).join(' | '));
   if (fehler.length) { console.log(`test_runzwei: ${fehler.length} von ${n} Prüfungen rot`); fehler.forEach((f) => console.log('  ✗ ' + f)); process.exit(1); }
   console.log(`test_runzwei: alle ${n} Prüfungen grün`);

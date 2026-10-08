@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.391** · index.html 2,56 MB · 781 Funktionen
+Stand: **v1.5.392** · index.html 2,56 MB · 781 Funktionen
 Zuletzt fortgeschrieben am 07.10.2026 (Nachtprüfung und Run 02 — Abschnitt 0o, „Stand Run 02"). Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
@@ -327,6 +327,7 @@ Speicher-Befunde sind in v1.5.340–344 behoben. Rohdaten: Workflow wf_63d754b1-
 - v1.5.389: Drain-Menge nur, wo sie entstehen kann — vorher „~1100 ml → 165–220 ml Drain“ in einen Topf, der am Gießpunkt ~3650 ml aufnimmt (F11, `_drainZuErwarten`, ANBAU.md 1.1).
 - v1.5.390: Lexikon „Drain-Kontrolle“ nennt das Ziel aus `DRAIN_ZIEL` (vorher oben 15–20, unten 10–20 %) und wann Drain überhaupt kommt.
 - v1.5.391: Gießwasser „Wasser mit 20–22 °C“ aus einer Quelle (`GIESSWASSER`, ANBAU.md 7.3) statt „lauwarm“ und 18–22 °C (F15).
+- v1.5.392: Lexikon „Wassertemperatur“ — Wasser am Vortag bereitstellen, Dünger erst kurz vor dem Gießen (ANBAU.md 10).
 
 **Gegenprüfung von v1.5.364/365 (07.10.2026 nachts, Workflow wf_4cf817bf-629, drei Sonnet-Prüfer + Gegenprüfer).** Kein Fehlalarm
 in 33 App-Fassungen, allen Vorlagen und über 2800 Klicks; die schweren Befunde (unsichere Kopie zerstört den Hauptstand, Tropfen als
@@ -2173,6 +2174,11 @@ mit echtem Zustand sichtbar.
 ---
 
 ## 10 · Kleinere offene Punkte
+
+- **Lexikon „Wasserhärte“ (gefunden beim Bau von v1.5.392, nicht behoben):** „Hartes Wasser: 2–3 Tage abstehen lassen (Kalk fällt
+  teilweise aus)“ steht nicht in `ANBAU.md` 3; „CalMag-Mangel fast garantiert“ bei weichem Wasser ist überzogen (3: Ca und Mg sind
+  knapp); hart/weich wird an der Gesamthärte (°dH) festgemacht, die Pufferung hängt aber an der Karbonathärte (3). Neu fassen aus
+  `ANBAU.md` 3, mit Gegenprüfung.
 
 - Outdoor-Photo: Der automatische Blütestart ist fest der 17. August (Südhalbkugel 17. Februar), frühestens 4 Wochen
   nach dem Start — ohne Breitengrad (`_computeBloomStartDate`). Gehört in den geplanten Outdoor-Bereich; bis dahin
