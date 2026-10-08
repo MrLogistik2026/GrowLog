@@ -2,6 +2,26 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-08 — v1.5.432
+
+- **Ruhe nach dem Topping als Untergrenze statt fester zwei Tage** (Patricks Freigabe vom 08.10.2026 abends; Topping-Prüfung
+  T4, T6, T7, T11). Bisher sperrte die App nach jedem Topping fest zwei Tage und zog den nächsten Guss auf Tag T+3, auch wo
+  der Rhythmus T+2 vorsah (Coco, Intervall 2). Patricks Rainbow-Blatt sagt „erster Guss danach frühestens 48 h, sobald der Topf
+  den Gießpunkt erreicht“. Die Ruhetag-Karte sagte „Kein Gießen“, direkt neben dem Hebe-Test „Wasserstress — sofort gießen“.
+  Hinweis, Dialog und Toasts begründeten die Pause mit Wundheilung („2–4 Stunden vorher volles Gießen mit Dünger … versorgt die
+  Wundheilung“, „die Schnittstelle muss erst heilen“). Nichts davon steht in `ANBAU.md`.
+- **Jetzt** reicht die Ruhe bis zum nächsten geplanten Guss. Der Guss kommt aber frühestens am übernächsten Tag nach dem Schnitt
+  (Rainbow-Blatt: 48 h; `_toppingPauseFuer`, `TOPPING_PAUSE_DEFAULT` = 1). Verschoben wird der Plan nur noch, wenn der nächste
+  Guss schon am Tag nach dem Schnitt läge. Die Ruhetag-Karte sagt „kein Guss geplant“. Hat der Topf den Gießpunkt erreicht, sagt
+  sie „gieß trotzdem“ (`ANBAU.md` 1.2, 14), sonst steht dort die Unterscheidung Durst gegen zu nass. Bei schwerem Topf nennt
+  sie beide Ursachen: zu nass heißt abtrocknen lassen, zu viel Dünger heißt beim nächsten Gießpunkt klares Wasser (5).
+  Hinweis, Knopf, Dialog, Toasts und Auto-Ausfüllen nennen die Pause als Vorgabe, nicht als Heilung, mit „1 Tag“ statt
+  „1 Tage“. Der Hinweis nimmt den Gießpunkt des Substrats (bei Coco ist „Mittel“ der Gießpunkt) und gilt vor Tag 25 nach
+  den Gießtagen der App. Der gesperrte „Gieß-Tag vor dem
+  Topping (2–4 h, Turgordruck)“ entfällt. Für Automatics steht „nur früh und nur bei kräftigen Pflanzen“ (`ANBAU.md` 9) statt
+  „Autos verkraften Schnitte schlecht“. Ein schon eingetragenes Topping behält seine Pause.
+- Test: `test_topping.js` P6 (fällt auf v1.5.431 in fünf Prüfungen um).
+
 ## 2026-10-08 — v1.5.431
 
 - **Der Topping-Tag folgt der Messung wie jeder Gießtag** (Patricks Freigabe vom 08.10.2026 abends: „so wie es für die User

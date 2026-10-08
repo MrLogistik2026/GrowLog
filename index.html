@@ -1289,11 +1289,16 @@ const T = {
   // TOPPING — Trainings-Hinweise
   // ---------------------------------------------------------------------
   topping: {
-    preWaterHint: ({ pauseDays, currentDay }) =>
-      `💡 <b>Vor dem Toppen gießen!</b> 2–4 Stunden vorher volles Gießen mit Dünger — das macht die Pflanze turgor-prall für einen sauberen Schnitt und versorgt die Wundheilung. Nach dem Topping: ${pauseDays} Tage Ruhe ohne Gießen.<br><span style="color:var(--text-hint);font-size:10px">Tag ${currentDay}: gute Zeit zum Toppen über dem 4.–5. Nodium (sichtbar durchzählen von unten).</span>`,
+    // (v1.5.432) Vorher: „Vor dem Toppen gießen! 2–4 Stunden vorher volles Gießen mit Dünger — das macht die Pflanze
+    // turgor-prall für einen sauberen Schnitt und versorgt die Wundheilung.“ Nichts davon steht in ANBAU.md; gegossen wird nach
+    // dem Gießpunkt (1.2), ein voller Topf nimmt nichts auf (1.1), nasse Wurzeln ersticken (13.1).
+    preWaterHint: ({ pauseDays, currentDay, gp, ab25, resumeDE }) =>
+      `💡 <b>Topping — gießen:</b> ${ab25
+        ? `Ob gegossen wird, bestimmt das Gewicht des Topfs, nicht der Schnitt. Heb ihn an: Ist er noch schwerer als der Gießpunkt (schwerer als „${gp.knopf}“), gießt du vorher nicht — ein voller Topf nimmt nichts mehr auf, und Wasser, das nicht abtrocknet, nimmt den Wurzeln die Luft. Ist er am Gießpunkt („${gp.knopf}“ oder leichter), gießt du wie an jedem anderen Tag.`
+        : `Vor Tag ${DRAIN_AB_TAG} gießt du an den Gießtagen, die die App nennt; für den Schnitt gießt du nicht extra.`} Dass Gießen kurz vor dem Schnitt die Wunde sauberer macht oder schneller heilen lässt, ist nicht belegt. Schneide nur eine Pflanze, die gesund und aufrecht steht; hängen die Blätter, klär zuerst, ob sie Durst hat (Topf leicht) oder zu nass steht (Topf schwer).<br><b>Nach dem Schnitt:</b> Die App plant ${_ruheTageText(pauseDays)} ohne Guss ein (Vorgabe, nicht gemessen); der nächste geplante Guss ist am ${resumeDE}. Erreicht der Topf vorher den Gießpunkt, gieß trotzdem.<br><span style="color:var(--text-hint);font-size:10px">Tag ${currentDay}: Schnitt über dem 4.–5. Nodium (Blattknoten — dort sitzt ein Blattpaar am Stamm; von unten durchzählen).</span>`,
 
     tooLateAuto: ({ week }) =>
-      `⏰ <b>Toppen nicht mehr empfohlen</b> – Blüte Woche ${week}. Bei Automatics gehört ein Schnitt vor den Blühbeginn: Sie blühen nach Kalender, und die Tage, die er kostet, holt die Pflanze nicht wieder auf. Sanftes Herunterbinden (LST) geht noch.<br><span style="color:var(--text-hint);font-size:10px">Beim nächsten Zyklus: rechtzeitig toppen — bei Automatics in der Anzucht ab Tag 15, vor dem Blühbeginn.</span>`,
+      `⏰ <b>Toppen nicht mehr empfohlen</b> – Blüte Woche ${week}. Bei Automatics gehört ein Schnitt vor den Blühbeginn: Sie blühen nach Kalender, und die Tage, die er kostet, holt die Pflanze nicht wieder auf. In den ersten Blütewochen geht sanftes Herunterbinden (LST) noch.<br><span style="color:var(--text-hint);font-size:10px">Beim nächsten Zyklus: rechtzeitig toppen — bei Automatics in der Anzucht ab Tag 15, vor dem Blühbeginn.</span>`,
 
     tooEarly: ({ day }) =>
       `Tag ${day}: Pflanze ist noch zu jung zum Toppen. Warte bis mindestens Tag 15, wenn 4–5 Nodien sichtbar sind.`,
@@ -2228,6 +2233,31 @@ function strainDifficultyLabel(d) {
  * CATEGORIES: 'nutrient' | 'ph' | 'water' | 'light' | 'temp' | 'pest' | 'mold' | 'genetic'
  * SEVERITY: 'low' | 'medium' | 'high' | 'critical'  (wie schnell handeln)
  */
+/**
+ * (v1.5.432) Ruhe nach dem Topping als Untergrenze: Der nächste Guss kommt frühestens nach 48 h — wie auf Patricks Rainbow-Blatt
+ * („erster Guss danach frühestens 48 h, sobald der Topf den Gießpunkt erreicht“) —, sonst am nächsten geplanten Gießtag. Vorher
+ * waren es fest 2 Tage, und der Plan wurde auf Tag T+3 gezogen, auch wo der Rhythmus T+2 vorsah (Coco, Intervall 2). Verschoben
+ * wird jetzt nur, wenn der nächste Guss schon am Tag nach dem Schnitt läge. Eine Pause nach dem Schnitt kennt ANBAU.md nicht; sie
+ * ist eine Planungsvorgabe, keine Heilung. Maßgeblich bleibt der Gießpunkt (1.2): Erreicht der Topf ihn am Ruhetag, sagt die App
+ * „gieß trotzdem“ (14: Welken heißt, dass Photosynthese und Transpiration schon stehen).
+ */
+const TOPPING_PAUSE_DEFAULT = 1;   // Untergrenze in Ruhetagen: 1 Tag = Guss frühestens am übernächsten Tag nach dem Schnitt
+function _ruheTageText(n) { return n === 1 ? '1 Tag' : n + ' Tage'; }
+/** (v1.5.432) Ruhetage bis zum nächsten geplanten Guss nach einem Topping an iso, mindestens TOPPING_PAUSE_DEFAULT. */
+function _toppingPauseFuer(c, iso) {
+  if (!c || !iso) return TOPPING_PAUSE_DEFAULT;
+  const vorher = { date: c.toppingDate, pause: c.toppingPause };
+  c.toppingDate = null;
+  let pause = TOPPING_PAUSE_DEFAULT;
+  try {
+    for (let d = 1; d <= 14; d++) {
+      const akt = getAction(isoPlus(iso, d), c);
+      if (akt === 'giess' || akt === 'giess_anz') { pause = Math.max(TOPPING_PAUSE_DEFAULT, d - 1); break; }
+    }
+  } finally { c.toppingDate = vorher.date; c.toppingPause = vorher.pause; }
+  return pause;
+}
+
 /**
  * (v1.5.420) Das Temperaturziel bei Licht an als Satzteil, aus KLIMA_ZIEL — für Diagnose- und Lexikontexte, die die Lampe von
  * der Wärme trennen. Vorher stand dort die Hand als Thermometer („30 Sek. Hand auf Pflanzenhöhe — zu warm = zu nah“).
@@ -4669,7 +4699,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.431';
+const APP_VERSION = 'v1.5.432';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -6380,7 +6410,7 @@ function _ladenZyklen() {
     if (c.intIce === undefined)     c.intIce = RI.ice;
     if (c.intErnte === undefined)   c.intErnte = RI.ernte;
     if (c.intDry === undefined)     c.intDry = RI.dry;
-    if (c.toppingPause === undefined) c.toppingPause = 2;
+    if (c.toppingPause === undefined) c.toppingPause = TOPPING_PAUSE_DEFAULT;
     if (!c.skippedDays) c.skippedDays = [];
     if (!c.seedType) c.seedType = 'auto';
     if (!c.lightVeg) c.lightVeg = '18/6';
@@ -7040,7 +7070,7 @@ function feedWaterGussIndex(c, iso) {
 function fwPatternStep(c, iso) {
   let step = feedWaterGussIndex(c, iso);
   if (c && c.toppingDate) {
-    const pause = c.toppingPause || 2;
+    const pause = c.toppingPause || TOPPING_PAUSE_DEFAULT;
     for (let sft = pause + 1; sft <= pause + 30; sft++) {
       const rd = isoPlus(c.toppingDate, sft);
       if (getAction(rd, c) === 'giess') { if (rd < iso) step -= 1; break; }
@@ -7098,7 +7128,7 @@ function getFeedWaterType(c, p, iso) {
   if (c.toppingDate) {
     const sinceTop = isoDiff(iso, c.toppingDate);
     if (sinceTop === 0) return 'water';                   // Topping-Tag selbst
-    const pause = c.toppingPause || 2;
+    const pause = c.toppingPause || TOPPING_PAUSE_DEFAULT;
     if (sinceTop > pause && sinceTop <= pause + 14) {
       // Ist iso der erste Gießtag seit dem Topping (nach der Pause)? Dann Erholungs-Wasser.
       let firstAfter = true;
@@ -9521,7 +9551,7 @@ function doUndo() {
     }, prev);
     S.cycles.forEach(c => {
       if (!c.offsetHistory) c.offsetHistory = [];
-      if (c.toppingPause === undefined) c.toppingPause = 2;
+      if (c.toppingPause === undefined) c.toppingPause = TOPPING_PAUSE_DEFAULT;
       if (!c.skippedDays) c.skippedDays = [];
       delete c.dayOffset; delete c.offsetDate;
     });
@@ -9549,7 +9579,7 @@ function doRedo() {
     }, next);
     S.cycles.forEach(c => {
       if (!c.offsetHistory) c.offsetHistory = [];
-      if (c.toppingPause === undefined) c.toppingPause = 2;
+      if (c.toppingPause === undefined) c.toppingPause = TOPPING_PAUSE_DEFAULT;
       if (!c.skippedDays) c.skippedDays = [];
       delete c.dayOffset; delete c.offsetDate;
     });
@@ -10201,7 +10231,7 @@ function contextFor(c, iso) {
   const isToppingDay = c.toppingDate === iso;
   const isToppingRest = c.toppingDate && !isToppingDay &&
                         isoDiff(iso, c.toppingDate) >= 1 &&
-                        isoDiff(iso, c.toppingDate) <= (c.toppingPause || 2);
+                        isoDiff(iso, c.toppingDate) <= (c.toppingPause || TOPPING_PAUSE_DEFAULT);
 
   return {
     // Basis
@@ -11504,7 +11534,7 @@ function getAction(iso, c) {
   // Gieß-Tag — die Pflanze soll vor dem Schnitt hydriert werden.
   if (c.toppingDate) {
     const daysSinceTop = isoDiff(iso, c.toppingDate);
-    if (daysSinceTop >= 1 && daysSinceTop <= (c.toppingPause || 2)) {
+    if (daysSinceTop >= 1 && daysSinceTop <= (c.toppingPause || TOPPING_PAUSE_DEFAULT)) {
       return null;
     }
   }
@@ -11724,7 +11754,7 @@ function getAction(iso, c) {
       // VOR oder AM heutigen Tag liegt UND der resumeDay erreicht ist, nutze ihn.
       // Damit fallen alle Action-Tage NACH resumeDay automatisch im iv-Rhythmus.
       if (c.toppingDate) {
-        const pause = c.toppingPause || 2;
+        const pause = c.toppingPause || TOPPING_PAUSE_DEFAULT;
         const resumeISO = isoPlus(c.toppingDate, pause + 1);
         if (resumeISO <= iso) {
           // resumeDay-Diff als Anker — daraus folgt resumeDay = Action (intervalIndex=0)
@@ -19724,7 +19754,7 @@ function renderCal() {
     // Archived cycle phase info (faded)
     const archInfo = !phaseDay ? arch.map(c => ({ c, p: phase(iso, c) })).filter(x => x.p)[0] : null;
     // Check if this is a topping rest day or skipped day
-    const isToppingRest = act.some(c => c.toppingDate && isoDiff(iso, c.toppingDate) >= 1 && isoDiff(iso, c.toppingDate) <= (c.toppingPause || 2));
+    const isToppingRest = act.some(c => c.toppingDate && isoDiff(iso, c.toppingDate) >= 1 && isoDiff(iso, c.toppingDate) <= (c.toppingPause || TOPPING_PAUSE_DEFAULT));
     const isToppingDay = act.some(c => c.toppingDate === iso);
     const isSkipped = act.some(c => c.skippedDays && c.skippedDays.includes(iso));
 
@@ -19898,7 +19928,7 @@ function renderCal() {
           // Zeige Punkt wenn: andere Aktion ODER Topping-Tag ODER Topping-Rest
           const hasEvent = !!info.a
             || info.c.toppingDate === iso
-            || (info.c.toppingDate && isoDiff(iso, info.c.toppingDate) >= 1 && isoDiff(iso, info.c.toppingDate) <= (info.c.toppingPause || 2));
+            || (info.c.toppingDate && isoDiff(iso, info.c.toppingDate) >= 1 && isoDiff(iso, info.c.toppingDate) <= (info.c.toppingPause || TOPPING_PAUSE_DEFAULT));
           return hasEvent;
         })
         .slice(0, 3); // max 3 Punkte (Platz-Limit)
@@ -20253,7 +20283,7 @@ function showCtx(iso) {
     // ohne manuell das Topping aufzuheben und neu zu setzen.
     if (isFuture && c.toppingDate) {
       const daysSinceTop = isoDiff(iso, c.toppingDate);
-      const pause = c.toppingPause || 2;
+      const pause = c.toppingPause || TOPPING_PAUSE_DEFAULT;
       if (daysSinceTop >= 1 && daysSinceTop <= pause) {
         items.push(`<div class="ctx-item" style="color:var(--purple)" onclick="extendToppingPause('${c.id}')">
           <span class="ctx-ic">😴</span>${s} Ruhetag verlängern (+1)
@@ -20350,10 +20380,10 @@ function closeCtx() {
 function isToppingLocked(c, iso) {
   if (!c || !c.toppingDate) return null;
   const diff = isoDiff(iso, c.toppingDate);
-  const pause = c.toppingPause || 2;
+  const pause = c.toppingPause || TOPPING_PAUSE_DEFAULT;
   if (diff === 0) return 'Topping-Tag — nicht verschieben.';
-  if (diff === -1) return 'Gieß-Tag vor dem Topping — muss 2–4h vor dem Schnitt liegen (Turgordruck).';
-  if (diff >= 1 && diff <= pause) return 'Ruhetag nach Topping — Rhythmus läuft nach der Pause weiter.';
+  // (v1.5.432) Der Vortag ist nicht mehr gesperrt („muss 2–4h vor dem Schnitt liegen (Turgordruck)“ — nicht in ANBAU.md).
+  if (diff >= 1 && diff <= pause) return 'Ruhetag nach Topping — Rhythmus läuft nach der Pause weiter. Willst du trotzdem gießen, trag den Guss im Eintrag dieses Tages ein.';
   return null;
 }
 
@@ -20579,23 +20609,23 @@ function _moveEntryWithShift(cId, fromISO, days) {
 // kürzt sich gegen den mitwandernden Anker raus). Das Vorrücken läuft hier stattdessen
 // über die Topping-Pause: 1 Tag kürzer = erster Guss 1 Tag früher (die Ruhe schrumpft mit).
 // So rutscht der Tag im Kalender sichtbar, ganz ohne "Heute eintragen"-Umweg.
-//   days < 0 = vorziehen  (Pause -1, Boden 1 Ruhetag — die Schnittstelle muss heilen)
+//   days < 0 = vorziehen  (Pause -1, Boden 1 Ruhetag — Planungsvorgabe, frühestens 48 h)
 //   days > 0 = verschieben (Pause +1, Deckel 7 Tage)
 // rerenderFn(neuerResumeDay) baut die Ansicht neu (Kalender: renderCal; Eintrag: zum
 // neuen Tag springen). Rückgabe: true = behandelt (Aufrufer zeigt KEINEN Hinweis),
 // false = kein resumeDay-Fall (Aufrufer macht normal weiter).
 function _tryToppingResumeShift(c, actionDay, days, rerenderFn) {
   if (!c.toppingDate) return false;
-  const pause = c.toppingPause || 2;
+  const pause = c.toppingPause || TOPPING_PAUSE_DEFAULT;
   const resumeISO = isoPlus(c.toppingDate, pause + 1);
   if (actionDay !== resumeISO) return false;   // nur der erste Guss nach dem Topping
   let newPause;
   if (days < 0) {
     newPause = pause - 1;
-    if (newPause < 1) { toast('⚠ Mindestens 1 Tag Topping-Ruhe — die Schnittstelle muss erst heilen'); return true; }
+    if (newPause < 1) { toast('Weniger als 1 Ruhetag plant die App nicht ein — erreicht der Topf früher den Gießpunkt, gieß trotzdem.'); return true; }
   } else {
     newPause = pause + 1;
-    if (newPause > 7) { toast('⚠ Mehr als 7 Tage Topping-Ruhe bringt nichts'); return true; }
+    if (newPause > 7) { toast('Länger als 7 Ruhetage plant die App nicht ein — gieß lieber nach dem Gewicht des Topfs (Hebe-Test).'); return true; }
   }
   c.toppingPause = newPause;
   saveS();
@@ -20847,17 +20877,18 @@ function restoreDayFromCal(cId, iso) {
 async function doTopping(cId, iso) {
   const c = S.cycles.find(x => x.id === cId);
   if (!c) return;
-  const pause = c.toppingPause || 2;
+  const pause = _toppingPauseFuer(c, iso);   // (v1.5.432) bis zum nächsten geplanten Guss, mindestens frühestens 48 h
   const isBackfill = iso < todayISO();
   const ok = await customConfirm(
-    isBackfill ? '✂️ Topping nachtragen?' : '✂️ Jetzt Toppen?',
+    isBackfill ? '✂️ Topping nachtragen?' : '✂️ Topping eintragen?',
     isBackfill
-      ? `Topping für den ${fmtDE(iso, {day:'2-digit', month:'2-digit'})} eintragen (bereits erfolgt). Danach ${pause} Tage Ruhe, nächster Guss am ${fmtDE(isoPlus(iso, pause + 1), {day:'2-digit', month:'2-digit'})}.`
-      : `Heute gießen + toppen. Danach ${pause} Tage Ruhe. Erster Guss am ${fmtDE(isoPlus(iso, pause + 1), {day:'2-digit', month:'2-digit'})}.`,
+      ? `Topping für den ${fmtDE(iso, {day:'2-digit', month:'2-digit'})} eintragen (bereits erfolgt). Danach plant die App ${_ruheTageText(pause)} ohne Guss ein; der nächste geplante Guss ist am ${fmtDE(isoPlus(iso, pause + 1), {day:'2-digit', month:'2-digit'})}. Erreicht der Topf vorher den Gießpunkt, gieß trotzdem.`
+      : `Du trägst ein, dass du heute getoppt hast. Ob du heute gießt, entscheidet der Topf — der Schnitt ist dafür kein Grund. Danach plant die App ${_ruheTageText(pause)} ohne Guss ein; der nächste geplante Guss ist am ${fmtDE(isoPlus(iso, pause + 1), {day:'2-digit', month:'2-digit'})}. Erreicht der Topf vorher den Gießpunkt, gieß trotzdem.`,
     isBackfill ? 'Nachtragen' : 'Toppen', 'var(--purple)'
   );
   if (!ok) return;
   c.toppingDate = iso;
+  c.toppingPause = pause;
 
   // Berechne den Offset so, dass der erste Guss nach der Pause
   // exakt auf toppingDate + pause + 1 fällt
@@ -20877,7 +20908,7 @@ async function doTopping(cId, iso) {
   }
   saveS();
   vibrate();
-  toast(isBackfill ? `✂️ Topping vom ${fmtDE(iso, {day:'2-digit', month:'2-digit'})} eingetragen! Nächster Guss: ${fmtDE(resumeDay, {day:'2-digit', month:'2-digit'})}` : `✂️ Getoppt! Nächster Guss: ${fmtDE(resumeDay, {day:'2-digit', month:'2-digit'})}`);
+  toast(isBackfill ? `✂️ Topping vom ${fmtDE(iso, {day:'2-digit', month:'2-digit'})} eingetragen! Nächster geplanter Guss: ${fmtDE(resumeDay, {day:'2-digit', month:'2-digit'})}` : `✂️ Topping eingetragen! Nächster geplanter Guss: ${fmtDE(resumeDay, {day:'2-digit', month:'2-digit'})}`);
   if (editISO) renderEntry(editISO);
 }
 
@@ -20890,12 +20921,12 @@ async function doTopping(cId, iso) {
 async function extendToppingPause(cId) {
   const c = S.cycles.find(x => x.id === cId);
   if (!c || !c.toppingDate) return;
-  const oldPause = c.toppingPause || 2;
+  const oldPause = c.toppingPause || TOPPING_PAUSE_DEFAULT;
   const newPause = oldPause + 1;
   const newResume = isoPlus(c.toppingDate, newPause + 1);
   const ok = await customConfirm(
     '😴 Ruhetag verlängern?',
-    `Die Pflanze bekommt einen zusätzlichen Tag Ruhe. Pause wird von ${oldPause} auf ${newPause} Tage verlängert. Alle nachfolgenden Gießtage verschieben sich um einen Tag nach hinten.\n\nNächster Guss dann: ${fmtDE(newResume, {day:'2-digit', month:'2-digit', year:'numeric'})}`,
+    `Die App plant einen Tag länger ohne Guss ein. Die Pause wird von ${_ruheTageText(oldPause)} auf ${_ruheTageText(newPause)} verlängert. Alle nachfolgenden Gießtage verschieben sich um einen Tag nach hinten. Erreicht der Topf in dieser Zeit den Gießpunkt, gieß trotzdem.\n\nNächster geplanter Guss dann: ${fmtDE(newResume, {day:'2-digit', month:'2-digit', year:'numeric'})}`,
     'Verlängern', 'var(--purple)'
   );
   if (!ok) return;
@@ -20929,7 +20960,7 @@ async function extendToppingPause(cId) {
   saveS();
   closeCtx();
   vibrate();
-  toast(`😴 Ruhetag verlängert — nächster Guss: ${fmtDE(newResume, {day:'2-digit', month:'2-digit'})}`);
+  toast(`😴 Ruhetag verlängert — nächster geplanter Guss: ${fmtDE(newResume, {day:'2-digit', month:'2-digit'})}`);
   renderCal();
   if (editISO) renderEntry(editISO);
 }
@@ -20939,19 +20970,18 @@ async function extendToppingPause(cId) {
  * Die Pflanze braucht weniger Ruhe → Pause -1, nachfolgende Gießtage rücken 1 Tag vor.
  * Gleiche Offset-Mechanik wie extendToppingPause/doTopping (alten Topping-Offset löschen,
  * mit neuer Pause neu rechnen, damit der resumeDay aufs Raster fällt).
- * Boden: mindestens 1 Ruhetag — die Schnittstelle muss heilen, sofort nach dem Topping
- * zu gießen wäre Überwässerungs-Risiko (konservativ-sicher).
+ * Boden: mindestens 1 Ruhetag (Planungsvorgabe, frühestens 48 h). Am Gießpunkt sagt die Ruhetag-Karte ohnehin „gieß trotzdem“.
  */
 async function shortenToppingPause(cId) {
   const c = S.cycles.find(x => x.id === cId);
   if (!c || !c.toppingDate) return;
-  const oldPause = c.toppingPause || 2;
-  if (oldPause <= 1) { toast('😴 Mindestens 1 Ruhetag — die Schnittstelle muss erst heilen'); return; }
+  const oldPause = c.toppingPause || TOPPING_PAUSE_DEFAULT;
+  if (oldPause <= 1) { toast('Weniger als 1 Ruhetag plant die App nicht ein — erreicht der Topf früher den Gießpunkt, gieß trotzdem.'); return; }
   const newPause = oldPause - 1;
   const newResume = isoPlus(c.toppingDate, newPause + 1);
   const ok = await customConfirm(
     '😴 Ruhetag entfernen?',
-    `Die Pflanze bekommt einen Tag weniger Ruhe. Die Pause wird von ${oldPause} auf ${newPause} Tag${newPause === 1 ? '' : 'e'} verkürzt. Alle nachfolgenden Gießtage rücken einen Tag nach vorne.\n\nNächster Guss dann: ${fmtDE(newResume, {day:'2-digit', month:'2-digit', year:'numeric'})}`,
+    `Die App plant einen Tag weniger ohne Guss ein. Die Pause wird von ${_ruheTageText(oldPause)} auf ${_ruheTageText(newPause)} verkürzt. Alle nachfolgenden Gießtage rücken einen Tag nach vorne.\n\nNächster Guss dann: ${fmtDE(newResume, {day:'2-digit', month:'2-digit', year:'numeric'})}`,
     'Entfernen', 'var(--purple)'
   );
   if (!ok) return;
@@ -20985,7 +21015,7 @@ async function shortenToppingPause(cId) {
   saveS();
   closeCtx();
   vibrate();
-  toast(`😴 Ruhetag entfernt — nächster Guss: ${fmtDE(newResume, {day:'2-digit', month:'2-digit'})}`);
+  toast(`😴 Ruhetag entfernt — nächster geplanter Guss: ${fmtDE(newResume, {day:'2-digit', month:'2-digit'})}`);
   renderCal();
   if (editISO) renderEntry(editISO);
 }
@@ -21930,7 +21960,7 @@ function isToppingWaterGuss(c, iso) {
   if (!c || !c.toppingDate) return false;
   const sinceTop = isoDiff(iso, c.toppingDate);
   if (sinceTop === 0) return true;
-  const pause = c.toppingPause || 2;
+  const pause = c.toppingPause || TOPPING_PAUSE_DEFAULT;
   if (sinceTop > pause && sinceTop <= pause + 14) {
     for (let s = pause + 1; s < sinceTop; s++) {
       const aa = getAction(isoPlus(c.toppingDate, s), c);
@@ -27430,7 +27460,7 @@ function addCyc(overrides, opts) {
     harvestDays: PHASE_DEFAULTS.harvestDays, dryDays: PHASE_DEFAULTS.dryDays,
     intAnzucht: mi.anzucht, intBloom: mi.bloom, intFlush: mi.flush,
     intIce: RI.ice, intErnte: RI.ernte, intDry: RI.dry,
-    offsetHistory: [], toppingDate: null, toppingPause: 2, skippedDays: [],
+    offsetHistory: [], toppingDate: null, toppingPause: TOPPING_PAUSE_DEFAULT, skippedDays: [],
     // Outdoor-support fields
     growType: o.growType || 'indoor',
     // ANBAUMEDIUM: 'erde' (Default) oder 'coco'. Bestimmt ab Etappe 1/2 Gießrhythmus,
@@ -30123,13 +30153,21 @@ function renderEntry(iso) {
         ? _gussMoveCard(c, iso)
       : (!a && p && _dryLeadIn(c, iso, p.ph, _ivAt(c, p.ph, iso)))
         ? _dryLeadInCard(c, iso)
-      : (!a && p && c.toppingDate && isoDiff(iso, c.toppingDate) >= 1 && isoDiff(iso, c.toppingDate) <= (c.toppingPause || 2))
+      : (!a && p && c.toppingDate && isoDiff(iso, c.toppingDate) >= 1 && isoDiff(iso, c.toppingDate) <= (c.toppingPause || TOPPING_PAUSE_DEFAULT))
         // Topping rest day
         ? `<div style="padding:10px 12px;background:rgba(176,106,200,0.08);border:0.5px solid rgba(176,106,200,0.25);border-radius:10px;margin-bottom:8px;display:flex;align-items:center;gap:10px">
             <span style="font-size:20px">✂️</span>
             <div>
               <div style="font-size:13px;font-weight:600;color:var(--purple)">Ruhetag nach Topping</div>
-              <div style="font-size:11px;color:var(--text-muted)">Tag ${isoDiff(iso, c.toppingDate)} von ${c.toppingPause || 2} · Kein Gießen</div>
+              <div style="font-size:11px;color:var(--text-muted)">Tag ${isoDiff(iso, c.toppingDate)} von ${c.toppingPause || TOPPING_PAUSE_DEFAULT} · kein Guss geplant</div>
+              ${(() => {
+                // (v1.5.432) Vorher „Kein Gießen“ — neben dem Hebe-Test „Wasserstress — sofort gießen“. Die Pause ist eine Vorgabe;
+                // am Gießpunkt gilt die Messung (ANBAU.md 1.2, 14).
+                const _gmR = giessenLautMessung(c, iso);
+                return (_gmR && _gmR.giessen)
+                  ? `<div style="font-size:11px;color:var(--yellow);margin-top:3px;line-height:1.45"><b>Der Topf hat den Gießpunkt erreicht — gieß trotzdem.</b> Die Ruhe ist eine Vorgabe, keine Heilung; Durst abwarten schadet.</div>`
+                  : `<div style="font-size:11px;color:var(--text-muted);margin-top:3px;line-height:1.45">Hängen die Blätter und der Topf ist leicht (Hebe-Test „${giesspunktFor(c).knopf}“ oder leichter), hat die Pflanze Durst — gieß trotzdem. Hängen sie bei schwerem Topf, hilft Gießen nicht: Entweder stehen die Wurzeln zu nass (abtrocknen lassen), oder der Dünger ist zu stark (beim nächsten Gießpunkt nur klares Wasser).</div>`;
+              })()}
             </div>
           </div>`
       : (!a && p && c.skippedDays && c.skippedDays.includes(iso))
@@ -30182,7 +30220,7 @@ function renderEntry(iso) {
       && iso <= todayISO();
     // Undo Topping button: show on the topping day itself OR on any rest day after topping
     const isToppingDay = c.toppingDate === iso;
-    const isToppingRest = c.toppingDate && isoDiff(iso, c.toppingDate) >= 1 && isoDiff(iso, c.toppingDate) <= (c.toppingPause || 2);
+    const isToppingRest = c.toppingDate && isoDiff(iso, c.toppingDate) >= 1 && isoDiff(iso, c.toppingDate) <= (c.toppingPause || TOPPING_PAUSE_DEFAULT);
     const showUndoTop = isToppingDay || isToppingRest;
 
     // Hinweis warum Toppen nicht mehr möglich ist — nur bei Automatics, ab dem ersten Blütetag (v1.5.370; vorher ab Woche 4).
@@ -30195,19 +30233,19 @@ function renderEntry(iso) {
 
     const toppingBtn = canTop
       ? `<div style="background:rgba(76,175,112,0.08);border:0.5px solid rgba(76,175,112,0.25);border-radius:10px;padding:10px 12px;margin-bottom:8px;font-size:11px;color:var(--green);line-height:1.5">
-          ${toppingIsBackfill ? `📌 <b>Topping nachtragen</b> für den ${fmtDE(iso, {day:'2-digit', month:'2-digit'})} — du hast an dem Tag bereits getoppt, das trägst du hier nur nach. Danach ${(c.toppingPause || 2)} Tage Ruhe ohne Gießen; den nächsten Guss verschiebt der Plan automatisch (heute also nicht extra gießen).` : `💡 <b>Vor dem Toppen gießen!</b> 2–4 Stunden vorher volles Gießen mit Dünger — das macht die Pflanze turgor-prall für einen sauberen Schnitt und versorgt die Wundheilung. Nach dem Topping: ${(c.toppingPause || 2)} Tage Ruhe ohne Gießen.<br><span style="color:var(--text-hint);font-size:10px">Tag ${p.day}: gute Zeit zum Toppen über dem 4.–5. Nodium (sichtbar durchzählen von unten).</span>`}${c.seedType === 'auto' ? `<br><span style="color:var(--yellow);font-size:10px">⚡ Autos am besten nur früh (in der Veg) toppen — in der Blüte lieber sanft biegen (LST) statt schneiden, Autos verkraften Schnitte schlecht.</span>` : ''}
+          ${toppingIsBackfill ? `📌 <b>Topping nachtragen</b> für den ${fmtDE(iso, {day:'2-digit', month:'2-digit'})} — du hast an dem Tag bereits getoppt, das trägst du hier nur nach. Danach plant die App ${_ruheTageText(_toppingPauseFuer(c, iso))} ohne Guss ein und setzt den nächsten Guss auf den ${fmtDE(isoPlus(iso, _toppingPauseFuer(c, iso) + 1), {day:'2-digit', month:'2-digit'})}. Gegossen wird weiter nach dem Topf.` : T.topping.preWaterHint({ pauseDays: _toppingPauseFuer(c, iso), currentDay: p.day, gp: giesspunktFor(c), ab25: (p.day || 1) >= DRAIN_AB_TAG, resumeDE: fmtDE(isoPlus(iso, _toppingPauseFuer(c, iso) + 1), {day:'2-digit', month:'2-digit'}) })}${c.seedType === 'auto' ? `<br><span style="color:var(--yellow);font-size:10px">⚡ Bei Automatics nur früh und nur bei kräftigen Pflanzen (gesund, aufrecht, 4–5 Blattknoten, keine Mangelzeichen): Sie blühen nach Alter und holen die Tage, die ein Schnitt kostet, nicht wieder auf. Später lieber sanft biegen (LST) statt schneiden.</span>` : ''}
         </div>
         <button onclick="doTopping('${c.id}','${iso}')" style="width:100%;background:rgba(176,106,200,0.08);border:0.5px solid rgba(176,106,200,0.25);border-radius:10px;padding:10px 12px;font-size:13px;color:var(--purple);cursor:pointer;font-family:var(--font);display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px">
-          ✂️ ${toppingIsBackfill ? `Topping für ${fmtDE(iso, {day:'2-digit', month:'2-digit'})} nachtragen` : `Jetzt Toppen (${(c.toppingPause || 2)} Tage Pause danach)`}
+          ✂️ ${toppingIsBackfill ? `Topping für ${fmtDE(iso, {day:'2-digit', month:'2-digit'})} nachtragen` : `Topping eintragen (danach ${_ruheTageText(_toppingPauseFuer(c, iso))} ohne geplanten Guss)`}
         </button>`
       : showTopTooLateHint
       ? `<div style="background:rgba(240,208,80,0.06);border:0.5px solid rgba(240,208,80,0.25);border-radius:10px;padding:10px 12px;margin-bottom:8px;font-size:11px;color:var(--text-sub);line-height:1.5">
-          ⏰ <b style="color:var(--yellow)">Toppen nicht mehr empfohlen</b> – Blüte Woche ${p.week}. Bei Automatics gehört ein Schnitt vor den Blühbeginn: Sie blühen nach Kalender, und die Tage, die er kostet, holt die Pflanze nicht wieder auf. Sanftes Herunterbinden (LST) geht noch.<br><span style="color:var(--text-hint);font-size:10px">Beim nächsten Zyklus: rechtzeitig toppen — bei Automatics in der Anzucht ab Tag 15, vor dem Blühbeginn.</span>
+          ⏰ <b style="color:var(--yellow)">Toppen nicht mehr empfohlen</b> – Blüte Woche ${p.week}. Bei Automatics gehört ein Schnitt vor den Blühbeginn: Sie blühen nach Kalender, und die Tage, die er kostet, holt die Pflanze nicht wieder auf. In den ersten Blütewochen geht sanftes Herunterbinden (LST) noch.<br><span style="color:var(--text-hint);font-size:10px">Beim nächsten Zyklus: rechtzeitig toppen — bei Automatics in der Anzucht ab Tag 15, vor dem Blühbeginn.</span>
         </div>`
       : showUndoTop
       ? `<div style="background:rgba(176,106,200,0.06);border:0.5px solid rgba(176,106,200,0.2);border-radius:10px;padding:10px 12px;margin-bottom:8px">
-          <div style="font-size:12px;color:var(--purple);font-weight:600;margin-bottom:6px">✂️ ${isToppingDay ? 'Topping-Tag' : 'Topping-Ruhetag ' + isoDiff(iso, c.toppingDate) + '/' + (c.toppingPause || 2)}</div>
-          <div style="font-size:10px;color:var(--text-muted);margin-bottom:8px;line-height:1.5">Getoppt am ${fmtDE(c.toppingDate, {day:'2-digit',month:'2-digit'})}. Nächster Guss am ${fmtDE(isoPlus(c.toppingDate, (c.toppingPause||2)+1), {day:'2-digit',month:'2-digit'})}.</div>
+          <div style="font-size:12px;color:var(--purple);font-weight:600;margin-bottom:6px">✂️ ${isToppingDay ? 'Topping-Tag' : 'Topping-Ruhetag ' + isoDiff(iso, c.toppingDate) + '/' + (c.toppingPause || TOPPING_PAUSE_DEFAULT)}</div>
+          <div style="font-size:10px;color:var(--text-muted);margin-bottom:8px;line-height:1.5">Getoppt am ${fmtDE(c.toppingDate, {day:'2-digit',month:'2-digit'})}. Nächster geplanter Guss am ${fmtDE(isoPlus(c.toppingDate, (c.toppingPause || TOPPING_PAUSE_DEFAULT)+1), {day:'2-digit',month:'2-digit'})}; erreicht der Topf vorher den Gießpunkt, gieß trotzdem.</div>
           <button onclick="undoTopping('${c.id}')" style="width:100%;background:var(--surface);border:0.5px solid rgba(224,96,96,0.3);border-radius:8px;padding:8px;font-size:12px;color:var(--red);cursor:pointer;font-family:var(--font)">↩ Topping rückgängig machen</button>
         </div>`
       : '';
@@ -30707,7 +30745,7 @@ function renderEntry(iso) {
       // (v1.5.431) Die Box sagte „Erst gießen (Menge unten), ~2 Std. warten, dann toppen“ — jetzt nur, wer entscheidet und wann der
       // nächste Guss geplant ist. Gegossen wird nach dem Topf (Hebe-Test), nicht nach dem Schnitt.
       if (isToppingTodayWD) {
-        const _pauseT = c.toppingPause || 2;
+        const _pauseT = c.toppingPause || TOPPING_PAUSE_DEFAULT;
         waterDayHint = `<div style="background:rgba(180,120,220,0.08);border:0.5px solid rgba(180,120,220,0.3);border-radius:10px;padding:10px 12px">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
             <span style="font-size:14px">✂️</span>
@@ -34258,9 +34296,9 @@ function getAutoFillTemplate(c, p, a, iso) {
   // SPEZIAL-FALL: Topping-Pause-Tag (1–2 Tage nach Topping, kein regulärer Gießtag)
   if (c.toppingDate) {
     const daysSinceTop = isoDiff(iso, c.toppingDate);
-    const pause = c.toppingPause || 2;
+    const pause = c.toppingPause || TOPPING_PAUSE_DEFAULT;
     if (daysSinceTop >= 1 && daysSinceTop <= pause) {
-      tpl.notePlaceholder = `Recovery-Tag ${daysSinceTop}/${pause} nach Topping. Pflanze nicht stressen, kein Wasser, kein Dünger.`;
+      tpl.notePlaceholder = `Ruhetag ${daysSinceTop}/${pause} nach dem Topping: kein Guss geplant. Heb den Topf an — am Gießpunkt oder bei hängenden Blättern und leichtem Topf gieß trotzdem.`;
       tpl._actionType = 'topping_rest';
       return tpl;
     }
