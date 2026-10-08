@@ -4,6 +4,7 @@
 //   P2 (v1.5.427)  Voller Topf am Topping-Tag: kein „Heute gießen — dann toppen“ / „Erst gießen“ neben „Topf ist voll“.
 //   P3 (v1.5.428)  „Jetzt Toppen“ ändert den heutigen Gießtag nicht (Blütetage 28–36, 40).
 //   P4 (v1.5.429)  Startseite, Anzucht-Karte: an einem Wasser-Tag laut Plan steht „Wasser-Tag“, nicht „Dünger laut Plan“.
+//   P9 (v1.5.436)  Kein doppelter Punkt nach einem Datum („am 11.10.. Erreicht“).
 //   P8 (v1.5.434)  Lexikon, Fehlersuche, FAQ und Demo ohne alte Topping-Aussagen (Turgor-Schnitt, Wundheilung, „Nicht bei Automatics“).
 //   P7 (v1.5.433)  Topping-Tag folgt dem Plan; Wasser danach nur bei Plänen mit Eingriffs-Regel (Rainbow).
 //   P6 (v1.5.432)  Ruhe nach dem Topping bis zum nächsten geplanten Guss, frühestens 48 h; am Gießpunkt „gieß trotzdem“.
@@ -216,6 +217,14 @@ async function starte() {
     const treffer = T.filter(([, s]) => alt.some(re => re.test(s)));
     pruefe(treffer.length === 0, `P8-1 ${treffer.length} Texte mit alten Topping-Aussagen: ` + treffer.slice(0, 4).map(([p, s]) => p + ' „' + (s.match(new RegExp(alt.map(r => r.source).join('|'))) || [''])[0] + '“').join(' | '));
     pruefe(!/Turgordruck muss stimmen für sauberen Schnitt|Pflanze war gut hydriert/.test(HTML), 'P8-2 Demo-Notizen mit „Turgordruck muss stimmen“ / „gut hydriert“');
+  }
+
+  // P9 (v1.5.436) · Kein doppelter Punkt nach einem Datum: fmtDE(…, {day, month}) endet schon auf „.“
+  {
+    const txt = a.E(`T.topping.preWaterHint({ pauseDays: 2, currentDay: 30, gp: giesspunktFor(null), ab25: true, resumeDE: fmtDE(todayISO(), {day:'2-digit', month:'2-digit'}) })`);
+    pruefe(!/\d\.\.\s/.test(txt), 'P9-1 Hinweis vor dem Toppen mit doppeltem Punkt nach dem Datum: ' + (txt.match(/.{0,30}\d\.\..{0,20}/) || [''])[0]);
+    const quelle = (HTML.match(/(month: ?'2-digit'\}\)\}|resumeDE\})\. [A-ZÄÖÜ]/g) || []).length;
+    pruefe(quelle === 0, `P9-2 Quelltext: ${quelle} Stellen hängen an ein Datum („11.10.“) noch einen Punkt an`);
   }
 
   pruefe(!a.errors.length, 'Skriptfehler: ' + a.errors.slice(0, 3).join(' | '));

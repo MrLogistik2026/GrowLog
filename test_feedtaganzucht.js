@@ -68,6 +68,14 @@ const MISS = (key, anzW, bluW) => `(function(){
   const c = JSON.parse(JSON.stringify(S.cycles[0])); c.id = 'kopie_${key}'; c.fertPlanId = plan.id;
   S.cycles.push(c);
   const pre = getPreset('${key}');
+  // (v1.5.433) Wasser-Tage in der Anzucht entstehen nur noch über eine Eingriffs-Regel des Plans (Rainbow: fimWasserguss),
+  // und der Topping-Tag selbst folgt dem Plan — vorher war er für jeden Plan ein Wasser-Tag, und genau der lag in der Anzucht.
+  // Für die Messung trägt die Vorlage das Kennzeichen kurz selbst, und das Topping der Kopie rückt so, dass der erste Guss
+  // nach der Ruhe der letzte Anzucht-Guss der Woche ist. Das FIM am alten Tag liefert weiter den Wasser-Tag der Blüte-Woche.
+  const _vorherFlag = pre.fimWasserguss; pre.fimWasserguss = true; if (typeof clearFeedWaterCache === 'function') clearFeedWaterCache();
+  { const _b = planWeekBounds(c); const von = ${anzW} >= 2 ? _b[${anzW} - 2] : 0, bis = _b[${anzW} - 1]; let G = null;
+    for (let d = von; d < bis; d++) { const iso = isoPlus(c.startDate, d); if (getAction(iso, c) === 'giess_anz') G = iso; }
+    if (G) c.toppingDate = isoPlus(G, -((c.toppingPause || TOPPING_PAUSE_DEFAULT) + 1)); clearFeedWaterCache(); }
   const gA = weekGussCounts(c, ${anzW}), gB = weekGussCounts(c, ${bluW});
   const r = { phA: plan.weekPhases[${anzW} - 1], phB: plan.weekPhases[${bluW} - 1],
     gA: gA.feed + '/' + gA.total, gB: gB.feed + '/' + gB.total, wasserA: gA.feed < gA.total, wasserB: gB.feed < gB.total,
@@ -79,6 +87,7 @@ const MISS = (key, anzW, bluW) => `(function(){
   const d = getWeekDoses(c.id, ${anzW}, c) || {};
   S._activePlanId = aktiv;
   r.modus = pre.doseMode; r.roh = roh[pid]; r.dosis = d[pid]; r.intA = c.intAnzucht || RI.anzucht;
+  pre.fimWasserguss = _vorherFlag; if (typeof clearFeedWaterCache === 'function') clearFeedWaterCache();
   S.cycles = S.cycles.filter(x => x.id !== c.id);
   return JSON.stringify(r);
 })()`;

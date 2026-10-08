@@ -280,7 +280,7 @@ const T = {
     preWaterHint: ({ pauseDays, currentDay, gp, ab25, resumeDE }) =>
       `💡 <b>Topping — gießen:</b> ${ab25
         ? `Ob gegossen wird, bestimmt das Gewicht des Topfs, nicht der Schnitt. Heb ihn an: Ist er noch schwerer als der Gießpunkt (schwerer als „${gp.knopf}“), gießt du vorher nicht — ein voller Topf nimmt nichts mehr auf, und Wasser, das nicht abtrocknet, nimmt den Wurzeln die Luft. Ist er am Gießpunkt („${gp.knopf}“ oder leichter), gießt du wie an jedem anderen Tag.`
-        : `Vor Tag ${DRAIN_AB_TAG} gießt du an den Gießtagen, die die App nennt; für den Schnitt gießt du nicht extra.`} Dass Gießen kurz vor dem Schnitt die Wunde sauberer macht oder schneller heilen lässt, ist nicht belegt. Schneide nur eine Pflanze, die gesund und aufrecht steht; hängen die Blätter, klär zuerst, ob sie Durst hat (Topf leicht) oder zu nass steht (Topf schwer).<br><b>Nach dem Schnitt:</b> Die App plant ${_ruheTageText(pauseDays)} ohne Guss ein (Vorgabe, nicht gemessen); der nächste geplante Guss ist am ${resumeDE}. Erreicht der Topf vorher den Gießpunkt, gieß trotzdem.<br><span style="color:var(--text-hint);font-size:10px">Tag ${currentDay}: Schnitt über dem 4.–5. Nodium (Blattknoten — dort sitzt ein Blattpaar am Stamm; von unten durchzählen).</span>`,
+        : `Vor Tag ${DRAIN_AB_TAG} gießt du an den Gießtagen, die die App nennt; für den Schnitt gießt du nicht extra.`} Dass Gießen kurz vor dem Schnitt die Wunde sauberer macht oder schneller heilen lässt, ist nicht belegt. Schneide nur eine Pflanze, die gesund und aufrecht steht; hängen die Blätter, klär zuerst, ob sie Durst hat (Topf leicht) oder zu nass steht (Topf schwer).<br><b>Nach dem Schnitt:</b> Die App plant ${_ruheTageText(pauseDays)} ohne Guss ein (Vorgabe, nicht gemessen); der nächste geplante Guss ist am ${resumeDE} Erreicht der Topf vorher den Gießpunkt, gieß trotzdem.<br><span style="color:var(--text-hint);font-size:10px">Tag ${currentDay}: Schnitt über dem 4.–5. Nodium (Blattknoten — dort sitzt ein Blattpaar am Stamm; von unten durchzählen).</span>`,
 
     tooLateAuto: ({ week }) =>
       `⏰ <b>Toppen nicht mehr empfohlen</b> – Blüte Woche ${week}. Bei Automatics gehört ein Schnitt vor den Blühbeginn: Sie blühen nach Kalender, und die Tage, die er kostet, holt die Pflanze nicht wieder auf. In den ersten Blütewochen geht sanftes Herunterbinden (LST) noch.<br><span style="color:var(--text-hint);font-size:10px">Beim nächsten Zyklus: rechtzeitig toppen — bei Automatics in der Anzucht ab Tag 15, vor dem Blühbeginn.</span>`,
@@ -1218,6 +1218,7 @@ function strainDifficultyLabel(d) {
  * CATEGORIES: 'nutrient' | 'ph' | 'water' | 'light' | 'temp' | 'pest' | 'mold' | 'genetic'
  * SEVERITY: 'low' | 'medium' | 'high' | 'critical'  (wie schnell handeln)
  */
+// (v1.5.436) fmtDE(iso, {day, month}) endet auf einen Punkt („11.10.“) — am Satzende keinen zweiten anhängen.
 /**
  * (v1.5.432) Ruhe nach dem Topping als Untergrenze: Der nächste Guss kommt frühestens nach 48 h — wie auf Patricks Rainbow-Blatt
  * („erster Guss danach frühestens 48 h, sobald der Topf den Gießpunkt erreicht“) —, sonst am nächsten geplanten Gießtag. Vorher
@@ -3684,7 +3685,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.435';
+const APP_VERSION = 'v1.5.436';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -12139,7 +12140,7 @@ function harvestCountdown(c, iso = null) {
   if (daysRemaining > uncertainty) {
     status = 'upcoming';
     label = `${daysRemaining} ±${uncertainty} T.`;
-    tooltip = `Erwartet am ~${fmtDE(harvestISO, {day:'2-digit', month:'2-digit'})}. Unsicherheit ±${uncertainty} Tage — letztendlich entscheiden die Trichome (milchig = höchster Wirkstoffgehalt, bernsteinfarben = beginnender Abbau — wie viel Bernstein, entscheidest du).`;
+    tooltip = `Erwartet am ~${fmtDE(harvestISO, {day:'2-digit', month:'2-digit'})} Unsicherheit ±${uncertainty} Tage — letztendlich entscheiden die Trichome (milchig = höchster Wirkstoffgehalt, bernsteinfarben = beginnender Abbau — wie viel Bernstein, entscheidest du).`;
   } else if (daysRemaining >= -uncertainty) {
     status = 'harvest-window';
     label = daysRemaining === 0 ? 'Ernte-Tag!' : daysRemaining > 0 ? `~${daysRemaining} T.` : `heute ${Math.abs(daysRemaining)} T. über`;
@@ -19873,8 +19874,8 @@ async function doTopping(cId, iso) {
   const ok = await customConfirm(
     isBackfill ? '✂️ Topping nachtragen?' : '✂️ Topping eintragen?',
     isBackfill
-      ? `Topping für den ${fmtDE(iso, {day:'2-digit', month:'2-digit'})} eintragen (bereits erfolgt). Danach plant die App ${_ruheTageText(pause)} ohne Guss ein; der nächste geplante Guss ist am ${fmtDE(isoPlus(iso, pause + 1), {day:'2-digit', month:'2-digit'})}. Erreicht der Topf vorher den Gießpunkt, gieß trotzdem.`
-      : `Du trägst ein, dass du heute getoppt hast. Ob du heute gießt, entscheidet der Topf — der Schnitt ist dafür kein Grund. Danach plant die App ${_ruheTageText(pause)} ohne Guss ein; der nächste geplante Guss ist am ${fmtDE(isoPlus(iso, pause + 1), {day:'2-digit', month:'2-digit'})}. Erreicht der Topf vorher den Gießpunkt, gieß trotzdem.`,
+      ? `Topping für den ${fmtDE(iso, {day:'2-digit', month:'2-digit'})} eintragen (bereits erfolgt). Danach plant die App ${_ruheTageText(pause)} ohne Guss ein; der nächste geplante Guss ist am ${fmtDE(isoPlus(iso, pause + 1), {day:'2-digit', month:'2-digit'})} Erreicht der Topf vorher den Gießpunkt, gieß trotzdem.`
+      : `Du trägst ein, dass du heute getoppt hast. Ob du heute gießt, entscheidet der Topf — der Schnitt ist dafür kein Grund. Danach plant die App ${_ruheTageText(pause)} ohne Guss ein; der nächste geplante Guss ist am ${fmtDE(isoPlus(iso, pause + 1), {day:'2-digit', month:'2-digit'})} Erreicht der Topf vorher den Gießpunkt, gieß trotzdem.`,
     isBackfill ? 'Nachtragen' : 'Toppen', 'var(--purple)'
   );
   if (!ok) return;
@@ -29208,7 +29209,7 @@ function renderEntry(iso) {
 
     const toppingBtn = canTop
       ? `<div style="background:rgba(76,175,112,0.08);border:0.5px solid rgba(76,175,112,0.25);border-radius:10px;padding:10px 12px;margin-bottom:8px;font-size:11px;color:var(--green);line-height:1.5">
-          ${toppingIsBackfill ? `📌 <b>Topping nachtragen</b> für den ${fmtDE(iso, {day:'2-digit', month:'2-digit'})} — du hast an dem Tag bereits getoppt, das trägst du hier nur nach. Danach plant die App ${_ruheTageText(_toppingPauseFuer(c, iso))} ohne Guss ein und setzt den nächsten Guss auf den ${fmtDE(isoPlus(iso, _toppingPauseFuer(c, iso) + 1), {day:'2-digit', month:'2-digit'})}. Gegossen wird weiter nach dem Topf.` : T.topping.preWaterHint({ pauseDays: _toppingPauseFuer(c, iso), currentDay: p.day, gp: giesspunktFor(c), ab25: (p.day || 1) >= DRAIN_AB_TAG, resumeDE: fmtDE(isoPlus(iso, _toppingPauseFuer(c, iso) + 1), {day:'2-digit', month:'2-digit'}) })}${c.seedType === 'auto' ? `<br><span style="color:var(--yellow);font-size:10px">⚡ Bei Automatics nur früh und nur bei kräftigen Pflanzen (gesund, aufrecht, 4–5 Blattknoten, keine Mangelzeichen): Sie blühen nach Alter und holen die Tage, die ein Schnitt kostet, nicht wieder auf. Später lieber sanft biegen (LST) statt schneiden.</span>` : ''}
+          ${toppingIsBackfill ? `📌 <b>Topping nachtragen</b> für den ${fmtDE(iso, {day:'2-digit', month:'2-digit'})} — du hast an dem Tag bereits getoppt, das trägst du hier nur nach. Danach plant die App ${_ruheTageText(_toppingPauseFuer(c, iso))} ohne Guss ein und setzt den nächsten Guss auf den ${fmtDE(isoPlus(iso, _toppingPauseFuer(c, iso) + 1), {day:'2-digit', month:'2-digit'})} Gegossen wird weiter nach dem Topf.` : T.topping.preWaterHint({ pauseDays: _toppingPauseFuer(c, iso), currentDay: p.day, gp: giesspunktFor(c), ab25: (p.day || 1) >= DRAIN_AB_TAG, resumeDE: fmtDE(isoPlus(iso, _toppingPauseFuer(c, iso) + 1), {day:'2-digit', month:'2-digit'}) })}${c.seedType === 'auto' ? `<br><span style="color:var(--yellow);font-size:10px">⚡ Bei Automatics nur früh und nur bei kräftigen Pflanzen (gesund, aufrecht, 4–5 Blattknoten, keine Mangelzeichen): Sie blühen nach Alter und holen die Tage, die ein Schnitt kostet, nicht wieder auf. Später lieber sanft biegen (LST) statt schneiden.</span>` : ''}
         </div>
         <button onclick="doTopping('${c.id}','${iso}')" style="width:100%;background:rgba(176,106,200,0.08);border:0.5px solid rgba(176,106,200,0.25);border-radius:10px;padding:10px 12px;font-size:13px;color:var(--purple);cursor:pointer;font-family:var(--font);display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px">
           ✂️ ${toppingIsBackfill ? `Topping für ${fmtDE(iso, {day:'2-digit', month:'2-digit'})} nachtragen` : `Topping eintragen (danach ${_ruheTageText(_toppingPauseFuer(c, iso))} ohne geplanten Guss)`}
@@ -29220,7 +29221,7 @@ function renderEntry(iso) {
       : showUndoTop
       ? `<div style="background:rgba(176,106,200,0.06);border:0.5px solid rgba(176,106,200,0.2);border-radius:10px;padding:10px 12px;margin-bottom:8px">
           <div style="font-size:12px;color:var(--purple);font-weight:600;margin-bottom:6px">✂️ ${isToppingDay ? 'Topping-Tag' : 'Topping-Ruhetag ' + isoDiff(iso, c.toppingDate) + '/' + (c.toppingPause || TOPPING_PAUSE_DEFAULT)}</div>
-          <div style="font-size:10px;color:var(--text-muted);margin-bottom:8px;line-height:1.5">Getoppt am ${fmtDE(c.toppingDate, {day:'2-digit',month:'2-digit'})}. Nächster geplanter Guss am ${fmtDE(isoPlus(c.toppingDate, (c.toppingPause || TOPPING_PAUSE_DEFAULT)+1), {day:'2-digit',month:'2-digit'})}; erreicht der Topf vorher den Gießpunkt, gieß trotzdem.</div>
+          <div style="font-size:10px;color:var(--text-muted);margin-bottom:8px;line-height:1.5">Getoppt am ${fmtDE(c.toppingDate, {day:'2-digit',month:'2-digit'})} Nächster geplanter Guss am ${fmtDE(isoPlus(c.toppingDate, (c.toppingPause || TOPPING_PAUSE_DEFAULT)+1), {day:'2-digit',month:'2-digit'})}; erreicht der Topf vorher den Gießpunkt, gieß trotzdem.</div>
           <button onclick="undoTopping('${c.id}')" style="width:100%;background:var(--surface);border:0.5px solid rgba(224,96,96,0.3);border-radius:8px;padding:8px;font-size:12px;color:var(--red);cursor:pointer;font-family:var(--font)">↩ Topping rückgängig machen</button>
         </div>`
       : '';

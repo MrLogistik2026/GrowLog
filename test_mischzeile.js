@@ -85,7 +85,8 @@ function pruef(name, bedingung, info) {
   E(`S.cycles[0].medium = 'coco'; openEntry('${d}')`);
   await warte(200);
   const coco = E(`document.getElementById('scr-entry').textContent.replace(/\\s+/g, ' ')`);
-  pruef('Coco-Hinweis: CalMag Pflicht, ohne „zuerst einrühren"', /Coco: CalMag gehört in jede Mischung/.test(coco) && !/CalMag zuerst einrühren/.test(coco), (coco.match(/🥥 Coco:.{0,80}/) || ['(fehlt)'])[0]);
+  // (v1.5.435) Die Pflicht gilt für ungepuffertes Coco (ANBAU.md 7.1) — der Hinweis nennt die Bedingung mit.
+  pruef('Coco-Hinweis: CalMag Pflicht bei ungepuffertem Coco, ohne „zuerst einrühren"', /Coco: Ungepuffertes Coco bindet Calcium.{0,60}CalMag dann in jede Mischung/.test(coco) && /Vorgepuffertes Coco/.test(coco) && !/CalMag zuerst einrühren/.test(coco), (coco.match(/🥥 Coco:.{0,80}/) || ['(fehlt)'])[0]);
   E(`S.cycles[0].medium = 'erde'`);
 
   const code = fs.readFileSync(path.join(__dirname, 'app.js'), 'utf8').split('\n').filter(z => !/^\s*(\/\/|\*|\/\*)/.test(z)).join('\n');

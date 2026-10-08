@@ -2,6 +2,20 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-08 — v1.5.436
+
+- **Doppelter Punkt nach einem Datum: „der nächste geplante Guss ist am 11.10.. Erreicht …“** (im Browser gesehen am
+  08.10.2026, beim Prüfen von v1.5.435). `fmtDE(iso, {day, month})` endet schon auf einen Punkt. Sechs Sätze hängten einen
+  zweiten an: Hinweis vor dem Toppen, beide Topping-Dialoge, Nachtragen, Kasten nach dem Topping, dazu der Hinweis zum
+  erwarteten Erntetag („Erwartet am ~11.10.. Unsicherheit …“). Zwei davon stammen aus v1.5.432, die anderen waren älter.
+- **Jetzt** steht nach dem Datum kein zweiter Punkt mehr. Ein Kommentar an der Stelle sagt es dem nächsten Satz.
+- Test: `test_topping.js` P9 (fällt auf v1.5.435 um).
+- **Zwei Tests nachgezogen, die App ist dabei unverändert.** `test_feedtaganzucht.js` brauchte für seine Prüflage einen
+  Wasser-Tag in der Anzucht — das war der Topping-Tag selbst, und der folgt seit v1.5.433 dem Plan. Die Prüflage legt das
+  Topping der Testkopie jetzt so, dass der Wasserguss nach der Ruhe in die Anzucht-Woche fällt. `test_mischzeile.js` suchte
+  „Coco: CalMag gehört in jede Mischung“; seit v1.5.435 nennt der Hinweis die Bedingung (ungepuffertes Coco, ANBAU.md 7.1).
+  Beide fielen erst im Gesamtlauf auf v1.5.435 auf, nicht in den Läufen für v1.5.433 und 435.
+
 ## 2026-10-08 — v1.5.435
 
 - **CalMag-Texte widersprachen `ANBAU.md` an mehreren Stellen** (Gegenprüfung der Wasserhärte-Texte vom 08.10.2026,
