@@ -647,6 +647,26 @@ async function starte() {
     pruefe(!/pht\.mid\.toFixed\(1\)/.test(HTML), 'F14-7 Quelltext: pht.mid.toFixed(1) kommt noch vor (' + (HTML.match(/pht\.mid\.toFixed\(1\)/g) || []).length + ' Stellen)');
   }
 
+  // F14b (v1.5.411) · Die Knöpfe − und + am pH-Feld starten beim angezeigten Ziel, nicht fest bei 6.4
+  {
+    const eVorher2 = a.E('JSON.stringify(S.entries)');
+    const R = JSON.parse(a.E(`(function(){ S.beginnerMode = false; const c = S.cycles[0]; const out = {}; const vorherIds = S.cycles.map(x => x.id);
+      const coco = addCyc({ name: 'Coco2', startDate: isoPlus(todayISO(), -50), seedType: 'auto', growType: 'indoor', medium: 'coco', potSize: 11, plantCount: 2,
+        startMethod: 'direct', fertPlanId: c.fertPlanId }, { still: true });
+      // ein Tag mit Feld für den Ablauf-pH (Gießtag, an dem Drain möglich ist)
+      for (let i = 30; i < 80; i++) { const iso = isoPlus(coco.startDate, i); setDebugDate(iso); openEntry(iso); renderEntry(iso);
+        if (document.getElementById('runoff-ph-' + coco.id)) { out.iso = iso; break; } }
+      const f = document.getElementById('ph-' + coco.id); out.platz = f ? f.getAttribute('placeholder') : null;
+      if (f) { stepPH(coco.id, 0.01); out.nach = document.getElementById('ph-' + coco.id).value; }
+      const r = document.getElementById('runoff-ph-' + coco.id); out.rplatz = r ? r.getAttribute('placeholder') : null;
+      if (r) { S.entries[out.iso].cycleData[coco.id].ph = ''; stepRunoffPh(coco.id, 0.01); out.rnach = document.getElementById('runoff-ph-' + coco.id).value; }
+      setDebugDate(''); S.cycles = S.cycles.filter(x => vorherIds.includes(x.id)); saveS();
+      return JSON.stringify(out); })()`));
+    a.E('S.entries = JSON.parse(' + JSON.stringify(eVorher2) + '); saveS();');
+    pruefe(R.iso && R.platz === '6.0' && R.nach === '6.01', `F14b-1 Coco, leeres pH-Feld (Platzhalter ${R.platz}): + ergibt ${R.nach} statt 6.01 (${JSON.stringify(R)})`);
+    pruefe(R.iso && R.rplatz === '6.0' && R.rnach === '6.01', `F14b-2 Coco, leeres Ablauf-pH-Feld (Platzhalter ${R.rplatz}): + ergibt ${R.rnach} statt 6.01`);
+  }
+
   pruefe(!a.errors.length, 'Skriptfehler: ' + a.errors.slice(0, 3).join(' | '));
   if (fehler.length) { console.log(`test_runzwei: ${fehler.length} von ${n} Prüfungen rot`); fehler.forEach((f) => console.log('  ✗ ' + f)); process.exit(1); }
   console.log(`test_runzwei: alle ${n} Prüfungen grün`);

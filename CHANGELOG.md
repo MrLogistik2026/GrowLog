@@ -2,6 +2,16 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-08 — v1.5.411
+
+- **Die Knöpfe − und + am pH-Feld starteten bei leerem Feld fest bei 6,4** (Nebenfund des F14-Prüfers). Das Feld zeigte das Ziel
+  des Substrats als Platzhalter, in Coco 6,0. Ein Tipp auf + machte daraus aber 6,41, samt Warnung „pH über 6,3 … Ziel
+  5,8–6,2“. Dasselbe galt für den Ablauf-pH.
+- **Jetzt** starten beide Knöpfe beim angezeigten Ziel (Platzhalter), wie es die Klima-Knöpfe schon tun. Ein eingetragener Wert
+  geht weiter vor.
+- Test: `test_runzwei.js` F14b (2 Prüfungen; beide fallen auf v1.5.410 um).
+
+
 ## 2026-10-08 — v1.5.410
 
 - **Das pH-Ziel im Eintrag war fest das Ziel des Substrats, während die Plan-Woche darüber eine andere Zahl nannte**

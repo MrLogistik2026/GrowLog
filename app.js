@@ -3645,7 +3645,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.410';
+const APP_VERSION = 'v1.5.411';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -31677,7 +31677,9 @@ function stepWater(cId, step, wk) {
 function stepPH(cId, step) {
   const el = document.getElementById('ph-' + cId);
   if (!el) return;
-  const current = parseFloat(el.value) || 6.4;
+  // (v1.5.411) Bei leerem Feld beim angezeigten Ziel (Platzhalter) starten, nicht fest bei 6.4 — in Coco ergab ein Tipp auf + sonst
+  // 6.41 samt Warnung „über 6.3“ (F14b).
+  const current = parseFloat(el.value) || parseFloat(el.placeholder) || 6.4;
   const newVal = Math.max(4, Math.min(9, Math.round((current + step) * 100) / 100));
   el.value = newVal;
   uEF(cId, 'ph', String(newVal));
@@ -32310,7 +32312,8 @@ function stepRunoffPh(cId, step) {
   if (!el) return;
   // Default: Input-pH wenn vorhanden, sonst 6.4
   const cd = S.entries[editISO]?.cycleData?.[cId] || {};
-  const fallback = parseFloat(cd.ph) || 6.4;
+  // (v1.5.411) wie stepPH: beim Platzhalter starten.
+  const fallback = parseFloat(cd.ph) || parseFloat(el.placeholder) || 6.4;
   const current = parseFloat(el.value) || fallback;
   const newVal = Math.max(4, Math.min(9, Math.round((current + step) * 100) / 100));
   el.value = newVal;
