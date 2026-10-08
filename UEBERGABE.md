@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.433** · index.html 2,56 MB · 781 Funktionen
+Stand: **v1.5.434** · index.html 2,56 MB · 781 Funktionen
 Zuletzt fortgeschrieben am 08.10.2026 (Nachtprüfung und Run 02 — Abschnitt 0o, „Stand Run 02"). Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
@@ -230,19 +230,16 @@ wf_0586d0bf-d3d (vergänglich). **Offen, nach Nutzen geordnet** (Umbauten oder P
 3. EC-Bewertung nach dem Korridor der Plan-Woche: im Eintrag erledigt (v1.5.369 unten, v1.5.374 oben). Offen: dieselbe
    Ampel auf der Startseite.
 4. Fachwörter ohne ⓘ im Assistenten und im Einsteiger-Eintrag; Einsteiger-Startseite ohne Erste-Hilfe-Karte (Profi hat sie).
-5. Topping (Prüfung vom 08.10.2026, Bericht und Messskripte unter `.claude/tmp/w417/topping/`, vergänglich). Die vier Fehler sind
-   in v1.5.426–429 behoben (Datum des ersten Gusses, voller Topf, Gießtag kippt, Anzucht-Karte). **Offen, Texte (ohne Rückfrage,
-   aber mit Gegenprüfung vor dem Einbau):** „2–4 Stunden vorher volles Gießen mit Dünger … Wundheilung“ (Hinweis im Eintrag,
-   tote Kopie `T.topping.preWaterHint`), Dialog „Heute gießen + toppen“, „Heute gießen — dann toppen“ bei „Mittel“, Ruhe-Karte
-   „Kein Gießen“ neben „Wasserstress — sofort gießen“, „die Schnittstelle muss heilen“, Auto-Ausfüllen-Platzhalter, Demo-Notizen,
-   Lexikon „Turgordruck“, „Topping“, „Reihenfolge: Gießen vor Topping“ (3 Tage Ruhe gegen 2), Supercropping, FIM, Troubleshooter
-   „Nach Topping welk: Stress — Geduld“, FAQ „mehr Gesamtertrag“. Leicht: „Tag automatisch ausfüllen“ tut am Topping-Tag nichts,
-   Pille „✂️ FIM“ am Topping-Tag im Fahrplan. **Patricks Entscheidung:** (a) Soll der Topping-Tag auch bei Hebe-Test „Mittel“ der
-   Messung folgen (dann `test_giesspunkt` J ändern)? (b) Pause als Untergrenze „frühestens 48 h und Gießpunkt“ wie auf dem
-   Rainbow-Blatt, statt zwei gesperrter Tage? (c) Guss am Topping-Tag Wasser (heutige Regel aus Sensi V3.2) oder Feed (Blatt:
-   Feed vor dem Eingriff)? (d) Mehrere Toppings je Zyklus? (e) Lexikon „Nicht bei Automatics“ gegen App und Rainbow-Plan — überall
-   „nur früh und nur bei kräftigen Pflanzen“ (ANBAU.md 9)? (f) Vor Tag 25 heißt Hebe-Test „Voll“ an einem Gießtag weiter „gieß
-   350 ml“ — so lassen?
+5. Topping — erledigt in v1.5.426–434 (Patricks Freigabe vom 08.10.2026 abends: „so wie es für die User am sinnvollsten wäre“):
+   Datum des ersten Gusses, voller Topf, Gießtag kippt, Anzucht-Karte, Topping-Tag folgt der Messung, Ruhe bis zum nächsten
+   geplanten Guss und frühestens am übernächsten Tag (am Gießpunkt „gieß trotzdem“), Wasserguss danach nur im Rainbow-Plan, Texte
+   ohne Wundheilung und Turgor-Schnitt, Automatics „nur früh und nur bei kräftigen Pflanzen“, kein zweites Topping. **Offen, leicht
+   (aus der Gegenprüfung, nach zwei Runden zurückgestellt):** Lexikon „Canopy-Management“ („Ziel für Top-Ertrag: 10–15 Colas“,
+   Topping ohne Auto-Bedingung); Wochen-Tipps BioBizz Master Woche 3 („perfekter Stickstoff-Sweetspot“) und eines Plans mit
+   „Advanced Amino unterstützt Stress-Erholung“; Startseite „4.–5. Nodium = idealer Zeitpunkt“; Lexikon „Umtopfen“ mit unbelegten
+   Zahlen („12–72 h Stillstand“, „verschwindet nach 12–24 h“, „Geduld“) und CalMag-Gabe danach; vor Tag 25 heißt Hebe-Test
+   „Voll“ an einem Gießtag weiter „gieß 350 ml“ (bewusst, der Topf ist vom Start noch schwer — nur der Text daneben „Jetzt
+   1–2 Tage trocknen lassen“ widerspricht noch).
 6. Tag 1 verweist auf eine Mischliste, die es dort nicht gibt. („Deine nächsten Güsse" beginnt seit v1.5.406 in der Anzucht.)
 7. Dünger abhaken sind im Eintrag 15 Einzel-Taps — Idee: „Alles wie im Plan" mit einem Tipp. („Erledigt" bucht den Plan-Dünger
    seit v1.5.360 als Vorschlag mit.)
@@ -376,6 +373,7 @@ Speicher-Befunde sind in v1.5.340–344 behoben. Rohdaten: Workflow wf_63d754b1-
 - v1.5.431: Der Topping-Tag folgt der Messung wie jeder Gießtag — kein „Heute gießen — dann toppen“ mehr, auch nicht bei „Mittel“; Auto-Ausfüllen arbeitet dort normal (Patricks Freigabe 08.10. abends).
 - v1.5.432: Ruhe nach dem Topping bis zum nächsten geplanten Guss, frühestens am übernächsten Tag (`_toppingPauseFuer`); Ruhetag-Karte am Gießpunkt „gieß trotzdem“; Hinweis, Dialog und Toasts ohne Wundheilung und „vor dem Schnitt gießen“.
 - v1.5.433: Topping-Tag folgt dem Düngeplan; Wasserguss nach der Ruhe nur bei Plänen mit Eingriffs-Regel (Rainbow, `_toppingWassergussVon`).
+- v1.5.434: Topping-, FIM- und HST-Texte in Lexikon, Fehlersuche, FAQ und Demo ohne unbelegte Wirkungen; Automatics „nur früh und nur bei kräftigen Pflanzen“; kein zweites Topping.
 
 **Gegenprüfung von v1.5.364/365 (07.10.2026 nachts, Workflow wf_4cf817bf-629, drei Sonnet-Prüfer + Gegenprüfer).** Kein Fehlalarm
 in 33 App-Fassungen, allen Vorlagen und über 2800 Klicks; die schweren Befunde (unsichere Kopie zerstört den Hauptstand, Tropfen als

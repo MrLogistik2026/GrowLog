@@ -2,6 +2,26 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-08 — v1.5.434
+
+- **Lexikon, Fehlersuche und FAQ zum Topping versprachen Wirkungen ohne Beleg** (Topping-Prüfung T8). Behauptet wurde unter
+  anderem: „Nur bei vollem Turgor gelingen saubere Schnitte“, „2–4 Stunden vorher voll gießen“, „heilt langsamer, steht 5–7
+  statt 2–3 Tage“, „Abends toppen → nachts keine Wundheilung“, „3 Tage Ruhe ohne Gießen“ (die App plante 2), „Kallus stärkt
+  den Nährstofftransport → dickere Colas“, „3–6 neue Haupttriebe … höheres Ertragspotenzial“ und „mehr Gesamtertrag“. Die
+  Fehlersuche sagte bei schlaffen Blättern nach dem Topping „Stress — Geduld, 2–3 Tage abwarten“ und übersah damit Durst und
+  nasse Wurzeln (`ANBAU.md` 1, 14, Regel 3). Das Lexikon verbot Topping und FIM bei Automatics, die App und der Rainbow-Plan
+  sehen beides vor. Dazu empfahl es ein zweites Topping, das die App nicht eintragen kann.
+- **Jetzt** nach `ANBAU.md`: Gegossen wird nach dem Topf, nicht nach dem Schnitt. Schlaffe Blätter heißen zuerst „Topf
+  anheben“ (leicht = Durst, schwer = zu nass). Bei Automatics steht überall „nur früh und nur bei kräftigen Pflanzen“ (9).
+  Wo eine Zahl fehlt, steht „nicht gemessen“, wo eine Wirkung fehlt, „nicht belegt“. Der Eintrag heißt jetzt „Gießen und
+  Topping“, das zweite Topping ist gestrichen. Die Notizen im Demo-Zyklus beschreiben dasselbe Vorgehen. Mitgenommen sind die
+  Altstellen, die den neuen Texten widersprachen: Anzucht-Lexikon („3 Tage Pause nach jedem HST-Eingriff“), Kurztexte zu FIM
+  („3–5 neue Spitzen“) und Supercropping („mehr Buds“), Info-Popover Topping, Mainlining („hydraulisch perfekte Symmetrie“),
+  und LST („ohne Ertragsverlust“). `ANBAU.md` 14 führt Gießen vor dem Schnitt, die Ruhepause „für die Heilung“ und Mehrertrag durch
+  Schnitt-Trainings jetzt ausdrücklich als nicht belegt. Gegengeprüft von einem Sonnet-Agenten, seine Korrekturen sind
+  eingearbeitet.
+- Test: `test_topping.js` P8.
+
 ## 2026-10-08 — v1.5.433
 
 - **Wasser am Topping-Tag und beim ersten Guss danach galt für jeden Plan mit Rhythmus** (Topping-Prüfung T5, T12). Die

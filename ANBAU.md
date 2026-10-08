@@ -979,6 +979,13 @@ Releases gekostet (die „Abtrockenphase vor dem Spülen", v1.5.65–79).
   in den Topf geht, hängt am Restgewicht vor dem Guss (1.1), nicht an der Phase.
 - **„Lieber einen Tag länger warten, hängende Blätter erholen sich in zwei Stunden."** Welken heißt, dass Photosynthese und
   Transpiration schon fast stehen (Frontiers in Plant Science 2026), und bei Automatics ist jeder Stresstag dauerhaft (9).
+- **Gießen kurz vor dem Schnitt (Topping, FIM, Supercropping) für einen sauberen Schnitt oder schnellere Wundheilung.**
+  Nicht belegt, ebenso eine Ruhepause nach dem Schnitt „für die Heilung“. Gegossen wird nach dem Gießpunkt (1.2), ein voller
+  Topf nimmt nichts auf (1.1). Die App plant nach einem Topping trotzdem eine Vorgabe ein: der nächste Guss frühestens am
+  übernächsten Tag (Patricks Rainbow-Blatt: „frühestens 48 h“), sonst am nächsten Gießtag — am Gießpunkt gilt die Messung.
+- **Mehr Ertrag durch Topping, FIM, Supercropping oder Mainlining; dickere Colas durch den Kallus am Knick.** Nicht gemessen.
+  Belegt ist nur, dass Automatics verlorene Tage nicht aufholen (9). Die App liest das als „nur früh und nur bei kräftigen
+  Pflanzen“ (gesund, aufrecht, 4–5 Blattknoten, keine Mangelzeichen) — eine Auslegung, keine Messung.
 - **Trockenstress für mehr Harz.** Die Befundlage ist dünn. Im kontrollierten Versuch mit Cannabis in Torf brachte moderate
   Trockenheit keinen Vorteil bei Blütenmasse und CBD, schwere schadete (Frontiers in Plant Science 2026). Keine Automatik.
 
