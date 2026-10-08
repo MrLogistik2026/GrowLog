@@ -471,6 +471,57 @@ async function starte() {
     pruefe(s1.ist[0] === 1 && s1.sorte[0] === 'S' && s1.sorte.slice(1).replace(/A/g, '') === '', `F08-10 Tag 1 beim Sprühstart: Sättigungsguss nicht als solcher gelistet (${s1.sorte})`);
   }
 
+  // F18 (v1.5.407) · Zwei Gruppen im Kalender: Die Zelle zeigt die wichtigere Aufgabe, und Wort, Symbol, Tag-Nummer und Farbe gehören zu ihr
+  {
+    const RANG = { ernte: 8, ice: 7, spuelen: 6, saettigung: 5, giess: 4, giess_anz: 4, sprueh: 2, trocknen: 1 };
+    const r = JSON.parse(a.E(`(function(){ const vorher = S.cycles.slice(); const eVorher = JSON.stringify(S.entries); S.beginnerMode = false;
+      const pid = S.cycles[0].fertPlanId;
+      const zelle = (iso) => { const [y, m, d] = iso.split('-').map(Number); calDate = new Date(y, m - 1, 1); renderCal();
+        const c = [...document.querySelectorAll('#cal-body .cal-cell')].find(x => parseInt(x.querySelector('.cal-num').textContent, 10) === d);
+        const ic = c.querySelector('.cal-icon'), tag = c.querySelector('.cal-tag');
+        const wort = [...c.querySelectorAll('span')].filter(s => /font-size:7px/.test(s.getAttribute('style') || '')).map(s => s.textContent.trim()).join('');
+        return { icon: ic ? (ic.querySelector('svg') ? 'svg' : ic.textContent.trim()) : '', tag: tag ? tag.textContent : '', farbe: tag ? tag.getAttribute('style') : '', wort }; };
+      const neu = (name, tage) => addCyc({ name, startDate: isoPlus(todayISO(), -tage), seedType: 'auto', growType: 'indoor', medium: 'erde',
+        potSize: 11, plantCount: 3, startMethod: 'direct', fertPlanId: pid }, { still: true });
+      const lauf = (versatz) => { S.cycles = []; S.entries = {};
+        const ga = neu('Gruppe A', 60), gb = neu('Gruppe B', 60 - versatz); const tage = [];
+        for (let i = 0; i < 200; i++) { const iso = isoPlus(ga.startDate, i); const pa = phase(iso, ga), pb = phase(iso, gb);
+          const aa = getAction(iso, ga), ba = getAction(iso, gb);
+          if (pa && pb && aa && ba) tage.push({ iso, aa, ba, da: pa.day, db: pb.day, z: zelle(iso) }); }
+        return { hexA: col(ga).hex, hexB: col(gb).hex, tage }; };
+      const out = { v6: lauf(6), vm9: lauf(-9) };
+      // Eine Gruppe allein: Der IceFlush-Tag trägt Symbol und Wort wie bisher
+      S.cycles = []; const solo = neu('Solo', 60); out.solo = null;
+      for (let i = 0; i < 200 && !out.solo; i++) { const iso = isoPlus(solo.startDate, i); if (getAction(iso, solo) === 'ice') out.solo = Object.assign({ iso, d: phase(iso, solo).day }, zelle(iso)); }
+      S.cycles = vorher; S.entries = JSON.parse(eVorher); calDate = new Date(); saveS();
+      return JSON.stringify(out); })()`));
+    const finde = (lauf, aa, ba) => lauf.tage.find(t => t.aa === aa && t.ba === ba);
+    const tIce = finde(r.v6, 'trocknen', 'ice'), tErnte = finde(r.v6, 'trocknen', 'ernte'), tSpuel = finde(r.vm9, 'giess', 'spuelen');
+    pruefe(tIce && tErnte && tSpuel, `F18-0 Prüflage: trocknen×ice ${!!tIce}, trocknen×ernte ${!!tErnte}, giess×spuelen ${!!tSpuel}`);
+    if (tIce && tErnte && tSpuel) {
+      pruefe(tIce.z.icon === '🧊' && tIce.z.wort === 'IceFlush',
+        `F18-1 Gruppe A trocknet, Gruppe B hat IceFlush (${tIce.iso}): Zelle zeigt Symbol „${tIce.z.icon}", Wort „${tIce.z.wort}" statt 🧊 „IceFlush"`);
+      pruefe(tErnte.z.icon === 'svg' && tErnte.z.wort === 'Ernte',
+        `F18-2 Gruppe A trocknet, Gruppe B hat Ernte (${tErnte.iso}): Zelle zeigt Symbol „${tErnte.z.icon}", Wort „${tErnte.z.wort}" statt Ernte-Symbol und „Ernte"`);
+      pruefe(tIce.z.tag === 'T' + tIce.db && tIce.z.farbe.includes(r.v6.hexB) && tErnte.z.tag === 'T' + tErnte.db && tErnte.z.farbe.includes(r.v6.hexB),
+        `F18-3 Tag-Nummer und Farbe gehören nicht zu Gruppe B: IceFlush ${tIce.z.tag} (soll T${tIce.db}), Ernte ${tErnte.z.tag} (soll T${tErnte.db})`);
+      pruefe(tSpuel.z.tag === 'T' + tSpuel.db && tSpuel.z.farbe.includes(r.vm9.hexB),
+        `F18-4 Gruppe A gießt, Gruppe B spült (${tSpuel.iso}): Zelle zeigt ${tSpuel.z.tag} statt Gruppe B (T${tSpuel.db}), Symbol „${tSpuel.z.icon}"`);
+    }
+    // Allgemein: Die Zelle folgt dem höheren Rang, bei Gleichstand der ersten Gruppe
+    for (const [name, lauf] of [['Versatz 6', r.v6], ['Versatz −9', r.vm9]]) {
+      const falsch = lauf.tage.filter(t => {
+        const gewinnerB = (RANG[t.ba] || 0) > (RANG[t.aa] || 0);
+        return t.z.tag !== 'T' + (gewinnerB ? t.db : t.da) || !t.z.farbe.includes(gewinnerB ? lauf.hexB : lauf.hexA);
+      });
+      pruefe(lauf.tage.length > 0 && falsch.length === 0,
+        `F18-5 ${name}: ${falsch.length} von ${lauf.tage.length} Tagen mit zwei Aufgaben zeigen die falsche Gruppe: ` +
+        falsch.slice(0, 3).map(t => `${t.iso} ${t.aa}/${t.ba} → ${t.z.tag}`).join(' | '));
+    }
+    pruefe(r.solo && r.solo.icon === '🧊' && r.solo.wort === 'IceFlush' && r.solo.tag === 'T' + r.solo.d,
+      `F18-6 eine Gruppe allein: IceFlush-Zelle verändert: ${JSON.stringify(r.solo)}`);
+  }
+
   pruefe(!a.errors.length, 'Skriptfehler: ' + a.errors.slice(0, 3).join(' | '));
   if (fehler.length) { console.log(`test_runzwei: ${fehler.length} von ${n} Prüfungen rot`); fehler.forEach((f) => console.log('  ✗ ' + f)); process.exit(1); }
   console.log(`test_runzwei: alle ${n} Prüfungen grün`);

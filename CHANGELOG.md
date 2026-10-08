@@ -2,6 +2,23 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-08 — v1.5.407
+
+- **Kalender mit zwei Gruppen: Die Zelle zeigte die Aufgabe des Zyklus, der in der Liste oben steht** (Run-02-Prüfung vom
+  07.10.2026, F18). Trocknete die erste Gruppe, stand am IceFlush- und am Erntetag der zweiten nur „Trocknen“ in der Zelle.
+  Deren Aufgabe war ein kleiner Punkt, das Wort „IceFlush“ oder „Ernte“ fehlte ganz. Nachgestellt: In 15 von 18 Versätzen
+  zwischen zwei Gruppen verdeckte die erste mindestens einen Tag lang eine wichtigere Aufgabe der zweiten.
+- **Jetzt** zeigt die Zelle die folgenreichere Aufgabe: Ernte vor IceFlush vor Spülen vor Sättigungsguss vor Gießen vor Sprühen
+  vor Trocknen (`CAL_AKTION_RANG`, `_calHauptAktion`). Symbol, Farbe, Tag-Nummer und Wort gehören zu ihr. Ernte und IceFlush
+  gibt es einmal im Zyklus und sie sind nicht rückholbar (`ANBAU.md` 11, 15), Trocknen ist jeden Tag ohne Handgriff. Bei
+  Gleichstand und mit einer Gruppe ändert sich nichts.
+- Geprüft im Browser (zwei Rainbow-Gruppen, nur im Arbeitsspeicher): Am 12.11. zeigt die Zelle „🧊 T90 IceFlush“ der zweiten
+  Gruppe statt des Trocknen-Symbols der ersten.
+- Vorgeschlagen und gemessen hat das ein Prüfer (Sonnet) auf v1.5.403.
+- **Offen** (Patricks Entscheidung, Umbau): beide Tag-Nummern in einer Zelle zeigen, damit die Nummer gar nicht mehr springt.
+- Test: `test_runzwei.js` F18 (8 Prüfungen; 6 fallen auf v1.5.406 um).
+
+
 ## 2026-10-08 — v1.5.406
 
 - **Der Gieß-Fahrplan nannte in der Anzucht keine Güsse** (Run-02-Prüfung vom 07.10.2026, F08). Die Liste „Deine nächsten

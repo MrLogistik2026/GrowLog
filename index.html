@@ -1685,6 +1685,23 @@ function calActionIcon(a) {
   if (CAL_SVG[a]) return CAL_SVG[a];
   return ACT_ICON[a] || '';
 }
+
+/**
+ * (v1.5.407) Welche Aufgabe die Kalenderzelle zeigt, wenn mehrere Zyklen an einem Tag etwas zu tun haben (zwei Gruppen im
+ * Zelt). Bisher gewann der Zyklus, der in der Liste oben steht: Trocknete die erste Gruppe, stand in der Zelle „Trocknen",
+ * und der IceFlush oder die Ernte der zweiten war nur ein Punkt. Jetzt gewinnt die seltenere, folgenreichere Aufgabe:
+ * Ernte und IceFlush gibt es einmal im Zyklus, Spülen ein paarmal, ein Guss alle paar Tage, Trocknen jeden Tag. Bei
+ * Gleichstand bleibt es bei der Reihenfolge der Liste, mit einem Zyklus ändert sich nichts.
+ */
+const CAL_AKTION_RANG = { ernte: 8, ice: 7, spuelen: 6, saettigung: 5, giess: 4, giess_anz: 4, sprueh: 2, trocknen: 1 };
+function _calHauptAktion(dayInfo) {
+  let beste = null;
+  for (const x of dayInfo) {
+    if (!x.a) continue;
+    if (!beste || (CAL_AKTION_RANG[x.a] || 0) > (CAL_AKTION_RANG[beste.a] || 0)) beste = x;
+  }
+  return beste;
+}
 const PH_ICON = { anzucht: '🌱', vorzucht: '🌱', vegi_out: '☀️', abhärten: '🌤', bloom: '🌸', flush: '🚿', ice: '🧊', harvest: '✂️', dry: '🍂' };
 const START_ICON = '☘️';
 
@@ -4641,7 +4658,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.406';
+const APP_VERSION = 'v1.5.407';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -19626,7 +19643,7 @@ function renderCal() {
     const isToday = iso === today;
     const hasEntry = entryHasContent(iso);
     const dayInfo = act.map(c => ({ c, a: getAction(iso, c), p: phase(iso, c) })).filter(x => x.p);
-    const actionDay = dayInfo.find(x => x.a);
+    const actionDay = _calHauptAktion(dayInfo);
     const phaseDay = dayInfo[0];
     const isStart = act.some(c => c.startDate === iso);
     // Auspflanz-Tag: der Tag, an dem die Pflanze raus kommt
@@ -19694,7 +19711,8 @@ function renderCal() {
       // 1. Trägt DIESER Tag eine Ereignis-Aktion, gehört die Beschriftung hierher —
       //    unabhängig davon, in welcher Phase das Raster ihn gerade führt. Genau das
       //    ist der vorgezogene IceFlush: Aktion an Tag 113, Phase dort noch 'flush'.
-      const _aktionHeute = getAction(iso, phaseDay.c);
+      // (v1.5.407) Das Wort gehört zu dem Zyklus, dessen Aufgabe die Zelle zeigt - nicht zum ersten der Liste.
+      const _aktionHeute = (actionDay && _aktionPhase[actionDay.a]) ? actionDay.a : getAction(iso, phaseDay.c);
       const _ereignisPh = _aktionPhase[_aktionHeute];
       if (_ereignisPh) {
         phaseMarkerColor = PHASE_MARKER_COLORS[_ereignisPh];
