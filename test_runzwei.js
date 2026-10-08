@@ -569,6 +569,84 @@ async function starte() {
     pruefe(!/ Wo\. \d+ · Tag/.test(fl(r.t18e.dash)), `F12-12 Einsteiger sieht keine Wochenzahl auf der Zyklus-Karte: ${fl(r.t18e.dash).slice(0, 400)}`);
   }
 
+  // F14 (v1.5.410) · Das pH-Ziel im Eintrag ist die Zahl der Plan-Woche, nicht fest das Ziel des Substrats
+  {
+    const eVorher = a.E('JSON.stringify(S.entries)');
+    // Prüflage: ein Gießtag in Plan-Woche 6 (Rainbow: pH 6,25), erster Tag der Woche (dann steht die Wochenkarte im Eintrag)
+    const L = JSON.parse(a.E(`(function(){ const c = S.cycles[0]; const out = {};
+      for (let i = 0; i < 160; i++) { const iso = isoPlus(c.startDate, i); const p = phase(iso, c); if (!p) continue;
+        const wk = fertPlanWeek(c, iso, p); if (wk !== 6 || out.erster) continue; out.erster = iso; }
+      for (let i = 0; i < 160; i++) { const iso = isoPlus(c.startDate, i); const p = phase(iso, c); if (!p) continue;
+        if (fertPlanWeek(c, iso, p) !== 6) continue; if (isGiessTag(iso, c) && getFeedWaterEffective(c, p, iso, null) !== 'water') { out.giess = iso; break; } }
+      return JSON.stringify(out); })()`));
+    pruefe(L.erster && L.giess, 'F14-0 Prüflage: kein Tag in Plan-Woche 6 gefunden: ' + JSON.stringify(L));
+
+    // 1 · Daten: Jede Zahl im Feld ph steht auch im Wochen-Tipp; Woche 1–12 und 14 haben eine
+    const D = JSON.parse(a.E(`(function(){ const wf = FERT_PRESETS.rainbow_auto.weekFocus; const out = [];
+      for (let w = 1; w <= 15; w++) { const f = wf[w]; const m = f.tip.match(/pH(?: |-Wasser )(\\d),(\\d+)/);
+        out.push({ w, ph: f.ph === undefined ? null : f.ph, im_tipp: m ? parseFloat(m[1] + '.' + m[2]) : null }); }
+      return JSON.stringify(out); })()`));
+    const ohne = D.filter(x => x.im_tipp !== null && x.ph !== x.im_tipp).map(x => `Wo ${x.w}: Feld ${x.ph} / Tipp ${x.im_tipp}`);
+    pruefe(ohne.length === 0, 'F14-1 Plan-Woche mit pH im Tipp-Text, aber ohne dieselbe Zahl im Feld ph: ' + ohne.join(' | '));
+    pruefe(D.filter(x => x.w <= 12).every(x => typeof x.ph === 'number'), 'F14-1b Woche 1–12 ohne Zahl im Feld ph: ' + JSON.stringify(D.filter(x => x.w <= 12 && typeof x.ph !== 'number').map(x => x.w)));
+
+    // 2 · Die Funktion: Zielwert der Woche, Spanne bleibt die des Substrats
+    const Z = JSON.parse(a.E(`(function(){ const c = S.cycles[0]; if (typeof phZielFuer !== 'function') return JSON.stringify({ fehlt: true });
+      const z = phZielFuer(c, '${L.giess}'); const alt = phTargetFor('erde');
+      return JSON.stringify({ midText: z.midText, mid: z.mid, quelle: z.quelle, label: z.label, labelComma: z.labelComma, lo: z.lo, hi: z.hi, altLabel: alt.label }); })()`));
+    pruefe(!Z.fehlt && Z.midText === '6.25' && Z.mid === 6.25 && Z.quelle === 'plan', 'F14-2 phZielFuer in Plan-Woche 6: ' + JSON.stringify(Z));
+    pruefe(Z.label === Z.altLabel && Z.lo === 6.2 && Z.hi === 6.4, 'F14-2b die Spanne bleibt die des Substrats: ' + JSON.stringify(Z));
+
+    // 3 · Eintrag (Profi) am ersten Tag der Woche: Wochenkarte und Zielzeile nennen dieselbe Zahl
+    const E = JSON.parse(a.E(`(function(){ S.beginnerMode = false; const c = S.cycles[0]; const out = {};
+      const lies = (iso) => { setDebugDate(iso); openEntry(iso); renderEntry(iso); const t = document.getElementById('entry-body').textContent.replace(/\\s+/g, ' ');
+        const f = document.getElementById('ph-' + c.id); const r = { t, platz: f ? f.getAttribute('placeholder') : null }; setDebugDate(''); return r; };
+      const e1 = lies('${L.erster}'); out.karte = (e1.t.match(/Woche 6[^—]{0,80}— pH (\\d,\\d+)/) || [])[1] || null;
+      out.zielE = (e1.t.match(/Ziel: pH (\\d\\.\\d+)/) || [])[1] || null;
+      const e2 = lies('${L.giess}'); out.ziel = (e2.t.match(/Ziel: pH (\\d\\.\\d+)/) || [])[1] || null; out.hint = (e2.t.match(/🎯 pH: (\\d\\.\\d+)/) || [])[1] || null;
+      out.mischen = (e2.t.match(/→ pH auf (\\d\\.\\d+)/) || [])[1] || null; out.platz = e2.platz;
+      return JSON.stringify(out); })()`));
+    pruefe(E.karte === '6,25', 'F14-3a Prüflage: Wochenkarte nennt nicht pH 6,25: ' + JSON.stringify(E));
+    pruefe(E.zielE && E.zielE.replace('.', ',') === E.karte, `F14-3b Wochenkarte „pH ${E.karte}“ und Zielzeile „Ziel: pH ${E.zielE}“ im selben Eintrag verschieden`);
+    pruefe(E.ziel === '6.25' && E.hint === '6.25' && E.mischen === '6.25' && E.platz === '6.25', 'F14-3c Ziel / Hinweiszeile / Mischen-Zeile / Platzhalter in Plan-Woche 6: ' + JSON.stringify(E));
+
+    // 4 · Einsteiger: Spanne im Feld-Hinweis bleibt, die Startseite nennt die Zahl der Woche
+    const S1 = JSON.parse(a.E(`(function(){ S.beginnerMode = true; const c = S.cycles[0]; const iso = '${L.giess}'; setDebugDate(iso);
+      openEntry(iso); renderEntry(iso); const t = document.getElementById('entry-body').textContent.replace(/\\s+/g, ' ');
+      renderDash(); const d = document.getElementById('dash-body').textContent.replace(/\\s+/g, ' '); setDebugDate(''); S.beginnerMode = false;
+      return JSON.stringify({ spanne: /pH 6\\.2–6\\.4 ist optimal/.test(t), start: (d.match(/pH auf (\\d\\.\\d+) einstellen/) || [])[1] || null }); })()`));
+    pruefe(S1.spanne, 'F14-4a Einsteiger: „pH 6.2–6.4 ist optimal“ (Spanne des Substrats) fehlt: ' + JSON.stringify(S1));
+    pruefe(S1.start === '6.25', 'F14-4b Startseite „pH auf … einstellen“ in Plan-Woche 6: ' + JSON.stringify(S1));
+
+    // 5 · „Tag automatisch ausfüllen“ schlägt dieselbe Zahl vor
+    const T = a.E(`(function(){ const c = S.cycles[0]; const iso = '${L.giess}'; const p = phase(iso, c); const t = getAutoFillTemplate(c, p, getAction(iso, c), iso); return t ? t.ph : 'kein Template'; })()`);
+    pruefe(T === '6.25', 'F14-5 Auto-Ausfüllen schlägt pH ' + T + ' vor statt 6.25');
+
+    // 6 · Gültigkeit: Planwert nur innerhalb der Spanne des Substrats; ohne Zahl im Plan bleibt es beim Substrat-Ziel
+    const G = JSON.parse(a.E(`(function(){ const c = S.cycles[0]; const out = {}; const iso = '${L.giess}'; const vorherIds = S.cycles.map(x => x.id);
+      const zf = (typeof phZielFuer === 'function') ? phZielFuer : () => ({ midText: 'fehlt', quelle: 'fehlt', label: '' });
+      const coco = addCyc({ name: 'Coco', startDate: c.startDate, seedType: 'auto', growType: 'indoor', medium: 'coco', potSize: 11, plantCount: 2,
+        startMethod: 'direct', fertPlanId: c.fertPlanId }, { still: true });
+      const z = zf(coco, iso); out.coco = { midText: z.midText, quelle: z.quelle, label: z.label };
+      let tag13 = null;
+      for (let i = 0; i < 160; i++) { const d = isoPlus(c.startDate, i); const p = phase(d, c); if (p && fertPlanWeek(c, d, p) === 13) { tag13 = d; break; } }
+      const z13 = zf(c, tag13); out.w13 = { midText: z13.midText, quelle: z13.quelle };
+      const pl = _planFuerVorlage('biobizz_light'); const bio = addCyc({ name: 'Bio', startDate: c.startDate, seedType: 'auto', growType: 'indoor', medium: 'erde',
+        potSize: 11, plantCount: 2, startMethod: 'direct', fertPlanId: pl }, { still: true });
+      const zb = zf(bio, iso); out.bio = { midText: zb.midText, quelle: zb.quelle };
+      out.leer = (function(){ try { const x = zf(null, null); return x.midText; } catch (e) { return 'Fehler: ' + e.message; } })();
+      S.cycles = S.cycles.filter(x => vorherIds.includes(x.id)); saveS();
+      return JSON.stringify(out); })()`));
+    pruefe(G.coco.midText === '6.0' && G.coco.quelle === 'substrat' && G.coco.label === '5.8–6.2', 'F14-6a Erd-Plan in Coco: Planwert 6,25 liegt über der Coco-Spanne und darf nicht gelten: ' + JSON.stringify(G.coco));
+    pruefe(G.w13.midText === '6.4' && G.w13.quelle === 'substrat', 'F14-6b Plan-Woche 13 (Rampe) nennt im Plan kein pH: Ziel des Substrats: ' + JSON.stringify(G.w13));
+    pruefe(G.bio.midText === '6.4' && G.bio.quelle === 'substrat', 'F14-6c Plan ohne pH-Zahlen (BioBizz Light) unverändert 6.4: ' + JSON.stringify(G.bio));
+    pruefe(G.leer === '6.4', 'F14-6d phZielFuer(null, null) wirft nicht: ' + G.leer);
+
+    a.E('S.entries = JSON.parse(' + JSON.stringify(eVorher) + '); saveS();');
+    // 7 · Wächter: keine Anzeigestelle rechnet das Ziel mehr mit toFixed(1) (6,25 würde „6.3“)
+    pruefe(!/pht\.mid\.toFixed\(1\)/.test(HTML), 'F14-7 Quelltext: pht.mid.toFixed(1) kommt noch vor (' + (HTML.match(/pht\.mid\.toFixed\(1\)/g) || []).length + ' Stellen)');
+  }
+
   pruefe(!a.errors.length, 'Skriptfehler: ' + a.errors.slice(0, 3).join(' | '));
   if (fehler.length) { console.log(`test_runzwei: ${fehler.length} von ${n} Prüfungen rot`); fehler.forEach((f) => console.log('  ✗ ' + f)); process.exit(1); }
   console.log(`test_runzwei: alle ${n} Prüfungen grün`);

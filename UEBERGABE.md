@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.409** · index.html 2,56 MB · 781 Funktionen
+Stand: **v1.5.410** · index.html 2,56 MB · 781 Funktionen
 Zuletzt fortgeschrieben am 07.10.2026 (Nachtprüfung und Run 02 — Abschnitt 0o, „Stand Run 02"). Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
@@ -273,7 +273,7 @@ Run 02 fachlich und Bedienung mit Patricks echter Datei, ein Gegenprüfer).** Ur
 keiner schlechter als v1.5.319. Die zwei schweren (Einschleusen über Anführungszeichen und `__proto__`) und die Import- und
 Speicher-Befunde sind in v1.5.340–344 behoben. Rohdaten: Workflow wf_63d754b1-be1 (journal.jsonl), Skripte unter
 `.claude/tmp/review339/` (vergänglich). **Offen, alle schon in v1.5.319 vorhanden, nach Nutzen für Run 02:**
-- Leicht: F14 pH 6.4 fest neben 6,35 der Plan-Woche, F16 jeder
+- Leicht: F16 jeder
   Bildschirm wählt eine andere Standardgruppe (~20356, ~22671), F19 Import übernimmt Spül-, Eis- und Trocknungstage nicht aus dem Plan.
 - Speicher, leicht: rettung.html bietet „Daten anzeigen" nur beim Hauptstand (SK-5); wiederherstellung.html überschreibt
   den Rückweg beim zweiten Einspielen, „Zurückholen" ohne Ablage des aktuellen Stands, Quota-Fehler roh (SK-6, wie in 319);
@@ -343,6 +343,7 @@ Speicher-Befunde sind in v1.5.340–344 behoben. Rohdaten: Workflow wf_63d754b1-
 - v1.5.407: Kalender bei zwei Gruppen — die Zelle zeigt die folgenreichere Aufgabe (Ernte > IceFlush > Spülen > Guss > Trocknen, `_calHauptAktion`, F18). Offen, Patricks Entscheidung: beide Tag-Nummern in einer Zelle.
 - v1.5.408: Eintragskopf und Plan-Blatt nennen den heutigen Plan-Tag, wo der Plan ab dem Keimling zählt (`_planTagAbKeimling`, F12).
 - v1.5.409: Startseite, Zyklus-Karte — keine unbeschriftete Phasen-Woche mehr in der Anzucht, in der Blüte „Blüte Wo. N“ (F12, zweiter Teil).
+- v1.5.410: pH-Ziel aus der Plan-Woche, wo der Plan eine Zahl nennt (`weekFocus[wk].ph`, `phZielFuer`, F14). Offen: Rainbow-Woche 13 und 15 ohne pH im Blatt.
 
 **Gegenprüfung von v1.5.364/365 (07.10.2026 nachts, Workflow wf_4cf817bf-629, drei Sonnet-Prüfer + Gegenprüfer).** Kein Fehlalarm
 in 33 App-Fassungen, allen Vorlagen und über 2800 Klicks; die schweren Befunde (unsichere Kopie zerstört den Hauptstand, Tropfen als

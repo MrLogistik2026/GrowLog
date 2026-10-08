@@ -2,6 +2,33 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-08 — v1.5.410
+
+- **Das pH-Ziel im Eintrag war fest das Ziel des Substrats, während die Plan-Woche darüber eine andere Zahl nannte**
+  (Run-02-Prüfung vom 07.10.2026, F14). Im Rainbow-Plan sagte die Wochenkarte „Frühblüte … — pH 6,25“; darunter standen
+  im selben Eintrag:
+  - „Ziel: pH 6.4“,
+  - „🎯 pH: 6.4“,
+  - „→ pH auf 6.4“,
+  - der Platzhalter 6.4.
+
+  Auf der Startseite stand „pH auf 6.4 einstellen“, „Tag automatisch ausfüllen“ schlug 6.4 vor. Patricks Blatt v2.1 nennt
+  6,4 → 6,35 → 6,3 → 6,25 über den Zyklus. An 76 von 121 Tagen lagen damit zwei Ziele in einer Karte. Kein Pflanzenrisiko
+  (beides liegt in `ANBAU.md` 4, Erde 6,0–6,5), aber die App überstimmte die Zahl des Plans mit ihrer eigenen.
+- **Jetzt** trägt der Rainbow-Plan die Zahl je Woche als Feld (`weekFocus[wk].ph`, dieselbe wie im Tipp-Text). Zielzeile,
+  Hinweiszeile, Mischen-Zeile, Platzhalter, Startseite und Auto-Ausfüllen nehmen sie über `phZielFuer(c, iso)`. Dabei gilt:
+  - Spanne und Warnschwellen bleiben die des Substrats.
+  - Die Zahl des Plans gilt nur, wenn sie in der Spanne des Substrats liegt. Ein Erd-Plan in Coco fällt auf 6.0 zurück
+    (ANBAU.md 4, Gültigkeitsbedingung).
+  - Ohne Zahl im Plan (alle anderen Vorlagen, Rainbow-Woche 13 und 15) ändert sich nichts.
+
+  Angezeigt wird mit bis zu zwei Nachkommastellen, weil `toFixed(1)` aus 6,25 „6.3“ gemacht hätte.
+- Gespeicherte Rainbow-Kopien bekommen die Zahlen ohne Umzug, weil die Wochen-Tipps live aus der Vorlage gelesen werden.
+- Vorgeschlagen und gemessen hat das ein Prüfer (Sonnet) über alle 36 Kombinationen aus Vorlage und Substrat.
+- **Offen** (Patricks Entscheidung): Rainbow-Woche 13 und 15 nennen im Blatt kein pH; dort gilt das Ziel des Substrats.
+- Test: `test_runzwei.js` F14 (15 Prüfungen; 13 fallen auf v1.5.409 um).
+
+
 ## 2026-10-08 — v1.5.409
 
 - **Die Startseite nannte zwei verschiedene Wochenzahlen ohne Beschriftung** (Run-02-Prüfung vom 07.10.2026, F12, zweiter Teil).

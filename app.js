@@ -2358,21 +2358,22 @@ const FERT_PRESETS = {
       15: { def: 0.22, min: 0,    max: 0.5,  label: 'IceFlush — nur Wasser', waterOnly: true },
     },
     // Plan-Tage zählen ab dem Keimling (Blatt: „Tag 1 = Sprout"), nicht ab dem App-Tag 1.
+    // `ph` = Zulauf-pH der Woche laut Blatt v2.1 (Chip „pH“); phZielFuer liest ihn. Der Tipp nennt dieselbe Zahl im Text — test_runzwei prüft, dass beide gleich sind.
     weekFocus: {
-      1:  { phase: 'Sämling',                  tip: 'pH 6,4. Kein Bio-Grow — Light-Mix ist vorgedüngt. Licht 25 %, 60–65 cm. Gießradius 5 cm, eng am Samen. Gegossen wird, wenn die Oberfläche im Gießradius hell wird und sich am Samen trocken anfühlt — höchstens alle zwei Tage. Nimmt der Referenztopf zwei Tage in Folge kaum ab, ist er unten noch nass: dann nicht gießen.' },
-      2:  { phase: 'Früh-Vegi · LST-Start',    tip: 'pH 6,35. Gießradius mit den Wurzeln auf 8–12 cm erweitern — nasse Erde ohne aufnehmende Wurzel bleibt nass. LST ab Plan-Tag 10–12 (Plan-Tage zählen ab dem Keimling). Ab Plan-Tag 10 täglich Nodes zählen — der FIM-Stichtag (Plan-Tag 13) fällt in diese Woche.' },
-      3:  { phase: 'Vegi · FIM · Wasserguss',  tip: 'pH 6,3 · gegossen wird am Gießpunkt („Knapp“) · noch kein Drain möglich. FIM nur, wenn alle Pflanzen bis Plan-Tag 13 Node 4–5 erreicht haben — Eingriff bis Plan-Tag 15, und am Eingriffstag müssen noch mindestens 7 Tage bis zum erwarteten Blütetag 0 bleiben; sonst bei keiner, dann LST allein. Reihenfolge: Feed → 1–2 Tage später FIM bei prallen Blättern → der erste Guss danach (frühestens 48 h, sobald der Topf den Gießpunkt erreicht) ist reines pH-Wasser 6,3 in Feed-Menge — trag das FIM als Training ein, dann stellt die App diesen Guss von selbst auf „Nur Wasser“. Fällt FIM aus, ist der erste Guss dieser Woche der Wasserguss (dann im Tageseintrag auf „Nur Wasser“ stellen). Ab jetzt wöchentlich pro Topf: Höhe, Seitentriebe, Internodienabstand.' },
-      4:  { phase: 'Stretch · Selektion',      tip: 'pH 6,3. Erste Pistillen pro Topf notieren = Blütetag 0 (die App zählt denselben Tag als Blütetag 1). Selektion Plan-Tag 22–31: Entfernt wird nur eine Pflanze, die selbst zurückbleibt (weniger Seitentriebe, größerer Internodienabstand) oder krank ist — nie eine gesunde wegen Beschattung; eine Auto holt den verlorenen Wurzelraum nicht auf. Epsom ab jetzt konstant 0,15, CalMag bleibt bis Woche 6 bei 0,3. Erste Drain-Versuche, noch ohne Bewertung.' },
-      5:  { phase: 'Stretch-Ende · Kontrollguss', tip: 'pH 6,3. Kontrollguss je Sorte: Topf kurz vor dem Gießen wiegen, rund 5 L je Topf ansetzen und mittig, langsam in Etappen gießen, bis ' + DRAIN_ZIEL.min + '–' + DRAIN_ZIEL.max + ' % in einer breiten Wanne ankommen. Abtropfen lassen, dann wiegen — das ist das erste Gewicht (100 %). Das zweite Gewicht kommt erst in Woche 6, kurz vor dem Gießen. Ab jetzt jeder Feed bis ' + DRAIN_ZIEL.min + '–' + DRAIN_ZIEL.max + ' % Drain; Drain-EC nur bei mindestens ' + DRAIN_ZIEL.min + ' % Durchfluss werten. Letzte Entlaubung, max. 10–15 %, nur Fächerblätter über Bud-Sites.' },
-      6:  { phase: 'Frühblüte · Bio-Bloom startet', tip: 'pH 6,25. Zweites Gewicht in dieser Woche kurz vor dem Gießen nehmen, am Gießpunkt („Knapp“) — die App setzt es als Gießpunkt, erst dann rechnet sie Prozente für diesen Topf. Ab jetzt die schwerste Schimmelphase: Handprobe im Canopy-Inneren wöchentlich, Luftfeuchte nachts zur kühlsten Stunde messen — beim Abkühlen steigt sie von selbst, und der Deckel gilt auch nachts. Gelb zwischen grünen Adern an mittleren/unteren Blättern erst unterscheiden: Seneszenz (spät, gleichmäßig von unten, Kelche schwellen weiter) → Hebe-Test (dauernass?) → Zulauf-pH (nie unter 6,0) → keine Calcium-Quelle erhöhen → erst dann Epsom 0,4 g/L für 2–3 Feeds, danach zurück auf 0,15. Nicht vorbeugend. Rückweg für Bio-Grow, am Blattbild statt am Kalender: Läuft eine Vergilbung schnell, fleckig oder etagenweise und stockt die Blütenbildung, Bio-Grow auf den nächsthöheren Wert des Plans — in Woche 6–10 auf 1,0, ab Woche 11 auf 0,75 — und dort bleiben, bis das Bild kippt. Es ist die einzige Korrektur für zu wenig Stickstoff; der EC zeigt organisch gebundenen Stickstoff nicht. Lollipopping nach Licht-Test, letzter Eingriff.' },
-      7:  { phase: 'Bud-Set',                  tip: 'pH 6,25. CalMag jetzt 0,5, Bio-Grow bleibt bei 0,75. Advanced Amino zum letzten Mal. Buds nicht mehr anfassen, Zweige am Stiel bewegen. Luft unter und durch den Canopy, nie direkt auf die Blüten — ist im Canopy-Inneren keine Bewegung spürbar, braucht es einen zweiten Ventilator.' },
-      8:  { phase: 'Bulk-Start · Ceiling-Test', tip: 'pH 6,25. Ceiling-Test Bio-Bloom 1,05 → 1,2 → 1,35 → 1,5, je Stufe mindestens zwei Güsse, jede Sorte getrennt; Bio-Grow bleibt dabei unverändert. Als Befund zählt Spitzenbrand an den Zuckerblättern nur, wenn der Topf nicht trocken war (Hebe-Test) und nicht nur die lichtnächsten Spitzen betroffen sind — dann eine Stufe zurück: Das ist das Ceiling dieser Sorte. Genauso zählen hellgelbe junge Blätter mit grün bleibenden Adern oder auffällig kurze Abstände zwischen den Blattknoten an den neuen Etagen (Bio-Bloom hebt vor allem Phosphor, und Phosphor verdrängt Zink und Eisen) — die jüngsten Blätter deshalb ab jetzt wöchentlich ansehen. Kein Befund bis 1,5: 1,5 ist die Arbeitsdosis. Bio-Grow bleibt bei 0,75 bis einschließlich Woche 10 — den Stopp lösen nur die Trichome aus, frühestens Woche 12.' },
-      9:  { phase: 'Bulk · Trichom-Baseline',  tip: 'pH 6,25. CalMag ab jetzt 0,8. Bio-Bloom 1,2 oder dein Ceiling. Trichom-Baseline pro Topf: alle 3–4 Tage, dieselben Stellen — Headbud, Mitte, unterer Trieb, je 30–50 Köpfe, die Zahl der Köpfe mit notieren —, nur Calyxen, nie Zuckerblätter, nie Foxtail-Neuwuchs. Der Hebe-Test bleibt der einzige Gieß-Trigger.' },
-      10: { phase: 'Bulk-Peak', tip: 'pH 6,25. Bio-Bloom auf deinem Ceiling (bis zum Testergebnis 1,2), Bio-Grow die letzte Woche mit 0,75. Nachts nicht gezielt herunterkühlen — Kühle kostet Blütenmasse, und jedes Grad weniger hebt die Luftfeuchte. Die Wurzelzone soll nicht unter 16 °C fallen. Luftfeuchte zur kühlsten Stunde prüfen; hält der Deckel nicht, entfeuchten statt kühlen. Ertragsstärkste Phase: Feed konstant, nichts ändern.' },
-      11: { phase: 'Reifung · Seneszenz',      tip: 'pH 6,25. Bio-Grow 0,5 als Zwischenstufe. Ab jetzt Schimmel-Deckel 60 % statt 65, Tag und Nacht. Vergilbung gleichmäßig von unten nach oben bei laufender Blütenentwicklung ist Seneszenz — nicht andüngen; läuft sie fleckig oder etagenweise und stockt die Blüte: Rückweg aus Woche 6, hier auf Bio-Grow 0,75. Steigt der Drain-EC bei mindestens 20 % Durchfluss, ohne Spitzenbrand und mit gleichmäßiger Vergilbung von unten, spricht das für Nachlieferung aus dem Substrat — keine Maßnahme. Steigt er dagegen schon seit Wochen, bei wenig Durchfluss oder mit fleckiger Vergilbung, ist es Anreicherung: Zufuhr senken oder Durchfluss erhöhen. Erreicht eine Sorte den Trigger für den Bio-Grow-Stopp und eine andere nicht: getrennte Ansätze nacheinander mischen.' },
-      12: { phase: 'Taper · N-Stopp bei Trigger', tip: 'pH 6,25. Bio-Grow 0,3 → 0: Stopp je Sorte bei 70–80 % milchigen Trichomen, ausgelöst von der am wenigsten reifen Pflanze dieser Sorte — nicht nach Kalender. Silica Force endet mit dem Stopp, spätestens mit dem letzten Guss dieser Woche. Bio-Bloom bleibt oben und wird erst 7 Tage nach dem Stopp reduziert.' },
+      1:  { phase: 'Sämling',                  ph: 6.4, tip: 'pH 6,4. Kein Bio-Grow — Light-Mix ist vorgedüngt. Licht 25 %, 60–65 cm. Gießradius 5 cm, eng am Samen. Gegossen wird, wenn die Oberfläche im Gießradius hell wird und sich am Samen trocken anfühlt — höchstens alle zwei Tage. Nimmt der Referenztopf zwei Tage in Folge kaum ab, ist er unten noch nass: dann nicht gießen.' },
+      2:  { phase: 'Früh-Vegi · LST-Start',    ph: 6.35, tip: 'pH 6,35. Gießradius mit den Wurzeln auf 8–12 cm erweitern — nasse Erde ohne aufnehmende Wurzel bleibt nass. LST ab Plan-Tag 10–12 (Plan-Tage zählen ab dem Keimling). Ab Plan-Tag 10 täglich Nodes zählen — der FIM-Stichtag (Plan-Tag 13) fällt in diese Woche.' },
+      3:  { phase: 'Vegi · FIM · Wasserguss',  ph: 6.3, tip: 'pH 6,3 · gegossen wird am Gießpunkt („Knapp“) · noch kein Drain möglich. FIM nur, wenn alle Pflanzen bis Plan-Tag 13 Node 4–5 erreicht haben — Eingriff bis Plan-Tag 15, und am Eingriffstag müssen noch mindestens 7 Tage bis zum erwarteten Blütetag 0 bleiben; sonst bei keiner, dann LST allein. Reihenfolge: Feed → 1–2 Tage später FIM bei prallen Blättern → der erste Guss danach (frühestens 48 h, sobald der Topf den Gießpunkt erreicht) ist reines pH-Wasser 6,3 in Feed-Menge — trag das FIM als Training ein, dann stellt die App diesen Guss von selbst auf „Nur Wasser“. Fällt FIM aus, ist der erste Guss dieser Woche der Wasserguss (dann im Tageseintrag auf „Nur Wasser“ stellen). Ab jetzt wöchentlich pro Topf: Höhe, Seitentriebe, Internodienabstand.' },
+      4:  { phase: 'Stretch · Selektion',      ph: 6.3, tip: 'pH 6,3. Erste Pistillen pro Topf notieren = Blütetag 0 (die App zählt denselben Tag als Blütetag 1). Selektion Plan-Tag 22–31: Entfernt wird nur eine Pflanze, die selbst zurückbleibt (weniger Seitentriebe, größerer Internodienabstand) oder krank ist — nie eine gesunde wegen Beschattung; eine Auto holt den verlorenen Wurzelraum nicht auf. Epsom ab jetzt konstant 0,15, CalMag bleibt bis Woche 6 bei 0,3. Erste Drain-Versuche, noch ohne Bewertung.' },
+      5:  { phase: 'Stretch-Ende · Kontrollguss', ph: 6.3, tip: 'pH 6,3. Kontrollguss je Sorte: Topf kurz vor dem Gießen wiegen, rund 5 L je Topf ansetzen und mittig, langsam in Etappen gießen, bis ' + DRAIN_ZIEL.min + '–' + DRAIN_ZIEL.max + ' % in einer breiten Wanne ankommen. Abtropfen lassen, dann wiegen — das ist das erste Gewicht (100 %). Das zweite Gewicht kommt erst in Woche 6, kurz vor dem Gießen. Ab jetzt jeder Feed bis ' + DRAIN_ZIEL.min + '–' + DRAIN_ZIEL.max + ' % Drain; Drain-EC nur bei mindestens ' + DRAIN_ZIEL.min + ' % Durchfluss werten. Letzte Entlaubung, max. 10–15 %, nur Fächerblätter über Bud-Sites.' },
+      6:  { phase: 'Frühblüte · Bio-Bloom startet', ph: 6.25, tip: 'pH 6,25. Zweites Gewicht in dieser Woche kurz vor dem Gießen nehmen, am Gießpunkt („Knapp“) — die App setzt es als Gießpunkt, erst dann rechnet sie Prozente für diesen Topf. Ab jetzt die schwerste Schimmelphase: Handprobe im Canopy-Inneren wöchentlich, Luftfeuchte nachts zur kühlsten Stunde messen — beim Abkühlen steigt sie von selbst, und der Deckel gilt auch nachts. Gelb zwischen grünen Adern an mittleren/unteren Blättern erst unterscheiden: Seneszenz (spät, gleichmäßig von unten, Kelche schwellen weiter) → Hebe-Test (dauernass?) → Zulauf-pH (nie unter 6,0) → keine Calcium-Quelle erhöhen → erst dann Epsom 0,4 g/L für 2–3 Feeds, danach zurück auf 0,15. Nicht vorbeugend. Rückweg für Bio-Grow, am Blattbild statt am Kalender: Läuft eine Vergilbung schnell, fleckig oder etagenweise und stockt die Blütenbildung, Bio-Grow auf den nächsthöheren Wert des Plans — in Woche 6–10 auf 1,0, ab Woche 11 auf 0,75 — und dort bleiben, bis das Bild kippt. Es ist die einzige Korrektur für zu wenig Stickstoff; der EC zeigt organisch gebundenen Stickstoff nicht. Lollipopping nach Licht-Test, letzter Eingriff.' },
+      7:  { phase: 'Bud-Set',                  ph: 6.25, tip: 'pH 6,25. CalMag jetzt 0,5, Bio-Grow bleibt bei 0,75. Advanced Amino zum letzten Mal. Buds nicht mehr anfassen, Zweige am Stiel bewegen. Luft unter und durch den Canopy, nie direkt auf die Blüten — ist im Canopy-Inneren keine Bewegung spürbar, braucht es einen zweiten Ventilator.' },
+      8:  { phase: 'Bulk-Start · Ceiling-Test', ph: 6.25, tip: 'pH 6,25. Ceiling-Test Bio-Bloom 1,05 → 1,2 → 1,35 → 1,5, je Stufe mindestens zwei Güsse, jede Sorte getrennt; Bio-Grow bleibt dabei unverändert. Als Befund zählt Spitzenbrand an den Zuckerblättern nur, wenn der Topf nicht trocken war (Hebe-Test) und nicht nur die lichtnächsten Spitzen betroffen sind — dann eine Stufe zurück: Das ist das Ceiling dieser Sorte. Genauso zählen hellgelbe junge Blätter mit grün bleibenden Adern oder auffällig kurze Abstände zwischen den Blattknoten an den neuen Etagen (Bio-Bloom hebt vor allem Phosphor, und Phosphor verdrängt Zink und Eisen) — die jüngsten Blätter deshalb ab jetzt wöchentlich ansehen. Kein Befund bis 1,5: 1,5 ist die Arbeitsdosis. Bio-Grow bleibt bei 0,75 bis einschließlich Woche 10 — den Stopp lösen nur die Trichome aus, frühestens Woche 12.' },
+      9:  { phase: 'Bulk · Trichom-Baseline',  ph: 6.25, tip: 'pH 6,25. CalMag ab jetzt 0,8. Bio-Bloom 1,2 oder dein Ceiling. Trichom-Baseline pro Topf: alle 3–4 Tage, dieselben Stellen — Headbud, Mitte, unterer Trieb, je 30–50 Köpfe, die Zahl der Köpfe mit notieren —, nur Calyxen, nie Zuckerblätter, nie Foxtail-Neuwuchs. Der Hebe-Test bleibt der einzige Gieß-Trigger.' },
+      10: { phase: 'Bulk-Peak', ph: 6.25, tip: 'pH 6,25. Bio-Bloom auf deinem Ceiling (bis zum Testergebnis 1,2), Bio-Grow die letzte Woche mit 0,75. Nachts nicht gezielt herunterkühlen — Kühle kostet Blütenmasse, und jedes Grad weniger hebt die Luftfeuchte. Die Wurzelzone soll nicht unter 16 °C fallen. Luftfeuchte zur kühlsten Stunde prüfen; hält der Deckel nicht, entfeuchten statt kühlen. Ertragsstärkste Phase: Feed konstant, nichts ändern.' },
+      11: { phase: 'Reifung · Seneszenz',      ph: 6.25, tip: 'pH 6,25. Bio-Grow 0,5 als Zwischenstufe. Ab jetzt Schimmel-Deckel 60 % statt 65, Tag und Nacht. Vergilbung gleichmäßig von unten nach oben bei laufender Blütenentwicklung ist Seneszenz — nicht andüngen; läuft sie fleckig oder etagenweise und stockt die Blüte: Rückweg aus Woche 6, hier auf Bio-Grow 0,75. Steigt der Drain-EC bei mindestens 20 % Durchfluss, ohne Spitzenbrand und mit gleichmäßiger Vergilbung von unten, spricht das für Nachlieferung aus dem Substrat — keine Maßnahme. Steigt er dagegen schon seit Wochen, bei wenig Durchfluss oder mit fleckiger Vergilbung, ist es Anreicherung: Zufuhr senken oder Durchfluss erhöhen. Erreicht eine Sorte den Trigger für den Bio-Grow-Stopp und eine andere nicht: getrennte Ansätze nacheinander mischen.' },
+      12: { phase: 'Taper · N-Stopp bei Trigger', ph: 6.25, tip: 'pH 6,25. Bio-Grow 0,3 → 0: Stopp je Sorte bei 70–80 % milchigen Trichomen, ausgelöst von der am wenigsten reifen Pflanze dieser Sorte — nicht nach Kalender. Silica Force endet mit dem Stopp, spätestens mit dem letzten Guss dieser Woche. Bio-Bloom bleibt oben und wird erst 7 Tage nach dem Stopp reduziert.' },
       13: { phase: 'Finish · Rampe',           tip: 'Nach dem Bio-Grow-Stopp 7 Tage Basis (Bio-Bloom 1,2 bzw. Ceiling · CalMag 0,8 · Epsom 0,15 · POWHUMUS 2,5 · Alg-A-Mic 2, ohne Bio-Grow und Silica), dann EIN Rampen-Guss: Bio-Bloom 0,5 · CalMag 0,5 · Epsom 0,2 — den zeigt die Mischliste in dieser Woche. Die Rampe erst starten, wenn der Trichom-Verlauf dein Ernteziel innerhalb von (4 × Gießabstand + 3) Tagen erwarten lässt; sonst bleibt der Feed wie Woche 12 ohne Silica als Warteschleife, und du verlängerst die Blütedauer im Endspurt. Liegt der Bernstein-Anteil über deinem eingestellten Ziel → schneiden, Spülen und IceFlush entfallen.' },
-      14: { phase: 'Spülen',                   tip: 'Zwei Güsse reines pH-Wasser 6,3, jeweils am Gießpunkt („Knapp“), nicht tiefer. Wann Schluss ist, sagt die Zahl der Spülgänge — nicht ein Drain-EC-Wert: In Light-Mix kann er nach dem Spülen wieder steigen, weil das Substrat nachliefert. Nach dem zweiten Spülgang einmalig Hard Dryback: nicht mehr gießen, bis der Topf den Gießpunkt erreicht — dann nimmt er das Schmelzwasser des IceFlush auf.' },
+      14: { phase: 'Spülen',                   ph: 6.3, tip: 'Zwei Güsse reines pH-Wasser 6,3, jeweils am Gießpunkt („Knapp“), nicht tiefer. Wann Schluss ist, sagt die Zahl der Spülgänge — nicht ein Drain-EC-Wert: In Light-Mix kann er nach dem Spülen wieder steigen, weil das Substrat nachliefert. Nach dem zweiten Spülgang einmalig Hard Dryback: nicht mehr gießen, bis der Topf den Gießpunkt erreicht — dann nimmt er das Schmelzwasser des IceFlush auf.' },
       15: { phase: 'IceFlush + Ernte',         tip: '1 L Crushed Ice pro Topf an den Rand, 4–6 h, kein Wasser dazu. Dunkelphase 28 h nur, wenn alle Töpfe im Zelt am selben Tag geschnitten werden (Licht aus 01:00, Zeitschaltuhr trennen, der folgende Lichttag entfällt); Luftfeuchte höchstens 60 %. Schnitt mit Dunkelphase am nächsten Morgen vor 05:00, ohne zwischen 01:00 und 05:00 — unter Grünlicht, Frischgewicht pro Topf. Ernte-Trigger: kaum noch klare Trichome und dein eingestelltes Bernstein-Ziel erreicht — wie viel Bernstein du willst, entscheidest du selbst (Vorgabe 5 %; mehr macht die Wirkung ruhiger und senkt die Potenz). Gemessen wird auf den Kelchen, nicht auf Zuckerblättern. Griffelbräunung ist kein Reifezeichen.' },
     },
     products: [
@@ -3644,7 +3645,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.409';
+const APP_VERSION = 'v1.5.410';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -8874,6 +8875,25 @@ function phTargetFor(medium) {
   return medium === 'coco'
     ? { lo: 5.8, hi: 6.2, mid: 6.0, label: '5.8–6.2', labelComma: '5,8–6,2' }
     : { lo: 6.2, hi: 6.4, mid: 6.4, label: '6.2–6.4', labelComma: '6,2–6,4' };
+}
+
+/**
+ * pH-Ziel am Zulauf für diesen Zyklus an diesem Tag. Spanne und Warnschwellen bleiben beim Substrat (phTargetFor); den
+ * Zielwert (`mid`, als Text `midText`) nimmt die Funktion aus der Plan-Woche, wenn der Plan der Woche eine Zahl nennt
+ * (`weekFocus[wk].ph` — Rainbow: 6,4 → 6,25 über den Zyklus). Vorher stand im Feld und auf der Startseite fest das Ziel des
+ * Substrats (Erde 6.4), während die Wochenkarte darüber 6,35 oder 6,25 nannte: zwei Ziele in einer Karte (v1.5.410, F14, Run-02-Prüfung).
+ * Gültigkeitsbedingung (ANBAU.md 4): Die Zahl des Plans zählt nur, wenn sie in der Spanne des Substrats liegt — ein Erd-Plan
+ * in Coco (6,25 liegt über 5,8–6,2) fällt auf das Ziel des Substrats zurück. Ohne Zahl im Plan ändert sich nichts.
+ */
+function phZielFuer(c, iso, p) {
+  const z = phTargetFor(c && c.medium);
+  const out = { ...z, midText: z.mid.toFixed(1), quelle: 'substrat' };
+  const ph = p || ((c && iso) ? phase(iso, c) : null);
+  const wk = (c && iso && ph) ? fertPlanWeek(c, iso, ph) : null;
+  const f = wk ? _planWochenFokus(getPlanForCycle(c), wk) : null;
+  const v = (f && !f._abgeleitet) ? Number(f.ph) : NaN;
+  if (v >= z.lo && v <= z.hi) { out.mid = v; out.midText = String(Math.round(v * 100) / 100); out.quelle = 'plan'; }
+  return out;
 }
 
 function getInt(c, ph) {
@@ -17354,7 +17374,7 @@ function plainSentence(action, c, p, waterMl) {
 function getTodayAction(c, p, a, iso) {
   if (!p) return null;
   const cl = col(c);
-  const pht = phTargetFor(c && c.medium);
+  const pht = phZielFuer(c, iso, p);
   const pot = getPotSize(c);
   // Hat der User für heute schon eine Gießmenge eingetragen (cd.water), zeig DIE hier —
   // sonst widerspricht der Home-Screen dem Eintrag (Eintrag 3300 vs. Home 7500). v1.1.135.
@@ -17473,7 +17493,7 @@ function getTodayAction(c, p, a, iso) {
       icon: '💦',
       color: cl.hex,
       steps: [
-        `Wasser anmischen: pH ${pht.mid.toFixed(1)}, EC höchstens 0,6 — ${_tag1MittelText(c, iso)}`,
+        `Wasser anmischen: pH ${pht.midText}, EC höchstens 0,6 — ${_tag1MittelText(c, iso)}`,
         `<b>${satMl} ml in 3 Etappen</b> zu je ~${etappe} ml, dazwischen jeweils 15 min Pause`,
         'Kreisförmig von außen nach innen gießen — nie direkt auf den Samen',
         'Säst du direkt in die Erde: den Samen erst nach dem letzten Durchgang legen.',
@@ -17497,7 +17517,7 @@ function getTodayAction(c, p, a, iso) {
         // wartet, bis der Samen selbst trocken liegt — und die Keimwurzel ist nach dem Durchbruch
         // nicht mehr austrocknungsfest (Pereira et al. 2018). Gefragt ist die Stelle, nicht die Tiefe.
         'Erst schauen: wird die Erde direkt über dem Samen oder um den Keimling hell? Dann sprühen.',
-        `3–5 Sprühstöße pH-Wasser (pH ${pht.mid.toFixed(1)}) auf die Erdoberfläche — nicht auf die Keimblätter`,
+        `3–5 Sprühstöße pH-Wasser (pH ${pht.midText}) auf die Erdoberfläche — nicht auf die Keimblätter`,
         'Heute kein Gießen und kein Hebe-Test: Sprühen ändert das Topfgewicht nicht messbar',
       ],
       hint: `Ab Tag 9 beginnt der normale Gießrhythmus — noch ${restTage} ${restTage === 1 ? 'Tag' : 'Tage'} sprühen.`,
@@ -17532,15 +17552,15 @@ function getTodayAction(c, p, a, iso) {
       icon: '💧',
       color: cl.hex,
       steps: isVorzucht ? [
-        `Ca. <b>${waterMl} ml</b> ${GIESSWASSER_TEXT} (pH ${pht.mid.toFixed(1)})`,
+        `Ca. <b>${waterMl} ml</b> ${GIESSWASSER_TEXT} (pH ${pht.midText})`,
         p.day <= 5 ? 'Ring um den Sämling, nicht direkt drauf' : 'Radius allmählich vergrößern',
         'Drinnen bleiben — bis zu den Eisheiligen/gewähltem Transplant-Datum',
       ] : isOutdoor ? [
         'Topf anheben: leicht? → gießen. Schwer? → warten.',
-        `Falls gießen: ca. <b>${waterMl} ml</b> ${GIESSWASSER_TEXT} (pH ${pht.mid.toFixed(1)})`,
+        `Falls gießen: ca. <b>${waterMl} ml</b> ${GIESSWASSER_TEXT} (pH ${pht.midText})`,
         activeDoses.length > 0 ? (() => { const _m = _mischungKurz(c, activeDoses, waterMl); return `Dünger laut Plan (Woche ${fertWk}) ${_m.fuer}: ${_m.text}`; })() : 'Laut Plan diese Woche kein Dünger',
       ] : [
-        `Ca. <b>${waterMl} ml</b> ${GIESSWASSER_TEXT} (pH ${pht.mid.toFixed(1)})`,
+        `Ca. <b>${waterMl} ml</b> ${GIESSWASSER_TEXT} (pH ${pht.midText})`,
         p.day <= KEIMUNG.auflaufenBis ? 'Ring um die Stelle, an der der Samen liegt — nicht direkt darauf'
           : p.day <= 10 ? 'Ring um den Keimling, nicht direkt drauf'
           : 'Radius allmählich vergrößern',
@@ -17579,11 +17599,11 @@ function getTodayAction(c, p, a, iso) {
       color: cl.hex,
       steps: isOutdoor ? [
         'Topf anheben: leicht? → gießen. Schwer? → warten.',
-        `Falls gießen: ca. <b>${waterMl} ml</b> Wasser · pH auf <b>${pht.mid.toFixed(1)}</b>`,
+        `Falls gießen: ca. <b>${waterMl} ml</b> Wasser · pH auf <b>${pht.midText}</b>`,
         _duengerZeile,
       ] : [
         `Ca. <b>${waterMl} ml</b> Wasser${_drainMoeglich(p) ? `, bis ${DRAIN_ZIEL.min}–${DRAIN_ZIEL.max} % unten ablaufen` : ''}`,
-        `pH auf <b>${pht.mid.toFixed(1)}</b> einstellen${_ecZ ? ` · EC im Ziel ${ecFmt(_ecZ.min)}–${ecFmt(_ecZ.max)} ${ecUnitLabel()}` : ''}`,
+        `pH auf <b>${pht.midText}</b> einstellen${_ecZ ? ` · EC im Ziel ${ecFmt(_ecZ.min)}–${ecFmt(_ecZ.max)} ${ecUnitLabel()}` : ''}`,
         _duengerZeile,
       ],
       hint: isOutdoor
@@ -17597,7 +17617,7 @@ function getTodayAction(c, p, a, iso) {
       icon: '🚿',
       color: cl.hex,
       steps: [
-        `Ca. <b>${waterMl} ml</b> reines Wasser · pH ${pht.mid.toFixed(1)}`,
+        `Ca. <b>${waterMl} ml</b> reines Wasser · pH ${pht.midText}`,
         '<b>KEIN Dünger</b> — nur klares Wasser!',
         'Bis viel Drain unten durchläuft (durchspülen)',
       ],
@@ -28792,7 +28812,7 @@ function renderEntry(iso) {
     // (v1.5.165) Ohne EC-Ziel keine erfundene Spanne. Vorher stand dann fest 0,8–2,0 — und in der Nährstoff-
     // Box sogar immer, auch in der Anzucht direkt neben dem Feld mit „Ziel 700–1000“.
     const ecRange = ecT ? (ecT.waterOnly ? 'nur Wasser' : `${ecFmt(ecT.min)}–${ecFmt(ecT.max)}`) : '';
-    const pht = phTargetFor(c && c.medium);
+    const pht = phZielFuer(c, iso, p);
     // Düngeplan-Woche: zentral über fertPlanWeek bestimmen — die EINE Quelle für die
     // Dünge-Woche. Sie achtet auf plan-eigene Tag-Spannen (weekDayBounds, z. B. Peak
     // Swelling = 14 Tage). Hat der Plan keine solchen Spannen, rechnet sie exakt wie
@@ -29850,7 +29870,7 @@ function renderEntry(iso) {
             <div style="font-size:10px;color:var(--text-hint);margin-bottom:2px">pH${S.beginnerMode ? infoBtn('ph') : ''}</div>
             <div style="display:flex;align-items:center;gap:3px">
               <button onclick="stepPH('${c.id}',-0.01)" class="stepper-btn">−</button>
-              <input class="inp-field${cd._suggested?.ph ? ' suggested' : ''}" type="number" step="0.01" min="4" max="9" id="ph-${c.id}" value="${cd.ph || ''}" placeholder="${pht.mid.toFixed(1)}"
+              <input class="inp-field${cd._suggested?.ph ? ' suggested' : ''}" type="number" step="0.01" min="4" max="9" id="ph-${c.id}" value="${cd.ph || ''}" placeholder="${pht.midText}"
                 style="width:52px;font-size:15px;font-weight:600;font-family:var(--mono);text-align:center;padding:6px 2px"
                 oninput="uEF('${c.id}','ph',this.value)"/>
               <button onclick="stepPH('${c.id}',0.01)" class="stepper-btn">+</button>
@@ -29867,7 +29887,7 @@ function renderEntry(iso) {
             </div>
           </div>
           <div style="flex:1;text-align:right;font-size:10px;color:var(--text-hint);line-height:1.5">
-            ${S.beginnerMode ? `pH ${pht.label} ist optimal` : `Ziel: pH ${pht.mid.toFixed(1)}${ecT ? ` · EC ${!ecT.waterOnly ? ecRange : `${ecFmt(0.3)}–${ecFmt(0.4)} (Wasser-Tag)`} ${ecUnitLabel()}` : ''}${_drainMoeglich(p) ? '<br>Drain entsorgen!' : ''}`}   <!-- (v1.5.386) wie die Zielzeile (v1.5.372): vor Tag 25 kein Drain -->
+            ${S.beginnerMode ? `pH ${pht.label} ist optimal` : `Ziel: pH ${pht.midText}${ecT ? ` · EC ${!ecT.waterOnly ? ecRange : `${ecFmt(0.3)}–${ecFmt(0.4)} (Wasser-Tag)`} ${ecUnitLabel()}` : ''}${_drainMoeglich(p) ? '<br>Drain entsorgen!' : ''}`}   <!-- (v1.5.386) wie die Zielzeile (v1.5.372): vor Tag 25 kein Drain -->
           </div>
         </div>
         ${phEcCritWarnHTML}
@@ -29896,7 +29916,7 @@ function renderEntry(iso) {
                 <div style="font-size:10px;color:var(--text-hint);margin-bottom:2px">Runoff pH</div>
                 <div style="display:flex;align-items:center;gap:3px">
                   <button onclick="stepRunoffPh('${c.id}',-0.01)" class="stepper-btn">−</button>
-                  <input class="inp-field" type="number" step="0.01" min="4" max="9" id="runoff-ph-${c.id}" value="${cd.runoffPh || ''}" placeholder="${cd.ph || pht.mid.toFixed(1)}"
+                  <input class="inp-field" type="number" step="0.01" min="4" max="9" id="runoff-ph-${c.id}" value="${cd.runoffPh || ''}" placeholder="${cd.ph || pht.midText}"
                     style="width:52px;font-size:15px;font-weight:600;font-family:var(--mono);text-align:center;padding:6px 2px;border-color:${phColor !== 'var(--text-hint)' ? phColor : 'var(--border)'}"
                     oninput="uEF('${c.id}','runoffPh',this.value);refreshRunoffAnalysis('${c.id}')"/>
                   <button onclick="stepRunoffPh('${c.id}',0.01)" class="stepper-btn">+</button>
@@ -30180,7 +30200,7 @@ function renderEntry(iso) {
             ${prodRows || `<div style="padding:10px 12px;font-size:12px;color:var(--text-muted)">Keine Dünger konfiguriert. <span style="color:var(--blue);cursor:pointer" onclick="openDuenger()">Dünger einrichten →</span></div>`}
           </div>
           ${mixSteps}
-          ${S.beginnerMode ? '' : `<div class="ph-hint">🎯 pH: ${pht.mid.toFixed(1)}${ecT && !ecT.waterOnly ? ` · EC: ${ecRange} ${ecUnitLabel()}` : ''}${_drainMoeglich(p) ? ` · Drain: ${DRAIN_ZIEL.min}–${DRAIN_ZIEL.max} %` : ''}</div>`}
+          ${S.beginnerMode ? '' : `<div class="ph-hint">🎯 pH: ${pht.midText}${ecT && !ecT.waterOnly ? ` · EC: ${ecRange} ${ecUnitLabel()}` : ''}${_drainMoeglich(p) ? ` · Drain: ${DRAIN_ZIEL.min}–${DRAIN_ZIEL.max} %` : ''}</div>`}
           ${c.medium === 'hydro' ? hydroResBlock : `<div style="background:var(--card);border:0.5px solid var(--border);border-radius:10px;overflow:hidden;margin-top:6px">
             <div onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none';this.querySelector('.gtgl').textContent=this.nextElementSibling.style.display==='none'?'▸':'▾'" style="padding:8px 12px;cursor:pointer;display:flex;align-items:center;gap:6px">
               <span style="font-size:13px">🚰</span>
@@ -30196,7 +30216,7 @@ function renderEntry(iso) {
                 <div>${c.medium === 'coco' ? '<b style="color:var(--teal)">② Feucht halten:</b> Coco nie ganz austrocknen lassen — nur leicht abtrocknen, dann wieder gießen. Die Wurzeln mögen es gleichmäßig feucht.' : '<b style="color:var(--teal)">② Rücktrocknung:</b> Finger weg! Trocknung zieht O₂ in die Wurzelzone = Motor für Wachstum.'}</div>
                 <div>${c.medium === 'coco' ? `<b style="color:var(--green)">③ Gießpunkt:</b> ${_drainMoeglich(p) ? '' : `Ab Tag ${DRAIN_AB_TAG}: `}Gießen sobald der Topf merklich leichter wird (Hebe-Test „${GIESSPUNKT.coco.knopf}“, ${GIESSPUNKT.coco.von}–${GIESSPUNKT.coco.bis} % Restgewicht) — jedes Mal mit Nährlösung. (${getInt(c, p?.ph || 'bloom') <= 1 ? 'meist täglich' : '~alle ' + getInt(c, p?.ph || 'bloom') + ' Tage'})` : `<b style="color:var(--green)">③ Sweetspot:</b> ${_drainMoeglich(p) ? '' : `Ab Tag ${DRAIN_AB_TAG}: `}Gießen im Sweet Spot bei ${GIESSPUNKT.erde.von}–${GIESSPUNKT.erde.bis} % Restgewicht (Hebe-Test „Knapp“). Obere 3–5 cm trocken. (~alle ${getInt(c, p?.ph || 'bloom')} Tage)`}</div>
                 <div style="background:rgba(240,208,80,0.06);border-radius:6px;padding:6px 8px;color:var(--yellow)">${c.medium === 'coco' ? '💡 <b>Tipp:</b> In Coco lieber etwas früher gießen als zu spät — Coco verzeiht Austrocknen schlecht. Staunässe trotzdem vermeiden, aber nie knochentrocken werden lassen.' : '💡 <b>Unsicher?</b> Morgen wieder anheben — nicht warten, bis die Blätter hängen: Dann steht die Photosynthese schon. Nass macht zu häufiges Gießen oder Wasser im Untersetzer, nicht eine volle Menge mit Drain.'}</div>
-                <div><b style="color:var(--orange)">🧪 Mischen:</b> ${(() => { const _mo = (_planAnsicht(c).mixOrder || []); return _mo.length ? `${_mo[0]} zuerst → umrühren → dann der Rest in der Reihenfolge deines Plans` : 'ein Silikat zuerst, falls du eins nutzt → dann CalMag → umrühren → Basisdünger → Additive'; })()} → pH auf ${pht.mid.toFixed(1)}</div>
+                <div><b style="color:var(--orange)">🧪 Mischen:</b> ${(() => { const _mo = (_planAnsicht(c).mixOrder || []); return _mo.length ? `${_mo[0]} zuerst → umrühren → dann der Rest in der Reihenfolge deines Plans` : 'ein Silikat zuerst, falls du eins nutzt → dann CalMag → umrühren → Basisdünger → Additive'; })()} → pH auf ${pht.midText}</div>
                 ${_drainMoeglich(p) ? `<div><b style="color:var(--orange)">🚿 Drain:</b> ${DRAIN_ZIEL.min}–${DRAIN_ZIEL.max} % Drain bei jedem Guss. Drain-Wasser sofort entsorgen!</div>` : ''}
               </div>
             </div>
@@ -30594,7 +30614,7 @@ function renderEntry(iso) {
               oninput="${_swOnInput}" onchange="_entryNeuNachFeld()" style="border-color:${cl.hex}44"/>
           </div>
           <div style="width:78px;flex-shrink:0"><div class="inp-label">pH</div>
-            <input class="inp-field" type="number" step="0.01" min="4" max="9" value="${cd.ph || ''}" placeholder="${pht.mid.toFixed(1)}" oninput="uEF('${c.id}','ph',this.value)"/>
+            <input class="inp-field" type="number" step="0.01" min="4" max="9" value="${cd.ph || ''}" placeholder="${pht.midText}" oninput="uEF('${c.id}','ph',this.value)"/>
           </div>
         </div>${_swTotalHint}${phEcCritWarnHTML}`;
 
@@ -33151,7 +33171,7 @@ function extrapolateRestPct(c, targetIso) {
 function getAutoFillTemplate(c, p, a, iso) {
   if (!c || !p || !iso) return null;
   const ph = p.ph;
-  const pht = phTargetFor(c.medium);
+  const pht = phZielFuer(c, iso, p);
   const day = p.day || 1;
   const week = p.week || 1;                   // PHASEN-relativ (Anzucht- bzw. Blüte-Woche) — für Stretch-/Spätblüte-Notizen
   const planWeek = fertPlanWeek(c, iso, p);   // DURCHLAUFENDE Plan-Woche (1–12) — für die Dünger-Dosen aus dem Wochenplan
@@ -33199,7 +33219,7 @@ function getAutoFillTemplate(c, p, a, iso) {
     // (v1.5.161) Menge aus waterSuggestion wie Startseite und Fahrplan — vorher fest 700 ml je Topf.
     const waterMl = waterSuggestion(c, p, iso);
     tpl.water = String(waterMl);
-    tpl.ph = pht.mid.toFixed(1);
+    tpl.ph = pht.midText;
     // (v1.5.218) Kein EC eintragen: Das waere ein erfundener Messwert (ANBAU.md 15 — „Messwerte werden nie
     // geschaetzt und eingetragen"). Das Ziel „hoechstens 0,6" steht im Text daneben, als Vorgabe statt Eintrag.
     tpl.ec = '';
@@ -33219,7 +33239,7 @@ function getAutoFillTemplate(c, p, a, iso) {
   // mit pH-Wasser + leichtem CalMag/Aloe — 3–5 Sprühstöße über dem Samen.
   if (a === 'sprueh') {
     tpl.water = '0';   // KEIN Gießen!
-    tpl.ph = pht.mid.toFixed(1);
+    tpl.ph = pht.midText;
     tpl.ec = '0';
     tpl.doses = {};
     tpl._allDosesZero = true;
@@ -33257,7 +33277,7 @@ function getAutoFillTemplate(c, p, a, iso) {
     // ist die Live-Empfehlung („~XX ml/Pflanze") konsistent mit dem Auto-Fill-Wert.
 
     tpl.water = String(waterMl);
-    tpl.ph = pht.mid.toFixed(1);
+    tpl.ph = pht.midText;
 
     // EC-Vorschlag aus der Gesamt-Wochen-Tabelle (getEcTarget) — konsistent mit dem
     // Düngeplan und der Spanne-Anzeige im Eintrag. Sämling Tag 1–7 bleibt bei 0
@@ -33349,7 +33369,7 @@ function getAutoFillTemplate(c, p, a, iso) {
     let waterMl = (typeof waterSuggestion === 'function') ? waterSuggestion(c, p) : 200;
     waterMl = Math.round(waterMl * 1.5 / 50) * 50; // mehr durchspülen!
     tpl.water = String(waterMl);
-    tpl.ph = pht.mid.toFixed(1);
+    tpl.ph = pht.midText;
     tpl.ec = '0';                  // KLARES Wasser
     tpl.doses = {};
     tpl._allDosesZero = true;
