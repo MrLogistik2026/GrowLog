@@ -4669,7 +4669,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.425';
+const APP_VERSION = 'v1.5.426';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -21241,31 +21241,30 @@ async function removeTrainingEvent(cId, iso, idx) {
 /**
  * Berechnet den minimalen Offset damit der Gießtag auf den Resume-Tag fällt.
  * Probiert Offsets 0 bis interval-1 durch.
- * Benutzt den kumulativen Offset aus offsetHistory für den Resume-Tag.
+ *
+ * (v1.5.426) Gefragt wird getAction selbst: Der Offset wird probeweise eingetragen, und es zählt, ob der Plan am Resume-Tag
+ * einen Guss hat. Vorher baute die Funktion das Raster von Hand nach (Güsse bei diff % Intervall = 0 ab Phasenstart). Das
+ * Sämlings-Protokoll verankert die Anzucht-Güsse aber bei Tag 9, 12, 15 … (getAction, anzAnchorStart). Toppte man im
+ * Standard-Start an Tag 15–18, nannte die App den ersten Guss zwei Tage früher, als sie ihn dann plante, mit 5–7 Tagen ohne
+ * Guss statt 3 (Prüfung vom 08.10.2026). Vor Tag 25 fängt keine Hebe-Test-Messung so ein Loch auf, und bei Automatics zählt
+ * jeder Stresstag (ANBAU.md 9). Eine Quelle für Versprechen und Plan.
  */
 function calcToppingOffset(c, toppingISO, pause) {
   const resumeDay = isoPlus(toppingISO, pause + 1);
-
-  // Kumulativen Offset für den Resume-Tag berechnen (ohne den neuen Topping-Offset)
-  let currentOffset = 0;
-  for (const entry of c.offsetHistory || []) {
-    if (resumeDay >= entry.date) currentOffset += entry.offset;
-  }
-
-  const diffFromStart = isoDiff(resumeDay, c.startDate);
   const a = anzuchtLenFor(c);
-  const iv = diffFromStart < a ? (c.intAnzucht || 3) : (c.intBloom || 3);
-
-  for (let testOff = 0; testOff < iv; testOff++) {
-    const totalOff = currentOffset + testOff;
-    const vs = isoPlus(c.startDate, totalOff);
-    const diff = isoDiff(resumeDay, vs);
-    if (diff < 0) continue;
-    const ps = diff < a ? 0 : a;
-    const dip = diff - ps;
-    if (dip >= 0 && dip % iv === 0) return testOff;
-  }
-  return 1; // fallback
+  const iv = isoDiff(resumeDay, c.startDate) < a ? (c.intAnzucht || 3) : (c.intBloom || 3);
+  const gesichert = Array.isArray(c.offsetHistory) ? c.offsetHistory.slice() : [];
+  const probe = { date: isoPlus(toppingISO, 1), offset: 0 };
+  c.offsetHistory = gesichert.concat([probe]);
+  let ergebnis = null;
+  try {
+    for (let testOff = 0; testOff < iv; testOff++) {
+      probe.offset = testOff;
+      const akt = getAction(resumeDay, c);
+      if (akt === 'giess' || akt === 'giess_anz') { ergebnis = testOff; break; }
+    }
+  } finally { c.offsetHistory = gesichert; }
+  return ergebnis == null ? 1 : ergebnis;   // fallback wie bisher
 }
 
 /**

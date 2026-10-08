@@ -2,6 +2,20 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-08 — v1.5.426
+
+- **Nach dem Toppen nannte die App ein falsches Datum für den ersten Guss** (Topping-Prüfung vom 08.10.2026, T1).
+  `calcToppingOffset` baute das Gießraster von Hand nach: Güsse jeden dritten Tag ab Phasenstart. Das Sämlings-Protokoll
+  legt die Anzucht-Güsse aber auf Tag 9, 12, 15 … Gemessen im Standard-Start (Rainbow, Erde, Intervall 3): Bei einem
+  Topping an Tag 15 bis 18 versprach die App den ersten Guss zwei Tage früher, als sie ihn plante. Zwischen zwei Güssen
+  lagen dann 5 bis 7 Tage statt 3, und im selben Eintrag standen zwei verschiedene Daten. Vor Tag 25 fängt keine
+  Hebe-Test-Messung so ein Loch auf, und bei Automatics zählt jeder Stresstag (`ANBAU.md` 9).
+- **Jetzt** fragt die Funktion `getAction` selbst: Der Offset wird probeweise eingetragen, und es zählt, ob der Plan am
+  versprochenen Tag einen Guss hat. Versprechen und Plan haben damit eine Quelle. Gemessen: 28 von 28 Fällen stimmen,
+  Standard-Start und „direkt“, mit und ohne Guss am Topping-Tag; vorher waren es 20 von 28. In der Blüte ändert sich nichts.
+  Die Pause selbst (Vorgabe 2 Tage) ist unverändert, sie ist Patricks Entscheidung.
+- Test: `test_topping.js` P1 (mit v1.5.429 ins Repo; fällt auf v1.5.425 um).
+
 ## 2026-10-08 — v1.5.425
 
 - **25 „✓“-Meldungen erschienen auch, wenn das Speichern gescheitert war** (Prüfrunde vom 07.10.2026, Speicher, Rest aus
