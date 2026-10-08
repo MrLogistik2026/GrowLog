@@ -7,6 +7,7 @@
 //   S5 (v1.5.395)  Wachstum: Gießen, Dünger nach Plan mit pH, Toppen wie die App, Automatics nicht umtopfen.
 //   S6 (v1.5.396)  Blüte: Titel, Dunkelphase, Stickstoff, Schimmel-Deckel aus KLIMA_ZIEL.
 //   S7 (v1.5.397)  Ernte: eigenes Bernstein-Ziel und Klar-Grenze aus der App, Messort, Spülen ehrlich, Schnitt im Dunkeln.
+//   S1 (v1.5.398)  Einkaufsliste: pH-Werkzeug, Thermo-Hygrometer und Lupe gehören dazu.
 //
 // GS_INDEX=<anderer Build> lässt den Test gegen einen alten Stand laufen; dort muss er umfallen.
 const fs = require('fs');
@@ -112,6 +113,13 @@ async function starte() {
     pruefe(!/1 Woche vorher/.test(s7) && !/Letzten 2 Tage/.test(s7) && /nicht belegt/.test(s7), 'S7-3 Spülen fest statt nach Plan, oder ohne „nicht belegt" (ANBAU.md 14)');
     pruefe(/Vor dem Lichtangang/.test(s7) && !/größten Qualitätsunterschied/.test(s7), 'S7-4 Schnitt-Zeitpunkt oder unbelegte Qualitätsaussage');
     pruefe(/Lupe zeigt, geht vor/.test(s7), 'S7-5 Messung schlägt Kalender (ANBAU.md 15) fehlt');
+  }
+
+  // S1 (v1.5.398) · Einkaufsliste: pH-Werkzeug, Thermo-Hygrometer und Lupe gehören dazu
+  {
+    const s1 = schritt(0);
+    pruefe(!/aber nicht Pflicht am Anfang/.test(s1), 'S1-1 pH-Werkzeug und Lupe stehen unter „nicht Pflicht"');
+    pruefe(/pH-Tropfen oder ein pH-Messgerät und pH-Minus/.test(s1) && /Thermo-Hygrometer/.test(s1) && /Lupe oder ein Handy mit Makro/.test(s1), 'S1-2 pH-Werkzeug, Thermo-Hygrometer oder Lupe fehlt');
   }
 
   pruefe(!a.errors.length, 'Skriptfehler: ' + a.errors.slice(0, 3).join(' | '));

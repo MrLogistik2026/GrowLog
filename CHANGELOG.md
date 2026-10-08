@@ -2,6 +2,17 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-08 — v1.5.398
+
+- **Anleitung „Dein erster Grow“, Schritt 1 (Einkaufsliste):** pH-Tropfen, pH-Minus und Lupe standen unter „Nützlich (aber
+  nicht Pflicht am Anfang)“. Schritt 5 verlangt seit v1.5.395 den pH der fertigen Mischung, Schritt 7 die Lupe. Ein falscher
+  pH ist einer der tödlichen Fehler (`ANBAU.md` 13.3): Die Nährstoffe sind da, aber nicht verfügbar. Ein Thermo-Hygrometer
+  fehlte ganz, obwohl die Schimmel-Warnung der App von Temperatur und Luftfeuchte lebt (13.5).
+- **Jetzt** gehören pH-Tropfen oder pH-Messgerät mit pH-Minus, ein Thermo-Hygrometer (Indoor) und eine Lupe oder ein Handy mit
+  Makro zum Minimum, je mit einem Satz, wofür.
+- Test: `test_erstergrow.js` S1 (2 Prüfungen; beide fallen auf v1.5.397 um).
+
+
 ## 2026-10-08 — v1.5.397
 
 - **Anleitung „Dein erster Grow“, Schritt 7 (Ernte), knüpfte die Ernte an eine feste Bernstein-Menge** („Standard-Empfehlung:

@@ -4625,7 +4625,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.397';
+const APP_VERSION = 'v1.5.398';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -9149,8 +9149,13 @@ const FIRST_GROW_STEPS = [
         <li><b>Erde</b> — fertige BioBizz Light-Mix oder ähnliche „leichte" Anzucht-Erde</li>
         <li><b>Licht</b> (nur Indoor) — LED-Panel mindestens 100 W echte Leistung</li>
         <li><b>Gießkanne</b> mit feinem Brausekopf</li>
+        <!-- (v1.5.398) Vorher standen pH-Werkzeug und Lupe unter „nicht Pflicht" — Schritt 5 verlangt den pH der Mischung, Schritt 7
+             die Lupe, und ein falscher pH ist einer der tödlichen Fehler (ANBAU.md 13.3). Ohne Temperatur und Luftfeuchte kann die App
+             nicht vor Schimmel warnen (13.5). -->
+        <li><b>pH-Tropfen oder ein pH-Messgerät und pH-Minus</b> — ab dem ersten Dünger stellst du das Gießwasser auf den pH deiner Erde ein. Bei falschem pH sind Nährstoffe da, aber die Pflanze kommt nicht an sie heran.</li>
+        <li><b>Thermo-Hygrometer</b> (nur Indoor) — zeigt Temperatur und Luftfeuchte im Zelt. Ohne diese zwei Zahlen kann die App dich nicht vor Schimmel warnen.</li>
+        <li><b>Lupe oder ein Handy mit Makro</b> — spätestens zur Ernte: Die Trichome entscheiden, wann du schneidest.</li>
       </ul>
-      <p><b>Nützlich (aber nicht Pflicht am Anfang):</b> pH-Tropfen zum Messen, pH-Minus, kleine Lupe für Trichome.</p>
       <p><b>Budget:</b> ~80–150€ für Anfänger-Setup, je nach Licht.</p>
     `,
   },
