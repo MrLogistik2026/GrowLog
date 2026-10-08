@@ -4621,7 +4621,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.388';
+const APP_VERSION = 'v1.5.389';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -15152,6 +15152,31 @@ function _gussHeuteErledigt(c, iso) {
   if (cd && cd._doneTodo) return { status: 'erledigt' };
   return null;
 }
+/**
+ * (v1.5.389) Kann der vorgeschlagene Guss Drain geben? In den Topf passt höchstens, was seit dem letzten Auffüllen fehlt; erst
+ * darüber läuft Drain ab (ANBAU.md 1.1). Startkurve und eigene Güsse rechnen „Verbrauch ÷ (1 − Drain-Ziel)" — das gibt 15–20 %
+ * Drain nur, wenn der Topf nach dem letzten Guss voll war. War er das seit dem Start nie (Gießradius, großer Topf), kann die
+ * Menge keinen Drain geben: In Run 02 sagte der Gieß-Guide „~1100 ml/Pfl. → 165–220 ml Drain" für einen 15-L-Topf, der am
+ * Gießpunkt rund 3650 ml aufnimmt (Prüfrunde 07.10.2026, F11). Drain ist zu erwarten, wenn die Menge aus dem heutigen Topf kommt
+ * (Waage, Hebe-Test: Defizit + Drain-Ziel), aus einem Guss mit Drain, wenn sie die Nachfüll-Grenze erreicht, oder wenn seit dem
+ * Start schon einmal Drain kam (gemessene Menge über 0 oder Drain-Werte, nicht übernommen).
+ */
+function _drainZuErwarten(c, iso, g) {
+  if (!c || !g || !(g.m > 0)) return false;
+  if (g.quelle === 'waage' || g.quelle === 'hebetest' || g.quelle === 'drain' || g.quelle === 'drainwerte') return true;
+  if (g.V > 0 && g.m >= Math.floor(g.V / 50) * 50) return true;
+  return Object.keys(S.entries || {}).some((k) => {
+    if (k < c.startDate || k >= iso) return false;
+    const cd = _gussCd(c, k);
+    if (!cd || _gussUebernommen(cd)) return false;
+    const ml = _gussZahl(cd.drainMl);
+    return (ml != null && ml > 0) || _gussZahl(cd.runoffEc) != null || _gussZahl(cd.runoffPh) != null;
+  });
+}
+/** (v1.5.389) Satz, wenn bei dieser Menge noch kein Drain kommen kann — eine Quelle für Lern-Status, Gieß-Guide und Startseite. */
+function _keinDrainSatz(g) {
+  return `Drain entsteht erst, wenn mehr in den Topf kommt, als seit dem letzten Auffüllen fehlt (bis ~${g.V} ml) — war er seit dem Start noch nie ganz durchgegossen, kommt bei dieser Menge unten noch nichts an. Kommt doch Drain, trag die Menge ein, dann rechnet die App damit`;
+}
 function _gussIstStart(g) { return !!(g && (g.quelle === 'start' || g.quelle === 'korridor')); }
 function _gussLernSatz(c, iso, g) {
   if (!g) return '';
@@ -15161,7 +15186,11 @@ function _gussLernSatz(c, iso, g) {
   const einheit = (c.scaleByPlants && n > 1) ? ' ml/Pflanze' : ' ml';
   const dMin = Math.round(g.m * DRAIN_ZIEL.min / 100), dMax = Math.round(g.m * DRAIN_ZIEL.max / 100);
   const klima = (g.klima && Math.abs(g.klima - 1) >= 0.02) ? ` · die Luft war seit dem Guss ${g.klima > 1 ? 'trockener' : 'feuchter'}` : '';
-  return `~${g.m}${einheit} ${_gussQuelleTeil(g)}${klima}. Höchstens ~${g.V} ml — mehr passt nicht in den Topf. Hör auf, sobald unten ${dMin}–${dMax} ml als Drain ankommen (${DRAIN_ZIEL.min}–${DRAIN_ZIEL.max} %)${_gussIstStart(g) ? '. Ab deinem ersten eigenen Guss folgt die App dir' : ''}.`;
+  // (v1.5.389) Die Drain-Menge nur, wenn sie bei dieser Menge entstehen kann (_drainZuErwarten).
+  const drainTeil = _drainZuErwarten(c, iso, g)
+    ? `Hör auf, sobald unten ${dMin}–${dMax} ml als Drain ankommen (${DRAIN_ZIEL.min}–${DRAIN_ZIEL.max} %)`
+    : _keinDrainSatz(g);
+  return `~${g.m}${einheit} ${_gussQuelleTeil(g)}${klima}. Höchstens ~${g.V} ml — mehr passt nicht in den Topf. ${drainTeil}${_gussIstStart(g) ? '. Ab deinem ersten eigenen Guss folgt die App dir' : ''}.`;
 }
 
 function waterSuggestion(c, p, iso) {
@@ -18193,7 +18222,9 @@ function plainSentence(action, c, p, waterMl) {
     }
     return isOutdoor
       ? `Prüf ob der Topf sich leicht anfühlt. Wenn ja, gieß ${_jeTopfWort}etwa <b>${_jeTopf(waterMl)} ml</b> lauwarmes Wasser${_zusammen(waterMl)}. Wenn er schwer ist, warte bis morgen. <b>Bei Hitze:</b> Pflanze kann täglich (oder sogar 2×) Wasser brauchen.`
-      : `Gib ${_wem} heute etwa <b>${_jeTopf(waterMl)} ml</b> lauwarmes Wasser${_zusammen(waterMl)}. Langsam gießen, bis unten etwas herausläuft: ${DRAIN_ZIEL.min}–${DRAIN_ZIEL.max} % der Menge als Drain sind richtig so.`;
+      : (() => { const _gS = gussMengeJePflanze(c, p, todayISO()); return (_gS && !_drainZuErwarten(c, todayISO(), _gS))   // (v1.5.389)
+        ? `Gib ${_wem} heute etwa <b>${_jeTopf(waterMl)} ml</b> lauwarmes Wasser${_zusammen(waterMl)}, langsam und über den ganzen Topf verteilt. ${_keinDrainSatz(_gS)}.`
+        : null; })() || `Gib ${_wem} heute etwa <b>${_jeTopf(waterMl)} ml</b> lauwarmes Wasser${_zusammen(waterMl)}. Langsam gießen, bis unten etwas herausläuft: ${DRAIN_ZIEL.min}–${DRAIN_ZIEL.max} % der Menge als Drain sind richtig so.`;
   }
   if (action === 'spuelen') {
     return `Heute nur klares Wasser ohne Dünger — davon ${_jeTopfWort}ungefähr <b>${_jeTopf(waterMl)} ml</b>${_zusammen(waterMl)}. Das spült die letzten Nährsalze aus der Erde.`;
@@ -30549,6 +30580,9 @@ function renderEntry(iso) {
       // am vollen Tag „Anrühren: ~0 ml" und „~0 ml → 0–0 ml Drain", unter „Topf ist voll — heute nicht gießen".
       const _gGuide = gussMengeJePflanze(c, p, iso);
       const _keinGuss = !(_guideTotal > 0) && !!(_gGuide && (_gGuide.quelle === 'voll' || _gGuide.quelle === 'feucht'));
+      // (v1.5.389) Drain nur, wo er bei dieser Menge entstehen kann. Ein eingetragener Guss zählt mit seiner Menge.
+      const _gDrain = _gGuide ? Object.assign({}, _gGuide, { m: guidePerPlant }) : null;
+      const _drainKommt = !_gGuide || _drainZuErwarten(c, iso, _gDrain);
       // LERN-STATUS (v1.2.69): erklärt in einem Satz, WORAUS der Vorschlag gerade
       // entsteht — Messung, Verbrauchsmodell, Anker oder Kaltstart. Gleiche
       // Quellen wie waterSuggestion/waterBasis → Anzeige == Realität.
@@ -30675,6 +30709,9 @@ function renderEntry(iso) {
             })()}
             ${_keinGuss
               ? `<div style="font-size:10px;color:var(--text-sub);line-height:1.4"><span style="color:var(--blue)">●</span> Heute kein Guss — der Topf ist noch ${_gGuide.quelle === 'voll' ? 'voll' : 'feucht'}</div>`
+              : (showDrain && !_drainKommt)
+              ? `<div style="font-size:10px;color:var(--text-sub);line-height:1.4"><span style="color:var(--green)">●</span> ~<span class="live-water" data-cycle="${c.id}">${guidePerPlant}</span> ml${effPlants > 1 && c.scaleByPlants ? '/Pfl.' : ''}</div>
+                 <div style="font-size:10px;color:var(--text-sub);line-height:1.4"><span style="color:var(--blue)">●</span> Drain erst, wenn der Topf voll ist</div>`
               : showDrain
               ? `<div style="font-size:10px;color:var(--text-sub);line-height:1.4"><span style="color:var(--green)">●</span> ~<span class="live-water" data-cycle="${c.id}">${guidePerPlant}</span> ml${effPlants > 1 && c.scaleByPlants ? '/Pfl.' : ''} → <span class="live-drain" data-cycle="${c.id}">${guideDrain}</span> ml Drain</div>
                  <div style="font-size:10px;color:var(--text-sub);line-height:1.4"><span style="color:var(--orange)">●</span> Drain entsorgen!</div>`

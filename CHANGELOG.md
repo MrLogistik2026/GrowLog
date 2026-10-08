@@ -2,6 +2,25 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-08 — v1.5.389
+
+- **Die App versprach Drain, der bei der vorgeschlagenen Menge nicht entstehen kann** (Run-02-Prüfung vom 07.10.2026, F11).
+  Gieß-Guide, Lern-Status und Startseite nannten zur Menge immer 15–20 % davon als Drain („~1100 ml/Pfl. → 165–220 ml Drain“,
+  „gießen, bis unten etwas herausläuft“). Nach `ANBAU.md` 1.1 läuft aber erst ab, was über das Defizit seit dem letzten
+  Auffüllen hinausgeht. Die Startkurve rechnet „Verbrauch ÷ (1 − Drain-Ziel)“ und stimmt nur, wenn der Topf nach dem letzten
+  Guss voll war. In Run 02 war er das bis zum Kontrollguss nie (Gießradius, 15-L-Topf, der am Gießpunkt rund 3650 ml
+  aufnimmt). Wer auf die versprochenen 165 ml wartet, gießt ohne Plan nach.
+- **Jetzt** nennen die drei Stellen die Drain-Menge nur, wenn sie zu erwarten ist (`_drainZuErwarten`). Das ist der Fall,
+  - wenn die Menge aus dem heutigen Topf kommt (Waage, Hebe-Test),
+  - wenn sie aus einem Guss mit Drain kommt,
+  - wenn sie die Nachfüll-Grenze erreicht,
+  - oder wenn seit dem Start schon einmal Drain eingetragen wurde.
+
+  Sonst steht da, woran Drain hängt: Er entsteht erst, wenn mehr in den Topf kommt, als seit dem letzten Auffüllen fehlt (bis
+  ~V ml). Kommt doch Drain, soll man die Menge eintragen. Die Menge selbst ist unverändert.
+- Test: `test_runzwei.js` F11 (6 Prüfungen; 3 fallen auf v1.5.388 um).
+
+
 ## 2026-10-08 — v1.5.388
 
 - **Zwei Gruppen im Zelt: Die Grenzen der jüngeren Gruppe fielen durch** (Run-02-Prüfung vom 07.10.2026, F10). Das Zeltklima

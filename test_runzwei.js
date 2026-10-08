@@ -323,6 +323,42 @@ async function starte() {
     } else pruefe(false, `F10-6 Prüflage Deckel: ${JSON.stringify({ s: r.stufen2, f: r.fuehrt2 })}`);
   }
 
+  // F11 (v1.5.389) · Drain nur in Aussicht stellen, wenn er bei dieser Menge entstehen kann (ANBAU.md 1.1)
+  {
+    const r = JSON.parse(a.E(`(function(){ const vorher = S.cycles.slice(); const eVorher = JSON.stringify(S.entries); S.beginnerMode = false;
+      const c = addCyc({ name: 'Topf 15', startDate: isoPlus(todayISO(), -40), seedType: 'auto', growType: 'indoor', medium: 'erde',
+        potSize: 15, plantCount: 3, startMethod: 'direct', fertPlanId: S.cycles[0].fertPlanId }, { still: true });
+      S.cycles = [c];
+      let tag = null; for (let i = 0; i < 40 && !tag; i++) { const iso = isoPlus(todayISO(), i); const p = phase(iso, c);
+        if (p && p.day >= 26 && getAction(iso, c) === 'giess') tag = iso; }
+      const lies = () => { const p = phase(tag, c); const g = gussMengeJePflanze(c, p, tag); setDebugDate(tag); openEntry(tag);
+        const t = document.getElementById('scr-entry').textContent.replace(/\\s+/g, ' ');
+        const satz = plainSentence('giess', c, p, g ? g.m * 3 : 0).replace(/<[^>]+>/g, '');
+        return { m: g && g.m, V: g && g.V, quelle: g && g.quelle, lern: _gussLernSatz(c, tag, g),
+          guideDrain: /→ [\\d–]+ ml Drain/.test(t), guideKein: /Drain erst, wenn der Topf voll ist/.test(t), satz }; };
+      const out = { tag };
+      if (tag) {
+        out.leer = lies();
+        // Ein früherer eigener Guss mit Drain: der Topf war schon einmal voll
+        const vor = isoPlus(tag, -3); S.entries[vor] = { temp: '', humidity: '', cycleData: { [c.id]: { water: '3000', drainMl: '400', doses: {}, photos: [] } } };
+        out.mitDrain = lies();
+        delete S.entries[vor];
+        // Hebe-Test von heute: Menge aus dem heutigen Topf
+        S.entries[tag] = { temp: '', humidity: '', cycleData: { [c.id]: { restPct: 30, doses: {}, photos: [] } } };
+        out.hebe = lies();
+      }
+      setDebugDate(null); S.entries = JSON.parse(eVorher); S.cycles = vorher; saveS();
+      return JSON.stringify(out); })()`));
+    pruefe(r.tag && r.leer && r.leer.m > 0 && r.leer.m < r.leer.V, `F11-0 Prüflage: ${JSON.stringify(r.leer)}`);
+    if (r.leer) {
+      pruefe(!/Hör auf, sobald unten/.test(r.leer.lern) && /kommt bei dieser Menge unten noch nichts an/.test(r.leer.lern), `F11-1 Lern-Status verspricht Drain: ${r.leer.lern}`);
+      pruefe(!r.leer.guideDrain && r.leer.guideKein, `F11-2 Gieß-Guide verspricht Drain bei ${r.leer.m} ml (Topf fasst ~${r.leer.V} ml)`);
+      pruefe(!/bis unten etwas herausläuft/.test(r.leer.satz) && /unten noch nichts an/.test(r.leer.satz), `F11-3 Startseite: ${r.leer.satz}`);
+      pruefe(/Hör auf, sobald unten/.test(r.mitDrain.lern) && r.mitDrain.guideDrain, `F11-4 nach einem Guss mit Drain fehlt die Drain-Menge: ${r.mitDrain.lern}`);
+      pruefe(r.hebe.quelle === 'hebetest' && /Hör auf, sobald unten/.test(r.hebe.lern) && /bis unten etwas herausläuft/.test(r.hebe.satz), `F11-5 Menge aus dem Hebe-Test ohne Drain-Menge: ${JSON.stringify(r.hebe)}`);
+    }
+  }
+
   pruefe(!a.errors.length, 'Skriptfehler: ' + a.errors.slice(0, 3).join(' | '));
   if (fehler.length) { console.log(`test_runzwei: ${fehler.length} von ${n} Prüfungen rot`); fehler.forEach((f) => console.log('  ✗ ' + f)); process.exit(1); }
   console.log(`test_runzwei: alle ${n} Prüfungen grün`);
