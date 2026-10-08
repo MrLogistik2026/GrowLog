@@ -2,6 +2,23 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-08 — v1.5.420
+
+- **Der Handtest stand an zwölf Stellen als Grenze für den Lampenabstand** (Nachtprüfung vom 07.10.2026, Prüfbericht zu
+  v1.5.399). Beispiele: „Hand 10 Sekunden auf Bud-Höhe gut aushaltbar = Abstand passt“, „zu heiß für dich = zu heiß für die
+  Pflanze“, „Lampe näher (Handtest!)“. Nach `ANBAU.md` 8.2 spürt die Hand nur Wärme. Zu viel Licht bleicht die Spitzen weiß
+  aus, ohne dass es warm werden muss — unter LED der wichtigere Fall. Dort gab die App Entwarnung bei einem echten Schaden. Im
+  Lexikon „Lichtabstand“ stand dazu eine Watt-zu-Zentimeter-Tabelle ohne Beleg, die einer anderen Stelle widersprach.
+- **Jetzt** trennen die Texte die beiden Schäden mit ihren verschiedenen Mitteln. Weiß ausgebleicht heißt zu viel Licht:
+  Leistung zurück oder höher hängen. Gelbbraun und gewölbt heißt Wärme oder trockene Luft: Lufttemperatur auf Spitzenhöhe
+  messen, Abluft und Umluft. Die Texte, die zu mehr Licht raten, nennen beide Stoppzeichen. Maßstab ist die Lichtmenge am
+  Blatt aus `LICHT_ZIEL`, das Temperaturziel kommt aus `KLIMA_ZIEL` (neu: `_tempZielText`). Ohne Lichtmesser gilt die
+  Herstellerangabe, kleine Schritte und das Bild an der Pflanze. Die Wattage-Tabelle und ihr Verweis im Eintrag „Lichtbrand“
+  sind weg, der Tacoing-Hinweis nennt das Ziel der Phase statt „unter 28–30 °C“.
+- Die Ersatztexte hat vorher ein Sonnet-Gegenprüfer gegen `ANBAU.md` gehalten. Seine Korrekturen sind eingearbeitet: das
+  zweite Stoppzeichen, Luft- statt Blatttemperatur, die Gewichtung beim Taco.
+- Test: `test_lichttexte.js` H1 bis H6 (mit v1.5.424 ins Repo; alle fallen auf v1.5.419 um).
+
 ## 2026-10-08 — v1.5.419
 
 - **CSV-Export ohne Formelschutz** (Sicherheitsprüfung vom 07.10.2026, offener Punkt). Excel, LibreOffice und Google
