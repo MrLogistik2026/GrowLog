@@ -2,6 +2,18 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-08 — v1.5.428
+
+- **„Jetzt Toppen“ ließ in der Blüte den heutigen Gießtag verschwinden oder neu entstehen** (Topping-Prüfung, T3).
+  `getAction` setzte am Topping-Tag `intervalIndex = dayInPhase` — eine Ausnahme aus dem Demo-Zyklus (Topping =
+  Phasenwechsel, „Hydrierung vor dem Schnitt“), die an jedem Blütetag griff. Gemessen an Blütetag 28–36 und 40: In 6 von 10
+  Fällen kippte der Gießtag durch den Tipp. Einmal verschwand er bei Hebe-Test „Knapp“, obwohl der Dialog eben „Heute gießen
+  + toppen“ gesagt hatte; einmal entstand ein Guss in einen noch feuchten Topf.
+- **Jetzt** gibt es die Ausnahme nicht mehr. Der Gießtag folgt dem Plan und dem Topf, nicht dem Schnitt (`ANBAU.md` 1.2,
+  15). Im Demo-Zyklus fällt dadurch der Guss an Tag 22 weg, einen Tag nach dem Anzucht-Guss an Tag 21. Das passt jetzt zu
+  seinem eigenen Kommentar („Topping → kein Eintrag“).
+- Test: `test_topping.js` P3.
+
 ## 2026-10-08 — v1.5.427
 
 - **Voller Topf am Topping-Tag: „Heute gießen — dann toppen“ neben „Topf ist voll — heute nicht gießen“** (Topping-Prüfung,

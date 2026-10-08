@@ -4669,7 +4669,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.427';
+const APP_VERSION = 'v1.5.428';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -11706,11 +11706,12 @@ function getAction(iso, c) {
     //   3. Theoretischer letzter Anzucht-Action-Tag — Fallback ohne User-Daten.
     //   4. dayInPhase             — letzter Notnagel.
     //
-    // Ausnahme: am Topping-Tag selbst (c.toppingDate === iso) bleibt Phasenstart-
-    // Action erhalten (Hydrierung vor Schnitt — Demo-Fall mit Topping=Phasenwechsel).
-    if (c.toppingDate === iso) {
-      intervalIndex = dayInPhase;
-    } else {
+    // (v1.5.428) Keine Ausnahme mehr für den Topping-Tag. Bisher galt dort intervalIndex = dayInPhase („Hydrierung vor dem
+    // Schnitt“, aus dem Demo-Zyklus mit Topping = Phasenwechsel) — an jedem Blütetag. Ein Tipp auf „Jetzt Toppen“ ließ den
+    // heutigen Gießtag damit verschwinden oder entstehen (gemessen: 6 von 10 Tagen; auch bei Hebe-Test „Knapp“ verschwand
+    // der Guss). Der Gießtag folgt dem Plan und dem Topf, nicht dem Schnitt (ANBAU.md 1.2, 15); „vor dem Schnitt gießen“
+    // steht nicht in ANBAU.md.
+    {
       let lastGussDiff = -1;
       // (v1.4.30) Merkt, ob der Anker ein ECHTER Guss ist (ANKER 2). Dann ist die Blüte
       // rein am Guss verankert (realPour + n·iv) und ignoriert offsetHistory — Offsets
