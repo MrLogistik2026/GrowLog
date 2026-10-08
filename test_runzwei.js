@@ -775,6 +775,47 @@ async function starte() {
 
 
 
+  // F16b (v1.5.418) · Die übrigen „erster laufender Zyklus“-Leser: Befehlssuche, Lexikon-Bezug, „Meine Produkte“, Bericht und
+  // Kollage. Lage wie bei Patrick vor dem Abschließen: Ein Zyklus im Curing steht oben in der Liste, zwei Gruppen wachsen.
+  {
+    const r = JSON.parse(a.E(`(function(){ const vorher = S.cycles.slice(); const eVorher = JSON.stringify(S.entries); const selVorher = selId;
+      const pid = S.cycles[0].fertPlanId; const heute = todayISO();
+      const neu = (name, tage) => addCyc({ name, startDate: isoPlus(heute, -tage), seedType: 'auto', growType: 'indoor', medium: 'erde',
+        potSize: 11, plantCount: 3, startMethod: 'direct', fertPlanId: pid }, { still: true });
+      S.cycles = []; S.entries = {};
+      const alt = neu('Alter Zyklus', 105), ga = neu('Gruppe A', 30), gb = neu('Gruppe B', 24);
+      const out = { altPh: (phase(heute, alt) || {}).ph || null, wachsend: _wachsendeZyklen(active(), heute).map(c => c.name) };
+      // Befehlssuche: Wem gilt der Befehl?
+      const orig = COMMANDS[0].run; let ziel = null; COMMANDS[0].run = (c) => { ziel = c && c.name; };
+      try { runCommand(0); } finally { COMMANDS[0].run = orig; }
+      out.befehl = ziel;
+      // Lexikon: gewählt ist der alte Zyklus (Einstellungen zuletzt dort)
+      selId = alt.id; out.lexSelAlt = (_activeCycleForLex() || {}).name || null;
+      selId = gb.id;  out.lexSelB = (_activeCycleForLex() || {}).name || null;
+      selId = alt.id; const mp = _myProductsGroup(); out.produkte = !!mp;
+      // Bericht ohne Angabe: Für wen?
+      let html = ''; const wo = window.open;
+      window.open = () => ({ document: { open() {}, write(h) { html += h; }, close() {} }, focus() {} });
+      try { exportReportPDF(); } finally { window.open = wo; }
+      out.berichtA = /Gruppe A/.test(html), out.berichtAlt = /Alter Zyklus/.test(html);
+      // Einstellungen: Knöpfe tragen den oben gewählten Zyklus und nennen ihn
+      const uiVorher = S._setUI; S._setUI = Object.assign({}, S._setUI || {}, { data: true });
+      selId = gb.id; draft = {}; goTo('set'); renderSet();
+      const knoepfe = [...document.querySelectorAll('#set-body .sec-tog')].filter(k => /exportReportPDF|exportCollage/.test(k.getAttribute('onclick') || ''));
+      out.knoepfe = knoepfe.map(k => ({ on: k.getAttribute('onclick'), text: k.textContent.replace(/\\s+/g, ' ').trim() }));
+      out.gbId = gb.id;
+      S._setUI = uiVorher; S.cycles = vorher; S.entries = JSON.parse(eVorher); selId = selVorher; draft = {}; saveS();
+      return JSON.stringify(out); })()`));
+    pruefe(r.altPh && !r.wachsend.includes('Alter Zyklus') && r.wachsend.length === 2, 'F16b-0 Prüflage: ' + JSON.stringify({ altPh: r.altPh, wachsend: r.wachsend }));
+    pruefe(r.befehl === 'Gruppe A', `F16b-1 Befehlssuche wirkt auf „${r.befehl}“ statt auf die führende Gruppe A`);
+    pruefe(r.lexSelAlt === 'Gruppe A', `F16b-2 Lexikon-Bezug bei gewähltem Zyklus im Curing: „${r.lexSelAlt}“ statt Gruppe A`);
+    pruefe(r.lexSelB === 'Gruppe B', `F16b-3 Lexikon-Bezug bei gewählter, wachsender Gruppe B: „${r.lexSelB}“`);
+    pruefe(r.produkte, 'F16b-4 „Meine Produkte“ leer');
+    pruefe(r.berichtA && !r.berichtAlt, `F16b-5 Bericht ohne Angabe: Gruppe A ${r.berichtA}, alter Zyklus ${r.berichtAlt}`);
+    pruefe(r.knoepfe.length === 2 && r.knoepfe.every(k => k.on.includes(r.gbId) && /Gruppe B/.test(k.text)),
+      'F16b-6 Bericht und Kollage in den Einstellungen gelten nicht der oben gewählten Gruppe B: ' + JSON.stringify(r.knoepfe));
+  }
+
   pruefe(!a.errors.length, 'Skriptfehler: ' + a.errors.slice(0, 3).join(' | '));
   if (fehler.length) { console.log(`test_runzwei: ${fehler.length} von ${n} Prüfungen rot`); fehler.forEach((f) => console.log('  ✗ ' + f)); process.exit(1); }
   console.log(`test_runzwei: alle ${n} Prüfungen grün`);

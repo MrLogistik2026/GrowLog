@@ -4662,7 +4662,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.417';
+const APP_VERSION = 'v1.5.418';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -17921,7 +17921,9 @@ const COMMANDS = [
 function runCommand(i) {
   const cmd = COMMANDS[i];
   if (!cmd) return;
-  const c = S.cycles.find(x => x.active && !x.archived) || S.cycles[0];
+  // (v1.5.418, F16) Die Gruppe mit stehenden Pflanzen, nicht der erste laufende Zyklus der Liste — der war bei Run 01 im Curing
+  // ein Zyklus ohne Pflanzen, und „Hebe-Test eintragen" landete dort.
+  const c = _standardZyklus();
   if (!c) { toast('Dafür brauchst du erst einen Zyklus'); return; }
   closeHelp();
   vibrate(8);
@@ -24757,11 +24759,13 @@ function renderSet() {
           ${bi.kopien.map(k => `<button onclick="restoreAutoBackup('${k.key}')" style="width:100%;margin-top:8px;background:var(--card2);border:0.5px solid var(--border);border-radius:8px;padding:8px;font-size:11px;color:var(--text-sub);cursor:pointer;font-family:var(--font)">🛟 Kopie vom ${k.date ? fmtDE(k.date) : '–'} laden (${k.entries} Einträge)</button>`).join('')}
         </div>`;
       })()}
-      <div class="sec-tog" onclick="exportReportPDF()" style="border-color:rgba(76,175,112,0.3);margin:0;background:rgba(76,175,112,0.04)">
+      <!-- (v1.5.418, F16) Bericht und Kollage gelten dem Zyklus, der oben in den Einstellungen gewählt ist, und nennen ihn —
+           vorher dem ersten laufenden der Liste, bei Run 01 im Curing also nicht der Gruppe, die man gerade ansah. -->
+      <div class="sec-tog" onclick="exportReportPDF('${sel ? sel.id : ''}')" style="border-color:rgba(76,175,112,0.3);margin:0;background:rgba(76,175,112,0.04)">
         <span>📄</span>
         <div>
           <div style="font-weight:500;font-size:13px">Grow-Bericht (PDF)</div>
-          <div style="font-size:11px;color:var(--text-muted)">Aktueller Zyklus · mit Fotos & Tabellen</div>
+          <div style="font-size:11px;color:var(--text-muted)">${sel ? escHtml(sel.name) : 'Aktueller Zyklus'} · mit Fotos & Tabellen</div>
         </div>
         <span style="color:var(--text-muted)">›</span>
       </div>
@@ -24773,11 +24777,11 @@ function renderSet() {
         </div>
         <span style="color:var(--text-muted)">›</span>
       </div>` : ''}
-      <div class="sec-tog" onclick="exportCollage()" style="margin:0">
+      <div class="sec-tog" onclick="exportCollage('${sel ? sel.id : ''}')" style="margin:0">
         <span>📸</span>
         <div>
           <div style="font-weight:500;font-size:13px">Foto-Kollage</div>
-          <div style="font-size:11px;color:var(--text-muted)">Wochen-Timeline deines Zyklus</div>
+          <div style="font-size:11px;color:var(--text-muted)">Wochen-Timeline · ${sel ? escHtml(sel.name) : 'deines Zyklus'}</div>
         </div>
         <span style="color:var(--text-muted)">›</span>
       </div>
@@ -28462,7 +28466,7 @@ function exportCycleCSV(cId) {
 function exportReportPDF(cId) {
   const c = cId
     ? S.cycles.find(x => x.id === cId)
-    : (active()[0] || S.cycles[0]);
+    : _standardZyklus();   // (v1.5.418, F16) ohne Angabe die Gruppe mit stehenden Pflanzen
   if (!c) { toast('Keine Zyklen zum Exportieren'); return; }
 
   const dates = Object.keys(S.entries).filter(d => S.entries[d]?.cycleData?.[c.id]).sort();
@@ -28823,7 +28827,7 @@ ${allPhotos.length > 0 ? `
 function exportCollage(cId) {
   const c = cId
     ? S.cycles.find(x => x.id === cId)
-    : (active()[0] || S.cycles[0]);
+    : _standardZyklus();   // (v1.5.418, F16)
   if (!c) { toast('Keine Zyklen mit Fotos vorhanden'); return; }
 
   const allPhotos = [];
@@ -38414,7 +38418,7 @@ const LEXIKON = [
  */
 function _myProductsGroup() {
   if (typeof S === 'undefined' || !S.cycles) return null;
-  const c = S.cycles.find(x => x.active && !x.archived) || S.cycles[0];
+  const c = _activeCycleForLex() || _standardZyklus();   // (v1.5.418, F16) wie die übrigen Lexikon-Bezüge
   if (!c) return null;
   const plan = (typeof getPlanForCycle === 'function') ? getPlanForCycle(c) : null;
   const prods = (plan && plan.products) || [];
@@ -38809,6 +38813,12 @@ function openLexikon() {
  */
 function _activeCycleForLex() {
   const sel = S.cycles.find(c => c.id === selId && c.active && c.startDate && !c.archived);
+  // (v1.5.418, F16) Wie der Lichtmesser (v1.5.415): Der gewählte Zyklus gilt, solange seine Pflanzen stehen, sonst die
+  // führende Gruppe — vorher der erste laufende, bei Run 01 im Curing also ein Zyklus ohne Phase mit Pflanzen.
+  const heute = todayISO();
+  if (sel && _wachsendeZyklen([sel], heute).length) return sel;
+  const std = _standardZyklus();
+  if (std && active().includes(std) && _wachsendeZyklen([std], heute).length) return std;
   return sel || active()[0] || null;
 }
 // letzter eingetragener Umwelt-Wert (Tag-Ebene: temp/humidity, gilt für alle Zyklen)

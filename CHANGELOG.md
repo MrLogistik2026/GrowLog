@@ -2,6 +2,20 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-08 — v1.5.418
+
+- **Befehlssuche, Lexikon, „Meine Produkte“, Bericht und Kollage nahmen den ersten laufenden Zyklus der Liste** (Run-02-Prüfung
+  vom 07.10.2026, F16, letzter Teil). Steht ein älterer Zyklus noch im Curing oben in der Liste (Run 01 vor dem Abschließen),
+  war das ein Zyklus ohne stehende Pflanzen. Gemessen: „Hebe-Test eintragen“ aus der Befehlssuche landete dort. Das Lexikon
+  bezog seine Hinweise auf dessen Phase, und der Grow-Bericht in den Einstellungen druckte ihn aus, egal welche Gruppe oben
+  gewählt war.
+- **Jetzt** gilt dieselbe Regel wie für Einstellungen und Lichtmesser (v1.5.412/415). Befehlssuche und Exporte ohne Angabe
+  nehmen die führende Gruppe mit stehenden Pflanzen (`_standardZyklus`). Der Lexikon-Bezug nimmt den gewählten Zyklus,
+  solange seine Pflanzen stehen, sonst die führende Gruppe. In den Einstellungen gelten Bericht und Kollage dem oben gewählten
+  Zyklus und nennen ihn („Gruppe B · mit Fotos & Tabellen“ statt „Aktueller Zyklus“). Den Bericht eines fertigen Zyklus holt
+  man dort also, indem man ihn oben wählt. Mit einem Zyklus ändert sich nichts.
+- Test: `test_runzwei.js` F16b-0 bis 6 (F16b-1, 2, 5 und 6 fallen auf v1.5.417 um).
+
 ## 2026-10-08 — v1.5.417
 
 - **Rainbow, Woche 13 und 15: Das pH-Ziel sprang von 6,25 auf 6,4** (Patricks Entscheidung vom 08.10.2026, Rest von F14).
