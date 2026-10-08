@@ -2932,8 +2932,12 @@ function buildDiagnosticContext(c, iso = null) {
       pct = parseFloat(latestEntry.cd.restPct);
     }
     if (pct !== null) {
-      if (pct > 65) result.restHigh = true;
-      if (pct < 25) result.restLow = true;
+      // (v1.5.437) Grenzen nach dem Gießpunkt des Substrats (ANBAU.md 1.2, 7.1). Vorher galten fest die Erde-Werte 65/25 —
+      // bei Coco war der Gießpunkt „Mittel“ (70) damit „Erde dauer-feucht“, und „Bald“/„Knapp“ unter dem Coco-Gießpunkt
+      // zählten nicht als trocken. Erde bleibt bei 65/25.
+      const _g = giesspunktFor(c);
+      if (pct > Math.max(65, _g.bis)) result.restHigh = true;
+      if (pct < _g.von) result.restLow = true;
     }
   }
 
@@ -4700,7 +4704,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.436';
+const APP_VERSION = 'v1.5.437';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,

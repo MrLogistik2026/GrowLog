@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.436** · index.html 2,56 MB · 781 Funktionen
+Stand: **v1.5.437** · index.html 2,56 MB · 781 Funktionen
 Zuletzt fortgeschrieben am 08.10.2026 (Nachtprüfung und Run 02 — Abschnitt 0o, „Stand Run 02"). Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
@@ -243,7 +243,23 @@ wf_0586d0bf-d3d (vergänglich). **Offen, nach Nutzen geordnet** (Umbauten oder P
 6. Tag 1 verweist auf eine Mischliste, die es dort nicht gibt. („Deine nächsten Güsse" beginnt seit v1.5.406 in der Anzucht.)
 7. Dünger abhaken sind im Eintrag 15 Einzel-Taps — Idee: „Alles wie im Plan" mit einem Tipp. („Erledigt" bucht den Plan-Dünger
    seit v1.5.360 als Vorschlag mit.)
-8. Diagnose: bei „welk" und „weiß ausgebleicht" falsche Reihung. (Sämlings-EC „SOFORT spülen" seit v1.5.373 behoben.)
+8. **Diagnose „welk“ und „weiß ausgebleicht“ — gemessen am 08.10.2026, B05 erledigt (v1.5.437), der Rest ist die Arbeitsliste.**
+   Ein Sonnet-Prüfer hat v1.5.435 vermessen (jsdom, 4686 Einzel- und 13194 Mehrfachauswahl-Fälle, 27 klassische Bilder).
+   Befunde mit Stellen, Messung, Ersatztexten: `.claude/notizen/diagnose/befund.txt`; Werkzeug unter `.claude/tmp/w417/diagnose/`
+   (`patch.js` baut die Varianten über OPT-Schalter, `vorschlag_PE.diff`, Wächter-Entwurf `test_w417_welk_weiss.js`: auf 435 7 OK /
+   27 FEHL, mit PE 34/0 — gehört als Abschnitt H in `test_diagnose.js`). **Reihenfolge, je eigene Version:**
+   B02 (bei Gleichstand zählt Kontext aus Messwerten vor dem Phasen-Bonus — Voraussetzung für B01) → B01 (`nutrient_burn` bekommt
+   „hängend“, Feld `breite: 5` und Engine `p.breite` — Überdüngung fehlt bei „welk“ heute ganz, ANBAU.md 1 und 5) → B04 (eine
+   Hebe-Test-Messung von **heute** schließt Wassermangel bzw. Überwässerung und Trauermücken aus, `restHeute`) → B07 (Farbknopf
+   „Weiß / ausgebleicht“, `photo_bleaching` mit `white` und `breite: 7`, Lichtmangel-Text beginnt mit der Unterscheidung — heute
+   führt „Lampe näher“) → Texte B03, B08–B11 (Hebe-Test-Gegenprobe vorn, ohne H2O2, „3 L“ und „Wurzelschock“; ein Handgriff fürs
+   Bleichen statt vier Zahlen; Bleichen-Ursache 3 ohne „CalMag + Schwefel“; „selten“ und „1–2 Stunden“ raus; Flush-Satz) — **vor dem
+   Ausliefern von einem Sonnet-Prüfer gegen ANBAU.md halten lassen** → B06 (Startseite „Erde bleibt dauerhaft feucht“ nach jedem
+   einzelnen „Voll“; das ✕ blendet für immer aus, `resetDiagHintDismissal` aus dem Kommentar gibt es nicht) → B12 (Etiketten „Runoff“
+   → „Drain“, „Erde dauer-feucht“ → „Topf schwer (heute)“). Gemessener Nebeneffekt von PE: Platz 1 wechselt in 3,9 % der Einzelfälle,
+   keine eindeutige Verschlechterung. **Umbauten (U1–U4):** Phasen-Bonus nur bei trennscharfer Liste und ein Feld `vorrang` für die
+   Wasser-Ursachen (13.1/13.2), Abdeckung als Gleichstandskriterium, Abschlag bei falschem Ort (0g), Zusatzfrage „Wie fühlt sich der
+   Topf an?“ im Assistenten, wenn heute kein Hebe-Test vorliegt. tempHot ab 30 °C / tempCold bis 18 °C sind Konvention (B12).
 9. Zyklus-Vergleich ohne Ertrag, g je Pflanze, Tage bis Ernte; Barrierefreiheit (Schrift ≤ 11 px,
    Tippflächen); Fotos als Base64 füllen den Speicher (~30 Fotos); kein Test-Gate vor dem Veröffentlichen.
 Weitere Ideen der Prüfer: gemeinsamer Mischansatz für zwei Zyklen am selben Gießtag („zusammen 4800 ml"), Sicherungs-Erinnerung
@@ -376,6 +392,7 @@ Speicher-Befunde sind in v1.5.340–344 behoben. Rohdaten: Workflow wf_63d754b1-
 - v1.5.434: Topping-, FIM- und HST-Texte in Lexikon, Fehlersuche, FAQ und Demo ohne unbelegte Wirkungen; Automatics „nur früh und nur bei kräftigen Pflanzen“; kein zweites Topping.
 - v1.5.435: CalMag-Texte ohne LED-Begründung und Regionen, Coco nur ungepuffert (Merkmal „gepuffert“ auf dem Sack), Mengen „laut Düngeplan oder Flasche“, pH-Schwelle der Ca-/Mg-Diagnose 5,5 nach ANBAU.md 4 (schließt „vier CalMag-Dosen“ aus Abschnitt 10).
 - v1.5.436: Kein doppelter Punkt mehr nach einem Datum („am 11.10.. Erreicht“) — sechs Sätze, davon zwei aus v1.5.432. Zwei Tests nachgezogen (`test_feedtaganzucht`, `test_mischzeile`): Ihre Prüflage hing an der alten Topping-Wasserregel bzw. am alten Coco-Satz. **Wer eine Regel einschränkt, sucht die Tests, deren Prüflage auf ihr beruht** — gefunden hat beide erst der Gesamtlauf.
+- v1.5.437: Die Diagnose liest den Hebe-Test nach dem Gießpunkt des Substrats — bei Coco galt „Mittel“ (der Gießpunkt) als „Erde dauer-feucht“ (B05, `test_hebekontext.js`).
 
 **Gegenprüfung von v1.5.364/365 (07.10.2026 nachts, Workflow wf_4cf817bf-629, drei Sonnet-Prüfer + Gegenprüfer).** Kein Fehlalarm
 in 33 App-Fassungen, allen Vorlagen und über 2800 Klicks; die schweren Befunde (unsichere Kopie zerstört den Hauptstand, Tropfen als

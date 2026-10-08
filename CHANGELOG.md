@@ -2,6 +2,20 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-08 — v1.5.437
+
+- **Die Diagnose las den Hebe-Test bei Coco mit den Grenzen für Erde.** `buildDiagnosticContext` setzte „Topf nass“ ab 65 und
+  „Topf trocken“ unter 25 Restgewicht, für jedes Substrat. Bei Coco liegt der Gießpunkt aber auf „Mittel“ (70, `GIESSPUNKT.coco`
+  60–85). Ein welker Coco-Topf am Gießpunkt galt damit als „Erde dauer-feucht“ und hob Überwässerung, Wurzelfäule und
+  Trauermücken an — bei einer Pflanze, die Durst haben kann. „Bald“ (50) und „Knapp“ (30) liegen unter dem Coco-Gießpunkt und
+  zählten trotzdem nicht als trocken. Gefunden von der Diagnose-Prüfung am 08.10.2026 (Befund B05).
+- **Jetzt** folgen die Grenzen dem Gießpunkt des Substrats (`giesspunktFor`): nass über max(65, Obergrenze des Gießpunkts),
+  trocken unter seiner Untergrenze. Für Erde bleibt alles bei 65/25; bei Coco ist nass nur noch „Voll“, trocken ab „Bald“.
+- **Warum:** ANBAU.md 1.2 und 7.1 (Coco wird häufiger gegossen, Gießpunkt „Mittel“) und Regel 1 — Substrat ist Eingangsgröße.
+  Diese Änderung ist die Voraussetzung für Befund B04 (eine Messung von heute schließt die Gegenerklärung aus): Ohne sie
+  schlösse ein Coco-Topf am Gießpunkt den Wassermangel aus.
+- Test: `test_hebekontext.js` (12 Prüfungen, beide Zeitzonen; 4 fallen auf v1.5.436 um).
+
 ## 2026-10-08 — v1.5.436
 
 - **Doppelter Punkt nach einem Datum: „der nächste geplante Guss ist am 11.10.. Erreicht …“** (im Browser gesehen am
