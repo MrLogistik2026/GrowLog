@@ -2,6 +2,16 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-08 — v1.5.424
+
+- **Lexikon „Wurzelzone Outdoor“: Hand außen am Topf als Test, dazu „Wurzeln sterben bei 31 °C“, „bis zu 95 %“,
+  „45–50 °C“** (Prüfbericht vom 08.10.2026). Die Topfwand ist nicht die Wurzelzone, und wenn sie sich heiß anfühlt, liegt
+  sie weit über der Grenze. Die Zahlen stehen nicht in `ANBAU.md`.
+- **Jetzt** mit den Werten aus `ANBAU.md` 7.3: Thermometer im Substrat, Optimum 18–24 °C. Über 26 °C wird der Sauerstoff
+  knapp, und der Pythium-Druck steigt. Warum warmes Wasser doppelt schadet, steht mit den Sauerstoffwerten aus 7.3 dabei.
+- Test: `test_lichttexte.js` Z1 (die Datei kommt mit dieser Version ins Repo; sie fällt auf v1.5.419 in 16 von 17
+  Prüfungen um).
+
 ## 2026-10-08 — v1.5.423
 
 - **Keimungs-Leitfaden, Tag 4: „Licht an, gedimmt, 30–40 cm Abstand“** — derselbe feste Abstand, den v1.5.394 aus „Dein
