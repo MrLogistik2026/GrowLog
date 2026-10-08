@@ -1,7 +1,7 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.415** · index.html 2,56 MB · 781 Funktionen
-Zuletzt fortgeschrieben am 07.10.2026 (Nachtprüfung und Run 02 — Abschnitt 0o, „Stand Run 02"). Fünf Fehler behoben: Der Widerspruch zwischen
+Stand: **v1.5.416** · index.html 2,56 MB · 781 Funktionen
+Zuletzt fortgeschrieben am 08.10.2026 (Nachtprüfung und Run 02 — Abschnitt 0o, „Stand Run 02"). Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
 die Ernte-Kacheln widersprechen der Erntekarte nicht mehr (v1.5.99), und **die Düngermengen
@@ -339,7 +339,7 @@ Speicher-Befunde sind in v1.5.340–344 behoben. Rohdaten: Workflow wf_63d754b1-
 - v1.5.404: Lichtziele aus einer Quelle (`LICHT_ZIEL`, ANBAU.md 8) — Sämling 150–300, Wachstum 400–600, Blüte 600–900; DLI aus den Stunden. Test `test_lichtziel.js`.
 - v1.5.405: Lichtmesser in der Blüte über 900 gelb mit Erklärung, rot erst ab ~1500 (Bleich-Schwelle, ANBAU.md 8.1/8.2).
 - v1.5.406: Gieß-Fahrplan listet die Anzucht-Güsse ab heute mit (nur zum Ansehen, ohne Umschalter; `collectAnzuchtGusse`, F08).
-- v1.5.407: Kalender bei zwei Gruppen — die Zelle zeigt die folgenreichere Aufgabe (Ernte > IceFlush > Spülen > Guss > Trocknen, `_calHauptAktion`, F18). Offen, Patricks Entscheidung: beide Tag-Nummern in einer Zelle.
+- v1.5.407: Kalender bei zwei Gruppen — die Zelle zeigt die folgenreichere Aufgabe (Ernte > IceFlush > Spülen > Guss > Trocknen, `_calHauptAktion`, F18).
 - v1.5.408: Eintragskopf und Plan-Blatt nennen den heutigen Plan-Tag, wo der Plan ab dem Keimling zählt (`_planTagAbKeimling`, F12).
 - v1.5.409: Startseite, Zyklus-Karte — keine unbeschriftete Phasen-Woche mehr in der Anzucht, in der Blüte „Blüte Wo. N“ (F12, zweiter Teil).
 - v1.5.410: pH-Ziel aus der Plan-Woche, wo der Plan eine Zahl nennt (`weekFocus[wk].ph`, `phZielFuer`, F14). Offen: Rainbow-Woche 13 und 15 ohne pH im Blatt.
@@ -348,6 +348,7 @@ Speicher-Befunde sind in v1.5.340–344 behoben. Rohdaten: Workflow wf_63d754b1-
 - v1.5.413: Zeitplan sagt „✓ Zyklus abgeschlossen · Fertig seit …“ bzw. „pausiert … mit dem Schalter läuft er wieder“ statt „wird beim Speichern automatisch aktiviert“; kein Schalter am abgeschlossenen Zyklus (F16 Teil B).
 - v1.5.414: Nach „Sichern“ eines pausierten oder abgeschlossenen Zyklus verschwindet „Änderungen sichern“ (tote Auto-Aktivierung in `saveDraft` entfernt, F16 Teil C).
 - v1.5.415: Lichtmesser folgt der Gruppe mit stehenden Pflanzen, nicht einem abgeschlossenen oder trocknenden Zyklus (F16 Teil D). **Offen aus F16:** Gieß-Fahrplan folgt nach dem Anlegen der zuletzt angelegten Gruppe (Regel aus v1.5.305, Patricks Entscheidung); `runCommand`, `_myProductsGroup`, `_activeCycleForLex`, `exportReportPDF`, `exportCollage` nehmen „ersten aktiven“ statt `_standardZyklus`.
+- v1.5.416: Kalender bei zwei Gruppen nennt beide Tag-Nummern („T96 T90“), jede in ihrer Farbe, in fester Reihenfolge; fett die Gruppe mit der Aufgabe (Patricks Entscheidung 08.10.; ab drei Zyklen eine Nummer).
 
 **Gegenprüfung von v1.5.364/365 (07.10.2026 nachts, Workflow wf_4cf817bf-629, drei Sonnet-Prüfer + Gegenprüfer).** Kein Fehlalarm
 in 33 App-Fassungen, allen Vorlagen und über 2800 Klicks; die schweren Befunde (unsichere Kopie zerstört den Hauptstand, Tropfen als

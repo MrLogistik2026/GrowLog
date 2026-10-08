@@ -480,7 +480,10 @@ async function starte() {
         const c = [...document.querySelectorAll('#cal-body .cal-cell')].find(x => parseInt(x.querySelector('.cal-num').textContent, 10) === d);
         const ic = c.querySelector('.cal-icon'), tag = c.querySelector('.cal-tag');
         const wort = [...c.querySelectorAll('span')].filter(s => /font-size:7px/.test(s.getAttribute('style') || '')).map(s => s.textContent.trim()).join('');
-        return { icon: ic ? (ic.querySelector('svg') ? 'svg' : ic.textContent.trim()) : '', tag: tag ? tag.textContent : '', farbe: tag ? tag.getAttribute('style') : '', wort }; };
+        // (v1.5.416) Mit zwei Gruppen stehen beide Nummern da; zur Aufgabe gehört die fett gesetzte.
+        const fe = tag ? tag.querySelector('span[style*="font-weight:800"]') : null;
+        return { icon: ic ? (ic.querySelector('svg') ? 'svg' : ic.textContent.trim()) : '', tag: tag ? tag.textContent : '', farbe: tag ? tag.getAttribute('style') : '', wort,
+          fett: fe ? fe.textContent : '', fettFarbe: fe ? fe.getAttribute('style') : '' }; };
       const neu = (name, tage) => addCyc({ name, startDate: isoPlus(todayISO(), -tage), seedType: 'auto', growType: 'indoor', medium: 'erde',
         potSize: 11, plantCount: 3, startMethod: 'direct', fertPlanId: pid }, { still: true });
       const lauf = (versatz) => { S.cycles = []; S.entries = {};
@@ -503,23 +506,63 @@ async function starte() {
         `F18-1 Gruppe A trocknet, Gruppe B hat IceFlush (${tIce.iso}): Zelle zeigt Symbol „${tIce.z.icon}", Wort „${tIce.z.wort}" statt 🧊 „IceFlush"`);
       pruefe(tErnte.z.icon === 'svg' && tErnte.z.wort === 'Ernte',
         `F18-2 Gruppe A trocknet, Gruppe B hat Ernte (${tErnte.iso}): Zelle zeigt Symbol „${tErnte.z.icon}", Wort „${tErnte.z.wort}" statt Ernte-Symbol und „Ernte"`);
-      pruefe(tIce.z.tag === 'T' + tIce.db && tIce.z.farbe.includes(r.v6.hexB) && tErnte.z.tag === 'T' + tErnte.db && tErnte.z.farbe.includes(r.v6.hexB),
-        `F18-3 Tag-Nummer und Farbe gehören nicht zu Gruppe B: IceFlush ${tIce.z.tag} (soll T${tIce.db}), Ernte ${tErnte.z.tag} (soll T${tErnte.db})`);
-      pruefe(tSpuel.z.tag === 'T' + tSpuel.db && tSpuel.z.farbe.includes(r.vm9.hexB),
-        `F18-4 Gruppe A gießt, Gruppe B spült (${tSpuel.iso}): Zelle zeigt ${tSpuel.z.tag} statt Gruppe B (T${tSpuel.db}), Symbol „${tSpuel.z.icon}"`);
+      pruefe(tIce.z.fett === 'T' + tIce.db && tIce.z.fettFarbe.includes(r.v6.hexB) && tErnte.z.fett === 'T' + tErnte.db && tErnte.z.fettFarbe.includes(r.v6.hexB),
+        `F18-3 fette Tag-Nummer und Farbe gehören nicht zu Gruppe B: IceFlush ${tIce.z.fett} (soll T${tIce.db}), Ernte ${tErnte.z.fett} (soll T${tErnte.db})`);
+      pruefe(tSpuel.z.fett === 'T' + tSpuel.db && tSpuel.z.fettFarbe.includes(r.vm9.hexB),
+        `F18-4 Gruppe A gießt, Gruppe B spült (${tSpuel.iso}): fett steht ${tSpuel.z.fett} statt Gruppe B (T${tSpuel.db}), Symbol „${tSpuel.z.icon}"`);
     }
     // Allgemein: Die Zelle folgt dem höheren Rang, bei Gleichstand der ersten Gruppe
     for (const [name, lauf] of [['Versatz 6', r.v6], ['Versatz −9', r.vm9]]) {
       const falsch = lauf.tage.filter(t => {
         const gewinnerB = (RANG[t.ba] || 0) > (RANG[t.aa] || 0);
-        return t.z.tag !== 'T' + (gewinnerB ? t.db : t.da) || !t.z.farbe.includes(gewinnerB ? lauf.hexB : lauf.hexA);
+        return t.z.fett !== 'T' + (gewinnerB ? t.db : t.da) || !t.z.fettFarbe.includes(gewinnerB ? lauf.hexB : lauf.hexA);
       });
       pruefe(lauf.tage.length > 0 && falsch.length === 0,
         `F18-5 ${name}: ${falsch.length} von ${lauf.tage.length} Tagen mit zwei Aufgaben zeigen die falsche Gruppe: ` +
-        falsch.slice(0, 3).map(t => `${t.iso} ${t.aa}/${t.ba} → ${t.z.tag}`).join(' | '));
+        falsch.slice(0, 3).map(t => `${t.iso} ${t.aa}/${t.ba} → ${t.z.fett}`).join(' | '));
     }
     pruefe(r.solo && r.solo.icon === '🧊' && r.solo.wort === 'IceFlush' && r.solo.tag === 'T' + r.solo.d,
       `F18-6 eine Gruppe allein: IceFlush-Zelle verändert: ${JSON.stringify(r.solo)}`);
+  }
+
+  // K2 (v1.5.416) · Zwei Gruppen: Die Zelle nennt beide Tag-Nummern, in der Reihenfolge der Zyklus-Liste und in der Farbe
+  // ihres Zyklus — auch an Tagen ohne Aufgabe. Fett ist höchstens eine: die der Gruppe, deren Aufgabe das Symbol zeigt.
+  // Ab drei Zyklen bleibt es bei einer Nummer (kein Platz in der Zelle).
+  {
+    const r = JSON.parse(a.E(`(function(){ const vorher = S.cycles.slice(); const eVorher = JSON.stringify(S.entries); S.beginnerMode = false;
+      const pid = S.cycles[0].fertPlanId;
+      const zellen = (iso) => { const [y, m] = iso.split('-').map(Number); calDate = new Date(y, m - 1, 1); renderCal();
+        const out = {}; [...document.querySelectorAll('#cal-body .cal-cell')].forEach(z => {
+          const k = ((z.getAttribute('onclick') || '').match(/calClick\\('([0-9-]+)'\\)/) || [])[1]; if (!k) return;
+          const tag = z.querySelector('.cal-tag');
+          out[k] = { text: tag ? tag.textContent : '', teile: tag ? [...tag.querySelectorAll('span')].map(s => ({ t: s.textContent, st: s.getAttribute('style') || '' })) : [] }; });
+        return out; };
+      const neu = (name, tage) => addCyc({ name, startDate: isoPlus(todayISO(), -tage), seedType: 'auto', growType: 'indoor', medium: 'erde',
+        potSize: 11, plantCount: 3, startMethod: 'direct', fertPlanId: pid }, { still: true });
+      S.cycles = []; S.entries = {};
+      const ga = neu('Gruppe A', 60), gb = neu('Gruppe B', 54); const tage = []; const cache = {};
+      for (let i = 0; i < 150; i++) { const iso = isoPlus(ga.startDate, i); const pa = phase(iso, ga), pb = phase(iso, gb);
+        if (!pa || !pb) continue; const mon = iso.slice(0, 7); if (!cache[mon]) cache[mon] = zellen(iso);
+        const aa = getAction(iso, ga), ba = getAction(iso, gb);
+        const haupt = _calHauptAktion([{ c: ga, a: aa, p: pa }, { c: gb, a: ba, p: pb }]);
+        tage.push({ iso, da: pa.day, db: pb.day, aa, ba, haupt: haupt ? haupt.c.name : '', z: cache[mon][iso] }); }
+      const hex = { A: col(ga).hex, B: col(gb).hex };
+      const gc = neu('Gruppe C', 50); let drei = null;
+      for (let i = 0; i < 150 && !drei; i++) { const iso = isoPlus(gc.startDate, i);
+        if (phase(iso, ga) && phase(iso, gb) && phase(iso, gc)) drei = { iso, z: zellen(iso)[iso] }; }
+      S.cycles = vorher; S.entries = JSON.parse(eVorher); calDate = new Date(); saveS();
+      return JSON.stringify({ tage, hex, drei }); })()`));
+    pruefe(r.tage.length > 40, 'K2-0 Prüflage: zu wenige Tage mit beiden Gruppen: ' + r.tage.length);
+    const textFalsch = r.tage.filter(t => !t.z || t.z.text !== 'T' + t.da + ' T' + t.db);
+    pruefe(textFalsch.length === 0, `K2-1 ${textFalsch.length} von ${r.tage.length} Zellen nennen nicht „T{A} T{B}“: ` + textFalsch.slice(0, 3).map(t => t.iso + ' → ' + (t.z && t.z.text)).join(' | '));
+    const farbeFalsch = r.tage.filter(t => !t.z || t.z.teile.length !== 2 || !t.z.teile[0].st.includes(r.hex.A) || !t.z.teile[1].st.includes(r.hex.B));
+    pruefe(farbeFalsch.length === 0, `K2-2 ${farbeFalsch.length} Zellen: Nummer nicht in der Farbe ihres Zyklus: ` + farbeFalsch.slice(0, 2).map(t => t.iso + ' ' + JSON.stringify(t.z)).join(' | '));
+    const fettFalsch = r.tage.filter(t => { if (!t.z) return true; const f = t.z.teile.filter(x => /font-weight:800/.test(x.st));
+      if (!t.haupt) return f.length !== 0;
+      return f.length !== 1 || f[0].t !== 'T' + (t.haupt === 'Gruppe A' ? t.da : t.db); });
+    pruefe(fettFalsch.length === 0, `K2-3 ${fettFalsch.length} Zellen: fett steht nicht genau die Gruppe mit der Aufgabe: ` + fettFalsch.slice(0, 3).map(t => `${t.iso} ${t.aa || '-'}/${t.ba || '-'} → ${JSON.stringify(t.z && t.z.teile)}`).join(' | '));
+    pruefe(r.tage.some(t => !t.haupt) && r.tage.some(t => t.haupt === 'Gruppe B'), 'K2-4 Prüflage: Tage ohne Aufgabe oder mit Aufgabe von Gruppe B fehlen');
+    pruefe(r.drei && r.drei.z && /^T\d+$/.test(r.drei.z.text) && r.drei.z.teile.length === 0, 'K2-5 drei Zyklen: Zelle soll eine Nummer zeigen: ' + JSON.stringify(r.drei));
   }
 
   // F12 · Zwei Wochenzählungen und kein heutiger Plan-Tag: Der Plan zählt ab dem Keimling, die App ab dem Keimstart.

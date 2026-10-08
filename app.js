@@ -3645,7 +3645,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.415';
+const APP_VERSION = 'v1.5.416';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -18818,6 +18818,19 @@ function renderCal() {
     // verschiedene Pflanzen, ohne dass man es sehen konnte.
     const tagDay = actionDay || (manualWaterDay && manualWaterDay.p ? manualWaterDay : null) || phaseDay;
 
+    // (v1.5.416) Zwei Gruppen im Zelt: Die Zelle nennt beide Tag-Nummern, jede in der Farbe ihres Zyklus und immer in
+    // der Reihenfolge der Zyklus-Liste. Mit nur einer Nummer (der Gruppe mit der Aufgabe, v1.5.127/407) stimmte jede
+    // Zelle für sich, aber die Zahl sprang von Tag zu Tag zwischen den Gruppen — T99, T93, T100 —, und wer eine Gruppe
+    // durch den Monat verfolgen wollte, musste jede Farbe einzeln lesen (Patricks Entscheidung, 08.10.2026). Die Nummer
+    // der Gruppe, deren Aufgabe das Symbol zeigt, steht fett. Ab drei Zyklen reicht der Platz in der Zelle nicht; dort
+    // bleibt es bei der einen Nummer und den Punkten.
+    const _tagAufgabe = actionDay || manualWaterDay || null;
+    const tagHTML = (dayInfo.length === 2)
+      ? `<span class="cal-tag cal-tag2">${dayInfo.map(x =>
+          `<span style="color:${col(x.c).hex}${_tagAufgabe && _tagAufgabe.c.id === x.c.id ? ';font-weight:800' : ''}">T${x.p.day}</span>`).join(' ')}</span>`
+      : tagDay ? `<span class="cal-tag" style="color:${tagCol}">T${tagDay.p.day}</span>`
+      : archInfo ? `<span class="cal-tag" style="color:${col(archInfo.c).hex}44;font-size:8px">T${archInfo.p.day}</span>` : '';
+
     // (v1.5.127) Haben MEHRERE Zyklen an diesem Tag etwas zu tun, war der zweite bisher
     // unsichtbar — die Zelle zeigt nur ein Symbol. Am 06.09. stand dort „🧊 IceFlush"
     // (Zyklus 1), während Zyklus 2 einen Gießtag hatte, von dem nichts zu sehen war.
@@ -18895,8 +18908,7 @@ function renderCal() {
       ${weitereHTML}
       ${icon ? `<span class="cal-icon">${icon}</span>` : ''}
       <span class="cal-num" ${isStart ? 'style="color:#f0d050;font-weight:800"' : ''}>${d}</span>
-      ${tagDay ? `<span class="cal-tag" style="color:${tagCol}">T${tagDay.p.day}</span>` :
-        archInfo ? `<span class="cal-tag" style="color:${col(archInfo.c).hex}44;font-size:8px">T${archInfo.p.day}</span>` : ''}
+      ${tagHTML}
       ${(phaseMarkerColor && phaseMarkerLabel && !isStart) ? `<span style="font-size:7px;font-weight:700;line-height:1.1;margin-top:1px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:${phaseMarkerColor}">${phaseMarkerLabel}</span>` : ''}
       ${(() => {
         // Zeige weißen Punkt wenn dieser Tag einen Eintrag hat — egal ob Tagebuch

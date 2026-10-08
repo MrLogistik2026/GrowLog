@@ -2,6 +2,19 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-08 — v1.5.416
+
+- **Kalender mit zwei Gruppen: Die Zelle nennt beide Tag-Nummern** (Patricks Entscheidung vom 08.10.2026, Rest von F18).
+  Bisher stand nur die Nummer der Gruppe da, deren Aufgabe das Symbol zeigt (v1.5.127/407). Jede Zelle stimmte für sich,
+  aber die Zahl sprang von Tag zu Tag zwischen den Gruppen (T99, T93, T100 …). Wer eine Gruppe durch den Monat verfolgen
+  wollte, musste jede Farbe einzeln lesen.
+- **Jetzt** stehen beide Nummern da, jede in der Farbe ihres Zyklus und immer in der Reihenfolge der Zyklus-Liste
+  („T96 T90“). Fett steht die Nummer der Gruppe, deren Aufgabe das Symbol zeigt; an Tagen ohne Aufgabe ist keine fett. Im
+  Browser auf 320 px gemessen: „T106 T100“ ist 32 px breit, die Zelle 42 px. Ab drei Zyklen reicht der Platz nicht, dort
+  bleibt es bei einer Nummer und den Punkten. Mit einem Zyklus ändert sich nichts.
+- Test: `test_runzwei.js` K2-0 bis 5, F18-3 bis 5 lesen jetzt die fette Nummer; `test_kalender.js` D an die neue Regel
+  angepasst und liest `GS_INDEX` (beide fallen auf v1.5.415 um).
+
 ## 2026-10-08 — v1.5.415
 
 - **Der Lichtmesser nahm den falschen Zyklus, wenn ein abgeschlossener oder trocknender gewählt war** (Run-02-Prüfung vom

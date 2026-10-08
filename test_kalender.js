@@ -28,7 +28,7 @@ const fs = require('fs');
 const path = require('path');
 const { JSDOM, VirtualConsole } = require('jsdom');
 
-const HTML = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');
+const HTML = fs.readFileSync(process.env.GS_INDEX || path.join(__dirname, 'index.html'), 'utf8');
 const BACKUP = fs.readFileSync(path.join(__dirname, 'growsmart-sicherung-2026-09-04.txt'), 'utf8');
 
 function fakeCtx() {
@@ -214,8 +214,9 @@ function pruef(name, bedingung, info) {
           var p1 = phase(iso, S.cycles[0]), p2 = phase(iso, c2);
           if (!p1 || !p2) return;
           var tag = (z.querySelector('.cal-tag') || {}).textContent || '';
+          var fett = (z.querySelector('.cal-tag span[style*="font-weight:800"]') || {}).textContent || '';
           var punkte = z.querySelectorAll('span[title] span').length;
-          if (!a1 && a2 && !nurZweiter) nurZweiter = { iso: iso, tagC1: p1.day, tagC2: p2.day, zeigt: tag };
+          if (!a1 && a2 && !nurZweiter) nurZweiter = { iso: iso, tagC1: p1.day, tagC2: p2.day, zeigt: tag, fett: fett };
           if (a1 && a2 && !beide) beide = { iso: iso, a1: a1, a2: a2, zeigt: tag, punkte: punkte,
             titel: (z.querySelector('span[title]') || {}).title || '' };
         });
@@ -225,10 +226,13 @@ function pruef(name, bedingung, info) {
 
     pruef('Es gibt einen Tag, an dem nur der zweite Grow etwas hat', !!r.nurZweiter, JSON.stringify(r));
     if (r.nurZweiter) {
-      pruef('Dort steht die Nummer des ZWEITEN Grows, nicht die des ersten',
-        r.nurZweiter.zeigt === 'T' + r.nurZweiter.tagC2, JSON.stringify(r.nurZweiter));
-      pruef('Und eben NICHT die des ersten (das war der Fehler)',
-        r.nurZweiter.zeigt !== 'T' + r.nurZweiter.tagC1, JSON.stringify(r.nurZweiter));
+      // (v1.5.416) Seit Patricks Entscheidung stehen bei zwei Grows beide Nummern da, in der Reihenfolge der Liste;
+      // zur Aufgabe gehört die fett gesetzte. Der Fehler von v1.5.127 (Symbol und Nummer von verschiedenen Grows) bleibt
+      // ausgeschlossen: Fett steht die Nummer des Grows, dessen Symbol die Zelle zeigt.
+      pruef('Dort stehen beide Nummern, erst der erste, dann der zweite Grow',
+        r.nurZweiter.zeigt === 'T' + r.nurZweiter.tagC1 + ' T' + r.nurZweiter.tagC2, JSON.stringify(r.nurZweiter));
+      pruef('Fett steht die Nummer des ZWEITEN Grows, nicht die des ersten (das war der Fehler)',
+        r.nurZweiter.fett === 'T' + r.nurZweiter.tagC2, JSON.stringify(r.nurZweiter));
     }
 
     pruef('Es gibt einen Tag, an dem BEIDE Grows etwas haben', !!r.beide, JSON.stringify(r));
