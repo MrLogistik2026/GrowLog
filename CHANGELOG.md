@@ -2,6 +2,14 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-08 — v1.5.423
+
+- **Keimungs-Leitfaden, Tag 4: „Licht an, gedimmt, 30–40 cm Abstand“** — derselbe feste Abstand, den v1.5.394 aus „Dein
+  erster Grow“ entfernt hat. Wie viel Licht ankommt, hängt an der Lampe, nicht an Zentimetern (`ANBAU.md` 8).
+- **Jetzt:** Herstellerangabe für Sämlinge, sonst lieber zu hoch als zu tief, in kleinen Schritten näher. Das Ziel kommt aus
+  `LICHT_ZIEL.saemling`, PPFD ist im Satz erklärt.
+- Test: `test_lichttexte.js` K1.
+
 ## 2026-10-08 — v1.5.422
 
 - **Lexikon „Wasser-Härte“ setzte Härte mit Pufferkraft gleich** (`UEBERGABE.md` 10, Prüfbericht vom 08.10.2026). Der Eintrag

@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.422** · index.html 2,56 MB · 781 Funktionen
+Stand: **v1.5.423** · index.html 2,56 MB · 781 Funktionen
 Zuletzt fortgeschrieben am 08.10.2026 (Nachtprüfung und Run 02 — Abschnitt 0o, „Stand Run 02"). Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
@@ -355,6 +355,7 @@ Speicher-Befunde sind in v1.5.340–344 behoben. Rohdaten: Workflow wf_63d754b1-
 - v1.5.420: Kein Handtest mehr als Lichtgrenze (zwölf Stellen) — Wärme und zu viel Licht getrennt, Ziele aus `LICHT_ZIEL`/`KLIMA_ZIEL` (`_tempZielText`), Wattage-Tabelle im Lexikon entfernt (ANBAU.md 8.2).
 - v1.5.421: Bleich-Schwelle überall aus `LICHT_ZIEL.bluete.bleichAb` (1500) statt „~1200“ und „W/m²“; „600–900, nicht mehr“ entfernt (ANBAU.md 8.1/8.2).
 - v1.5.422: Lexikon „Wasser-Härte“ und FAQ „Ist mein Wasser zu hart?“ nach ANBAU.md 3 — Karbonathärte (Puffer) und Gesamthärte (Ca/Mg) getrennt, „abstehen, Kalk fällt aus“ als nicht belegt, pH-Ziel nach Substrat.
+- v1.5.423: Keimungs-Leitfaden Tag 4 ohne feste 30–40 cm — Herstellerangabe, kleine Schritte, Ziel aus `LICHT_ZIEL.saemling`.
 
 **Gegenprüfung von v1.5.364/365 (07.10.2026 nachts, Workflow wf_4cf817bf-629, drei Sonnet-Prüfer + Gegenprüfer).** Kein Fehlalarm
 in 33 App-Fassungen, allen Vorlagen und über 2800 Klicks; die schweren Befunde (unsichere Kopie zerstört den Hauptstand, Tropfen als

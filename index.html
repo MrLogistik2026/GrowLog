@@ -4669,7 +4669,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.422';
+const APP_VERSION = 'v1.5.423';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -31857,7 +31857,7 @@ function renderEntry(iso) {
         3: _germ === 'paper'
           ? { do: `Noch keine Keimwurzel? Tücher feucht halten. Ist sie ${KEIMUNG.wurzelMmVon}–${KEIMUNG.wurzelMmBis} mm lang: heute einsetzen.`, avoid: 'Warten, bis die Wurzel länger ist — je länger sie wird, desto leichter bricht sie beim Einsetzen.' }
           : { do: 'Der Samen liegt in der Erde. Die Stelle über ihm feucht halten — zu sehen ist noch nichts, und das ist normal.', avoid: 'Zum Nachsehen ausgraben oder die Erde am Samen austrocknen lassen.' },
-        4: { do: `Keimling sichtbar? Dann Licht an, gedimmt, 30–40 cm Abstand. Noch nichts zu sehen? Normal bis Tag ${KEIMUNG.auflaufenBis}.`, avoid: 'Einen durchgebrochenen Keimling ohne Licht stehen lassen — er schießt dünn in die Höhe.' },
+        4: { do: `Keimling sichtbar? Dann Licht an, gedimmt. Häng die Lampe so, wie dein Hersteller es für Sämlinge angibt (steht nichts dabei: lieber zu hoch als zu tief), und rück in kleinen Schritten näher. Ziel: ${LICHT_ZIEL.saemling.ppfd.join('–')} PPFD — so heißt die Lichtmenge am Blatt. Noch nichts zu sehen? Normal bis Tag ${KEIMUNG.auflaufenBis}.`, avoid: 'Einen durchgebrochenen Keimling ohne Licht stehen lassen — er schießt dünn in die Höhe.' },
         5: ((c.startMethod || 'saturated') === 'saturated')
           ? { do: 'Keimblätter offen? Weiter nur die Stelle am Keimling besprühen — gegossen wird erst ab Tag 9.', avoid: 'Mehr Dünger, als der Plan vorsieht — der Sämling lebt noch von den Keimblättern.' }
           : { do: 'Keimblätter offen? Gib nur die kleine Menge, die oben steht, und nur im Ring um den Keimling.', avoid: 'Mehr Dünger, als der Plan vorsieht — der Sämling lebt noch von den Keimblättern.' },
