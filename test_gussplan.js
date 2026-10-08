@@ -231,7 +231,7 @@ const mess = (E, anfaenger) => JSON.parse(E(`(function(){
           heuteIstGuss: isGiessTag(todayISO(), c),
           erledigt: !!_gussHeuteErledigt(c, todayISO()),   // (v1.5.274) schon gegossen oder Topf voll
           aktion: getAction(todayISO(), c) || null,
-          hinweisVorBluete: /Diese Liste beginnt mit der Blüte/.test(t),
+          anzuchtListe: /Anzucht · hier nur zum Ansehen/.test(t) && !/Diese Liste beginnt mit der Blüte/.test(t),
           text: t.slice(0, 170)
         });
       } finally { todayISO = echt; c.startDate = altStart; }
@@ -264,12 +264,12 @@ const mess = (E, anfaenger) => JSON.parse(E(`(function(){
     pruef('Tag 2 (Sprühtag): die Karte sagt NICHT "heute"',
       !(t2.aktion === 'sprueh' && t2.wann === 'heute'), JSON.stringify(t2));
 
-    // Der Hinweis, dass die Liste erst mit der Bluete beginnt, erscheint nur solange
-    // er stimmt.
-    pruef('Vor der Bluete steht der Hinweis zur Liste da',
-      anTag(2).hinweisVorBluete === true, JSON.stringify(anTag(2)));
-    pruef('Ab dem ersten Bluete-Guss ist er wieder weg',
-      anTag(30).hinweisVorBluete === false, JSON.stringify(anTag(30)));
+    // (v1.5.406) Die Liste fuehrt die Anzucht-Guesse selbst auf (nur zum Ansehen); den Hinweis "Diese Liste beginnt mit der
+    // Bluete" gibt es nicht mehr.
+    pruef('Vor der Bluete fuehrt die Liste die Anzucht-Guesse auf und sagt nicht mehr, sie beginne mit der Bluete',
+      anTag(2).anzuchtListe === true, JSON.stringify(anTag(2)));
+    pruef('Ab dem ersten Bluete-Guss steht keine Anzucht-Gruppe mehr da',
+      anTag(30).anzuchtListe === false, JSON.stringify(anTag(30)));
   }
 
   console.log('');

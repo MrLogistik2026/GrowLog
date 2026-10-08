@@ -2,6 +2,22 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-08 — v1.5.406
+
+- **Der Gieß-Fahrplan nannte in der Anzucht keine Güsse** (Run-02-Prüfung vom 07.10.2026, F08). Die Liste „Deine nächsten
+  Güsse“ begann erst mit der Blüte: An Tag 11 stand oben „Nächster Guss · in 2 Tagen · Tag 13“, darunter begann die Liste
+  bei Tag 22. In Run 02 fehlten so bis zu 15 Tage. Den Satz „Diese Liste beginnt mit der Blüte“ sah nur der Profi.
+- **Jetzt** führt die Liste die Güsse der Anzucht ab heute mit auf, in beiden Modi: Sättigungsguss und Anzucht-Güsse
+  (`collectAnzuchtGusse`, aus `getAction` wie die Karte oben), mit Menge und dem Kopf „🌱 Anzucht · hier nur zum Ansehen“.
+  Diese Zeilen haben keinen Düngen/Wasser-Umschalter. Der hängt am Blüte-Guss-Index, und ein Tipp auf einen Anzucht-Tag würde
+  den ersten Blüte-Guss umschalten. Das war der Grund, warum v1.5.119 die Liste nicht erweitert hatte.
+- Statt des alten Satzes steht nur noch, was keine Zeile zeigen kann: „Tag 2–8: nur Sprühen, kein Guss“ beim Sprühstart. Die
+  Blüte-Zeilen und ihr Umschalter sind unverändert.
+- Die Ersatztexte und Ersetzungen hat ein Prüfer (Sonnet) vorher an v1.5.403 gemessen.
+- Test: `test_runzwei.js` F08 (19 Prüfungen in beiden Modi; 10 fallen auf v1.5.405 um). `test_gussplan.js` G prüft jetzt die
+  Anzucht-Gruppe statt des entfallenen Satzes.
+
+
 ## 2026-10-08 — v1.5.405
 
 - **Der Lichtmesser färbte in der Blüte jeden Wert über 900 µmol/m²/s rot** (beim Bau von v1.5.404 gefunden). Nach

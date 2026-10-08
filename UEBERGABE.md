@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.405** · index.html 2,56 MB · 781 Funktionen
+Stand: **v1.5.406** · index.html 2,56 MB · 781 Funktionen
 Zuletzt fortgeschrieben am 07.10.2026 (Nachtprüfung und Run 02 — Abschnitt 0o, „Stand Run 02"). Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
@@ -233,7 +233,7 @@ wf_0586d0bf-d3d (vergänglich). **Offen, nach Nutzen geordnet** (Umbauten oder P
 5. „2 Tage ohne Gießen nach dem Topping" (`toppingPause`, verschiebt den Gießplan) und „2–4 h vorher volles Gießen mit Dünger … für
    die Wundheilung" (`T.topping.preWaterHint`) ohne Beleg — der Gießzeitpunkt folgt dem Gießpunkt (`ANBAU.md` 1.2). (Der Knopf bis
    Blütewoche 3 ist seit v1.5.370 behoben.)
-6. Tag 1 verweist auf eine Mischliste, die es dort nicht gibt; „Deine nächsten Güsse" beginnt in der Anzucht erst bei Blüte.
+6. Tag 1 verweist auf eine Mischliste, die es dort nicht gibt. („Deine nächsten Güsse" beginnt seit v1.5.406 in der Anzucht.)
 7. Dünger abhaken sind im Eintrag 15 Einzel-Taps — Idee: „Alles wie im Plan" mit einem Tipp. („Erledigt" bucht den Plan-Dünger
    seit v1.5.360 als Vorschlag mit.)
 8. Diagnose: bei „welk" und „weiß ausgebleicht" falsche Reihung. (Sämlings-EC „SOFORT spülen" seit v1.5.373 behoben.)
@@ -273,7 +273,7 @@ Run 02 fachlich und Bedienung mit Patricks echter Datei, ein Gegenprüfer).** Ur
 keiner schlechter als v1.5.319. Die zwei schweren (Einschleusen über Anführungszeichen und `__proto__`) und die Import- und
 Speicher-Befunde sind in v1.5.340–344 behoben. Rohdaten: Workflow wf_63d754b1-be1 (journal.jsonl), Skripte unter
 `.claude/tmp/review339/` (vergänglich). **Offen, alle schon in v1.5.319 vorhanden, nach Nutzen für Run 02:**
-- Leicht: F08 Einsteiger-Fahrplan ohne Anzucht-Güsse, F12 Plan-Tag im Eintragskopf, F14 pH 6.4 fest neben 6,35 der Plan-Woche, F16 jeder
+- Leicht: F12 Plan-Tag im Eintragskopf, F14 pH 6.4 fest neben 6,35 der Plan-Woche, F16 jeder
   Bildschirm wählt eine andere Standardgruppe (~20356, ~22671), F18 Kalender
   zeigt bei zwei Aktionen nur eine (~18082), F19 Import übernimmt Spül-, Eis- und Trocknungstage nicht aus dem Plan.
 - Speicher, leicht: rettung.html bietet „Daten anzeigen" nur beim Hauptstand (SK-5); wiederherstellung.html überschreibt
@@ -340,6 +340,7 @@ Speicher-Befunde sind in v1.5.340–344 behoben. Rohdaten: Workflow wf_63d754b1-
 - v1.5.403: „Nachtragen“ geht nach der ersten Gruppe zur nächsten mit Lücken weiter (F13, zweiter Teil).
 - v1.5.404: Lichtziele aus einer Quelle (`LICHT_ZIEL`, ANBAU.md 8) — Sämling 150–300, Wachstum 400–600, Blüte 600–900; DLI aus den Stunden. Test `test_lichtziel.js`.
 - v1.5.405: Lichtmesser in der Blüte über 900 gelb mit Erklärung, rot erst ab ~1500 (Bleich-Schwelle, ANBAU.md 8.1/8.2).
+- v1.5.406: Gieß-Fahrplan listet die Anzucht-Güsse ab heute mit (nur zum Ansehen, ohne Umschalter; `collectAnzuchtGusse`, F08).
 
 **Gegenprüfung von v1.5.364/365 (07.10.2026 nachts, Workflow wf_4cf817bf-629, drei Sonnet-Prüfer + Gegenprüfer).** Kein Fehlalarm
 in 33 App-Fassungen, allen Vorlagen und über 2800 Klicks; die schweren Befunde (unsichere Kopie zerstört den Hauptstand, Tropfen als
@@ -1251,9 +1252,8 @@ fragte nur die falsche Quelle. Das ist zum vierten Mal dasselbe Muster in dieser
 (`_trainingFit`, `_helpCurrentScreen`, `meta.phase`, jetzt `isGiessTag`): **Bevor eine neue
 Regel gebaut wird, erst nachsehen, ob die Antwort schon im Datenmodell steht.**
 
-Die Liste darunter bleibt eine Blüte-Liste — sie sagt das jetzt auch, solange der Zyklus in
-der Anzucht steht. Sie dort nachzubauen wäre ein Eingriff in den Feed/Wasser-Umschalter,
-der am Blüte-Guss-Index hängt.
+Die Liste darunter blieb damals eine Blüte-Liste, weil der Feed/Wasser-Umschalter am Blüte-Guss-Index hängt. Seit
+v1.5.406 führt sie die Anzucht-Güsse trotzdem mit — nur zum Ansehen, ohne Umschalter (`collectAnzuchtGusse`).
 
 ### Drei Sackgassen im leeren Zustand (v1.5.120–122)
 

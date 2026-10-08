@@ -435,6 +435,42 @@ async function starte() {
     pruefe(r.nach[0] === 0 && r.nach[1] === 0, `F13b-1 nach „Nachtragen" bleiben Lücken in der zweiten Gruppe: ${JSON.stringify(r)}`);
   }
 
+  // F08 (v1.5.406) · Der Gieß-Fahrplan listet die Anzucht-Güsse mit, im Einsteiger- wie im Profi-Modus — nur zum Ansehen
+  {
+    const lauf = (einsteiger, methode, tag) => JSON.parse(a.E(`(function(){ const vorher = S.cycles.slice(); S.beginnerMode = ${einsteiger};
+      const c = addCyc({ name: 'Anzucht-Probe', startDate: isoPlus(todayISO(), -${tag - 1}), seedType: 'auto', growType: 'indoor', medium: 'erde',
+        potSize: 11, plantCount: 3, startMethod: '${methode}', fertPlanId: S.cycles[0].fertPlanId }, { still: true }); saveS();
+      _gussplanZyklusId = c.id; openGussplan(); const body = document.getElementById('gussplan-body');
+      const tagVon = (z) => parseInt(z.textContent.match(/Tag (\\d+)/)[1], 10);
+      const zeilen = [...body.querySelectorAll('div')].filter(d => /^Tag \\d+$/.test(d.textContent.trim())).map(d => d.parentElement);
+      const az = anzuchtLenFor(c); const soll = [];
+      for (let d = ${tag}; d <= az; d++) { const x = getAction(isoPlus(c.startDate, d - 1), c); if (x === 'giess_anz' || x === 'saettigung') soll.push(d); }
+      const anz = zeilen.filter(z => tagVon(z) <= az), bluete = zeilen.find(z => tagVon(z) > az);
+      const t = body.textContent.replace(/\\s+/g, ' ');
+      const out = { soll, ist: anz.map(tagVon), schalter: anz.some(z => /toggleFwDay|⇄/.test(z.innerHTML)), ohneMenge: anz.filter(z => !/etwa \\d+ ml/.test(z.textContent)).length,
+        blueteSchalter: !!bluete && /toggleFwDay/.test(bluete.innerHTML), altHinweis: /Diese Liste beginnt/.test(t), spruehen: /nur Sprühen, kein Guss/.test(t),
+        sorte: anz.map(z => /Sättigung/.test(z.textContent) ? 'S' : /Anzucht/.test(z.textContent) ? 'A' : '?').join(''), override: !!c.fwOverrides };
+      S.cycles = vorher; _gussplanZyklusId = null; saveS();
+      return JSON.stringify(out); })()`));
+    for (const einsteiger of [true, false]) {
+      const wo = einsteiger ? 'Einsteiger' : 'Profi';
+      const r = lauf(einsteiger, 'direct', 11);   // Tag 11: noch drei Anzucht-Güsse (13, 16, 19)
+      pruefe(r.soll.length === 3 && JSON.stringify(r.ist) === JSON.stringify(r.soll), `F08-1 ${wo}: Anzucht-Güsse in der Liste ${JSON.stringify(r.ist)} statt ${JSON.stringify(r.soll)}`);
+      pruefe(!r.schalter && !r.override, `F08-2 ${wo}: eine Anzucht-Zeile hat einen Umschalter (toggleFwDay)`);
+      pruefe(r.ist.length && r.ohneMenge === 0, `F08-3 ${wo}: Anzucht-Zeile ohne Menge`);
+      pruefe(r.blueteSchalter, `F08-4 ${wo}: die Blüte-Güsse haben ihren Umschalter nicht mehr`);
+      pruefe(!r.altHinweis, `F08-5 ${wo}: „Diese Liste beginnt mit der Blüte" steht noch da, obwohl die Anzucht jetzt mit drin ist`);
+      pruefe(!r.spruehen, `F08-6 ${wo}: Sprüh-Hinweis ohne Sprühtage (startMethod direct)`);
+      const s = lauf(einsteiger, 'saturated', 4);  // Tag 4: Sprühtage bis Tag 8, erster Guss Tag 9
+      pruefe(s.soll.length >= 4 && JSON.stringify(s.ist) === JSON.stringify(s.soll), `F08-7 ${wo}: Sprühstart: Liste ${JSON.stringify(s.ist)} statt ${JSON.stringify(s.soll)}`);
+      pruefe(s.spruehen, `F08-8 ${wo}: Sprühstart ohne Hinweis „nur Sprühen, kein Guss"`);
+      const b = lauf(einsteiger, 'direct', 40);   // Tag 40: längst Blüte, keine Anzucht-Zeile mehr
+      pruefe(b.ist.length === 0 && b.blueteSchalter, `F08-9 ${wo}: Blüte-Stand zeigt Anzucht-Zeilen (${JSON.stringify(b.ist)}) oder verliert den Umschalter`);
+    }
+    const s1 = lauf(false, 'saturated', 1);        // Tag 1 mit Sättigungsguss
+    pruefe(s1.ist[0] === 1 && s1.sorte[0] === 'S' && s1.sorte.slice(1).replace(/A/g, '') === '', `F08-10 Tag 1 beim Sprühstart: Sättigungsguss nicht als solcher gelistet (${s1.sorte})`);
+  }
+
   pruefe(!a.errors.length, 'Skriptfehler: ' + a.errors.slice(0, 3).join(' | '));
   if (fehler.length) { console.log(`test_runzwei: ${fehler.length} von ${n} Prüfungen rot`); fehler.forEach((f) => console.log('  ✗ ' + f)); process.exit(1); }
   console.log(`test_runzwei: alle ${n} Prüfungen grün`);
