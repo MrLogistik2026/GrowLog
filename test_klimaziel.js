@@ -198,11 +198,11 @@ const HELFER = `
     const r = JSON.parse(E(`(function(){ ${txt} const c = S.cycles[0]; const e = S.entries['${D}'];
       const st = klimaStatus(parseFloat(e.temp), parseFloat(e.humidity), phase('${D}', c), c);
       return JSON.stringify({ s: st.s, pille: txt('vpd-p'), erwartet: _klimaPille(st).label, marke: _klimaMarke(st), ziel: txt('klima-ziel'), rlf: txt('klima-rlf'),
-        lo: _klimaZahl(st.fenster.lo), hi: _klimaZahl(st.fenster.hi), satz: klimaSatz(st), phR: document.getElementById('er').getAttribute('placeholder') }); })()`));
+        spanne: _klimaRlfSpanne(st.fenster), satz:   /* (v1.5.401) ganze Prozent wie der Satz */ klimaSatz(st), phR: document.getElementById('er').getAttribute('placeholder') }); })()`));
     pruef(`Profi: Pille „${r.erwartet}" aus dem Befund`, r.pille === r.erwartet, JSON.stringify(r));
     pruef('Profi: Zielzeile mit Band, Temperatur, Fenster bei 23,8 °C und Deckel', r.ziel && r.ziel.startsWith(r.marke)
-      && r.ziel.includes(`Späte Blüte: VPD 1,2–1,5 kPa · 22–26 °C · bei 23,8 °C RLF ${r.lo}–${r.hi} % · Schimmel-Deckel 60 %`), r.ziel);
-    pruef('Luftfeuchte-Zeile: dasselbe Fenster bei 23,8 °C', r.rlf && r.rlf.includes(`bei 23,8 °C ${r.lo}–${r.hi} % RLF`), r.rlf);
+      && r.ziel.includes(`Späte Blüte: VPD 1,2–1,5 kPa · 22–26 °C · bei 23,8 °C RLF ${r.spanne} · Schimmel-Deckel 60 %`), r.ziel);
+    pruef('Luftfeuchte-Zeile: dasselbe Fenster bei 23,8 °C', r.rlf && r.rlf.includes(`bei 23,8 °C ${r.spanne} RLF`), r.rlf);
     E(`S.beginnerMode = true; openEntry('${D}')`);
     await warte(200);
     const b = JSON.parse(E(`(function(){ ${txt} return JSON.stringify({ kasten: txt('vpd-c') }); })()`));

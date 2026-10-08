@@ -2,6 +2,17 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-08 — v1.5.401
+
+- **Die Luftfeuchte-Spanne stand im Eintrag mit Nachkommastellen, der Satz daneben in ganzen Prozent** (Run-02-Prüfung vom
+  07.10.2026, F17). Zielzeile und RLF-Zeile zeigten z. B. „bei 25 °C 50,7–63,5 % RLF“, der Einsteiger-Satz „auf 51–63 %“.
+  Nach `ANBAU.md` 2.2 stehen die Spannen als ganze Prozent innerhalb des Fensters, so wie die App sie anzeigt — Lexikon,
+  Infotexte und Warnungen tun das seit v1.5.190.
+- **Jetzt** nehmen beide Zeilen `_klimaRlfSpanne` wie alle anderen Stellen. Die Bewertung selbst (✓/⚠) ist unverändert.
+- Test: `test_runzwei.js` F17 (2 Prüfungen; beide fallen auf v1.5.399 um). `test_klimaziel.js` H liest das Fenster jetzt
+  über dieselbe Funktion statt die Nachkommastellen zu erwarten.
+
+
 ## 2026-10-08 — v1.5.400
 
 - **Ein Wächter-Test war seit v1.5.393 rot** (`test_tag1mengen.js`, beide Zonen; gefunden im Gesamtlauf auf v1.5.399:

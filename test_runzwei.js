@@ -378,6 +378,15 @@ async function starte() {
     pruefe(!/am Vortag anmischen/.test(p) && /Dünger erst kurz vor dem Gießen/.test(p), `W392 Lexikon rät, Gießwasser auf Vorrat zu mischen: ${p.slice(0, 160)}`);
   }
 
+  // F17 (v1.5.401) · Luftfeuchte-Spanne im Eintrag in ganzen Prozent, wie der Satz daneben (ANBAU.md 2.2)
+  {
+    const r = JSON.parse(a.E(`(function(){ S.beginnerMode = false; const c = S.cycles[0]; const iso = todayISO();
+      const k = _klimaEntryTeile('25', '55', [c], iso); const txt = (h) => h.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
+      return JSON.stringify({ ziel: txt(k.vpdBox), rlf: txt(k.rlfZeile), spanne: k.st ? _klimaRlfSpanne(k.st.fenster) : null }); })()`));
+    pruefe(r.spanne && r.ziel.includes('RLF ' + r.spanne) && !/RLF d+,d/.test(r.ziel), `F17-1 Zielzeile: ${r.ziel.slice(0, 200)}`);
+    pruefe(r.spanne && r.rlf.includes(r.spanne + ' RLF') && !/°C d+,d+–/.test(r.rlf), `F17-2 RLF-Zeile: ${r.rlf}`);
+  }
+
   pruefe(!a.errors.length, 'Skriptfehler: ' + a.errors.slice(0, 3).join(' | '));
   if (fehler.length) { console.log(`test_runzwei: ${fehler.length} von ${n} Prüfungen rot`); fehler.forEach((f) => console.log('  ✗ ' + f)); process.exit(1); }
   console.log(`test_runzwei: alle ${n} Prüfungen grün`);

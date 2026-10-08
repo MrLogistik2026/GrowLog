@@ -3611,7 +3611,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.400';
+const APP_VERSION = 'v1.5.401';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -15755,7 +15755,7 @@ function _klimaEntryTeile(tRaw, rhRaw, act, iso) {
       const zielText = (st && !st.ziel.vpd)
         ? `${st.ziel.icon} ${st.ziel.name}: kein VPD-Ziel ohne Licht · Luftfeuchte höchstens ${st.ziel.deckel} %${st.stufe === 'ernte' ? ` · nach dem Schnitt ${TROCKNEN_TEXT}` : ''}`
         : st
-        ? `${st.ziel.icon} ${st.ziel.name}: VPD ${_klimaZahl(st.ziel.vpd[0])}–${_klimaZahl(st.ziel.vpd[1])} kPa · ${st.ziel.temp[0]}–${st.ziel.temp[1]} °C · bei ${_klimaZahl(st.fenster.t)} °C RLF ${_klimaZahl(st.fenster.lo)}–${_klimaZahl(st.fenster.hi)} %${st.ziel.deckel != null ? ` · Schimmel-Deckel ${st.ziel.deckel} %` : ''}`
+        ? `${st.ziel.icon} ${st.ziel.name}: VPD ${_klimaZahl(st.ziel.vpd[0])}–${_klimaZahl(st.ziel.vpd[1])} kPa · ${st.ziel.temp[0]}–${st.ziel.temp[1]} °C · bei ${_klimaZahl(st.fenster.t)} °C RLF ${_klimaRlfSpanne(st.fenster)}${st.ziel.deckel != null ? ` · Schimmel-Deckel ${st.ziel.deckel} %` : ''}`
         : (pt && pt.vpdMin ? `${pt.icon} ${pt.label}: VPD ${pt.vpdMin}–${pt.vpdMax} kPa · ${pt.tempMin}–${pt.tempMax}°C · ${pt.rhMin}–${pt.rhMax}% RLF` : '');
       vpdBox = `<div class="vpd-box">
           <div>
@@ -15791,6 +15791,8 @@ function _klimaEntryTeile(tRaw, rhRaw, act, iso) {
     }
   }
 
+  // (v1.5.401) Die Luftfeuchte-Spannen in Zielzeile und RLF-Zeile in ganzen Prozent (_klimaRlfSpanne), wie der Einsteiger-Satz und
+  // ANBAU.md 2.2 — vorher „bei 25 °C 50,7–63,5 % RLF" neben „auf 51–63 %" (Run-02-Prüfung, F17).
   const tMark = st ? (st.tS === 'ok' ? '✓' : (st.tS ? '⚠' : '')) : (pt ? inRangeMark(t, pt.tempMin, pt.tempMax) : '');
   const tempZeile = (st && !st.ziel.temp) ? zeile('', st.stufe === 'ernte'
       ? `${st.ziel.icon} ${st.ziel.name}: nach dem Schnitt ${TROCKNEN_KLIMA.tMin}–${TROCKNEN_KLIMA.tMax} °C`
@@ -15801,7 +15803,7 @@ function _klimaEntryTeile(tRaw, rhRaw, act, iso) {
   const rMark = st ? (st.rh === null ? '' : (st.level === 'critical' ? '🚨' : (rhIn ? '✓' : (st.level === 'knapp' ? '≈' : '⚠'))))
     : (pt ? inRangeMark(rh, pt.rhMin, pt.rhMax) : '');
   const rlfZeile = (st && !st.ziel.vpd) ? zeile(rMark, `${st.ziel.icon} ${st.ziel.name}: höchstens ${st.ziel.deckel} % RLF${st.stufe === 'ernte' ? ' bis zum Schnitt' : ''}`)
-    : st ? zeile(rMark, `${st.ziel.icon} ${st.ziel.name}: bei ${_klimaZahl(st.fenster.t)} °C ${_klimaZahl(st.fenster.lo)}–${_klimaZahl(st.fenster.hi)} % RLF`)
+    : st ? zeile(rMark, `${st.ziel.icon} ${st.ziel.name}: bei ${_klimaZahl(st.fenster.t)} °C ${_klimaRlfSpanne(st.fenster)} RLF`)
     : (pt ? zeile(rMark, `${pt.icon} ${pt.label}: ${pt.rhMin}–${pt.rhMax}% RLF${suffix}`) : '');
   const kritT = renderCriticalWarning(getCriticalWarning('temp', t, p0, c0));
   const kritR = renderCriticalWarning(getCriticalWarning('rlf', rh, p0, c0, t));
