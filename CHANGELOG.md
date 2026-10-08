@@ -2,6 +2,16 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-08 — v1.5.421
+
+- **Bleich-Schwelle „~1200“ und „über 600 W/m²“ an fünf Stellen** (Prüfbericht zu v1.5.399). Seit v1.5.405 warnt der
+  Lichtmesser erst ab 1500 (`LICHT_ZIEL.bluete.bleichAb`, `ANBAU.md` 8.2). Wer 1300 maß, bekam dort Entwarnung und in
+  Diagnose und Lexikon „Bleaching-Risiko“. „W/m²“ ist elektrische Leistung, keine Lichtmenge am Blatt. Im Eintrag
+  „Lichtbrand“ stand zudem „Ziel 600–900 PPFD in Blüte, nicht mehr“, nach 8.1 ist darüber kein Schaden.
+- **Jetzt** nennen alle Stellen die Zahl aus `LICHT_ZIEL`. Bei Photobleaching gilt das Bild vor dem Handy-Messwert, weil
+  der eine Schätzung ist (`ANBAU.md` 15).
+- Test: `test_lichttexte.js` B1 bis B3.
+
 ## 2026-10-08 — v1.5.420
 
 - **Der Handtest stand an zwölf Stellen als Grenze für den Lampenabstand** (Nachtprüfung vom 07.10.2026, Prüfbericht zu

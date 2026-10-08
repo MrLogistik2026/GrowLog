@@ -2513,9 +2513,9 @@ const PROBLEMS = [
       color: ['paleGreen', 'yellow'],
       shape: ['spotted', 'curlUp'],
     },
-    description: 'Top-Buds und obere Blätter werden weißlich/gebleicht (NICHT braun-verbrannt), oft mit silbrig-glänzenden Flecken. Chlorophyll und Trichome werden ausgebleicht. Sieht nach viel Harz aus, ist aber ausgeblichenes Gewebe: An diesen Spitzen kommt mehr Licht an, als die Blätter verarbeiten können. Typisch bei starken LEDs über 600 W/m², PPFD über ~1200 am Canopy.',
+    description: 'Top-Buds und obere Blätter werden weißlich/gebleicht (NICHT braun-verbrannt), oft mit silbrig-glänzenden Flecken. Chlorophyll und Trichome werden ausgebleicht. Sieht nach viel Harz aus, ist aber ausgeblichenes Gewebe: An diesen Spitzen kommt mehr Licht an, als die Blätter verarbeiten können. Typisch bei sehr hoher Lichtmenge am Canopy: ausbleichen kann es praktisch erst ab etwa ' + LICHT_ZIEL.bluete.bleichAb + ' PPFD.',
     context: { phase: ['bloom'], daysToHarvestLow: false },
-    action: 'LED um 15–20 cm anheben oder Dimmer auf 60–70% bis Ernte. PPFD-Meter (oder LED-PAR-Sensor) zeigt am Canopy: Bloom-Optimum 600–900, Bleaching-Risiko ab ~1200 (steigend je näher/stärker die LED). Wenn Trichome schon trüb-braun sind: lieber jetzt ernten als noch mehr stressen.',
+    action: 'LED um 15–20 cm anheben oder Dimmer auf 60–70% bis Ernte. PPFD-Meter (oder LED-PAR-Sensor) zeigt am Canopy: Blüte-Ziel ' + LICHT_ZIEL.bluete.ppfd.join('–') + ', ausbleichen kann es praktisch erst ab etwa ' + LICHT_ZIEL.bluete.bleichAb + ' (je näher oder stärker die LED, desto mehr Licht am Blatt). Zeigt dein Messgerät deutlich weniger, aber das Bild passt (weiß, scharf begrenzt, nur die lichtnächsten Spitzen), gilt das Bild — Handy-Messungen sind Schätzungen. Wenn Trichome schon trüb-braun sind: lieber jetzt ernten als noch mehr stressen.',
     lexiconKey: 'photo_bleaching',
   },
   {
@@ -4669,7 +4669,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.420';
+const APP_VERSION = 'v1.5.421';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -8614,8 +8614,8 @@ const SYMPTOMS = [
         heading: 'Spitzen direkt unter Lampe weiß-gelb, untere Bereiche grün',
         verdict: '⚠⚠ Foto-Bleaching (zu starke Lampe)',
         color: 'var(--red)',
-        text: 'Das passiert wenn die PPFD an den Top-Buds über ~1200 erreicht — Chlorophyll und Trichome werden ausgebleicht. Wirkt zwar wie „weiße Buds = potent", ist aber ausgeblichenes Gewebe — mehr Licht, als die Spitzen verarbeiten. <b>Lösung:</b> Lampe SOFORT höher hängen (mind. 20 cm), oder Dimmer auf 60–70% reduzieren bis zur Ernte.',
-        when: 'Bloom mit starker LED über 600 W/m²',
+        text: 'Das passiert bei sehr hoher Lichtmenge an den Top-Buds — praktisch erst ab etwa ' + LICHT_ZIEL.bluete.bleichAb + ' PPFD. Chlorophyll und Trichome werden ausgebleicht. Wirkt zwar wie „weiße Buds = potent", ist aber ausgeblichenes Gewebe — mehr Licht, als die Spitzen verarbeiten. <b>Lösung:</b> Lampe SOFORT höher hängen (mind. 20 cm), oder Dimmer auf 60–70% reduzieren bis zur Ernte.',
+        when: 'Blüte, Lampe sehr nah oder voll aufgedreht',
         lex: 'Lichtbrand (Phototoxizität)',
       },
       {
@@ -38100,7 +38100,7 @@ const LEXIKON = [
     { t: 'Lichtbrand (Phototoxizität)',
       brief: 'PPFD zu hoch für die Pflanze. Obere Blüten und Blätter bleichen aus. Sieht oft wie Hitze aus, ist aber Licht.',
       mechanism: 'Wenn die <b>PPFD die Verarbeitungs-Kapazität</b> der Pflanze übersteigt, werden Chloroplasten und Chlorophyll <b>oxidativ zerstört</b>. Blätter werden gelblich-weiß, in extremen Fällen verbrennen die obersten Triebspitzen komplett. <b>Wichtige Unterscheidung zu Hitzestress:</b> Lichtbrand tritt auch bei kühler Temperatur auf (LED bleibt kalt!). Hitzestress kommt vom <b>Klima</b>, Lichtbrand von der <b>Strahlung</b>.',
-      practice: '<b>Diagnose:</b><br>• Obere Blätter bleichen aus (weiß/gelb)<br>• Tritt direkt unter der Lampe auf, nicht am Rand<br>• Blätter sind nicht eingerollt (das wäre Hitze)<br>• Temperatur im Zelt normal<br>• Bei dimmbarer LED: Symptome nach Erhöhung der Leistung<br><br><b>Sofort-Lösung:</b><br>1. Lampe sofort 10-15 cm höher hängen<br>2. Oder: LED-Output dimmen (-20 %)<br>3. Bereits gebleichte Blätter wachsen nicht zurück → entfernen<br>4. PPFD-Meter besorgen oder Photone-App: Ziel 600-900 PPFD in Blüte, nicht mehr<br><br><b>Vorbeugen:</b> Lichtmenge am Blatt messen und im Ziel der Phase bleiben (siehe Lichtabstand-Eintrag). LEDs in Spätblüte oft zu nah, weil Pflanze ungebremst nach oben wächst.',
+      practice: '<b>Diagnose:</b><br>• Obere Blätter bleichen aus (weiß/gelb)<br>• Tritt direkt unter der Lampe auf, nicht am Rand<br>• Blätter sind nicht eingerollt (das wäre Hitze)<br>• Temperatur im Zelt normal<br>• Bei dimmbarer LED: Symptome nach Erhöhung der Leistung<br><br><b>Sofort-Lösung:</b><br>1. Lampe sofort 10-15 cm höher hängen<br>2. Oder: LED-Output dimmen (-20 %)<br>3. Bereits gebleichte Blätter wachsen nicht zurück → entfernen<br>4. PPFD-Meter besorgen oder Photone-App: Ziel in der Blüte ' + LICHT_ZIEL.bluete.ppfd.join('–') + ' PPFD; darüber ist es noch kein Schaden — ausbleichen kann es praktisch erst ab etwa ' + LICHT_ZIEL.bluete.bleichAb + '<br><br><b>Vorbeugen:</b> Lichtmenge am Blatt messen und im Ziel der Phase bleiben (siehe Lichtabstand-Eintrag). LEDs in Spätblüte oft zu nah, weil Pflanze ungebremst nach oben wächst.',
       pitfall: 'Lichtbrand wird oft mit <b>Stickstoff-Überschuss</b> verwechselt (auch dunkle Blätter). Unterschied: Lichtbrand zeigt sich nur unter der Lampe (lokal), N-Überschuss überall. Auch: bei UV-Bar zu langer Bestrahlung = UV-Schaden = ähnlich aussehend, aber durch UV-B verursacht. UV-Bar zeitlich begrenzen.' },
     { t: 'Hitzestress',
       brief: 'Über 30 °C im Zelt. Klassisches „Taco-Blatt" — Blattränder rollen sich nach oben ein.',
