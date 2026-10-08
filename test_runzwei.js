@@ -674,6 +674,9 @@ async function starte() {
       let tag13 = null;
       for (let i = 0; i < 160; i++) { const d = isoPlus(c.startDate, i); const p = phase(d, c); if (p && fertPlanWeek(c, d, p) === 13) { tag13 = d; break; } }
       const z13 = zf(c, tag13); out.w13 = { midText: z13.midText, quelle: z13.quelle };
+      let tag15 = null;
+      for (let i = 0; i < 200; i++) { const d = isoPlus(c.startDate, i); const p = phase(d, c); if (p && fertPlanWeek(c, d, p) === 15) { tag15 = d; break; } }
+      const z15 = tag15 ? zf(c, tag15) : { midText: 'kein Tag', quelle: '' }; out.w15 = { tag: tag15, midText: z15.midText, quelle: z15.quelle };
       const pl = _planFuerVorlage('biobizz_light'); const bio = addCyc({ name: 'Bio', startDate: c.startDate, seedType: 'auto', growType: 'indoor', medium: 'erde',
         potSize: 11, plantCount: 2, startMethod: 'direct', fertPlanId: pl }, { still: true });
       const zb = zf(bio, iso); out.bio = { midText: zb.midText, quelle: zb.quelle };
@@ -681,7 +684,9 @@ async function starte() {
       S.cycles = S.cycles.filter(x => vorherIds.includes(x.id)); saveS();
       return JSON.stringify(out); })()`));
     pruefe(G.coco.midText === '6.0' && G.coco.quelle === 'substrat' && G.coco.label === '5.8–6.2', 'F14-6a Erd-Plan in Coco: Planwert 6,25 liegt über der Coco-Spanne und darf nicht gelten: ' + JSON.stringify(G.coco));
-    pruefe(G.w13.midText === '6.4' && G.w13.quelle === 'substrat', 'F14-6b Plan-Woche 13 (Rampe) nennt im Plan kein pH: Ziel des Substrats: ' + JSON.stringify(G.w13));
+    // (v1.5.417) Woche 13 und 15 stehen auf dem Blatt ohne pH; Patrick am 08.10.2026: die 6,25 aus Woche 12 gilt weiter.
+    pruefe(G.w13.midText === '6.25' && G.w13.quelle === 'plan', 'F14-6b Plan-Woche 13 (Rampe): pH 6,25 aus Woche 12 gilt weiter: ' + JSON.stringify(G.w13));
+    pruefe(G.w15.midText === '6.25' && G.w15.quelle === 'plan', 'F14-6e Plan-Woche 15 (IceFlush + Ernte): pH 6,25 statt Erd-Ziel 6,4: ' + JSON.stringify(G.w15));
     pruefe(G.bio.midText === '6.4' && G.bio.quelle === 'substrat', 'F14-6c Plan ohne pH-Zahlen (BioBizz Light) unverändert 6.4: ' + JSON.stringify(G.bio));
     pruefe(G.leer === '6.4', 'F14-6d phZielFuer(null, null) wirft nicht: ' + G.leer);
 

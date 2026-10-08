@@ -2,6 +2,17 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-08 — v1.5.417
+
+- **Rainbow, Woche 13 und 15: Das pH-Ziel sprang von 6,25 auf 6,4** (Patricks Entscheidung vom 08.10.2026, Rest von F14).
+  Seit v1.5.410 nimmt der Eintrag den Zulauf-pH aus der Plan-Woche. Auf Patricks Blatt v2.1 nennen Woche 13 (Rampe) und
+  Woche 15 (IceFlush und Ernte) aber keinen pH-Wert. Dort fiel das Ziel auf das Erd-Ziel 6,4 zurück, zwischen 6,25 in
+  Woche 12 und 6,3 beim Spülen.
+- **Jetzt** gilt in beiden Wochen die 6,25 aus Woche 12 weiter. Der Tipp von Woche 13 nennt sie wie die Wochen davor. Die
+  Spanne bleibt die des Substrats (`ANBAU.md` 4). In Woche 15 wird nicht gegossen, die Zahl gilt nur für einen Guss, der
+  dort trotzdem nötig wird. Die Tipps kommen live aus der Vorlage, also gilt das auch für schon gespeicherte Rainbow-Pläne.
+- Test: `test_runzwei.js` F14-6b (jetzt 6,25) und F14-6e (Woche 15), beide fallen auf v1.5.416 um.
+
 ## 2026-10-08 — v1.5.416
 
 - **Kalender mit zwei Gruppen: Die Zelle nennt beide Tag-Nummern** (Patricks Entscheidung vom 08.10.2026, Rest von F18).
