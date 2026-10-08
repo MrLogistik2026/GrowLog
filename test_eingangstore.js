@@ -300,6 +300,33 @@ async function eingeschleust(a) {
     }
   }
 
+  // G (v1.5.419) · CSV-Export: Eine Zelle, die mit = + @ - oder Tabulator beginnt, führt eine Tabellenkalkulation als Formel aus.
+  // Eine Notiz aus einer fremden Sicherung („=HYPERLINK(…)“) wäre beim Öffnen ein Link oder Befehl. Erwartet: vorangestelltes ',
+  // echte negative Zahlen und normale Texte unverändert.
+  {
+    const csv = await a.w.eval(`(async function(){ const vorher = S.cycles.slice(); const eVorher = JSON.stringify(S.entries);
+      S.cycles = []; S.entries = {};
+      const c = addCyc({ name: 'CSV', startDate: isoPlus(todayISO(), -20), seedType: 'auto', growType: 'indoor', medium: 'erde', potSize: 11,
+        plantCount: 1, startMethod: 'direct', fertPlanId: _planFuerVorlage('rainbow_auto') }, { still: true });
+      const tage = [isoPlus(todayISO(), -5), isoPlus(todayISO(), -4), isoPlus(todayISO(), -3), isoPlus(todayISO(), -2), isoPlus(todayISO(), -1)];
+      const notizen = ['=HYPERLINK("http://example.test","klick")', '+1+1', '@SUMME(1;2)', '-2+3', 'pH gemessen, alles gut'];
+      tage.forEach((d, i) => { S.entries[d] = { cycleData: { [c.id]: { notes: notizen[i], water: '500', ph: i === 4 ? '-2' : '6.3' } } }; });
+      let blob = null; const u = URL.createObjectURL, k = HTMLAnchorElement.prototype.click;
+      URL.createObjectURL = (b) => { blob = b; return 'blob:test'; }; HTMLAnchorElement.prototype.click = function () {};
+      try { exportCycleCSV(c.id); } finally { URL.createObjectURL = u; HTMLAnchorElement.prototype.click = k; }
+      const text = blob ? await new Promise((res) => { const r = new FileReader(); r.onload = () => res(String(r.result)); r.readAsText(blob); }) : '';
+      S.cycles = vorher; S.entries = JSON.parse(eVorher); saveS();
+      return text; })()`);
+    const zeilen = String(csv || '').replace(/^﻿/, '').split('\n');
+    pruefe(zeilen.length === 6, 'G0 Prüflage: CSV mit ' + zeilen.length + ' Zeilen statt 6: ' + String(csv).slice(0, 120));
+    const zelle = (z) => (zeilen[z] || '');
+    pruefe(/,"'=HYPERLINK\(""http:\/\/example\.test"",""klick""\)"$/.test(zelle(1)), 'G1 =HYPERLINK nicht entschärft: ' + zelle(1));
+    pruefe(/,'\+1\+1$/.test(zelle(2)), 'G2 +1+1 nicht entschärft: ' + zelle(2));
+    pruefe(/,'@SUMME\(1;2\)$/.test(zelle(3)), 'G3 @SUMME nicht entschärft: ' + zelle(3));
+    pruefe(/,'-2\+3$/.test(zelle(4)), 'G4 -2+3 nicht entschärft: ' + zelle(4));
+    pruefe(/,"pH gemessen, alles gut"$/.test(zelle(5)) && /,500,-2,/.test(zelle(5)), 'G5 normaler Text oder negative Zahl verändert: ' + zelle(5));
+  }
+
   pruefe(!a.errors.length, 'Skriptfehler: ' + a.errors.slice(0, 3).join(' | '));
   if (fehler.length) { console.log(`test_eingangstore: ${fehler.length} von ${n} Prüfungen rot`); fehler.forEach((f) => console.log('  ✗ ' + f)); process.exit(1); }
   console.log(`test_eingangstore: alle ${n} Prüfungen grün`);

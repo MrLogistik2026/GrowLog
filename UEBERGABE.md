@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.418** · index.html 2,56 MB · 781 Funktionen
+Stand: **v1.5.419** · index.html 2,56 MB · 781 Funktionen
 Zuletzt fortgeschrieben am 08.10.2026 (Nachtprüfung und Run 02 — Abschnitt 0o, „Stand Run 02"). Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
@@ -351,6 +351,7 @@ Speicher-Befunde sind in v1.5.340–344 behoben. Rohdaten: Workflow wf_63d754b1-
 - v1.5.416: Kalender bei zwei Gruppen nennt beide Tag-Nummern („T96 T90“), jede in ihrer Farbe, in fester Reihenfolge; fett die Gruppe mit der Aufgabe (Patricks Entscheidung 08.10.; ab drei Zyklen eine Nummer).
 - v1.5.417: Rainbow-Woche 13 und 15 nennen auf dem Blatt kein pH — dort gilt die 6,25 aus Woche 12 weiter statt des Erd-Ziels 6,4 (Patricks Entscheidung 08.10.).
 - v1.5.418: Befehlssuche, Lexikon-Bezug, „Meine Produkte“, Bericht und Kollage folgen der Gruppe mit stehenden Pflanzen (`_standardZyklus`); in den Einstellungen gelten Bericht und Kollage dem oben gewählten Zyklus und nennen ihn (F16, letzter Teil).
+- v1.5.419: CSV-Export mit Formelschutz — eine Zelle, die mit = + @ - oder Tabulator beginnt, bekommt ein vorangestelltes ' (Sicherheitsprüfung 07.10.).
 
 **Gegenprüfung von v1.5.364/365 (07.10.2026 nachts, Workflow wf_4cf817bf-629, drei Sonnet-Prüfer + Gegenprüfer).** Kein Fehlalarm
 in 33 App-Fassungen, allen Vorlagen und über 2800 Klicks; die schweren Befunde (unsichere Kopie zerstört den Hauptstand, Tropfen als
@@ -362,7 +363,7 @@ der Rohstand davor wird nicht aufgehoben (Befund S7).
 und Werkzeug liegen in `.claude/notizen/xss/` (`ergebnis.txt`, `journal.jsonl`, `harness/probe.js` + `run.js` — vergiftet je eine
 Feldgruppe und sucht in ~45 Bildschirmen eingeschleuste Elemente und Befehle; liest `index_head.html` neben sich, vorher
 `index.html` dorthin kopieren). v1.5.364 schließt Kennungen und Werte, v1.5.366 die Freitexte (auch im Bericht- und Kollage-Fenster und in Knopf-Befehlen mit
-Produktnamen). **Offen:** CSV-Export ohne Schutz vor Formelzeichen (= + - @); keine Content-Security-Policy (die ~290 Inline-Befehle
+Produktnamen). **Offen:** keine Content-Security-Policy (die ~290 Inline-Befehle
 verhindern eine strenge).
 
 **Bei der nächsten Bewertung** dieselbe Skala, dieselben Kategorie-IDs und dieselben Regeln aus `auftrag.md` nehmen und

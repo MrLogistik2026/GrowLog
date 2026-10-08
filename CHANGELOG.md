@@ -2,6 +2,16 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-08 — v1.5.419
+
+- **CSV-Export ohne Formelschutz** (Sicherheitsprüfung vom 07.10.2026, offener Punkt). Excel, LibreOffice und Google
+  Tabellen führen eine Zelle als Formel aus, wenn sie mit = + @ - oder einem Tabulator beginnt. Eine Tagebuch-Notiz wie
+  „=HYPERLINK(…)“ aus einer fremden oder präparierten Sicherung wäre beim Öffnen der CSV ein Link oder Befehl gewesen.
+  Notizen sind Freitext und werden an den Eingangstoren bewusst nicht umgeschrieben (v1.5.366).
+- **Jetzt** bekommt eine solche Zelle beim Export ein vorangestelltes ', damit bleibt sie Text. Eine echte negative Zahl
+  („-2“) und gewöhnliche Texte bleiben unverändert.
+- Test: `test_eingangstore.js` G0 bis 5 (G1 bis 4 fallen auf v1.5.418 um).
+
 ## 2026-10-08 — v1.5.418
 
 - **Befehlssuche, Lexikon, „Meine Produkte“, Bericht und Kollage nahmen den ersten laufenden Zyklus der Liste** (Run-02-Prüfung

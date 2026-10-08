@@ -4662,7 +4662,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.418';
+const APP_VERSION = 'v1.5.419';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -28404,9 +28404,13 @@ function exportCycleCSV(cId) {
   if (dates.length === 0) { toast('Keine Einträge zum Exportieren'); return; }
 
   // CSV-Felder mit Komma/"/Newline brauchen Quotes + verdoppelte Quotes
+  // (v1.5.419) Formelschutz: Excel, LibreOffice und Google Tabellen führen eine Zelle, die mit = + @ (auch - oder Tabulator)
+  // beginnt, als Formel aus — eine Notiz „=HYPERLINK(…)“ aus einer fremden Sicherung würde beim Öffnen zum Link oder Befehl.
+  // Ein vorangestelltes ' macht sie zu Text. Eine echte negative Zahl („-2“) bleibt unberührt.
   const csvField = (val) => {
     if (val === null || val === undefined) return '';
-    const s = String(val);
+    let s = String(val);
+    if (/^[=+@\t\r]/.test(s) || (s[0] === '-' && !/^-\d+([.,]\d+)?$/.test(s))) s = "'" + s;
     if (s.includes(',') || s.includes('"') || s.includes('\n')) {
       return '"' + s.replace(/"/g, '""') + '"';
     }
