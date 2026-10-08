@@ -710,6 +710,12 @@ async function starte() {
     pruefe(r.einst === 'Gruppe A' && r.fahrplan === 'Gruppe A', `F16-1 nach dem Start: Einstellungen „${r.einst}", Gieß-Fahrplan „${r.fahrplan}" (beide: die führende Gruppe „Gruppe A", nicht Run alt)`);
     pruefe(r.licht < 600, `F16-2 Licht-Ziel der Tipps richtet sich nach dem abgeschlossenen Zyklus (PPFD ab ${r.licht}, Blüte-Ziel) statt nach der Gruppe in der Anzucht`);
     pruefe(r.nachLoeschen === 'Gruppe A', `F16-9 nach dem Löschen wählt die Einstellungen „${r.nachLoeschen}" statt der führenden Gruppe`);
+    // (v1.5.413)
+    pruefe(/✓ Zyklus abgeschlossen/.test(r.abgeschl.text) && /Fertig seit \d\d\.\d\d\.\d{4}/.test(r.abgeschl.text) && !/pausiert|automatisch aktiviert|Deaktiviert/.test(r.abgeschl.text),
+      `F16-3 abgeschlossener Zyklus: ${r.abgeschl.text}`);
+    pruefe(r.abgeschl.schalter === false, 'F16-4 am abgeschlossenen Zyklus steht ein Schalter „aktiv" (er würde active setzen, archived bliebe: „Aktiver Grow" bei geschlossenem Zyklus)');
+    pruefe(/○ Zyklus pausiert/.test(r.gestoppt.text) && /Mit dem Schalter läuft er wieder/.test(r.gestoppt.text) && !/automatisch aktiviert/.test(r.gestoppt.text) && r.gestoppt.schalter === true,
+      `F16-5 gestoppter Zyklus: Schalter ${r.gestoppt.schalter}, ${r.gestoppt.text}`);
     // F16-WEITER
   }
 

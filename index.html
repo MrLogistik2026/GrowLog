@@ -4659,7 +4659,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.412';
+const APP_VERSION = 'v1.5.413';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -24302,7 +24302,7 @@ function renderSet() {
 
 
           <!-- GRUPPE: Zeitplan (Phasendauern + Gießintervall zusammengelegt, Mai 2026) -->
-          ${_setAccordionHeader('cyc_timing', '📅', 'Zeitplan', `${sel.active ? '● Aktiver Grow' : '○ pausiert'}${d.startDate ? ' · Start ' + d.startDate.split('-').reverse().join('.') : ''}`)}
+          ${_setAccordionHeader('cyc_timing', '📅', 'Zeitplan', `${sel.archived ? '✓ abgeschlossen' : sel.active ? '● Aktiver Grow' : '○ pausiert'}${d.startDate ? ' · Start ' + d.startDate.split('-').reverse().join('.') : ''}`)}
           ${S._setUI.cyc_timing ? `
           <div style="background:${sel.active ? cl.dk : 'var(--surface)'};border:0.5px solid ${sel.active ? cl.hex+'44' : 'var(--border)'};border-radius:12px;padding:12px 14px;margin-top:8px">
             <div class="inp-wrap" style="margin-bottom:10px">
@@ -24319,11 +24319,12 @@ function renderSet() {
             <div style="display:flex;align-items:center;justify-content:space-between">
               <div>
                 <div style="font-size:13px;font-weight:600;color:${sel.active ? cl.hex : 'var(--text-sub)'}">
-                  ${sel.active ? '● Aktiver Grow' : '○ Grow pausiert'}
+                  ${/* (v1.5.413, F16) abgeschlossen/gestoppt statt „pausiert … wird beim Speichern automatisch aktiviert" */ ''}${sel.archived ? '✓ Zyklus abgeschlossen' : sel.active ? '● Aktiver Grow' : '○ Zyklus pausiert'}
                 </div>
-                ${!sel.active ? '<div style="font-size:10px;color:var(--text-muted);margin-top:2px">Deaktiviert — wird beim Speichern automatisch aktiviert</div>' : ''}
+                ${sel.archived ? `<div style="font-size:10px;color:var(--text-muted);margin-top:2px;line-height:1.5">${sel.endDate ? 'Fertig seit ' + sel.endDate.split('-').reverse().join('.') + '. ' : ''}Startseite, Kalender-Planung und Gieß-Fahrplan führen ihn nicht mehr; Einträge, Fotos und Bilanz bleiben. Zum Weiterführen unten „Abschluss aufheben“ tippen.</div>`
+                  : !sel.active ? '<div style="font-size:10px;color:var(--text-muted);margin-top:2px;line-height:1.5">Gestoppt — Startseite, Kalender-Planung und Gieß-Fahrplan führen ihn nicht. Mit dem Schalter läuft er wieder.</div>' : ''}
               </div>
-              <label class="sw"><input type="checkbox" ${sel.active ? 'checked' : ''} onchange="_setScrollY=document.getElementById('set-body').scrollTop;toggleAct('${sel.id}',this.checked)"/><span class="sl"></span></label>
+              ${sel.archived ? '' : `<label class="sw"><input type="checkbox" ${sel.active ? 'checked' : ''} onchange="_setScrollY=document.getElementById('set-body').scrollTop;toggleAct('${sel.id}',this.checked)"/><span class="sl"></span></label>`}
             </div>
           </div>
           ` : ''}

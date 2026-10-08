@@ -2,6 +2,21 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-08 — v1.5.413
+
+- **Der Zeitplan in den Einstellungen sagte bei einem abgeschlossenen Zyklus „○ Grow pausiert — Deaktiviert — wird beim
+  Speichern automatisch aktiviert“** (Run-02-Prüfung vom 07.10.2026, F16, Teil B). Beides stimmte nicht: Der Zyklus war
+  abgeschlossen (`archived`, `endDate` seit v1.5.308), und Sichern aktivierte ihn nicht (gemessen). Bei einem gestoppten Zyklus
+  war der Satz ebenso falsch. Der Schalter daneben machte aus einem abgeschlossenen Zyklus „● Aktiver Grow“, obwohl er
+  abgeschlossen blieb und auf keinem Bildschirm mehr erschien.
+- **Jetzt** steht da:
+  - **Abgeschlossen:** „✓ Zyklus abgeschlossen — Fertig seit TT.MM.JJJJ. Startseite, Kalender-Planung und Gieß-Fahrplan führen
+    ihn nicht mehr; Einträge, Fotos und Bilanz bleiben. Zum Weiterführen unten ‚Abschluss aufheben‘ tippen“. Es gibt keinen
+    Schalter; der Weg zurück ist der vorhandene Knopf.
+  - **Gestoppt:** „○ Zyklus pausiert — Gestoppt … Mit dem Schalter läuft er wieder“.
+- Test: `test_runzwei.js` F16-3 bis 5 (3 Prüfungen; alle fallen auf v1.5.412 um).
+
+
 ## 2026-10-08 — v1.5.412
 
 - **Nach dem Neustart öffneten die Einstellungen den abgeschlossenen Zyklus** (Run-02-Prüfung vom 07.10.2026, F16). Die Wahl
