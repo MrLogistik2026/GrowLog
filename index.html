@@ -4659,7 +4659,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.413';
+const APP_VERSION = 'v1.5.414';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -25139,10 +25139,9 @@ async function saveDraft() {
   const c = S.cycles.find(x => x.id === selId);
   if (!c) return;
 
-  // Auto-activate if not yet active and has a startDate in draft
-  if (!draft.active && draft.startDate) {
-    draft.active = true;
-  }
+  // (v1.5.414, F16) Hier stand eine „Auto-Aktivierung" (draft.active = true). Seit v1.5.86 schreibt Sichern nur angefasste Felder —
+  // active wird nie angefasst, die Zeile aktivierte also nichts, ließ den Entwurf aber von der Wirklichkeit abweichen:
+  // „Änderungen sichern" blieb bei jedem pausierten oder abgeschlossenen Zyklus für immer stehen.
   // If active but no startDate, set today
   if (draft.active && !draft.startDate) {
     draft.startDate = todayISO();

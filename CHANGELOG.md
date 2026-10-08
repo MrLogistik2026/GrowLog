@@ -2,6 +2,18 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-08 — v1.5.414
+
+- **Nach „Sichern“ blieb bei einem pausierten oder abgeschlossenen Zyklus „💾 Änderungen sichern“ stehen** (Run-02-Prüfung vom
+  07.10.2026, F16, Teil C). `saveDraft` setzte im Entwurf `active = true` („Auto-Aktivierung“). Seit v1.5.86 schreibt Sichern
+  aber nur Felder, die man angefasst hat. Die Zeile aktivierte deshalb nie etwas, ließ den Entwurf aber dauerhaft von der
+  Wirklichkeit abweichen. Die App hielt ihn für ungesichert, und der falsche Satz aus v1.5.413 stützte sich auf sie.
+- **Jetzt** ist die tote Zeile weg. Nach dem Sichern steht „✓ Alle Änderungen gespeichert“. Ein pausierter Zyklus wird beim
+  Sichern weiter nicht aktiviert, wie bisher auch.
+- Test: `test_runzwei.js` F16-6 bis 8 (3 Prüfungen; F16-7 fällt auf v1.5.413 um, 6 und 8 sichern ab, dass Eingabe und Status
+  erhalten bleiben).
+
+
 ## 2026-10-08 — v1.5.413
 
 - **Der Zeitplan in den Einstellungen sagte bei einem abgeschlossenen Zyklus „○ Grow pausiert — Deaktiviert — wird beim

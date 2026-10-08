@@ -716,6 +716,11 @@ async function starte() {
     pruefe(r.abgeschl.schalter === false, 'F16-4 am abgeschlossenen Zyklus steht ein Schalter „aktiv" (er würde active setzen, archived bliebe: „Aktiver Grow" bei geschlossenem Zyklus)');
     pruefe(/○ Zyklus pausiert/.test(r.gestoppt.text) && /Mit dem Schalter läuft er wieder/.test(r.gestoppt.text) && !/automatisch aktiviert/.test(r.gestoppt.text) && r.gestoppt.schalter === true,
       `F16-5 gestoppter Zyklus: Schalter ${r.gestoppt.schalter}, ${r.gestoppt.text}`);
+    // (v1.5.414)
+    pruefe(/Änderungen sichern/.test(r.vorSichern), `F16-6 Prüflage: vor dem Sichern fehlt der Knopf (${r.vorSichern})`);
+    pruefe(/Alle Änderungen gespeichert/.test(r.nachSichern) && !/Änderungen sichern/.test(r.nachSichern), `F16-7 nach dem Sichern bleibt „Änderungen sichern" stehen: ${r.nachSichern}`);
+    pruefe(r.zustand.active === false && r.zustand.archived === true && r.zustand.endDate && r.zustand.pot === 12,
+      `F16-8 Sichern ändert Status oder verliert die Eingabe: ${JSON.stringify(r.zustand)}`);
     // F16-WEITER
   }
 
