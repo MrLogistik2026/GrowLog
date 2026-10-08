@@ -2,6 +2,16 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-08 — v1.5.430
+
+- **Ein Satz aus v1.5.420 ließ den Wächter in `test_lexikon.js` umfallen** (Gesamtlauf vom 08.10.2026). Im neuen Eintrag
+  „Lichtabstand“ stand „die Ränder des Zelts liegen typisch 30–50 % darunter“. Die Aussage stammt aus `ANBAU.md` 8 und
+  stimmt. Der Wächter sucht aber seit v1.5.248 nach „30–50 % darunter“, der alten Haltung zu Düngermengen unter der
+  Flaschenangabe. Der Satz ist deshalb umformuliert, der Wächter bleibt, wie er ist.
+- **Jetzt:** „an den Rändern des Zelts kommen typisch 30–50 % weniger an“. Dieselbe Lehre wie bei v1.5.400: Wer Texte ändert,
+  lässt die Quelltext-Wächter laufen, bevor er hochlädt. Hier ist das vor dem Hochladen passiert, deshalb ging 420 nie rot raus.
+- Test: `test_lexikon.js` (rot auf v1.5.420–429, grün auf v1.5.430).
+
 ## 2026-10-08 — v1.5.429
 
 - **Startseite, Anzucht-Karte: „Dünger laut Plan“ an einem Wasser-Tag** (Topping-Prüfung, T5). Am Topping-Tag eines
