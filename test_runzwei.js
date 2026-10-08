@@ -667,6 +667,54 @@ async function starte() {
     pruefe(R.iso && R.rplatz === '6.0' && R.rnach === '6.01', `F14b-2 Coco, leeres Ablauf-pH-Feld (Platzhalter ${R.rplatz}): + ergibt ${R.rnach} statt 6.01`);
   }
 
+  // F16 (v1.5.412–415) · Nach dem Start gilt in den Einstellungen dieselbe Gruppe wie im Gieß-Fahrplan; ein abgeschlossener oder
+  // gestoppter Zyklus sagt, was er ist (statt „pausiert … wird beim Speichern automatisch aktiviert"), und Sichern räumt auf
+  {
+    const r = JSON.parse(await a.E(`(async function(){ const vorher = S.cycles.slice(); const eVorher = JSON.stringify(S.entries); S.beginnerMode = false;
+      const heute = todayISO(); const pid = S.cycles[0].fertPlanId; S.cycles = []; S.entries = {};
+      const neu = (name, tage) => addCyc({ name, startDate: isoPlus(heute, -tage), seedType: 'auto', growType: 'indoor', medium: 'erde', potSize: 11,
+        plantCount: 3, startMethod: 'direct', fertPlanId: pid }, { still: true });
+      const alt = neu('Run alt', 140); alt.archived = true; alt.active = false; alt.endDate = isoPlus(heute, -30);   // wie nach „Zyklus abschließen"
+      const cur = neu('Run Curing', 100);                                                                              // geerntet, noch nicht abgeschlossen: aktiv, aber keine stehende Pflanze
+      for (let n = 80; n < 260; n++) { cur.startDate = isoPlus(heute, -n); const p = phase(heute, cur); if (p && !_KLIMA_RANG[p.ph] && !p.ernteOffen) break; }
+      const ga = neu('Gruppe A', 20); const gb = neu('Gruppe B', 8);                                                   // B zuletzt angelegt, A führt
+      const gs = neu('Gestoppt', 30); gs.active = false;                                                               // wie nach „stoppen"
+      saveS();
+      const text = () => document.getElementById('set-body').textContent.replace(/\\s+/g, ' ');
+      const schalter = (id) => [...document.querySelectorAll('#set-body input[type=checkbox]')].some(x => (x.getAttribute('onchange') || '').includes("toggleAct('" + id + "'"));
+      const zeige = (id) => { selId = id; draft = {}; draftTouched = {}; S._setUI = S._setUI || {}; S._setUI.cyc_timing = true; goTo('set'); renderSet(); };
+      const out = {};
+      // 1 · Neustart: nichts gewählt (selId und die Wahl im Fahrplan werden nicht gespeichert)
+      selId = null; draft = {}; draftTouched = {}; _gussplanZyklusId = null; S._setUI = S._setUI || {}; S._setUI.cyc_timing = true;
+      goTo('set'); renderSet();
+      out.einst = S.cycles.find(c => c.id === selId).name; out.fahrplan = gussplanActiveCycle().name;
+      out.licht = _ppfdTargets(18).ppfd[0];                      // beide Gruppen sind in der Anzucht: Blüte-Ziel wäre 600
+      selId = null; out.lichtOhneWahl = _ppfdTargets(18).ppfd[0];        // nur mit Teil D: ohne Wahl nicht der erste aktive (Curing)
+      selId = alt.id; out.lichtAbgeschlossen = _ppfdTargets(18).ppfd[0]; // nur mit Teil D: Einstellungen auf dem abgeschlossenen Zyklus
+      selId = ga.id; out.curPhase = (phase(heute, cur) || {}).ph || null;
+      // 2 · Der abgeschlossene Zyklus
+      zeige(alt.id); const t1 = text(); out.abgeschl = { text: t1.slice(t1.indexOf('Zeitplan'), t1.indexOf('Zeitplan') + 420), schalter: schalter(alt.id) };
+      // 3 · Der gestoppte Zyklus
+      zeige(gs.id); const t2 = text(); out.gestoppt = { text: t2.slice(t2.indexOf('Zeitplan'), t2.indexOf('Zeitplan') + 420), schalter: schalter(gs.id) };
+      // 4 · Sichern auf dem abgeschlossenen Zyklus: bleibt abgeschlossen, und „Änderungen sichern" verschwindet
+      zeige(alt.id); dd('potSize', 12); out.vorSichern = document.getElementById('cyc-save-zone').textContent.replace(/\\s+/g, ' ').trim();
+      await saveDraft();
+      out.nachSichern = document.getElementById('cyc-save-zone').textContent.replace(/\\s+/g, ' ').trim();
+      out.zustand = { active: alt.active, archived: alt.archived, endDate: alt.endDate, pot: alt.potSize };
+      // 5 · Einen Zyklus löschen: die Wahl fällt nicht auf den ersten der Liste (den abgeschlossenen), sondern auf die führende Gruppe
+      selId = gs.id; draft = {}; draftTouched = {};
+      await delCyc(gs.id);
+      out.nachLoeschen = S.cycles.find(c => c.id === selId) ? S.cycles.find(c => c.id === selId).name : null;
+      selId = null; draft = {}; draftTouched = {}; _gussplanZyklusId = null; S.cycles = vorher; S.entries = JSON.parse(eVorher); saveS();
+      return JSON.stringify(out); })()`));
+    pruefe(r.einst === 'Gruppe A' && r.fahrplan === 'Gruppe A', `F16-1 nach dem Start: Einstellungen „${r.einst}", Gieß-Fahrplan „${r.fahrplan}" (beide: die führende Gruppe „Gruppe A", nicht Run alt)`);
+    pruefe(r.licht < 600, `F16-2 Licht-Ziel der Tipps richtet sich nach dem abgeschlossenen Zyklus (PPFD ab ${r.licht}, Blüte-Ziel) statt nach der Gruppe in der Anzucht`);
+    pruefe(r.nachLoeschen === 'Gruppe A', `F16-9 nach dem Löschen wählt die Einstellungen „${r.nachLoeschen}" statt der führenden Gruppe`);
+    // F16-WEITER
+  }
+
+
+
   pruefe(!a.errors.length, 'Skriptfehler: ' + a.errors.slice(0, 3).join(' | '));
   if (fehler.length) { console.log(`test_runzwei: ${fehler.length} von ${n} Prüfungen rot`); fehler.forEach((f) => console.log('  ✗ ' + f)); process.exit(1); }
   console.log(`test_runzwei: alle ${n} Prüfungen grün`);

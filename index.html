@@ -4659,7 +4659,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.411';
+const APP_VERSION = 'v1.5.412';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -21402,7 +21402,7 @@ async function stopC(cId, mode = 'default') {
       }
     });
     if (typeof clearPlanNotesForCycle === 'function') clearPlanNotesForCycle(cId);
-    if (selId === cId) { selId = S.cycles[0]?.id || null; draft = {}; draftTouched = {}; }
+    if (selId === cId) { selId = null; draft = {}; draftTouched = {}; }   // (v1.5.412, F16) null = Standardwahl, siehe _standardZyklus
     saveS();
     renderCal();
     toast(`${sym(c)} verworfen`);
@@ -21983,6 +21983,18 @@ function gussplanActiveCycle() {
   if (gewaehlt && (!wachsend.length || wachsend.includes(gewaehlt))) return gewaehlt;
   return (wachsend.length ? _fuehrenderZyklus(wachsend, heute) : null)
       || cs[0] || null;
+}
+/**
+ * (v1.5.412, F16) Welcher Zyklus gilt, solange noch keiner gewählt ist — beim ersten Öffnen der Einstellungen nach dem App-Start
+ * (selId wird nicht gespeichert). Vorher der erste der Liste: nach dem Start fast immer ein abgeschlossener Run 01, während
+ * der Gieß-Fahrplan (seit v1.5.305) schon die wachsende Gruppe zeigte — und das Licht-Ziel der Tipps richtete sich nach dessen
+ * Phase (null → „Blüte 600–900" für Sämlinge). Jetzt wie im Fahrplan: der am weitesten entwickelte mit stehenden Pflanzen
+ * (_fuehrenderZyklus), sonst der erste laufende, sonst der erste der Liste.
+ */
+function _standardZyklus() {
+  const heute = todayISO();
+  const wachsend = _wachsendeZyklen(active(), heute);
+  return (wachsend.length ? _fuehrenderZyklus(wachsend, heute) : null) || active()[0] || (S.cycles || [])[0] || null;
 }
 /** (v1.5.305) Bei mehreren Zyklen: welcher gemeint ist, und ein Tipp wechselt. */
 function _gussplanZyklusWahl(c) {
@@ -23841,7 +23853,7 @@ function renderSet() {
   if (_autoScrollEl && _setScrollY === null) {
     _setScrollY = _autoScrollEl.scrollTop;
   }
-  if (!selId && S.cycles.length > 0) selId = S.cycles[0].id;
+  if (!selId && S.cycles.length > 0) selId = (_standardZyklus() || S.cycles[0]).id;   // (v1.5.412, F16) nicht der erste der Liste
   const sel = S.cycles.find(c => c.id === selId);
   // (v1.5.86) Neuer Zyklus im Entwurf → auch die Merkliste der angefassten Felder leeren.
   if (sel && draft.id !== sel.id) { draft = { ...sel }; draftTouched = {}; }
@@ -28139,7 +28151,7 @@ async function delCyc(id) {
   });
   // Plan-Notizen für diesen Zyklus auch löschen
   clearPlanNotesForCycle(id);
-  selId = S.cycles[0]?.id || null;
+  selId = null;   // (v1.5.412, F16) Standardwahl statt „erster der Liste" (_standardZyklus)
   draft = {}; draftTouched = {};
   saveS();
   renderSet();

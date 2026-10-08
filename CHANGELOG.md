@@ -2,6 +2,25 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-08 — v1.5.412
+
+- **Nach dem Neustart öffneten die Einstellungen den abgeschlossenen Zyklus** (Run-02-Prüfung vom 07.10.2026, F16). Die Wahl
+  in den Einstellungen (`selId`) wird nicht gespeichert und fiel beim Start auf den ersten Zyklus der Liste, bei Patrick den
+  abgeschlossenen Run 01. Der Gieß-Fahrplan zeigte da schon die wachsende Gruppe (seit v1.5.305). Dasselbe passierte nach
+  dem Löschen eines Zyklus und nach dem Verwerfen eines frisch angelegten. Folgefehler: Das Licht-Ziel der Tipps richtete sich
+  nach dem abgeschlossenen Zyklus und zeigte Sämlingen das Blüte-Ziel 600–900.
+- **Jetzt** gilt ohne Wahl dieselbe Regel wie im Fahrplan (`_standardZyklus`):
+  1. die am weitesten entwickelte Gruppe mit stehenden Pflanzen (`_fuehrenderZyklus`),
+  2. sonst der erste laufende Zyklus,
+  3. sonst der erste der Liste.
+
+  Löschen und Verwerfen setzen die Wahl zurück, statt den ersten der Liste zu nehmen. Wer einen Zyklus antippt oder neu anlegt,
+  behält ihn wie bisher.
+- Vorgeschlagen und gemessen hat das ein Prüfer (Sonnet) auf v1.5.403, mit echtem Neustart in jsdom.
+- Test: `test_runzwei.js` F16-1, 2 und 9 (3 Prüfungen; alle fallen auf v1.5.411 um). In `test_zyklus2.js` hielt H0 den
+  alten Zustand als Vorbedingung fest („nach dem Start ist Run 01 gewählt“); H0 prüft jetzt die führende Gruppe.
+
+
 ## 2026-10-08 — v1.5.411
 
 - **Die Knöpfe − und + am pH-Feld starteten bei leerem Feld fest bei 6,4** (Nebenfund des F14-Prüfers). Das Feld zeigte das Ziel

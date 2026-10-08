@@ -342,7 +342,7 @@ function pruef(name, bedingung, info) {
     };
     const a = await load(neu);
     const text = () => { a.E("goTo('gussplan')"); return (a.window.document.getElementById('gussplan-body')?.textContent || '').replace(/\s+/g, ' '); };
-    pruef('H0 Lage: nach dem Start ist in den Einstellungen Run 01 gewählt', a.E('selId === null || selId === S.cycles[0].id'));
+    pruef('H0 Lage: nach dem Start gilt in den Einstellungen die führende Gruppe, nicht Run 01 im Curing', a.E("selId === null || selId === 'z_Anesia'"));   // (v1.5.412)
     const t1 = text();
     pruef('H1 der Fahrplan zeigt die Anesia-Gruppe, nicht Run 01 im Curing', a.E('gussplanActiveCycle().name') === 'Anesia' && !/Curing läuft/.test(t1), t1.slice(0, 160));
     pruef('H2 und nennt die Zyklen zum Wechseln', /Anesia/.test(t1) && /Mimosa/.test(t1) && /Sensi Amnesia/.test(t1));
