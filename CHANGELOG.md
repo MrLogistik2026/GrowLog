@@ -2,6 +2,20 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-08 — v1.5.390
+
+- **Der Lexikon-Eintrag „Drain-Kontrolle“ widersprach sich selbst** (beim Bau von v1.5.389 gefunden). Oben stand „15–20 %
+  des Gießwassers“, darunter „10–20 % der Gieß-Menge … Bei 1 L Guss → ~100–200 ml Drain“. Nach `ANBAU.md` 5.1 ist das Ziel
+  15–20 %; unter 10 % ist eine Drain-Messung gar keine.
+- **Jetzt** kommen beide Zahlen aus `DRAIN_ZIEL` (1 L → ~150–200 ml). Dazu stehen zwei Sätze aus `ANBAU.md` darin:
+  - Drain kommt erst, wenn der Topf voll ist (1.1).
+  - Stofftöpfe und Air-Pots laufen auch seitlich ab; man fängt den Drain in einer breiten Wanne auf (5.1).
+
+  Die Drain-Messung nennt die Regel aus `T.drainRegelKurz`, mit der Bedingung „bei mindestens 15 % Drain“, statt „zeigt den
+  echten Zustand im Substrat“ ohne Bedingung.
+- Test: `test_drainzieltexte.js` Abschnitt C (5 Prüfungen; 4 fallen auf v1.5.389 um).
+
+
 ## 2026-10-08 — v1.5.389
 
 - **Die App versprach Drain, der bei der vorgeschlagenen Menge nicht entstehen kann** (Run-02-Prüfung vom 07.10.2026, F11).

@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.389** · index.html 2,56 MB · 781 Funktionen
+Stand: **v1.5.390** · index.html 2,56 MB · 781 Funktionen
 Zuletzt fortgeschrieben am 07.10.2026 (Nachtprüfung und Run 02 — Abschnitt 0o, „Stand Run 02"). Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
@@ -325,6 +325,7 @@ Speicher-Befunde sind in v1.5.340–344 behoben. Rohdaten: Workflow wf_63d754b1-
 - v1.5.387: Der erste Guss nach einem eingetragenen FIM ist im Rainbow-Plan von selbst „Nur Wasser“ (F02, Patricks Entscheidung; `_fimWassergussVon`, Kennzeichen `fimWasserguss` an der Vorlage).
 - v1.5.388: Zwei Gruppen im Zelt — der Eintrag nennt unter „Bewertet nach …“, was dieselbe Luft für die andere Gruppe heißt: Sämling unter 40 % (⚠), Sämlings-Ziel mit Haube als Ausgleich (💡), strengerer Deckel (F10, `_klimaAndereGruppen`).
 - v1.5.389: Drain-Menge nur, wo sie entstehen kann — vorher „~1100 ml → 165–220 ml Drain“ in einen Topf, der am Gießpunkt ~3650 ml aufnimmt (F11, `_drainZuErwarten`, ANBAU.md 1.1).
+- v1.5.390: Lexikon „Drain-Kontrolle“ nennt das Ziel aus `DRAIN_ZIEL` (vorher oben 15–20, unten 10–20 %) und wann Drain überhaupt kommt.
 
 **Gegenprüfung von v1.5.364/365 (07.10.2026 nachts, Workflow wf_4cf817bf-629, drei Sonnet-Prüfer + Gegenprüfer).** Kein Fehlalarm
 in 33 App-Fassungen, allen Vorlagen und über 2800 Klicks; die schweren Befunde (unsichere Kopie zerstört den Hauptstand, Tropfen als

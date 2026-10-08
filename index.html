@@ -4621,7 +4621,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.389';
+const APP_VERSION = 'v1.5.390';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -36369,10 +36369,11 @@ const LEXIKON = [
       mechanism: 'Leitungswasser enthält regional unterschiedlich viele gelöste Mineralien — primär <b>Calcium- und Magnesium-Carbonat (Kalk)</b>. Das ist die <b>Wasserhärte</b>.<br><br><b>Hartes Wasser (>15 °dH):</b> Hohe Carbonat-Puffer-Wirkung. pH-Down wird „aufgefressen", pH driftet zurück nach oben → Lockouts.<br><b>Weiches Wasser (&lt;8 °dH):</b> Kaum Puffer. pH kippt leicht in beide Richtungen. CalMag-Mangel fast garantiert.',
       practice: '<b>Wasserhärte checken:</b> Bei Wasserwerk-Website oder mit Teststreifen (Aquaristik).<br><br><b>Lösungen:</b><br>• Hartes Wasser: 2-3 Tage abstehen lassen (Kalk fällt teilweise aus), etwas mehr pH-Down<br>• Weiches Wasser: CalMag immer dazu<br>• Premium: <b>Umkehrosmose (RO)</b> — filtert 99 % aller Mineralien raus, EC ~0.0. Perfekte „leere Leinwand".<br><br><b>Bei RO:</b> CalMag ist Pflicht! Ohne → sofortiger Ca/Mg-Mangel, weil nichts mehr drin ist.',
       pitfall: 'Viele Grower kaufen RO-Anlage ohne zu verstehen dass dann das komplette Dünger-Regime umgestellt werden muss. Bei weichem Wasser reicht oft Leitungswasser + CalMag — RO-Anlage ist 300-600 € die oft unnötig ausgegeben sind.' },
+    // (v1.5.390) Ziel aus DRAIN_ZIEL — vorher sagte die Kurzfassung 15–20 %, die Praxis darunter 10–20 % („1 L → 100–200 ml").
     { t: 'Drain-Kontrolle',
-      brief: '15-20 % des Gießwassers soll unten ablaufen. Der wichtigste Hebel gegen Versalzung.',
+      brief: DRAIN_ZIEL.min + '–' + DRAIN_ZIEL.max + ' % des Gießwassers soll unten ablaufen. Der wichtigste Hebel gegen Versalzung, wenn mit jedem Guss gedüngt wird.',
       mechanism: 'Bei jedem Guss sammeln sich <b>ungenutzte Salze</b> im Substrat — was die Pflanze nicht aufnimmt, bleibt drin. Durch das überschüssige Drain-Wasser werden diese Salze <b>aktiv ausgewaschen</b>. Ohne Drain würden sie sich ansammeln bis der EC-Wert im Topf gefährlich steigt (Nutrient Burn).',
-      practice: '<b>Menge:</b> 10-20 % der Gieß-Menge soll unten als Drain austreten. Bei 1 L Guss → ~100-200 ml Drain.<br><br><b>Drain-Wasser sofort entsorgen</b>, NIEMALS zurück in die Dünger-Kanne — es ist Salz-angereichert.<br><br><b>Runoff-Messung</b> (pH und EC) am Drain zeigt den echten Zustand im Substrat — oft erstes Warnsignal vor sichtbaren Mangel-Symptomen.',
+      practice: '<b>Menge:</b> ' + DRAIN_ZIEL.min + '–' + DRAIN_ZIEL.max + ' % der Gießmenge soll unten als Drain austreten. Bei 1 L Guss sind das ~' + (10 * DRAIN_ZIEL.min) + '–' + (10 * DRAIN_ZIEL.max) + ' ml.<br><br><b>Drain kommt erst, wenn der Topf voll ist:</b> In den Topf passt, was seit dem letzten Auffüllen fehlt — erst darüber läuft etwas ab. Ein Topf, der seit dem Start nie ganz durchgegossen war, gibt bei einer kleinen Menge keinen Drain. <b>Stofftöpfe und Air-Pots laufen auch seitlich ab:</b> in einer breiten Wanne auffangen, sonst misst du zu wenig.<br><br><b>Drain-Wasser sofort entsorgen</b>, NIEMALS zurück in die Dünger-Kanne — es ist Salz-angereichert.<br><br><b>Drain-Messung</b> (pH und EC) zeigt den Zustand im Substrat — aber nur mit genug Durchfluss. Drain-EC: ' + T.drainRegelKurz() + '. Bei wenigen Tropfen misst du nur den Rand des Topfs.',
       pitfall: 'Untersetzer die vollaufen und NICHT geleert werden → Wurzeln saugen das Salz-angereicherte Wasser zurück → doppelt schlimm. Immer Drain komplett entsorgen, Topf eventuell kurz hochstellen bis abgetropft.' },
     { t: 'Umtopfen',
       brief: 'Wann, wie, ob überhaupt. Bei Automatics fast immer ein Fehler — bei photoperiodischen Pflanzen ein Standard-Werkzeug bei korrektem Timing.',

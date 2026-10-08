@@ -87,6 +87,20 @@ function pruef(name, bedingung, info) {
     pruef(`Eintrag, Gießanleitung: „${ziel} unten ablaufen", passend zur eigenen Drain-Zeile`, g.includes(`bis ${ziel} unten ablaufen`) && eintrag.includes(`${ziel} Drain bei jedem Guss`), g);   // (v1.5.201) Zeile aus DRAIN_ZIEL
   }
 
+  console.log('\nC - Lexikon „Drain-Kontrolle" (v1.5.390)');
+  {
+    const e = JSON.parse(E(`JSON.stringify(LEXIKON.flatMap(k => k.items || []).find(x => x.t === 'Drain-Kontrolle') || null)`));
+    pruef('Eintrag vorhanden', !!e);
+    if (e) {
+      pruef(`Kurzfassung nennt ${ziel}`, e.brief.includes(ziel), e.brief);
+      pruef(`Praxis nennt ${ziel}, kein „10–20 %"`, e.practice.includes(ziel) && !/10\s?[–-]\s?20\s?%/.test(e.practice), e.practice.slice(0, 120));
+      pruef('Praxis sagt, dass Drain erst bei vollem Topf kommt (ANBAU.md 1.1)', /Drain kommt erst, wenn der Topf voll ist/.test(e.practice));
+    }
+    const zeilen = fs.readFileSync(path.join(__dirname, 'app.js'), 'utf8').split(/\r?\n/)
+      .map((z, i) => ({ nr: i + 1, z })).filter(x => !/^\s*(\/\/|\*|\/\*)/.test(x.z) && /10\s?[–-]\s?20\s?% der Gie(ß|ss)/.test(x.z));
+    pruef('Kein „10–20 % der Gießmenge" im Quelltext', zeilen.length === 0, zeilen.map(x => 'Zeile ' + x.nr).join(', '));
+  }
+
   console.log(`\nErgebnis: ${ok} OK, ${fail} Fehler`);
   process.exit(fail ? 1 : 0);
 })();
