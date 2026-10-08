@@ -4659,7 +4659,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.414';
+const APP_VERSION = 'v1.5.415';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -40405,7 +40405,10 @@ function _ppfdTargets(stunden) {
   // (v1.5.404) Ziel aus LICHT_ZIEL (ANBAU.md 8): der Sämling über klimaStufe (erste 10 Tage), die übrige Anzucht und Vegi als
   // Wachstum. Die Tageslichtsumme aus den eingestellten Stunden statt einer eigenen Tabelle.
   let key = 'bluete';
-  const c = (S.cycles || []).find(x => x.id === selId) || (S.cycles || []).find(x => x.active);
+  // (v1.5.415, F16) Der gewählte Zyklus nur, solange seine Pflanzen stehen; sonst die führende Gruppe (_standardZyklus). Vorher der erste
+  // aktive: Run 01 im Curing oder ein geöffneter abgeschlossener Zyklus ergab „Blüte 600–900" für Sämlinge in der Anzucht.
+  const gew = (S.cycles || []).find(x => x.id === selId);
+  const c = (gew && _wachsendeZyklen([gew], todayISO()).length) ? gew : _standardZyklus();
   if (c) {
     try {
       const p = phase(todayISO(), c);

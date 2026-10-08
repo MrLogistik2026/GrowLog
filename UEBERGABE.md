@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.414** · index.html 2,56 MB · 781 Funktionen
+Stand: **v1.5.415** · index.html 2,56 MB · 781 Funktionen
 Zuletzt fortgeschrieben am 07.10.2026 (Nachtprüfung und Run 02 — Abschnitt 0o, „Stand Run 02"). Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
@@ -273,8 +273,7 @@ Run 02 fachlich und Bedienung mit Patricks echter Datei, ein Gegenprüfer).** Ur
 keiner schlechter als v1.5.319. Die zwei schweren (Einschleusen über Anführungszeichen und `__proto__`) und die Import- und
 Speicher-Befunde sind in v1.5.340–344 behoben. Rohdaten: Workflow wf_63d754b1-be1 (journal.jsonl), Skripte unter
 `.claude/tmp/review339/` (vergänglich). **Offen, alle schon in v1.5.319 vorhanden, nach Nutzen für Run 02:**
-- Leicht: F16 jeder
-  Bildschirm wählt eine andere Standardgruppe (~20356, ~22671), F19 Import übernimmt Spül-, Eis- und Trocknungstage nicht aus dem Plan.
+- Leicht: F19 Import übernimmt Spül-, Eis- und Trocknungstage nicht aus dem Plan.
 - Speicher, leicht: rettung.html bietet „Daten anzeigen" nur beim Hauptstand (SK-5); wiederherstellung.html überschreibt
   den Rückweg beim zweiten Einspielen, „Zurückholen" ohne Ablage des aktuellen Stands, Quota-Fehler roh (SK-6, wie in 319);
   aus Runde 2: Fremd-Band verdrängt das Sperr-Band, ~24 „✓"-Toasts prüfen saveS nicht.
@@ -348,6 +347,7 @@ Speicher-Befunde sind in v1.5.340–344 behoben. Rohdaten: Workflow wf_63d754b1-
 - v1.5.412: Einstellungen öffnen nach dem Start die führende Gruppe statt des abgeschlossenen Zyklus (`_standardZyklus`, F16 Teil A).
 - v1.5.413: Zeitplan sagt „✓ Zyklus abgeschlossen · Fertig seit …“ bzw. „pausiert … mit dem Schalter läuft er wieder“ statt „wird beim Speichern automatisch aktiviert“; kein Schalter am abgeschlossenen Zyklus (F16 Teil B).
 - v1.5.414: Nach „Sichern“ eines pausierten oder abgeschlossenen Zyklus verschwindet „Änderungen sichern“ (tote Auto-Aktivierung in `saveDraft` entfernt, F16 Teil C).
+- v1.5.415: Lichtmesser folgt der Gruppe mit stehenden Pflanzen, nicht einem abgeschlossenen oder trocknenden Zyklus (F16 Teil D). **Offen aus F16:** Gieß-Fahrplan folgt nach dem Anlegen der zuletzt angelegten Gruppe (Regel aus v1.5.305, Patricks Entscheidung); `runCommand`, `_myProductsGroup`, `_activeCycleForLex`, `exportReportPDF`, `exportCollage` nehmen „ersten aktiven“ statt `_standardZyklus`.
 
 **Gegenprüfung von v1.5.364/365 (07.10.2026 nachts, Workflow wf_4cf817bf-629, drei Sonnet-Prüfer + Gegenprüfer).** Kein Fehlalarm
 in 33 App-Fassungen, allen Vorlagen und über 2800 Klicks; die schweren Befunde (unsichere Kopie zerstört den Hauptstand, Tropfen als

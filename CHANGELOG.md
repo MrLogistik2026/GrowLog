@@ -2,6 +2,18 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-08 — v1.5.415
+
+- **Der Lichtmesser nahm den falschen Zyklus, wenn ein abgeschlossener oder trocknender gewählt war** (Run-02-Prüfung vom
+  07.10.2026, F16, Teil D). `_ppfdTargets` nahm den in den Einstellungen gewählten Zyklus, sonst den ersten aktiven. Stand Run 01
+  noch im Curing oder war er in den Einstellungen geöffnet, hatte er keine Phase mit stehenden Pflanzen. Der Lichtmesser fiel
+  dann auf das Blüte-Ziel 600–900 zurück, während die Sämlinge der wachsenden Gruppe 150–300 brauchen (`ANBAU.md` 8). Das ist
+  für Sämlinge die gefährliche Richtung.
+- **Jetzt** gilt der gewählte Zyklus nur, solange seine Pflanzen stehen, sonst die führende Gruppe (`_standardZyklus`, v1.5.412).
+  Mit einem Zyklus ändert sich nichts.
+- Test: `test_runzwei.js` F16-10 (fällt auf v1.5.414 um).
+
+
 ## 2026-10-08 — v1.5.414
 
 - **Nach „Sichern“ blieb bei einem pausierten oder abgeschlossenen Zyklus „💾 Änderungen sichern“ stehen** (Run-02-Prüfung vom

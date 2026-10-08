@@ -721,7 +721,8 @@ async function starte() {
     pruefe(/Alle Änderungen gespeichert/.test(r.nachSichern) && !/Änderungen sichern/.test(r.nachSichern), `F16-7 nach dem Sichern bleibt „Änderungen sichern" stehen: ${r.nachSichern}`);
     pruefe(r.zustand.active === false && r.zustand.archived === true && r.zustand.endDate && r.zustand.pot === 12,
       `F16-8 Sichern ändert Status oder verliert die Eingabe: ${JSON.stringify(r.zustand)}`);
-    // F16-WEITER
+    // (v1.5.415)
+    pruefe(r.curPhase && r.lichtOhneWahl < 600 && r.lichtAbgeschlossen < 600, `F16-10 (Teil D) Licht-Ziel der Tipps ohne Wahl (PPFD ab ${r.lichtOhneWahl}) oder bei geöffnetem abgeschlossenem Zyklus (ab ${r.lichtAbgeschlossen}) folgt nicht der Gruppe in der Anzucht (Run Curing steht in Phase ${r.curPhase})`);
   }
 
 
