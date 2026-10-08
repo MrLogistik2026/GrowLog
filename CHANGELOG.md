@@ -2,6 +2,25 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-08 — v1.5.399
+
+- **Anleitung „Dein erster Grow“, Schritt 8 (Trocknen & Curing):**
+  - „Keller oder dunkler Schrank ideal“ — ein feuchter Keller ist riskant, *Botrytis* wächst auch kühl gut (`ANBAU.md` 12.1).
+  - „Sanfte Luft“ statt minimaler Luftbewegung (12.1).
+  - „Heu-Geschmack“ ohne Mechanismus.
+  - Gläser füllen ohne Knick-Test und ohne Feuchte-Ziel (12.2).
+  - „Die ersten 2–4 Wochen Curing machen den Unterschied zwischen OK und Premium“ als Versprechen.
+- **Jetzt:**
+  - **Trockenraum:** einer, in dem sich Temperatur und Luftfeuchte halten lassen; minimale Luftbewegung.
+  - **Zu schnell getrocknet:** außen hart, innen feucht, scharf und grasig, flüchtige Aromen zuerst verloren (12.1).
+  - **Gläser:** erst nach dem Knick-Test füllen. Ein Hygrometer im Glas, Ziel 58–62 % wie überall in der App. Ab 70 % kann
+    Schimmel wachsen, unter 55 % ist es zu trocken (12.2).
+  - **Lüften:** zwei Wochen täglich öffnen, danach nur bei mehr als 62 %.
+  - **Geduld:** „lässt sich nicht abkürzen“ mit dem Grund.
+- Test: `test_erstergrow.js` S8 (3 Prüfungen; alle fallen auf v1.5.398 um). Damit sind alle acht Schritte der Anleitung gegen
+  `ANBAU.md` gehalten (v1.5.393–399).
+
+
 ## 2026-10-08 — v1.5.398
 
 - **Anleitung „Dein erster Grow“, Schritt 1 (Einkaufsliste):** pH-Tropfen, pH-Minus und Lupe standen unter „Nützlich (aber

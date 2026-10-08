@@ -4625,7 +4625,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.398';
+const APP_VERSION = 'v1.5.399';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -9300,20 +9300,23 @@ const FIRST_GROW_STEPS = [
     duration: '2–6 Wochen',
     content: `
       <p><b>Trocknen (7–14 Tage):</b></p>
+      <!-- (v1.5.399) Vorher „Keller … ideal" (Botrytis wächst auch kühl gut, ANBAU.md 12.1), „sanfte Luft" (12.1: minimale), „Heu"
+           ohne Mechanismus, Gläser ohne Knick-Test und ohne Feuchte-Ziel (12.2), „OK und Premium" als Versprechen. -->
       <ul>
-        <li><b>${TROCKNEN_TEXT}</b>, dunkel, sanfte Luft</li>
-        <li>Keller oder dunkler Schrank ideal</li>
+        <li><b>${TROCKNEN_TEXT}</b>, dunkel, minimale Luftbewegung</li>
+        <li>Ein dunkler Raum oder Schrank, in dem du Temperatur und Luftfeuchte halten kannst — ein feuchter Keller ist riskant: Schimmel (Botrytis) wächst auch bei Kühle gut</li>
         <li>Zweige kopfüber aufhängen</li>
-        <li><b>Fertig:</b> Wenn Stiele knacken statt biegen</li>
+        <li><b>Fertig:</b> Wenn die dünnen Stiele mit hörbarem Knacken brechen statt sich zu biegen</li>
       </ul>
-      <p><b>Typischer Fehler:</b> Zu schnell trocken (zu trocken/heiß) = „Heu"-Geschmack. Lieber langsam.</p>
+      <p><b>Typischer Fehler:</b> Zu schnell getrocknet (zu trocken oder zu warm): Außen wird die Blüte hart, innen bleibt Feuchtigkeit, das Ergebnis schmeckt scharf und grasig, und die flüchtigen Aromen gehen zuerst verloren. Lieber langsam.</p>
       <p><b>Curing (2+ Wochen):</b></p>
       <ul>
-        <li>Buds in Gläser füllen (zu 2/3, nicht voll)</li>
-        <li>Erste 2 Wochen täglich für 5 Min. öffnen (&bdquo;burpen&rdquo;) — lässt Feuchte raus</li>
-        <li>Später nur alle paar Tage kurz öffnen</li>
+        <li>Erst wenn die dünnen Stiele knacken: Buds in Gläser füllen (zu 2/3, nicht voll)</li>
+        <li>Ein kleines Hygrometer ins Glas legen. Ziel 58–62 % Luftfeuchte — zeigt es mehr, das Glas offen lassen, bis es wieder im Bereich ist. Ab 70 % kann Schimmel wachsen, unter 55 % ist es zu trocken.</li>
+        <li>Erste 2 Wochen täglich für 5 Min. öffnen (&bdquo;burpen&rdquo;) — die Restfeuchte aus dem Inneren steigt ins Glas und muss raus</li>
+        <li>Danach geschlossen reifen lassen und nur noch öffnen, wenn das Hygrometer über 62 % zeigt</li>
       </ul>
-      <p><b>Geduld zahlt sich aus:</b> Die ersten 2–4 Wochen Curing machen <b>den</b> Unterschied zwischen OK und Premium.</p>
+      <p><b>Geduld:</b> Curing braucht Wochen und lässt sich nicht abkürzen — die Restfeuchte gleicht sich aus, Chlorophyll baut weiter ab.</p>
       <p><b>Gratulation! 🎉</b> Du hast erfolgreich deinen ersten Grow durch!</p>
     `,
   },

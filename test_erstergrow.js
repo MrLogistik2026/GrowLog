@@ -8,6 +8,7 @@
 //   S6 (v1.5.396)  Blüte: Titel, Dunkelphase, Stickstoff, Schimmel-Deckel aus KLIMA_ZIEL.
 //   S7 (v1.5.397)  Ernte: eigenes Bernstein-Ziel und Klar-Grenze aus der App, Messort, Spülen ehrlich, Schnitt im Dunkeln.
 //   S1 (v1.5.398)  Einkaufsliste: pH-Werkzeug, Thermo-Hygrometer und Lupe gehören dazu.
+//   S8 (v1.5.399)  Trocknen und Curing: Trockenraum, Knick-Test vor dem Glas, Hygrometer im Glas.
 //
 // GS_INDEX=<anderer Build> lässt den Test gegen einen alten Stand laufen; dort muss er umfallen.
 const fs = require('fs');
@@ -120,6 +121,14 @@ async function starte() {
     const s1 = schritt(0);
     pruefe(!/aber nicht Pflicht am Anfang/.test(s1), 'S1-1 pH-Werkzeug und Lupe stehen unter „nicht Pflicht"');
     pruefe(/pH-Tropfen oder ein pH-Messgerät und pH-Minus/.test(s1) && /Thermo-Hygrometer/.test(s1) && /Lupe oder ein Handy mit Makro/.test(s1), 'S1-2 pH-Werkzeug, Thermo-Hygrometer oder Lupe fehlt');
+  }
+
+  // S8 (v1.5.399) · Trocknen und Curing: kein „Keller ideal", Knick-Test vor dem Glas, Hygrometer im Glas, kein Premium-Versprechen
+  {
+    const s8 = schritt(7);
+    pruefe(!/Keller oder dunkler Schrank ideal/.test(s8) && /Botrytis/.test(s8) && /minimale Luftbewegung/.test(s8), 'S8-1 Trockenraum: „Keller ideal" oder „sanfte Luft" (ANBAU.md 12.1)');
+    pruefe(/Erst wenn die dünnen Stiele knacken/.test(s8) && /58–62 %/.test(s8) && /Ab 70 %/.test(s8) && /unter 55 %/.test(s8), 'S8-2 Gläser ohne Knick-Test oder ohne Feuchte-Ziel (ANBAU.md 12.2)');
+    pruefe(!/OK und Premium/.test(s8) && /lässt sich nicht abkürzen/.test(s8), 'S8-3 Curing-Versprechen statt Mechanismus');
   }
 
   pruefe(!a.errors.length, 'Skriptfehler: ' + a.errors.slice(0, 3).join(' | '));

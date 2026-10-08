@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.398** · index.html 2,56 MB · 781 Funktionen
+Stand: **v1.5.399** · index.html 2,56 MB · 781 Funktionen
 Zuletzt fortgeschrieben am 07.10.2026 (Nachtprüfung und Run 02 — Abschnitt 0o, „Stand Run 02"). Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
@@ -328,12 +328,13 @@ Speicher-Befunde sind in v1.5.340–344 behoben. Rohdaten: Workflow wf_63d754b1-
 - v1.5.390: Lexikon „Drain-Kontrolle“ nennt das Ziel aus `DRAIN_ZIEL` (vorher oben 15–20, unten 10–20 %) und wann Drain überhaupt kommt.
 - v1.5.391: Gießwasser „Wasser mit 20–22 °C“ aus einer Quelle (`GIESSWASSER`, ANBAU.md 7.3) statt „lauwarm“ und 18–22 °C (F15).
 - v1.5.392: Lexikon „Wassertemperatur“ — Wasser am Vortag bereitstellen, Dünger erst kurz vor dem Gießen (ANBAU.md 10).
-- v1.5.393: Einsteiger-Anleitung „Dein erster Grow“, Schritt 2/3 — „direkt in die Erde (empfohlen)“ wie die Start-Methode der App (`GERM_GUIDES.direct`); Test `test_erstergrow.js`. Die Schritte 4–8 folgen (Prüferbericht vom 08.10. eingearbeitet).
+- v1.5.393: Einsteiger-Anleitung „Dein erster Grow“, Schritt 2/3 — „direkt in die Erde (empfohlen)“ wie die Start-Methode der App (`GERM_GUIDES.direct`); Test `test_erstergrow.js`. Die Ersatztexte aller Schritte hat vorher ein Sonnet-Prüfer gegen `ANBAU.md` gehalten.
 - v1.5.394: Schritt 4 — Licht über die Lichtmenge (PPFD) statt 30–40 cm, Bleichen und Hitze getrennt, Gießen nach der Start-Methode, Dünger nach Plan.
 - v1.5.395: Schritt 5 — Dünger nach Plan mit pH statt „halbe Dosis“, Toppen wie die App (Automatics nur vor dem Blühbeginn), Automatics nie umtopfen.
 - v1.5.396: Schritt 6 — Stickstoff nicht kappen, Deckel 65/60 % aus `KLIMA_ZIEL`, Dunkelphase wirklich dunkel, realistische Dauer (auch im Kopf: ~4–6 Monate).
 - v1.5.397: Schritt 7 — eigenes Bernstein-Ziel und Klar-Grenze statt „80 % milchig, 10–20 % bernstein“, Messort, Spülen nach Plan und als unbelegt gekennzeichnet.
 - v1.5.398: Schritt 1 — pH-Werkzeug, Thermo-Hygrometer und Lupe gehören zum Minimum.
+- v1.5.399: Schritt 8 — kein „Keller ideal“, Knick-Test vor dem Glas, Hygrometer im Glas (58–62 %). Damit ist die ganze Anleitung gegen `ANBAU.md` gehalten. **Offen aus dem Prüferbericht:** Lexikon (~35893) und Licht-Werkzeug (~39215) nennen für die Anzucht 200–400 µmol/m²/s, `ANBAU.md` 8 nennt Sämling 150–300 und Wachstum 400–600; neun Texte empfehlen den Handtest für den Lichtabstand (1444, 1481, 7281, 7289, 7313, 7495, 7519, 35893, 37148/37164) — gegen 8.2 prüfen.
 
 **Gegenprüfung von v1.5.364/365 (07.10.2026 nachts, Workflow wf_4cf817bf-629, drei Sonnet-Prüfer + Gegenprüfer).** Kein Fehlalarm
 in 33 App-Fassungen, allen Vorlagen und über 2800 Klicks; die schweren Befunde (unsichere Kopie zerstört den Hauptstand, Tropfen als
