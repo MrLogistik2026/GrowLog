@@ -2,6 +2,22 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-08 — v1.5.387
+
+- **Den Wasserguss nach dem FIM musste man im Rainbow-Plan von Hand umstellen** (Run-02-Prüfung vom 07.10.2026, F02). Das Blatt
+  v2.1 sagt: „der erste Guss danach (frühestens 48 h, sobald der Topf den Gießpunkt erreicht) ist reines pH-Wasser in
+  Feed-Menge“. In der App stand das nur im Wochen-Tipp von Plan-Woche 3; Startseite, Eintrag und Mischliste nannten an genau
+  diesem Tag die volle Feed-Dosis. Wer den Tipp nicht gelesen hatte, düngte.
+- **Jetzt** (Patricks Entscheidung vom 08.10.2026: „Automatisch auf Nur Wasser stellen“) ist der erste Guss nach einem als
+  Training eingetragenen FIM von selbst „Nur Wasser“ — höchstens 14 Tage danach, gezählt nach dem Gießplan wie beim Topping
+  (`_fimWassergussVon`). Der Eintrag nennt den Grund („erster Guss nach dem FIM vom …“), im Gieß-Fahrplan ist der Guss fest
+  wie der Topping-Wasserguss. Die eigene Wahl im Tageseintrag gewinnt weiter.
+- **Nur für Vorlagen mit `fimWasserguss`** (bisher Rainbow): Es ist eine Regel des Plans, kein Befund aus `ANBAU.md` — ein
+  FIM in einem anderen Plan ändert dort nichts. Den Fall „FIM fällt aus“ (dann ist der erste Guss der Woche der Wasserguss)
+  kann die App nicht erkennen; der Wochen-Tipp sagt dafür weiter, im Eintrag umzustellen.
+- Test: `test_runzwei.js` F02 (8 Prüfungen; 3 fallen auf v1.5.386 um).
+
+
 ## 2026-10-08 — v1.5.386
 
 - **Der Rest von F06: Im Wasser-Kasten des Eintrags stand vor Tag 25 weiter „Drain entsorgen!"** (gefunden, als

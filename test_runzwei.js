@@ -252,6 +252,43 @@ async function starte() {
     pruefe(r.namen && r.tipps === 2, `F07-2 Namen der Gruppen oder ein Tipp je Woche fehlen: ${JSON.stringify(r)}`);
   }
 
+  // F02 (v1.5.387) · Der erste Guss nach einem eingetragenen FIM ist im Rainbow-Plan von selbst „Nur Wasser"
+  {
+    const r = JSON.parse(a.E(`(function(){ const vorher = S.cycles.slice(); S.beginnerMode = false;
+      const lauf = (vorlage) => {
+        const c = addCyc({ name: 'FIM-Probe', startDate: isoPlus(todayISO(), -10), seedType: 'auto', growType: 'indoor', medium: 'erde',
+          potSize: 11, plantCount: 3, startMethod: 'direct', fertPlanId: _planFuerVorlage(vorlage) }, { still: true });
+        let fim = null;
+        for (let i = 0; i < 60 && !fim; i++) { const iso = isoPlus(c.startDate, i); const p = phase(iso, c);
+          if (p && fertPlanWeek(c, iso, p) === 3 && getAction(iso, c) !== 'giess' && getAction(iso, c) !== 'giess_anz') fim = iso; }
+        const guesse = []; for (let t = 1; t <= 20 && guesse.length < 2 && fim; t++) { const iso = isoPlus(fim, t);
+          const aa = getAction(iso, c); if (aa === 'giess' || aa === 'giess_anz') guesse.push(iso); }
+        const typ = (iso) => getFeedWaterEffective(c, phase(iso, c), iso, null);
+        const ohne = guesse.map(typ);
+        c.trainingEvents = [{ date: fim, type: 'fim', notes: '' }];
+        const mit = guesse.map(typ);
+        const out = { fim, guesse, ohne, mit, fest: guesse.length ? isToppingWaterGuss(c, guesse[0]) : null,
+          eigeneWahl: guesse.length ? getFeedWaterEffective(c, phase(guesse[0], c), guesse[0], { waterOnly: false }) : null };
+        if (vorlage === 'rainbow_auto' && guesse.length) { setDebugDate(guesse[0]); openEntry(guesse[0]);
+          out.eintrag = /erster Guss nach dem FIM/.test(document.getElementById('scr-entry').textContent); setDebugDate(null); }
+        S.cycles = S.cycles.filter(x => x.id !== c.id);
+        return out;
+      };
+      const rb = lauf('rainbow_auto'), bb = lauf('biobizz_light');
+      S.cycles = vorher; saveS();
+      return JSON.stringify({ rb, bb }); })()`));
+    const { rb, bb } = r;
+    pruefe(rb.fim && rb.guesse.length === 2, `F02-0 Prüflage Rainbow: ${JSON.stringify(rb)}`);
+    pruefe(rb.ohne[0] === 'feed', `F02-1 ohne FIM ist der erste Guss in Plan-Woche 3 kein Feed: ${rb.ohne.join(', ')}`);
+    pruefe(rb.mit[0] === 'water', `F02-2 erster Guss nach dem FIM (${rb.guesse[0]}) ist nicht „Nur Wasser": ${rb.mit.join(', ')}`);
+    pruefe(rb.mit[1] === 'feed', `F02-3 der Guss danach ist kein Feed: ${rb.mit.join(', ')}`);
+    pruefe(rb.fest === true, 'F02-4 der FIM-Wasserguss ist im Gieß-Fahrplan nicht fest');
+    pruefe(rb.eigeneWahl === 'feed', `F02-5 die eigene Wahl im Tageseintrag gewinnt nicht: ${rb.eigeneWahl}`);
+    pruefe(rb.eintrag === true, 'F02-6 der Tageseintrag nennt den Grund („erster Guss nach dem FIM") nicht');
+    pruefe(bb.fim && JSON.stringify(bb.ohne) === JSON.stringify(bb.mit) && bb.fest === false,
+      `F02-7 ein Plan ohne FIM-Wasserguss ändert sich durch das FIM: ${JSON.stringify(bb)}`);
+  }
+
   pruefe(!a.errors.length, 'Skriptfehler: ' + a.errors.slice(0, 3).join(' | '));
   if (fehler.length) { console.log(`test_runzwei: ${fehler.length} von ${n} Prüfungen rot`); fehler.forEach((f) => console.log('  ✗ ' + f)); process.exit(1); }
   console.log(`test_runzwei: alle ${n} Prüfungen grün`);

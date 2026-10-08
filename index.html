@@ -3338,7 +3338,7 @@ const FERT_PRESETS = {
     weekFocus: {
       1:  { phase: 'Sämling',                  tip: 'pH 6,4. Kein Bio-Grow — Light-Mix ist vorgedüngt. Licht 25 %, 60–65 cm. Gießradius 5 cm, eng am Samen. Gegossen wird, wenn die Oberfläche im Gießradius hell wird und sich am Samen trocken anfühlt — höchstens alle zwei Tage. Nimmt der Referenztopf zwei Tage in Folge kaum ab, ist er unten noch nass: dann nicht gießen.' },
       2:  { phase: 'Früh-Vegi · LST-Start',    tip: 'pH 6,35. Gießradius mit den Wurzeln auf 8–12 cm erweitern — nasse Erde ohne aufnehmende Wurzel bleibt nass. LST ab Plan-Tag 10–12 (Plan-Tage zählen ab dem Keimling). Ab Plan-Tag 10 täglich Nodes zählen — der FIM-Stichtag (Plan-Tag 13) fällt in diese Woche.' },
-      3:  { phase: 'Vegi · FIM · Wasserguss',  tip: 'pH 6,3 · gegossen wird am Gießpunkt („Knapp“) · noch kein Drain möglich. FIM nur, wenn alle Pflanzen bis Plan-Tag 13 Node 4–5 erreicht haben — Eingriff bis Plan-Tag 15, und am Eingriffstag müssen noch mindestens 7 Tage bis zum erwarteten Blütetag 0 bleiben; sonst bei keiner, dann LST allein. Reihenfolge: Feed → 1–2 Tage später FIM bei prallen Blättern → der erste Guss danach (frühestens 48 h, sobald der Topf den Gießpunkt erreicht) ist reines pH-Wasser 6,3 in Feed-Menge (im Tageseintrag auf „Nur Wasser“ stellen). Fällt FIM aus, ist der erste Guss dieser Woche der Wasserguss. Ab jetzt wöchentlich pro Topf: Höhe, Seitentriebe, Internodienabstand.' },
+      3:  { phase: 'Vegi · FIM · Wasserguss',  tip: 'pH 6,3 · gegossen wird am Gießpunkt („Knapp“) · noch kein Drain möglich. FIM nur, wenn alle Pflanzen bis Plan-Tag 13 Node 4–5 erreicht haben — Eingriff bis Plan-Tag 15, und am Eingriffstag müssen noch mindestens 7 Tage bis zum erwarteten Blütetag 0 bleiben; sonst bei keiner, dann LST allein. Reihenfolge: Feed → 1–2 Tage später FIM bei prallen Blättern → der erste Guss danach (frühestens 48 h, sobald der Topf den Gießpunkt erreicht) ist reines pH-Wasser 6,3 in Feed-Menge — trag das FIM als Training ein, dann stellt die App diesen Guss von selbst auf „Nur Wasser“. Fällt FIM aus, ist der erste Guss dieser Woche der Wasserguss (dann im Tageseintrag auf „Nur Wasser“ stellen). Ab jetzt wöchentlich pro Topf: Höhe, Seitentriebe, Internodienabstand.' },
       4:  { phase: 'Stretch · Selektion',      tip: 'pH 6,3. Erste Pistillen pro Topf notieren = Blütetag 0 (die App zählt denselben Tag als Blütetag 1). Selektion Plan-Tag 22–31: Entfernt wird nur eine Pflanze, die selbst zurückbleibt (weniger Seitentriebe, größerer Internodienabstand) oder krank ist — nie eine gesunde wegen Beschattung; eine Auto holt den verlorenen Wurzelraum nicht auf. Epsom ab jetzt konstant 0,15, CalMag bleibt bis Woche 6 bei 0,3. Erste Drain-Versuche, noch ohne Bewertung.' },
       5:  { phase: 'Stretch-Ende · Kontrollguss', tip: 'pH 6,3. Kontrollguss je Sorte: Topf kurz vor dem Gießen wiegen, rund 5 L je Topf ansetzen und mittig, langsam in Etappen gießen, bis ' + DRAIN_ZIEL.min + '–' + DRAIN_ZIEL.max + ' % in einer breiten Wanne ankommen. Abtropfen lassen, dann wiegen — das ist das erste Gewicht (100 %). Das zweite Gewicht kommt erst in Woche 6, kurz vor dem Gießen. Ab jetzt jeder Feed bis ' + DRAIN_ZIEL.min + '–' + DRAIN_ZIEL.max + ' % Drain; Drain-EC nur bei mindestens ' + DRAIN_ZIEL.min + ' % Durchfluss werten. Letzte Entlaubung, max. 10–15 %, nur Fächerblätter über Bud-Sites.' },
       6:  { phase: 'Frühblüte · Bio-Bloom startet', tip: 'pH 6,25. Zweites Gewicht in dieser Woche kurz vor dem Gießen nehmen, am Gießpunkt („Knapp“) — die App setzt es als Gießpunkt, erst dann rechnet sie Prozente für diesen Topf. Ab jetzt die schwerste Schimmelphase: Handprobe im Canopy-Inneren wöchentlich, Luftfeuchte nachts zur kühlsten Stunde messen — beim Abkühlen steigt sie von selbst, und der Deckel gilt auch nachts. Gelb zwischen grünen Adern an mittleren/unteren Blättern erst unterscheiden: Seneszenz (spät, gleichmäßig von unten, Kelche schwellen weiter) → Hebe-Test (dauernass?) → Zulauf-pH (nie unter 6,0) → keine Calcium-Quelle erhöhen → erst dann Epsom 0,4 g/L für 2–3 Feeds, danach zurück auf 0,15. Nicht vorbeugend. Rückweg für Bio-Grow, am Blattbild statt am Kalender: Läuft eine Vergilbung schnell, fleckig oder etagenweise und stockt die Blütenbildung, Bio-Grow auf den nächsthöheren Wert des Plans — in Woche 6–10 auf 1,0, ab Woche 11 auf 0,75 — und dort bleiben, bis das Bild kippt. Es ist die einzige Korrektur für zu wenig Stickstoff; der EC zeigt organisch gebundenen Stickstoff nicht. Lollipopping nach Licht-Test, letzter Eingriff.' },
@@ -3383,8 +3383,9 @@ const FERT_PRESETS = {
     mixInfo: 'Wasser 20–22 °C → Silica Force (2–5 Min warten) → CalMag → Epsom (klar rühren) → POWHUMUS-Konzentrat → Bio-Grow / Bio-Bloom → Alg-A-Mic → Advanced Amino (per Spritze, nur bis Woche 7) → EC messen → pH auf Zielwert, 5 Min warten, nachmessen. Nie zwei Konzentrate direkt zusammengeben — jede Komponente vollständig verteilen, bevor die nächste kommt. Nicht auf Vorrat mischen: der BioBizz-Ansatz hält wenige Stunden. Spül- und Rampenwasser brauchen viel weniger Säure (Silica Force und POWHUMUS fehlen dann) — pH-Down tropfenweise neu einstellen.',
     drainInfo: 'Drain-Ziel ' + DRAIN_ZIEL.min + '–' + DRAIN_ZIEL.max + ' %, in einer breiten Wanne gemessen. Drain-EC: ' + T.drainRegelKurz() + '. Ein niedriges Verhältnis ist hier kein Grund nachzudüngen — dieser Plan ist bewusst keine Vollversorgung, und organisch gebundenen Stickstoff zeigt der EC nicht. Was zu wenig Stickstoff anzeigt, steht im Rückweg für Bio-Grow (Wochen-Tipp Woche 6). Drain-pH 6,8–7,2 ist Kalkpuffer, kein Befund — erst wenn er über Wochen weiter steigt oder mit Chlorose an jungen Blättern auftritt. Zulauf-pH 6,25–6,4, nie unter 6,0. Gegossen wird am Gießpunkt nach dem Hebe-Test, nicht nach einer Wochenzahl. Woche 1–3 ist kein Drain möglich, Woche 4 erste Versuche ohne Bewertung, ab Woche 5 jeder Feed mit Drain.',
     // Jeder Guss ein Feed bis zur Rampe; Spülen nur Wasser, am IceFlush wird nicht gegossen.
-    // Den einen Wasserguss nach dem FIM (Woche 3) stellt man am Tag selbst um — er hängt am
-    // FIM-Termin, nicht an der Woche.
+    // Der eine Wasserguss nach dem FIM (Woche 3) hängt am FIM-Termin, nicht an der Woche — die App
+    // stellt ihn von selbst um, sobald das FIM als Training eingetragen ist (v1.5.387, _fimWassergussVon).
+    fimWasserguss: true,
     feedWaterRhythm: {
       '1': 'F', '2': 'F', '3': 'F', '4': 'F', '5': 'F', '6': 'F', '7': 'F',
       '8': 'F', '9': 'F', '10': 'F', '11': 'F', '12': 'F', '13': 'F', '14': 'W', '15': '-'
@@ -4620,7 +4621,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.386';
+const APP_VERSION = 'v1.5.387';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -7007,6 +7008,32 @@ function fwPatternStep(c, iso) {
  * @returns {'feed'|'water'|null} null = kein Rhythmus hinterlegt oder kein
  *   normaler Gießtag → Verhalten wie bisher (voller Feed).
  */
+/**
+ * (v1.5.387) Ist iso der erste Guss nach einem eingetragenen FIM, und sieht die Vorlage dafür reines Wasser vor? Dann das
+ * FIM-Datum, sonst null. Das Rainbow-Blatt v2.1 verlangt „der erste Guss danach … ist reines pH-Wasser in Feed-Menge“; bis
+ * v1.5.386 stand das nur im Wochen-Tipp, und man musste es am Tag selbst umstellen (Prüfrunde 07.10.2026, F02 — Patrick:
+ * „Automatisch auf Nur Wasser stellen“). Eine Regel des Plans, kein Befund aus ANBAU.md — deshalb nur mit fimWasserguss an
+ * der Vorlage, nicht für jeden Plan. Gezählt wird nach dem Gießplan (getAction), höchstens 14 Tage nach dem FIM, wie beim Topping.
+ */
+function _fimWassergussVon(c, iso) {
+  if (!c || !iso || !Array.isArray(c.trainingEvents) || !c.trainingEvents.length) return null;
+  const plan = getPlanForCycle(c);
+  const pre = plan ? _planVorlage(plan) : null;
+  if (!pre || !pre.fimWasserguss) return null;
+  for (const e of c.trainingEvents) {
+    if (!e || e.type !== 'fim' || typeof e.date !== 'string' || !(e.date < iso)) continue;
+    const abstand = isoDiff(iso, e.date);
+    if (!(abstand >= 1 && abstand <= 14)) continue;
+    let erster = true;
+    for (let t = 1; t < abstand; t++) {
+      const aa = getAction(isoPlus(e.date, t), c);
+      if (aa === 'giess' || aa === 'giess_anz') { erster = false; break; }
+    }
+    if (erster) return e.date;
+  }
+  return null;
+}
+
 function getFeedWaterType(c, p, iso) {
   if (!c || !p) return null;
   const plan = getPlanForCycle(c);
@@ -7034,6 +7061,9 @@ function getFeedWaterType(c, p, iso) {
       if (firstAfter) return 'water';
     }
   }
+  // (v1.5.387) FIM-REGEL: Der erste Guss nach einem eingetragenen FIM ist reines Wasser, wo die Vorlage es vorsieht (Rainbow).
+  // Steht vor der Anzucht-Regel, weil das FIM in die Anzucht fällt. Die Wahl im Tageseintrag gewinnt weiter (getFeedWaterEffective).
+  if (_fimWassergussVon(c, iso)) return 'water';
   // VEGI-/ANZUCHT-REGEL: In der Anzucht-/Vegiphase wird durchgehend gedüngt — der
   // Dünger-Wasser-Rhythmus (mit reinen Wasser-Tagen) startet erst mit der Blüte.
   // Die junge Pflanze will in der Wachstumsphase stetig Nährstoffe; reine Wasser-Tage
@@ -21659,6 +21689,8 @@ function openDuenger() {
 // Spiegelt die Topping-Wasser-Regel aus getFeedWaterType: der Schnitt-Schutz
 // (Wasser am Topping-Tag + erster Guss nach der Pause) ist nicht verhandelbar.
 function isToppingWaterGuss(c, iso) {
+  // (v1.5.387) Der Wasserguss nach dem FIM ist ebenso fest: getFeedWaterType entscheidet ihn vor dem Guss-Override.
+  if (c && _fimWassergussVon(c, iso)) return true;
   if (!c || !c.toppingDate) return false;
   const sinceTop = isoDiff(iso, c.toppingDate);
   if (sinceTop === 0) return true;
@@ -22182,7 +22214,7 @@ function toggleFwDay(iso) {
   // Gesperrte Güsse sind nicht umschaltbar (biologischer Schutz / feste Phasen).
   const lock = (typeof isToppingWaterGuss === 'function') ? isToppingWaterGuss(c, iso) : false;
   const act = getAction(iso, c);
-  if (lock || (act !== 'giess' && act !== 'giess_anz')) { if (typeof toast === 'function') toast('Dieser Tag ist fest (Topping/Flush/Iceflush)'); return; }
+  if (lock || (act !== 'giess' && act !== 'giess_anz')) { if (typeof toast === 'function') toast('Dieser Tag ist fest (Topping/FIM/Flush/Iceflush)'); return; }
   const gi = feedWaterGussIndex(c, iso);
   if (!c.fwOverrides) c.fwOverrides = {};
   // Vom EFFEKTIVEN Typ aus umschalten (inkl. evtl. altem datums-basiertem Override) und
@@ -22346,7 +22378,7 @@ function toggleGussStep(gIdx) {
   if (!c) return;
   const steps = collectBloomGusse(c);
   const step = steps.find(s => s.gIdx === gIdx);
-  if (step && step.locked) { toast('Fester Wasserguss rund ums Topping'); return; }
+  if (step && step.locked) { toast(_fimWassergussVon(c, step.iso) ? 'Fester Wasserguss nach dem FIM' : 'Fester Wasserguss rund ums Topping'); return; }
   // gussPlan beim ersten Eingriff aus dem aktuellen Rhythmus aufbauen, damit alle
   // anderen Güsse ihren bisherigen Typ behalten (nicht auf Default zurückfallen).
   // Nur echte Blüte-Güsse (gIdx gesetzt) zählen — Flush/Iceflush haben keinen Index.
@@ -30913,7 +30945,8 @@ function renderEntry(iso) {
         // "Von dir geändert", wenn der effektive Typ (egal aus welchem Speicher) vom
         // Plan-Vorschlag abweicht — deckt Guss-Override UND Eintrag-Flag ab. v1.2.53.
         const _fwOverridden = _fwAuto !== null && fwType !== null && fwType !== _fwAuto;
-        const _fwAutoLabel = _fwAuto === 'water' ? '💧 nur Wasser'
+        const _fwFim = _fwAuto === 'water' ? _fimWassergussVon(c, iso) : null;   // (v1.5.387)
+        const _fwAutoLabel = _fwAuto === 'water' ? ('💧 nur Wasser' + (_fwFim ? ` · erster Guss nach dem FIM vom ${fmtDE(_fwFim, {day:'2-digit', month:'2-digit'})}` : ''))
                            : (_fwAuto === 'feed' ? '🌿 Feed (voller Dünger)' : null);
         const _fwFeedActive = fwType === 'feed';
         const _fwWaterActive = fwType === 'water';
