@@ -2,6 +2,18 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-08 — v1.5.400
+
+- **Ein Wächter-Test war seit v1.5.393 rot** (`test_tag1mengen.js`, beide Zonen; gefunden im Gesamtlauf auf v1.5.399:
+  288 von 290 Läufen grün). Er sucht im Quelltext nach dem alten Satz „Samen in trockene Erde“, den v1.5.168 aus der App
+  genommen hat. Gefunden hat er ihn in meinem eigenen Kommentar zu v1.5.393, der den alten Zustand beschrieb. In der App
+  stand nichts davon.
+- **Jetzt** ist der Kommentar umformuliert. Die App ist sonst unverändert.
+- **Daraus zu lernen:** v1.5.393–399 sind nur mit den Tests hochgegangen, die die Anleitung nennen. Wer Texte ändert, nimmt
+  auch die Wächter mit, die den ganzen Quelltext nach alten Sätzen durchsuchen (`grep -l "src.match|readFileSync.*app.js"
+  test_*.js`) — und schreibt die alten Sätze nicht wörtlich in Kommentare.
+
+
 ## 2026-10-08 — v1.5.399
 
 - **Anleitung „Dein erster Grow“, Schritt 8 (Trocknen & Curing):**
