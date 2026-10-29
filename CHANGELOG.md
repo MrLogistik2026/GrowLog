@@ -2,6 +2,13 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-29 — v1.5.454
+
+- **Banner „Aktion verpasst“: „In den letzten 1 Tagen wurden Gieß-Tage nicht eingetragen.“** Gefunden bei der Anfänger-Prüfung
+  am 29.10.2026 (Tag 10).
+- **Jetzt** heißt es bei einem Tag „Gestern wurde ein Gieß-Tag nicht eingetragen.“, ab zwei Tagen wie bisher.
+- Test: `test_verpasst_text.js` (3 Prüfungen, beide Zeitzonen; 2 fallen auf v1.5.453 um).
+
 ## 2026-10-29 — v1.5.453
 
 - **Meilenstein Tag 3: „erste Blättchen kommen raus! Jetzt nur ganz wenig gießen.“** Die Karte stand direkt unter „Heute nur

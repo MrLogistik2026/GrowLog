@@ -3755,7 +3755,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.453';
+const APP_VERSION = 'v1.5.454';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -18156,7 +18156,7 @@ function renderDash() {
         <span style="font-size:22px;flex-shrink:0;line-height:1.2">🕐</span>
         <div style="flex:1;min-width:0">
           <div style="font-size:13px;font-weight:600;color:var(--orange)">${totalCount} Aktion${totalCount === 1 ? '' : 'en'} verpasst${secondaryInfo}</div>
-          <div style="font-size:11px;color:var(--text-sub);line-height:1.5;margin-top:3px">In den letzten ${cycleEntries[0].oldest} Tagen wurden Gieß-Tage nicht eingetragen. Du kannst sie nachholen oder als bewusst übersprungen markieren — kein Drama.</div>
+          <div style="font-size:11px;color:var(--text-sub);line-height:1.5;margin-top:3px">${cycleEntries[0].oldest === 1 ? 'Gestern wurde ein Gieß-Tag nicht eingetragen.' : `In den letzten ${cycleEntries[0].oldest} Tagen wurden Gieß-Tage nicht eingetragen.`} Du kannst sie nachholen oder als bewusst übersprungen markieren — kein Drama.</div>
           <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap">
             <button onclick="openCatchupWizard('${primaryCycle.id}')" style="background:var(--orange);border:none;color:#fff;font-size:11px;padding:8px 12px;border-radius:8px;cursor:pointer;font-family:var(--font);font-weight:600">Nachtragen</button>
             <button onclick="dismissCatchup()" style="background:transparent;border:0.5px solid var(--border);color:var(--text-muted);font-size:11px;padding:8px 12px;border-radius:8px;cursor:pointer;font-family:var(--font)">Heute nicht mehr</button>
