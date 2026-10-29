@@ -2,6 +2,29 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-29 — v1.5.442
+
+- **Die Maßnahmen bei hängenden Blättern widersprachen sich ohne Gegenprobe.** Bei „hängend“ stehen Überwässerung („GIESSEN
+  STOPPEN“) und Wassermangel („Sofort gießen — aber dosiert“) mit gleicher Punktzahl in derselben Liste, beide ohne Bedingung.
+  Wer der oberen Karte folgte, tat bei der Hälfte der Fälle das Gegenteil des Richtigen. Die Wurzelfäule begann mit „NOTFALL.
+  Topf umtopfen, faule Wurzeln abschneiden, H2O2-Spülung“ — schon bei bloßem Welken; der Wassermangel nannte „nicht auf
+  einmal 3 L“ und „Wurzelschock“, unabhängig von der Topfgröße. Gefunden von der Diagnose-Prüfung am 08.10.2026 (Befund B03).
+- **Jetzt** beginnen Überwässerung und Wassermangel mit „Erst den Topf anheben (Hebe-Test)“: schwer heißt nicht gießen, leicht
+  heißt gießen — so viel, wie die Gießmenge im Eintrag nennt, ab Tag 25 bis der Topf wieder voll ist. Die Überwässerung nennt
+  die dritte Ursache mit ihrem Kennzeichen: schwerer Topf und Drain-EC über dem 1,6-Fachen des Gießwassers (bei mindestens
+  15 % Drain) heißt eher zu viel Dünger, dann nicht mit derselben Nährlösung nachgießen — mit der Ausnahme Spätblüte in Erde
+  (ANBAU.md 5.1). Die Wurzelfäule gilt erst bei braunen, weichen, modrigen Wurzeln im dauernassen Topf; Wurzelzone 18–24 °C,
+  über 26 °C steigt der Druck; Umtopfen ist der letzte Schritt, kein erster. Die Überdüngung sagt, dass sie auch im nassen
+  Topf welkt.
+- **Warum:** ANBAU.md 1 (das Gewicht bildet den Wasservorrat ab), 1.1 (in den Topf passt, was ihm fehlt), 5, 7.3, 7.4 und 9
+  (Umtopfen kostet Tage, die eine Automatic nicht aufholt), 14 (Welken heißt, Photosynthese steht fast — nicht abwarten) und
+  Regel 3. H2O2, „Wurzelschock“ und „2–3 Gänge über 30 Minuten“ stehen nicht in ANBAU.md. Die Zahlen kommen aus
+  `GIESSPUNKT`, `DRAIN_ZIEL`, `DRAIN_EC_VERHAELTNIS` und `DRAIN_AB_TAG`; vor Tag 25 gilt der Gießtag der App.
+- Zweimal gegengeprüft (Sonnet, gegen ANBAU.md): die Entwürfe aus dem Befund und die fertigen Texte. Aus der ersten Runde
+  kamen die Tag-25-Bedingung, „oder ein anderer Grund (z. B. Hitze an der Lampe)“, die Spätblüte-Ausnahme und die Erklärung
+  von Pythium dazu.
+- Test: `test_diagnose_welktexte.js` (17 Prüfungen, beide Zeitzonen; 15 fallen auf v1.5.441 um).
+
 ## 2026-10-29 — v1.5.441
 
 - **Weiß ausgebleichte Spitzen ließen sich in der Diagnose nur als „Hellgrün“ wählen.** Dann standen „Lichtmangel /

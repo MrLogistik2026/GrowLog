@@ -2412,9 +2412,9 @@ const PROBLEMS = [
     // Trockenheit (ANBAU.md 1, 5), aber ohne Messung darf das Symptom keine Ursache verdrängen, die ein
     // Messwert stützt (ANBAU.md 15: Messung schlägt Symptom).
     shapeWenn: { wilting: 'ecDeltaPos' },
-    description: 'Braune, trockene, verbrannt aussehende Blattspitzen — die klassische "Crispy-Tip"-Optik. Schreitet von den Spitzen nach innen.',
+    description: 'Braune, trockene, verbrannt aussehende Blattspitzen — die klassische "Crispy-Tip"-Optik. Schreitet von den Spitzen nach innen. Bei starkem Salz kehrt sich der Wasserfluss um: Die Pflanze verliert Wasser an das Substrat und welkt — auch im nassen Topf.',
     context: { phase: ['vegi', 'bloom'], ecDeltaPos: true },
-    action: 'Düngung sofort halbieren, bei schwerem Burn: einmal flushen (2× Topfvolumen klares pH-Wasser). EC-Monitoring aktivieren wenn nicht schon. '
+    action: 'Welkt die Pflanze im nassen Topf, nicht mit derselben Nährlösung nachgießen — das verschlimmert es. Düngung sofort halbieren, bei schwerem Burn: einmal flushen (2× Topfvolumen klares pH-Wasser). EC-Monitoring aktivieren wenn nicht schon. '
       + '<b>In den letzten zwei Wochen vor der Ernte</b> lieber nur die Dosis senken — ein Flush kostet dort Ertrag, weil die Pflanze sich nicht mehr erholen kann.',
     lexiconKey: 'nutrient_burn',
   },
@@ -2464,7 +2464,10 @@ const PROBLEMS = [
     description: 'Blätter hängen nach unten obwohl Topf nass ist. Stamm kann weich werden. Langsames Wachstum. Klassisch: „aussieht wie Wassermangel, ist aber Wasserüberschuss".',
     // (v1.5.439) Ein federleichter Topf im Hebe-Test von heute schließt Überwässerung aus (ANBAU.md 15, Regel 2).
     context: { restHigh: true, phase: ['vegi', 'anzucht'], ignoreWennTrocken: true },
-    action: 'GIESSEN STOPPEN. Erst wieder gießen, wenn der Topf den Gießpunkt erreicht (Erde: Hebe-Test „Knapp“, unter ' + GIESSPUNKT.erde.bis + ' % Restgewicht; Coco: „Mittel“). Wurzeln brauchen Sauerstoff. Untersetzer leeren. Danach nicht öfter gießen, als der Hebe-Test sagt — nass macht zu häufiges Gießen, nicht eine volle Menge mit Drain.',
+    // (v1.5.442) Erst die Gegenprobe am Topf — bei „hängend“ stehen Überwässerung, Wassermangel und Überdüngung nebeneinander,
+    // und „GIESSEN STOPPEN“ ohne Bedingung ist bei einem leichten Topf genau falsch (ANBAU.md 1, 5; Regel 3).
+    action: 'Erst den Topf anheben (Hebe-Test). Ist er schwer, GIESSEN STOPPEN — erst wieder gießen, wenn er den Gießpunkt erreicht (Erde: Hebe-Test „' + GIESSPUNKT.erde.knopf + '“, unter ' + GIESSPUNKT.erde.bis + ' % Restgewicht; Coco: „' + GIESSPUNKT.coco.knopf + '“; vor Tag ' + DRAIN_AB_TAG + ' am nächsten Gießtag der App, wenn der Topf dann nicht mehr nass ist). Wurzeln brauchen Sauerstoff, und nasses Substrat verdrängt ihn. Untersetzer leeren. Danach nicht öfter gießen, als der Hebe-Test sagt — nass macht zu häufiges Gießen, nicht eine volle Menge mit Drain. '
+      + '<b>Unterscheiden:</b> Ist der Topf leicht, spricht das für Wassermangel. Ist er schwer und liegt der Drain-EC über dem ' + String(DRAIN_EC_VERHAELTNIS.voll).replace('.', ',') + '-Fachen des Gießwassers (gemessen bei mindestens ' + DRAIN_ZIEL.min + ' % Drain), ist es wahrscheinlich zu viel Dünger: Das Salz zieht der Wurzel Wasser ab — dann nicht mit derselben Nährlösung nachgießen. In der späten Blüte in Erde kann ein hoher Drain-EC auch Nachlieferung aus dem Substrat sein; dann zeigen braune Blattspitzen, ob es der Dünger ist.',
     lexiconKey: 'overwatering',
   },
   {
@@ -2480,7 +2483,10 @@ const PROBLEMS = [
     description: 'Blätter hängen schlaff, Topf federleicht. Wenn lange ignoriert: Blätter werden trocken und knistern.',
     // (v1.5.439) Ein schwerer Topf im Hebe-Test von heute schließt Wassermangel aus (ANBAU.md 15, Regel 2).
     context: { restLow: true, ignoreWennNass: true },
-    action: 'Sofort gießen — aber dosiert. Nicht auf einmal 3 L nachkippen, sondern in 2–3 Gängen über 30 Minuten. Zu viel auf einmal = Wurzelschock.',
+    // (v1.5.442) Vorher „Sofort gießen“ ohne Gegenprobe, dazu „3 L“ und „Wurzelschock“ ohne Beleg. In den Topf passt, was ihm
+    // fehlt (ANBAU.md 1.1); Welken heißt, Photosynthese steht fast — nicht abwarten (14, 9).
+    action: 'Erst den Topf anheben (Hebe-Test). Nur wenn er leicht ist — den Gießpunkt erreicht hat oder leichter (Erde: „' + GIESSPUNKT.erde.knopf + '“, Coco: „' + GIESSPUNKT.coco.knopf + '“) —, ist es Wassermangel. Ist er schwer, NICHT gießen: Dann ist es Überwässerung, zu viel Dünger oder ein anderer Grund (z. B. Hitze an der Lampe). '
+      + 'Bei leichtem Topf sofort gießen, so viel wie die Gießmenge im Eintrag nennt; ab Tag ' + DRAIN_AB_TAG + ' gießt du, bis der Topf beim Anheben wieder voll ist — was darüber hinausgeht, läuft als Drain ab. Nicht abwarten: Welken heißt, Photosynthese und Transpiration stehen schon fast, und bei Automatics ist jeder Stresstag dauerhaft verloren.',
     lexiconKey: 'underwatering',
   },
   {
@@ -2495,7 +2501,10 @@ const PROBLEMS = [
     },
     description: 'Wurzeln werden braun, weich, riechen modrig (statt frisch-erdig). Pflanze hängt trotz Wasser. Oft bei konstanter Überwässerung.',
     context: { restHigh: true, tempWarm: true },
-    action: 'NOTFALL. Topf umtopfen, faule Wurzeln abschneiden, H2O2-Spülung (3 %, 10 ml/L, einmalig). Bessere Drainage und trockenere Gießzyklen.',
+    // (v1.5.442) Vorher „NOTFALL. Topf umtopfen … H2O2“ schon bei bloßem Welken. H2O2 steht nicht in ANBAU.md; Umtopfen kostet
+    // Tage, die eine Automatic nicht aufholt (7.4, 9). Wurzelzone nach 7.3.
+    action: 'Nur wenn die Wurzeln sichtbar braun und weich sind, modrig riechen und der Topf dauernass bleibt — nicht schon bei bloßem Welken (dafür erst Überwässerung, Wassermangel und Überdüngung ausschließen: Topf anheben, Drain-EC prüfen). '
+      + 'Dann: nicht mehr gießen, bis der Topf den Gießpunkt erreicht; Untersetzer leeren. Die Wurzelzone soll bei 18–24 °C liegen — über 26 °C steigt der Druck durch Wurzelfäule-Erreger (Pythium, ein Algenpilz im Wurzelraum) deutlich. Umtopfen und Wurzeln kappen ist der letzte Schritt, kein erster: Es kostet Tage, die vor allem Automatics nicht aufholen.',
     lexiconKey: 'root_rot',
   },
 
@@ -4735,7 +4744,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.441';
+const APP_VERSION = 'v1.5.442';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
