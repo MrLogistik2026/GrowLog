@@ -2,6 +2,15 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-29 — v1.5.471
+
+- **Topf-Schritt im Assistenten:** Bei Automatics standen zwei gleiche Knöpfe „Empfehlung: 11L“ und „Standard: 11L“; die
+  Substrat-Wahl stand unter „Wie groß ist dein Topf?“, dazu ein Knopf „💧 Hydro · bald“, der nichts tut. Gefunden bei der
+  Anfänger-Prüfung am 29.10.2026.
+- **Jetzt** heißt der Schritt „Topf und Erde“; „Standard“ erscheint nur, wenn er von der Empfehlung abweicht; „Hydro · bald“ ist im
+  Einsteiger-Modus ausgeblendet (im Profi-Modus bleibt er als Ausblick).
+- Test: `test_assistent_topf_und_erde.js` (8 Prüfungen, beide Zeitzonen; 4 fallen auf v1.5.470 um). Gebaut von einem Sonnet-Helfer.
+
 ## 2026-10-29 — v1.5.470
 
 - **Die Dünger-Frage im Assistenten hieß „Düngeplan?“** — darunter Karten mit „Master × 50%“, „Terra Vega + Flores“. Ein Anfänger

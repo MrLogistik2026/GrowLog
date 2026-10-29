@@ -3768,7 +3768,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.470';
+const APP_VERSION = 'v1.5.471';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -25698,15 +25698,15 @@ function _wizStepPotSize(a) {
   const med = a.medium || 'erde';
 
   return `<div style="padding:20px">
-    <h2 style="font-size:20px;font-weight:700;margin:0 0 6px">Wie groß ist dein Topf?</h2>
-    <p style="font-size:13px;color:var(--text-muted);margin:0 0 16px">In Litern. Das hilft bei der Gießmenge.</p>
+    <h2 style="font-size:20px;font-weight:700;margin:0 0 6px">Topf und Erde</h2>
+    <p style="font-size:13px;color:var(--text-muted);margin:0 0 16px">Worin wächst deine Pflanze, und wie groß ist der Topf (in Litern)? Das hilft bei der Gießmenge.</p>
 
     <div class="inp-wrap" style="margin-bottom:16px">
       <div class="inp-label">Worin wächst deine Pflanze?</div>
       <div style="display:flex;gap:8px;margin-top:6px">
         <button onclick="_wizAnswers.medium='erde';_renderWiz()" style="flex:1;background:${med==='erde'?'rgba(76,175,112,0.15)':'var(--card2)'};border:1.5px solid ${med==='erde'?'var(--green)':'var(--border)'};border-radius:10px;padding:12px;font-size:13px;color:${med==='erde'?'var(--green)':'var(--text)'};font-weight:${med==='erde'?'700':'500'};cursor:pointer;font-family:var(--font)">🪴 Erde</button>
         <button onclick="_wizAnswers.medium='coco';_renderWiz()" style="flex:1;background:${med==='coco'?'rgba(76,175,112,0.15)':'var(--card2)'};border:1.5px solid ${med==='coco'?'var(--green)':'var(--border)'};border-radius:10px;padding:12px;font-size:13px;color:${med==='coco'?'var(--green)':'var(--text)'};font-weight:${med==='coco'?'700':'500'};cursor:pointer;font-family:var(--font)">🥥 Coco</button>
-        <button onclick="toast('💧 Hydro kommt bald — wähl solange Erde oder Coco')" style="flex:1;background:var(--card2);border:1.5px dashed var(--border);border-radius:10px;padding:12px;font-size:13px;color:var(--text-hint);font-weight:500;cursor:not-allowed;opacity:0.6;font-family:var(--font)">💧 Hydro <span style="font-size:10px;font-weight:600">· bald</span></button>
+        ${S.beginnerMode ? '' : `<button onclick="toast('💧 Hydro kommt bald — wähl solange Erde oder Coco')" style="flex:1;background:var(--card2);border:1.5px dashed var(--border);border-radius:10px;padding:12px;font-size:13px;color:var(--text-hint);font-weight:500;cursor:not-allowed;opacity:0.6;font-family:var(--font)">💧 Hydro <span style="font-size:10px;font-weight:600">· bald</span></button>`}
       </div>
       <div style="font-size:11px;color:var(--text-sub);line-height:1.45;margin-top:8px">${med==='hydro' ? 'Hydro (z.B. DWC): Wurzeln hängen in belüfteter Nährlösung — kein Gießen, dafür tägliche Tank-Pflege (pH, EC, Wassertemp). Etwas anspruchsvoller, verzeiht Fehler weniger.' : med==='coco' ? 'Kokos-Substrat: wird häufiger gegossen als Erde und braucht etwas andere pH- und EC-Werte.' : 'Klassische Blumenerde: verzeiht am meisten, ideal für den Einstieg.'}</div>
     </div>
@@ -25724,7 +25724,7 @@ function _wizStepPotSize(a) {
 
     <div style="display:flex;gap:8px;margin-bottom:16px">
       <button onclick="_wizAnswers.potSize=${rec.size};document.getElementById('wiz-pot').value=${rec.size}" style="flex:1;background:var(--card2);border:0.5px solid var(--border);border-radius:10px;padding:10px;font-size:12px;color:var(--text);cursor:pointer;font-family:var(--font)">Empfehlung: ${rec.size}L</button>
-      ${a.growType === 'outdoor' ? `<button onclick="_wizAnswers.potSize=50;document.getElementById('wiz-pot').value=50" style="flex:1;background:var(--card2);border:0.5px solid var(--border);border-radius:10px;padding:10px;font-size:12px;color:var(--text);cursor:pointer;font-family:var(--font)">Groß: 50L</button>` : `<button onclick="_wizAnswers.potSize=11;document.getElementById('wiz-pot').value=11" style="flex:1;background:var(--card2);border:0.5px solid var(--border);border-radius:10px;padding:10px;font-size:12px;color:var(--text);cursor:pointer;font-family:var(--font)">Standard: 11L</button>`}
+      ${a.growType === 'outdoor' ? `<button onclick="_wizAnswers.potSize=50;document.getElementById('wiz-pot').value=50" style="flex:1;background:var(--card2);border:0.5px solid var(--border);border-radius:10px;padding:10px;font-size:12px;color:var(--text);cursor:pointer;font-family:var(--font)">Groß: 50L</button>` : rec.size === 11 ? '' : `<button onclick="_wizAnswers.potSize=11;document.getElementById('wiz-pot').value=11" style="flex:1;background:var(--card2);border:0.5px solid var(--border);border-radius:10px;padding:10px;font-size:12px;color:var(--text);cursor:pointer;font-family:var(--font)">Standard: 11L</button>`}
     </div>
 
     <button onclick="_wizNext()" style="width:100%;background:var(--green);color:#fff;border:none;border-radius:12px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;font-family:var(--font)">Weiter →</button>

@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.470** · index.html 2,67 MB · 781 Funktionen
+Stand: **v1.5.471** · index.html 2,67 MB · 781 Funktionen
 Zuletzt fortgeschrieben am 29.10.2026 (Diagnose-Arbeitsliste, B02, B04, B01, B07, B03, B11, B10, B08 und B09 erledigt — Abschnitt 0o, Punkt 8). Davor: Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
@@ -427,6 +427,7 @@ Speicher-Befunde sind in v1.5.340–344 behoben. Rohdaten: Workflow wf_63d754b1-
 - v1.5.468: Keine Modus-Frage nach dem Assistenten — Start im Einsteiger-Modus mit Hinweis, wo man umstellt.
 - v1.5.469: Assistent erklärt „Zyklus“ im ersten Schritt.
 - v1.5.470: Assistent fragt „Welchen Dünger hast du oder willst du kaufen?“ und nennt die Einsteiger-Vorlage.
+- v1.5.471: Assistent: Schritt „Topf und Erde“ ohne doppelten 11-L-Knopf, „Hydro · bald“ nur im Profi-Modus.
 
 **Gegenprüfung von v1.5.364/365 (07.10.2026 nachts, Workflow wf_4cf817bf-629, drei Sonnet-Prüfer + Gegenprüfer).** Kein Fehlalarm
 in 33 App-Fassungen, allen Vorlagen und über 2800 Klicks; die schweren Befunde (unsichere Kopie zerstört den Hauptstand, Tropfen als
