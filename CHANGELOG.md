@@ -2,6 +2,13 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-29 — v1.5.469
+
+- **„Zyklus“ wurde nirgends erklärt** — „Meinen ersten Zyklus einrichten“, „Zyklus jetzt anlegen“, ohne Satz dazu. Gefunden bei der
+  Anfänger-Prüfung am 29.10.2026.
+- **Jetzt** steht im ersten Schritt des Assistenten: „Ein Zyklus ist ein Anbau-Durchgang — von der Keimung bis zur Ernte.“
+- Test: `test_assistent_zyklus_erklaert.js` (3 Prüfungen, beide Zeitzonen; 2 fallen auf v1.5.468 um). Gebaut von einem Sonnet-Helfer.
+
 ## 2026-10-29 — v1.5.468
 
 - **Direkt nach dem Assistenten fragte die App „Einsteiger- oder Profi-Modus?“** — mit einem Profi-Knopf, der mit „EC-Werte ·

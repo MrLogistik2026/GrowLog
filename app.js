@@ -3768,7 +3768,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.468';
+const APP_VERSION = 'v1.5.469';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -25490,9 +25490,10 @@ function _wizStepWelcome(a) {
   return `<div style="padding:24px 20px">
     <div style="font-size:48px;text-align:center;margin-bottom:12px">🌱</div>
     <h1 style="font-size:22px;font-weight:700;color:var(--green);text-align:center;margin:0 0 12px">Willkommen!</h1>
-    <p style="font-size:14px;line-height:1.6;color:var(--text-sub);text-align:center;margin:0 0 24px">
+    <p style="font-size:14px;line-height:1.6;color:var(--text-sub);text-align:center;margin:0 0 12px">
       Lass uns deinen neuen Zyklus einrichten.<br>Ich stelle dir <b>sieben bis acht kurze Fragen</b> — jede mit einer Empfehlung, die du übernehmen kannst.
     </p>
+    <p style="font-size:13px;line-height:1.5;color:var(--text-muted);text-align:center;margin:0 0 24px">Ein Zyklus ist ein Anbau-Durchgang — von der Keimung bis zur Ernte.</p>
     <button onclick="_wizNext()" style="width:100%;background:var(--green);color:#fff;border:none;border-radius:12px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;font-family:var(--font)">Los geht's →</button>
     ${skipBtn}
   </div>`;
