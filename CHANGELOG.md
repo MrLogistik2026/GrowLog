@@ -2,6 +2,15 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-29 — v1.5.455
+
+- **Sämlings-Pflege: „die Mengen stehen in der Mischliste“ an Tagen ohne Mischliste.** Der Satz stand an jedem Sämlingstag,
+  für den der Plan Dünger vorsieht — auch an Sprüh- und Ruhetagen, an denen der Eintrag gar keine Mischliste hat. Gefunden bei
+  der Anfänger-Prüfung am 29.10.2026 (Tag 3 und Tag 10).
+- **Jetzt** heißt es an Gießtagen „die Mengen stehen unten in der Mischliste“, sonst „die Mengen siehst du am nächsten
+  Gießtag (morgen / Datum) im Eintrag“ (`isGiessTag`, `nextGiessTag`).
+- Test: `test_saemling_mischliste.js` (5 Prüfungen über 15 Tage, beide Zeitzonen; 2 fallen auf v1.5.454 um).
+
 ## 2026-10-29 — v1.5.454
 
 - **Banner „Aktion verpasst“: „In den letzten 1 Tagen wurden Gieß-Tage nicht eingetragen.“** Gefunden bei der Anfänger-Prüfung

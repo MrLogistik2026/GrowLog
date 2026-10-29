@@ -3755,7 +3755,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.454';
+const APP_VERSION = 'v1.5.455';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -30983,7 +30983,9 @@ function renderEntry(iso) {
       const _saemWoche = fertPlanWeek(c, iso, p);
       const _saemDosen = Object.values(getWeekDoses(c.id, _saemWoche, c) || {}).filter(v => v > 0).length;
       const _saemDuenger = _saemDosen > 0
-        ? `Dein Plan sieht diese Woche ${_saemDosen} Produkt${_saemDosen === 1 ? '' : 'e'} vor — die Mengen stehen in der Mischliste. Light-Mix-Erde ist schon vorgedüngt: Mehr, als der Plan vorsieht, braucht ein Sämling nicht.`
+        // (v1.5.455) Die Mischliste steht nur an Gießtagen im Eintrag. Vorher hieß es an jedem Sämlingstag „die Mengen stehen in der
+        // Mischliste“ — auch an Sprüh- und Ruhetagen, an denen es keine gibt.
+        ? `Dein Plan sieht diese Woche ${_saemDosen} Produkt${_saemDosen === 1 ? '' : 'e'} vor — ${isGiessTag(iso, c) ? 'die Mengen stehen unten in der Mischliste' : (() => { const _ng = nextGiessTag(c, iso); return _ng ? `die Mengen siehst du am nächsten Gießtag (${_ng.days === 1 ? 'morgen' : fmtDE(_ng.iso, { day: '2-digit', month: '2-digit' })}) im Eintrag` : 'die Mengen siehst du am nächsten Gießtag im Eintrag'; })()}. Light-Mix-Erde ist schon vorgedüngt: Mehr, als der Plan vorsieht, braucht ein Sämling nicht.`
         : 'Dein Plan sieht diese Woche keinen vor — der Sämling lebt von der Erde.';
       return `
       <div style="background:linear-gradient(135deg,rgba(122,194,90,0.12),rgba(122,194,90,0.04));border:1px solid rgba(122,194,90,0.4);border-radius:12px;padding:12px 14px;margin-top:8px">
