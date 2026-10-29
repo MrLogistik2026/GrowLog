@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.446** · index.html 2,67 MB · 781 Funktionen
+Stand: **v1.5.447** · index.html 2,67 MB · 781 Funktionen
 Zuletzt fortgeschrieben am 29.10.2026 (Diagnose-Arbeitsliste, B02, B04, B01, B07, B03, B11, B10, B08 und B09 erledigt — Abschnitt 0o, Punkt 8). Davor: Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
@@ -403,6 +403,7 @@ Speicher-Befunde sind in v1.5.340–344 behoben. Rohdaten: Workflow wf_63d754b1-
 - v1.5.444: Schnellhilfe „Erde trocken, Pflanze welk“ mit Hebe-Test-Gegenprobe, ohne „selten“ und „nach 1–2 Stunden“ (B10, `test_schnellhilfe_welk.js`).
 - v1.5.445: Licht-Bleichen überall mit einem Handgriff (Lampe nicht näher, ein Schritt zurück) statt vier fester Zahlen, kein „bis Ernte“, kein „Trichome trüb-braun: jetzt ernten“ (B08, `test_bleichtexte.js`). **Offen, gefunden dabei:** Schnellhilfe „Pflanze welkt nur unter starker Lampe“ nennt „Dimmer auf 70–80%“ und „LED über 400 W“ (Hitze, ANBAU.md 8.2: Abstand, Abluft, Umluft); Lichtmangel-Text „Notlösung: Pflanze tiefer eingraben“ (bei Automatics gegen 7.4).
 - v1.5.446: Schnellhilfe „Ganzes Blatt blass“ ohne „CalMag + Schwefel über Blattdünger“ — erst oben oder unten, Magnesium wie die Diagnose, Coco-Ausnahme, Licht als dritte Ursache (B09).
+- v1.5.447: Magnesium überall in derselben Reihenfolge — Booster aussetzen, pH prüfen, dann Bittersalz (Schnellhilfe „Adern grün“ und Lexikon nannten zuerst den pH).
 
 **Gegenprüfung von v1.5.364/365 (07.10.2026 nachts, Workflow wf_4cf817bf-629, drei Sonnet-Prüfer + Gegenprüfer).** Kein Fehlalarm
 in 33 App-Fassungen, allen Vorlagen und über 2800 Klicks; die schweren Befunde (unsichere Kopie zerstört den Hauptstand, Tropfen als

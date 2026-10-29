@@ -68,6 +68,17 @@ const HTML = fs.readFileSync(process.env.GS_INDEX || path.join(__dirname, 'index
   pruefe(iB >= 0 && iB < iP && iP < iS, 'Blass-Karte: Booster → pH → Bittersalz wie die Diagnose');
   pruefe(/ungepuffertem Coco/.test(k3t) && /fehlt eher Licht/.test(k3t), 'Blass-Karte: Coco-Ausnahme und Licht als Ursache');
 
+  // (v1.5.447) Magnesium überall in derselben Reihenfolge: Booster aussetzen → pH prüfen → Bittersalz (ANBAU.md 6.2). Die Karte
+  // „Adern grün, dazwischen gelb“ und das Lexikon „Magnesium“ nannten zuerst den pH, Diagnose und die übrigen Karten den Booster.
+  const mgKarte = JSON.parse(E(`JSON.stringify(SYMPTOMS.flatMap(s => s.causes || []).find(c => /Untere\\/mittlere Blätter, Adern scharf grün/.test(c.heading)) || null)`));
+  const mgT = (mgKarte && mgKarte.text) || '';
+  pruefe(/<b>1\.<\/b> Läuft ein Kalium-Booster/.test(mgT), 'Karte „Adern grün“: Schritt 1 ist der Booster');
+  const mgLex = texte.find((x) => /^LEXIKON Magnesium/.test(x.wo));
+  pruefe(mgLex && /Erst den Booster aussetzen, dann den pH prüfen/.test(mgLex.t), 'Lexikon Magnesium: Booster vor pH');
+  const mgTexte = texte.filter((x) => /Bittersalz/.test(x.t) && /Booster/.test(x.t) && /pH/.test(x.t));
+  const verkehrt = mgTexte.filter((x) => { const b = x.t.indexOf('Booster'); return /Erst pH prüfen|1\.<\/b> pH prüfen/.test(x.t.slice(0, b)); });
+  pruefe(mgTexte.length >= 3 && verkehrt.length === 0, `Magnesium-Reihenfolge in ${mgTexte.length} Texten — verkehrt: ${verkehrt.map((x) => x.wo).join(' · ')}`);
+
   pruefe(errors.length === 0, 'Laufzeitfehler: ' + errors.slice(0, 2).join(' | '));
   console.log(`TZ=${process.env.TZ || '(System)'} · ${n - fehler.length}/${n} OK`);
   for (const f of fehler) console.log('  FEHL ' + f);

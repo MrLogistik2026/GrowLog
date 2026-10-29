@@ -2,6 +2,17 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-29 — v1.5.447
+
+- **Magnesium-Mangel: zwei Stellen nannten eine andere Reihenfolge als die Diagnose.** Die Schnellhilfe „Adern grün,
+  dazwischen gelb“ sagte „1. pH prüfen, 2. Kalium-Booster aussetzen, 3. Bittersalz“, das Lexikon „Magnesium (Epsom /
+  Bittersalz)“ „Erst pH prüfen“ ohne den Booster. Die Diagnose (`mg_deficiency`), die Schnellhilfe „Magnesium“ und seit
+  v1.5.446 die Karte „Ganzes Blatt blass“ nennen zuerst den Booster — nach ANBAU.md 6.2 der häufigste Fall in der Blüte.
+  Gefunden bei der Gegenprüfung von Befund B09 (29.10.2026).
+- **Jetzt** überall: erst den Booster aussetzen, dann den pH prüfen, erst danach Bittersalz (Magnesiumsulfat).
+- Test: `test_bleichtexte.js` Abschnitt „Magnesium-Reihenfolge“ (3 Prüfungen, darunter ein Wächter über alle Texte mit
+  Booster, pH und Bittersalz; beide Zeitzonen; fallen auf v1.5.446 um).
+
 ## 2026-10-29 — v1.5.446
 
 - **Schnellhilfe „Obere Buds verlieren Farbe“, dritte Ursache „Ganzes Blatt verbleicht, aber Lampe nicht zu nah“:** Urteil
