@@ -2,6 +2,16 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-29 — v1.5.475
+
+- **Das Diagnose-Ergebnis bot keinen Weg zur Messung, die es empfiehlt.** Die Karten der Wasser-Ursachen sagen „Erst den Topf
+  anheben“, unten standen nur „Neu beginnen“ und „Fertig“. Gefunden bei der Bedien-Prüfung „Hilfe finden“ am 29.10.2026.
+- **Jetzt** gibt es, wenn Überwässerung, Wassermangel, Wurzelfäule oder Überdüngung unter den ersten drei stehen und ein Zyklus da
+  ist, den Knopf „⚖️ Hebe-Test eintragen“: Er schließt den Assistenten, öffnet den heutigen Eintrag und springt zum Hebe-Test
+  (`jumpToEntryField(…, 'hebe')`). Er speichert nichts — auch nicht die Topf-Antwort aus dem Assistenten (Vorschlag und
+  Bestätigung sind zwei Dinge). Liegt schon ein Hebe-Test von heute vor, entfällt er.
+- Test: `test_diagnose_hebeknopf.js` (15 Prüfungen, beide Zeitzonen; 9 fallen auf v1.5.474 um). Gebaut von einem Sonnet-Helfer.
+
 ## 2026-10-29 — v1.5.474
 
 - **Zurück aus dem Gieß-Fahrplan führte nicht dorthin, woher man kam.** Der Pfeil oben ging immer in die Einstellungen, die

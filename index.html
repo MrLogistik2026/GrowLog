@@ -3319,6 +3319,34 @@ function _diagTopfFrageHTML() {
   </div>`;
 }
 
+/**
+ * (v1.5.475) Knopf „Hebe-Test eintragen“ im Diagnose-Ergebnis. Nur bei Wasser-Ursachen unter den ersten drei, nur mit Zyklus,
+ * und nicht, wenn heute schon ein echter Hebe-Test eingetragen ist. Er öffnet nur das Feld — gespeichert wird nichts.
+ */
+const _DIAG_WASSER_URSACHEN = ['overwatering', 'underwatering', 'root_rot', 'nutrient_burn'];
+function _diagHebeKnopfHTML(results, ctx, c) {
+  if (!c || !results.slice(0, 3).some(r => _DIAG_WASSER_URSACHEN.includes(r.problem.id))) return '';
+  if (ctx.restHeute && !ctx._topfAngabe) return '';
+  const t = diagState.topf;
+  const vorschlag = (t === 'leicht' || t === 'schwer')
+    ? `<div style="font-size:11px;color:var(--text-muted);line-height:1.5;margin-bottom:8px">Dein Eindruck „${t === 'leicht' ? 'leicht' : 'schwer'}“ ist erst ein Vorschlag. Trag den Hebe-Test ein, dann rechnet die App mit der Messung — gespeichert wird nur, was du dort eingibst.</div>`
+    : `<div style="font-size:11px;color:var(--text-muted);line-height:1.5;margin-bottom:8px">Der Topf trennt Durst von zu viel Wasser. Heb ihn an und trag ein, wie er sich anfühlt.</div>`;
+  return `<div data-diag-hebe style="margin-top:16px;padding:12px;background:var(--card);border:0.5px solid var(--border);border-radius:12px">
+    ${vorschlag}
+    <button onclick="diagHebeEintragen()" style="width:100%;padding:13px;background:var(--blue);border:none;border-radius:10px;font-size:13px;font-weight:700;color:#fff;cursor:pointer;font-family:var(--font)">⚖️ Hebe-Test eintragen</button>
+  </div>`;
+}
+
+/** (v1.5.475) Schließt den Assistenten, öffnet den heutigen Eintrag und springt zum Hebe-Test. Speichert nichts. */
+function diagHebeEintragen() {
+  const cId = diagState.cycleId;
+  if (!cId) return;
+  closeDiagnostics();
+  if (!['dash', 'cal', 'tips', 'set'].includes(tab)) entryFrom = 'dash'; else entryFrom = tab;
+  openEntry(todayISO());
+  setTimeout(() => jumpToEntryField(cId, 'hebe'), 150);
+}
+
 function renderDiagStep4() {
   // Kontext aus App extrahieren falls cycleId gesetzt
   const { ctx, c: _diagC } = _diagKontext();
@@ -3368,6 +3396,7 @@ function renderDiagStep4() {
     <div style="display:flex;flex-direction:column;gap:12px">
       ${results.map((r, i) => renderDiagResultCard(r, i)).join('')}
     </div>
+    ${_diagHebeKnopfHTML(results, ctx, _diagC)}
     <div style="margin-top:20px;padding:12px;background:var(--card2);border-radius:10px;font-size:11px;color:var(--text-muted);line-height:1.6">
       ⚖️ Diese Auswertung basiert auf den häufigsten Grow-Problemen. Sie ersetzt keine Erfahrung und kein direktes Inspizieren der Pflanze. Bei Unsicherheit: Foto machen, Community fragen, Lexikon lesen.
     </div>
@@ -4783,7 +4812,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.474';
+const APP_VERSION = 'v1.5.475';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -29894,9 +29923,15 @@ function jumpToEntryField(cId, was) {
   else if (was === 'rh') el = document.getElementById('er');
   else if (was === 'note') el = document.getElementById('note-' + cId) || body.querySelector('.note-ta');
   else if (was === 'photo') el = body.querySelector('.photo-add') || body.querySelector('.photo-grid');
+  // (v1.5.475) Hebe-Test: Gewichtsfeld (Waage), sonst die Knopfreihe bzw. der Regler (Bauchgefühl/Finger/Slider).
+  else if (was === 'hebe') {
+    el = document.getElementById('weight-g-' + cId);
+    if (!el) { const k = body.querySelector('[onclick^="setLiftFeel("]'); el = k ? k.parentElement : null; }
+    if (!el) el = body.querySelector('input[type="range"][oninput*="uRestPct"]');
+  }
   if (!el) {
     // Kein Wegweiser ins Leere: an einem Tag ohne Guss gibt es kein Wasser-Feld.
-    toast(was === 'water' ? 'Heute ist kein Gießtag — kein Wasser-Feld vorhanden.' : 'Dieses Feld gibt es an diesem Tag nicht.');
+    toast(was === 'water' ? 'Heute ist kein Gießtag — kein Wasser-Feld vorhanden.' : (was === 'hebe' ? 'Heute ist kein Messtag — den Hebe-Test gibt es an diesem Tag nicht.' : 'Dieses Feld gibt es an diesem Tag nicht.'));
     return;
   }
   for (let n = el.parentElement; n && n !== body; n = n.parentElement) {
