@@ -2,6 +2,22 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-29 — v1.5.441
+
+- **Weiß ausgebleichte Spitzen ließen sich in der Diagnose nur als „Hellgrün“ wählen.** Dann standen „Lichtmangel /
+  Etiolierung“ und Foto-Bleaching gleichauf; bei oberen Blättern und bei „alle Blätter“ führte der Lichtmangel, mit „Lampe
+  ein Stück näher“ als erstem Handgriff — die falsche Richtung. Nach ANBAU.md 8.2 bleicht zu viel Licht nach weiß aus und
+  trifft die lichtnächsten Spitzen; blass-hellgrün ist ein anderes Bild. Gefunden von der Diagnose-Prüfung am 08.10.2026
+  (Befund B07). v1.5.124 hatte die Trennung begonnen (Hellgrün aus dem Lichtbrand genommen), den Gegenknopf aber nicht geliefert.
+- **Jetzt** gibt es im Schritt „Wie sieht es aus?“ den Knopf „Weiß / ausgebleicht“ (`DIAG_LABELS.color.white`). Mit ihm steht
+  das Foto-Bleaching bei neuen Blättern, Blüten und „alle Blätter“ auf Platz 1, auch mit „zu warm“. Der Lichtmangel-Text
+  beginnt mit der Unterscheidung: weiß heißt zu viel Licht, gleichmäßig blass und gestreckt heißt zu wenig.
+- Die Profilbreite des Foto-Bleachings ist auf den bisherigen Wert 7 festgeschrieben (`breite`, die Engine liest sie jetzt) —
+  sonst hätte das neue Merkmal Gleichstände bei „Buds + Gelb/Taco“ zum Lichtbrand verschoben (gemessen, 115 Fälle).
+- Im Browser durchgeklickt (Handy-Format, Patricks Daten): acht Farbknöpfe im geraden Raster, „Weiß“ wählbar, Ergebnis
+  Foto-Bleaching zuerst. Dessen Maßnahmentext (feste Zentimeter, „bis Ernte“) kommt mit Befund B08.
+- Test: `test_diagnose_weiss.js` (12 Prüfungen, beide Zeitzonen; 4 fallen auf v1.5.440 um).
+
 ## 2026-10-29 — v1.5.440
 
 - **Hängende Blätter bei gemessen hohem Drain-EC: Die Überdüngung fehlte in der Diagnose.** `nutrient_burn` kannte die Form

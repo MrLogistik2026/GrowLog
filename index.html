@@ -2222,7 +2222,7 @@ function strainDifficultyLabel(d) {
  *
  * SYMPTOM-KATEGORIEN:
  *   location: 'oldLeaves' | 'newLeaves' | 'allLeaves' | 'buds' | 'stem' | 'roots'
- *   color:    'yellow' | 'brown' | 'purple' | 'darkGreen' | 'paleGreen' | 'red' | 'spots'
+ *   color:    'yellow' | 'brown' | 'purple' | 'darkGreen' | 'paleGreen' | 'white' | 'red' | 'spots'
  *   shape:    'curlDown' | 'curlUp' | 'wilting' | 'crispy' | 'spotted' | 'holed' | 'webs' | 'burnTips'
  *   timing:   'hours' | 'days' | 'weeks'  (seit wann tritt es auf)
  *
@@ -2547,9 +2547,11 @@ const PROBLEMS = [
       // Top-Buds in mittlerer-später Blüte. Sieht "weiß/gebleicht" aus, nicht
       // verbrannt-braun. Häufige Verwechslung mit Mehltau (deshalb spotted).
       location: ['newLeaves', 'buds', 'allLeaves'],
-      color: ['paleGreen', 'yellow'],
+      // (v1.5.441) Weiß ist das Kennzeichen (ANBAU.md 8.2); breite 7 = bisherige Profillänge, damit sich keine Gleichstände verschieben.
+      color: ['white', 'paleGreen', 'yellow'],
       shape: ['spotted', 'curlUp'],
     },
+    breite: 7,
     description: 'Top-Buds und obere Blätter werden weißlich/gebleicht (NICHT braun-verbrannt), oft mit silbrig-glänzenden Flecken. Chlorophyll und Trichome werden ausgebleicht. Sieht nach viel Harz aus, ist aber ausgeblichenes Gewebe: An diesen Spitzen kommt mehr Licht an, als die Blätter verarbeiten können. Typisch bei sehr hoher Lichtmenge am Canopy: ausbleichen kann es praktisch erst ab etwa ' + LICHT_ZIEL.bluete.bleichAb + ' PPFD.',
     context: { phase: ['bloom'], daysToHarvestLow: false },
     action: 'LED um 15–20 cm anheben oder Dimmer auf 60–70% bis Ernte. PPFD-Meter (oder LED-PAR-Sensor) zeigt am Canopy: Blüte-Ziel ' + LICHT_ZIEL.bluete.ppfd.join('–') + ', ausbleichen kann es praktisch erst ab etwa ' + LICHT_ZIEL.bluete.bleichAb + ' (je näher oder stärker die LED, desto mehr Licht am Blatt). Zeigt dein Messgerät deutlich weniger, aber das Bild passt (weiß, scharf begrenzt, nur die lichtnächsten Spitzen), gilt das Bild — Handy-Messungen sind Schätzungen. Wenn Trichome schon trüb-braun sind: lieber jetzt ernten als noch mehr stressen.',
@@ -2570,7 +2572,8 @@ const PROBLEMS = [
     },
     description: 'Pflanze streckt sich extrem (lange Internodien zwischen den Blattetagen), Stamm wird dünn und kippt fast um. Blätter generell hellgrün-blass. In der Blüte: kleine luftige Buds statt dichter Cola. Lampe zu schwach, zu weit weg oder Lichtperiode unzureichend.',
     context: { phase: ['anzucht', 'vegi', 'bloom'] },
-    action: 'Mehr Licht ans Blatt bringen, in kleinen Schritten: Dimmer ein Stück hoch oder Lampe ein Stück näher, dann die Lichtmenge am Blatt messen (PPFD). Ziel am Canopy (Oberkante der Pflanzen): ' + _lichtZielZeile() + ' µmol/m²/s. Ohne Lichtmesser ist jede Zahl geschätzt — dann nach einigen Tagen die obersten Blätter ansehen: Bleichen die obersten Blätter weiß aus (zu viel Licht) oder werden die Ränder gelbbraun und wölben sich nach oben (zu viel Wärme), war der Schritt zu groß. Die Hand taugt hier nicht als Grenze, denn eine LED kann ausbleichen, ohne dass sie sich heiß anfühlt. Bei alten oder schwachen LEDs: Leistung prüfen, ggf. ersetzen. Notlösung: Pflanze tiefer eingraben (kann am Stiel Wurzeln bilden).',
+    // (v1.5.441) Zuerst die Gegenprobe: weiß = zu viel Licht, blass und gestreckt = zu wenig.
+    action: 'Erst unterscheiden: Bleichen die obersten Blätter oder Blütenspitzen <b>weiß</b> aus, ist es zu viel Licht (Foto-Bleaching) — dann nicht näher, sondern Leistung zurück. Sind sie gleichmäßig blass und die Pflanze streckt sich, fehlt Licht: Mehr Licht ans Blatt bringen, in kleinen Schritten: Dimmer ein Stück hoch oder Lampe ein Stück näher, dann die Lichtmenge am Blatt messen (PPFD). Ziel am Canopy (Oberkante der Pflanzen): ' + _lichtZielZeile() + ' µmol/m²/s. Ohne Lichtmesser ist jede Zahl geschätzt — dann nach einigen Tagen die obersten Blätter ansehen: Bleichen die obersten Blätter weiß aus (zu viel Licht) oder werden die Ränder gelbbraun und wölben sich nach oben (zu viel Wärme), war der Schritt zu groß. Die Hand taugt hier nicht als Grenze, denn eine LED kann ausbleichen, ohne dass sie sich heiß anfühlt. Bei alten oder schwachen LEDs: Leistung prüfen, ggf. ersetzen. Notlösung: Pflanze tiefer eingraben (kann am Stiel Wurzeln bilden).',
     lexiconKey: 'light_deficiency',
   },
   {
@@ -2825,7 +2828,9 @@ function diagnoseProblems(symptoms, ctx = {}) {
     score = Math.min(1, score + ctxBoost);
     // Breite des Profils = wie viele Symptome der Eintrag überhaupt listet. Dient nur der
     // Reihenfolge bei Gleichstand (siehe unten), nicht der Punktzahl.
-    const breite = pLoc.length + pCol.length + pShpBasis.length;
+    // (v1.5.441) Ein Eintrag kann seine Breite festschreiben (p.breite), damit ein neues Merkmal wie „weiß“ die
+    // Reihenfolge bei Gleichstand nicht verschiebt.
+    const breite = (p.breite != null) ? p.breite : (pLoc.length + pCol.length + pShpBasis.length);
     const rang = { critical: 3, high: 2, medium: 1, low: 0 }[p.severity] ?? 1;
     // (v1.5.438) Der Anteil, der etwas aussagt: Messwerte und die späte Blüte, ohne den
     // allgemeinen Phasen-Bonus. Gerundet, damit 0,15 − 0,05 nicht als 0,10000000000000002
@@ -3123,6 +3128,8 @@ const DIAG_LABELS = {
     yellow: { label: 'Gelb', icon: '🟡' },
     brown: { label: 'Braun', icon: '🟤' },
     paleGreen: { label: 'Hellgrün', icon: '🟢' },
+    // (v1.5.441) Weiß ausgebleicht ist ein anderes Bild als blass-hellgrün (Foto-Bleaching, B07).
+    white: { label: 'Weiß / ausgebleicht', icon: '⚪' },
     darkGreen: { label: 'Dunkelgrün', icon: '💚' },
     purple: { label: 'Lila / Violett', icon: '🟣' },
     red: { label: 'Rot', icon: '🔴' },
@@ -4728,7 +4735,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.440';
+const APP_VERSION = 'v1.5.441';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
