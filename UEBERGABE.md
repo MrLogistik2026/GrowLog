@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.463** · index.html 2,67 MB · 781 Funktionen
+Stand: **v1.5.464** · index.html 2,67 MB · 781 Funktionen
 Zuletzt fortgeschrieben am 29.10.2026 (Diagnose-Arbeitsliste, B02, B04, B01, B07, B03, B11, B10, B08 und B09 erledigt — Abschnitt 0o, Punkt 8). Davor: Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
@@ -420,6 +420,7 @@ Speicher-Befunde sind in v1.5.340–344 behoben. Rohdaten: Workflow wf_63d754b1-
 - v1.5.461: Diagnose-Assistent mit drei Schritten — „Seit wann tritt es auf?“ entfällt, die Antwort wurde nie ausgewertet (`test_diagnose_schritte.js`).
 - v1.5.462: Diagnose fragt bei „hängend“ ohne Hebe-Test von heute einmal „Wie schwer ist der Topf?“ — leicht nimmt Überwässerung, schwer den Wassermangel aus der Liste (U4, `test_diagnose_topffrage.js`).
 - v1.5.463: Einstellungen zeigen über „Änderungen sichern“, was sich ändert (Ernte, nächster Guss, Menge, Gießtage, Plan, verpasste Tage) — in beiden Modi, für jedes Feld (`_wirkungSnap`, `test_einstellungen_wirkung.js`). Schritt 1 aus Abschnitt 1.
+- v1.5.464: EC-Stepper startet beim Ziel der Plan-Woche statt bei fest 1,4 (`test_stepec_ziel.js`).
 
 **Gegenprüfung von v1.5.364/365 (07.10.2026 nachts, Workflow wf_4cf817bf-629, drei Sonnet-Prüfer + Gegenprüfer).** Kein Fehlalarm
 in 33 App-Fassungen, allen Vorlagen und über 2800 Klicks; die schweren Befunde (unsichere Kopie zerstört den Hauptstand, Tropfen als

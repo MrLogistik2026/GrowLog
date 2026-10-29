@@ -2,6 +2,15 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-29 — v1.5.464
+
+- **Der EC-Stepper startete bei fest 1,4.** Ein leeres EC-Feld sprang mit dem ersten „+“ auf 1,41 (bzw. 1410 µS), obwohl daneben
+  das Ziel der Plan-Woche stand (z. B. 0,73) — und der Wert wurde als Messung gespeichert. Der pH-Stepper macht es seit v1.5.411
+  richtig. Gefunden bei der Gießtag-Prüfung am 29.10.2026.
+- **Jetzt** startet `stepEC` bei leerem Feld beim angezeigten Ziel (Platzhalter, in der gewählten Einheit) wie `stepPH`; fest 1,4
+  gilt nur noch ohne Platzhalter.
+- Test: `test_stepec_ziel.js` (5 Prüfungen, beide Zeitzonen; 3 fallen auf v1.5.463 um). Gebaut von einem Sonnet-Helfer.
+
 ## 2026-10-29 — v1.5.463
 
 - **Wer in den Einstellungen etwas änderte, sah die Folge meist erst nach dem Sichern — und oft woanders.** Nur „Damit ergibt

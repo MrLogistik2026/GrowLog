@@ -4783,7 +4783,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.463';
+const APP_VERSION = 'v1.5.464';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -32966,9 +32966,9 @@ function stepPH(cId, step) {
 }
 
 /**
- * Step EC value up/down by step amount. Default 1.4 (middle of Cup-Standard 0.8-2.0).
- * Treats empty or zero as "use default" to match stepEnv/stepPH behaviour:
- * user sees placeholder 1.4 and expects next + to land on 1.5, not 0.1.
+ * Step EC value up/down by step amount. Bei leerem Feld oder 0 startet der Schritt beim angezeigten Ziel (Platzhalter),
+ * wie stepPH; nur ohne Platzhalter gilt 1.4 (Mitte von Cup-Standard 0.8-2.0).
+ * (v1.5.464) Vorher fest 1.4: Bei Ziel 0,73 sprang das leere Feld mit dem ersten „+“ auf 1,41 und wurde als Messung gespeichert.
  */
 function stepEC(cId, dir) {
   const el = document.getElementById('ec-' + cId);
@@ -32976,7 +32976,9 @@ function stepEC(cId, dir) {
   // Arbeitet in der angezeigten Einheit (mS/µS/ppm); intern als mS gespeichert.
   const u = ecUnitDef();
   const raw = parseFloat(String(el.value).replace(',', '.'));
-  const curDisp = (isNaN(raw) || raw === 0) ? ecDisp(1.4) : raw;  // Default 1.4 mS
+  // (v1.5.464) Platzhalter steht schon in der angezeigten Einheit (ecDisp); 1.4 mS nur als letzter Ausweg.
+  const ph = parseFloat(String(el.placeholder).replace(',', '.'));
+  const curDisp = (isNaN(raw) || raw === 0) ? ((isFinite(ph) && ph > 0) ? ph : ecDisp(1.4)) : raw;
   let nd = curDisp + dir * u.step;
   nd = Math.max(0, Math.min(u.max, nd));
   nd = u.factor === 1 ? Math.round(nd * 100) / 100 : Math.round(nd);
