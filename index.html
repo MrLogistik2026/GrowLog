@@ -4770,7 +4770,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.456';
+const APP_VERSION = 'v1.5.457';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -18754,6 +18754,10 @@ function getTodayAction(c, p, a, iso) {
     // (v1.5.153) Ablaufziel aus DRAIN_ZIEL — derselbe Schritt sagte „bis ~10% Drain“, der Hinweis
     // darunter „15–20%“. EC-Ziel aus dem Plan statt fest 0,8–2,0; an einem Wasser-Tag gibt es keins.
     const _ecZ = _wasserTag ? null : _ecTargetFor(c, iso);
+    // (v1.5.457) Drain nur nennen, wo er bei dieser Menge entstehen kann — dieselbe Regel wie der Satz darüber (plainSentence,
+    // v1.5.389). Vorher stand unter „… kommt bei dieser Menge unten noch nichts an“ der Schritt „bis 15–20 % unten ablaufen“
+    // und der Hinweis „15–20 % Drain erzeugen“ (ANBAU.md 1.1: Drain kommt erst, wenn mehr in den Topf geht, als ihm fehlt).
+    const _drainKommtA = _drainMoeglich(p) && (() => { const _g = gussMengeJePflanze(c, p, iso); return !_g || _drainZuErwarten(c, iso, _g); })();
     return {
       title: isOutdoor ? '💧 Heute: Topf prüfen' : '💧 Heute: Gießtag',
       icon: '💧',
@@ -18763,13 +18767,14 @@ function getTodayAction(c, p, a, iso) {
         `Falls gießen: ca. <b>${waterMl} ml</b> Wasser · pH auf <b>${pht.midText}</b>`,
         _duengerZeile,
       ] : [
-        `Ca. <b>${waterMl} ml</b> Wasser${_drainMoeglich(p) ? `, bis ${DRAIN_ZIEL.min}–${DRAIN_ZIEL.max} % unten ablaufen` : ''}`,
+        `Ca. <b>${waterMl} ml</b> Wasser${_drainKommtA ? `, bis ${DRAIN_ZIEL.min}–${DRAIN_ZIEL.max} % unten ablaufen` : ''}`,
         `pH auf <b>${pht.midText}</b> einstellen${_ecZ ? ` · EC im Ziel ${ecFmt(_ecZ.min)}–${ecFmt(_ecZ.max)} ${ecUnitLabel()}` : ''}`,
         _duengerZeile,
       ],
       hint: isOutdoor
         ? 'Outdoor-Regel: nach Regentag 1–2 Tage nicht gießen. Den Regen-Button nutzen!'
-        : (_drainMoeglich(p) ? `${DRAIN_ZIEL.min}–${DRAIN_ZIEL.max} % Drain erzeugen, Drain sofort entsorgen` : 'Noch kein Drain nötig (Topf nicht vollgesättigt)'),
+        : (_drainKommtA ? `${DRAIN_ZIEL.min}–${DRAIN_ZIEL.max} % Drain erzeugen, Drain sofort entsorgen`
+          : (_drainMoeglich(p) ? 'Bei dieser Menge kommt unten noch kein Drain — das ist richtig' : 'Noch kein Drain nötig (Topf nicht vollgesättigt)')),
     };
   }
   if (a === 'spuelen') {

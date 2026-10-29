@@ -2,6 +2,17 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-29 — v1.5.457
+
+- **Die Gießkarte der Startseite widersprach sich zum Drain.** Der Satz prüft seit v1.5.389, ob bei der heutigen Menge überhaupt
+  Drain entstehen kann (`_drainZuErwarten`); Schritt und Hinweis darunter prüften nur, ob Tag 25 erreicht ist. An Tag 45 stand
+  „… kommt bei dieser Menge unten noch nichts an“ direkt über „Ca. 1600 ml Wasser, bis 15–20 % unten ablaufen“ und
+  „15–20 % Drain erzeugen“ (ANBAU.md 1.1: Drain kommt erst, wenn mehr in den Topf geht, als ihm fehlt). Gefunden bei der
+  Gießtag-Prüfung am 29.10.2026.
+- **Jetzt** folgen Schritt und Hinweis derselben Regel wie der Satz; wo kein Drain entstehen kann, sagt der Hinweis „Bei dieser
+  Menge kommt unten noch kein Drain — das ist richtig“.
+- Test: `test_startseite_drain.js` (5 Prüfungen über alle Gießtage von Tag 25 bis 71, beide Zeitzonen; 1 fällt auf v1.5.456 um).
+
 ## 2026-10-29 — v1.5.456
 
 - **Tag 1 nannte die Mittel ohne Menge.** Startseite und Tageskarte sagten „Wasser anmischen … laut Plan: CalMag, POWHUMUS,
