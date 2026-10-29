@@ -2,6 +2,14 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-29 — v1.5.470
+
+- **Die Dünger-Frage im Assistenten hieß „Düngeplan?“** — darunter Karten mit „Master × 50%“, „Terra Vega + Flores“. Ein Anfänger
+  weiß nicht, dass er hier seinen gekauften Dünger wählt. Gefunden bei der Anfänger-Prüfung am 29.10.2026.
+- **Jetzt:** „Welchen Dünger hast du oder willst du kaufen?“ und darunter, wer noch keinen hat, die Einsteiger-Vorlage mit Namen
+  (aus `EINSTEIGER_VORLAGE`, je Substrat).
+- Test: `test_assistent_duengerfrage.js` (4 Prüfungen, beide Zeitzonen; fallen auf v1.5.469 um). Gebaut von einem Sonnet-Helfer.
+
 ## 2026-10-29 — v1.5.469
 
 - **„Zyklus“ wurde nirgends erklärt** — „Meinen ersten Zyklus einrichten“, „Zyklus jetzt anlegen“, ohne Satz dazu. Gefunden bei der

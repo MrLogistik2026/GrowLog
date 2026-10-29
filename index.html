@@ -4783,7 +4783,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.469';
+const APP_VERSION = 'v1.5.470';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -26825,8 +26825,8 @@ function _wizStepFertPlan(a) {
   const hasExistingPlans = plans.length > 0;
 
   return `<div style="padding:20px">
-    <h2 style="font-size:20px;font-weight:700;margin:0 0 6px">Düngeplan?</h2>
-    <p style="font-size:13px;color:var(--text-muted);margin:0 0 16px">Wähle einen fertigen Plan oder lade einen BioBizz-Standard.</p>
+    <h2 style="font-size:20px;font-weight:700;margin:0 0 6px">Welchen Dünger hast du oder willst du kaufen?</h2>
+    <p style="font-size:13px;color:var(--text-muted);margin:0 0 16px">Wähle den fertigen Plan zu deinem Dünger. Hast du noch keinen, passt${(FERT_PRESETS[recommendedKey] && FERT_PRESETS[recommendedKey].name) ? ' <b>' + FERT_PRESETS[recommendedKey].name + '</b>' : ' die Einsteiger-Empfehlung'} — sie verzeiht Fehler am meisten.</p>
 
     ${hasExistingPlans ? `<div style="margin-bottom:16px">
       <div style="font-size:11px;color:var(--text-muted);font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.05em">Deine Pläne</div>
