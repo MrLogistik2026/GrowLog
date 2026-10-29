@@ -2,6 +2,21 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-29 — v1.5.462
+
+- **Bei „hängenden Blättern“ blieb die Diagnose unentschieden, und der Assistent fragte nicht nach dem Topf.** Ohne Hebe-Test von
+  heute stehen Überwässerung, Wassermangel und Wurzelfäule gleichauf; die Karten sagen zwar „Erst den Topf anheben“, aber die
+  Antwort kam nirgends zurück. Gemessen am 29.10.2026: ohne Topf-Angabe waren Platz 1 und 2 in 7 von 14 Ort-und-Phase-Fällen
+  punktgleich, in 9 von 14 stand der Hitzestress ohne Temperatur oben. Befund U4 der Diagnose-Prüfung vom 08.10.2026, bestätigt
+  von der Bedien-Prüfung „Hilfe finden“.
+- **Jetzt** fragt Schritt 2 bei „hängend“ einmal „Wie schwer ist der Topf?“ — Leicht / Mittel / Schwer / Weiß nicht. „Leicht“
+  nimmt Überwässerung und Trauermücken aus der Liste, „Schwer“ den Wassermangel (dieselbe Regel wie ein Hebe-Test von heute,
+  v1.5.439). Liegt heute schon ein Hebe-Test vor, fragt der Assistent nicht, sondern nennt ihn. Die Kontext-Zeile über dem
+  Ergebnis sagt „Topf leicht (deine Angabe)“, auch ohne Zyklus.
+- **Warum:** ANBAU.md 1 (das Gewicht bildet den Wasservorrat ab) und 15 (Messung schlägt Symptom; wo der Wert fehlt, ist die
+  richtige Ausgabe eine Rückfrage). Die Antwort wird nicht als Messung gespeichert — sie gilt nur für diese Auswertung.
+- Test: `test_diagnose_topffrage.js` (8 Prüfungen, beide Zeitzonen; fällt auf v1.5.461 um).
+
 ## 2026-10-29 — v1.5.461
 
 - **Der Diagnose-Assistent fragte „Seit wann tritt es auf?“ — und wertete die Antwort nie aus.** Schritt 3 bot „In den letzten

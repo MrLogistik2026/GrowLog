@@ -2013,6 +2013,7 @@ let diagState = {
   location: [],   // e.g. ['oldLeaves', 'allLeaves']
   colors: [],     // e.g. ['yellow', 'spots']
   shapes: [],     // e.g. ['curlUp']
+  topf: null,     // (v1.5.462) 'leicht' | 'mittel' | 'schwer' | 'weissnicht' — nur bei „hängend“ ohne Hebe-Test von heute
 };
 
 /**
@@ -2021,7 +2022,7 @@ let diagState = {
  * Kontext dieses Zyklus eingespeist.
  */
 function openDiagnostics(cycleId = null) {
-  diagState = { step: 1, cycleId, location: [], colors: [], shapes: [] };
+  diagState = { step: 1, cycleId, location: [], colors: [], shapes: [], topf: null };
   renderDiagWizard();
 }
 
@@ -2107,6 +2108,29 @@ function diagToggle(field, value) {
   if (idx >= 0) arr.splice(idx, 1);
   else arr.push(value);
   renderDiagWizard();
+}
+
+function diagSetTopf(value) {
+  diagState.topf = diagState.topf === value ? null : value;
+  renderDiagWizard();
+}
+
+/**
+ * (v1.5.462) Der Kontext für die Auswertung: aus dem Zyklus und, wenn heute nicht gemessen wurde, aus der Topf-Antwort im
+ * Assistenten. Bei „hängend“ stehen sonst Überwässerung, Wassermangel und Wurzelfäule gleichauf — das Gewicht ist die einzige
+ * Größe, die den Wasservorrat abbildet (ANBAU.md 1), und eine Messung von heute schließt die Gegenerklärung aus (15, v1.5.439).
+ * Gemessen am 29.10.2026: Mit „leicht“ fallen Überwässerung und Trauermücken in 14 von 14 Ort-und-Phase-Fällen heraus, mit
+ * „schwer“ der Wassermangel; ohne Antwort waren Platz 1 und 2 in 7 von 14 Fällen punktgleich.
+ */
+function _diagKontext() {
+  let ctx = {};
+  const c = diagState.cycleId ? S.cycles?.find(x => x.id === diagState.cycleId) : null;
+  if (c) ctx = buildDiagnosticContext(c);
+  const t = diagState.topf;
+  if (diagState.shapes.includes('wilting') && !ctx.restHeute && t && t !== 'weissnicht') {
+    ctx = Object.assign({}, ctx, { restHigh: t === 'schwer', restLow: t === 'leicht', restHeute: true, _topfAngabe: t });
+  }
+  return { ctx, c };
 }
 
 function diagGoTo(step) {
@@ -2252,20 +2276,38 @@ function renderDiagStep2() {
         </button>`;
       }).join('')}
     </div>
+    ${_diagTopfFrageHTML()}
+  </div>`;
+}
+
+/** (v1.5.462) Die Topf-Frage — nur bei „hängend“, und nur wenn heute noch kein Hebe-Test eingetragen ist. */
+function _diagTopfFrageHTML() {
+  if (!diagState.shapes.includes('wilting')) return '';
+  const c = diagState.cycleId ? S.cycles?.find(x => x.id === diagState.cycleId) : null;
+  const ctx = c ? buildDiagnosticContext(c) : {};
+  if (ctx.restHeute) {
+    const wie = ctx.restHigh ? 'schwer' : (ctx.restLow ? 'leicht' : 'weder schwer noch leicht');
+    return `<div style="margin-top:16px;padding:10px 12px;background:var(--card2);border-radius:8px;font-size:12px;color:var(--text-sub);line-height:1.5">⚖️ Dein Hebe-Test von heute: Topf <b>${wie}</b> — die Auswertung rechnet damit.</div>`;
+  }
+  const opt = [['leicht', 'Leicht', 'fast leer'], ['mittel', 'Mittel', 'weder noch'], ['schwer', 'Schwer', 'wie frisch gegossen'], ['weissnicht', 'Weiß nicht', '']];
+  return `<div style="margin-top:20px">
+    <div style="font-size:11px;font-weight:600;color:var(--text-hint);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">Wie schwer ist der Topf?</div>
+    <div style="font-size:12px;color:var(--text-muted);margin-bottom:10px;line-height:1.5">Heb ihn kurz an — das trennt Durst von zu viel Wasser. Hängende Blätter sehen bei beidem gleich aus.</div>
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">
+      ${opt.map(([key, label, unter]) => {
+        const active = diagState.topf === key;
+        return `<button onclick="diagSetTopf('${key}')" style="padding:12px;background:${active ? 'rgba(90,171,240,0.15)' : 'var(--card)'};border:1px solid ${active ? 'var(--blue)' : 'var(--border)'};border-radius:10px;cursor:pointer;font-family:var(--font);color:var(--text);text-align:left">
+          <div style="font-size:12px;font-weight:600">${label}</div>${unter ? `<div style="font-size:10px;color:var(--text-muted);margin-top:2px">${unter}</div>` : ''}
+        </button>`;
+      }).join('')}
+    </div>
   </div>`;
 }
 
 function renderDiagStep4() {
   // Kontext aus App extrahieren falls cycleId gesetzt
-  let ctx = {};
-  let cycleName = null;
-  if (diagState.cycleId) {
-    const c = S.cycles?.find(x => x.id === diagState.cycleId);
-    if (c) {
-      ctx = buildDiagnosticContext(c);
-      cycleName = c.name;
-    }
-  }
+  const { ctx, c: _diagC } = _diagKontext();
+  const cycleName = _diagC ? _diagC.name : null;
 
   const results = diagnoseProblems({
     location: diagState.location,
@@ -2293,14 +2335,14 @@ function renderDiagStep4() {
   if (ctx.phLow) ctxBadges.push('pH niedrig');
   if (ctx.tempHot) ctxBadges.push('warm');
   if (ctx.tempCold) ctxBadges.push('kalt');
-  if (ctx.restHigh) ctxBadges.push(ctx.restHeute ? 'Topf schwer (heute)' : 'Topf schwer');
-  if (ctx.restLow) ctxBadges.push(ctx.restHeute ? 'Topf leicht (heute)' : 'Topf leicht');
+  if (ctx.restHigh) ctxBadges.push(ctx._topfAngabe ? 'Topf schwer (deine Angabe)' : (ctx.restHeute ? 'Topf schwer (heute)' : 'Topf schwer'));
+  if (ctx.restLow) ctxBadges.push(ctx._topfAngabe ? 'Topf leicht (deine Angabe)' : (ctx.restHeute ? 'Topf leicht (heute)' : 'Topf leicht'));
   if (ctx.ecDeltaPos) ctxBadges.push('Drain-EC hoch');
   if (ctx.humidityHigh) ctxBadges.push('Luftfeuchte hoch');
 
-  const ctxLine = (cycleName && ctxBadges.length > 0)
+  const ctxLine = ctxBadges.length > 0
     ? `<div style="padding:8px 12px;background:var(--card2);border-radius:8px;margin-bottom:16px;font-size:11px;color:var(--text-muted)">
-        📊 Kontext aus <b style="color:var(--text-sub)">${cycleName}</b>: ${ctxBadges.join(' · ')}
+        📊 ${cycleName ? `Kontext aus <b style="color:var(--text-sub)">${cycleName}</b>` : 'Deine Angaben'}: ${ctxBadges.join(' · ')}
       </div>`
     : '';
 
@@ -3726,7 +3768,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.461';
+const APP_VERSION = 'v1.5.462';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
