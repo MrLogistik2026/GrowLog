@@ -4770,7 +4770,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.459';
+const APP_VERSION = 'v1.5.460';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -18185,6 +18185,9 @@ function renderHelp(nurTreffer) {
         <div style="font-size:14px;font-weight:700;color:var(--green);margin-top:2px">${info.t}</div>
         <div style="font-size:12px;color:var(--text-sub);line-height:1.55;margin-top:4px">${info.d}</div>
       </div>
+
+      <!-- (v1.5.460) Einstieg ohne Suche: Wer ein Problem mit der Pflanze hat, tippt nichts ein, sondern drückt hier (gleiches Ziel wie der Startseiten-Knopf). -->
+      <button id="help-problem" onclick="closeHelp();openSymptomChecker()" style="display:block;width:100%;text-align:left;background:rgba(224,96,96,0.08);border:0.5px solid rgba(224,96,96,0.3);border-radius:12px;padding:12px 14px;margin-bottom:14px;font-size:13px;font-weight:600;color:var(--red);cursor:pointer;font-family:var(--font)">🔍 Meine Pflanze hat ein Problem<div style="font-size:11px;font-weight:400;color:var(--text-sub);margin-top:2px">Pflanzen-Check mit Lösungsvorschlägen</div></button>
 
       <div style="font-size:11px;color:var(--text-hint);margin-bottom:5px">Wonach suchst du?</div>
       <input id="help-q" value="${(st.q || '').replace(/"/g, '&quot;')}" placeholder="Was willst du tun? z. B. Ernte verschieben" oninput="helpQuery(this.value)"

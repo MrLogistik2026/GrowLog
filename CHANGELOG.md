@@ -2,6 +2,13 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-29 — v1.5.460
+
+- **Das „?“-Hilfeblatt hatte keinen Einstieg für ein Pflanzenproblem.** Ohne Suche bot es nur „Schließen“ und „Sichern &
+  kopieren“. Gefunden bei der Bedien-Prüfung „Hilfe finden“ am 29.10.2026.
+- **Jetzt** steht über der Suche „🔍 Meine Pflanze hat ein Problem“ — derselbe Weg wie der Pflanzen-Check der Startseite.
+- Test: `test_hilfeblatt_problem.js` (4 Prüfungen, beide Zeitzonen; fallen auf v1.5.459 um). Gebaut von einem Sonnet-Helfer.
+
 ## 2026-10-29 — v1.5.459
 
 - **Die Hilfesuche fand weder die Schnellhilfe noch die Diagnose.** Die 13 Schnellhilfe-Karten (`SYMPTOMS`) wurden nicht
