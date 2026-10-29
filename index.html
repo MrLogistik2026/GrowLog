@@ -2565,9 +2565,14 @@ const PROBLEMS = [
       shape: ['spotted', 'curlUp'],
     },
     breite: 7,
-    description: 'Top-Buds und obere Blätter werden weißlich/gebleicht (NICHT braun-verbrannt), oft mit silbrig-glänzenden Flecken. Chlorophyll und Trichome werden ausgebleicht. Sieht nach viel Harz aus, ist aber ausgeblichenes Gewebe: An diesen Spitzen kommt mehr Licht an, als die Blätter verarbeiten können. Typisch bei sehr hoher Lichtmenge am Canopy: ausbleichen kann es praktisch erst ab etwa ' + LICHT_ZIEL.bluete.bleichAb + ' PPFD.',
-    context: { phase: ['bloom'], daysToHarvestLow: false },
-    action: 'LED um 15–20 cm anheben oder Dimmer auf 60–70% bis Ernte. PPFD-Meter (oder LED-PAR-Sensor) zeigt am Canopy: Blüte-Ziel ' + LICHT_ZIEL.bluete.ppfd.join('–') + ', ausbleichen kann es praktisch erst ab etwa ' + LICHT_ZIEL.bluete.bleichAb + ' (je näher oder stärker die LED, desto mehr Licht am Blatt). Zeigt dein Messgerät deutlich weniger, aber das Bild passt (weiß, scharf begrenzt, nur die lichtnächsten Spitzen), gilt das Bild — Handy-Messungen sind Schätzungen. Wenn Trichome schon trüb-braun sind: lieber jetzt ernten als noch mehr stressen.',
+    description: 'Die lichtnächsten Spitzen, meist die oberen Blüten, bleichen weiß aus, scharf begrenzt (NICHT braun-verbrannt). Sieht nach viel Harz aus, ist aber ausgeblichenes Gewebe: An diesen Spitzen kommt mehr Licht an, als die Blätter verarbeiten können. Typisch bei sehr hoher Lichtmenge am Canopy: ausbleichen kann es praktisch erst ab etwa ' + LICHT_ZIEL.bluete.bleichAb + ' PPFD.',
+    context: { phase: ['bloom'] },
+    // (v1.5.445) Vorher „LED um 15–20 cm anheben oder Dimmer auf 60–70% bis Ernte“ — feste Zahlen ohne Beleg, an vier Stellen
+    // verschieden, und „bis Ernte“ kostet Ertrag: Im Bestand steigt er mit dem Licht (ANBAU.md 8.1). „Trichome trüb-braun: lieber jetzt
+    // ernten“ vermischte milchig und bernstein (11). Ein Handgriff, schrittweise, und das Bild schlägt die Schätzung.
+    action: 'Zu viel Licht, kein reiner Hitzeschaden — also Lampe NICHT näher: Leistung am Dimmer ein Stück zurücknehmen oder die Lampe ein Stück höher hängen, immer nur einen Schritt. '
+      + 'Ein Lichtmesser zeigt die Lichtmenge am Blatt (PPFD) an der Oberkante der Pflanzen (Canopy): Blüte-Ziel ' + LICHT_ZIEL.bluete.ppfd.join('–') + ', ausbleichen kann es praktisch erst ab etwa ' + LICHT_ZIEL.bluete.bleichAb + ' (je näher oder stärker die LED, desto mehr Licht am Blatt). Ohne Messgerät ist jede Zahl geschätzt; dann gilt das Bild — weiß, scharf begrenzt, nur die lichtnächsten Spitzen. '
+      + 'Nach ein paar Tagen die neuen Spitzen ansehen: Bleichen sie weiter aus, war der Schritt zu klein; bleiben sie grün, nicht weiter dimmen — im Bestand steigt der Ertrag mit dem Licht. Ob geerntet wird, entscheiden die Trichome, nicht die Bleichung (Köpfe noch klar = zu früh).',
     lexiconKey: 'photo_bleaching',
   },
   {
@@ -4748,7 +4753,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.444';
+const APP_VERSION = 'v1.5.445';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -8550,7 +8555,7 @@ const SYMPTOMS = [
         heading: 'Silbrig-glänzende Flecken nur auf Top-Blättern',
         verdict: '⚠ Foto-Bleaching (Lampe zu nah/stark)',
         color: 'var(--orange)',
-        text: 'Anders als Mehltau: kein Belag, sondern „verbleichte" Flecken die im Licht silbrig glänzen. Photoinhibition durch zu hohe PPFD. <b>Lösung:</b> LED um 10–15 cm anheben, oder Dimmer auf 70%. Wenn nur eine Pflanze betroffen ist (ragt heraus): Topf tiefer stellen, LST anwenden.',
+        text: 'Anders als Mehltau: kein Belag, sondern „verbleichte" Flecken die im Licht silbrig glänzen. Photoinhibition durch zu viel Licht am Blatt. <b>Lösung:</b> Lampe nicht näher: Leistung am Dimmer ein Stück zurück oder die Lampe ein Stück höher, immer nur ein Schritt. Wenn nur eine Pflanze betroffen ist (ragt heraus): Topf tiefer stellen, LST anwenden.',
         when: 'Indoor, starke LED, Mittelblüte',
         lex: 'Lichtbrand (Phototoxizität)',
       },
@@ -8701,7 +8706,7 @@ const SYMPTOMS = [
         heading: 'Spitzen direkt unter Lampe weiß-gelb, untere Bereiche grün',
         verdict: '⚠⚠ Foto-Bleaching (zu starke Lampe)',
         color: 'var(--red)',
-        text: 'Das passiert bei sehr hoher Lichtmenge an den Top-Buds — praktisch erst ab etwa ' + LICHT_ZIEL.bluete.bleichAb + ' PPFD. Chlorophyll und Trichome werden ausgebleicht. Wirkt zwar wie „weiße Buds = potent", ist aber ausgeblichenes Gewebe — mehr Licht, als die Spitzen verarbeiten. <b>Lösung:</b> Lampe SOFORT höher hängen (mind. 20 cm), oder Dimmer auf 60–70% reduzieren bis zur Ernte.',
+        text: 'Das passiert bei sehr hoher Lichtmenge an den Top-Buds — praktisch erst ab etwa ' + LICHT_ZIEL.bluete.bleichAb + ' PPFD. Das Gewebe bleicht aus. Wirkt zwar wie „weiße Buds = potent", ist aber ausgeblichenes Gewebe — mehr Licht, als die Spitzen verarbeiten. <b>Lösung:</b> Lampe nicht näher: Leistung am Dimmer ein Stück zurück oder die Lampe ein Stück höher, immer nur ein Schritt. Nach ein paar Tagen die neuen Spitzen ansehen — bleiben sie grün, nicht weiter dimmen.',
         when: 'Blüte, Lampe sehr nah oder voll aufgedreht',
         lex: 'Lichtbrand (Phototoxizität)',
       },
@@ -38173,7 +38178,7 @@ const LEXIKON = [
     { t: 'Lichtbrand (Phototoxizität)',
       brief: 'PPFD zu hoch für die Pflanze. Obere Blüten und Blätter bleichen aus. Sieht oft wie Hitze aus, ist aber Licht.',
       mechanism: 'Wenn die <b>PPFD die Verarbeitungs-Kapazität</b> der Pflanze übersteigt, werden Chloroplasten und Chlorophyll <b>oxidativ zerstört</b>. Blätter werden gelblich-weiß, in extremen Fällen verbrennen die obersten Triebspitzen komplett. <b>Wichtige Unterscheidung zu Hitzestress:</b> Lichtbrand tritt auch bei kühler Temperatur auf (LED bleibt kalt!). Hitzestress kommt vom <b>Klima</b>, Lichtbrand von der <b>Strahlung</b>.',
-      practice: '<b>Diagnose:</b><br>• Obere Blätter bleichen aus (weiß/gelb)<br>• Tritt direkt unter der Lampe auf, nicht am Rand<br>• Blätter sind nicht eingerollt (das wäre Hitze)<br>• Temperatur im Zelt normal<br>• Bei dimmbarer LED: Symptome nach Erhöhung der Leistung<br><br><b>Sofort-Lösung:</b><br>1. Lampe sofort 10-15 cm höher hängen<br>2. Oder: LED-Output dimmen (-20 %)<br>3. Bereits gebleichte Blätter wachsen nicht zurück → entfernen<br>4. PPFD-Meter besorgen oder Photone-App: Ziel in der Blüte ' + LICHT_ZIEL.bluete.ppfd.join('–') + ' PPFD; darüber ist es noch kein Schaden — ausbleichen kann es praktisch erst ab etwa ' + LICHT_ZIEL.bluete.bleichAb + '<br><br><b>Vorbeugen:</b> Lichtmenge am Blatt messen und im Ziel der Phase bleiben (siehe Lichtabstand-Eintrag). LEDs in Spätblüte oft zu nah, weil Pflanze ungebremst nach oben wächst.',
+      practice: '<b>Diagnose:</b><br>• Obere Blüten oder Blätter bleichen weiß aus, scharf begrenzt (gelb bis braun mit Wölbung wäre Hitze: dann Abluft und Umluft prüfen)<br>• Tritt direkt unter der Lampe auf, nicht am Rand<br>• Blätter sind nicht eingerollt (das wäre Hitze)<br>• Temperatur im Zelt normal<br>• Bei dimmbarer LED: Symptome nach Erhöhung der Leistung<br><br><b>Sofort-Lösung:</b><br>1. Lampe nicht näher: Leistung am Dimmer ein Stück zurücknehmen oder die Lampe ein Stück höher hängen — immer nur einen Schritt<br>2. Nach ein paar Tagen nur die neuen Spitzen ansehen: Bleichen sie weiter aus, war der Schritt zu klein; bleiben sie grün, nicht weiter dimmen<br>3. PPFD-Meter besorgen oder Photone-App: Ziel in der Blüte ' + LICHT_ZIEL.bluete.ppfd.join('–') + ' PPFD; darüber ist es noch kein Schaden — ausbleichen kann es praktisch erst ab etwa ' + LICHT_ZIEL.bluete.bleichAb + '<br><br><b>Vorbeugen:</b> Lichtmenge am Blatt messen und im Ziel der Phase bleiben (siehe Lichtabstand-Eintrag). LEDs in Spätblüte oft zu nah, weil Pflanze ungebremst nach oben wächst.',
       pitfall: 'Lichtbrand wird oft mit <b>Stickstoff-Überschuss</b> verwechselt (auch dunkle Blätter). Unterschied: Lichtbrand zeigt sich nur unter der Lampe (lokal), N-Überschuss überall. Auch: bei UV-Bar zu langer Bestrahlung = UV-Schaden = ähnlich aussehend, aber durch UV-B verursacht. UV-Bar zeitlich begrenzen.' },
     { t: 'Hitzestress',
       brief: 'Über 30 °C im Zelt. Klassisches „Taco-Blatt" — Blattränder rollen sich nach oben ein.',

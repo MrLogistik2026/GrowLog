@@ -2,6 +2,28 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-29 — v1.5.445
+
+- **Fürs Licht-Bleichen nannte die App vier verschiedene Handgriffe.** Diagnose: „LED um 15–20 cm anheben oder Dimmer auf
+  60–70% bis Ernte“; Schnellhilfe: „Lampe SOFORT höher hängen (mind. 20 cm), oder Dimmer auf 60–70% reduzieren bis zur
+  Ernte“; Schnellhilfe Flecken: „LED um 10–15 cm anheben, oder Dimmer auf 70%“; Lexikon: „Lampe sofort 10-15 cm höher … LED-
+  Output dimmen (-20 %)“. Feste Zentimeter und Prozent stehen nirgends in ANBAU.md (8.2: Leistung reduzieren oder Abstand
+  vergrößern), und weil der Bestandsertrag mit dem Licht steigt (8.1), kostet „bis Ernte“ gedimmt Ertrag ohne Beleg. Dazu
+  „Wenn Trichome schon trüb-braun sind: lieber jetzt ernten“ — vermischt milchig und bernstein (11). Gefunden von der
+  Diagnose-Prüfung am 08.10.2026 (Befund B08).
+- **Jetzt** überall derselbe Handgriff: Lampe NICHT näher, Leistung am Dimmer ein Stück zurück oder die Lampe ein Stück
+  höher, immer nur ein Schritt; nach ein paar Tagen die neuen Spitzen ansehen — bleichen sie weiter aus, war der Schritt zu
+  klein, bleiben sie grün, nicht weiter dimmen. Ohne Messgerät gilt das Bild (weiß, scharf begrenzt, nur die lichtnächsten
+  Spitzen). Ob geerntet wird, entscheiden die Trichome. PPFD und Canopy sind im Satz erklärt, die Zahlen kommen aus
+  `LICHT_ZIEL`.
+- Das Diagnose-Bild sagt „die lichtnächsten Spitzen, meist die oberen Blüten“ statt „Chlorophyll und Trichome werden
+  ausgebleicht“; das Lexikon „Lichtbrand“ trennt weiß (Bleichen) von gelb bis braun mit Wölbung (Hitze: Abluft und Umluft)
+  statt „weiß/gelb“ als ein Bild (8.2). `daysToHarvestLow: false` im Kontext war wirkungslos und ist entfernt.
+- Zweimal gegengeprüft (Sonnet, gegen ANBAU.md); aus der zweiten Runde kamen „kein reiner Hitzeschaden“, die weiß/gelb-
+  Trennung im Lexikon und das Streichen von „gebleichte Blätter wachsen nicht zurück → entfernen“.
+- Test: `test_bleichtexte.js` (12 Prüfungen, darunter ein Wächter über Diagnose, Schnellhilfe und Lexikon gegen feste
+  Zentimeter- und Dimmer-Zahlen beim Bleichen; beide Zeitzonen; 9 fallen auf v1.5.444 um).
+
 ## 2026-10-29 — v1.5.444
 
 - **Schnellhilfe „Pflanze hängt“, Karte „Erde trocken, Pflanze welk“:** „Selten, aber möglich bei heißen Tagen … Nach 1-2
