@@ -4783,7 +4783,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.466';
+const APP_VERSION = 'v1.5.467';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -13470,7 +13470,15 @@ function clearPlanNotesForCycle(cycleId) {
   }
 }
 
-function calcStreak(c) {
+// (v1.5.467) Ist dieses Feld des Tages ein App-Vorschlag und keine Messung? Eine Quelle für alle Anzeigen (Fortschritts-Chip,
+// Mischzeile, Startseiten-Kacheln). Vorher lasen nur die Bilanzen cd._suggested; der Chip zeigte „✓🧪 pH" für das Ziel-pH, die Kacheln
+// „Gesamt 1.8 L" aus einem Vorschlag. ANBAU.md 15: Zielwerte darf die App zeigen — als Platzhalter, nicht als Eintrag. Wer den
+// Wert tippt, löscht das Kennzeichen (uEF); die Logik dahinter bleibt unberührt.
+const VORSCHLAG_TITEL = 'Vorschlag — noch nicht gemessen';
+function _istVorschlag(cd, feld) { return !!(cd && cd._suggested && cd._suggested[feld]); }
+function _istVorschlagDosis(cd, prodId) { return !!(cd && cd._suggestedDoses && cd._suggestedDoses[prodId]); }
+
+function calcStreak(c, info) {
   const today = todayISO();
   let s = 0;
   // Heutiger Tag ist Sonderfall: Wenn er ein Gießtag ist aber noch kein Eintrag
@@ -13492,7 +13500,11 @@ function calcStreak(c) {
       // - Der User "Erledigt" auf dem Dashboard geklickt hat (_doneTodo)
       // Das verhindert dass der Streak bricht wenn jemand nur schnell abhakt.
       const cd = S.entries[iso]?.cycleData?.[c.id];
-      if (cd && (cd.water || cd._doneTodo)) s++;
+      if (cd && (cd.water || cd._doneTodo)) {
+        s++;
+        // (v1.5.467) Zählt ein Tag nur wegen eines Vorschlags (Ausfüllen ohne Haken), sagt die Anzeige „~" (info.vorschlag).
+        if (info && _istVorschlag(cd, 'water') && !cd._doneTodo) info.vorschlag = true;
+      }
       else break;
     }
   }
@@ -19358,7 +19370,7 @@ function renderDash() {
           <span style="font-size:22px">⚠️</span>
           <div style="flex:1">
             <div style="font-size:13px;font-weight:700;color:var(--red)">Eingetragen — aber ${_befunde.length === 1 ? 'ein Wert braucht' : _befunde.length + ' Werte brauchen'} deinen Blick</div>
-            <div style="font-size:11px;color:var(--text-muted)">${sym(c)} ${c.name}${_eingetragenH ? ' · ' + _eingetragenH.ml + ' ml eingetragen' : ''}</div>
+            <div style="font-size:11px;color:var(--text-muted)">${sym(c)} ${c.name}${_eingetragenH ? ' · ' + (_istVorschlag(_gussCd(c, today), 'water') ? '~' + _eingetragenH.ml + ' ml Vorschlag' : _eingetragenH.ml + ' ml eingetragen') : ''}</div>
           </div>
           <span style="color:var(--red);font-size:18px">›</span>
         </div>
@@ -19371,7 +19383,7 @@ function renderDash() {
         <div style="display:flex;align-items:center;gap:10px">
           <span style="font-size:22px">✓</span>
           <div style="flex:1">
-            <div style="font-size:13px;font-weight:700;color:var(--green)">Heute erledigt · ${doneTs ? `<span onclick="event.stopPropagation();editDoneTime('${c.id}','${today}')" title="Uhrzeit ändern" style="border-bottom:1px dashed rgba(76,175,112,0.6);cursor:pointer">${doneTime} ✎</span>` : `${_eingetragenH.ml} ml eingetragen`}</div>
+            <div style="font-size:13px;font-weight:700;color:var(--green)">Heute erledigt · ${doneTs ? `<span onclick="event.stopPropagation();editDoneTime('${c.id}','${today}')" title="Uhrzeit ändern" style="border-bottom:1px dashed rgba(76,175,112,0.6);cursor:pointer">${doneTime} ✎</span>` : `${_istVorschlag(_gussCd(c, today), 'water') ? '~' + _eingetragenH.ml + ' ml Vorschlag' : _eingetragenH.ml + ' ml eingetragen'}`}</div>
             <div style="font-size:11px;color:var(--text-muted)">${sym(c)} ${c.name} · ${td.title.replace(/^[^\w]*/,'').replace(/^Heute: /,'')}</div>
           </div>
           ${doneTs ? `<button onclick="event.stopPropagation();markTodayUndone('${c.id}','${today}')" style="background:none;border:none;color:var(--text-hint);font-size:11px;cursor:pointer;padding:4px 8px;font-family:var(--font)">↺ Rückgängig</button>` : ''}
@@ -19453,7 +19465,7 @@ function renderDash() {
 
   // Smart stats — einmaliger Durchlauf statt 3 separater Iterationen
   // (filter → map/filter → reduce). Bei vielen Entries wirkt sich das aus.
-  let avgPH = '—', totalWater = 0, harvestDate = '—';
+  let avgPH = '—', totalWater = 0, harvestDate = '—', waterVorschlag = 0;
   if (fc) {
     let phSum = 0, phCount = 0;
     const allDates = Object.keys(S.entries);
@@ -19461,6 +19473,8 @@ function renderDash() {
       const cd = S.entries[allDates[i]]?.cycleData?.[fc.id];
       if (!cd?.water) continue;
       totalWater += parseFloat(cd.water) || 0;
+      // (v1.5.467) Die Summe enthält Vorschläge („Erledigt", Ausfüllen) — die Kachel kennzeichnet das mit „~" (ANBAU.md 15).
+      if (_istVorschlag(cd, 'water')) waterVorschlag += parseFloat(cd.water) || 0;
       const phVal = parseFloat(cd.ph);
       // (v1.5.353) Nur gemessene pH-Werte — ein Vorschlag (Ausfüllen, Nachtragen) ist keiner. Dieselbe Regel wie in der
       // Zyklus-Bilanz der Einstellungen („× gem.") und im pH-Trend.
@@ -19515,11 +19529,12 @@ function renderDash() {
     <div class="stat-box"><div class="stat-lbl">Heute</div><div class="stat-val" style="font-size:22px">${fcOffen ? '🔍' : (fcAction ? ACT_ICON[fcAction] || '💤' : '💤')}</div></div>
     <div class="stat-box" title="${harvestStatTitle}"><div class="stat-lbl">Erntedatum</div><div class="stat-val" style="font-size:14px">${harvestDateShown}</div></div>
   </div>` : (() => {
-    const streak = fc ? calcStreak(fc) : 0;
+    const _streakInfo = {};
+    const streak = fc ? calcStreak(fc, _streakInfo) : 0;
     const fcPht = phTargetFor(fc && fc.medium);
     // Streak: bei 0 einen Dash zeigen statt "0 🔥" — motivierender als demotivierender Startzustand.
     const streakDisplay = streak > 0
-      ? `${streak}<span class="stat-unit"> 🔥</span>`
+      ? `${_streakInfo.vorschlag ? '~' : ''}${streak}<span class="stat-unit"> 🔥</span>`
       : `<span style="color:var(--text-hint)">—</span>`;
     return `<div class="stat-row">
       <div class="stat-box" title="${harvestStatTitle}"><div class="stat-lbl">Ernte in</div><div class="stat-val">${harvestStatLabel}</div></div>
@@ -19527,16 +19542,17 @@ function renderDash() {
       <div class="stat-box"><div class="stat-lbl">Ø pH</div><div class="stat-val" style="color:${avgPH !== '—' && parseFloat(avgPH) >= fcPht.lo && parseFloat(avgPH) <= fcPht.hi ? 'var(--green)' : avgPH !== '—' ? 'var(--orange)' : 'var(--text-hint)'}">${avgPH}</div></div>
     </div>
     <div class="stat-row" style="margin-top:6px">
-      <div class="stat-box"><div class="stat-lbl">Gesamt 💧</div><div class="stat-val">${totalWater > 0 ? (totalWater/1000).toFixed(1) : '—'}<span class="stat-unit"> L</span></div></div>
+      <div class="stat-box"${waterVorschlag > 0 ? ` title="Enthält Vorschläge (${(waterVorschlag/1000).toFixed(1)} L) — nicht gemessen"` : ''}><div class="stat-lbl">Gesamt 💧</div><div class="stat-val">${totalWater > 0 ? (waterVorschlag > 0 ? '~' : '') + (totalWater/1000).toFixed(1) : '—'}<span class="stat-unit"> L</span></div></div>
       <div class="stat-box" title="${harvestStatTitle}"><div class="stat-lbl">Erntedatum</div><div class="stat-val" style="font-size:14px">${harvestDateShown}</div></div>
-      <div class="stat-box"><div class="stat-lbl">Streak ${infoBtn('streak', 14, 'var(--blue)')}</div><div class="stat-val">${streakDisplay}</div></div>
+      <div class="stat-box"${_streakInfo.vorschlag ? ' title="Zählt Tage mit, die nur ein Vorschlag sind"' : ''}><div class="stat-lbl">Streak ${infoBtn('streak', 14, 'var(--blue)')}</div><div class="stat-val">${streakDisplay}</div></div>
     </div>`;
   })()) : '';
 
   const cards = act.map(c => {
     const p = phase(today, c), a = getAction(today, c), cl = col(c), s = sym(c);
     const pct = p?.pct || 0, sf = fmtDE(c.startDate), next = nextGiessTag(c, today);
-    const streak = calcStreak(c);
+    const _streakInfoK = {};
+    const streak = calcStreak(c, _streakInfoK);
     const tip = getSmartTip(c, p);
     // pH/EC trend data — letzte N Einträge MIT Werten statt letzte 14 Tage komplett.
     // So sehen die Mini-Charts auch dann gut aus wenn nur alle 3 Tage gegossen wird
@@ -19591,7 +19607,7 @@ function renderDash() {
           </div>
           <div style="font-size:12px;color:${cl.hex};font-weight:500">${!p && c.startDate <= today ? '✓ Fertig — alle Phasen vorbei' : `${(p && p.ph === 'cure' && !p.ernteOffen) ? 'Curing' : (stgName || (p ? PN[p.ph] : '—'))}${/* (v1.5.409, F12) Phasen-Woche nicht in der Anzucht (sie widerspricht der Plan-Woche oben — im Eintrag seit v1.5.338 ebenso), in der Blüte „Blüte Wo." wie im Eintrag */ !S.beginnerMode && p?.week && p.ph !== 'anzucht' ? ' · ' + (p.ph === 'bloom' ? 'Blüte ' : '') + 'Wo. ' + p.week : ''} · ${phaseDayLabel(p)}`}</div>
           ${S.beginnerMode ? '' : `<div style="display:flex;gap:8px;margin-top:3px;align-items:center">
-            ${streak > 0 ? `<span class="streak">🔥 ${streak}</span>` : ''}
+            ${streak > 0 ? `<span class="streak"${_streakInfoK.vorschlag ? ' title="Zählt Tage mit, die nur ein Vorschlag sind"' : ''}>🔥 ${_streakInfoK.vorschlag ? '~' : ''}${streak}</span>` : ''}
             <span style="font-size:10px;color:var(--text-muted)">Start ${sf}</span>
           </div>`}
         </div>
@@ -31369,6 +31385,9 @@ function renderEntry(iso) {
               + (_ownTxt ? `<div class="mix-own-line" data-cycle="${c.id}" data-prod="${pr?.id}" data-unit="${pr?.unit || 'ml/L'}" data-decimals="${decimals}" data-dispunit="${dispUnit}" title="${_lineTitle}" style="${_lineCSS};color:var(--blue);margin-top:1px">${_ownTxt}</div>` : '')
             : '';
           const checked = !!(cd.mixChecks?.[pr?.id]);
+          // (v1.5.467) Eine Dosis „laut Plan" (Erledigt, Ausfüllen, Nachtragen) ist ein Vorschlag: „~" statt grünem „✓", bis der Nutzer
+          // sie antippt (bestätigt) oder ändert. Die Zeile las _suggestedDoses nicht — nur die Dünger-Bilanz tat es.
+          const _vorD = checked && _istVorschlagDosis(cd, pr?.id);
           const checkId = `mix-${c.id}-${i}-${isInActiveList ? 'a' : 'i'}`;
           const rowOpacity = checked ? '0.55' : (isZero ? '0.5' : '1');
           const rowStyle = `padding:10px 8px;margin:0 -4px;border-radius:8px;transition:background 0.15s;display:flex;flex-direction:column;align-items:stretch;cursor:pointer;opacity:${rowOpacity}`;
@@ -31381,7 +31400,7 @@ function renderEntry(iso) {
           return `<div class="mix-step" id="${checkId}" ${onclickAttr} style="${rowStyle}">
             <div style="display:flex;align-items:center;width:100%">
             <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0">
-              <div class="mix-chk" style="font-size:18px;width:24px;text-align:center;flex-shrink:0;color:${checked ? 'var(--green)' : ''}">${checked ? '✓' : (isZero ? '∅' : '○')}</div>
+              <div class="mix-chk" style="font-size:18px;width:24px;text-align:center;flex-shrink:0;color:${_vorD ? 'var(--text-muted)' : (checked ? 'var(--green)' : '')}"${_vorD ? ` title="Vorschlag laut Plan — noch nicht von dir bestätigt. Antippen bestätigt."` : ''}>${_vorD ? '~' : (checked ? '✓' : (isZero ? '∅' : '○'))}</div>
               <div style="width:10px;height:10px;border-radius:50%;background:${pr?.color || '#555'};flex-shrink:0"></div>
               <div style="font-size:13px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;flex:1">${name}</div>
             </div>
@@ -32545,10 +32564,14 @@ function renderEntry(iso) {
     const _zeile = _wz.length ? _wz : [_fuehrenderZyklus(act, iso) || act[0]];
     const _cdVon = (c) => saved.cycleData?.[c.id] || {};
     const _faellig = _zeile.filter(c => { try { return gussFaellig(c, iso); } catch (e) { return false; } });
+    // (v1.5.467) Was zählt als eingetragen? Wasser: auch ein übernommener Guss („Erledigt", Ausfüllen) — der Nutzer hat ihn
+    // bestätigt. Alles andere (pH): nur gemessen. Ein Ziel-pH als Vorschlag ist keine Messung (ANBAU.md 15) → „~" statt „✓".
+    const _gilt = (c, feld) => !!_cdVon(c)[feld] && (feld === 'water' || !_istVorschlag(_cdVon(c), feld));
     const _pruefe = (feld) => {
       const pool = _faellig.length ? _faellig : _zeile;
-      const fehlt = pool.find(c => !_cdVon(c)[feld]);
-      return { ok: _faellig.length ? !fehlt : _zeile.some(c => !!_cdVon(c)[feld]), ziel: fehlt || pool[0] };
+      const fehlt = pool.find(c => !_gilt(c, feld));
+      const ok = _faellig.length ? !fehlt : _zeile.some(c => _gilt(c, feld));
+      return { ok, vor: !ok && _zeile.some(c => !!_cdVon(c)[feld] && _istVorschlag(_cdVon(c), feld)), ziel: fehlt || pool[0] };
     };
     const _w = _pruefe('water'), _ph = _pruefe('ph');
     const _hatNotiz = (c) => !!(_cdVon(c).notes && String(_cdVon(c).notes).trim());
@@ -32567,7 +32590,7 @@ function renderEntry(iso) {
     // die Aufgabenliste für heute, nicht bloß eine Erfolgsmeldung.
     const chips = [
       { ok: hasWater, icon: '💧', label: 'Wasser', ziel: 'water' },
-      { ok: hasPh, icon: '🧪', label: 'pH', ziel: 'ph' },
+      { ok: hasPh, vor: _ph.vor, icon: '🧪', label: 'pH', ziel: 'ph' },
       { ok: hasTemp, icon: '🌡', label: 'Temp', ziel: 'temp' },
       { ok: hasRh, icon: '💨', label: 'RLF', ziel: 'rh' },
       { ok: hasNote, icon: '📝', label: 'Notiz', ziel: 'note' },
@@ -32580,7 +32603,7 @@ function renderEntry(iso) {
       : '';
     fillStatusChip = `<div style="display:flex;align-items:center;gap:5px;padding:7px 10px;background:rgba(76,175,112,0.05);border:0.5px solid rgba(76,175,112,0.2);border-radius:10px;flex-wrap:wrap">
       <span style="font-size:11px;color:var(--green);font-weight:700;margin-right:2px">${filled}/${total} <span style="font-weight:500">eingetragen</span></span>
-      ${chips.map(ch => `<button onclick="jumpToEntryField('${(_sprungZiel[ch.ziel] || fc).id}','${ch.ziel}')" title="Zum Feld ${ch.label} springen" style="font-size:10px;padding:3px 7px;border-radius:6px;border:0.5px solid ${ch.ok ? 'rgba(76,175,112,0.3)' : 'var(--border)'};background:${ch.ok ? 'rgba(76,175,112,0.15)' : 'var(--surface)'};color:${ch.ok ? 'var(--green)' : 'var(--text-hint)'};opacity:${ch.ok ? '1' : '0.75'};cursor:pointer;font-family:var(--font)">${ch.ok ? '✓' : ''}${ch.icon} ${ch.label}</button>`).join('')}
+      ${chips.map(ch => `<button onclick="jumpToEntryField('${(_sprungZiel[ch.ziel] || fc).id}','${ch.ziel}')" title="${ch.vor ? VORSCHLAG_TITEL + ' — antippen springt zum Feld ' + ch.label : 'Zum Feld ' + ch.label + ' springen'}" style="font-size:10px;padding:3px 7px;border-radius:6px;border:0.5px solid ${ch.ok ? 'rgba(76,175,112,0.3)' : 'var(--border)'};background:${ch.ok ? 'rgba(76,175,112,0.15)' : 'var(--surface)'};color:${ch.ok ? 'var(--green)' : (ch.vor ? 'var(--text-sub)' : 'var(--text-hint)')};opacity:${ch.ok ? '1' : '0.75'};cursor:pointer;font-family:var(--font)">${ch.ok ? '✓' : (ch.vor ? '~' : '')}${ch.icon} ${ch.label}</button>`).join('')}
       ${tippHint}
     </div>`;
   }
@@ -33671,7 +33694,10 @@ function toggleMixCheck(cId, prodId) {
   ensE(cId);
   const cd = S.entries[editISO].cycleData[cId];
   if (!cd.mixChecks) cd.mixChecks = {};
-  cd.mixChecks[prodId] = !cd.mixChecks[prodId];
+  // (v1.5.467) Ein Antippen der „~"-Zeile bestätigt die vorgeschlagene Dosis (Haken bleibt, Kennzeichen fällt weg) —
+  // erst das nächste Antippen nimmt den Haken heraus.
+  if (cd.mixChecks[prodId] && _istVorschlagDosis(cd, prodId)) delete cd._suggestedDoses[prodId];
+  else cd.mixChecks[prodId] = !cd.mixChecks[prodId];
   // Clean up the key if it was un-toggled (keeps state lean)
   if (!cd.mixChecks[prodId]) delete cd.mixChecks[prodId];
   saveS();

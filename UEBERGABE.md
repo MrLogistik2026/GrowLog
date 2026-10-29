@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.466** · index.html 2,67 MB · 781 Funktionen
+Stand: **v1.5.467** · index.html 2,67 MB · 781 Funktionen
 Zuletzt fortgeschrieben am 29.10.2026 (Diagnose-Arbeitsliste, B02, B04, B01, B07, B03, B11, B10, B08 und B09 erledigt — Abschnitt 0o, Punkt 8). Davor: Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
@@ -423,6 +423,7 @@ Speicher-Befunde sind in v1.5.340–344 behoben. Rohdaten: Workflow wf_63d754b1-
 - v1.5.464: EC-Stepper startet beim Ziel der Plan-Woche statt bei fest 1,4 (`test_stepec_ziel.js`).
 - v1.5.465: Hebe-Test mit einem Vokabular (`LIFT_FEEL_TEXTE`) in Eintrag und Guss-Blatt (`test_hebetexte_einheitlich.js`).
 - v1.5.466: „Nächster Gießtag“ an ruhigen Tagen nur noch einmal auf der Startseite (`test_naechster_giesstag_einmal.js`).
+- v1.5.467: Vorschläge („Erledigt“, Ausfüllen) mit „~“ statt „✓“ — pH-Chip, Mischzeilen, Gesamt, Streak (ANBAU.md 15, `test_vorschlag_anzeige.js`).
 
 **Gegenprüfung von v1.5.364/365 (07.10.2026 nachts, Workflow wf_4cf817bf-629, drei Sonnet-Prüfer + Gegenprüfer).** Kein Fehlalarm
 in 33 App-Fassungen, allen Vorlagen und über 2800 Klicks; die schweren Befunde (unsichere Kopie zerstört den Hauptstand, Tropfen als

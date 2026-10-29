@@ -2,6 +2,19 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-29 — v1.5.467
+
+- **Vorschläge sahen aus wie Messungen.** Nach „✓ Erledigt“ oder „✨ Tag automatisch ausfüllen“ zeigte der Eintrag „✓🧪 pH“, obwohl
+  der pH nur das Ziel war; die Mischzeilen standen alle grün „✓“ (sie lasen `_suggestedDoses` nicht, nur die Dünger-Bilanz tat
+  es); die Startseite zeigte „Gesamt 💧 1.8 L“ und „Streak 1 🔥“ aus einem Vorschlag. ANBAU.md 15: Zielwerte darf die App zeigen —
+  als Platzhalter, nicht als Eintrag. Gefunden bei der Gießtag-Prüfung am 29.10.2026.
+- **Jetzt** kennzeichnet eine Quelle (`_istVorschlag`, `_istVorschlagDosis`, Titel „Vorschlag — noch nicht gemessen“) alle diese
+  Anzeigen mit „~“: pH-Chip „~🧪 pH“ (zählt nicht in „n/6“), Mischzeile „~“ grau statt „✓“ grün, „Gesamt ~1.8 L“, „~1 🔥“, auf
+  der Startseite „~1800 ml Vorschlag“ statt „eingetragen“. Ein übernommener Guss zählt weiter als erledigt (der Nutzer hat ihn
+  bestätigt). Ein Antippen der „~“-Mischzeile bestätigt die Dosis (wird „✓“), erst das nächste nimmt den Haken heraus.
+- Test: `test_vorschlag_anzeige.js` (12 Prüfungen, beide Zeitzonen; 7 fallen auf v1.5.466 um). Gebaut von einem Sonnet-Helfer,
+  Diff selbst gegengelesen.
+
 ## 2026-10-29 — v1.5.466
 
 - **„Nächster Gießtag“ stand an ruhigen Tagen zweimal auf der Startseite** — im Banner „Heute alles ruhig“ („in 2 Tagen“) und
