@@ -2,6 +2,28 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-29 — v1.5.463
+
+- **Wer in den Einstellungen etwas änderte, sah die Folge meist erst nach dem Sichern — und oft woanders.** Nur „Damit ergibt
+  sich“ zeigte die Kette, für sieben Felder und hinter dem zugeklappten Zeitplan (im Einsteiger-Modus fast nie sichtbar). Topf,
+  Pflanzenzahl, Substrat, Düngeplan, Spül- und IceFlush-Tage änderten Gieß-Fahrplan, Mengen und Ernte still; eine kürzere Blüte
+  schob Gießtage in die Vergangenheit, die die Startseite danach als „verpasst“ meldete. Bedien-Prüfung „Einstellungen und
+  Kopplung“ am 29.10.2026 (H6 Einstellungen 5,0 — die schwächste Bedien-Note der Bewertung); das ist Schritt 1 aus
+  UEBERGABE Abschnitt 1, „Eine Vorschau statt siebzehn Warnungen“.
+- **Jetzt** steht über „Änderungen sichern“ in beiden Modi, was sich mit dem Sichern ändert: „Ernte: Do 17.09. → Sa 19.09.“,
+  „Nächster Guss: morgen → Sa 31.10.“, „Menge am nächsten Gießtag: 1,6 L → 2,1 L“, „Gießtage in den nächsten 14 Tagen: 4 → 14“,
+  „Düngeplan: A → B“ und, wenn Tage der letzten Woche dadurch als nicht eingetragen gälten, eine Warnung. Ändert sich nichts
+  davon: „An Gießtagen, Gießmenge und Ernte ändert sich damit nichts.“
+- **Ein Mechanismus:** derselbe Schnappschuss (`_wirkungSnap`: Erntetag, nächster Guss mit Menge, Gießtage in 14 Tagen,
+  verpasste Tage, Plan) vor und nach dem Entwurf, nur die Unterschiede als Zeilen (`_wirkungZeilen`). Gerechnet wird mit dem,
+  was „Sichern“ wirklich schreibt (nur angefasste Felder, Einrasten des Spülstarts). Die Save-Zone hat eine Quelle
+  (`_saveZoneInner`) statt zweier Kopien. Der Gieß-Cache wird um die Rechnung geleert, weil Entwurf und Zyklus dieselbe
+  Kennung tragen.
+- Im Browser geprüft (Handy-Format): Erde → Coco zeigt „Nächster Guss: Sa. 31.10. → morgen · Menge 6 L → 2 L · Gießtage 4 → 14 ·
+  ⚠ 4 Gießtage der letzten Woche wären dann nicht eingetragen“.
+- Test: `test_einstellungen_wirkung.js` (12 Prüfungen in Einsteiger- und Profi-Modus, beide Zeitzonen; 6 fallen auf
+  v1.5.462 um).
+
 ## 2026-10-29 — v1.5.462
 
 - **Bei „hängenden Blättern“ blieb die Diagnose unentschieden, und der Assistent fragte nicht nach dem Topf.** Ohne Hebe-Test von

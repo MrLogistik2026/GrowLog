@@ -3768,7 +3768,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.462';
+const APP_VERSION = 'v1.5.463';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -23615,14 +23615,7 @@ function renderSet() {
             // So sieht der Anfänger keinen riesigen "Speichern"-Button wenn es nichts zu speichern gibt.
             // WICHTIG: Wrapper hat ID damit dd() den Bereich live updaten kann (sonst sieht der User
             // den Save-Button nicht erscheinen wenn er Werte ändert — er müsste raus & rein).
-            const isDirty = sel && Object.keys(draft).some(k => {
-              if (k === 'id' || k.startsWith('_')) return false;
-              return JSON.stringify(draft[k]) !== JSON.stringify(sel[k]);
-            });
-            const inner = isDirty
-              ? `<button class="sav-btn" style="background:${cl.hex};margin-top:8px" onclick="saveDraft()">💾 Änderungen sichern</button>`
-              : `<div style="margin-top:8px;padding:8px 12px;background:rgba(76,175,112,0.06);border:0.5px solid rgba(76,175,112,0.2);border-radius:10px;font-size:11px;color:var(--text-muted);text-align:center">✓ Alle Änderungen gespeichert</div>`;
-            return `<div id="cyc-save-zone">${inner}</div>`;
+            return `<div id="cyc-save-zone">${sel ? _saveZoneInner(sel, cl).html : ''}</div>`;
           })()}
           <!-- GRUPPE: Identität (klappbar; während einer Tour offen, damit #cyc-name-input erreichbar bleibt) -->
           ${_setAccordionHeader('cyc_identity', '📝', 'Name & Aussehen')}
@@ -24288,6 +24281,67 @@ function _refreshKettenVorschau() {
   if (t.firstElementChild) el.replaceWith(t.firstElementChild);
 }
 
+/**
+ * (v1.5.463) Was sich mit dem Sichern ändert — mit Datum und Zahl, direkt über dem Knopf, in beiden Modi und für jedes Feld.
+ * Vorher stand die Folge nur für sieben Felder der Kette in „Damit ergibt sich“ (`_kettenVorschauHTML`), und das hinter dem
+ * zugeklappten Zeitplan; Topf, Pflanzenzahl, Substrat, Düngeplan, Spül- und IceFlush-Tage änderten Gieß-Fahrplan, Mengen und
+ * Ernte still. Eine kürzere Blüte schob Gießtage in die Vergangenheit, die danach als „verpasst“ gemeldet wurden.
+ * Ein Mechanismus statt Sonderwarnungen (UEBERGABE Abschnitt 1, Schritt 1): derselbe Schnappschuss vor und nach dem Entwurf,
+ * nur die Unterschiede als Zeilen. Gerechnet wird mit dem, was „Sichern“ wirklich schreibt (angefasste Felder, Spülstart rastet ein).
+ */
+function _wirkungSnap(c) {
+  const heute = todayISO();
+  const r = { ernte: null, naechster: null, menge: null, giess14: 0, verpasst: 0, plan: null };
+  try { const st = endspurtState(c, heute); if (st && st.ernteTag) r.ernte = isoPlus(c.startDate, st.ernteTag - 1); } catch (e) {}
+  try { const ng = nextGiessTag(c, heute); if (ng) { r.naechster = ng.iso; const p = phase(ng.iso, c); r.menge = Math.round(waterSuggestion(c, p, ng.iso) || 0); } } catch (e) {}
+  for (let i = 0; i < 14; i++) { try { if (isGiessTag(isoPlus(heute, i), c)) r.giess14++; } catch (e) {} }
+  try { r.verpasst = getCatchupCandidates(c).length; } catch (e) {}
+  try { r.plan = (getPlanForCycle(c) || {}).name || null; } catch (e) {}
+  return r;
+}
+function _wirkungZeilen(sel, d, touched) {
+  if (!sel || !sel.startDate) return [];
+  const neu = Object.assign({}, sel);
+  Object.keys(touched || {}).forEach(k => { if (k !== 'id') neu[k] = d[k]; });
+  if (touched && touched.plantCount && Array.isArray(sel.plants)) {
+    const n = Math.max(1, parseInt(neu.plantCount) || 1);
+    neu.plants = sel.plants.slice(0, n).concat(Array.from({ length: Math.max(0, n - sel.plants.length) }, (_, i) => ({ id: '_vorschau' + i, label: '' })));
+  }
+  const kette = ['startDate', 'anzuchtDays', 'bloomDays', 'bloomStartDate', 'intAnzucht', 'intBloom', 'intFlush'];
+  if (kette.some(k => touched && touched[k] && JSON.stringify(sel[k]) !== JSON.stringify(neu[k]))) {
+    delete neu._spuelStartFest; try { _snapFlushToRhythm(neu, { ohneSpeichern: true }); } catch (e) {}
+  }
+  clearFeedWaterCache();   // der Cache hängt an der Zyklus-Kennung — Entwurf und gespeicherter Zyklus teilen sie
+  const a = _wirkungSnap(sel);
+  clearFeedWaterCache();
+  const b = _wirkungSnap(neu);
+  clearFeedWaterCache();
+  const heute = todayISO();
+  const tag = (iso) => { if (!iso) return '—'; const t = isoDiff(iso, heute); return t === 0 ? 'heute' : t === 1 ? 'morgen' : fmtDE(iso, { weekday: 'short', day: '2-digit', month: '2-digit' }); };
+  const liter = (ml) => ml == null ? '—' : (ml >= 1000 ? String(Math.round(ml / 100) / 10).replace('.', ',') + ' L' : ml + ' ml');
+  const z = [];
+  if (a.ernte !== b.ernte) z.push(`Ernte: ${tag(a.ernte)} → <b>${tag(b.ernte)}</b>`);
+  if (a.naechster !== b.naechster) z.push(`Nächster Guss: ${tag(a.naechster)} → <b>${tag(b.naechster)}</b>`);
+  if (a.menge != null && b.menge != null && Math.abs(a.menge - b.menge) >= 50) z.push(`Menge am nächsten Gießtag: ${liter(a.menge)} → <b>${liter(b.menge)}</b>`);
+  if (a.giess14 !== b.giess14) z.push(`Gießtage in den nächsten 14 Tagen: ${a.giess14} → <b>${b.giess14}</b>`);
+  if (a.plan !== b.plan) z.push(`Düngeplan: ${a.plan || 'keiner'} → <b>${b.plan || 'keiner'}</b>`);
+  const dv = b.verpasst - a.verpasst;
+  if (dv > 0) z.push(`<span style="color:var(--orange)">⚠ ${dv} Gießtag${dv === 1 ? '' : 'e'} der letzten Woche ${dv === 1 ? 'wäre' : 'wären'} dann nicht eingetragen — die Startseite meldet ${dv === 1 ? 'ihn' : 'sie'} als verpasst.</span>`);
+  return z;
+}
+function _saveZoneInner(sel, cl) {
+  const isDirty = !!sel && Object.keys(draft).some(k => {
+    if (k === 'id' || k.startsWith('_')) return false;
+    return JSON.stringify(draft[k]) !== JSON.stringify(sel[k]);
+  });
+  if (!isDirty) return { isDirty, html: `<div style="margin-top:8px;padding:8px 12px;background:rgba(76,175,112,0.06);border:0.5px solid rgba(76,175,112,0.2);border-radius:10px;font-size:11px;color:var(--text-muted);text-align:center">✓ Alle Änderungen gespeichert</div>` };
+  let zeilen = [];
+  try { zeilen = _wirkungZeilen(sel, draft, draftTouched); } catch (e) { zeilen = []; }
+  const wirkung = `<div id="cyc-wirkung" style="margin-top:8px;padding:8px 12px;background:var(--card2);border-radius:10px;font-size:11px;color:var(--text-sub);line-height:1.6">`
+    + (zeilen.length ? `<b>Mit dem Sichern ändert sich:</b><br>${zeilen.join('<br>')}` : 'An Gießtagen, Gießmenge und Ernte ändert sich damit nichts.') + `</div>`;
+  return { isDirty, html: wirkung + `<button class="sav-btn" style="background:${cl.hex};margin-top:8px" onclick="saveDraft()">💾 Änderungen sichern</button>` };
+}
+
 function _refreshSaveZone() {
   const topBtn = document.getElementById('set-save-top');
   const zone = document.getElementById('cyc-save-zone');
@@ -24296,13 +24350,8 @@ function _refreshSaveZone() {
   const sel = S.cycles.find(c => c.id === selId);
   if (!sel) { if (topBtn) topBtn.style.display = 'none'; return; }
   const cl = sel.colorId ? COLORS.find(x => x.id === sel.colorId) || COLORS[0] : COLORS[0];
-  const isDirty = Object.keys(draft).some(k => {
-    if (k === 'id' || k.startsWith('_')) return false;
-    return JSON.stringify(draft[k]) !== JSON.stringify(sel[k]);
-  });
-  zone.innerHTML = isDirty
-    ? `<button class="sav-btn" style="background:${cl.hex};margin-top:8px" onclick="saveDraft()">💾 Änderungen sichern</button>`
-    : `<div style="margin-top:8px;padding:8px 12px;background:rgba(76,175,112,0.06);border:0.5px solid rgba(76,175,112,0.2);border-radius:10px;font-size:11px;color:var(--text-muted);text-align:center">✓ Alle Änderungen gespeichert</div>`;
+  const { html, isDirty } = _saveZoneInner(sel, cl);
+  zone.innerHTML = html;
   // Oberen Speichern-Button (in der Leiste) synchron einblenden — erscheint nur
   // wenn es ungespeicherte Änderungen gibt, genau wie der untere Button. So findet
   // man den Speichern-Knopf oben in der Leiste (intuitiver), ohne ganz nach unten
