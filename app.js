@@ -3797,7 +3797,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.477';
+const APP_VERSION = 'v1.5.478';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -7319,6 +7319,19 @@ const INFO_TERMS = {
     tip: 'Nur in der Wachstumsphase und frühen bis mittleren Blüte (etwa bis Woche 4–5), <b>nie</b> in der Spätblüte. Höchstens ein Drittel der Blätter auf einmal. Ziel: kein Blatt liegt auf einer Blüte, jede Blüte sieht Licht.',
     lex: 'Defoliation (Entlaubung)',
   },
+  // (v1.5.478) Hebe-Test und RLF (Anfänger-Prüfung 29.10.2026, Punkt 5). Hebe-Test: ANBAU.md 1 und 1.2; Zahlen aus GIESSPUNKT.
+  hebetest: {
+    title: 'Hebe-Test',
+    text: 'Beim Hebe-Test hebst du den Topf an und schätzt, wie schwer er ist. Das Gewicht ist die einzige Größe, die den ganzen Wasservorrat im Topf abbildet: Ein Finger prüft nur die obersten Zentimeter, ein Feuchtesensor nur einen Punkt. Du gibst das Ergebnis als Restgewicht an — „Voll“ ist der frisch durchgegossene Topf.',
+    tip: 'Gegossen wird am Gießpunkt: in Erde beim Knopf „' + GIESSPUNKT.erde.knopf + '“, in Coco beim Knopf „' + GIESSPUNKT.coco.knopf + '“ (Coco wird früher gegossen). Heb den Topf nach dem Gießen einmal an und merk dir, wie sich „voll“ anfühlt — das ist dein Vergleich.',
+    lex: 'Restgewicht (Dryback · Trocken-Nass-Zyklus)',
+  },
+  rlf: {
+    title: 'RLF (relative Luftfeuchte)',
+    text: 'RLF ist die relative Luftfeuchte: wie viel Wasserdampf die Luft gerade trägt, in Prozent von dem, was sie bei dieser Temperatur höchstens tragen könnte. Warme Luft trägt mehr als kalte — dieselbe Luft hat nach dem Abkühlen deshalb eine höhere RLF.',
+    tip: 'Das Ziel hängt von der Phase ab und kommt aus dem Ziel-VPD bei deiner Temperatur; die App zeigt es im Klima-Bereich. Fest ist nur die Obergrenze gegen Schimmel: in der Blüte höchstens <b>' + KLIMA_ZIEL.frueh.deckel + ' %</b>, in der späten Blüte höchstens <b>' + KLIMA_ZIEL.spaet.deckel + ' %</b>.',
+    lex: 'VPD (Vapour Pressure Deficit)',
+  },
 };
 
 /** Ein kleines halbtransparentes Overlay mit einem Fachbegriff-Erklärung. */
@@ -7394,8 +7407,10 @@ const _LINKIFY_PATTERNS = [
   { re: /\bPremium-Anbau\b/, key: 'cupniveau' },
   { re: /\bStretch\b/, key: 'stretch' },
   { re: /\bCuring\b/, key: 'curing' },
+  { re: /\bHebe-Tests?\b/, key: 'hebetest' },   // (v1.5.478)
+  { re: /\bRLF\b/, key: 'rlf' },
 ];
-function linkifyTerms(text) {
+function linkifyTerms(text, schon) {   // (v1.5.478) schon: optionales Set von Schlüsseln, die in diesem Zusammenhang schon verlinkt sind
   if (!text || typeof text !== 'string') return text;
   let out = text;
   // Skip-Marker: wir merken Stellen die schon ersetzt wurden, damit ein
@@ -7404,6 +7419,7 @@ function linkifyTerms(text) {
   const replaced = new Set();
   for (const { re, key } of _LINKIFY_PATTERNS) {
     if (replaced.has(key)) continue;
+    if (schon && schon.has(key)) continue;
     if (!INFO_TERMS[key]) continue;
     const match = out.match(re);
     if (!match) continue;
@@ -7417,6 +7433,7 @@ function linkifyTerms(text) {
     const link = `<a onclick="event.stopPropagation();showInfoPopover('${key}')" style="color:var(--blue);cursor:pointer;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:2px">${match[0]}</a>`;
     out = out.slice(0, idx) + link + out.slice(idx + match[0].length);
     replaced.add(key);
+    if (schon) schon.add(key);
   }
   return out;
 }
@@ -18495,6 +18512,7 @@ function renderDash() {
       </div>`;
     }
 
+    const _lkSchritte = new Set();   // (v1.5.478) jeder Fachbegriff in den Schritten nur einmal verlinkt
     return `<div style="background:linear-gradient(135deg,${td.color}18,${td.color}08);border:1px solid ${td.color}55;border-radius:14px;padding:14px 16px;cursor:pointer" onclick="entryFrom='dash';openEntry('${today}')">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
         <span style="font-size:22px">${td.icon}</span>
@@ -18508,7 +18526,7 @@ function renderDash() {
       <div style="display:flex;flex-direction:column;gap:4px;margin-bottom:6px">
         ${td.steps.map((s, i) => `<div style="display:flex;gap:6px;font-size:12px;color:var(--text-sub);line-height:1.5">
           <span style="color:${td.color};font-weight:600;flex-shrink:0">${i + 1}.</span>
-          <span>${s}</span>
+          <span>${(typeof s === 'string' && !/<a |<button/.test(s)) ? linkifyTerms(s, _lkSchritte) : s}</span>
         </div>`).join('')}
       </div>
       ${td.hint ? `<div style="font-size:10px;color:${td.color};opacity:0.85;border-top:0.5px solid ${td.color}33;padding-top:6px;margin-top:4px;line-height:1.4">💡 ${td.hint}</div>` : ''}
@@ -29857,7 +29875,7 @@ function renderEntry(iso) {
         const header = `<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px">
           <div style="display:flex;align-items:center;gap:6px">
             <span style="font-size:14px">${isScale ? '⚖️' : (c.weightMode === 'finger' ? '👆' : '✋')}</span>
-            <span style="font-size:12px;font-weight:600;color:var(--text)">${isScale ? 'Waage' : (c.weightMode === 'finger' ? 'Fingertest' : 'Hebe-Test')}</span>
+            <span style="font-size:12px;font-weight:600;color:var(--text)">${isScale ? 'Waage' : (c.weightMode === 'finger' ? 'Fingertest' : 'Hebe-Test' + infoBtn('hebetest'))}</span>
           </div>
           ${(userExpanded && (isSaturationDay || isSprayDay || isPostHarvest))
             ? `<button onclick="collapseLiftTest('${c.id}','${iso}')" style="background:transparent;border:none;color:var(--text-hint);font-size:10px;cursor:pointer;padding:2px 6px;text-decoration:underline;font-family:var(--font)" title="Hebe-Test wieder ausblenden">▲ ausblenden</button>`
@@ -30818,7 +30836,7 @@ function renderEntry(iso) {
         const header = `<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px">
           <div style="display:flex;align-items:center;gap:6px">
             <span style="font-size:14px">${isScale ? '⚖️' : (c.weightMode === 'finger' ? '👆' : '✋')}</span>
-            <span style="font-size:12px;font-weight:600;color:var(--text)">${isScale ? 'Waage' : (c.weightMode === 'finger' ? 'Fingertest' : 'Hebe-Test')}</span>
+            <span style="font-size:12px;font-weight:600;color:var(--text)">${isScale ? 'Waage' : (c.weightMode === 'finger' ? 'Fingertest' : 'Hebe-Test' + infoBtn('hebetest'))}</span>
           </div>
           ${(userExpanded && (isSaturationDay || isSprayDay || isPostHarvest))
             ? `<button onclick="collapseLiftTest('${c.id}','${iso}')" style="background:transparent;border:none;color:var(--text-hint);font-size:10px;cursor:pointer;padding:2px 6px;text-decoration:underline;font-family:var(--font)" title="Hebe-Test wieder ausblenden">▲ ausblenden</button>`

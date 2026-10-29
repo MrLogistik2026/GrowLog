@@ -2,6 +2,15 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-29 — v1.5.478
+
+- **„Hebe-Test“ und „RLF“ hatten kein ⓘ** — „Hebe-Test“ steht auf fast jedem Bildschirm. Gefunden bei der Anfänger-Prüfung am
+  29.10.2026.
+- **Jetzt** stehen beide in `INFO_TERMS` (Hebe-Test nach ANBAU.md 1 und 1.2 mit dem Gießpunkt aus `GIESSPUNKT`; RLF mit der
+  Obergrenze aus `KLIMA_ZIEL`) und in der automatischen Verlinkung; die Schrittliste der Startseite wird jetzt auch verlinkt,
+  jeder Begriff einmal je Karte. Die Überschrift „Hebe-Test“ im Eintrag hat ein ⓘ.
+- Test: `test_info_hebetest_rlf.js` (13 Prüfungen, beide Zeitzonen; 10 fallen auf v1.5.477 um). Gebaut von einem Sonnet-Helfer.
+
 ## 2026-10-29 — v1.5.477
 
 - **Tag 1 sagte „Säst du direkt in die Erde …“ auch bei Keimung im Glas oder Tuch.** Gefunden bei der Anfänger-Prüfung am

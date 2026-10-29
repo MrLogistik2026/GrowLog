@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.477** · index.html 2,67 MB · 781 Funktionen
+Stand: **v1.5.478** · index.html 2,67 MB · 781 Funktionen
 Zuletzt fortgeschrieben am 29.10.2026 (Diagnose-Arbeitsliste, B02, B04, B01, B07, B03, B11, B10, B08 und B09 erledigt — Abschnitt 0o, Punkt 8). Davor: Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
@@ -434,6 +434,7 @@ Speicher-Befunde sind in v1.5.340–344 behoben. Rohdaten: Workflow wf_63d754b1-
 - v1.5.475: Diagnose-Ergebnis mit „Hebe-Test eintragen“, wenn Wasser-Ursachen vorn stehen (`test_diagnose_hebeknopf.js`).
 - v1.5.476: Jede Schnellhilfe-Karte führt mit „Genauer eingrenzen →“ in den Assistenten, vorbelegt (`test_schnellhilfe_eingrenzen.js`).
 - v1.5.477: Tag-1-Satz passt zur Keimmethode (Direktsaat, Glas, Tuch) aus `KEIMUNG` (`test_tag1_keimsatz.js`).
+- v1.5.478: ⓘ für „Hebe-Test“ und „RLF“, Startseiten-Schritte verlinkt (`test_info_hebetest_rlf.js`).
 
 **Gegenprüfung von v1.5.364/365 (07.10.2026 nachts, Workflow wf_4cf817bf-629, drei Sonnet-Prüfer + Gegenprüfer).** Kein Fehlalarm
 in 33 App-Fassungen, allen Vorlagen und über 2800 Klicks; die schweren Befunde (unsichere Kopie zerstört den Hauptstand, Tropfen als
