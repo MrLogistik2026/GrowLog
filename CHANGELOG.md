@@ -2,6 +2,15 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-29 — v1.5.474
+
+- **Zurück aus dem Gieß-Fahrplan führte nicht dorthin, woher man kam.** Der Pfeil oben ging immer in die Einstellungen, die
+  Zurück-Taste des Handys immer in den Düngeplan — auch wenn man von der Startseite kam. Gefunden bei der Einstellungs-Prüfung am
+  29.10.2026.
+- **Jetzt** merkt sich `openGussplan` die Herkunft (`_gussFrom`), und beide Wege führen dorthin zurück (`gussplanZurueck`); ohne
+  Herkunft (Befehlssuche, Karten) wie bisher.
+- Test: `test_gussplan_zurueck.js` (10 Prüfungen, beide Zeitzonen; 4 fallen auf v1.5.473 um). Gebaut von einem Sonnet-Helfer.
+
 ## 2026-10-29 — v1.5.473
 
 - **Die Startseite nannte am Gießtag die Kalendermenge, ohne nach dem Topf zu fragen.** „✓ Erledigt“ buchte diese Menge blind;

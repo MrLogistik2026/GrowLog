@@ -3768,7 +3768,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.473';
+const APP_VERSION = 'v1.5.474';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -3786,6 +3786,8 @@ let S = {
   planNotes: {},
 };
 let tab = 'dash', calDate = new Date(), editISO = null, entryFrom = 'dash';
+// (v1.5.474) Von wo aus der Gieß-Fahrplan geöffnet wurde (null = Befehlssuche/Karte: Rückfall wie bisher).
+let _gussFrom = null;
 // Produkte, deren Dosis der User im aktuell offenen Eintrag gerade per +/− verstellt
 // hat. Sie bleiben in der aktiven Mix-Liste sichtbar — auch wenn die Dosis auf 0
 // fällt. Sonst "verschwindet" ein Produkt sofort beim Runterregeln in die
@@ -17239,6 +17241,7 @@ function goTo(t, arg) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   const scr = document.getElementById('scr-' + t);
   scr.classList.add('active');
+  if (t !== 'gussplan') _gussFrom = null;
   tab = t;
   const n = document.getElementById('nav-' + t);
   if (n) n.innerHTML = buildNav(t);
@@ -17246,7 +17249,12 @@ function goTo(t, arg) {
   else if (t === 'cal') renderCal();
   else if (t === 'tips') renderTips();
   else if (t === 'set') renderSet();
-  else if (t === 'gussplan') renderGussplan();
+  else if (t === 'gussplan') {
+    renderGussplan();
+    // (v1.5.474) Der Pfeil oben steht fest in index.html (→ Einstellungen); hier auf die Herkunft umgebogen.
+    const _gb = scr.querySelector('.topbar .icon-btn');
+    if (_gb) _gb.onclick = () => gussplanZurueck('set');
+  }
   // (v1.5.106) `duenger` fehlte hier als einziger Bildschirm mit eigenem Inhalt. Wer im
   // Gieß-Fahrplan die Zurück-Taste drückte, landete über den Handler in `_onBack` auf dem
   // Düngeplan — sichtbar geschaltet, aber nie gefüllt, also leer bis auf die Kopfzeile.
@@ -17307,7 +17315,7 @@ window.addEventListener('popstate', () => {
     goTo('tips'); history.pushState(null, '', location.href); return;
   }
   if (document.getElementById('scr-gussplan').classList.contains('active')) {
-    goTo('duenger'); history.pushState(null, '', location.href); return;
+    gussplanZurueck('duenger'); history.pushState(null, '', location.href); return;
   }
   if (document.getElementById('scr-gallery').classList.contains('active')) {
     goTo('dash'); history.pushState(null, '', location.href); return;
@@ -21228,7 +21236,16 @@ function _gussplanZyklusWahl(c) {
 
 function openGussplan() {
   if (!gussplanActiveCycle()) { toast('Erst einen Zyklus anlegen'); return; }
+  // (v1.5.474) Herkunft merken, bevor goTo den Bildschirm wechselt.
+  const von = tab;
   goTo('gussplan');
+  _gussFrom = (von && von !== 'gussplan') ? von : null;
+}
+
+/** (v1.5.474) Zurück aus dem Gieß-Fahrplan: dorthin, woher man kam; sonst `rueckfall`. */
+function gussplanZurueck(rueckfall) {
+  const ziel = _gussFrom || rueckfall;
+  goTo(ziel);
 }
 
 function renderGussplan() {
