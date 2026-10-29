@@ -2,6 +2,13 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-29 — v1.5.479
+
+- **Dieselbe Pflanze hieß auf der Startseite „Anzucht · Tag 10“ und „Sämling · Tag 10“.** Das sind zwei Dinge — die Phase des
+  Plans und das Entwicklungsstadium der Pflanze —, aber nichts sagte das. Gefunden bei der Anfänger-Prüfung am 29.10.2026.
+- **Jetzt** nennt die Zyklus-Karte in Anzucht und Vorzucht beides: „Anzucht · Tag 10 · Stadium Sämling“ (`_zyklusKopfName`).
+- Test: `test_phase_und_stadium.js` (13 Prüfungen, beide Zeitzonen; 6 fallen auf v1.5.478 um). Gebaut von einem Sonnet-Helfer.
+
 ## 2026-10-29 — v1.5.478
 
 - **„Hebe-Test“ und „RLF“ hatten kein ⓘ** — „Hebe-Test“ steht auf fast jedem Bildschirm. Gefunden bei der Anfänger-Prüfung am
