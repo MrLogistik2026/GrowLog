@@ -1399,8 +1399,12 @@ const PROBLEMS = [
     shapeWenn: { wilting: 'ecDeltaPos' },
     description: 'Braune, trockene, verbrannt aussehende Blattspitzen — die klassische "Crispy-Tip"-Optik. Schreitet von den Spitzen nach innen. Bei starkem Salz kehrt sich der Wasserfluss um: Die Pflanze verliert Wasser an das Substrat und welkt — auch im nassen Topf.',
     context: { phase: ['vegi', 'bloom'], ecDeltaPos: true },
-    action: 'Welkt die Pflanze im nassen Topf, nicht mit derselben Nährlösung nachgießen — das verschlimmert es. Düngung sofort halbieren, bei schwerem Burn: einmal flushen (2× Topfvolumen klares pH-Wasser). EC-Monitoring aktivieren wenn nicht schon. '
-      + '<b>In den letzten zwei Wochen vor der Ernte</b> lieber nur die Dosis senken — ein Flush kostet dort Ertrag, weil die Pflanze sich nicht mehr erholen kann.',
+    // (v1.5.443) Vorher „2× Topfvolumen“ (in den Topf passt nur, was ihm fehlt, der Rest ist Drain — ANBAU.md 1.1), „EC-Monitoring
+    // aktivieren“ (gibt es in der App nicht) und „ein Flush kostet dort Ertrag“ (nicht belegt, ANBAU.md 14). Vor Tag 25 wird nicht
+    // durchgegossen: Der junge Topf bliebe lange nass (13.1, wie v1.5.373 beim Sämlings-EC).
+    action: 'Welkt die Pflanze im nassen Topf, nicht mit derselben Nährlösung nachgießen — das verschlimmert es. Düngung sofort halbieren. '
+      + 'Ab Tag ' + DRAIN_AB_TAG + ', bei schwerem Burn: einmal mit klarem pH-Wasser durchgießen, bis unten Drain läuft (Ziel ' + DRAIN_ZIEL.min + '–' + DRAIN_ZIEL.max + ' % der Menge), und ab dann bei jedem Guss den Drain-EC messen. Vorher nicht durchgießen: Der junge Topf hat kaum Wurzeln und bliebe lange nass — dann nur die Düngung zurücknehmen. '
+      + '<b>In den letzten zwei Wochen vor der Ernte</b> reicht meist die gesenkte Dosis; Durchgießen ist dort nicht schädlich, bringt aber keinen belegten Qualitätsgewinn.',
     lexiconKey: 'nutrient_burn',
   },
 
@@ -3729,7 +3733,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.442';
+const APP_VERSION = 'v1.5.443';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,

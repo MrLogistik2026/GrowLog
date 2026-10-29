@@ -1,7 +1,7 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.442** · index.html 2,67 MB · 781 Funktionen
-Zuletzt fortgeschrieben am 29.10.2026 (Diagnose-Arbeitsliste, B02, B04, B01, B07 und B03 erledigt — Abschnitt 0o, Punkt 8). Davor: Fünf Fehler behoben: Der Widerspruch zwischen
+Stand: **v1.5.443** · index.html 2,67 MB · 781 Funktionen
+Zuletzt fortgeschrieben am 29.10.2026 (Diagnose-Arbeitsliste, B02, B04, B01, B07, B03 und B11 erledigt — Abschnitt 0o, Punkt 8). Davor: Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
 die Ernte-Kacheln widersprechen der Erntekarte nicht mehr (v1.5.99), und **die Düngermengen
@@ -243,7 +243,7 @@ wf_0586d0bf-d3d (vergänglich). **Offen, nach Nutzen geordnet** (Umbauten oder P
 6. Tag 1 verweist auf eine Mischliste, die es dort nicht gibt. („Deine nächsten Güsse" beginnt seit v1.5.406 in der Anzucht.)
 7. Dünger abhaken sind im Eintrag 15 Einzel-Taps — Idee: „Alles wie im Plan" mit einem Tipp. („Erledigt" bucht den Plan-Dünger
    seit v1.5.360 als Vorschlag mit.)
-8. **Diagnose „welk“ und „weiß ausgebleicht“ — gemessen am 08.10.2026, B05 erledigt (v1.5.437), B02 (v1.5.438), B04 (v1.5.439), B01 (v1.5.440), B07 (v1.5.441), B03 (v1.5.442), der Rest ist die Arbeitsliste.**
+8. **Diagnose „welk“ und „weiß ausgebleicht“ — gemessen am 08.10.2026, B05 erledigt (v1.5.437), B02 (v1.5.438), B04 (v1.5.439), B01 (v1.5.440), B07 (v1.5.441), B03 (v1.5.442), B11 (v1.5.443), der Rest ist die Arbeitsliste.**
    Ein Sonnet-Prüfer hat v1.5.435 vermessen (jsdom, 4686 Einzel- und 13194 Mehrfachauswahl-Fälle, 27 klassische Bilder).
    Befunde mit Stellen, Messung, Ersatztexten: `.claude/notizen/diagnose/befund.txt`; Werkzeug unter `.claude/tmp/w417/diagnose/`
    (`patch.js` baut die Varianten über OPT-Schalter, `vorschlag_PE.diff`, Wächter-Entwurf `test_w417_welk_weiss.js`: auf 435 7 OK /
@@ -399,6 +399,7 @@ Speicher-Befunde sind in v1.5.340–344 behoben. Rohdaten: Workflow wf_63d754b1-
 - v1.5.440: Hängend bei gemessen hohem Drain-EC — die Überdüngung steht vorn; ohne Drain-EC zählt „hängend“ für sie nicht, weil sie sonst in 108 Fällen ungestützt auf Platz 1 sprang (B01, `test_diagnose_ueberduengung.js`).
 - v1.5.441: Farbknopf „Weiß / ausgebleicht“ in der Diagnose — Foto-Bleaching zuerst, der Lichtmangel-Text unterscheidet weiß von blass, bevor er „näher“ sagt (B07, `test_diagnose_weiss.js`).
 - v1.5.442: Überwässerung und Wassermangel beginnen mit dem Hebe-Test, die Überwässerung nennt die Überdüngung mit Kennzeichen, Wurzelfäule ohne „NOTFALL umtopfen“ und H2O2 (B03, `test_diagnose_welktexte.js`).
+- v1.5.443: Spül-Satz der Überdüngung ohne „2× Topfvolumen“, „EC-Monitoring“ und „ein Flush kostet Ertrag“; durchgegossen wird erst ab Tag 25 (B11).
 
 **Gegenprüfung von v1.5.364/365 (07.10.2026 nachts, Workflow wf_4cf817bf-629, drei Sonnet-Prüfer + Gegenprüfer).** Kein Fehlalarm
 in 33 App-Fassungen, allen Vorlagen und über 2800 Klicks; die schweren Befunde (unsichere Kopie zerstört den Hauptstand, Tropfen als

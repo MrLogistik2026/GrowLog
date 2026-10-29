@@ -2,6 +2,21 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-29 — v1.5.443
+
+- **Der Spül-Rat der Überdüngung stand auf drei unbelegten Sätzen.** „Einmal flushen (2× Topfvolumen klares pH-Wasser)“ — in
+  den Topf passt aber nur, was ihm fehlt, der Rest läuft als Drain ab (ANBAU.md 1.1). „EC-Monitoring aktivieren“ — eine
+  solche Einstellung gibt es in der App nicht. „In den letzten zwei Wochen … ein Flush kostet dort Ertrag, weil die Pflanze
+  sich nicht mehr erholen kann“ — nicht belegt; ANBAU.md 14 führt Spülen vor der Ernte als unschädlich, ohne belegten
+  Qualitätsunterschied. Gefunden von der Diagnose-Prüfung am 08.10.2026 (Befund B11).
+- **Jetzt:** Düngung halbieren; ab Tag 25 bei schwerem Burn einmal mit klarem pH-Wasser durchgießen, bis unten Drain läuft
+  (Ziel 15–20 % aus `DRAIN_ZIEL`), und ab dann bei jedem Guss den Drain-EC messen. **Vor Tag 25 nicht durchgießen** — der junge
+  Topf hat kaum Wurzeln und bliebe lange nass (ANBAU.md 13.1; dieselbe Regel wie beim Sämlings-EC seit v1.5.373). Vor der
+  Ernte reicht meist die gesenkte Dosis; Durchgießen ist dort nicht schädlich, bringt aber keinen belegten Qualitätsgewinn.
+- Die Tag-25-Grenze kam aus der Gegenprüfung der fertigen Texte (Sonnet, gegen ANBAU.md); die 20–40-%-Klammer aus dem
+  Befund-Entwurf ist gestrichen, weil sie `DRAIN_ZIEL` widerspricht und an Baumschulpflanzen gemessen wurde (5.1).
+- Test: `test_diagnose_welktexte.js` Abschnitt 6 (3 Prüfungen, beide Zeitzonen; fallen auf v1.5.442 um).
+
 ## 2026-10-29 — v1.5.442
 
 - **Die Maßnahmen bei hängenden Blättern widersprachen sich ohne Gegenprobe.** Bei „hängend“ stehen Überwässerung („GIESSEN

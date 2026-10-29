@@ -1,4 +1,4 @@
-// (v1.5.442) Die Maßnahmen bei hängenden Blättern beginnen mit der Gegenprobe am Topf.
+// (v1.5.442) Die Maßnahmen bei hängenden Blättern beginnen mit der Gegenprobe am Topf. (v1.5.443) Dazu der Spül-Satz der Überdüngung.
 //
 // Bei „hängend“ stehen Überwässerung („GIESSEN STOPPEN“) und Wassermangel („Sofort gießen“) gleichauf in derselben Liste,
 // beide ohne Bedingung — wer der oberen Karte folgte, tat bei der Hälfte der Fälle das Gegenteil des Richtigen. Die
@@ -56,6 +56,11 @@ const HTML = fs.readFileSync(process.env.GS_INDEX || path.join(__dirname, 'index
   // 5. Überdüngung: welkt auch im nassen Topf, nicht mit derselben Lösung nachgießen
   pruefe(/welkt/.test(salzBild) && /nassen Topf/.test(salzBild), 'Überdüngung: Beschreibung nennt das Welken im nassen Topf');
   pruefe(/nicht mit derselben Nährlösung/.test(salz), 'Überdüngung: nicht mit derselben Nährlösung nachgießen');
+  // 6. (v1.5.443) Spül-Satz: kein „2× Topfvolumen“, kein „EC-Monitoring aktivieren“ (gibt es nicht), kein „ein Flush kostet Ertrag“;
+  //    vor Tag 25 (DRAIN_AB_TAG) nicht durchgießen (ANBAU.md 1.1, 13.1, 14).
+  pruefe(!/2× Topfvolumen|EC-Monitoring|kostet dort Ertrag/.test(salz), 'Überdüngung: kein „2× Topfvolumen“, „EC-Monitoring“, „kostet dort Ertrag“');
+  pruefe(salz.includes('Ab Tag ' + tag) && /Vorher nicht durchgießen/.test(salz), 'Überdüngung: durchgießen erst ab Tag ' + tag);
+  pruefe(/keinen belegten Qualitätsgewinn/.test(salz), 'Überdüngung: Durchgießen vor der Ernte ohne Qualitätsversprechen');
 
   pruefe(errors.length === 0, 'Laufzeitfehler: ' + errors.slice(0, 2).join(' | '));
   console.log(`TZ=${process.env.TZ || '(System)'} · ${n - fehler.length}/${n} OK`);
