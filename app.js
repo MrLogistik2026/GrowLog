@@ -3768,7 +3768,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.467';
+const APP_VERSION = 'v1.5.468';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -26294,8 +26294,15 @@ function _wizFinish() {
   saveS();
 
   if (isFirstCycle && !S._modeAsked) {
-    // Dialog zeigen, dann zum Dashboard
-    _showModeChoiceDialog();
+    // (v1.5.468) Keine Frage mehr: Einsteiger-Modus ist der Start; ein Hinweis nennt den Weg zum Profi-Modus.
+    // Wer den Profi-Modus schon eingestellt hat (beginnerMode === false), behält ihn.
+    S._modeAsked = true;
+    const _bleibtProfi = S.beginnerMode === false;
+    if (!_bleibtProfi) S.beginnerMode = true;
+    saveS();
+    closeWizard();
+    toast(_bleibtProfi ? `🌱 Dein neuer Zyklus ist bereit!`
+      : '🌱 Dein Zyklus ist bereit. Die App erklärt alles einfach — mehr Details: unten auf der Startseite „Profi" tippen.');
   } else {
     closeWizard();
     toast(`🌱 Dein neuer Zyklus ist bereit!`);

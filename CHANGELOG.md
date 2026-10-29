@@ -2,6 +2,16 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-29 — v1.5.468
+
+- **Direkt nach dem Assistenten fragte die App „Einsteiger- oder Profi-Modus?“** — mit einem Profi-Knopf, der mit „EC-Werte ·
+  VPD-Skala · IceFlush“ warb, Wörtern, die ein Anfänger noch nie gesehen hat. Die Startseite hat unten ohnehin die Karte
+  „Einsteiger-Modus aktiv … Profi“. Gefunden bei der Anfänger-Prüfung am 29.10.2026.
+- **Jetzt** startet die App im Einsteiger-Modus, ohne zu fragen, und sagt per Hinweis, wo man umstellt. Wer schon im Profi-Modus
+  ist, bleibt dort. Regeln statt Regler: Die Frage lässt sich aus „neu hier“ beantworten.
+- Test: `test_assistent_keine_modusfrage.js` (6 Prüfungen, beide Zeitzonen; 4 fallen auf v1.5.467 um). Gebaut von einem
+  Sonnet-Helfer.
+
 ## 2026-10-29 — v1.5.467
 
 - **Vorschläge sahen aus wie Messungen.** Nach „✓ Erledigt“ oder „✨ Tag automatisch ausfüllen“ zeigte der Eintrag „✓🧪 pH“, obwohl
