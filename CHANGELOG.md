@@ -2,6 +2,21 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-29 — v1.5.439
+
+- **Eine Hebe-Messung von heute schloss in der Diagnose nichts aus.** Bei „hängend“ und einem Topf, den der Hebe-Test von
+  heute als schwer ausweist, stand der Wassermangel („gießen“) weiter in der Liste; bei einem federleichten Topf standen
+  Überwässerung („GIESSEN STOPPEN“) und Trauermücken darin. Der Kontext wirkte nur als +5 Punkte und konnte die
+  Gegenerklärung nicht herausnehmen. Gefunden von der Diagnose-Prüfung am 08.10.2026 (Befund B04).
+- **Jetzt** fällt der Wassermangel heraus, wenn der Topf heute schwer ist, und Überwässerung und Trauermücken fallen
+  heraus, wenn er heute leicht ist (`restHeute` in `buildDiagnosticContext`, Profilfelder `ignoreWennNass` und
+  `ignoreWennTrocken`, nach dem Vorbild von `ignoreInFlush`).
+- **Nur heute zählt:** Der Kontext sucht den Hebe-Test bis zu drei Tage zurück, und ein „Voll“ vom Gießtag sagt am
+  dritten Tag nichts mehr. Eine ältere Messung gibt weiter nur Punkte und schließt nichts aus.
+- **Warum:** ANBAU.md 15 (Messung schlägt Symptom) und Regel 2. Die Grenzen „schwer“ und „leicht“ folgen seit v1.5.437
+  dem Gießpunkt des Substrats — ohne das hätte ein Coco-Topf am Gießpunkt den Wassermangel ausgeschlossen.
+- Test: `test_hebeheute.js` (7 Prüfungen, beide Zeitzonen; 2 fallen auf v1.5.438 um).
+
 ## 2026-10-29 — v1.5.438
 
 - **In der Diagnose zählte der Phasen-Bonus bei Gleichstand so viel wie ein Messwert.** `diagnoseProblems` gibt jedem

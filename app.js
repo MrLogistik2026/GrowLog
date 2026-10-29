@@ -1443,7 +1443,8 @@ const PROBLEMS = [
       shape: ['wilting', 'curlDown'],
     },
     description: 'Blätter hängen nach unten obwohl Topf nass ist. Stamm kann weich werden. Langsames Wachstum. Klassisch: „aussieht wie Wassermangel, ist aber Wasserüberschuss".',
-    context: { restHigh: true, phase: ['vegi', 'anzucht'] },
+    // (v1.5.439) Ein federleichter Topf im Hebe-Test von heute schließt Überwässerung aus (ANBAU.md 15, Regel 2).
+    context: { restHigh: true, phase: ['vegi', 'anzucht'], ignoreWennTrocken: true },
     action: 'GIESSEN STOPPEN. Erst wieder gießen, wenn der Topf den Gießpunkt erreicht (Erde: Hebe-Test „Knapp“, unter ' + GIESSPUNKT.erde.bis + ' % Restgewicht; Coco: „Mittel“). Wurzeln brauchen Sauerstoff. Untersetzer leeren. Danach nicht öfter gießen, als der Hebe-Test sagt — nass macht zu häufiges Gießen, nicht eine volle Menge mit Drain.',
     lexiconKey: 'overwatering',
   },
@@ -1458,7 +1459,8 @@ const PROBLEMS = [
       shape: ['wilting', 'crispy'],
     },
     description: 'Blätter hängen schlaff, Topf federleicht. Wenn lange ignoriert: Blätter werden trocken und knistern.',
-    context: { restLow: true },
+    // (v1.5.439) Ein schwerer Topf im Hebe-Test von heute schließt Wassermangel aus (ANBAU.md 15, Regel 2).
+    context: { restLow: true, ignoreWennNass: true },
     action: 'Sofort gießen — aber dosiert. Nicht auf einmal 3 L nachkippen, sondern in 2–3 Gängen über 30 Minuten. Zu viel auf einmal = Wurzelschock.',
     lexiconKey: 'underwatering',
   },
@@ -1645,7 +1647,8 @@ const PROBLEMS = [
       shape: ['wilting'],
     },
     description: 'Kleine schwarze Mücken über der Erde — Larven fressen Wurzelhaare. Oft bei konstant feuchter Erde.',
-    context: { restHigh: true },
+    // (v1.5.439) Wie bei der Überwässerung: ein leichter Topf von heute schließt Dauer-Nässe aus (ANBAU.md 15).
+    context: { restHigh: true, ignoreWennTrocken: true },
     action: 'Erde bis zum Gießpunkt abtrocknen lassen (Restgewicht unter ' + GIESSPUNKT.erde.bis + ' %). Gelbtafeln fangen adulte. Neemkuchen oder Bti-Granulat gegen Larven.',
     lexiconKey: 'fungus_gnats',
   },
@@ -1793,6 +1796,9 @@ function diagnoseProblems(symptoms, ctx = {}) {
 
     // Phasen-Ausschluss: z.B. Stickstoff-Mangel in Flush ist normal
     if (pCtx.ignoreInFlush && ctx.phase === 'flush') return null;
+    // (v1.5.439) Nur eine Messung von heute schließt die Gegenerklärung aus (ANBAU.md 15, Regel 2)
+    if (pCtx.ignoreWennNass && ctx.restHigh && ctx.restHeute) return null;
+    if (pCtx.ignoreWennTrocken && ctx.restLow && ctx.restHeute) return null;
 
     score = Math.min(1, score + ctxBoost);
     // Breite des Profils = wie viele Symptome der Eintrag überhaupt listet. Dient nur der
@@ -1932,6 +1938,8 @@ function buildDiagnosticContext(c, iso = null) {
       const _g = giesspunktFor(c);
       if (pct > Math.max(65, _g.bis)) result.restHigh = true;
       if (pct < _g.von) result.restLow = true;
+      // (v1.5.439) Messung vom Bezugstag? Ein „Voll“ vom Gießtag sagt am dritten Tag nichts mehr (ANBAU.md 15)
+      result.restHeute = (latestEntry.iso === refISO);
     }
   }
 
@@ -3698,7 +3706,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.438';
+const APP_VERSION = 'v1.5.439';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,

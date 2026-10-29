@@ -1,7 +1,7 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.438** · index.html 2,67 MB · 781 Funktionen
-Zuletzt fortgeschrieben am 29.10.2026 (Diagnose-Arbeitsliste, B02 erledigt — Abschnitt 0o, Punkt 8). Davor: Fünf Fehler behoben: Der Widerspruch zwischen
+Stand: **v1.5.439** · index.html 2,67 MB · 781 Funktionen
+Zuletzt fortgeschrieben am 29.10.2026 (Diagnose-Arbeitsliste, B02 und B04 erledigt — Abschnitt 0o, Punkt 8). Davor: Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
 die Ernte-Kacheln widersprechen der Erntekarte nicht mehr (v1.5.99), und **die Düngermengen
@@ -243,14 +243,15 @@ wf_0586d0bf-d3d (vergänglich). **Offen, nach Nutzen geordnet** (Umbauten oder P
 6. Tag 1 verweist auf eine Mischliste, die es dort nicht gibt. („Deine nächsten Güsse" beginnt seit v1.5.406 in der Anzucht.)
 7. Dünger abhaken sind im Eintrag 15 Einzel-Taps — Idee: „Alles wie im Plan" mit einem Tipp. („Erledigt" bucht den Plan-Dünger
    seit v1.5.360 als Vorschlag mit.)
-8. **Diagnose „welk“ und „weiß ausgebleicht“ — gemessen am 08.10.2026, B05 erledigt (v1.5.437), B02 erledigt (v1.5.438), der Rest ist die Arbeitsliste.**
+8. **Diagnose „welk“ und „weiß ausgebleicht“ — gemessen am 08.10.2026, B05 erledigt (v1.5.437), B02 (v1.5.438), B04 (v1.5.439), der Rest ist die Arbeitsliste.**
    Ein Sonnet-Prüfer hat v1.5.435 vermessen (jsdom, 4686 Einzel- und 13194 Mehrfachauswahl-Fälle, 27 klassische Bilder).
    Befunde mit Stellen, Messung, Ersatztexten: `.claude/notizen/diagnose/befund.txt`; Werkzeug unter `.claude/tmp/w417/diagnose/`
    (`patch.js` baut die Varianten über OPT-Schalter, `vorschlag_PE.diff`, Wächter-Entwurf `test_w417_welk_weiss.js`: auf 435 7 OK /
    27 FEHL, mit PE 34/0 — gehört als Abschnitt H in `test_diagnose.js`). **Reihenfolge, je eigene Version:**
-   ~~B02~~ (erledigt v1.5.438, `test_diagnose_messwert.js`) → B01 (`nutrient_burn` bekommt
-   „hängend“, Feld `breite: 5` und Engine `p.breite` — Überdüngung fehlt bei „welk“ heute ganz, ANBAU.md 1 und 5) → B04 (eine
-   Hebe-Test-Messung von **heute** schließt Wassermangel bzw. Überwässerung und Trauermücken aus, `restHeute`) → B07 (Farbknopf
+   ~~B02~~ (erledigt v1.5.438, `test_diagnose_messwert.js`) → ~~B04~~ (erledigt v1.5.439, `test_hebeheute.js`) → B01
+   (`nutrient_burn` bekommt „hängend“ — **aber nur bei gemessen hohem Drain-EC**: die Fassung „immer“ ist am 29.10.2026 gemessen
+   und verworfen, 108 von 4686 Fällen sprangen ohne Messwert auf Platz 1; Begründung `.claude/notizen/diagnose/gegenpruefung_2026-10-29.txt`)
+   → B07 (Farbknopf
    „Weiß / ausgebleicht“, `photo_bleaching` mit `white` und `breite: 7`, Lichtmangel-Text beginnt mit der Unterscheidung — heute
    führt „Lampe näher“) → Texte B03, B08–B11 (Hebe-Test-Gegenprobe vorn, ohne H2O2, „3 L“ und „Wurzelschock“; ein Handgriff fürs
    Bleichen statt vier Zahlen; Bleichen-Ursache 3 ohne „CalMag + Schwefel“; „selten“ und „1–2 Stunden“ raus; Flush-Satz) — **vor dem
@@ -394,6 +395,7 @@ Speicher-Befunde sind in v1.5.340–344 behoben. Rohdaten: Workflow wf_63d754b1-
 - v1.5.436: Kein doppelter Punkt mehr nach einem Datum („am 11.10.. Erreicht“) — sechs Sätze, davon zwei aus v1.5.432. Zwei Tests nachgezogen (`test_feedtaganzucht`, `test_mischzeile`): Ihre Prüflage hing an der alten Topping-Wasserregel bzw. am alten Coco-Satz. **Wer eine Regel einschränkt, sucht die Tests, deren Prüflage auf ihr beruht** — gefunden hat beide erst der Gesamtlauf.
 - v1.5.437: Die Diagnose liest den Hebe-Test nach dem Gießpunkt des Substrats — bei Coco galt „Mittel“ (der Gießpunkt) als „Erde dauer-feucht“ (B05, `test_hebekontext.js`).
 - v1.5.438: Bei Punktgleichstand in der Diagnose schlägt ein Messwert den Phasen-Bonus — „hängend, Blüte, Topf nass“ nannte den Hitzestress ohne Temperatur vor den Trauermücken, „pH zu hoch“ den pH-Lockout erst auf Platz 4 (B02, `test_diagnose_messwert.js`; 59 von 4686 Fällen tauschen Platz 1, alle Messwert vor Phase).
+- v1.5.439: Eine Hebe-Messung von heute schließt die Gegenerklärung aus — schwerer Topf ohne Wassermangel, leichter ohne Überwässerung und Trauermücken; ältere Messungen geben nur Punkte (B04, `test_hebeheute.js`).
 
 **Gegenprüfung von v1.5.364/365 (07.10.2026 nachts, Workflow wf_4cf817bf-629, drei Sonnet-Prüfer + Gegenprüfer).** Kein Fehlalarm
 in 33 App-Fassungen, allen Vorlagen und über 2800 Klicks; die schweren Befunde (unsichere Kopie zerstört den Hauptstand, Tropfen als
