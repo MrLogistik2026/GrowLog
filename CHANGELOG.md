@@ -2,6 +2,27 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-29 — v1.5.438
+
+- **In der Diagnose zählte der Phasen-Bonus bei Gleichstand so viel wie ein Messwert.** `diagnoseProblems` gibt jedem
+  Eintrag, dessen Phasenliste passt, +5 Punkte. Die Liste ['vegi','bloom'] trifft fast immer zu und belegt nichts. Bei
+  gleicher Punktzahl entschied der höhere Kontext-Bonus, und darin waren Phase und Messung gleich viel wert. „Alle Blätter
+  hängend, Blüte, Topf nass“ nannte deshalb den Hitzestress ohne jede Temperatur vor den Trauermücken, die der nasse Topf
+  stützt; „neue Blätter gelb, pH zu hoch“ nannte den pH-Lockout erst auf Platz 4, hinter Überdüngung und Lichtmangel.
+  Gefunden von der Diagnose-Prüfung am 08.10.2026 (Befund B02).
+- **Jetzt** entscheidet bei Gleichstand zuerst der Bonus ohne die Phasen-Punkte (Messwerte und späte Blüte), danach wie
+  bisher Kontext, Schweregrad und Profilbreite. Die Punktzahlen bleiben gleich, nur gleich bewertete Treffer tauschen.
+- **Gemessen** (Sonnet-Helfer, 437 gegen 438): Platz 1 wechselt in 59 von 4686 Einzelauswahl-Fällen (1,3 %) und in 326
+  von 13194 Mehrfachauswahl-Fällen (2,5 %). Jeder Wechsel bringt eine Ursache mit passendem Messwert vor eine mit bloßen
+  Phasen-Punkten (pH hoch → pH-Lockout, nasser Topf → Wurzelfäule oder Überwässerung, trockener Topf → Wassermangel,
+  zu warm → Spinnmilben). Die 24 klassischen Bilder bleiben 24 von 24.
+- **Bewusst offen:** Ohne jeden Messwert führt bei „alle Blätter hängend“ in der Blüte weiter der Hitzestress. Das ist die
+  Frage, ob der Phasen-Bonus überhaupt zählen soll (U1 in `.claude/notizen/diagnose/befund.txt`).
+- **Warum:** ANBAU.md 15 (Messung schlägt Symptom) und Regel 1 (eine Schwelle ohne Gültigkeitsbedingung belegt nichts).
+  Voraussetzung für B01: Ohne diese Reihenfolge rückt die Überdüngung bei „hängend + nass“ vor die Überwässerung.
+- Test: `test_diagnose_messwert.js` (12 Prüfungen, darunter eine Regel über 3888 Fälle; beide Zeitzonen; 4 fallen auf
+  v1.5.437 um).
+
 ## 2026-10-08 — v1.5.437
 
 - **Die Diagnose las den Hebe-Test bei Coco mit den Grenzen für Erde.** `buildDiagnosticContext` setzte „Topf nass“ ab 65 und

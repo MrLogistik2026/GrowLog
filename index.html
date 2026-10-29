@@ -2781,9 +2781,10 @@ function diagnoseProblems(symptoms, ctx = {}) {
 
     const pCtx = p.context || {};
     let ctxBoost = 0;
+    let _phaseB = 0;
     if (pCtx.phase && ctx.phase) {
       if (pCtx.phase.includes(ctx.phase) || (pCtx.phase.includes('vegi') && ['anzucht','vorzucht','vegi_out','abhärten'].includes(ctx.phase))) {
-        ctxBoost += 0.05; contextReasons.push(`passt zur Phase ${_phasenWort(ctx.phase)}`);
+        ctxBoost += 0.05; _phaseB = 0.05; contextReasons.push(`passt zur Phase ${_phasenWort(ctx.phase)}`);
       }
     }
     if (pCtx.phHigh && ctx.phHigh) { ctxBoost += 0.05; contextReasons.push('pH zu hoch'); }
@@ -2813,7 +2814,11 @@ function diagnoseProblems(symptoms, ctx = {}) {
     // Reihenfolge bei Gleichstand (siehe unten), nicht der Punktzahl.
     const breite = pLoc.length + pCol.length + pShp.length;
     const rang = { critical: 3, high: 2, medium: 1, low: 0 }[p.severity] ?? 1;
-    return { problem: p, score, matchedReasons, contextReasons, ctxBoost, breite, rang };
+    // (v1.5.438) Der Anteil, der etwas aussagt: Messwerte und die späte Blüte, ohne den
+    // allgemeinen Phasen-Bonus. Gerundet, damit 0,15 − 0,05 nicht als 0,10000000000000002
+    // einen Gleichstand entscheidet.
+    const mess = Math.round(Math.max(0, ctxBoost - _phaseB) * 1000) / 1000;
+    return { problem: p, score, matchedReasons, contextReasons, ctxBoost, mess, breite, rang };
   }).filter(Boolean);
 
   // (v1.5.124) Bei Punktgleichstand entschied bisher die Reihenfolge im Quelltext — also
@@ -2825,6 +2830,10 @@ function diagnoseProblems(symptoms, ctx = {}) {
   //
   // Statt an der Punktzahl zu drehen (das verschöbe jede Diagnose) entscheidet bei
   // Gleichstand jetzt der Reihe nach:
+  //   0. (v1.5.438) der Bonus ohne Phasen-Punkte — Topf schwer, pH zu hoch, Drain-EC zu
+  //      hoch, späte Blüte. Der Phasen-Bonus belegt nichts: Die Liste ['vegi','bloom'] trifft
+  //      fast immer zu. Vorher stand bei „alle Blätter hängend" in der Blüte der Hitzestress ohne jede
+  //      Temperatur vor der Überwässerung im nachweislich nassen Topf (Diagnose-Prüfung B02).
   //   1. der höhere Kontext-Bonus — die Messwerte des Nutzers schlagen den Zufall,
   //   2. der Schweregrad — nach `ANBAU.md` 15 wird bei Unsicherheit in Richtung Sicherheit
   //      gerundet. Sind zwei Erklärungen gleich wahrscheinlich, gehört die gefährlichere
@@ -2837,7 +2846,7 @@ function diagnoseProblems(symptoms, ctx = {}) {
   // Die Punktzahlen selbst bleiben unverändert, es ändert sich nur die Reihenfolge
   // gleichwertiger Treffer.
   return results
-    .sort((a, b) => (b.score - a.score) || (b.ctxBoost - a.ctxBoost)
+    .sort((a, b) => (b.score - a.score) || (b.mess - a.mess) || (b.ctxBoost - a.ctxBoost)
       || (b.rang - a.rang) || (a.breite - b.breite))
     .slice(0, 5);
 }
@@ -4704,7 +4713,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.437';
+const APP_VERSION = 'v1.5.438';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
