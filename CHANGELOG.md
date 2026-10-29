@@ -2,6 +2,15 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-29 — v1.5.472
+
+- **„Damit ergibt sich“ sagte immer „Liegt ein Tag im nächsten Monat, im Kalender weiterblättern.“** — auch wenn alle Tage im
+  laufenden Monat lagen. Gefunden bei der Einstellungs-Prüfung am 29.10.2026.
+- **Jetzt** erscheint der Hinweis nur, wenn ein genannter Tag (letzter Guss, Spülgänge, IceFlush, Ernte) in einem späteren Monat
+  liegt.
+- Test: `test_kettenvorschau_kalenderhinweis.js` (4 Prüfungen, beide Zeitzonen; 2 fallen auf v1.5.471 um). Gebaut von einem
+  Sonnet-Helfer.
+
 ## 2026-10-29 — v1.5.471
 
 - **Topf-Schritt im Assistenten:** Bei Automatics standen zwei gleiche Knöpfe „Empfehlung: 11L“ und „Standard: 11L“; die

@@ -4783,7 +4783,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.471';
+const APP_VERSION = 'v1.5.472';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -25297,11 +25297,15 @@ function _kettenVorschauHTML(sel, d) {
     ? ` <span style="color:var(--text-hint)">— bisher Tag ${stAlt.ernteTag} (${_dat(sel, stAlt.ernteTag)})</span>` : '';
   const rast = (neu && Number(_b.bloomDays) !== Number(_bloomEingabe))
     ? `<br><span style="color:var(--yellow)">Blüte wird ${_b.bloomDays} statt ${_bloomEingabe} Tage: Das Spülen beginnt am nächsten Gießtag, nicht am Tag nach dem letzten Düngerguss.</span>` : '';
+  // (v1.5.472) Hinweis nur, wenn ein genannter Tag nicht mehr im aktuellen Monat liegt.
+  const _monatJetzt = todayISO().slice(0, 7);
+  const _genannt = [stx.letzterGuss].concat(stx.spuelGaenge || [], [stx.iceStart, stx.ernteTag]).filter(t => t);
+  const _spaeterMonat = _genannt.some(t => isoPlus(_b.startDate, t - 1).slice(0, 7) > _monatJetzt);
   return `<div id="cyc-ketten-vorschau" style="font-size:10px;color:var(--text-sub);line-height:1.55;margin-top:8px;background:var(--card2);border-radius:8px;padding:8px 10px">
     <b>Damit ergibt sich${neu ? ' (noch nicht gesichert)' : ''}:</b><br>
     ${stx.letzterGuss ? `Letzter Düngerguss Tag ${stx.letzterGuss} (${_dat(_b, stx.letzterGuss)}) · ` : ''}Spülgänge ${stx.spuelGaenge.length ? stx.spuelGaenge.map(t => 'Tag ' + t + ' (' + _dat(_b, t) + ')').join(' · ') : '—'}<br>
     Hard-Dryback ${stx.iceDry} Tage · IceFlush ab Tag ${stx.iceStart} (${_dat(_b, stx.iceStart)}) · <b>Ernte Tag ${stx.ernteTag} (${_dat(_b, stx.ernteTag)})</b>${vorher}${rast}
-    <br><span style="color:var(--text-hint)">Liegt ein Tag im nächsten Monat, im Kalender weiterblättern.</span>
+    ${_spaeterMonat ? '<br><span style="color:var(--text-hint)">Liegt ein Tag im nächsten Monat, im Kalender weiterblättern.</span>' : ''}
   </div>`;
 }
 function _refreshKettenVorschau() {
