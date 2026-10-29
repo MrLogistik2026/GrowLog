@@ -3738,7 +3738,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.445';
+const APP_VERSION = 'v1.5.446';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -7704,10 +7704,14 @@ const SYMPTOMS = [
         lex: 'Trichom-Analyse (Ernte-Trigger)',
       },
       {
-        heading: 'Ganzes Blatt verbleicht, aber Lampe nicht zu nah',
-        verdict: '⚠ Magnesium- oder Schwefel-Mangel',
+        heading: 'Ganzes Blatt blass oder gelblich, nicht nur die Spitzen unter der Lampe',
+        verdict: '⚠ Kein Licht-Bleichen — Nährstoff, pH oder Licht',
         color: 'var(--orange)',
-        text: 'Wenn Blätter generell blasser werden (nicht nur Tops), eher Nährstoff-Problem. Bei Mg: zwischen Adern hellgrün. Bei S: junge Blätter zuerst hellgrün. <b>Lösung:</b> CalMag + Schwefel über Blattdünger.',
+        // (v1.5.446) Vorher „CalMag + Schwefel über Blattdünger“ — gegen die Magnesium-Diagnose (Booster aussetzen, pH, dann
+        // Bittersalz; Calcium verdrängt Magnesium, ANBAU.md 6.2) und ohne die Erstfrage oben/unten (6.1). Schwefel-Blattdüngung
+        // steht nicht in ANBAU.md.
+        text: 'Wird das ganze Blatt blasser, nicht nur die lichtnächsten Spitzen, ist es kein Licht-Bleichen. <b>Erst fragen: oben oder unten?</b> Zuerst die <b>unteren</b> Blätter gelb (zwischen den Adern oder gleichmäßig): Stickstoff oder Magnesium, in der späten Blüte oft nur normale Reife — siehe „Adern grün, dazwischen gelb“. Zuerst die <b>jungen</b> Blätter hell: Eisen oder zu hoher pH — pH prüfen, nicht Eisen nachlegen. Bleibt die Pflanze gleichmäßig blass und streckt sich, fehlt eher Licht. '
+          + 'Bei Magnesium gilt die Reihenfolge der Diagnose: erst den Blüte-Booster aussetzen, dann den pH prüfen, erst dann gezielt Bittersalz (Magnesiumsulfat). Ein CalMag-Mittel bringt Calcium mit, und Calcium verdrängt Magnesium — in ungepuffertem Coco ist CalMag dagegen Grundbedarf, dort nicht weglassen.',
         when: 'Alle Phasen',
         lex: 'CalMag',
       },

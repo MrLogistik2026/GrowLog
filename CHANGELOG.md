@@ -2,6 +2,21 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-29 — v1.5.446
+
+- **Schnellhilfe „Obere Buds verlieren Farbe“, dritte Ursache „Ganzes Blatt verbleicht, aber Lampe nicht zu nah“:** Urteil
+  „Magnesium- oder Schwefel-Mangel“, Lösung „CalMag + Schwefel über Blattdünger“. Das widersprach der Magnesium-Diagnose
+  (erst den Blüte-Booster aussetzen, dann pH, dann Bittersalz; Calcium verdrängt Magnesium, ANBAU.md 6.2) und übersprang die
+  Erstfrage oben oder unten (6.1): „Ganzes Blatt blass“ ist kein Magnesium-Bild. Schwefel-Blattdüngung steht nicht in
+  ANBAU.md. Gefunden von der Diagnose-Prüfung am 08.10.2026 (Befund B09).
+- **Jetzt** heißt die Karte „Ganzes Blatt blass oder gelblich, nicht nur die Spitzen unter der Lampe“, Urteil „Kein
+  Licht-Bleichen — Nährstoff, pH oder Licht“. Sie fragt zuerst oben oder unten: unten Stickstoff, Magnesium oder in der späten
+  Blüte normale Reife; oben Eisen oder zu hoher pH (pH prüfen, nicht Eisen nachlegen); gleichmäßig blass und gestreckt eher
+  Lichtmangel. Für Magnesium gilt die Reihenfolge der Diagnose; CalMag bringt Calcium mit, in ungepuffertem Coco ist es
+  dagegen Grundbedarf (7.1). „Bittersalz“ ist als Magnesiumsulfat erklärt.
+- Die Coco-Ausnahme, die Licht-Ursache und die Erklärung von Bittersalz kamen aus der Gegenprüfung (Sonnet, gegen ANBAU.md).
+- Test: `test_bleichtexte.js` Abschnitt „Blass-Karte“ (4 Prüfungen, beide Zeitzonen; fallen auf v1.5.445 um).
+
 ## 2026-10-29 — v1.5.445
 
 - **Fürs Licht-Bleichen nannte die App vier verschiedene Handgriffe.** Diagnose: „LED um 15–20 cm anheben oder Dimmer auf

@@ -1,4 +1,4 @@
-// (v1.5.445) Foto-Bleaching: ein Handgriff statt vier Zahlen, „Lampe NICHT näher“, kein „bis Ernte“.
+// (v1.5.445) Foto-Bleaching: ein Handgriff statt vier Zahlen, „Lampe NICHT näher“, kein „bis Ernte“. (v1.5.446) Dazu die Karte „Ganzes Blatt blass“.
 //
 // Für denselben Handgriff nannte die App vier Fassungen: „LED um 15–20 cm anheben oder Dimmer auf 60–70% bis Ernte“
 // (Diagnose), „Lampe SOFORT höher hängen (mind. 20 cm), oder Dimmer auf 60–70% reduzieren bis zur Ernte“ (Schnellhilfe),
@@ -56,6 +56,17 @@ const HTML = fs.readFileSync(process.env.GS_INDEX || path.join(__dirname, 'index
   // Lexikon Lichtbrand: weiß ist Bleichen, gelb bis braun ist Hitze (ANBAU.md 8.2)
   const lb = texte.find((x) => /Lichtbrand \(Phototoxizität\)/.test(x.wo));
   pruefe(lb && !/bleichen aus \(weiß\/gelb\)/.test(lb.t), 'Lexikon Lichtbrand: nicht „weiß/gelb“ als ein Bild');
+
+  // (v1.5.446) Schnellhilfe „Obere Buds verlieren Farbe“, Ursache 3: kein „CalMag + Schwefel über Blattdünger“; erst oben oder
+  // unten (ANBAU.md 6.1), Magnesium in der Reihenfolge der Diagnose (6.2), Coco als Ausnahme (7.1), Licht als dritte Ursache.
+  const k3 = JSON.parse(E(`JSON.stringify(SYMPTOMS.flatMap(s => s.causes || []).find(c => /Ganzes Blatt/.test(c.heading)) || null)`));
+  const k3t = (k3 && k3.text) || '';
+  pruefe(!!k3 && !/CalMag \+ Schwefel|Blattdünger/.test(k3t), 'Blass-Karte: kein „CalMag + Schwefel über Blattdünger“');
+  pruefe(/oben oder unten/.test(k3t), 'Blass-Karte: Erstfrage oben oder unten');
+  // „pH prüfen“ steht schon beim Eisen weiter vorn — gesucht wird die Magnesium-Reihenfolge ab dem Booster.
+  const iB = k3t.indexOf('Booster'), iP = k3t.indexOf('pH', iB), iS = k3t.indexOf('Bittersalz');
+  pruefe(iB >= 0 && iB < iP && iP < iS, 'Blass-Karte: Booster → pH → Bittersalz wie die Diagnose');
+  pruefe(/ungepuffertem Coco/.test(k3t) && /fehlt eher Licht/.test(k3t), 'Blass-Karte: Coco-Ausnahme und Licht als Ursache');
 
   pruefe(errors.length === 0, 'Laufzeitfehler: ' + errors.slice(0, 2).join(' | '));
   console.log(`TZ=${process.env.TZ || '(System)'} · ${n - fehler.length}/${n} OK`);
