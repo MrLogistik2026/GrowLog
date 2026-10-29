@@ -4770,7 +4770,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.458';
+const APP_VERSION = 'v1.5.459';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -17977,6 +17977,11 @@ function _helpCurrentScreen() {
  * das Wort „Guss-Verschiebung" nicht. Mehrere Schreibweisen pro Befehl sind Absicht.
  */
 const COMMANDS = [
+  // (v1.5.459) Die Diagnose war nur über Wissen → Diagnose erreichbar; „diagnose", „problem", „krank" fanden nichts. Sie braucht keinen
+  // Zyklus (openDiagnostics(null) läuft ohne Kontext), deshalb ohneZyklus.
+  { t: 'Problem-Diagnose starten',      keys: 'diagnose problem krank krankheit schlecht probleme pflanze hilfe ursache',
+    hint: 'Wenige Fragen zu deiner Pflanze, dann die wahrscheinlichsten Ursachen mit Lösung', ohneZyklus: true,
+    run: () => openDiagnosticsFromTips() },
   { t: 'Ernte verschieben',            keys: 'ernte erntetag später früher verschieben datum endspurt reif',
     hint: 'Erntetag setzen — Spülen, IceFlush und der letzte Guss rechnen sich zurück',
     run: (c) => setEndspurtErnte(c.id) },
@@ -18052,7 +18057,7 @@ function runCommand(i) {
   // (v1.5.418, F16) Die Gruppe mit stehenden Pflanzen, nicht der erste laufende Zyklus der Liste — der war bei Run 01 im Curing
   // ein Zyklus ohne Pflanzen, und „Hebe-Test eintragen" landete dort.
   const c = _standardZyklus();
-  if (!c) { toast('Dafür brauchst du erst einen Zyklus'); return; }
+  if (!c && !cmd.ohneZyklus) { toast('Dafür brauchst du erst einen Zyklus'); return; }
   closeHelp();
   vibrate(8);
   try { cmd.run(c); } catch (e) { toast('Das hat gerade nicht geklappt — versuch es über das Menü'); }
@@ -18081,6 +18086,14 @@ function helpSearch(q) {
     }
   });
 
+  // (v1.5.459) Die Schnellhilfe-Karten (SYMPTOMS) werden durchsucht: „hängt", „weiß", „gelb" führen direkt auf die Karte. Vorher gab es
+  // dafür nur den Sammelsprung auf die Tipps-Seite. SYMPTOM_SUCHWORTE ergänzt Alltagswörter, die in Titel und Untertitel fehlen.
+  const SYMPTOM_SUCHWORTE = { bleaching: 'ausgebleicht gebleicht bleich weiss', wilting: 'welk schlapp', pests: 'schaedlinge insekten milben laeuse', damping_off: 'keimling umgefallen' };
+  (typeof SYMPTOMS !== 'undefined' ? SYMPTOMS : []).forEach(sy => {
+    if (passt(sy.title, sy.subtitle, SYMPTOM_SUCHWORTE[sy.id])) {
+      treffer.push({ art: 'Schnellhilfe', titel: sy.icon + ' ' + sy.title, text: sy.subtitle, go: `closeHelp();showSymptomDetail('${sy.id}')` });
+    }
+  });
   Object.entries(typeof INFO_TERMS !== 'undefined' ? INFO_TERMS : {}).forEach(([k, v]) => {
     if (passt(v.title, v.text, v.tip, k)) {
       treffer.push({ art: 'Lexikon', titel: v.title, text: String(v.text || '').replace(/<[^>]+>/g, '').slice(0, 130), go: `showInfoPopover('${k}')` });

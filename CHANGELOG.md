@@ -2,6 +2,17 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-29 — v1.5.459
+
+- **Die Hilfesuche fand weder die Schnellhilfe noch die Diagnose.** Die 13 Schnellhilfe-Karten (`SYMPTOMS`) wurden nicht
+  durchsucht, „diagnose“ fand nichts, „Problem“ führte nur auf die Tipps-Seite; „ausgebleicht“ fand die Karte „Obere Buds
+  verlieren Farbe“ nicht. Gefunden bei der Bedien-Prüfung „Hilfe finden“ am 29.10.2026.
+- **Jetzt** durchsucht `helpSearch` auch die Schnellhilfe (Titel, Untertitel und Alltagswörter in `SYMPTOM_SUCHWORTE`, z. B.
+  „ausgebleicht“, „welk“) und springt direkt zur Karte; der neue Befehl „Problem-Diagnose starten“ (diagnose, problem, krank)
+  öffnet den Assistenten — auch ohne Zyklus (`ohneZyklus`).
+- Test: `test_hilfesuche_schnellhilfe.js` (9 Prüfungen, beide Zeitzonen; 8 fallen auf v1.5.458 um). Gebaut von einem
+  Sonnet-Helfer, eingebaut und nachgeprüft.
+
 ## 2026-10-29 — v1.5.458
 
 - **Der Pflanzen-Check war im Einsteiger-Modus versteckt.** „🆘 Meine Pflanze sieht schlecht aus“ stand auf der Startseite im
