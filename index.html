@@ -4748,7 +4748,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.443';
+const APP_VERSION = 'v1.5.444';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -8491,9 +8491,11 @@ const SYMPTOMS = [
       },
       {
         heading: 'Erde trocken, Pflanze welk',
-        verdict: '⚠ Unterwässerung',
+        verdict: '⚠ Wassermangel',
         color: 'var(--orange)',
-        text: 'Selten, aber möglich bei heißen Tagen. <b>Lösung:</b> Langsam gießen, bis unten ' + DRAIN_ZIEL.min + '–' + DRAIN_ZIEL.max + ' % der Menge ablaufen. Nach 1-2 Stunden sollte die Pflanze sichtbar aufrichten.',
+        // (v1.5.444) Vorher „Selten“ (lässt Anfänger die Ursache übergehen, die eine Automatic jeden Tag dauerhaft kostet,
+        // ANBAU.md 9) und „nach 1–2 Stunden aufrichten“ (nicht belegt, 14) — ohne Gegenprobe am Topf.
+        text: 'Nur wenn der Topf beim Anheben leicht ist (ab Tag ' + DRAIN_AB_TAG + ': Gießpunkt erreicht oder leichter — Erde „' + GIESSPUNKT.erde.knopf + '“, Coco „' + GIESSPUNKT.coco.knopf + '“; davor: er fühlt sich trocken an) — ist er schwer, ist es eine der anderen Ursachen. <b>Lösung:</b> Gieß so viel, wie die Gießmenge im Eintrag nennt; ab Tag ' + DRAIN_AB_TAG + ' gießt du, bis der Topf beim Anheben wieder voll ist, und was darüber hinausgeht, läuft als Drain ab (Ziel ' + DRAIN_ZIEL.min + '–' + DRAIN_ZIEL.max + ' %). Nicht abwarten: Welken heißt, Photosynthese und Transpiration stehen schon fast, und bei Automatics ist jeder Stresstag dauerhaft verloren.',
         when: 'Alle Phasen',
       },
       {

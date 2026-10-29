@@ -2,6 +2,19 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-29 — v1.5.444
+
+- **Schnellhilfe „Pflanze hängt“, Karte „Erde trocken, Pflanze welk“:** „Selten, aber möglich bei heißen Tagen … Nach 1-2
+  Stunden sollte die Pflanze sichtbar aufrichten.“ Beides steht nicht in ANBAU.md, und „selten“ lässt Anfänger genau die
+  Ursache übergehen, die eine Automatic jeden Stresstag dauerhaft kostet (ANBAU.md 9, 14). Eine Gegenprobe am Topf fehlte,
+  während die vierte Karte derselben Liste (Topping/Umtopfen) sie schon hatte. Gefunden von der Diagnose-Prüfung am
+  08.10.2026 (Befund B10).
+- **Jetzt** beginnt die Karte mit „Nur wenn der Topf beim Anheben leicht ist“ (ab Tag 25 am Gießpunkt aus `GIESSPUNKT`,
+  davor: fühlt sich trocken an); ein schwerer Topf heißt eine der anderen Ursachen. Gegossen wird die Gießmenge des Eintrags,
+  ab Tag 25 bis der Topf wieder voll ist, der Rest läuft als Drain ab. „Nicht abwarten“ statt „nach 1–2 Stunden“. Das Urteil
+  heißt „Wassermangel“ wie in der Diagnose, nicht mehr „Unterwässerung“.
+- Test: `test_schnellhilfe_welk.js` (9 Prüfungen, beide Zeitzonen; 7 fallen auf v1.5.443 um).
+
 ## 2026-10-29 — v1.5.443
 
 - **Der Spül-Rat der Überdüngung stand auf drei unbelegten Sätzen.** „Einmal flushen (2× Topfvolumen klares pH-Wasser)“ — in
