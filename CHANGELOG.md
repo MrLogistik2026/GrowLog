@@ -2,6 +2,21 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-29 — v1.5.449
+
+- **Die Begründungen der Diagnose sagten Dinge, die der Messwert nicht trägt.** Unter „Warum diese Hypothese“ standen „EC-Runoff
+  steigend“ (gemeint ist: Drain-EC über dem 1,6-Fachen des Gießwassers — nicht „steigend“), „Runoff-pH driftet hoch“ und
+  „Erde dauer-feucht“ (ein einzelner Hebe-Test, bei Coco auch kein „Erde“). Der Startseiten-Hinweis sagte „Runoff-pH steigt
+  deutlich über Input“, die Kontext-Zeile über dem Ergebnis „Erde feucht“ und „EC steigt“. Die Nomenklatur der App ist
+  „Drain“ (ANWEISUNG.md). Gefunden von der Diagnose-Prüfung am 08.10.2026 (Befund B12).
+- **Jetzt:** „Topf schwer (heute gemessen)“ bzw. „(letzte Messung)“, „Topf leicht …“, „Drain-EC zu hoch/zu niedrig“,
+  „Drain-pH weit über/unter dem Gießwasser“; im Hinweis „Drain-pH liegt deutlich über dem Gießwasser“, „Drain-EC zu hoch —
+  Salze sammeln sich“, „Topf beim Anheben sehr leicht“; in der Kontext-Zeile „Topf schwer (heute)“, „Drain-EC hoch“.
+- Die Temperaturgrenzen 30 °C (zu warm) und 18 °C (zu kalt) im Diagnose-Kontext sind als Konvention der Raumluft
+  gekennzeichnet; ANBAU.md nennt kein Hitze-Limit (2.2: 30 °C ist das Photosynthese-Optimum). Offene Frage an Patrick.
+- Test: `test_diagnose_etiketten.js` (8 Prüfungen, darunter ein Wächter über alle Begründungen; beide Zeitzonen; fallen auf
+  v1.5.448 um).
+
 ## 2026-10-29 — v1.5.448
 
 - **Der Startseiten-Hinweis „Erde bleibt dauerhaft feucht“ kam nach jedem Gießtag.** `getDiagnosticHints` meldete ihn nach

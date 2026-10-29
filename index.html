@@ -2823,18 +2823,20 @@ function diagnoseProblems(symptoms, ctx = {}) {
     if (pCtx.tempHot && ctx.tempHot) { ctxBoost += 0.05; contextReasons.push('Temperatur zu warm'); }
     if (pCtx.tempCold && ctx.tempCold) { ctxBoost += 0.05; contextReasons.push('Temperatur zu kalt'); }
     if (pCtx.tempWarm && ctx.tempWarm) { ctxBoost += 0.03; contextReasons.push('warmes Klima'); }
-    if (pCtx.restHigh && ctx.restHigh) { ctxBoost += 0.05; contextReasons.push('Erde dauer-feucht'); }
-    if (pCtx.restLow && ctx.restLow) { ctxBoost += 0.05; contextReasons.push('Erde sehr trocken'); }
-    if (pCtx.ecDeltaPos && ctx.ecDeltaPos) { ctxBoost += 0.05; contextReasons.push('EC-Runoff steigend'); }
-    if (pCtx.ecDeltaNeg && ctx.ecDeltaNeg) { ctxBoost += 0.05; contextReasons.push('EC-Runoff fallend'); }
+    // (v1.5.449) Die Etiketten sagen, was der Wert trägt: eine Hebe-Messung (heute oder bis 3 Tage alt), kein „dauer-feucht“;
+    // der Drain-EC über dem 1,6-Fachen des Gießwassers, kein „steigend“ — und „Drain“, nicht „Runoff“ (ANWEISUNG.md, Nomenklatur).
+    if (pCtx.restHigh && ctx.restHigh) { ctxBoost += 0.05; contextReasons.push(ctx.restHeute ? 'Topf schwer (heute gemessen)' : 'Topf schwer (letzte Messung)'); }
+    if (pCtx.restLow && ctx.restLow) { ctxBoost += 0.05; contextReasons.push(ctx.restHeute ? 'Topf leicht (heute gemessen)' : 'Topf leicht (letzte Messung)'); }
+    if (pCtx.ecDeltaPos && ctx.ecDeltaPos) { ctxBoost += 0.05; contextReasons.push('Drain-EC zu hoch'); }
+    if (pCtx.ecDeltaNeg && ctx.ecDeltaNeg) { ctxBoost += 0.05; contextReasons.push('Drain-EC zu niedrig'); }
     if (pCtx.ecLow && ctx.ecLow) { ctxBoost += 0.03; contextReasons.push('EC zu niedrig'); }
     if (pCtx.humidityHigh && ctx.humidityHigh) { ctxBoost += 0.05; contextReasons.push('Luftfeuchte zu hoch'); }
     if (pCtx.daysToHarvestLow && ctx.daysToHarvestLow) { ctxBoost += 0.05; contextReasons.push('Ernte-Fenster nahe'); }
     // (v1.5.361) Späte Blüte (bluetestufe 'spaet', letztes Drittel): natürliche Reife ist dann die häufigere Erklärung (ANBAU.md 6.4).
     if (pCtx.spaetbluete && ctx.spaetbluete) { ctxBoost += 0.08; contextReasons.push('späte Blüte — natürliche Reife wahrscheinlich'); }
     if (pCtx.nichtInSpaetbluete && ctx.spaetbluete) { ctxBoost -= 0.05; contextReasons.push('in der späten Blüte erst die natürliche Reife ausschließen'); }
-    if (pCtx.runoffDriftHigh && ctx.runoffDriftHigh) { ctxBoost += 0.08; contextReasons.push('Runoff-pH driftet hoch'); }
-    if (pCtx.runoffDriftLow && ctx.runoffDriftLow) { ctxBoost += 0.08; contextReasons.push('Runoff-pH driftet niedrig'); }
+    if (pCtx.runoffDriftHigh && ctx.runoffDriftHigh) { ctxBoost += 0.08; contextReasons.push('Drain-pH weit über dem Gießwasser'); }
+    if (pCtx.runoffDriftLow && ctx.runoffDriftLow) { ctxBoost += 0.08; contextReasons.push('Drain-pH weit unter dem Gießwasser'); }
     ctxBoost = Math.min(ctxBoost, 0.2);
 
     // Phasen-Ausschluss: z.B. Stickstoff-Mangel in Flush ist normal
@@ -2943,6 +2945,8 @@ function buildDiagnosticContext(c, iso = null) {
   if (latestEntry && latestEntry.e.temp) {
     const t = parseFloat(latestEntry.e.temp);
     if (isFinite(t)) {
+      // 30 °C und 18 °C sind Konventionen der Raumluft, nicht aus ANBAU.md (2.2 nennt 30 °C nur als Photosynthese-Optimum,
+      // Hitze am Blatt hängt am Blatt-VPD). Offene Frage an Patrick, siehe UEBERGABE 0o Punkt 8 (B12).
       if (t >= 30) result.tempHot = true;
       else if (t <= 18) result.tempCold = true;
       if (t >= 25) result.tempWarm = true;
@@ -3087,12 +3091,12 @@ function getDiagnosticHints(c) {
   const sig = (k, text) => { keys.push(k); signals.push(text); };
   if (ctx.phHigh) sig('phHigh', 'pH-Werte der letzten Tage liegen hoch');
   if (ctx.phLow) sig('phLow', 'pH-Werte der letzten Tage liegen niedrig');
-  if (ctx.runoffDriftHigh) sig('drainPhHoch', 'Runoff-pH steigt deutlich über Input');
-  if (ctx.runoffDriftLow) sig('drainPhTief', 'Runoff-pH fällt deutlich unter Input');
-  if (ctx.ecDeltaPos) sig('drainEc', 'Runoff-EC steigt — Salze sammeln sich');
+  if (ctx.runoffDriftHigh) sig('drainPhHoch', 'Drain-pH liegt deutlich über dem Gießwasser');
+  if (ctx.runoffDriftLow) sig('drainPhTief', 'Drain-pH liegt deutlich unter dem Gießwasser');
+  if (ctx.ecDeltaPos) sig('drainEc', 'Drain-EC zu hoch — Salze sammeln sich');
   // (v1.5.448) Vorher nach jedem einzelnen „Voll“ oder „Mittel“ — also nach jedem Gießtag. Der Hinweis lehrte, ihn wegzuklicken.
   if (ctx.restHigh && ctx.restHighZweimal) sig('nass', 'Topf bei zwei Messungen hintereinander schwer');
-  if (ctx.restLow) sig('trocken', 'Erde ist sehr trocken');
+  if (ctx.restLow) sig('trocken', 'Topf beim Anheben sehr leicht');
   if (ctx.tempHot) sig('heiss', 'Raumtemperatur zu hoch');
   if (ctx.tempCold) sig('kalt', 'Raumtemperatur zu niedrig');
   if (ctx.humidityHigh) sig('feucht', 'Luftfeuchte erhöht — Schimmel-Risiko');
@@ -3331,9 +3335,9 @@ function renderDiagStep4() {
   if (ctx.phLow) ctxBadges.push('pH niedrig');
   if (ctx.tempHot) ctxBadges.push('warm');
   if (ctx.tempCold) ctxBadges.push('kalt');
-  if (ctx.restHigh) ctxBadges.push('Erde feucht');
-  if (ctx.restLow) ctxBadges.push('Erde trocken');
-  if (ctx.ecDeltaPos) ctxBadges.push('EC steigt');
+  if (ctx.restHigh) ctxBadges.push(ctx.restHeute ? 'Topf schwer (heute)' : 'Topf schwer');
+  if (ctx.restLow) ctxBadges.push(ctx.restHeute ? 'Topf leicht (heute)' : 'Topf leicht');
+  if (ctx.ecDeltaPos) ctxBadges.push('Drain-EC hoch');
   if (ctx.humidityHigh) ctxBadges.push('Luftfeuchte hoch');
 
   const ctxLine = (cycleName && ctxBadges.length > 0)
@@ -4764,7 +4768,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.448';
+const APP_VERSION = 'v1.5.449';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
