@@ -3755,7 +3755,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.455';
+const APP_VERSION = 'v1.5.456';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -17405,8 +17405,16 @@ function _tag1MittelText(c, iso) {
   const p = (c && typeof phase === 'function') ? phase(iso, c) : null;
   if (!p) return 'laut Plan ohne Dünger';
   const d = getWeekDoses(c.id, fertPlanWeek(c, iso, p), c) || {};
-  const namen = Object.keys(d).filter(k => d[k] > 0).map(k => (_produktFuer(c, k) || {}).name).filter(Boolean);
-  return namen.length ? `laut Plan: ${namen.join(', ')}` : 'laut Plan ohne Dünger';
+  // (v1.5.456) Mit Menge je Liter bzw. je Guss, in der Reihenfolge des Plans. Vorher nur die Namen: Am ersten Tag kennt der
+  // Anfänger die Mittel, aber keine Menge — und rät oder lässt sie weg. Die Mengen sind dieselben wie im Plan-Blatt.
+  const reihe = (_planAnsicht(c).products || []).map(pr => pr.id);
+  const zahl = (v) => String(Math.round(v * 100) / 100).replace('.', ',');
+  const posten = Object.keys(d).filter(k => d[k] > 0)
+    .sort((a, b) => (reihe.indexOf(a) + 1 || 999) - (reihe.indexOf(b) + 1 || 999))
+    .map(k => { const pr = _produktFuer(c, k) || {}; if (!pr.name) return null;
+      return `${pr.name} ${zahl(d[k])} ${displayUnit(pr.unit)} ${isPerLitre(pr.unit) ? 'je Liter' : 'je Guss'}`; })
+    .filter(Boolean);
+  return posten.length ? `laut Plan: ${posten.join(', ')}` : 'laut Plan ohne Dünger';
 }
 
 function _tag1Referenz(c) {

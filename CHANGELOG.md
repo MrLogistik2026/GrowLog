@@ -2,6 +2,17 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-29 — v1.5.456
+
+- **Tag 1 nannte die Mittel ohne Menge.** Startseite und Tageskarte sagten „Wasser anmischen … laut Plan: CalMag, POWHUMUS,
+  Alg-A-Mic“ — nur Namen, obwohl der Plan die Mengen kennt. Am ersten Tag kennt ein Anfänger die Mittel, aber keine Menge; er
+  rät oder lässt sie weg. Gefunden bei der Anfänger-Prüfung am 29.10.2026.
+- **Jetzt:** „laut Plan: CalMag 0,3 ml je Liter, POWHUMUS 2,5 g je Liter, …“ — in der Reihenfolge des Plans, je Liter oder je
+  Guss nach der Einheit des Produkts, dieselben Zahlen wie im Plan-Blatt (`_tag1MittelText`).
+- **Bewusst nicht in dieser Version:** Der Eintrag an Tag 1 zeigt die Mittel weiter als „Zusätze (optional)“ ohne Soll-Spalte
+  — das ist ein Umbau des Eintrags (Befund der Anfänger-Prüfung, `.claude/notizen/ux/anfaenger_2026-10-29.txt` Punkt 1).
+- Test: `test_tag1_mittelmengen.js` (6 Prüfungen, beide Zeitzonen; 4 fallen auf v1.5.455 um).
+
 ## 2026-10-29 — v1.5.455
 
 - **Sämlings-Pflege: „die Mengen stehen in der Mischliste“ an Tagen ohne Mischliste.** Der Satz stand an jedem Sämlingstag,
