@@ -2,6 +2,17 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-29 — v1.5.450
+
+- **Schnellhilfe „Pflanze welkt nur unter starker Lampe“: feste Zahlen ohne Beleg.** „Lampe höher hängen, Dimmer auf 70–80%“
+  und als Bedingung „Indoor, starke LED über 400 W“. Die Leistung allein sagt nicht, wie viel Wärme am Blatt ankommt, und feste
+  Dimmer-Prozente stehen nirgends in ANBAU.md. Eine Gegenprobe am Topf fehlte, obwohl Welken bei leichtem Topf Durst heißt.
+  Gefunden beim Vereinheitlichen der Bleich-Texte (v1.5.445).
+- **Jetzt:** erst den Topf anheben; bei Hitze Abstand vergrößern oder die Leistung ein Stück zurück, immer nur ein Schritt,
+  dazu Abluft und Umluft — die Gegenmaßnahmen bei thermischem Stress nach ANBAU.md 8.2. Die Lufttemperatur der mittleren Blüte
+  kommt aus `KLIMA_ZIEL`. Bedingung „Lampe nah oder stark aufgedreht“ statt einer Watt-Grenze.
+- Test: `test_schnellhilfe_welk.js` Abschnitt „Hitze-Karte“ (3 Prüfungen, beide Zeitzonen; fallen auf v1.5.449 um).
+
 ## 2026-10-29 — v1.5.449
 
 - **Die Begründungen der Diagnose sagten Dinge, die der Messwert nicht trägt.** Unter „Warum diese Hypothese“ standen „EC-Runoff

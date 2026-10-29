@@ -4768,7 +4768,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.449';
+const APP_VERSION = 'v1.5.450';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -8522,8 +8522,10 @@ const SYMPTOMS = [
         heading: 'Pflanze welkt nur unter starker Lampe, im Schatten erholt sie sich',
         verdict: '⚠ Hitze-/Lichtstress',
         color: 'var(--orange)',
-        text: 'Lampe gibt zu viel Strahlungswärme ab — Pflanze schließt Spaltöffnungen aus Selbstschutz und wirkt dadurch welk, obwohl Erde feucht ist. <b>Lösung:</b> Lampe höher hängen, Dimmer auf 70–80%, Lüfter direkt unter die Lampe (kühlt das Canopy). Bei LED-Hitze: LED-Treiber separat aus dem Zelt führen.',
-        when: 'Indoor, starke LED über 400 W',
+        // (v1.5.450) Vorher „Dimmer auf 70–80%“ und „starke LED über 400 W“ — feste Zahlen ohne Beleg; die Leistung allein sagt nicht,
+        // wie viel Wärme am Blatt ankommt. Gegenmaßnahmen bei thermischem Stress nach ANBAU.md 8.2: Abstand, Abluft, Umluft.
+        text: 'Lampe gibt zu viel Strahlungswärme ab — die Pflanze schließt die Spaltöffnungen aus Selbstschutz und wirkt dadurch welk, obwohl die Erde feucht ist. Erst den Topf anheben: Ist er leicht, hat sie Durst. <b>Lösung bei Hitze:</b> Abstand vergrößern oder die Leistung am Dimmer ein Stück zurück, immer nur ein Schritt; dazu Abluft und Umluft verstärken — ein Lüfter, der durch das Blätterdach weht, kühlt die Blätter (Lufttemperatur bei Licht an, mittlere Blüte: ' + KLIMA_ZIEL.mittel.temp.join('–') + ' °C). Bei LED-Hitze: Treiber außerhalb des Zelts.',
+        when: 'Indoor, Lampe nah oder stark aufgedreht',
         lex: 'Lichtbrand (Phototoxizität)',
       },
       {

@@ -1,4 +1,4 @@
-// (v1.5.444) Schnellhilfe „Pflanze hängt“: Die Karte „Erde trocken, Pflanze welk“ beginnt mit der Gegenprobe am Topf.
+// (v1.5.444) Schnellhilfe „Pflanze hängt“: Die Karte „Erde trocken, Pflanze welk“ beginnt mit der Gegenprobe am Topf. (v1.5.450) Dazu die Hitze-Karte.
 //
 // Vorher: „Selten, aber möglich bei heißen Tagen … Nach 1-2 Stunden sollte die Pflanze sichtbar aufrichten.“ Beides steht nicht
 // in ANBAU.md; „selten“ lässt Anfänger die Ursache übergehen, die eine Automatic jeden Stresstag dauerhaft kostet (ANBAU.md 9, 14).
@@ -40,6 +40,13 @@ const HTML = fs.readFileSync(process.env.GS_INDEX || path.join(__dirname, 'index
   pruefe(/Nicht abwarten/.test(t), 'nicht abwarten (ANBAU.md 14)');
   pruefe(karte && /Wassermangel/.test(karte.verdict || ''), 'Urteil heißt „Wassermangel“ wie in der Diagnose');
 
+  // (v1.5.450) Karte „Pflanze welkt nur unter starker Lampe“: Hitze nach ANBAU.md 8.2 (Abstand, Abluft, Umluft), keine festen
+  // Dimmer-Zahlen und keine Watt-Grenze; vorher der Hebe-Test, denn ein leichter Topf heißt Durst.
+  const hitze = JSON.parse(E(`JSON.stringify(SYMPTOMS.flatMap(s => s.causes || []).find(u => /welkt nur unter starker Lampe/.test(u.heading)) || null)`));
+  const ht = (hitze && hitze.text) || '', hw = (hitze && hitze.when) || '';
+  pruefe(!!hitze && !/70–80|Dimmer auf d/.test(ht) && !/d+ W/.test(hw), 'Hitze-Karte: keine „Dimmer auf 70–80 %“, keine Watt-Grenze');
+  pruefe(/Abluft/.test(ht) && /Umluft/.test(ht), 'Hitze-Karte: Abluft und Umluft');
+  pruefe(/Topf anheben/.test(ht), 'Hitze-Karte: erst den Topf anheben');
   pruefe(errors.length === 0, 'Laufzeitfehler: ' + errors.slice(0, 2).join(' | '));
   console.log(`TZ=${process.env.TZ || '(System)'} · ${n - fehler.length}/${n} OK`);
   for (const f of fehler) console.log('  FEHL ' + f);
