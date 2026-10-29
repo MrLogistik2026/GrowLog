@@ -2,6 +2,26 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-29 — v1.5.473
+
+- **Die Startseite nannte am Gießtag die Kalendermenge, ohne nach dem Topf zu fragen.** „✓ Erledigt“ buchte diese Menge blind;
+  die Messung, die sie ändern würde (Voll → heute nicht gießen, Knapp → mehr), steckte im Eintrag. Gemessen bei der
+  Gießtag-Prüfung am 29.10.2026: Die Gießkarte enthielt kein einziges „anheben“, während der Eintrag „Regel Nr. 1: nach
+  Topfgewicht, nicht nach Kalender“ sagt.
+- **Jetzt** hat die Gießkarte ab Tag 25 die Zeile „⚖️ Erst anheben — wie schwer ist der Topf?“ mit den fünf Hebe-Knöpfen (Voll ·
+  Mittel · Bald · Knapp · Trocken, aus `LIFT_FEEL_TEXTE`). Ein Tipp trägt den Hebe-Test von heute ein (`dashHebeTest`, mit
+  Rückgängig), und Karte, Satz und „Erledigt“ rechnen danach mit ihm — bei „Voll“ heißt die Karte „Gießtag — der Topf ist noch
+  voll · Heute nicht gießen“. Vor Tag 25 (der Topf wiegt vor allem Substrat ohne Wurzeln, ANBAU.md 1.2), im Waage-Modus und nach
+  einer Messung von heute erscheinen keine Knöpfe.
+- **Warum:** ANBAU.md 1 (das Gewicht bildet den Wasservorrat ab) und 15 (Messung schlägt Kalender) — die tägliche Frage steht
+  vorn, also auch ihre Antwort.
+- Im Browser geprüft (Handy-Format): fünf Knöpfe unter dem Hinweis, „Voll“ dreht die Karte auf „nicht gießen“.
+- Test: `test_startseite_hebeknoepfe.js` (10 Prüfungen, beide Zeitzonen; fällt auf dem Vorstand um).
+- **Nebenbei nachgezogen (ohne App-Änderung):** `test_wassertagstart.js` und `test_zyklus2.js` erwarteten noch den Wortlaut vor v1.5.457
+  (Drain-Ziel auch, wo kein Drain entsteht) und v1.5.466 (nächster Gießtag doppelt). Beide fielen erst im Gesamtlauf auf v1.5.472
+  auf — die Teilläufe für 457 und 466 hatten sie nicht dabei. **Lehre:** Wer einen Satz der Startseite ändert, lässt alle Tests
+  laufen, die `getTodayAction` oder `renderDash` lesen (grep), nicht nur die mit passendem Namen.
+
 ## 2026-10-29 — v1.5.472
 
 - **„Damit ergibt sich“ sagte immer „Liegt ein Tag im nächsten Monat, im Kalender weiterblättern.“** — auch wenn alle Tage im

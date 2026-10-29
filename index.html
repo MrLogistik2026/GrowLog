@@ -4783,7 +4783,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.472';
+const APP_VERSION = 'v1.5.473';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -19175,6 +19175,42 @@ async function confirmFlipToBloom(cId) {
   renderDash();
 }
 
+/**
+ * (v1.5.473) Die Startseite fragt am Gießtag den Topf, bevor sie eine Menge nennt. Vorher stand vorn die Kalendermenge, und
+ * „✓ Erledigt“ buchte sie blind — die Messung, die sie ändern würde (Voll → heute nicht gießen, Knapp → mehr), steckte im
+ * Eintrag (Gießtag-Prüfung 29.10.2026, Punkt 1). Ein Tipp trägt den Hebe-Test von heute ein; Karte, Satz und „Erledigt“ rechnen
+ * danach mit ihm (giessenLautMessung, gussMengeJePflanze). Erst ab Tag 25 (DRAIN_AB_TAG) — davor wiegt der Topf vor allem
+ * Substrat ohne Wurzeln (ANBAU.md 1.2). Nicht bei der Waage (dort wird gewogen) und nicht, wenn heute schon gemessen ist.
+ */
+function _dashHebeZeile(c, p, a, iso, td) {
+  if (!c || !p || td.aktionen || !['giess', 'giess_anz', 'spuelen'].includes(a) || !_drainMoeglich(p) || c.weightMode === 'scale') return '';
+  const cd = S.entries[iso]?.cycleData?.[c.id];
+  if (cd && cd.restPct !== undefined && cd.restPct !== null && cd.restPct !== '') {
+    if (JSON.stringify(td).includes('Hebe-Test')) return '';   // die Karte nennt die Messung schon selbst (voll, feucht)
+    const k =Object.keys(LIFT_FEEL_VALUES).find(x => Math.abs(LIFT_FEEL_VALUES[x] - parseFloat(cd.restPct)) < 1);
+    const t = k ? LIFT_FEEL_TEXTE[k] : null;
+    return `<div style="font-size:11px;color:var(--text-muted);margin-top:8px">⚖️ Hebe-Test heute: ${t ? t.icon + ' <b>' + t.kurz + '</b> — ' + t.zeile : Math.round(parseFloat(cd.restPct)) + ' %'}</div>`;
+  }
+  const knoepfe = Object.keys(LIFT_FEEL_TEXTE).map(k => `<button onclick="event.stopPropagation();dashHebeTest('${c.id}','${k}')" title="${LIFT_FEEL_TEXTE[k].zeile}" style="flex:1;min-width:52px;background:transparent;border:1px solid ${td.color}55;color:var(--text);border-radius:8px;padding:6px 2px;font-size:11px;cursor:pointer;font-family:var(--font)">${LIFT_FEEL_TEXTE[k].icon}<br>${LIFT_FEEL_TEXTE[k].kurz}</button>`).join('');
+  return `<div style="margin-top:8px"><div style="font-size:11px;color:var(--text-sub);margin-bottom:4px">⚖️ Erst anheben — wie schwer ist der Topf?</div><div style="display:flex;gap:4px">${knoepfe}</div></div>`;
+}
+/** (v1.5.473) Trägt den Hebe-Test von heute aus der Startseite ein — dieselben Werte wie die Leiste im Eintrag (LIFT_FEEL_VALUES). */
+function dashHebeTest(cId, feel) {
+  const pct = LIFT_FEEL_VALUES[feel];
+  if (pct === undefined) return;
+  pushUndo();
+  const iso = todayISO();
+  if (!S.entries[iso]) S.entries[iso] = { temp: '', humidity: '', cycleData: {} };
+  if (!S.entries[iso].cycleData) S.entries[iso].cycleData = {};
+  if (!S.entries[iso].cycleData[cId]) S.entries[iso].cycleData[cId] = { doses: {}, water: '', ph: '', ec: '', notes: '', photos: [], trichomes: null };
+  const cd = S.entries[iso].cycleData[cId];
+  cd.restPct = pct;
+  cd._restPctUserSet = true;
+  vibrate(15);
+  if (saveS()) toast(`Hebe-Test eingetragen: ${LIFT_FEEL_TEXTE[feel].kurz}`);
+  renderDash();
+}
+
 function renderDash() {
   const act = active(), today = todayISO();
   const fmt = new Date().toLocaleDateString('de-DE', { weekday: 'long', day: '2-digit', month: 'long' });
@@ -19408,6 +19444,7 @@ function renderDash() {
         </div>`).join('')}
       </div>
       ${td.hint ? `<div style="font-size:10px;color:${td.color};opacity:0.85;border-top:0.5px solid ${td.color}33;padding-top:6px;margin-top:4px;line-height:1.4">💡 ${td.hint}</div>` : ''}
+      ${_dashHebeZeile(c, p, a, today, td)}
       <div style="display:flex;gap:8px;margin-top:8px;align-items:center">
         ${td.aktionen
           // (v1.5.264) Eine Karte kann eigene Knöpfe mitbringen — die Ernte-Karte ohne reife Trichome führt zur Messung,
