@@ -2,6 +2,17 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-29 — v1.5.458
+
+- **Der Pflanzen-Check war im Einsteiger-Modus versteckt.** „🆘 Meine Pflanze sieht schlecht aus“ stand auf der Startseite im
+  Einsteiger-Modus nur hinter „Mehr anzeigen“, im Profi-Modus direkt sichtbar. Wer als Anfänger ein Problem hat, sah keine Tür —
+  und die FAQ „Meine Blätter werden gelb“ verwies auf genau diesen Knopf. Gefunden bei der Bedien-Prüfung „Hilfe finden“ am
+  29.10.2026.
+- **Jetzt** steht der Knopf in beiden Modi sichtbar vor „Mehr anzeigen“ und nicht doppelt im aufgeklappten Bereich; die FAQ
+  nennt ihn mit seinem Namen.
+- Test: `test_pflanzencheck_sichtbar.js` (6 Prüfungen, beide Zeitzonen; 3 fallen auf v1.5.457 um). Gebaut von einem
+  Sonnet-Helfer, eingebaut und nachgeprüft.
+
 ## 2026-10-29 — v1.5.457
 
 - **Die Gießkarte der Startseite widersprach sich zum Drain.** Der Satz prüft seit v1.5.389, ob bei der heutigen Menge überhaupt

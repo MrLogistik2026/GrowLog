@@ -4770,7 +4770,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.457';
+const APP_VERSION = 'v1.5.458';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -9120,7 +9120,7 @@ const FAQ = [
     q: 'Meine Blätter werden gelb',
     icon: '🟡',
     category: 'Probleme',
-    a: 'Gelbe Blätter haben mehrere Ursachen. Starte den <b>Pflanzen-Check</b> auf dem Dashboard für eine Diagnose mit Lösungsvorschlägen.',
+    a: 'Gelbe Blätter haben mehrere Ursachen. Tippe auf dem Dashboard auf <b>🆘 Meine Pflanze sieht schlecht aus</b> (Pflanzen-Check) für eine Diagnose mit Lösungsvorschlägen.',
     action: 'symptom',
   },
   {
@@ -19706,7 +19706,10 @@ function renderDash() {
       <span style="color:var(--text-muted)">›</span>
     </div>` : '';
 
-  const secondarySections = `${stats}${chartsHTML}${galleryHTML}${symptomBtn}`;
+  // (v1.5.458) „Meine Pflanze sieht schlecht aus" steht in BEIDEN Modi direkt auf der Startseite (unter den Zyklen) und nicht mehr
+  // hinter „Mehr anzeigen": Wer ein Problem hat, sucht keine zugeklappten Bereiche. Deshalb gehört er nicht in secondarySections
+  // (sonst stünde er bei aufgeklapptem Bereich doppelt da).
+  const secondarySections = `${stats}${chartsHTML}${galleryHTML}`;
   
   // ANFÄNGER: wenn heute KEINE Aktion ansteht (actionCards-String leer), eine klare
   // "Heute alles ruhig"-Box anzeigen. Sonst weiß der Anfänger nicht ob die App
@@ -19752,7 +19755,7 @@ function renderDash() {
   document.getElementById('dash-body').innerHTML = `${demoBanner}${catchupBanner}${flipCard}${actionCards}${quietBanner}${todayCard}${alertHTML}${diagHintsHTML}${weatherWidget()}${multiCycLabel}${S.beginnerMode && act.length > 0 ? '' : stats}<div class="sect-head">Meine Zyklen</div>${empty}${cards}${act.length > 0 ? _neuerZyklusKnopf() : ''}
     ${S.beginnerMode && act.length > 0 ? '' : chartsHTML}
     ${S.beginnerMode && act.length > 0 ? '' : galleryHTML}
-    ${S.beginnerMode && act.length > 0 ? '' : symptomBtn}
+    ${symptomBtn}
     ${moreBlock}
     ${beginnerBanner}
     <div style="height:12px"></div>`;
