@@ -4812,7 +4812,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.475';
+const APP_VERSION = 'v1.5.476';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -9079,6 +9079,38 @@ function openSymptomChecker() {
 /**
  * Detail-View: zeigt alle Ursachen zum gewählten Symptom.
  */
+/**
+ * (v1.5.476) Was der Assistent aus einer Schnellhilfe-Karte schon weiß (Schlüssel wie in DIAG_LABELS). Nur Eindeutiges:
+ * „Pflanze hängt“ ist die Form „Hängend“ an allen Blättern; bei gelben Blättern bleibt der Ort offen, weil alte und neue
+ * Blätter auf verschiedene Ursachen zeigen. Karten ohne Eintrag öffnen den Assistenten leer.
+ */
+const SYMPTOM_DIAG_VORBELEGUNG = {
+  wilting:       { location: ['allLeaves'], shapes: ['wilting'] },
+  yellow_leaves: { colors: ['yellow'] },
+  interveinal:   { colors: ['yellow'] },
+  burned_tips:   { shapes: ['burnTips'] },
+  spots:         { colors: ['spots'], shapes: ['spotted'] },
+  bleaching:     { colors: ['white'] },
+  purple_stems:  { location: ['stem'], colors: ['purple'] },
+  bud_rot:       { location: ['buds'] },
+  damping_off:   { location: ['stem'] },
+};
+
+/** (v1.5.476) Schnellhilfe-Karte → Diagnose-Assistent, mit Vorbelegung und dem Zyklus-Kontext wie im Wissen-Tab. */
+function openDiagnosticsFromSymptom(symptomId) {
+  document.querySelectorAll('[data-symptom]').forEach(x => x.remove());
+  const act = active();
+  openDiagnostics(act.length > 0 ? act[0].id : null);
+  const v = SYMPTOM_DIAG_VORBELEGUNG[symptomId];
+  if (v) {
+    diagState.location = (v.location || []).slice();
+    diagState.colors = (v.colors || []).slice();
+    diagState.shapes = (v.shapes || []).slice();
+    if (diagState.location.length > 0) diagState.step = 2;
+    renderDiagWizard();
+  }
+}
+
 function showSymptomDetail(symptomId) {
   const s = SYMPTOMS.find(x => x.id === symptomId);
   if (!s) return;
@@ -9118,6 +9150,8 @@ function showSymptomDetail(symptomId) {
         <button onclick="this.closest('[data-symptom]').remove()" style="background:none;border:none;color:var(--text-muted);font-size:22px;cursor:pointer;padding:0 4px">✕</button>
       </div>
       ${causes}
+      <button data-symptom-diag onclick="openDiagnosticsFromSymptom('${s.id}')" style="margin-top:4px;width:100%;padding:13px;border-radius:12px;background:var(--blue);border:none;color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font)">Genauer eingrenzen →</button>
+      <div style="font-size:11px;color:var(--text-muted);line-height:1.5;margin-top:6px;text-align:center">Der Assistent fragt nach Ort und Form und nennt die wahrscheinlichsten Ursachen.</div>
       <div style="font-size:10px;color:var(--text-hint);line-height:1.5;margin-top:12px;padding-top:12px;border-top:0.5px solid var(--border)">
         💡 Diese Hinweise ersetzen keine professionelle Beratung. Im Zweifel Grow-Shop oder Fachforum fragen.
       </div>

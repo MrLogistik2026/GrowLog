@@ -2,6 +2,15 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-29 — v1.5.476
+
+- **Keine Schnellhilfe-Karte führte in den Diagnose-Assistenten.** Wer „Pflanze hängt“ las und nicht weiterkam, musste die Diagnose
+  von vorn suchen. Gefunden bei der Bedien-Prüfung „Hilfe finden“ am 29.10.2026.
+- **Jetzt** endet jede Karte mit „Genauer eingrenzen →“; der Assistent öffnet mit dem Zyklus-Kontext und, wo die Karte es
+  hergibt, vorbelegt (`SYMPTOM_DIAG_VORBELEGUNG`: „Pflanze hängt“ → alle Blätter, hängend — dann gleich mit der Topf-Frage).
+- Test: `test_schnellhilfe_eingrenzen.js` (58 Prüfungen über alle Karten, beide Zeitzonen; fällt auf v1.5.475 um). Gebaut von einem
+  Sonnet-Helfer.
+
 ## 2026-10-29 — v1.5.475
 
 - **Das Diagnose-Ergebnis bot keinen Weg zur Messung, die es empfiehlt.** Die Karten der Wasser-Ursachen sagen „Erst den Topf
