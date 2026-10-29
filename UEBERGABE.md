@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.447** · index.html 2,67 MB · 781 Funktionen
+Stand: **v1.5.448** · index.html 2,67 MB · 781 Funktionen
 Zuletzt fortgeschrieben am 29.10.2026 (Diagnose-Arbeitsliste, B02, B04, B01, B07, B03, B11, B10, B08 und B09 erledigt — Abschnitt 0o, Punkt 8). Davor: Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
@@ -243,7 +243,7 @@ wf_0586d0bf-d3d (vergänglich). **Offen, nach Nutzen geordnet** (Umbauten oder P
 6. Tag 1 verweist auf eine Mischliste, die es dort nicht gibt. („Deine nächsten Güsse" beginnt seit v1.5.406 in der Anzucht.)
 7. Dünger abhaken sind im Eintrag 15 Einzel-Taps — Idee: „Alles wie im Plan" mit einem Tipp. („Erledigt" bucht den Plan-Dünger
    seit v1.5.360 als Vorschlag mit.)
-8. **Diagnose „welk“ und „weiß ausgebleicht“ — gemessen am 08.10.2026, B05 erledigt (v1.5.437), B02 (v1.5.438), B04 (v1.5.439), B01 (v1.5.440), B07 (v1.5.441), B03 (v1.5.442), B11 (v1.5.443), B10 (v1.5.444), B08 (v1.5.445), B09 (v1.5.446), der Rest ist die Arbeitsliste.**
+8. **Diagnose „welk“ und „weiß ausgebleicht“ — gemessen am 08.10.2026, B05 erledigt (v1.5.437), B02 (v1.5.438), B04 (v1.5.439), B01 (v1.5.440), B07 (v1.5.441), B03 (v1.5.442), B11 (v1.5.443), B10 (v1.5.444), B08 (v1.5.445), B09 (v1.5.446), B06 (v1.5.448), der Rest ist die Arbeitsliste.**
    Ein Sonnet-Prüfer hat v1.5.435 vermessen (jsdom, 4686 Einzel- und 13194 Mehrfachauswahl-Fälle, 27 klassische Bilder).
    Befunde mit Stellen, Messung, Ersatztexten: `.claude/notizen/diagnose/befund.txt`; Werkzeug unter `.claude/tmp/w417/diagnose/`
    (`patch.js` baut die Varianten über OPT-Schalter, `vorschlag_PE.diff`, Wächter-Entwurf `test_w417_welk_weiss.js`: auf 435 7 OK /
@@ -404,6 +404,7 @@ Speicher-Befunde sind in v1.5.340–344 behoben. Rohdaten: Workflow wf_63d754b1-
 - v1.5.445: Licht-Bleichen überall mit einem Handgriff (Lampe nicht näher, ein Schritt zurück) statt vier fester Zahlen, kein „bis Ernte“, kein „Trichome trüb-braun: jetzt ernten“ (B08, `test_bleichtexte.js`). **Offen, gefunden dabei:** Schnellhilfe „Pflanze welkt nur unter starker Lampe“ nennt „Dimmer auf 70–80%“ und „LED über 400 W“ (Hitze, ANBAU.md 8.2: Abstand, Abluft, Umluft); Lichtmangel-Text „Notlösung: Pflanze tiefer eingraben“ (bei Automatics gegen 7.4).
 - v1.5.446: Schnellhilfe „Ganzes Blatt blass“ ohne „CalMag + Schwefel über Blattdünger“ — erst oben oder unten, Magnesium wie die Diagnose, Coco-Ausnahme, Licht als dritte Ursache (B09).
 - v1.5.447: Magnesium überall in derselben Reihenfolge — Booster aussetzen, pH prüfen, dann Bittersalz (Schnellhilfe „Adern grün“ und Lexikon nannten zuerst den pH).
+- v1.5.448: Startseiten-Hinweis „Topf schwer“ erst nach zwei schweren Messungen; das ✕ gilt nur für dieselben Signale, ein neues Signal bringt den Hinweis zurück (B06, `test_diaghinweis.js`).
 
 **Gegenprüfung von v1.5.364/365 (07.10.2026 nachts, Workflow wf_4cf817bf-629, drei Sonnet-Prüfer + Gegenprüfer).** Kein Fehlalarm
 in 33 App-Fassungen, allen Vorlagen und über 2800 Klicks; die schweren Befunde (unsichere Kopie zerstört den Hauptstand, Tropfen als

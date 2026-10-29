@@ -2983,6 +2983,14 @@ function buildDiagnosticContext(c, iso = null) {
       const _g = giesspunktFor(c);
       if (pct > Math.max(65, _g.bis)) result.restHigh = true;
       if (pct < _g.von) result.restLow = true;
+      // (v1.5.448) „Dauerhaft“ schwer heißt: auch die Messung davor (bis 3 Tage zurück) lag über der Nass-Grenze. Ein einzelnes
+      // „Voll“ nach dem Gießen ist der Normalzustand des Nass-Trocken-Zyklus (ANBAU.md 1, Regel 2) — dafür kein Startseiten-Hinweis.
+      if (result.restHigh) {
+        const _davor = entries.slice(1).map(({ cd }) => (cd.weightG && c.saturatedWeight && c.dryWeight)
+          ? calcRestPct(cd.weightG, c.saturatedWeight, c.dryWeight, _g.anker)
+          : (cd.restPct !== undefined ? parseFloat(cd.restPct) : null)).find(v => v != null && isFinite(v));
+        if (_davor != null && _davor > Math.max(65, _g.bis)) result.restHighZweimal = true;
+      }
       // (v1.5.439) Messung vom Bezugstag? Ein „Voll“ vom Gießtag sagt am dritten Tag nichts mehr (ANBAU.md 15)
       result.restHeute = (latestEntry.iso === refISO);
     }
@@ -3043,16 +3051,16 @@ function openDiagnosticsFromTips() {
 }
 
 /**
- * Blendet den Diagnose-Hint für einen Zyklus aus bis die Bedingungen sich ändern.
- * Einträge in S.dismissedDiagHints werden beim nächsten neuen Trigger-Signal
- * zurückgesetzt (siehe resetDiagHintDismissal).
+ * Blendet den Diagnose-Hint für einen Zyklus aus, bis sich seine Signale ändern.
+ * (v1.5.448) Gemerkt wird „Zyklus|Signale“ (z. B. „c123|nass,heiss“). Kommt ein neues Signal dazu oder fällt eins weg, passt
+ * der Eintrag nicht mehr und der Hinweis erscheint wieder. Vorher galt das ✕ für den Zyklus bis zu seinem Ende — ein späterer
+ * echter Befund erschien nie wieder, und die Funktion resetDiagHintDismissal aus dem alten Kommentar gab es nicht.
  */
-function dismissDiagHint(cycleId) {
-  if (!S.dismissedDiagHints) S.dismissedDiagHints = [];
-  if (!S.dismissedDiagHints.includes(cycleId)) {
-    S.dismissedDiagHints.push(cycleId);
-    saveS();
-  }
+function dismissDiagHint(cycleId, sig) {
+  const liste = (S.dismissedDiagHints || []).filter(x => x !== cycleId && !String(x).startsWith(cycleId + '|'));
+  liste.push(cycleId + '|' + (sig || ''));
+  S.dismissedDiagHints = liste;
+  saveS();
   renderDash();
 }
 
@@ -3075,17 +3083,19 @@ function getDiagnosticHints(c) {
   if (!c || !c.startDate) return null;
   const ctx = buildDiagnosticContext(c);
 
-  const signals = [];
-  if (ctx.phHigh) signals.push('pH-Werte der letzten Tage liegen hoch');
-  if (ctx.phLow) signals.push('pH-Werte der letzten Tage liegen niedrig');
-  if (ctx.runoffDriftHigh) signals.push('Runoff-pH steigt deutlich über Input');
-  if (ctx.runoffDriftLow) signals.push('Runoff-pH fällt deutlich unter Input');
-  if (ctx.ecDeltaPos) signals.push('Runoff-EC steigt — Salze sammeln sich');
-  if (ctx.restHigh) signals.push('Erde bleibt dauerhaft feucht');
-  if (ctx.restLow) signals.push('Erde ist sehr trocken');
-  if (ctx.tempHot) signals.push('Raumtemperatur zu hoch');
-  if (ctx.tempCold) signals.push('Raumtemperatur zu niedrig');
-  if (ctx.humidityHigh) signals.push('Luftfeuchte erhöht — Schimmel-Risiko');
+  const signals = [], keys = [];
+  const sig = (k, text) => { keys.push(k); signals.push(text); };
+  if (ctx.phHigh) sig('phHigh', 'pH-Werte der letzten Tage liegen hoch');
+  if (ctx.phLow) sig('phLow', 'pH-Werte der letzten Tage liegen niedrig');
+  if (ctx.runoffDriftHigh) sig('drainPhHoch', 'Runoff-pH steigt deutlich über Input');
+  if (ctx.runoffDriftLow) sig('drainPhTief', 'Runoff-pH fällt deutlich unter Input');
+  if (ctx.ecDeltaPos) sig('drainEc', 'Runoff-EC steigt — Salze sammeln sich');
+  // (v1.5.448) Vorher nach jedem einzelnen „Voll“ oder „Mittel“ — also nach jedem Gießtag. Der Hinweis lehrte, ihn wegzuklicken.
+  if (ctx.restHigh && ctx.restHighZweimal) sig('nass', 'Topf bei zwei Messungen hintereinander schwer');
+  if (ctx.restLow) sig('trocken', 'Erde ist sehr trocken');
+  if (ctx.tempHot) sig('heiss', 'Raumtemperatur zu hoch');
+  if (ctx.tempCold) sig('kalt', 'Raumtemperatur zu niedrig');
+  if (ctx.humidityHigh) sig('feucht', 'Luftfeuchte erhöht — Schimmel-Risiko');
 
   if (signals.length === 0) return null;
 
@@ -3095,6 +3105,7 @@ function getDiagnosticHints(c) {
     icon: '🔍',
     text: `Auffällige Messwerte bei <b>${c.name}</b>: ${displaySignals.join(', ')}. Symptome an der Pflanze sichtbar? Jetzt diagnostizieren.`,
     cycleId: c.id,
+    sig: keys.join(','),
   };
 }
 
@@ -4753,7 +4764,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.447';
+const APP_VERSION = 'v1.5.448';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -19197,13 +19208,13 @@ function renderDash() {
   // zum Problem-Diagnostiker. User kann Hint pro Zyklus ausblenden.
   const diagHints = act
     .map(c => getDiagnosticHints(c))
-    .filter(h => h && !(S.dismissedDiagHints || []).includes(h.cycleId));
+    .filter(h => h && !(S.dismissedDiagHints || []).includes(h.cycleId + '|' + h.sig));
   const diagHintsHTML = diagHints.map(h =>
     `<div style="background:linear-gradient(135deg,rgba(232,136,74,0.12),rgba(232,136,74,0.04));border:1px solid rgba(232,136,74,0.4);border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:10px;margin-bottom:6px">
       <span style="font-size:22px;flex-shrink:0">${h.icon}</span>
       <div style="flex:1;font-size:12px;color:var(--text);line-height:1.5">${h.text}</div>
       <button onclick="openDiagnostics('${h.cycleId}')" style="background:var(--orange);border:none;color:#fff;font-size:11px;padding:6px 10px;border-radius:6px;cursor:pointer;font-family:var(--font);font-weight:600;white-space:nowrap">Diagnose</button>
-      <button onclick="dismissDiagHint('${h.cycleId}')" style="background:none;border:none;color:var(--text-muted);font-size:16px;cursor:pointer;padding:0 4px" aria-label="Ausblenden">✕</button>
+      <button onclick="dismissDiagHint('${h.cycleId}','${h.sig}')" style="background:none;border:none;color:var(--text-muted);font-size:16px;cursor:pointer;padding:0 4px" aria-label="Ausblenden">✕</button>
     </div>`
   ).join('');
 

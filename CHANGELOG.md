@@ -2,6 +2,20 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-29 — v1.5.448
+
+- **Der Startseiten-Hinweis „Erde bleibt dauerhaft feucht“ kam nach jedem Gießtag.** `getDiagnosticHints` meldete ihn nach
+  jedem einzelnen „Voll“ oder „Mittel“ der letzten drei Tage — also nach jedem Guss, obwohl ein voller Topf danach der
+  Normalzustand des Nass-Trocken-Zyklus ist (ANBAU.md 1, Regel 2). Der Hinweis lehrte, ihn wegzuklicken. Und ein Tipp auf ✕
+  blendete ihn für den Zyklus bis zu dessen Ende aus: Ein späterer echter Befund (Drain-EC hoch, zu warm) erschien nie wieder;
+  der Rücksetzer `resetDiagHintDismissal` aus dem Kommentar gab es nicht. Gefunden von der Diagnose-Prüfung am 08.10.2026
+  (Befund B06).
+- **Jetzt** heißt das Signal „Topf bei zwei Messungen hintereinander schwer“ und kommt nur, wenn auch die Messung davor (bis
+  drei Tage zurück) über der Nass-Grenze des Substrats lag (`restHighZweimal`). Das ✕ merkt sich Zyklus und Signale
+  (`Zyklus|nass,heiss`); kommt ein Signal dazu oder fällt eins weg, erscheint der Hinweis wieder. Alte Einträge (nur die
+  Zyklus-Kennung) blenden nicht mehr aus und werden beim nächsten ✕ ersetzt.
+- Test: `test_diaghinweis.js` (9 Prüfungen, beide Zeitzonen; 5 fallen auf v1.5.447 um).
+
 ## 2026-10-29 — v1.5.447
 
 - **Magnesium-Mangel: zwei Stellen nannten eine andere Reihenfolge als die Diagnose.** Die Schnellhilfe „Adern grün,
