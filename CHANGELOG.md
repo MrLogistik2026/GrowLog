@@ -2,6 +2,16 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-29 — v1.5.465
+
+- **Der Hebe-Test hatte zwei Vokabulare.** Die Eintragsleiste sagt „Voll / Mittel / Bald / Knapp / Trocken“, das Guss-Blatt
+  (`openGussHebe`) für dieselben Stufen „Schwer wie frisch gegossen / Noch gut schwer / Wird leichter / Schon ziemlich leicht /
+  Federleicht“. Die Texte der App nennen den Gießpunkt mit den Wörtern der Leiste („Knapp“, „Mittel“ in `GIESSPUNKT`). Gefunden
+  bei der Gießtag-Prüfung am 29.10.2026.
+- **Jetzt** gibt es eine Tabelle `LIFT_FEEL_TEXTE` (Zeichen, Kurzwort, erklärende Zeile) neben `LIFT_FEEL_VALUES`; Eintragsleiste,
+  Guss-Blatt, „vorher“-Zeile und `_nichtGiessenWorte` lesen daraus. Das Guss-Blatt zeigt „🟡 Bald — wird leichter, bald gießen“.
+- Test: `test_hebetexte_einheitlich.js` (11 Prüfungen, beide Zeitzonen; 5 fallen auf v1.5.464 um). Gebaut von einem Sonnet-Helfer.
+
 ## 2026-10-29 — v1.5.464
 
 - **Der EC-Stepper startete bei fest 1,4.** Ein leeres EC-Feld sprang mit dem ersten „+“ auf 1,41 (bzw. 1410 µS), obwohl daneben

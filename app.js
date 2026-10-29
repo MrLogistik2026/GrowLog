@@ -3768,7 +3768,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.464';
+const APP_VERSION = 'v1.5.465';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -13887,7 +13887,7 @@ function _nichtGiessenWorte(c, iso, gm) {
   const knopf = gpW.knopf;
   const feucht = !!(gm && gm.grund === 'feucht');
   const r = gm ? gm.r : 100;
-  const wort = { full: 'Voll', medium: 'Mittel', soon: 'Bald', low: 'Knapp', dry: 'Trocken' }[getLiftFeelForPct(r)] || 'Voll';
+  const wort = (LIFT_FEEL_TEXTE[getLiftFeelForPct(r)] || {}).kurz || 'Voll';
   const waage = c.weightMode === 'scale';
   const tag = feucht && gm.bis ? fmtDE(gm.bis, { weekday: 'long', day: '2-digit', month: '2-digit' }) : '';
   return {
@@ -29651,7 +29651,7 @@ function renderEntry(iso) {
           // (v1.5.349) Gemessen vor dem Guss, Guss schon eingetragen: der Wert bleibt stehen, als „vorher" beschriftet.
           // Ohne diese Zeile stand nach dem Guss weiter „Heute gießen — geplanter Gieß-Tag" über dem Knopf „Knapp".
           if (clf && savedRest !== null && savedRest < 85 && cd._restPctUserSet && parseFloat(cd.water) > 0 && !isIceFlushToday) {
-            const _wort = { full: 'Voll', medium: 'Mittel', soon: 'Bald', low: 'Knapp', dry: 'Trocken' }[getLiftFeelForPct(savedRest)] || '';
+            const _wort = (LIFT_FEEL_TEXTE[getLiftFeelForPct(savedRest)] || {}).kurz || '';
             clf = {
               status: 'vorher',
               color: 'var(--green)',
@@ -32052,6 +32052,19 @@ function stepRestPct(cId, step) {
  */
 const LIFT_FEEL_VALUES = { full: 95, medium: 70, soon: 50, low: 30, dry: 20 };
 /**
+ * (v1.5.465) Eine Beschriftung für den Hebe-Test. Vorher hatten Eintragsleiste („Voll · frisch … Trocken · kritisch“) und das
+ * Guss-Blatt („Schwer wie frisch gegossen … Federleicht“) je ihre eigenen Wörter für dieselben Stufen; wer beides nutzte,
+ * las zwei Sprachen für denselben Griff. Kurzwort + Zusatz stehen in der Eintragsleiste, das Kurzwort mit der erklärenden
+ * Zeile im Guss-Blatt; die Kurzwörter stimmen mit den Texten der App überein („Knapp“, „Mittel“ in GIESSPUNKT).
+ */
+const LIFT_FEEL_TEXTE = {
+  full:   { icon: '💧', kurz: 'Voll',    hint: 'frisch',   zeile: 'schwer wie frisch gegossen — eigentlich noch nicht nötig' },
+  medium: { icon: '🟢', kurz: 'Mittel',  hint: 'feucht',   zeile: 'noch gut schwer — noch Wasser drin' },
+  soon:   { icon: '🟡', kurz: 'Bald',    hint: 'leichter', zeile: 'wird leichter — bald gießen' },
+  low:    { icon: '🟠', kurz: 'Knapp',   hint: 'leicht',   zeile: 'schon ziemlich leicht — guter Gieß-Zeitpunkt' },
+  dry:    { icon: '🔴', kurz: 'Trocken', hint: 'kritisch', zeile: 'federleicht — sehr trocken, höchste Zeit' },
+};
+/**
  * Profi-Tip im Bauchgefühl-Modus: dezenter Hinweis, dass es per Küchenwaage
  * genauer geht. Nur sichtbar wenn der User schon mind. 3 Bauchgefühl-Werte
  * für diesen Cycle eingetragen hat — dann kennt er den Workflow und ist
@@ -32368,11 +32381,9 @@ function _renderLiftFeelBody(cId, currentPct, userTouched) {
     { feel: 'low',    icon: '🟠', label: '5 cm+',  hint: 'Knöchel', color: '#e08040' },
     { feel: 'dry',    icon: '🔴', label: 'Staub',  hint: 'ganz tief', color: '#e06060' },
   ] : [
-    { feel: 'full',   icon: '💧', label: 'Voll',    hint: 'frisch',   color: '#4a9eff' },
-    { feel: 'medium', icon: '🟢', label: 'Mittel',  hint: 'feucht',   color: '#5cb85c' },
-    { feel: 'soon',   icon: '🟡', label: 'Bald',    hint: 'leichter', color: '#e0a020' },
-    { feel: 'low',    icon: '🟠', label: 'Knapp',   hint: 'leicht',   color: '#e08040' },
-    { feel: 'dry',    icon: '🔴', label: 'Trocken', hint: 'kritisch', color: '#e06060' },
+    // (v1.5.465) Texte aus LIFT_FEEL_TEXTE (gemeinsam mit dem Guss-Blatt), nur die Farben bleiben hier.
+    ...[['full', '#4a9eff'], ['medium', '#5cb85c'], ['soon', '#e0a020'], ['low', '#e08040'], ['dry', '#e06060']].map(([f, color]) => (
+      { feel: f, icon: LIFT_FEEL_TEXTE[f].icon, label: LIFT_FEEL_TEXTE[f].kurz, hint: LIFT_FEEL_TEXTE[f].hint, color })),
   ];
 
   const btnHtml = buttons.map(b => {
@@ -32813,13 +32824,8 @@ function openGussHebe(cId, iso) {
   overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:10001;display:flex;align-items:flex-end;justify-content:center;padding:12px;font-family:var(--font)';
   overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
   const fbtn = 'width:100%;padding:11px 12px;border-radius:10px;font-size:13px;cursor:pointer;font-family:var(--font);text-align:left;background:var(--card2);border:0.5px solid var(--border);color:var(--text)';
-  const feels = [
-    ['dry', '🪶 Federleicht', 'sehr trocken — höchste Zeit'],
-    ['low', '🍂 Schon ziemlich leicht', 'guter Gieß-Zeitpunkt'],
-    ['soon', '⚖️ Wird leichter', 'bald gießen'],
-    ['medium', '💧 Noch gut schwer', 'noch Wasser drin'],
-    ['full', '🧱 Schwer wie frisch gegossen', 'eigentlich noch nicht nötig'],
-  ];
+  // (v1.5.465) Dieselben Kurzwörter wie in der Eintragsleiste (LIFT_FEEL_TEXTE); die erklärende Zeile steht dahinter.
+  const feels = ['dry', 'low', 'soon', 'medium', 'full'].map(f => [f, LIFT_FEEL_TEXTE[f].icon + ' ' + LIFT_FEEL_TEXTE[f].kurz, LIFT_FEEL_TEXTE[f].zeile]);
   const btns = feels.map(([f, label, hint]) => `<button onclick="gussHebeSet('${cId}','${iso}','${f}')" style="${fbtn}"><span style="font-weight:600">${label}</span> <span style="font-size:10px;color:var(--text-hint)">· ${hint}</span></button>`).join('');
   overlay.innerHTML = `
     <div style="background:var(--card);border:0.5px solid var(--border);border-radius:18px 18px 0 0;padding:20px 16px 16px;max-width:440px;width:100%;max-height:80vh;overflow-y:auto" class="scroll">
