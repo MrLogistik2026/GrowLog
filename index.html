@@ -4770,7 +4770,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.451';
+const APP_VERSION = 'v1.5.452';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -25086,6 +25086,7 @@ function ddSeed(which, val) {
     const n = parseFloat(String(val).replace(',', '.'));
     draft[which] = (isFinite(n) && n > 0) ? n : '';
   }
+  _draftAngefasst(which);
   const lo = parseFloat(draft.seedWeeksLo), hi = parseFloat(draft.seedWeeksHi);
   // Nur untere Grenze da? Dann ist sie vorerst auch die obere.
   const plan = isFinite(hi) && hi > 0 ? hi : (isFinite(lo) && lo > 0 ? lo : null);
@@ -25094,7 +25095,7 @@ function ddSeed(which, val) {
     // Felder wie iceDays noch nicht enthalten, dann käme eine falsche Tageszahl heraus.
     const basis = Object.assign({}, S.cycles.find(x => x.id === selId) || {}, draft);
     const tage = bloomDaysFromSeedWeeks(basis, plan);
-    if (tage) draft.bloomDays = tage;
+    if (tage) { draft.bloomDays = tage; _draftAngefasst('bloomDays'); }
   }
   renderSet();
 }
@@ -25134,12 +25135,18 @@ function _setReservePct(cId, val) {
  * Erde-Rhythmus (alle 3 Tage), was Coco austrocknen ließe. renderSet() zeigt die
  * aktualisierten Intervall-Felder sofort an.
  */
+// (v1.5.452) Diese drei Wege schreiben in den Entwurf, ohne über dd() zu gehen — sie müssen ihre Felder selbst als
+// angefasst markieren. Seit v1.5.86 schreibt „Sichern“ nur angefasste Felder zurück; Substrat, Samentüten-Wochen und
+// Samentyp zeigten deshalb ihre Vorschau, gingen beim Sichern aber still verloren, und „Änderungen sichern“ blieb stehen.
+function _draftAngefasst(...keys) { keys.forEach(k => { draftTouched[k] = true; }); }
+
 function setCycleMedium(v) {
   draft.medium = v;
   const mi = mediumIntervals(v);
   draft.intAnzucht = mi.anzucht;
   draft.intBloom = mi.bloom;
   draft.intFlush = mi.flush;
+  _draftAngefasst('medium', 'intAnzucht', 'intBloom', 'intFlush');
   renderSet();
 }
 
@@ -25201,8 +25208,10 @@ function _updatePlantField(cycleId, plantId, field, value) {
  */
 function _onSeedTypeChange(value) {
   draft.seedType = value;
+  _draftAngefasst('seedType');
   if (value === 'auto' && draft.bloomStartDate) {
     draft.bloomStartDate = '';
+    _draftAngefasst('bloomStartDate');
   }
   renderSet();
 }

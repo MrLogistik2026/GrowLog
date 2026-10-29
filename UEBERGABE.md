@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.451** · index.html 2,67 MB · 781 Funktionen
+Stand: **v1.5.452** · index.html 2,67 MB · 781 Funktionen
 Zuletzt fortgeschrieben am 29.10.2026 (Diagnose-Arbeitsliste, B02, B04, B01, B07, B03, B11, B10, B08 und B09 erledigt — Abschnitt 0o, Punkt 8). Davor: Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
@@ -408,6 +408,7 @@ Speicher-Befunde sind in v1.5.340–344 behoben. Rohdaten: Workflow wf_63d754b1-
 - v1.5.449: Diagnose sagt „Drain“ statt „Runoff“ und „Topf schwer (heute gemessen)“ statt „Erde dauer-feucht“ — Begründungen, Startseiten-Hinweis, Kontext-Zeile (B12, `test_diagnose_etiketten.js`). **Offen (Patricks Entscheidung):** tempHot ab 30 °C und tempCold bis 18 °C sind Konventionen der Raumluft, nicht ANBAU.md.
 - v1.5.450: Schnellhilfe „Pflanze welkt nur unter starker Lampe“ ohne „Dimmer auf 70–80%“ und „LED über 400 W“ — Topf anheben, dann Abstand/Leistung, Abluft und Umluft (ANBAU.md 8.2).
 - v1.5.451: Kein „Pflanze tiefer eingraben“ mehr bei gestreckten Pflanzen (drei Stellen) — eine Stütze statt Umsetzen, das bei Automatics Tage kostet (ANBAU.md 7.4, 9).
+- v1.5.452: **Fehler:** Substrat, Samentüten-Wochen und Samentyp gingen beim Sichern der Einstellungen still verloren (draftTouched fehlte seit v1.5.86) — behoben, `test_entwurf_wege.js`.
 
 **Gegenprüfung von v1.5.364/365 (07.10.2026 nachts, Workflow wf_4cf817bf-629, drei Sonnet-Prüfer + Gegenprüfer).** Kein Fehlalarm
 in 33 App-Fassungen, allen Vorlagen und über 2800 Klicks; die schweren Befunde (unsichere Kopie zerstört den Hauptstand, Tropfen als

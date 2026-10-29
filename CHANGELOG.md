@@ -2,6 +2,19 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-29 — v1.5.452
+
+- **Drei Einstellungen gingen beim „Sichern“ still verloren: Substrat, Wochenangabe der Samentüte und Samentyp.**
+  `setCycleMedium`, `ddSeed` und `_onSeedTypeChange` schrieben in den Entwurf, ohne das Feld als angefasst zu markieren. Seit
+  v1.5.86 schreibt `saveDraft` aber nur angefasste Felder zurück. Wer Erde auf Coco umstellte oder „16–17 Wochen“ von der
+  Samentüte eintrug, sah die neue Kette in der Vorschau, tippte „Sichern“ — und nichts wurde gespeichert; „Änderungen
+  sichern“ blieb stehen. Mit Coco bliebe der Erde-Gießpunkt aktiv (ANBAU.md 1.2, 7.1), mit der Tüte die alte Blütedauer.
+  Gefunden bei der Bedien-Prüfung „Einstellungen und Kopplung“ am 29.10.2026, nachgemessen.
+- **Jetzt** markieren die drei Wege ihre Felder selbst (`_draftAngefasst`): Substrat mit seinem Gießrhythmus, Wochenangabe mit
+  der daraus gerechneten Blütedauer, Samentyp mit einem gelöschten Blütestart-Datum. Ändert sich dabei die Kette, rastet der
+  Spülstart beim Sichern ein wie bei jedem anderen Feld.
+- Test: `test_entwurf_wege.js` (7 Prüfungen, beide Zeitzonen; 5 fallen auf v1.5.451 um).
+
 ## 2026-10-29 — v1.5.451
 
 - **Bei gestreckten Pflanzen riet die App an drei Stellen, die Pflanze „tiefer einzugraben“** — Lichtmangel in der Diagnose
