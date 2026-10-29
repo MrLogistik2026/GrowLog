@@ -4770,7 +4770,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.452';
+const APP_VERSION = 'v1.5.453';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -16536,7 +16536,9 @@ function getAlerts(c) {
   // entsprechende Tag *heute* ist — so verpasst niemand den Moment.
   const daysSinceStart = p.day;
   const milestones = [];
-  if (daysSinceStart === 3) milestones.push({ key: 'd3', icon: '🌱', text: 'Tag 3 — erste Blättchen kommen raus! Jetzt nur ganz wenig gießen.', type: 'milestone' });
+  // (v1.5.453) Vorher „Tag 3 — erste Blättchen kommen raus! Jetzt nur ganz wenig gießen.“ — direkt unter „Heute nur sprühen, nicht
+  // gießen!“ und gegen die Keimung: Der Keimling kommt aus 1 cm Tiefe nach 3,3–3,9 Tagen, die App plant mit Tag 4–7 (ANBAU.md 16).
+  if (daysSinceStart === 3) milestones.push({ key: 'd3', icon: '🌱', text: 'Tag 3 — oben ist meist noch nichts zu sehen, das ist normal. Der Keimling kommt etwa an Tag ' + KEIMUNG.auflaufenVon + '–' + KEIMUNG.auflaufenBis + '; bis dahin gilt, was die App für heute sagt.', type: 'milestone' });
   if (daysSinceStart === 7) milestones.push({ key: 'd7', icon: '🎉', text: 'Eine Woche geschafft! Typisch: erstes echtes Laubblatt-Paar.', type: 'milestone' });
   if (daysSinceStart === 14) milestones.push({ key: 'd14', icon: '💪', text: '2 Wochen! Jetzt passiert das meiste unter der Erde — Wurzeln wachsen wie verrückt.', type: 'milestone' });
   if (daysSinceStart === 21) milestones.push({ key: 'd21', icon: '🌿', text: (c.seedType === 'auto' && p.ph === 'bloom')

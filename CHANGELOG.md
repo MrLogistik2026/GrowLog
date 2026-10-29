@@ -2,6 +2,16 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-29 — v1.5.453
+
+- **Meilenstein Tag 3: „erste Blättchen kommen raus! Jetzt nur ganz wenig gießen.“** Die Karte stand direkt unter „Heute nur
+  sprühen, nicht gießen!“, und der Eintrag desselben Tags sagt „zu sehen ist noch nichts, und das ist normal“. Der Keimling
+  kommt aus 1 cm Tiefe nach 3,3–3,9 Tagen, die App plant mit Tag 4–7 (ANBAU.md 16). Gefunden bei der Anfänger-Prüfung am
+  29.10.2026.
+- **Jetzt:** „Tag 3 — oben ist meist noch nichts zu sehen, das ist normal. Der Keimling kommt etwa an Tag 4–7; bis dahin
+  gilt, was die App für heute sagt.“ Die Tage kommen aus `KEIMUNG`.
+- Test: `test_anfaenger_tag3.js` (5 Prüfungen, beide Zeitzonen; 2 fallen auf v1.5.452 um).
+
 ## 2026-10-29 — v1.5.452
 
 - **Drei Einstellungen gingen beim „Sichern“ still verloren: Substrat, Wochenangabe der Samentüte und Samentyp.**
