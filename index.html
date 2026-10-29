@@ -4783,7 +4783,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.465';
+const APP_VERSION = 'v1.5.466';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -19752,7 +19752,10 @@ function renderDash() {
         const _wz = _wachsendeZyklen(act, today);
         const next = (_wz.length ? _wz : [act[0]]).map(z => nextGiessTag(z, today)).filter(Boolean)
           .sort((x, y) => x.days - y.days)[0] || null;
-        const sub = next
+        // (v1.5.466) Zeigt die Zyklus-Karte darunter schon „Nächster Gießtag · Wochentag · in Nd“ (Zyklus ohne Aktion heute),
+        // steht der Satz nicht ein zweites Mal im Banner — vorher stand er an jedem Nicht-Gießtag doppelt untereinander.
+        const _karteNennt = act.some(z => !getAction(today, z) && nextGiessTag(z, today));
+        const sub = (next && !_karteNennt)
           ? `Nächster Gießtag: ${next.days === 1 ? 'morgen' : 'in ' + next.days + ' Tagen'}`
           : 'Beobachten, ggf. Foto machen';
         return `<div style="background:linear-gradient(135deg,rgba(76,175,112,0.10),rgba(76,175,112,0.03));border:1px solid rgba(76,175,112,0.3);border-radius:14px;padding:14px 16px;margin-bottom:6px;display:flex;align-items:center;gap:12px">

@@ -2,6 +2,14 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-29 — v1.5.466
+
+- **„Nächster Gießtag“ stand an ruhigen Tagen zweimal auf der Startseite** — im Banner „Heute alles ruhig“ („in 2 Tagen“) und
+  darunter in der Zyklus-Karte („💧 Nächster Gießtag Samstag … in 2d“). Gefunden bei der Gießtag-Prüfung am 29.10.2026.
+- **Jetzt** nennt ihn nur die Karte (mit Wochentag und Datum, antippbar); der Banner sagt dann „Beobachten, ggf. Foto machen“.
+- Test: `test_naechster_giesstag_einmal.js` (9 Prüfungen über drei ruhige Tage, beide Zeitzonen; 3 fallen auf v1.5.465 um).
+  Gebaut von einem Sonnet-Helfer.
+
 ## 2026-10-29 — v1.5.465
 
 - **Der Hebe-Test hatte zwei Vokabulare.** Die Eintragsleiste sagt „Voll / Mittel / Bald / Knapp / Trocken“, das Guss-Blatt
