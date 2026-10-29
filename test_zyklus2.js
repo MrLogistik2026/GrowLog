@@ -358,8 +358,11 @@ function pruef(name, bedingung, info) {
     // Startseite, Einsteiger, ruhiger Tag: der nächste Gießtag kommt von den wachsenden Zyklen
     a.E("S.cycles[0].archived = false; S.cycles[0].active = true; S.beginnerMode = true; renderDash()");
     const dash = (a.window.document.getElementById('dash-body')?.textContent || '').replace(/\s+/g, ' ');
-    pruef('H7 Startseite (Einsteiger, ruhiger Tag): „Nächster Gießtag: in 2 Tagen" statt „Beobachten"',
-      /Nächster Gießtag: in 2 Tagen/.test(dash) && !/Beobachten, ggf\. Foto machen/.test(dash), dash.slice(0, 240));
+    // (v1.5.466) Den nächsten Gießtag nennt nur noch eine Stelle: die Zyklus-Karte („Nächster Gießtag · Datum · in 2d"), der Banner
+    // sagt dann „Beobachten". Geprüft wird weiter, dass er von den wachsenden Zyklen kommt (in 2 Tagen) und nicht doppelt steht.
+    // Zwei wachsende Zyklen: Jede Zyklus-Karte nennt ihren eigenen nächsten Gießtag — das ist keine Dopplung.
+    pruef('H7 Startseite (Einsteiger, ruhiger Tag): der nächste Gießtag in 2 Tagen von den wachsenden Zyklen, nicht zusätzlich im Banner',
+      /in 2 ?d\b|in 2 Tagen/.test(dash) && !(/Nächster Gießtag:/.test(dash) && /Nächster Gießtag\s*\S+tag,/.test(dash)), dash.slice(0, 400));
     pruef('H8 keine JS-Fehler', a.errors.length + b.errors.length === 0, a.errors[0] || b.errors[0]);
   }
 

@@ -97,7 +97,10 @@ const LAUF = (key) => `(function(){
     pruef(key + ': Gegenprobe Feed-Tage nennen den Dünger mit Menge', feed.every(t => /Dünger Wo\. \d+ für [\d,]+ L( anmischen \(heute brauchst du davon [^)]+ L\))?: [^|]+ \d+(,\d)? (ml|g)/.test(t.steps)), feed.map(t => t.steps).slice(0, 1).join(''));
     pruef(key + ': Feed-Tage nennen das EC-Ziel des Plans', feed.every(t => !t.ecMin || t.steps.includes(`EC im Ziel ${t.ecMin}–${t.ecMax}`)), feed.map(t => t.steps + ' / ' + t.ecMin + '–' + t.ecMax).slice(0, 1).join(''));
     pruef(key + ': kein „~10%" in Schritt oder Hinweis', tage.every(t => !/10\s?%/.test(t.steps + t.hint)), tage.filter(t => /10\s?%/.test(t.steps + t.hint)).map(t => t.d).join(', '));
-    pruef(key + ': ab Tag 25 nennen Schritt und Hinweis dasselbe Ziel 15–20 %', tage.filter(t => t.d >= 25).every(t => /15–20 % unten ablaufen/.test(t.steps) && /15–20 % Drain/.test(t.hint)), tage.filter(t => t.d >= 25).map(t => t.steps.split(' | ')[0]).slice(0, 1).join(''));
+    // (v1.5.457) Ab Tag 25 nennen Schritt und Hinweis das Ziel 15–20 % nur noch, wo bei der Menge Drain entstehen kann
+    // (_drainZuErwarten) — dann beide; sonst keiner, und der Hinweis sagt „kommt unten noch kein Drain“. Geprüft wird weiter,
+    // dass Schritt und Hinweis dasselbe sagen.
+    pruef(key + ': ab Tag 25 nennen Schritt und Hinweis dasselbe Ziel 15–20 % — oder beide keins', tage.filter(t => t.d >= 25).every(t => (/15–20 % unten ablaufen/.test(t.steps) && /15–20 % Drain/.test(t.hint)) || (!/15–20 %/.test(t.steps) && /kommt unten noch kein Drain/.test(t.hint))), tage.filter(t => t.d >= 25).map(t => t.steps.split(' | ')[0]).slice(0, 1).join(''));
   }
 
   console.log('\nB - Sichtbar auf der Startseite an einem Wasser-Tag');
