@@ -2,6 +2,17 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-29 — v1.5.461
+
+- **Der Diagnose-Assistent fragte „Seit wann tritt es auf?“ — und wertete die Antwort nie aus.** Schritt 3 bot „In den letzten
+  Stunden / Seit einigen Tagen / Seit Wochen“ an; `renderDiagStep4` gab `diagnoseProblems` aber nur Ort, Farbe und Form. Ein
+  Tap ohne Wirkung, der Weg zur Antwort war unnötig lang (7 Taps von der Tipps-Seite). Gefunden bei der Bedien-Prüfung „Hilfe
+  finden“ am 29.10.2026.
+- **Jetzt** hat der Assistent drei Schritte: Ort, Aussehen, Ergebnis. Im zweiten Schritt heißt der Knopf „Auswerten →“.
+  `renderDiagStep3`, `diagSetTiming` und `DIAG_LABELS.timing` sind entfernt.
+- **Warum:** Die App fragt nichts, was sie nicht braucht (ANWEISUNG.md, „Regeln statt Regler“).
+- Test: `test_diagnose_schritte.js` (7 Prüfungen, beide Zeitzonen; 6 fallen auf v1.5.460 um).
+
 ## 2026-10-29 — v1.5.460
 
 - **Das „?“-Hilfeblatt hatte keinen Einstieg für ein Pflanzenproblem.** Ohne Suche bot es nur „Schließen“ und „Sichern &

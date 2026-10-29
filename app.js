@@ -1209,7 +1209,6 @@ function strainDifficultyLabel(d) {
  *   location: 'oldLeaves' | 'newLeaves' | 'allLeaves' | 'buds' | 'stem' | 'roots'
  *   color:    'yellow' | 'brown' | 'purple' | 'darkGreen' | 'paleGreen' | 'white' | 'red' | 'spots'
  *   shape:    'curlDown' | 'curlUp' | 'wilting' | 'crispy' | 'spotted' | 'holed' | 'webs' | 'burnTips'
- *   timing:   'hours' | 'days' | 'weeks'  (seit wann tritt es auf)
  *
  * Jeder Problem-Eintrag kann mehrere Varianten davon listen — Score = Anzahl
  * matchender Kriterien / Gesamtzahl relevanter Kriterien. Kontext-Boost
@@ -1753,7 +1752,7 @@ function _phasenWort(ph) {
  * Diagnose-Engine: Bewertet alle Probleme gegen ein User-Symptom-Profil
  * und liefert die wahrscheinlichsten Diagnosen sortiert nach Match-Score.
  *
- * @param {object} symptoms  {location: string[], colors: string[], shapes: string[], timing: string}
+ * @param {object} symptoms  {location: string[], colors: string[], shapes: string[]}
  * @param {object} ctx       Kontextuelle App-Daten: {phase, phHigh, phLow, tempHot, tempCold, restHigh, restLow, ecDeltaPos, ecDeltaNeg, humidityHigh, daysToHarvestLow, runoffDriftHigh, runoffDriftLow}
  * @returns {Array<{problem, score, matchedReasons, contextReasons}>} sortiert absteigend
  */
@@ -2014,7 +2013,6 @@ let diagState = {
   location: [],   // e.g. ['oldLeaves', 'allLeaves']
   colors: [],     // e.g. ['yellow', 'spots']
   shapes: [],     // e.g. ['curlUp']
-  timing: null,   // 'hours' | 'days' | 'weeks'
 };
 
 /**
@@ -2023,7 +2021,7 @@ let diagState = {
  * Kontext dieses Zyklus eingespeist.
  */
 function openDiagnostics(cycleId = null) {
-  diagState = { step: 1, cycleId, location: [], colors: [], shapes: [], timing: null };
+  diagState = { step: 1, cycleId, location: [], colors: [], shapes: [] };
   renderDiagWizard();
 }
 
@@ -2111,11 +2109,6 @@ function diagToggle(field, value) {
   renderDiagWizard();
 }
 
-function diagSetTiming(value) {
-  diagState.timing = value;
-  renderDiagWizard();
-}
-
 function diagGoTo(step) {
   // Validierung bei Vorwärts-Navigation
   if (step > diagState.step) {
@@ -2165,11 +2158,6 @@ const DIAG_LABELS = {
     holed: { label: 'Löcher', icon: '🕳️' },
     webs: { label: 'Spinnweben', icon: '🕸️' },
   },
-  timing: {
-    hours: 'In den letzten Stunden',
-    days: 'Seit einigen Tagen',
-    weeks: 'Seit Wochen',
-  },
   severity: {
     low: { label: 'Leicht', color: 'var(--green)' },
     medium: { label: 'Mittel', color: 'var(--yellow)' },
@@ -2193,7 +2181,9 @@ function renderDiagWizard() {
   }
 
   const step = diagState.step;
-  const totalSteps = 4;
+  // (v1.5.461) Drei Schritte statt vier: „Seit wann tritt es auf?“ wurde gefragt, aber nie ausgewertet — diagnoseProblems
+  // bekam die Antwort gar nicht. Die App fragt nichts, was sie nicht braucht (ANWEISUNG.md, „Regeln statt Regler“).
+  const totalSteps = 3;
 
   // Header mit Fortschritts-Indikator
   const header = `<div style="flex-shrink:0;padding:12px 16px;display:flex;align-items:center;gap:12px;border-bottom:0.5px solid var(--border)">
@@ -2203,7 +2193,7 @@ function renderDiagWizard() {
       <div style="font-size:11px;color:var(--text-muted)">Schritt ${step} von ${totalSteps}</div>
     </div>
     <div style="display:flex;gap:3px">
-      ${[1,2,3,4].map(i => `<span style="width:20px;height:3px;border-radius:2px;background:${i <= step ? 'var(--green)' : 'var(--card2)'}"></span>`).join('')}
+      ${[1,2,3].map(i => `<span style="width:20px;height:3px;border-radius:2px;background:${i <= step ? 'var(--green)' : 'var(--card2)'}"></span>`).join('')}
     </div>
   </div>`;
 
@@ -2211,8 +2201,7 @@ function renderDiagWizard() {
   let body = '';
   if (step === 1) body = renderDiagStep1();
   else if (step === 2) body = renderDiagStep2();
-  else if (step === 3) body = renderDiagStep3();
-  else if (step === 4) body = renderDiagStep4();
+  else if (step === 3) body = renderDiagStep4();
 
   // Footer mit Navigation
   const footer = renderDiagFooter();
@@ -2262,24 +2251,6 @@ function renderDiagStep2() {
           <span style="font-size:12px;font-weight:600">${label}</span>
         </button>`;
       }).join('')}
-    </div>
-  </div>`;
-}
-
-function renderDiagStep3() {
-  return `<div>
-    <div style="font-size:18px;font-weight:700;margin-bottom:8px">Seit wann tritt es auf?</div>
-    <div style="font-size:12px;color:var(--text-muted);margin-bottom:20px">Tempo hilft — manche Probleme (Schädlinge, Hitzestress) kommen schnell, andere (Mängel) schleichend.</div>
-    <div style="display:flex;flex-direction:column;gap:10px">
-      ${Object.entries(DIAG_LABELS.timing).map(([key, label]) => {
-        const active = diagState.timing === key;
-        return `<button onclick="diagSetTiming('${key}')" style="padding:16px;background:${active ? 'rgba(90,171,240,0.15)' : 'var(--card)'};border:1px solid ${active ? 'var(--blue)' : 'var(--border)'};border-radius:12px;cursor:pointer;font-family:var(--font);color:var(--text);font-size:14px;font-weight:600;text-align:left">
-          ${label}
-        </button>`;
-      }).join('')}
-    </div>
-    <div style="margin-top:16px;padding:10px 12px;background:var(--card2);border-radius:8px;font-size:11px;color:var(--text-muted);line-height:1.5">
-      💡 Optional — falls du dir nicht sicher bist, überspring diesen Schritt. Die Diagnose funktioniert auch ohne.
     </div>
   </div>`;
 }
@@ -2385,8 +2356,8 @@ function renderDiagResultCard(r, idx) {
 function renderDiagFooter() {
   const step = diagState.step;
   const canBack = step > 1;
-  const canNext = step < 4;
-  const isResult = step === 4;
+  const canNext = step < 3;
+  const isResult = step === 3;
 
   if (isResult) {
     return `<div style="flex-shrink:0;padding:12px 16px;border-top:0.5px solid var(--border);display:flex;gap:8px">
@@ -2397,7 +2368,7 @@ function renderDiagFooter() {
 
   return `<div style="flex-shrink:0;padding:12px 16px;border-top:0.5px solid var(--border);display:flex;gap:8px">
     <button onclick="diagGoTo(${step-1})" ${canBack ? '' : 'disabled'} style="flex:1;padding:14px;background:var(--card);border:0.5px solid var(--border);border-radius:10px;font-size:13px;font-weight:600;color:${canBack ? 'var(--text-sub)' : 'var(--text-hint)'};cursor:${canBack ? 'pointer' : 'default'};opacity:${canBack ? 1 : 0.5};font-family:var(--font)">← Zurück</button>
-    <button onclick="diagGoTo(${step+1})" style="flex:2;padding:14px;background:var(--blue);border:none;border-radius:10px;font-size:13px;font-weight:700;color:#fff;cursor:pointer;font-family:var(--font)">${canNext ? 'Weiter →' : 'Auswerten →'}</button>
+    <button onclick="diagGoTo(${step+1})" style="flex:2;padding:14px;background:var(--blue);border:none;border-radius:10px;font-size:13px;font-weight:700;color:#fff;cursor:pointer;font-family:var(--font)">${step === 2 ? 'Auswerten →' : 'Weiter →'}</button>
   </div>`;
 }
 
@@ -3755,7 +3726,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.460';
+const APP_VERSION = 'v1.5.461';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
