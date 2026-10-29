@@ -1,4 +1,4 @@
-// (v1.5.441) Weiß ausgebleichte Spitzen haben einen eigenen Knopf, und die Diagnose nennt zuerst das Foto-Bleaching.
+// (v1.5.441) Weiß ausgebleichte Spitzen haben einen eigenen Knopf, und die Diagnose nennt zuerst das Foto-Bleaching. (v1.5.451) Kein „eingraben“.
 //
 // ANBAU.md 8.2: Photobleaching bleicht nach WEISS aus und trifft die lichtnächsten Spitzen — Maßnahme Leistung runter oder
 // Abstand größer. Thermischer Stress vergilbt oder verbrennt. Die Oberfläche kannte nur „Hellgrün“; wer weiße Spitzen sah,
@@ -53,6 +53,11 @@ const HTML = fs.readFileSync(process.env.GS_INDEX || path.join(__dirname, 'index
   pruefe(iWeiss >= 0 && iNaeher > iWeiss, 'Lichtmangel: die Unterscheidung „weiß = zu viel Licht“ steht vor „näher“');
   pruefe(/Erst unterscheiden/.test(lm.slice(0, 40)), 'Lichtmangel: der Text beginnt mit der Unterscheidung');
 
+  // (v1.5.451) Kein „Pflanze tiefer eingraben“ bei gestreckten Pflanzen — umsetzen kostet Tage, die eine Automatic nicht aufholt
+  // (ANBAU.md 7.4, 9); stattdessen eine Stütze.
+  const lichtTexte = JSON.parse(E(`JSON.stringify([].concat(PROBLEMS.map(p => (p.action || '') + ' ' + (p.description || '')), SYMPTOMS.flatMap(s => (s.causes || []).map(c => c.text || ''))))`));
+  pruefe(!lichtTexte.some(t => /eingraben/i.test(t)), 'Kein „tiefer eingraben“ in Diagnose und Schnellhilfe');
+  pruefe(/stütze/i.test(lm), 'Lichtmangel: Stütze statt Eingraben');
   pruefe(errors.length === 0, 'Laufzeitfehler: ' + errors.slice(0, 2).join(' | '));
   console.log(`TZ=${process.env.TZ || '(System)'} · ${n - fehler.length}/${n} OK`);
   for (const f of fehler) console.log('  FEHL ' + f);

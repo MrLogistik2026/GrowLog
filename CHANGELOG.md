@@ -2,6 +2,17 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-29 — v1.5.451
+
+- **Bei gestreckten Pflanzen riet die App an drei Stellen, die Pflanze „tiefer einzugraben“** — Lichtmangel in der Diagnose
+  („Notlösung: Pflanze tiefer eingraben (kann am Stiel Wurzeln bilden)“), Schnellhilfe „Streck-mich-zur-Lampe“ und Schnellhilfe
+  gestreckter Sämling („Notfall: Pflanze tiefer eingraben bis fast zu den Keimblättern“). Tiefer setzen heißt umsetzen, und das
+  kostet Tage, die eine Automatic nicht aufholt (ANBAU.md 7.4, 9); seit v1.5.395 sagt die App „Automatics nie umtopfen“. Dass der
+  Stiel dann Wurzeln bildet, steht nicht in ANBAU.md. Gefunden beim Bau von v1.5.441.
+- **Jetzt:** „Kippt der Stiel, stütze ihn mit einem dünnen Stab; umtopfen oder tiefer setzen kostet Tage, die vor allem eine
+  Automatic nicht aufholt.“ Die Ursache (zu wenig Licht) behandeln die Texte davor unverändert.
+- Test: `test_diagnose_weiss.js` Abschnitt „kein Eingraben“ (2 Prüfungen, beide Zeitzonen; fallen auf v1.5.450 um).
+
 ## 2026-10-29 — v1.5.450
 
 - **Schnellhilfe „Pflanze welkt nur unter starker Lampe“: feste Zahlen ohne Beleg.** „Lampe höher hängen, Dimmer auf 70–80%“

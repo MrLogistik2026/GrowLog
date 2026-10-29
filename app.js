@@ -1576,7 +1576,9 @@ const PROBLEMS = [
     description: 'Pflanze streckt sich extrem (lange Internodien zwischen den Blattetagen), Stamm wird dünn und kippt fast um. Blätter generell hellgrün-blass. In der Blüte: kleine luftige Buds statt dichter Cola. Lampe zu schwach, zu weit weg oder Lichtperiode unzureichend.',
     context: { phase: ['anzucht', 'vegi', 'bloom'] },
     // (v1.5.441) Zuerst die Gegenprobe: weiß = zu viel Licht, blass und gestreckt = zu wenig.
-    action: 'Erst unterscheiden: Bleichen die obersten Blätter oder Blütenspitzen <b>weiß</b> aus, ist es zu viel Licht (Foto-Bleaching) — dann nicht näher, sondern Leistung zurück. Sind sie gleichmäßig blass und die Pflanze streckt sich, fehlt Licht: Mehr Licht ans Blatt bringen, in kleinen Schritten: Dimmer ein Stück hoch oder Lampe ein Stück näher, dann die Lichtmenge am Blatt messen (PPFD). Ziel am Canopy (Oberkante der Pflanzen): ' + _lichtZielZeile() + ' µmol/m²/s. Ohne Lichtmesser ist jede Zahl geschätzt — dann nach einigen Tagen die obersten Blätter ansehen: Bleichen die obersten Blätter weiß aus (zu viel Licht) oder werden die Ränder gelbbraun und wölben sich nach oben (zu viel Wärme), war der Schritt zu groß. Die Hand taugt hier nicht als Grenze, denn eine LED kann ausbleichen, ohne dass sie sich heiß anfühlt. Bei alten oder schwachen LEDs: Leistung prüfen, ggf. ersetzen. Notlösung: Pflanze tiefer eingraben (kann am Stiel Wurzeln bilden).',
+    // (v1.5.451) Statt „Notlösung: Pflanze tiefer eingraben“ eine Stütze — umsetzen kostet Tage, die eine Automatic nicht aufholt
+    // (ANBAU.md 7.4, 9); dass der Stiel dann Wurzeln bildet, steht nicht in ANBAU.md.
+    action: 'Erst unterscheiden: Bleichen die obersten Blätter oder Blütenspitzen <b>weiß</b> aus, ist es zu viel Licht (Foto-Bleaching) — dann nicht näher, sondern Leistung zurück. Sind sie gleichmäßig blass und die Pflanze streckt sich, fehlt Licht: Mehr Licht ans Blatt bringen, in kleinen Schritten: Dimmer ein Stück hoch oder Lampe ein Stück näher, dann die Lichtmenge am Blatt messen (PPFD). Ziel am Canopy (Oberkante der Pflanzen): ' + _lichtZielZeile() + ' µmol/m²/s. Ohne Lichtmesser ist jede Zahl geschätzt — dann nach einigen Tagen die obersten Blätter ansehen: Bleichen die obersten Blätter weiß aus (zu viel Licht) oder werden die Ränder gelbbraun und wölben sich nach oben (zu viel Wärme), war der Schritt zu groß. Die Hand taugt hier nicht als Grenze, denn eine LED kann ausbleichen, ohne dass sie sich heiß anfühlt. Bei alten oder schwachen LEDs: Leistung prüfen, ggf. ersetzen. Kippt der Stiel, stütze ihn mit einem dünnen Stab; umtopfen oder tiefer setzen kostet Tage, die vor allem eine Automatic nicht aufholt.',
     lexiconKey: 'light_deficiency',
   },
   {
@@ -3753,7 +3755,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.450';
+const APP_VERSION = 'v1.5.451';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -7644,7 +7646,7 @@ const SYMPTOMS = [
         heading: 'Hellgrün, dünn, hoher Stamm — Pflanze schaut nach Licht',
         verdict: '⚠ Lichtmangel / Etiolierung',
         color: 'var(--orange)',
-        text: 'Klassisches „Streck-mich-zur-Lampe"-Bild: lange Internodien (Abstand zwischen Blättern), dünner Stiel, Pflanze fällt fast um. Meist zu wenig Licht. <b>Lösung:</b> Lampe in kleinen Schritten näher oder Dimmer hoch und nach jedem Schritt die Lichtmenge am Blatt (PPFD) messen. <b>Ziel am Canopy (Oberkante der Pflanzen):</b> ' + _lichtZielZeile() + '. Ohne Lichtmesser nach einigen Tagen die obersten Blätter ansehen: Bleichen die obersten Blätter weiß aus (zu viel Licht) oder werden die Ränder gelbbraun und wölben sich nach oben (zu viel Wärme), war der Schritt zu groß. Die Hand zeigt das nicht zuverlässig — eine LED kann ausbleichen, ohne heiß zu sein. Bei Notlösung: Pflanze tiefer in Topf eingraben (kann an verholztem Stamm Wurzeln bilden).',
+        text: 'Klassisches „Streck-mich-zur-Lampe"-Bild: lange Internodien (Abstand zwischen Blättern), dünner Stiel, Pflanze fällt fast um. Meist zu wenig Licht. <b>Lösung:</b> Lampe in kleinen Schritten näher oder Dimmer hoch und nach jedem Schritt die Lichtmenge am Blatt (PPFD) messen. <b>Ziel am Canopy (Oberkante der Pflanzen):</b> ' + _lichtZielZeile() + '. Ohne Lichtmesser nach einigen Tagen die obersten Blätter ansehen: Bleichen die obersten Blätter weiß aus (zu viel Licht) oder werden die Ränder gelbbraun und wölben sich nach oben (zu viel Wärme), war der Schritt zu groß. Die Hand zeigt das nicht zuverlässig — eine LED kann ausbleichen, ohne heiß zu sein. Kippt der Stiel, stütze ihn mit einem dünnen Stab; umtopfen oder tiefer setzen kostet Tage, die vor allem eine Automatic nicht aufholt.',
         when: 'Indoor, schwache Lampe',
         lex: 'PPFD & DLI (Licht-Matrix)',
       },
@@ -7668,7 +7670,7 @@ const SYMPTOMS = [
         heading: 'Sämling streckt sich nach 2–3 Tagen',
         verdict: '⚠⚠ Lampe zu weit weg',
         color: 'var(--red)',
-        text: 'Klassischer Anfänger-Fehler: Die Lampe ist für den Sämling zu weit weg oder zu schwach — der Stiel wächst dünn und lang Richtung Licht („Etiolierung"). <b>Sofort:</b> Lampe in kleinen Schritten näher oder Dimmer hochdrehen und nach jedem Schritt die Lichtmenge am Blatt (PPFD) messen. Ziel für den Sämling: in den ersten rund 10 Tagen ' + LICHT_ZIEL.saemling.ppfd.join('–') + ', danach ' + LICHT_ZIEL.wachstum.ppfd.join('–') + '. Ohne Lichtmesser: Häng die Lampe so, wie dein Hersteller es für Sämlinge angibt (steht nichts dabei: gedimmt und lieber zu hoch als zu tief), und rück von dort nur in kleinen Schritten näher, solange er sich streckt. Achte dabei auf die Temperatur am Sämling (' + KLIMA_ZIEL.saemling.temp.join('–') + ' °C). Die Hand taugt hier nicht als Grenze — sie spürt nur Wärme, nicht die Lichtmenge. <b>Notfall:</b> Pflanze tiefer eingraben bis fast zu den Keimblättern — kann am Stiel Wurzeln bilden.',
+        text: 'Klassischer Anfänger-Fehler: Die Lampe ist für den Sämling zu weit weg oder zu schwach — der Stiel wächst dünn und lang Richtung Licht („Etiolierung"). <b>Sofort:</b> Lampe in kleinen Schritten näher oder Dimmer hochdrehen und nach jedem Schritt die Lichtmenge am Blatt (PPFD) messen. Ziel für den Sämling: in den ersten rund 10 Tagen ' + LICHT_ZIEL.saemling.ppfd.join('–') + ', danach ' + LICHT_ZIEL.wachstum.ppfd.join('–') + '. Ohne Lichtmesser: Häng die Lampe so, wie dein Hersteller es für Sämlinge angibt (steht nichts dabei: gedimmt und lieber zu hoch als zu tief), und rück von dort nur in kleinen Schritten näher, solange er sich streckt. Achte dabei auf die Temperatur am Sämling (' + KLIMA_ZIEL.saemling.temp.join('–') + ' °C). Die Hand taugt hier nicht als Grenze — sie spürt nur Wärme, nicht die Lichtmenge. <b>Kippt er:</b> Stütze den Stiel mit einem dünnen Stab; umtopfen oder tiefer setzen kostet Tage, die vor allem eine Automatic nicht aufholt.',
         when: 'Sämling Tag 2–14',
         lex: 'Sämlingsphase',
       },
