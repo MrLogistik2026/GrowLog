@@ -2,6 +2,26 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-29 — v1.5.440
+
+- **Hängende Blätter bei gemessen hohem Drain-EC: Die Überdüngung fehlte in der Diagnose.** `nutrient_burn` kannte die Form
+  „hängend“ nicht. Bei „alle Blätter hängend“ mit einem Drain-EC gültig über dem 1,6-Fachen des Gießwassers stand sie nicht
+  einmal unter den ersten fünf — dabei welkt eine überdüngte Pflanze wie eine durstige, auch im nassen Topf (ANBAU.md 1, 5).
+  Gefunden von der Diagnose-Prüfung am 08.10.2026 (Befund B01).
+- **Jetzt** zählt „hängend“ für die Überdüngung, sobald der Drain-EC gemessen zu hoch ist (`shapeWenn: { wilting:
+  'ecDeltaPos' }`, in `diagnoseProblems` ausgewertet). Dann steht sie mit 77 % vorn, vor Wurzelfäule und Überwässerung bzw.
+  vor dem Wassermangel — die Karten dahinter bleiben in der Liste.
+- **Bewusst nicht wie im Befund vorgeschlagen:** Die Fassung „hängend zählt immer“ wurde gemessen und verworfen. In 108 von
+  4686 Einzelfällen sprang die Überdüngung dann ohne jeden Messwert auf Platz 1, auch vor Ursachen, die eine Messung stützt
+  (Hitzestress bei „zu warm“, Wurzelfäule und Überwässerung bei nassem Topf, Eisen bei pH zu hoch, Stickstoff bei gelben
+  alten Blättern) — gegen ANBAU.md 15. Ohne Drain-EC nennen stattdessen die Karten der Wasser-Ursachen die Überdüngung als
+  dritte Möglichkeit mit Unterscheidungskriterium (kommt mit den Texten aus Befund B03).
+- **Gemessen** (Sonnet-Helfer, 439 gegen 440): Platz 1 wechselt nur in der Lage „Drain-EC hoch“ (19 von 426 Einzelfällen,
+  100 Mehrfachfälle), in allen anderen zehn Lagen null. Die Profilbreite für den Gleichstand rechnet weiter mit der
+  Grundform-Liste.
+- Test: `test_diagnose_ueberduengung.js` (8 Prüfungen, darunter eine Regel über alle Orte und Farben mit „hängend“ ohne Drain-EC; beide Zeitzonen;
+  2 fallen auf v1.5.439 um).
+
 ## 2026-10-29 — v1.5.439
 
 - **Eine Hebe-Messung von heute schloss in der Diagnose nichts aus.** Bei „hängend“ und einem Topf, den der Hebe-Test von
