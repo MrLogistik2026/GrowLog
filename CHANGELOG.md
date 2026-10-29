@@ -2,6 +2,15 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-29 — v1.5.477
+
+- **Tag 1 sagte „Säst du direkt in die Erde …“ auch bei Keimung im Glas oder Tuch.** Gefunden bei der Anfänger-Prüfung am
+  29.10.2026.
+- **Jetzt** passt der Satz zur Keimmethode (`_tag1Keimsatz`, `_keimMethode`): Direktsaat wie bisher; Glas „12–24 Stunden, nie länger,
+  danach in die feuchte Erde“; Tuch „in die Erde bei 2–5 mm Keimwurzel, meist nach 1–3 Tagen“ — alle Zahlen aus `KEIMUNG`
+  (ANBAU.md 16). Er steht auf der Tag-1-Karte und im Satz darüber.
+- Test: `test_tag1_keimsatz.js` (10 Prüfungen, beide Zeitzonen; 7 fallen auf v1.5.476 um). Gebaut von einem Sonnet-Helfer.
+
 ## 2026-10-29 — v1.5.476
 
 - **Keine Schnellhilfe-Karte führte in den Diagnose-Assistenten.** Wer „Pflanze hängt“ las und nicht weiterkam, musste die Diagnose
