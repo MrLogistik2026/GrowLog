@@ -126,7 +126,7 @@ const kurz = (s) => String(s || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' '
     pruef('Coco, IceFlush-Tag bei 70 %: „IceFlush bereit — Gießpunkt erreicht" statt „noch zu feucht"', /IceFlush bereit — Gießpunkt erreicht/.test(ice) && !/IceFlush — noch zu feucht/.test(ice),
       (ice.match(/IceFlush (bereit|—) [^▸▾]{0,80}/) || [''])[0]);
     pruef('Coco, IceFlush-Anleitung: Checkliste und Timeline mit 60–85 %',
-      /Hard-Dryback: Gießpunkt erreicht \(60–85 % Restgewicht/.test(ice) && /bis der Topf den Gießpunkt erreicht \(60–85 % Restgewicht\)/.test(ice));
+      /Abtrocknen: Gießpunkt erreicht \(60–85 % Restgewicht/.test(ice) && /bis der Topf den Gießpunkt erreicht \(60–85 % Restgewicht\)/.test(ice));
   });
 
   await abschnitt('C - Vorhersage, Gießanleitung, Lexikon, Quelltext', async () => {
@@ -143,7 +143,7 @@ const kurz = (s) => String(s || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' '
     E(`S.cycles[0].medium = 'erde'`);
     const lex = JSON.parse(E(`(function(){ const alle = LEXIKON.flatMap(function (c) { return c.items; });
       const g = function (t) { const i = alle.find(function (x) { return x.t === t; }); return i ? [i.brief, i.mechanism, i.practice, i.pitfall].join(' ') : ''; };
-      return JSON.stringify({ hd: g('Hard Dryback (Ernte-Vorbereitung)'), rest: g('Restgewicht (Dryback · Trocken-Nass-Zyklus)') }); })()`));
+      return JSON.stringify({ hd: g('Abtrocknen vor dem IceFlush'), rest: g('Restgewicht (Trocken-Nass-Zyklus)') }); })()`));
     pruef('Lexikon „Hard Dryback": nennt den Coco-Gießpunkt', /in Coco beim Hebe-Test „Mittel“ \(60–85 %\)/.test(lex.hd), kurz(lex.hd).slice(0, 300));
     pruef('Lexikon „Restgewicht": Coco „Mittel“ (60–85 %)', /beim Hebe-Test „Mittel“ \(60–85 %\)/.test(lex.rest) && !/60–70/.test(lex.rest));
     const roh = fs.readFileSync(path.join(__dirname, 'app.js'), 'utf8');

@@ -147,7 +147,7 @@ const mess = (E, anfaenger) => JSON.parse(E(`(function(){
   console.log('D - Profi: nichts weggenommen');
   {
     pruef('Die Endspurt-Kette steht offen da', /Letzter Guss/.test(pro.text));
-    pruef('Hard-Dryback ist sichtbar', /Hard-\s?Dryback/.test(pro.text));
+    pruef('Hard-Dryback ist sichtbar', /🌵 Abtrocknen/.test(pro.text));
     pruef('Rhythmus und Mengen sind erreichbar', /Rhythmus & Mengen einstellen/.test(pro.text));
     pruef('Der ausfuehrliche Listen-Text bleibt', /Gesperrte Tage/.test(pro.text));
     pruef('Alle Eingabefelder sind noch da', pro.felder === 9, 'felder=' + pro.felder);

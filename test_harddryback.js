@@ -114,13 +114,13 @@ async function abschnitt(titel, fn) {
     pruef('IceFlush-Tag 40 %: „noch zu feucht" — dieselbe Grenze wie die Bewertung (Gießpunkt unter 40 %)', /IceFlush — noch zu feucht/.test(grenze) && !/IceFlush bereit/.test(grenze),
       (grenze.match(/IceFlush (bereit|—).{0,60}/) || [''])[0]);
     pruef('IceFlush-Tag 38 %: bereit', /IceFlush bereit/.test(bereit), (bereit.match(/IceFlush bereit.{0,80}/) || [''])[0]);
-    pruef('Checkliste: „Hard-Dryback: Gießpunkt erreicht (25–40 % Restgewicht"', /Hard-Dryback: Gießpunkt erreicht \(25–40 % Restgewicht/.test(bereit) && !/~35% Restgewicht/.test(bereit));
+    pruef('Checkliste: „Hard-Dryback: Gießpunkt erreicht (25–40 % Restgewicht"', /Abtrocknen: Gießpunkt erreicht \(25–40 % Restgewicht/.test(bereit) && !/~35% Restgewicht/.test(bereit));
   });
 
   await abschnitt('C - Lexikon, Plan-Tipp, Quelltext', async () => {
     const r = JSON.parse(E(`(function(){ const alle = LEXIKON.flatMap(function (c) { return c.items; });
       const g = function (t) { const i = alle.find(function (x) { return x.t === t; }); return i ? [i.brief, i.mechanism, i.practice, i.pitfall].join(' ') : null; };
-      return JSON.stringify({ hd: g('Hard Dryback (Ernte-Vorbereitung)'), ice: g('IceFlush'), plan: JSON.stringify(FERT_PRESETS.biobizz_konservativ) }); })()`));
+      return JSON.stringify({ hd: g('Abtrocknen vor dem IceFlush'), ice: g('IceFlush'), plan: JSON.stringify(FERT_PRESETS.biobizz_konservativ) }); })()`));
     const altHd = /~35|35%|~50%|70%\+ milchig|CalMag|≤ 0\.4|Kontaktzeit|Kältereiz|triggert leichten Stress|~100 ml/;
     pruef('Lexikon „Hard Dryback": Gießpunkt statt ~35 %, ohne CalMag-Dosis, Drain-EC-Ziel und Kältereiz',
       !!r.hd && !altHd.test(r.hd) && /Gießpunkt/.test(r.hd), (r.hd || '').match(altHd) ? (r.hd || '').match(altHd)[0] : 'Gießpunkt fehlt');

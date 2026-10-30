@@ -75,7 +75,7 @@ const zaehle = (s, teil) => String(s || '').split(teil).length - 1;
   const r = JSON.parse(E(`(function(){ const alle = LEXIKON.flatMap(function (c) { return c.items; });
     const g = function (t) { const i = alle.find(function (x) { return x.t === t; }); return i ? [i.brief, i.mechanism, i.practice, i.pitfall].join(' ') : null; };
     const aktion = function (id) { const p = PROBLEMS.find(function (x) { return x.id === id; }); return p ? p.action : null; };
-    return JSON.stringify({ infoDry: INFO_TERMS.dryback.text, infoGnat: INFO_TERMS.trauermuecken.tip, rest: g('Restgewicht (Dryback · Trocken-Nass-Zyklus)'),
+    return JSON.stringify({ infoDry: INFO_TERMS.dryback.text, infoGnat: INFO_TERMS.trauermuecken.tip, rest: g('Restgewicht (Trocken-Nass-Zyklus)'),
       gnat: g('Trauermücken (Sciaridae)'), pythium: g('Wurzelfäule (Pythium)'), saemling: g('Sämlingsphase'),
       nass: aktion('overwatering'), muecken: aktion('fungus_gnats'), alle: PROBLEMS.map(function (p) { return p.action || ''; }),
       ab: DRAIN_AB_TAG, g: GIESSPUNKT }); })()`));

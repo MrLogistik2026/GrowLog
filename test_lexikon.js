@@ -559,7 +559,7 @@ function pruef(name, bedingung, info) {
       /Für Geschmack, Asche oder Inhaltsstoffe ist kein Vorteil belegt — in lebender Erde so wenig wie sonst/.test(sp)
       && /Die Erde liefert nach, und die Pflanze nimmt gegen Ende weniger auf/.test(sp), sp.slice(sp.indexOf('Mythos'), sp.indexOf('Mythos') + 500));
     pruef('Hard Dryback endet am Gießpunkt (1.2), IceFlush ohne Trichom-Zusage (14)',
-      /Hard Dryback = nicht gießen, bis der Topf den Gießpunkt erreicht — nicht tiefer/.test(sp) && /IceFlush = Crushed Ice an den Topfrand \(einmal, kein Wasser dazu\) — ein Trichom-Plus ist nicht belegt/.test(sp));
+      /Abtrocknen = nicht gießen, bis der Topf den Gießpunkt erreicht — nicht tiefer/.test(sp) && /IceFlush = Crushed Ice an den Topfrand \(einmal, kein Wasser dazu\) — ein Trichom-Plus ist nicht belegt/.test(sp));
     pruef('Der Eintrag bleibt ausführlich (Praxis bleibt beschrieben)', sp.length > 3000, 'zeichen=' + sp.length);
   }
 

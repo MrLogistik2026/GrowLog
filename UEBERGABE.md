@@ -1,7 +1,14 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.482** · index.html 2,67 MB · 781 Funktionen
-Zuletzt fortgeschrieben am 29.10.2026 (Diagnose-Arbeitsliste, B02, B04, B01, B07, B03, B11, B10, B08 und B09 erledigt — Abschnitt 0o, Punkt 8). Davor: Fünf Fehler behoben: Der Widerspruch zwischen
+Stand: **v1.5.483** · index.html 2,67 MB · 781 Funktionen
+Zuletzt fortgeschrieben am 30.10.2026 früh (Nachtarbeit 29./30.10.: Diagnose-Liste B01–B12 und U4 fertig, danach zwei
+Bedien-Prüfungen nach den Grundsätzen der Lager-App — Befunde in `.claude/notizen/ux/*.txt` und `.claude/tmp/ux2/bericht.txt`,
+abgearbeitet in v1.5.452–487, siehe Versionsliste in 0o. **Offen aus der zweiten Prüfung:** Einsteiger-Eintrag am Gießtag
+noch fast so lang wie im Profi-Modus (8 Felder / 53 Knöpfe gegen 19 / 54; Banner, Toppen-Block, drei Mengen, Lern-Status vor
+den Feldern), Assistent ohne ⓘ und mit Dauer-Frage vor der Sorte (Patrick 08.10.: Assistent vorerst nicht umbauen —
+v1.5.468–471 waren Texte und eine weggelassene Frage), Sämlings-Protokoll-Fenster wiederholt die Tag-1-Karte, Profi-Startseite
+nennt Plan-Woche „Wo6“ und Blütewoche „Blüte Wo. 4“ nebeneinander (Test `test_runzwei` hängt an „Wo6“), Diagnose-Umbauten
+U1–U3, Temperaturgrenzen 30/18 °C, Installationsname „Grow-Begleiter“ in `manifest.json`.) Davor: Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
 die Ernte-Kacheln widersprechen der Erntekarte nicht mehr (v1.5.99), und **die Düngermengen
@@ -439,6 +446,7 @@ Speicher-Befunde sind in v1.5.340–344 behoben. Rohdaten: Workflow wf_63d754b1-
 - v1.5.480: Einsteiger-Eintrag ohne doppelte Dünger-Tabelle — eingetragen wird in der Mischreihenfolge; Profi zieht die Mischzeile nach (`test_eintrag_duenger_einmal.js`).
 - v1.5.481: „✓ Alles wie im Plan gemischt“ in der Mischreihenfolge — ein Tipp bestätigt alle Plan-Dünger mit Menge, „✓“ statt „~“ (`test_eintrag_alles_wie_plan.js`).
 - v1.5.482: Wochenkarte im Eintrag als kurze Kopfzeile „Plan-Woche N gilt ab heute“ mit „Passt“ / „Noch ein paar Tage …“, der lange Text zugeklappt unter den Gießfeldern (`test_eintrag_wochenkarte.js`).
+- v1.5.483: Begriffe bereinigt: Grow → Anbau/Zyklus/Tagebuch, Dryback → Restgewicht/Abtrocknen, Runoff → Drain; Lexikon-Titel samt Verweisen, alte Wörter finden weiter (`test_begriffe_sichtbar.js`). Gesamtlauf 381/382, der eine rote Test (`test_runzwei`, Folge von 482) nachgezogen.
 
 **Gegenprüfung von v1.5.364/365 (07.10.2026 nachts, Workflow wf_4cf817bf-629, drei Sonnet-Prüfer + Gegenprüfer).** Kein Fehlalarm
 in 33 App-Fassungen, allen Vorlagen und über 2800 Klicks; die schweren Befunde (unsichere Kopie zerstört den Hauptstand, Tropfen als

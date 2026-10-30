@@ -2,6 +2,28 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-30 — v1.5.483
+
+- **„Grow“, „Dryback“ und „Runoff“ standen weiter sichtbar in der App** — gemessen 31×, 43× und 15× auf den Hauptbildschirmen,
+  246 Fundstellen im Quelltext, obwohl die Nomenklatur „Zyklus“, „Restgewicht“ und „Drain“ festlegt (ANWEISUNG.md). Hilfe-Prüfung
+  am 29.10.2026, Punkt 5; Hebel 10 der Bewertung vom 17.09.2026.
+- **Jetzt:** Dryback → „Restgewicht“ oder „Abtrocknen“ (Hard-Dryback → „Abtrocknen vor dem IceFlush“; „stark“ wäre falsch, es
+  geht nur bis zum Gießpunkt), Runoff → „Drain“, Grow → „Anbau“, „Zyklus“, „Tagebuch“ oder „Lexikon“ (Grow-Dünger →
+  Wachstumsdünger, Grow-Tent/-Room → „Zelt oder Raum“). Lexikon-Titel samt allen Verweisen mitgezogen; die alten Wörter finden
+  über `LEX_ALIASES` und `INFO_TERMS` weiter ihren Eintrag. Eine Erklärstelle bleibt: „in Foren oft ‚Dryback‘ genannt“. Produktnamen
+  (Bio·Grow, FloraGrow), „Grower“ und Kennungen bleiben. Überschriften „Grow-Tipps“/„Grow-Lexikon“ in `head.html`.
+- Neun Tests suchten alte Titel oder Wörter und sind nachgezogen (cocogiesspunkt, endspurt, giesspunktzahlen, gussplan,
+  harddryback, iceflushreste, lexikon, outdoor, sortendauer).
+- **Offen:** Der Installationsname in `manifest.json` heißt noch „GrowSmart — Grow-Begleiter“ (eine Änderung dort kann auf dem Handy
+  eine Neuinstallation anstoßen). Vorbestehend: Die Aliase „super cropping“/„supercrop“ zeigen auf einen Titel „Supercropping“,
+  den es nicht gibt.
+- Test: `test_begriffe_sichtbar.js` (424 Prüfungen über alle Hauptbildschirme, Schnellhilfe, Anleitung, FAQ, Info-Fenster,
+  Diagnose und Befehle, beide Zeitzonen; fällt auf v1.5.482 mit über 200 Funden um). Gebaut von einem Sonnet-Helfer.
+- **Nachgezogen für v1.5.482:** `test_runzwei.js` F14-3 las das pH der Plan-Woche aus der alten Wochenkarte; seit 482 steht der
+  Wochen-Tipp mit pH zugeklappt darunter. Die App nennt weiter dieselbe Zahl (Zielzeile, Hinweis, Mischzeile, Platzhalter 6,25).
+  Der eingeschränkte Testlauf für 482 hatte `test_runzwei` nicht dabei; gefunden hat es der Gesamtlauf — wer den Eintrag umbaut,
+  nimmt alle Tests mit `openEntry`/`renderEntry` in den Lauf.
+
 ## 2026-10-30 — v1.5.482
 
 - **Die Wochenkarte „Woche 5 ist durch. Weiter zu Woche 6?“ stand im Eintrag vor dem Hebe-Test, rund 2000 Zeichen lang** — und

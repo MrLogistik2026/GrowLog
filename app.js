@@ -376,9 +376,9 @@ const T = {
   // Große Abweichung vom Input = Warnsignal.
   // ---------------------------------------------------------------------
   runoff: {
-    label: 'Runoff (Ablauf)',
-    labelShort: 'Runoff',
-    explain: 'Runoff = das Wasser das unten aus dem Topf rausläuft. pH und EC messen dir was in der Erde passiert. Abweichung vom Input = Warnsignal.',
+    label: 'Drain (Ablauf)',
+    labelShort: 'Drain',
+    explain: 'Drain = das Wasser das unten aus dem Topf rausläuft. pH und EC messen dir was in der Erde passiert. Abweichung vom Input = Warnsignal.',
 
     // Runoff-EC-Analyse
     // (v1.5.150) Beschreiben statt deuten. „Salz-Akkumulation“ nannte eine Ursache für ein Bild mit
@@ -463,13 +463,13 @@ const T = {
     // der richtige Hebel. Ohne bekanntes Medium → Erde-Variante (sicherer, drängt nicht zu Säure).
     phWarningHigh: ({ inputPh, runoffPh, medium }) =>
       (medium === 'coco' || medium === 'hydro')
-        ? `Runoff-pH ${runoffPh.toFixed(1)} ist deutlich höher als Input ${inputPh.toFixed(1)} — im inerten Medium (kein Puffer) driftet die Wurzelzone basisch, Kalium-Lockout droht. Input-pH senken (${medium === 'hydro' ? 'Hydro' : 'Coco'} ${phTargetFor(medium).label}).`
-        : `Runoff-pH ${runoffPh.toFixed(1)} liegt über Input ${inputPh.toFixed(1)}. In Erde ist das meist der Kalk-Puffer — <b>kein</b> Grund, den Input-pH zu senken. Weiter mit dem Zulauf im Ziel gießen (pH ${phTargetFor(medium).label}); nicht dauerhaft unter 6.0, um den Drain zu drücken (das bekämpft den Puffer und riskiert erst recht einen Lockout). Nur bei echten Mangel-Symptomen + über mehrere Güsse steigendem Drain-pH: 1× leichter Flush mit pH 6.5.`,
+        ? `Drain-pH ${runoffPh.toFixed(1)} ist deutlich höher als Input ${inputPh.toFixed(1)} — im inerten Medium (kein Puffer) driftet die Wurzelzone basisch, Kalium-Lockout droht. Input-pH senken (${medium === 'hydro' ? 'Hydro' : 'Coco'} ${phTargetFor(medium).label}).`
+        : `Drain-pH ${runoffPh.toFixed(1)} liegt über Input ${inputPh.toFixed(1)}. In Erde ist das meist der Kalk-Puffer — <b>kein</b> Grund, den Input-pH zu senken. Weiter mit dem Zulauf im Ziel gießen (pH ${phTargetFor(medium).label}); nicht dauerhaft unter 6.0, um den Drain zu drücken (das bekämpft den Puffer und riskiert erst recht einen Lockout). Nur bei echten Mangel-Symptomen + über mehrere Güsse steigendem Drain-pH: 1× leichter Flush mit pH 6.5.`,
 
     phWarningLow: ({ inputPh, runoffPh, medium }) =>
       (medium === 'coco' || medium === 'hydro')
-        ? `Runoff-pH ${runoffPh.toFixed(1)} ist deutlich niedriger als Input ${inputPh.toFixed(1)} — im inerten Medium driftet die Wurzelzone sauer, Calcium/Magnesium-Lockout droht. Input-pH ans obere Ende des Ziels anheben (${medium === 'hydro' ? 'Hydro' : 'Coco'} ${phTargetFor(medium).label}, also etwa ${phTargetFor(medium).hi.toFixed(1)}).`
-        : `Runoff-pH ${runoffPh.toFixed(1)} liegt unter Input ${inputPh.toFixed(1)}. Etwas niedriger ist in Erde oft normal. Erst bei Calcium/Magnesium-Mangel-Symptomen gegensteuern — dann den Zulauf ans obere Ende des Ziels setzen (pH ${phTargetFor(medium).hi.toFixed(1)}). Nicht überkorrigieren.`,
+        ? `Drain-pH ${runoffPh.toFixed(1)} ist deutlich niedriger als Input ${inputPh.toFixed(1)} — im inerten Medium driftet die Wurzelzone sauer, Calcium/Magnesium-Lockout droht. Input-pH ans obere Ende des Ziels anheben (${medium === 'hydro' ? 'Hydro' : 'Coco'} ${phTargetFor(medium).label}, also etwa ${phTargetFor(medium).hi.toFixed(1)}).`
+        : `Drain-pH ${runoffPh.toFixed(1)} liegt unter Input ${inputPh.toFixed(1)}. Etwas niedriger ist in Erde oft normal. Erst bei Calcium/Magnesium-Mangel-Symptomen gegensteuern — dann den Zulauf ans obere Ende des Ziels setzen (pH ${phTargetFor(medium).hi.toFixed(1)}). Nicht überkorrigieren.`,
   },
 
   dataHonesty: {
@@ -1060,7 +1060,7 @@ const STRAINS = [
   { name: 'Zkittlez Auto', type: 'auto', subtype: 'Indica-dominant', flowering: 75, yieldIndoor: '120-170 g/Pflanze', yieldOutdoor: '150-250 g/Pflanze', height: 'mittel', difficulty: 2, smell: 'mittel', notes: 'Bonbon-Aroma, sehr populär', commonIssues: ['bevorzugt leichte Düngung — nicht überfüttern'] },
   { name: 'Critical Auto', type: 'auto', subtype: 'Indica-dominant', flowering: 65, yieldIndoor: '130-180 g/Pflanze', yieldOutdoor: '180-280 g/Pflanze', height: 'kompakt', difficulty: 1, smell: 'mittel', notes: 'Kompakt, schnell, ertragreich', commonIssues: ['sehr dichte Buds — Schimmelgefahr, für Luftbewegung sorgen'] },
   { name: 'Royal Gorilla Auto', type: 'auto', subtype: 'Hybrid', flowering: 70, yieldIndoor: '150-200 g/Pflanze', yieldOutdoor: '200-300 g/Pflanze', height: 'mittel', difficulty: 2, smell: 'stark', notes: 'THC-Bombe, harzig', commonIssues: ['empfindlich auf Überdüngung — konservativ füttern'] },
-  { name: 'Quick One', type: 'auto', subtype: 'Hybrid', flowering: 56, yieldIndoor: '90-130 g/Pflanze', yieldOutdoor: '120-180 g/Pflanze', height: 'kompakt', difficulty: 1, smell: 'schwach', notes: 'Sehr schnell, diskret, perfekt für eiligen Grow', commonIssues: ['sehr schnell — Blüte kommt früh, Timing im Blick behalten'] },
+  { name: 'Quick One', type: 'auto', subtype: 'Hybrid', flowering: 56, yieldIndoor: '90-130 g/Pflanze', yieldOutdoor: '120-180 g/Pflanze', height: 'kompakt', difficulty: 1, smell: 'schwach', notes: 'Sehr schnell, diskret, perfekt für einen eiligen Anbau', commonIssues: ['sehr schnell — Blüte kommt früh, Timing im Blick behalten'] },
   { name: 'Girl Scout Cookies Auto', type: 'auto', subtype: 'Indica-dominant', flowering: 70, yieldIndoor: '100-150 g/Pflanze', yieldOutdoor: '150-250 g/Pflanze', height: 'mittel', difficulty: 2, smell: 'stark', notes: 'Süß, kraftvoll, beliebter GSC-Klon', commonIssues: ['empfindlich auf Überdüngung — moderat füttern'] },
   { name: 'Sour Diesel Auto', type: 'auto', subtype: 'Sativa-dominant', flowering: 75, yieldIndoor: '120-170 g/Pflanze', yieldOutdoor: '150-250 g/Pflanze', height: 'mittel-hoch', difficulty: 2, smell: 'sehr stark', notes: 'Energie-Buzz, typischer Diesel-Geruch', commonIssues: ['Geruch — starker Luftfilter empfohlen'] },
   { name: 'Think Different', type: 'auto', subtype: 'Sativa-dominant', flowering: 70, yieldIndoor: '150-250 g/Pflanze', yieldOutdoor: '200-400 g/Pflanze', height: 'hoch', difficulty: 2, smell: 'mittel', notes: 'Einer der stärksten Auto-Erträge', commonIssues: ['kräftiger Stretch — Platz nach oben und frühes Training einplanen'] },
@@ -2357,7 +2357,7 @@ function renderDiagStep4() {
     return `<div>
       <div style="font-size:18px;font-weight:700;margin-bottom:8px">Keine klare Übereinstimmung</div>
       <div style="font-size:13px;color:var(--text-sub);line-height:1.6;margin-bottom:16px">
-        Die beschriebenen Symptome passen zu keiner der häufigen Grow-Probleme in unserer Datenbank. Das muss nicht schlimm sein — es kann auch heißen dass die Symptome zu unspezifisch waren.
+        Die beschriebenen Symptome passen zu keiner der häufigen Anbau-Probleme in unserer Datenbank. Das muss nicht schlimm sein — es kann auch heißen dass die Symptome zu unspezifisch waren.
       </div>
       <div style="padding:14px;background:var(--card);border-radius:12px;border:0.5px solid var(--border);font-size:12px;color:var(--text-sub);line-height:1.6">
         <b style="color:var(--text)">Was jetzt?</b><br>
@@ -2393,7 +2393,7 @@ function renderDiagStep4() {
     </div>
     ${_diagHebeKnopfHTML(results, ctx, _diagC)}
     <div style="margin-top:20px;padding:12px;background:var(--card2);border-radius:10px;font-size:11px;color:var(--text-muted);line-height:1.6">
-      ⚖️ Diese Auswertung basiert auf den häufigsten Grow-Problemen. Sie ersetzt keine Erfahrung und kein direktes Inspizieren der Pflanze. Bei Unsicherheit: Foto machen, Community fragen, Lexikon lesen.
+      ⚖️ Diese Auswertung basiert auf den häufigsten Anbau-Problemen. Sie ersetzt keine Erfahrung und kein direktes Inspizieren der Pflanze. Bei Unsicherheit: Foto machen, Community fragen, Lexikon lesen.
     </div>
   </div>`;
 }
@@ -2535,7 +2535,7 @@ const FERT_PRESETS = {
       11: { phase: 'Reifung · Seneszenz',      ph: 6.25, tip: 'pH 6,25. Bio-Grow 0,5 als Zwischenstufe. Ab jetzt Schimmel-Deckel 60 % statt 65, Tag und Nacht. Vergilbung gleichmäßig von unten nach oben bei laufender Blütenentwicklung ist Seneszenz — nicht andüngen; läuft sie fleckig oder etagenweise und stockt die Blüte: Rückweg aus Woche 6, hier auf Bio-Grow 0,75. Steigt der Drain-EC bei mindestens 20 % Durchfluss, ohne Spitzenbrand und mit gleichmäßiger Vergilbung von unten, spricht das für Nachlieferung aus dem Substrat — keine Maßnahme. Steigt er dagegen schon seit Wochen, bei wenig Durchfluss oder mit fleckiger Vergilbung, ist es Anreicherung: Zufuhr senken oder Durchfluss erhöhen. Erreicht eine Sorte den Trigger für den Bio-Grow-Stopp und eine andere nicht: getrennte Ansätze nacheinander mischen.' },
       12: { phase: 'Taper · N-Stopp bei Trigger', ph: 6.25, tip: 'pH 6,25. Bio-Grow 0,3 → 0: Stopp je Sorte bei 70–80 % milchigen Trichomen, ausgelöst von der am wenigsten reifen Pflanze dieser Sorte — nicht nach Kalender. Silica Force endet mit dem Stopp, spätestens mit dem letzten Guss dieser Woche. Bio-Bloom bleibt oben und wird erst 7 Tage nach dem Stopp reduziert.' },
       13: { phase: 'Finish · Rampe',           ph: 6.25, tip: 'pH 6,25. Nach dem Bio-Grow-Stopp 7 Tage Basis (Bio-Bloom 1,2 bzw. Ceiling · CalMag 0,8 · Epsom 0,15 · POWHUMUS 2,5 · Alg-A-Mic 2, ohne Bio-Grow und Silica), dann EIN Rampen-Guss: Bio-Bloom 0,5 · CalMag 0,5 · Epsom 0,2 — den zeigt die Mischliste in dieser Woche. Die Rampe erst starten, wenn der Trichom-Verlauf dein Ernteziel innerhalb von (4 × Gießabstand + 3) Tagen erwarten lässt; sonst bleibt der Feed wie Woche 12 ohne Silica als Warteschleife, und du verlängerst die Blütedauer im Endspurt. Liegt der Bernstein-Anteil über deinem eingestellten Ziel → schneiden, Spülen und IceFlush entfallen.' },
-      14: { phase: 'Spülen',                   ph: 6.3, tip: 'Zwei Güsse reines pH-Wasser 6,3, jeweils am Gießpunkt („Knapp“), nicht tiefer. Wann Schluss ist, sagt die Zahl der Spülgänge — nicht ein Drain-EC-Wert: In Light-Mix kann er nach dem Spülen wieder steigen, weil das Substrat nachliefert. Nach dem zweiten Spülgang einmalig Hard Dryback: nicht mehr gießen, bis der Topf den Gießpunkt erreicht — dann nimmt er das Schmelzwasser des IceFlush auf.' },
+      14: { phase: 'Spülen',                   ph: 6.3, tip: 'Zwei Güsse reines pH-Wasser 6,3, jeweils am Gießpunkt („Knapp“), nicht tiefer. Wann Schluss ist, sagt die Zahl der Spülgänge — nicht ein Drain-EC-Wert: In Light-Mix kann er nach dem Spülen wieder steigen, weil das Substrat nachliefert. Nach dem zweiten Spülgang einmalig Abtrocknen: nicht mehr gießen, bis der Topf den Gießpunkt erreicht — dann nimmt er das Schmelzwasser des IceFlush auf.' },
       15: { phase: 'IceFlush + Ernte',         ph: 6.25, tip: '1 L Crushed Ice pro Topf an den Rand, 4–6 h, kein Wasser dazu. Dunkelphase 28 h nur, wenn alle Töpfe im Zelt am selben Tag geschnitten werden (Licht aus 01:00, Zeitschaltuhr trennen, der folgende Lichttag entfällt); Luftfeuchte höchstens 60 %. Schnitt mit Dunkelphase am nächsten Morgen vor 05:00, ohne zwischen 01:00 und 05:00 — unter Grünlicht, Frischgewicht pro Topf. Ernte-Trigger: kaum noch klare Trichome und dein eingestelltes Bernstein-Ziel erreicht — wie viel Bernstein du willst, entscheidest du selbst (Vorgabe 5 %; mehr macht die Wirkung ruhiger und senkt die Potenz). Gemessen wird auf den Kelchen, nicht auf Zuckerblättern. Griffelbräunung ist kein Reifezeichen.' },
     },
     products: [
@@ -2595,17 +2595,17 @@ const FERT_PRESETS = {
     drainInfo: '⚠️ Premium-Plan: Bewusst früher & härter Stickstoff-Cutoff (Wo 7 halbiert, Wo 8 hart auf 0) um blättrige Buds zu vermeiden. Ab Wo 8 nur noch P/K + Top·Max. Bei jedem Gießen ' + DRAIN_ZIEL.min + '–' + DRAIN_ZIEL.max + ' % Drain, Drain sofort entsorgen.',
     weekFocus: {
       1:  { phase: 'Keimung',     tip: 'Wurzel-Taxis. Kein Stickstoff! Energie kommt aus dem Keimblatt. Nur kleine Ringbewässerung.' },
-      2:  { phase: 'Vegi I',      tip: 'Etablierung. Grow-Start für erste Blätter, Root·Juice ausschleichen, Alg·A·Mic als LED-Schutz dazu.' },
+      2:  { phase: 'Vegi I',      tip: 'Etablierung. Bio·Grow-Start für erste Blätter, Root·Juice ausschleichen, Alg·A·Mic als LED-Schutz dazu.' },
       3:  { phase: 'Vegi II',     tip: 'Topping/LST. Der perfekte Stickstoff-Sweetspot für schnelles Blattwachstum.' },
       4:  { phase: 'Stretch I',   tip: 'Prä-Blüte. Hormonumstellung beginnt. Bloom und Top·Max starten leicht.' },
       5:  { phase: 'Stretch II',  tip: 'Vertikales Wachstum. Die Pflanze saugt extrem viel Wasser und Nährstoffe.' },
       6:  { phase: 'Stacking',    tip: 'Gerüstbau. Calyxen bilden sich. Stretch stoppt langsam.' },
-      7:  { phase: 'Swelling I',  tip: 'Die Stickstoff-Falle! Grow wird zwingend halbiert, um blättrige, dunkle Buds zu vermeiden.' },
+      7:  { phase: 'Swelling I',  tip: 'Die Stickstoff-Falle! Bio·Grow wird zwingend halbiert, um blättrige, dunkle Buds zu vermeiden.' },
       8:  { phase: 'Swelling II', tip: 'Stickstoff-Stopp. Bio·Bloom liefert genug. Zusätze laufen aus.' },
       9:  { phase: 'Ripening I',  tip: 'Reifung. Ab jetzt P/K und Top·Max, kein Stickstoff mehr.' },
       10: { phase: 'Ripening II', tip: 'Reifung. Bio·Bloom reduzieren. Dass die unteren Blätter jetzt gleichmäßig von unten nach oben vergilben, ist normal — die Pflanze verlagert Stickstoff in die Blüten.' },
       11: { phase: 'Flush',       tip: 'Letzte Woche vor dem Eis: nur noch Wasser mit etwas CalMag, der Plan nimmt den Dünger heraus. Ein Qualitätsgewinn durchs Spülen ist nicht belegt; das Ende setzt der Plan, nicht ein Drain-EC-Wert. Gießen wie immer, bis unten ' + DRAIN_ZIEL.min + '–' + DRAIN_ZIEL.max + ' % herauslaufen.' },
-      12: { phase: 'Ernte',       tip: 'IceFlush & Hard-Dryback. Nach dem letzten Spülgang nicht mehr gießen, bis der Topf den Gießpunkt erreicht (Hebe-Test „Knapp“), dann Eis und Ernte.' },
+      12: { phase: 'Ernte',       tip: 'IceFlush & Abtrocknen. Nach dem letzten Spülgang nicht mehr gießen, bis der Topf den Gießpunkt erreicht (Hebe-Test „Knapp“), dann Eis und Ernte.' },
     },
     products: [
       { name: 'CalMag',      unit: 'ml/L', color: '#f0d050', note: '① Calcium & Magnesium (immer zuerst!)', waterDayDose: 0.3 },
@@ -2918,7 +2918,7 @@ const FERT_PRESETS = {
       8:  { phase: 'Blüte III',   tip: 'Reifung. Bio·Grow ist raus, Bio·Bloom bleibt auf 1.8 ml/L, Top·Max auf 3.' },
       9:  { phase: 'Reifung I',   tip: 'Bio·Bloom hoch (1.8), Top·Max weiter. Bio·Grow ist raus. Drain-EC überwachen.' },
       10: { phase: 'Reifung II',  tip: 'Bloom ausschleichen (0.6), Top·Max noch dabei. Echte Spülung ab Wo 11.' },
-      11: { phase: 'Hard Dryback', tip: 'Nicht mehr gießen, bis der Topf den Gießpunkt erreicht (Hebe-Test „Knapp“). Vorbereitung IceFlush oder Ernte.' },
+      11: { phase: 'Abtrocknen', tip: 'Nicht mehr gießen, bis der Topf den Gießpunkt erreicht (Hebe-Test „Knapp“). Vorbereitung IceFlush oder Ernte.' },
       12: { phase: 'IceFlush/Ernte', tip: 'IceFlush mit 1 L Crushed Ice je Topf. Dunkelphase 24–36 h, dann Ernte. Beliebte Grower-Technik — ein Trichom-Plus ist nicht belegt.' },
     },
     products: [
@@ -2971,7 +2971,7 @@ const FERT_PRESETS = {
       8:  { phase: 'Reifung I', tip: 'A+B reduzieren. Reine Reifung.' },
       9:  { phase: 'Reifung II', tip: 'Trichome checken. CANNAZYM weiterführen.' },
       10: { phase: 'Spülung',   tip: '7 Tage spülen mit reinem CalMag-Wasser. Das Spülende setzt der Plan, nicht der Drain-EC.' },
-      11: { phase: 'Hard Dryback', tip: 'Nicht mehr gießen, bis der Topf den Gießpunkt erreicht (Hebe-Test „' + GIESSPUNKT.coco.knopf + '“). Coco trocknet schneller als Erde — darunter meldet die App „Zu trocken für Coco". Vorbereitung IceFlush oder Ernte.' },
+      11: { phase: 'Abtrocknen', tip: 'Nicht mehr gießen, bis der Topf den Gießpunkt erreicht (Hebe-Test „' + GIESSPUNKT.coco.knopf + '“). Coco trocknet schneller als Erde — darunter meldet die App „Zu trocken für Coco". Vorbereitung IceFlush oder Ernte.' },
       12: { phase: 'Ernte',     tip: 'Ernte vor dem Lichtangang. Trichom-Profil bestimmt Zeitpunkt.' },
     },
     products: [
@@ -3012,17 +3012,17 @@ const FERT_PRESETS = {
     mixInfo: '3-Komponenten-System (Universal-Mineral-Linie). Reihenfolge GANZ WICHTIG: 1. CalMag zuerst. 2. FloraMicro zuerst nach CalMag (Mikronährstoffe + Calcium-Komplex). 3. FloraGrow. 4. FloraBloom. 5. Diamond Nectar (Huminsäuren) als Additiv. 6. Ripen nur in den letzten 2 Wochen. Niemals FloraGrow/FloraBloom vor FloraMicro mischen — sonst Ausfällung. pH ' + phTargetFor('coco').label + '.',
     drainInfo: '🧪 Die Flora-Serie selbst läuft in Hydro, Coco und Erde — dieser Plan hier ist auf Coco ausgelegt und führt den pH auf ' + phTargetFor('coco').labelComma + '. In Erde gehört der pH auf ' + phTargetFor('erde').labelComma + '; nimm dort einen der Erd-Pläne. Verhältnis Micro/Grow/Bloom ändern für Phase: Vegi 3-2-1, Übergang 2-2-2, Blüte 1-2-3 oder 1-3-2. Immer in dieser Reihenfolge mischen. Drain-EC checken — bei zu hoch: weniger A/B/C, gleiche Verhältnis.',
     weekFocus: {
-      1:  { phase: 'Anzucht',  tip: 'Sehr niedrige EC. Nur CalMag + Micro + minimal Grow.' },
+      1:  { phase: 'Anzucht',  tip: 'Sehr niedrige EC. Nur CalMag + Micro + minimal FloraGrow.' },
       2:  { phase: 'Vegi I',   tip: 'Vegi-Verhältnis 3-2-1 (Micro-Grow-Bloom). Diamond Nectar dazu.' },
       3:  { phase: 'Vegi II',  tip: 'Steigern auf voller Vegi-Dosis.' },
       4:  { phase: 'Übergang', tip: 'Verhältnis auf 2-2-2 wechseln. Pre-Blüte.' },
       5:  { phase: 'Blüte I',  tip: 'Blüte-Verhältnis 1-2-3. Bloom hochfahren.' },
       6:  { phase: 'Blüte II', tip: 'Maximale Blüte-Dosis. Buds füllen.' },
       7:  { phase: 'Blüte III', tip: 'Maximum halten. Drain-EC weiter checken.' },
-      8:  { phase: 'Reifung I', tip: 'Bloom maximal, Grow ausschleichen.' },
+      8:  { phase: 'Reifung I', tip: 'Bloom maximal, FloraGrow ausschleichen.' },
       9:  { phase: 'Reifung II', tip: 'Ripen startet (letzte 2 Wochen vor Spülung).' },
       10: { phase: 'Spülung',  tip: 'Reines Wasser mit pH ' + phTargetFor('coco').mid.toFixed(1) + '. Salze raus.' },
-      11: { phase: 'Hard Dryback', tip: 'Nicht mehr gießen, bis der Topf den Gießpunkt erreicht (Hebe-Test „' + GIESSPUNKT.coco.knopf + '“). Coco trocknet schneller als Erde — darunter meldet die App „Zu trocken für Coco". Vorbereitung IceFlush oder Ernte.' },
+      11: { phase: 'Abtrocknen', tip: 'Nicht mehr gießen, bis der Topf den Gießpunkt erreicht (Hebe-Test „' + GIESSPUNKT.coco.knopf + '“). Coco trocknet schneller als Erde — darunter meldet die App „Zu trocken für Coco". Vorbereitung IceFlush oder Ernte.' },
       12: { phase: 'Ernte',    tip: 'Ernte vor dem Lichtangang.' },
     },
     products: [
@@ -3072,7 +3072,7 @@ const FERT_PRESETS = {
           },
           "2": {
               "phase": "Vegi I",
-              "tip": "Grow-Start. LST sobald 3. Node. Silica Force startet jetzt."
+              "tip": "Bio-Grow-Start. LST sobald 3. Node. Silica Force startet jetzt."
           },
           "3": {
               "phase": "Vegi II",
@@ -3754,7 +3754,7 @@ async function openCollageExport(cId) {
     <div style="flex:1;padding:20px 16px" class="scroll">
       <div style="background:var(--card);border:0.5px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px">
         <div style="font-size:13px;font-weight:600;margin-bottom:4px">Collage als Bild</div>
-        <div style="font-size:11px;color:var(--text-muted);line-height:1.5;margin-bottom:12px">Alle Fotos in einem Raster mit Tag- und Phase-Markierung, 1080×1920 Story-Format. Zum Teilen in Social-Media oder als Grow-Andenken.</div>
+        <div style="font-size:11px;color:var(--text-muted);line-height:1.5;margin-bottom:12px">Alle Fotos in einem Raster mit Tag- und Phase-Markierung, 1080×1920 Story-Format. Zum Teilen in Social-Media oder als Erinnerung an deinen Anbau.</div>
         <button onclick="doGenerateCollage('${cId}')" style="width:100%;padding:12px;background:var(--green);border:none;border-radius:10px;font-size:13px;font-weight:700;color:#fff;cursor:pointer;font-family:var(--font)">🎨 Collage erstellen</button>
       </div>
       <div id="collage-preview-area" style="display:none">
@@ -3807,7 +3807,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.482';
+const APP_VERSION = 'v1.5.483';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -4332,7 +4332,7 @@ function renderCompareBody(a, b, cmp) {
     ${metricRow('⌀ pH (gemessen)', a.ph.avg !== null ? a.ph.avg.toFixed(2) : '—', b.ph.avg !== null ? b.ph.avg.toFixed(2) : '—', 'phAvg')}
     ${metricRow(`⌀ EC (${ecUnitLabel()})`, a.ec.avg !== null ? String(ecDisp(a.ec.avg)) : '—', b.ec.avg !== null ? String(ecDisp(b.ec.avg)) : '—', 'ecAvg')}
     ${a.weight.sweetSpotPct !== null || b.weight.sweetSpotPct !== null ? metricRow('Sweet-Spot-Quote', a.weight.sweetSpotPct!==null?a.weight.sweetSpotPct+'%':'—', b.weight.sweetSpotPct!==null?b.weight.sweetSpotPct+'%':'—', 'sweetSpot') : ''}
-    ${a.runoff.measurements > 0 || b.runoff.measurements > 0 ? metricRow('⌀ Runoff Δ pH', a.runoff.phAvgDelta!==null?(a.runoff.phAvgDelta>0?'+':'')+a.runoff.phAvgDelta.toFixed(2):'—', b.runoff.phAvgDelta!==null?(b.runoff.phAvgDelta>0?'+':'')+b.runoff.phAvgDelta.toFixed(2):'—', 'runoffPh') : ''}
+    ${a.runoff.measurements > 0 || b.runoff.measurements > 0 ? metricRow('⌀ Drain Δ pH', a.runoff.phAvgDelta!==null?(a.runoff.phAvgDelta>0?'+':'')+a.runoff.phAvgDelta.toFixed(2):'—', b.runoff.phAvgDelta!==null?(b.runoff.phAvgDelta>0?'+':'')+b.runoff.phAvgDelta.toFixed(2):'—', 'runoffPh') : ''}
   </div>`;
 
   // Ehrlichkeits-Sektion
@@ -4388,7 +4388,7 @@ function renderCompareBody(a, b, cmp) {
   }
   if (cmp?.deltas?.runoffPh?.winner) {
     const w = cmp.deltas.runoffPh.winner === 'a' ? a : b;
-    insights.push(`<b style="color:${w.color}">${w.name}</b> hat stabilere Erde (kleinerer Runoff-Δ pH) — Substrat-pH driftet weniger.`);
+    insights.push(`<b style="color:${w.color}">${w.name}</b> hat stabilere Erde (kleinerer Drain-Δ pH) — Substrat-pH driftet weniger.`);
   }
 
   const insightsSection = insights.length > 0 ? `<div style="background:var(--card);border:0.5px solid var(--border);border-radius:12px;padding:14px;margin-bottom:12px">
@@ -5180,7 +5180,7 @@ function _vorfallText(i) {
   // flüchtig — die erkennt die App nicht (Lücke, in der UEBERGABE vermerkt). Deshalb „privates Fenster" nur als möglicher Fall.
   if (i && i.geladen === 'gesperrt') {
     return { titel: '⚠️ GrowSmart kann hier nichts speichern',
-      text: 'Der Browser lässt GrowSmart gerade nicht an den Speicher — meist, weil Cookies und Website-Daten für diese Seite blockiert sind, manchmal auch in einem privaten Fenster. Du kannst dich umsehen, aber alles, was du jetzt einträgst, ist beim Schließen weg.\n\nSo behebst du es: Erlaube in den Browser-Einstellungen Cookies und Website-Daten für diese Seite, oder öffne GrowSmart in einem normalen Fenster. Danach GrowSmart neu öffnen.\n\nTrägst du trotzdem etwas ein, rette es vor dem Schließen mit einem Backup (Einstellungen → Daten & Sicherheit) und lade es danach mit „Import".\n\nHast du deinen Grow schon in einem anderen Browser angelegt? Dann liegen die Daten dort.' };
+      text: 'Der Browser lässt GrowSmart gerade nicht an den Speicher — meist, weil Cookies und Website-Daten für diese Seite blockiert sind, manchmal auch in einem privaten Fenster. Du kannst dich umsehen, aber alles, was du jetzt einträgst, ist beim Schließen weg.\n\nSo behebst du es: Erlaube in den Browser-Einstellungen Cookies und Website-Daten für diese Seite, oder öffne GrowSmart in einem normalen Fenster. Danach GrowSmart neu öffnen.\n\nTrägst du trotzdem etwas ein, rette es vor dem Schließen mit einem Backup (Einstellungen → Daten & Sicherheit) und lade es danach mit „Import".\n\nHast du deinen Anbau schon in einem anderen Browser angelegt? Dann liegen die Daten dort.' };
   }
   const zahl = (n, eins, mehr) => `${n} ${n === 1 ? eins : mehr}`;
   const umfang = `${zahl(i.zyklen, 'Zyklus', 'Zyklen')}, ${zahl(i.eintraege, 'Eintrag', 'Einträge')}`;
@@ -7186,10 +7186,10 @@ const INFO_TERMS = {
     lex: null,
   },
   runoff: {
-    title: 'Runoff-Messung',
-    text: 'Runoff ist das Wasser, das beim Gießen unten aus dem Topf läuft. Misst du dessen pH und EC, siehst du, was <b>wirklich in der Erde</b> passiert — nicht nur, was du oben reingibst.',
+    title: 'Drain-Messung',
+    text: 'Drain ist das Wasser, das beim Gießen unten aus dem Topf läuft. Misst du dessen pH und EC, siehst du, was <b>wirklich in der Erde</b> passiert — nicht nur, was du oben reingibst.',
     tip: 'Beim Gießen den Drain in einer breiten Wanne auffangen, die Menge messen, dann pH und EC. ' + T.drainRegel() + ' Driftet der pH stark ab, droht ein Lockout (Nährstoff-Blockade).',
-    lex: 'Runoff-EC (Drain-Messung)',
+    lex: 'Drain-EC (Ablauf-Messung)',
   },
   vpd: {
     title: 'VPD (Dampfdruck-Defizit)',
@@ -7210,10 +7210,10 @@ const INFO_TERMS = {
     lex: 'Topping',
   },
   dryback: {
-    title: 'Restgewicht (Dryback)',
-    text: 'Restgewicht heißt: erst wieder gießen, wenn der Topf spürbar leichter geworden ist und den Gießpunkt erreicht hat: in Erde beim Hebe-Test „Knapp“, etwa ' + GIESSPUNKT.erde.von + '–' + GIESSPUNKT.erde.bis + ' % Restgewicht (Coco früher, bei „Mittel“). Also nach Gewicht gießen statt stur nach Kalender. Die Zahl gilt, sobald ein Guss den ganzen Topf durchzieht — ab Tag ' + DRAIN_AB_TAG + '. Davor wiegt der Topf vor allem Substrat ohne Wurzeln, und gegossen wird an den Gießtagen der App. (Fachbegriff: „Dryback".)',
+    title: 'Restgewicht',
+    text: 'Restgewicht heißt: erst wieder gießen, wenn der Topf spürbar leichter geworden ist und den Gießpunkt erreicht hat: in Erde beim Hebe-Test „Knapp“, etwa ' + GIESSPUNKT.erde.von + '–' + GIESSPUNKT.erde.bis + ' % Restgewicht (Coco früher, bei „Mittel“). Also nach Gewicht gießen statt stur nach Kalender. Die Zahl gilt, sobald ein Guss den ganzen Topf durchzieht — ab Tag ' + DRAIN_AB_TAG + '. Davor wiegt der Topf vor allem Substrat ohne Wurzeln, und gegossen wird an den Gießtagen der App.',
     tip: 'Warum: Beim Abtrocknen zieht die Wurzel Sauerstoff in die Erde — das ist der Motor fürs Wachstum. Dauernd nasse Erde erstickt die Wurzel und lockt Trauermücken an. Heb den Topf an und „lies" am Gewicht, wann es Zeit ist.',
-    lex: 'Restgewicht (Dryback · Trocken-Nass-Zyklus)',
+    lex: 'Restgewicht (Trocken-Nass-Zyklus)',
   },
   drain: {
     title: 'Drain (Ablaufwasser)',
@@ -7334,7 +7334,7 @@ const INFO_TERMS = {
     title: 'Hebe-Test',
     text: 'Beim Hebe-Test hebst du den Topf an und schätzt, wie schwer er ist. Das Gewicht ist die einzige Größe, die den ganzen Wasservorrat im Topf abbildet: Ein Finger prüft nur die obersten Zentimeter, ein Feuchtesensor nur einen Punkt. Du gibst das Ergebnis als Restgewicht an — „Voll“ ist der frisch durchgegossene Topf.',
     tip: 'Gegossen wird am Gießpunkt: in Erde beim Knopf „' + GIESSPUNKT.erde.knopf + '“, in Coco beim Knopf „' + GIESSPUNKT.coco.knopf + '“ (Coco wird früher gegossen). Heb den Topf nach dem Gießen einmal an und merk dir, wie sich „voll“ anfühlt — das ist dein Vergleich.',
-    lex: 'Restgewicht (Dryback · Trocken-Nass-Zyklus)',
+    lex: 'Restgewicht (Trocken-Nass-Zyklus)',
   },
   rlf: {
     title: 'RLF (relative Luftfeuchte)',
@@ -7400,6 +7400,11 @@ function infoBtn(termKey, size = 11, color = 'var(--text-hint)') {
  * Verwendung restriktiv halten: nur bei Erklärungstexten und Anfänger-
  * Hinweisen. NICHT auf Eingabefelder, Buttons oder UI-Chrome anwenden.
  */
+// (v1.5.483) Begriffe: In sichtbaren Texten standen noch „Grow", „Dryback" und „Runoff" (Bedien-Prüfung „Hilfe finden" 29.10.2026, Punkt 5;
+// Bewertung 17.09.2026, Hebel 10). Die Nomenklatur der ANWEISUNG.md heißt „Zyklus" und „Restgewicht"; „Drain" ist der App-Begriff fürs Ablaufwasser.
+// Jetzt: „Anbau"/„Zyklus" statt Grow, „Abtrocknen" (Hard-Dryback vor dem IceFlush) bzw. „Restgewicht" statt Dryback, „Drain" statt Runoff.
+// Unverändert: Bezeichner und Datenfelder (runoffPh, runoffEc, isHardDryback …), Produktnamen (Bio·Grow, Terra Grow, FloraGrow), „Grower".
+// Alte Wörter bleiben als Suchwort (LEX_ALIASES, INFO_TERMS-Schlüssel); „Dryback" steht einmal erklärend im Lexikon-Eintrag Restgewicht.
 const _LINKIFY_PATTERNS = [
   // Reihenfolge wichtig: längere Patterns zuerst, damit "EC-Wert" vor "EC" matcht
   { re: /\bpH-Wert\b/, key: 'ph' },
@@ -7475,7 +7480,7 @@ const SYMPTOMS = [
         heading: 'Alle Blätter gelb-hellgrün',
         verdict: '⚠ Stickstoff-Mangel',
         color: 'var(--orange)',
-        text: 'Die Pflanze hat zu wenig Stickstoff. <b>Lösung:</b> Dünger erhöhen (auf volle Dosis oder +20%), besonders den Grow-Dünger. Bei Bio: Alg·A·Mic oder Bio·Grow hochfahren.',
+        text: 'Die Pflanze hat zu wenig Stickstoff. <b>Lösung:</b> Dünger erhöhen (auf volle Dosis oder +20%), besonders den Wachstumsdünger. Bei Bio: Alg·A·Mic oder Bio·Grow hochfahren.',
         when: 'Anzucht/Vegi/frühe Blüte',
         lex: 'Nährstoffmangel',
       },
@@ -7493,7 +7498,7 @@ const SYMPTOMS = [
         color: 'var(--red)',
         text: 'Erde ist dauernd nass, Wurzeln kriegen keinen Sauerstoff. <b>Lösung:</b> Nicht nach Kalender gießen, sondern erst wieder, wenn der Topf beim Anheben den Gießpunkt erreicht (Erde: Hebe-Test „' + GIESSPUNKT.erde.knopf + '“, Coco: „' + GIESSPUNKT.coco.knopf + '“) — bei kleiner Pflanze im großen Topf kann das mehrere Tage dauern, eine feste Frist gibt es nicht. Wasser im Untersetzer weggießen; steht der Topf unten im Wasser, ihn schräg stellen zum Ablaufen.',
         when: 'Alle Phasen',
-        lex: 'Restgewicht (Dryback · Trocken-Nass-Zyklus)',
+        lex: 'Restgewicht (Trocken-Nass-Zyklus)',
       },
       {
         heading: 'Oberste Blätter und Blütenspitzen weiß ausgebleicht, scharf begrenzt',
@@ -7565,7 +7570,7 @@ const SYMPTOMS = [
         color: 'var(--red)',
         text: 'Paradox aber häufig: Zu viel Wasser → Wurzeln ersticken → Pflanze welkt wie bei Durst. Dasselbe Bild macht zu viel Dünger: Das Salz zieht Wasser aus der Wurzel, auch im nassen Topf. <b>Unterscheiden:</b> Drain-EC bei mindestens ' + DRAIN_ZIEL.min + ' % Drain hoch → Überdüngung, beim nächsten Guss nur klares Wasser mit Drain und danach weniger düngen. Drain-EC unauffällig → Überwässerung: erst wieder gießen, wenn der Topf beim Anheben den Gießpunkt erreicht (Erde „' + GIESSPUNKT.erde.knopf + '“, Coco „' + GIESSPUNKT.coco.knopf + '“) — keine feste Frist.',
         when: 'Alle Phasen',
-        lex: 'Restgewicht (Dryback · Trocken-Nass-Zyklus)',
+        lex: 'Restgewicht (Trocken-Nass-Zyklus)',
       },
       {
         heading: 'Erde trocken, Pflanze welk',
@@ -7664,7 +7669,7 @@ const SYMPTOMS = [
         color: 'var(--orange)',
         text: 'Die häufigste Ursache fürs Einrollen nach unten: zu nasse Erde, die Wurzeln bekommen keinen Sauerstoff. <b>Lösung:</b> Topf anheben — fühlt er sich schwer an, nicht gießen. Erst wieder gießen, wenn er spürbar leichter ist. Nicht „nachhelfen" mit mehr Wasser.',
         when: 'Alle Phasen',
-        lex: 'Restgewicht (Dryback · Trocken-Nass-Zyklus)',
+        lex: 'Restgewicht (Trocken-Nass-Zyklus)',
       },
       {
         heading: 'Ränder rollen, Lüfter bläst direkt drauf',
@@ -8218,7 +8223,7 @@ const FAQ = [
     icon: '⏰',
     category: 'Wasser',
     a: '<b>Nicht nach Kalender</b>, sondern nach Topfgewicht! Topf anheben: leicht = gießen, schwer = warten. Ziel: 15-20% Drain beim Gießen. Orientierung: Indoor alle 2-4 Tage, Outdoor je nach Wetter.',
-    lex: 'Restgewicht (Dryback · Trocken-Nass-Zyklus)',
+    lex: 'Restgewicht (Trocken-Nass-Zyklus)',
   },
   {
     q: 'Ist Toppen Pflicht?',
@@ -8568,7 +8573,7 @@ const FIRST_GROW_STEPS = [
         <li>Danach geschlossen reifen lassen und nur noch öffnen, wenn das Hygrometer über 62 % zeigt</li>
       </ul>
       <p><b>Geduld:</b> Curing braucht Wochen und lässt sich nicht abkürzen — die Restfeuchte gleicht sich aus, Chlorophyll baut weiter ab.</p>
-      <p><b>Gratulation! 🎉</b> Du hast erfolgreich deinen ersten Grow durch!</p>
+      <p><b>Gratulation! 🎉</b> Du hast erfolgreich deinen ersten Anbau durch!</p>
     `,
   },
 ];
@@ -8595,7 +8600,7 @@ function openFirstGrowGuide() {
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
         <span style="font-size:28px">🌱</span>
         <div style="flex:1">
-          <div style="font-size:16px;font-weight:700;color:var(--text)">Dein erster Grow</div>
+          <div style="font-size:16px;font-weight:700;color:var(--text)">Dein erster Anbau</div>
           <div style="font-size:11px;color:var(--text-muted)">Komplett-Anleitung · 8 Schritte · ~4–6 Monate bis ins Glas</div>
         </div>
         <button onclick="this.closest('[data-firstgrow]').remove()" style="background:none;border:none;color:var(--text-muted);font-size:22px;cursor:pointer;padding:0 4px">✕</button>
@@ -8605,7 +8610,7 @@ function openFirstGrowGuide() {
       </div>
       ${steps}
       <div style="font-size:10px;color:var(--text-hint);line-height:1.5;margin-top:12px;padding-top:12px;border-top:0.5px solid var(--border)">
-        💡 Für spezifische Probleme während des Grows: Nutze „🆘 Pflanzen-Check" auf dem Dashboard oder „💬 Frag GrowSmart".
+        💡 Für spezifische Probleme während des Anbaus: Nutze „🆘 Pflanzen-Check" auf dem Dashboard oder „💬 Frag GrowSmart".
       </div>
     </div>
   `;
@@ -10260,13 +10265,13 @@ async function setEndspurtSpuelStart(cId) {
   if (!c || !st) return;
   const v = await customInput({
     title: '💧 Erster Spülgang',
-    msg: `An welchem Grow-Tag soll das Spülen beginnen?\n\nHeute ist Tag ${st.heuteTag}. Der letzte Guss liegt auf Tag ${st.letzterGuss}.`,
+    msg: `An welchem Zyklustag soll das Spülen beginnen?\n\nHeute ist Tag ${st.heuteTag}. Der letzte Guss liegt auf Tag ${st.letzterGuss}.`,
     unit: 'Tag', initial: st.spuelStart, min: st.anz + 2, max: st.heuteTag + 90,
     hint: 'Auch rückwirkend, falls du schon gespült hast.',
   });
   if (v === null) return;
   const n = parseInt(v, 10);
-  if (!isFinite(n)) { toast(`„${v}" ist keine Tageszahl — gib den Grow-Tag als Zahl ein.`); return; }
+  if (!isFinite(n)) { toast(`„${v}" ist keine Tageszahl — gib den Zyklustag als Zahl ein.`); return; }
   const neuBloom = n - 1 - st.anz;
   if (neuBloom < 1) { toast(`Tag ${n} liegt noch in der Anzucht — der Spülstart muss nach Tag ${st.anz + 1} liegen.`); return; }
 
@@ -10314,9 +10319,9 @@ async function setEndspurtIceStart(cId) {
   if (!c || !st) return;
   const v = await customInput({
     title: '🧊 IceFlush',
-    msg: `An welchem Grow-Tag soll der IceFlush beginnen?\n\nDas Spülen startet an Tag ${st.spuelStart}. Dazwischen liegen Spülgänge und der Hard-Dryback.`,
+    msg: `An welchem Zyklustag soll der IceFlush beginnen?\n\nDas Spülen startet an Tag ${st.spuelStart}. Dazwischen liegen Spülgänge und das Abtrocknen.`,
     unit: 'Tag', initial: st.iceStart, min: st.spuelStart + 1, max: st.spuelStart + 30,
-    hint: `Aktuell: ${st.spuelDauer} Spültage + ${st.iceDry} Tage Hard-Dryback.`,
+    hint: `Aktuell: ${st.spuelDauer} Spültage + ${st.iceDry} Tage Abtrocknen.`,
   });
   if (v === null) return;
   const n = parseInt(v, 10);
@@ -10330,7 +10335,7 @@ async function setEndspurtIceStart(cId) {
   c.flushWetDays = Math.max(1, gesamt - c.iceDryDays);
   _syncFlushPhase(c);
   saveS(); vibrate(8);
-  toast(`IceFlush ab Tag ${n} · ${c.flushWetDays} Spültage + ${c.iceDryDays} Tage Hard-Dryback`);
+  toast(`IceFlush ab Tag ${n} · ${c.flushWetDays} Spültage + ${c.iceDryDays} Tage Abtrocknen`);
   _rerenderEndspurt();
 }
 
@@ -10448,7 +10453,7 @@ async function endspurtNormal(cId) {
     `Letzter Guss Tag ${st.letzterGuss}, dann wie gewohnt ${iv} Tage bis zum ersten Spülgang.\n\n`
     + `Spülen ab Tag ${neuSpuel} statt Tag ${st.spuelStart}\n`
     + `IceFlush Tag ${neuSpuel + st.spuelDauer + st.iceDry} · Ernte Tag ${neuSpuel + st.spuelDauer + st.iceDry + st.iceDauer}\n\n`
-    + `Spültage (${st.spuelDauer}) und Hard-Dryback (${st.iceDry}) bleiben, wie sie sind.`,
+    + `Spültage (${st.spuelDauer}) und Abtrocknen (${st.iceDry}) bleiben, wie sie sind.`,
     'Umstellen', 'var(--green)');
   if (!ok) return;
   c.flushDryDays = iv;
@@ -10611,13 +10616,13 @@ function endspurtCard(c, iso) {
 
     <div style="border-top:0.5px dashed var(--border);margin:6px 0 2px"></div>
     ${zeileDauer('💧 Spülen ab', 'Tag ' + st.spuelStart, st.spuelDauer, 'flushWetDays', 1, 20, `setEndspurtSpuelStart('${c.id}')`)}
-    <div style="font-size:9px;color:var(--text-hint);padding:0 0 4px 2px">Spülgänge: ${st.spuelGaenge.length ? 'Tag ' + st.spuelGaenge.join(' · ') : 'keine'} · Intervall ${st.intFlush} Tage${st.spuelGaenge.length === 1 && st.spuelDauer > st.intFlush ? ' — mehr passen nicht, der Hard-Dryback belegt das Ende' : ''}</div>
+    <div style="font-size:9px;color:var(--text-hint);padding:0 0 4px 2px">Spülgänge: ${st.spuelGaenge.length ? 'Tag ' + st.spuelGaenge.join(' · ') : 'keine'} · Intervall ${st.intFlush} Tage${st.spuelGaenge.length === 1 && st.spuelDauer > st.intFlush ? ' — mehr passen nicht, das Abtrocknen belegt das Ende' : ''}</div>
     ${/* (v1.5.123) Draußen gibt es keinen IceFlush — das Phasenmodell lässt die Phase für
           Outdoor weg. Die beiden Zeilen standen trotzdem da und ließen einen Tag einstellen,
           den es nie gab; die Einstellungen blenden `iceDays` für Outdoor längst aus
           (`durListAll`). Hard-Dryback hängt am IceFlush und geht deshalb mit. */
       (c.growType === 'outdoor') ? '' : `
-    ${zeileDauer('🌵 Hard-Dryback', 'vor dem Ice', st.iceDry, 'iceDryDays', 0, 6)}
+    ${zeileDauer('🌵 Abtrocknen', 'vor dem Ice', st.iceDry, 'iceDryDays', 0, 6)}
     ${zeileDauer('🧊 IceFlush', 'Tag ' + st.iceStart, st.iceDauer, 'iceDays', 0, 5, `setEndspurtIceStart('${c.id}')`)}`}
     ${zeileAus('🍯 Ernte', 'Tag ' + st.ernteTag, '', `setEndspurtErnte('${c.id}')`)}
     ${zeileAus('🍂 Trocknen bis', 'Tag ' + st.trockenBis, '')}
@@ -12784,7 +12789,7 @@ async function setPlantSheetDay() {
   const aktuell = isoDiff(st.iso, c.startDate) + 1;
   const v = await customInput({
     title: '📅 Welcher Tag?',
-    msg: `An welchem Grow-Tag wurde geschnitten? Heute ist Tag ${heuteNr}.`,
+    msg: `An welchem Zyklustag wurde geschnitten? Heute ist Tag ${heuteNr}.`,
     unit: 'Tag', initial: aktuell, min: 1, max: heuteNr,
     hint: 'In der Zukunft geht nicht — geerntet wird, was schon geschnitten ist.',
   });
@@ -17094,10 +17099,10 @@ const COMMANDS = [
     hint: 'Letzter Guss, dann im gewohnten Abstand der erste Spülgang',
     run: (c) => { goTo('gussplan'); renderGussplan(); toast('Endspurt-Karte: „Auf normalen Rhythmus stellen"'); } },
   { t: 'Spülstart festlegen',          keys: 'spülen spuelen start beginn erster spülgang spuelgang tag festlegen wann',
-    hint: 'Grow-Tag eintippen, an dem das Spülen beginnt',
+    hint: 'Zyklustag eintippen, an dem das Spülen beginnt',
     run: (c) => setEndspurtSpuelStart(c.id) },
   { t: 'IceFlush-Tag festlegen',       keys: 'iceflush ice eis tag festlegen wann beginn',
-    hint: 'Grow-Tag eintippen, an dem der IceFlush beginnt',
+    hint: 'Zyklustag eintippen, an dem der IceFlush beginnt',
     run: (c) => setEndspurtIceStart(c.id) },
   { t: 'Endspurt öffnen',              keys: 'endspurt ende finish letzte wochen ernte spülen spuelen planen kette',
     hint: 'Letzter Guss, Abtrocknen, Spülen, IceFlush und Ernte an einer Stelle',
@@ -17486,12 +17491,12 @@ function getSmartTip(c, p) {
   // Tagen danach die Dunkelphase. Vorher stand an allen drei Tagen „Eiswasser (<10°C)".
   const _aIce = (p.ph === 'ice' && c && c.startDate && p.day) ? getAction(isoPlus(c.startDate, p.day - 1), c) : null;
   const tips = {
-    'anzucht_1': { text: 'Erde feucht halten, kein Dünger.', lex: 'Restgewicht (Dryback · Trocken-Nass-Zyklus)' },
+    'anzucht_1': { text: 'Erde feucht halten, kein Dünger.', lex: 'Restgewicht (Trocken-Nass-Zyklus)' },
     'anzucht_2': { text: 'Leichter Dünger (25-50%) möglich.', lex: 'NPK' },
     'anzucht_3': { text: 'Umtopfen prüfen!', lex: 'Umtopfen' },
     'bloom_1':   { text: 'Blüte gestartet! PK erhöhen.', lex: 'NPK' },
     'bloom_3':   { text: 'Blüten formen sich. Stützen!', lex: 'LST (Low Stress)' },
-    'bloom_5':   { text: 'Peak-Blüte. Rhythmus halten!', lex: 'Restgewicht (Dryback · Trocken-Nass-Zyklus)' },
+    'bloom_5':   { text: 'Peak-Blüte. Rhythmus halten!', lex: 'Restgewicht (Trocken-Nass-Zyklus)' },
     'bloom_7':   { text: 'Trichome kontrollieren – Lupe!', lex: 'Trichom-Analyse (Ernte-Trigger)' },
     'bloom_9':   { text: 'Letzte Woche vor Spülung.', lex: 'Spülung (Final-Flush)' },
     'flush':     { text: 'Nur klares Wasser. pH ' + phTargetFor(c && c.medium).label + '.', lex: 'Spülung (Final-Flush)' },
@@ -17935,7 +17940,7 @@ function getTodayAction(c, p, a, iso) {
         `Daraus werden ~${waterMl} ml Schmelzwasser${getEffectivePlantCount(c, iso) > 1 ? ' für alle Töpfe' : ''} — kein zusätzliches Wasser gießen`,
         'Beliebte Abschluss-Technik — ein Trichom-Plus ist nicht belegt',
       ],
-      hint: 'Wer heute zusätzlich gießt, macht den Hard-Dryback der Tage davor zunichte',
+      hint: 'Wer heute zusätzlich gießt, macht das Abtrocknen der Tage davor zunichte',
     };
   }
   // (v1.5.265) Steht die Pflanze nach dem Plan-Erntetag noch (_stehtNochNachPlan), gilt dieselbe Karte wie am Erntetag.
@@ -18110,7 +18115,7 @@ function weatherWidget() {
       <span style="font-size:20px">🌤</span>
       <div style="flex:1;min-width:0">
         <div style="font-size:12px;font-weight:600;color:var(--blue)">Wetter aktivieren</div>
-        <div style="font-size:10px;color:var(--text-muted);line-height:1.4">Für deinen Outdoor-Grow — Standort wird gebraucht</div>
+        <div style="font-size:10px;color:var(--text-muted);line-height:1.4">Für deinen Outdoor-Anbau — Standort wird gebraucht</div>
       </div>
       <span style="color:var(--blue);font-size:14px">›</span>
     </div>`;
@@ -19785,7 +19790,7 @@ function _moveIceFlushTo(c, zielISO) {
   if (typeof _syncFlushPhase === 'function') _syncFlushPhase(c);
   saveS();
   vibrate(10);
-  toast(`🧊 IceFlush auf Tag ${zielTag} · ${c.flushWetDays} Spültage + ${c.iceDryDays} Tage Hard-Dryback`);
+  toast(`🧊 IceFlush auf Tag ${zielTag} · ${c.flushWetDays} Spültage + ${c.iceDryDays} Tage Abtrocknen`);
   return true;
 }
 
@@ -20947,7 +20952,7 @@ function renderTips() {
     <div class="sec-tog" onclick="openFirstGrowGuide()" style="border-color:rgba(76,175,112,0.5);margin-top:4px;background:linear-gradient(135deg,rgba(76,175,112,0.12),rgba(76,175,112,0.03))">
       <span>🌱</span>
       <div>
-        <div style="font-weight:600">Dein erster Grow in 8 Schritten</div>
+        <div style="font-weight:600">Dein erster Anbau in 8 Schritten</div>
         <div style="font-size:12px;color:var(--text-muted)">Komplett-Anleitung für Einsteiger</div>
       </div>
       <span style="color:var(--green)">›</span>
@@ -20971,7 +20976,7 @@ function renderTips() {
     <div class="sec-tog" onclick="openLexikon()" style="margin-top:4px">
       <span>📖</span>
       <div>
-        <div style="font-weight:600">Grow-Lexikon</div>
+        <div style="font-weight:600">Lexikon</div>
         <div style="font-size:12px;color:var(--text-muted)">${lexAll().reduce((a,c) => a + c.items.length, 0)} Einträge</div>
       </div>
       <span style="color:var(--text-muted)">›</span>
@@ -22432,7 +22437,7 @@ function renderDuenger() {
           <div style="display:flex;align-items:flex-start;gap:10px">
             <span style="font-size:18px;line-height:1.2">⚠️</span>
             <div style="flex:1;min-width:0">
-              <div style="font-size:13px;font-weight:700;color:var(--text)">Dieser Plan ist deinem Grow noch nicht zugewiesen</div>
+              <div style="font-size:13px;font-weight:700;color:var(--text)">Dieser Plan ist deinem Zyklus noch nicht zugewiesen</div>
               <div style="font-size:11px;color:var(--text-sub);line-height:1.55;margin-top:4px">Du siehst hier „<b>${escHtml(activePlan.name)}</b>". Dein laufender Zyklus „<b>${escHtml(_rc.name)}</b>" rechnet die Tagesmengen aber noch mit „<b>${_curName}</b>". Solange das so ist, zeigt dein Tageseintrag andere Dünger-Mengen als der Plan hier.</div>
               <button onclick="assignActivePlanToCycle('${_rc.id}')" style="margin-top:9px;background:var(--green);color:#fff;border:none;border-radius:9px;padding:10px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);line-height:1.3">„${escHtml(activePlan.name)}" für „${escHtml(_rc.name)}" übernehmen</button>
             </div>
@@ -22444,7 +22449,7 @@ function renderDuenger() {
             <span style="font-size:18px;line-height:1.2">⚠️</span>
             <div style="flex:1;min-width:0">
               <div style="font-size:13px;font-weight:700;color:var(--text)">Dieser Plan ist deinen laufenden Zyklen noch nicht zugewiesen</div>
-              <div style="font-size:11px;color:var(--text-sub);line-height:1.55;margin-top:4px">Diese Grows rechnen ihre Tagesmengen noch mit einem anderen Plan: ${_off.map(c => '„' + escHtml(c.name) + '"').join(', ')}. Stell sie einzeln um in den Einstellungen beim jeweiligen Zyklus (Feld „Düngeplan") — so behältst du die Kontrolle, falls einer absichtlich auf einem anderen Plan läuft.</div>
+              <div style="font-size:11px;color:var(--text-sub);line-height:1.55;margin-top:4px">Diese Zyklen rechnen ihre Tagesmengen noch mit einem anderen Plan: ${_off.map(c => '„' + escHtml(c.name) + '"').join(', ')}. Stell sie einzeln um in den Einstellungen beim jeweiligen Zyklus (Feld „Düngeplan") — so behältst du die Kontrolle, falls einer absichtlich auf einem anderen Plan läuft.</div>
             </div>
           </div>
         </div>`;
@@ -23348,7 +23353,7 @@ function renderSet() {
 
           <!-- GRUPPE: Genetik & Licht -->
           <!-- GRUPPE: Indoor/Outdoor — Grow-Typ -->
-          ${SHOW_OUTDOOR ? _setAccordionHeader('cyc_grow', '🏠', 'Grow-Typ') : ''}
+          ${SHOW_OUTDOOR ? _setAccordionHeader('cyc_grow', '🏠', 'Anbau-Art') : ''}
           ${SHOW_OUTDOOR && S._setUI.cyc_grow ? `<div style="margin-top:4px;padding:12px 14px 8px;background:var(--card);border:0.5px solid var(--border);border-left:2px solid var(--green);border-radius:10px">
           <div style="display:flex;gap:6px;background:var(--card2);border:0.5px solid var(--border);border-radius:10px;padding:4px;margin-top:6px">
             <button onclick="dd('growType','indoor');renderSet()" style="flex:1;background:${d.growType!=='outdoor'?'var(--green-dk)':'transparent'};border:none;color:${d.growType!=='outdoor'?'var(--green)':'var(--text-muted)'};padding:10px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font)">🏠 Indoor</button>
@@ -23639,7 +23644,7 @@ function renderSet() {
 
 
           <!-- GRUPPE: Zeitplan (Phasendauern + Gießintervall zusammengelegt, Mai 2026) -->
-          ${_setAccordionHeader('cyc_timing', '📅', 'Zeitplan', `${sel.archived ? '✓ abgeschlossen' : sel.active ? '● Aktiver Grow' : '○ pausiert'}${d.startDate ? ' · Start ' + d.startDate.split('-').reverse().join('.') : ''}`)}
+          ${_setAccordionHeader('cyc_timing', '📅', 'Zeitplan', `${sel.archived ? '✓ abgeschlossen' : sel.active ? '● Aktiver Zyklus' : '○ pausiert'}${d.startDate ? ' · Start ' + d.startDate.split('-').reverse().join('.') : ''}`)}
           ${S._setUI.cyc_timing ? `
           <div style="background:${sel.active ? cl.dk : 'var(--surface)'};border:0.5px solid ${sel.active ? cl.hex+'44' : 'var(--border)'};border-radius:12px;padding:12px 14px;margin-top:8px">
             <div class="inp-wrap" style="margin-bottom:10px">
@@ -23656,7 +23661,7 @@ function renderSet() {
             <div style="display:flex;align-items:center;justify-content:space-between">
               <div>
                 <div style="font-size:13px;font-weight:600;color:${sel.active ? cl.hex : 'var(--text-sub)'}">
-                  ${/* (v1.5.413, F16) abgeschlossen/gestoppt statt „pausiert … wird beim Speichern automatisch aktiviert" */ ''}${sel.archived ? '✓ Zyklus abgeschlossen' : sel.active ? '● Aktiver Grow' : '○ Zyklus pausiert'}
+                  ${/* (v1.5.413, F16) abgeschlossen/gestoppt statt „pausiert … wird beim Speichern automatisch aktiviert" */ ''}${sel.archived ? '✓ Zyklus abgeschlossen' : sel.active ? '● Aktiver Zyklus' : '○ Zyklus pausiert'}
                 </div>
                 ${sel.archived ? `<div style="font-size:10px;color:var(--text-muted);margin-top:2px;line-height:1.5">${sel.endDate ? 'Fertig seit ' + sel.endDate.split('-').reverse().join('.') + '. ' : ''}Startseite, Kalender-Planung und Gieß-Fahrplan führen ihn nicht mehr; Einträge, Fotos und Bilanz bleiben. Zum Weiterführen unten „Abschluss aufheben“ tippen.</div>`
                   : !sel.active ? '<div style="font-size:10px;color:var(--text-muted);margin-top:2px;line-height:1.5">Gestoppt — Startseite, Kalender-Planung und Gieß-Fahrplan führen ihn nicht. Mit dem Schalter läuft er wieder.</div>' : ''}
@@ -24077,7 +24082,7 @@ function renderSet() {
       <div class="sec-tog" onclick="exportReportPDF('${sel ? sel.id : ''}')" style="border-color:rgba(76,175,112,0.3);margin:0;background:rgba(76,175,112,0.04)">
         <span>📄</span>
         <div>
-          <div style="font-weight:500;font-size:13px">Grow-Bericht (PDF)</div>
+          <div style="font-weight:500;font-size:13px">Zyklus-Bericht (PDF)</div>
           <div style="font-size:11px;color:var(--text-muted)">${sel ? escHtml(sel.name) : 'Aktueller Zyklus'} · mit Fotos & Tabellen</div>
         </div>
         <span style="color:var(--text-muted)">›</span>
@@ -24101,7 +24106,7 @@ function renderSet() {
       <div class="sec-tog" onclick="exportDiary()" style="margin:0">
         <span>📓</span>
         <div>
-          <div style="font-weight:500;font-size:13px">Grow-Tagebuch exportieren</div>
+          <div style="font-weight:500;font-size:13px">Tagebuch exportieren</div>
           <div style="font-size:11px;color:var(--text-muted)">Alle Einträge als Markdown-Datei</div>
         </div>
         <span style="color:var(--text-muted)">›</span>
@@ -24443,7 +24448,7 @@ function _kettenVorschauHTML(sel, d) {
   return `<div id="cyc-ketten-vorschau" style="font-size:10px;color:var(--text-sub);line-height:1.55;margin-top:8px;background:var(--card2);border-radius:8px;padding:8px 10px">
     <b>Damit ergibt sich${neu ? ' (noch nicht gesichert)' : ''}:</b><br>
     ${stx.letzterGuss ? `Letzter Düngerguss Tag ${stx.letzterGuss} (${_dat(_b, stx.letzterGuss)}) · ` : ''}Spülgänge ${stx.spuelGaenge.length ? stx.spuelGaenge.map(t => 'Tag ' + t + ' (' + _dat(_b, t) + ')').join(' · ') : '—'}<br>
-    Hard-Dryback ${stx.iceDry} Tage · IceFlush ab Tag ${stx.iceStart} (${_dat(_b, stx.iceStart)}) · <b>Ernte Tag ${stx.ernteTag} (${_dat(_b, stx.ernteTag)})</b>${vorher}${rast}
+    Abtrocknen ${stx.iceDry} Tage · IceFlush ab Tag ${stx.iceStart} (${_dat(_b, stx.iceStart)}) · <b>Ernte Tag ${stx.ernteTag} (${_dat(_b, stx.ernteTag)})</b>${vorher}${rast}
     ${_spaeterMonat ? '<br><span style="color:var(--text-hint)">Liegt ein Tag im nächsten Monat, im Kalender weiterblättern.</span>' : ''}
   </div>`;
 }
@@ -24927,12 +24932,12 @@ function _renderWelcome() {
       <div style="text-align:center;margin-bottom:28px">
         <div style="font-size:72px;margin-bottom:8px">🌱</div>
         <h1 style="font-size:28px;font-weight:800;color:var(--green);margin:0 0 8px;letter-spacing:-0.5px">GrowSmart</h1>
-        <div style="font-size:14px;color:var(--text-muted);line-height:1.5">Dein Grow-Begleiter vom Samen bis zur Ernte</div>
+        <div style="font-size:14px;color:var(--text-muted);line-height:1.5">Dein Begleiter vom Samen bis zur Ernte</div>
       </div>
 
       <div style="background:var(--card);border:0.5px solid var(--border);border-radius:16px;padding:18px;margin-bottom:14px">
         <div style="font-size:13px;color:var(--text-sub);line-height:1.7">
-          Diese App plant dir <b style="color:var(--text)">alles Wichtige</b> für deinen Cannabis-Grow:
+          Diese App plant dir <b style="color:var(--text)">alles Wichtige</b> für deinen Cannabis-Anbau:
         </div>
         <div style="margin-top:12px;display:flex;flex-direction:column;gap:8px">
           <div style="display:flex;align-items:center;gap:12px;font-size:13px;color:var(--text-sub)">
@@ -25668,7 +25673,7 @@ function _wizStepLocation(a) {
         <span style="font-size:32px">🏠</span>
         <div style="flex:1">
           <div style="font-size:16px;font-weight:700;color:var(--text)">Drinnen</div>
-          <div style="font-size:12px;color:var(--text-muted);margin-top:3px;line-height:1.4">Grow-Zelt, Schrank, Zimmer mit Lampe</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:3px;line-height:1.4">Zelt, Schrank, Zimmer mit Lampe</div>
         </div>
         <span style="color:var(--text-muted);font-size:18px">›</span>
       </div>
@@ -26220,7 +26225,7 @@ function _strainInfoHTML(name, growType) {
     // Erfahrungswert ausgeben — deshalb steht dort die Züchterzahl mit dabei, damit jeder
     // sieht, worauf die Rechnung beruht.
     + (_sd.quelle === 'gemessen'
-      ? `<br><span style="color:var(--text-hint);font-size:10px">Aus einem echten Grow. Geplant wird mit ${_sd.hi} Tagen — dem oberen Ende. Zu spät ernten kostet nichts, zu früh kostet die Ernte.</span>`
+      ? `<br><span style="color:var(--text-hint);font-size:10px">Aus einem echten Anbau. Geplant wird mit ${_sd.hi} Tagen — dem oberen Ende. Zu spät ernten kostet nichts, zu früh kostet die Ernte.</span>`
       : _sd.quelle === 'hochgerechnet'
         ? `<br><span style="color:var(--text-hint);font-size:10px">Hochgerechnet aus der Züchter-Angabe (${_sd.zuechterTage} Tage), <b>nicht nachgemessen</b>. Autos brauchen in der Praxis 30–50 % länger als angegeben. Geplant wird mit ${_sd.hi} Tagen. Steht auf deiner Samentüte eine Wochen-Angabe, trag lieber die ein — die rechnet genauer.</span>`
         : `<br><span style="color:var(--text-hint);font-size:10px">Züchter-Angabe für die reine Blütezeit. Wie lange du vorher wachsen lässt, bestimmst du selbst.</span>`);
@@ -28054,7 +28059,7 @@ function exportReportPDF(cId) {
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<title>Grow-Bericht: ${c.name}</title>
+<title>Zyklus-Bericht: ${c.name}</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: -apple-system, 'Segoe UI', Roboto, sans-serif; color: #222; line-height: 1.5; padding: 20px; max-width: 900px; margin: 0 auto; background: white; }
@@ -28083,7 +28088,7 @@ function exportReportPDF(cId) {
 <body>
 <button class="print-btn" onclick="window.print()">🖨 Als PDF speichern</button>
 
-<h1>🌱 Grow-Bericht: ${c.name}</h1>
+<h1>🌱 Zyklus-Bericht: ${c.name}</h1>
 <div style="color: #666; font-size: 12px; margin-bottom: 16px;">Erstellt: ${new Date().toLocaleDateString('de-DE', { weekday:'long', day:'2-digit', month:'long', year:'numeric' })}</div>
 
 <div class="meta">
@@ -28113,8 +28118,8 @@ ${(runoffPhDeltas.length > 0 || runoffEcDeltas.length > 0 || weightMeasurements 
 <div class="meta">
   ${weightMeasurements > 0 ? `<div class="meta-box"><div class="meta-label">Restgewicht-Messungen</div><div class="meta-val">${weightMeasurements}</div></div>` : ''}
   ${weightMeasurements > 0 ? `<div class="meta-box"><div class="meta-label">Sweet-Spot-Quote</div><div class="meta-val">${sweetSpotRate}</div></div>` : ''}
-  ${runoffPhDeltas.length > 0 ? `<div class="meta-box"><div class="meta-label">⌀ Runoff Δ pH</div><div class="meta-val">${avgRunoffPhDelta > 0 ? '+' : ''}${avgRunoffPhDelta}</div></div>` : ''}
-  ${runoffEcDeltas.length > 0 ? `<div class="meta-box"><div class="meta-label">⌀ Runoff Δ EC</div><div class="meta-val">${avgRunoffEcDelta > 0 ? '+' : ''}${avgRunoffEcDelta}</div></div>` : ''}
+  ${runoffPhDeltas.length > 0 ? `<div class="meta-box"><div class="meta-label">⌀ Drain Δ pH</div><div class="meta-val">${avgRunoffPhDelta > 0 ? '+' : ''}${avgRunoffPhDelta}</div></div>` : ''}
+  ${runoffEcDeltas.length > 0 ? `<div class="meta-box"><div class="meta-label">⌀ Drain Δ EC</div><div class="meta-val">${avgRunoffEcDelta > 0 ? '+' : ''}${avgRunoffEcDelta}</div></div>` : ''}
 </div>
 ` : ''}
 
@@ -28181,7 +28186,7 @@ ${dates.length > 0 ? `
 <table>
   <thead>
     <tr>
-      <th>Datum</th><th>Phase</th><th>Temp</th><th>RLF</th><th>VPD</th><th>Wasser</th><th>pH</th><th>EC</th><th>Rest%</th><th>Runoff</th><th>Notizen</th>
+      <th>Datum</th><th>Phase</th><th>Temp</th><th>RLF</th><th>VPD</th><th>Wasser</th><th>pH</th><th>EC</th><th>Rest%</th><th>Drain</th><th>Notizen</th>
     </tr>
   </thead>
   <tbody>${entryRows}</tbody>
@@ -28710,7 +28715,7 @@ function exportDiary() {
   const act = S.cycles;
   if (act.length === 0) { toast('Keine Zyklen vorhanden'); return; }
 
-  let md = `# 🌱 GrowSmart Grow-Tagebuch\n`;
+  let md = `# 🌱 GrowSmart Tagebuch\n`;
   md += `Exportiert: ${new Date().toLocaleDateString('de-DE', { day:'2-digit', month:'long', year:'numeric' })}\n\n`;
 
   act.forEach(c => {
@@ -28791,10 +28796,10 @@ function exportDiary() {
  * can learn about what they just observed in context.
  */
 const QN_LEX = {
-  'Blätter hängen': 'Restgewicht (Dryback · Trocken-Nass-Zyklus)',
+  'Blätter hängen': 'Restgewicht (Trocken-Nass-Zyklus)',
   'Blätter gelblich': 'Nährstoffmangel',
   'Untere Blätter gelb': 'Nährstoffmangel',
-  'Überwässert': 'Restgewicht (Dryback · Trocken-Nass-Zyklus)',
+  'Überwässert': 'Restgewicht (Trocken-Nass-Zyklus)',
   'Umgetopft': 'Umtopfen',
   'Stretch sichtbar': 'Lichtzyklen',
   'Trichome klar': 'Trichom-Analyse (Ernte-Trigger)',
@@ -28888,7 +28893,7 @@ function getSmartQuickNotes(c, p, cd, iso) {
 
   if (p.ph === 'flush') {
     out.push({ label: 'Nur klares Wasser', icon: '💧', type: 'action' });
-    out.push({ label: 'Runoff klar', icon: '✨', type: 'observation' });
+    out.push({ label: 'Drain klar', icon: '✨', type: 'observation' });
   }
 
   if (p.ph === 'ice') {
@@ -29372,7 +29377,7 @@ function renderEntry(iso) {
         hardDrybackBanner = `<div style="background:linear-gradient(135deg,rgba(251,191,36,0.08),rgba(251,191,36,0.04));border:1px solid rgba(251,191,36,0.3);border-radius:10px;padding:10px 12px;margin-bottom:8px;display:flex;align-items:center;gap:10px">
           <span style="font-size:18px">🎯</span>
           <div style="flex:1">
-            <div style="font-size:12px;font-weight:700;color:#fbbf24">Hard-Dryback-Phase · IceFlush in ${daysToIce === 0 ? 'morgen' : daysToIce + ' Tag' + (daysToIce === 1 ? '' : 'en')}</div>
+            <div style="font-size:12px;font-weight:700;color:#fbbf24">Abtrocknen · IceFlush in ${daysToIce === 0 ? 'morgen' : daysToIce + ' Tag' + (daysToIce === 1 ? '' : 'en')}</div>
             <div style="font-size:11px;color:var(--text-sub);line-height:1.45;margin-top:2px">Ab jetzt nicht mehr gießen, bis der Topf den Gießpunkt erreicht (${giesspunktFor(c).von}–${giesspunktFor(c).bis} % Restgewicht, Hebe-Test „${giesspunktFor(c).knopf}"). Dann bleibt das Schmelzwasser des IceFlush im Topf.</div>
           </div>
         </div>`;
@@ -30359,14 +30364,14 @@ function renderEntry(iso) {
           return `<div style="display:flex;flex-direction:column;gap:6px;padding:10px 4px 0;border-top:0.5px solid var(--border);margin-top:6px">
             <div style="display:flex;align-items:center;justify-content:space-between">
               <div style="display:flex;align-items:center;gap:6px">
-                <span style="font-size:11px;color:var(--text-hint);font-weight:600;text-transform:uppercase;letter-spacing:0.03em">🌊 Runoff (optional)</span>
+                <span style="font-size:11px;color:var(--text-hint);font-weight:600;text-transform:uppercase;letter-spacing:0.03em">🌊 Drain (optional)</span>
                 ${S.beginnerMode ? infoBtn('runoff') : ''}
               </div>
               <span id="runoff-status-${c.id}" style="font-size:10px;font-family:var(--mono)">${hasDiff ? `<span style="color:${_runoffSevColor(ra.boxSeverity)}">${ra.phLabel} · ${ra.ecLabel}</span>` : ''}</span>
             </div>
             <div style="display:flex;align-items:center;gap:8px;padding:0 4px">
               <div>
-                <div style="font-size:10px;color:var(--text-hint);margin-bottom:2px">Runoff pH</div>
+                <div style="font-size:10px;color:var(--text-hint);margin-bottom:2px">Drain pH</div>
                 <div style="display:flex;align-items:center;gap:3px">
                   <button onclick="stepRunoffPh('${c.id}',-0.01)" class="stepper-btn">−</button>
                   <input class="inp-field" type="number" step="0.01" min="4" max="9" id="runoff-ph-${c.id}" value="${cd.runoffPh || ''}" placeholder="${cd.ph || pht.midText}"
@@ -30376,7 +30381,7 @@ function renderEntry(iso) {
                 </div>
               </div>
               <div>
-                <div style="font-size:10px;color:var(--text-hint);margin-bottom:2px">Runoff EC</div>
+                <div style="font-size:10px;color:var(--text-hint);margin-bottom:2px">Drain EC</div>
                 <div style="display:flex;align-items:center;gap:3px">
                   <button onclick="stepRunoffEc('${c.id}',-1)" class="stepper-btn">−</button>
                   <input class="inp-field" type="number" step="${ecStep()}" min="0" max="${ecMax()}" id="runoff-ec-${c.id}" value="${cd.runoffEc ? ecDisp(parseFloat(cd.runoffEc)) : ''}" placeholder="${ecDisp(parseFloat(cd.ec || ecPh || '1.4'))}"
@@ -32437,7 +32442,7 @@ function _renderIceFlushPanel(c, iso) {
   // zusätzlichen Güssen vor dem Hard-Dryback — verdrängte Luft. Das Spülende setzt der Plan. Ein gespeichertes Häkchen bleibt, zählt nicht.
   const checklistItems = [
     { id: 'trichomes', label: `Trichome mit Lupe auf den Blütenkelchen geprüft (nicht auf den Blättchen, nicht an frisch nachgeschobenen Spitzen): klar höchstens ${RIPE_CLEAR_DONE} %, Bernstein nahe an deinem Ziel (${_targetAmber(c)} %)` },
-    { id: 'dryback',   label: `Hard-Dryback: Gießpunkt erreicht (${giesspunktFor(c).von}–${giesspunktFor(c).bis} % Restgewicht, Hebe-Test bestätigt)` },
+    { id: 'dryback',   label: `Abtrocknen: Gießpunkt erreicht (${giesspunktFor(c).von}–${giesspunktFor(c).bis} % Restgewicht, Hebe-Test bestätigt)` },
     { id: 'ice_ready', label: `Crushed Ice bereit: ${icePerPot} ml/Topf · ${icePerPot * plants} ml gesamt für ${plants} Pflanze${plants === 1 ? '' : 'n'}` },
     { id: 'tent_dark', label: 'Zelt auf Pitch-Black geprüft — alle Lichtquellen abgeklebt' },
     { id: 'dry_tent',  label: `Trockenzelt vorbereitet: ${TROCKNEN_TEXT} · kein direkter Luftstrom` },
@@ -32480,7 +32485,7 @@ function _renderIceFlushPanel(c, iso) {
 
   // Timeline
   const timeline = [
-    { time: 'Vor dem IceFlush', dot: '#fbbf24', text: `Hard-Dryback: nach dem letzten Spülgang nicht mehr gießen, bis der Topf den Gießpunkt erreicht (${giesspunktFor(c).von}–${giesspunktFor(c).bis} % Restgewicht)` },
+    { time: 'Vor dem IceFlush', dot: '#fbbf24', text: `Abtrocknen: nach dem letzten Spülgang nicht mehr gießen, bis der Topf den Gießpunkt erreicht (${giesspunktFor(c).von}–${giesspunktFor(c).bis} % Restgewicht)` },
     { time: 'Tag −1',        dot: '#4ade80', text: 'Trichome final mit Lupe checken · Crushed Ice bereitstellen · Trockenzelt vorbereiten' },
     { time: 'Heute · 18 Uhr',  dot: '#a5f3fc', text: `IceFlush — ${icePerPot} ml Crushed Ice pro Topf am Rand verteilen` },
     { time: 'Heute · 22–24 Uhr', dot: '#a5f3fc', text: 'Eis geschmolzen · Licht AUS' },
@@ -33085,7 +33090,7 @@ function openGussHebe(cId, iso) {
         <div style="font-size:11px;color:var(--text-muted);margin-top:2px">Heb den Topf an — wie schwer fühlt er sich an?</div>
       </div>
       <div style="display:flex;flex-direction:column;gap:6px;margin-top:10px">${btns}</div>
-      <div style="font-size:10px;color:var(--text-hint);text-align:center;margin-top:10px;line-height:1.4">Daraus rechnet die App die genaue Gießmenge aus dem echten Dryback.</div>
+      <div style="font-size:10px;color:var(--text-hint);text-align:center;margin-top:10px;line-height:1.4">Daraus rechnet die App die genaue Gießmenge aus dem echten Abtrocknen.</div>
       <button onclick="this.closest('[data-day-picker]').remove();openGussSheet('${cId}','${iso}')" style="width:100%;background:transparent;border:none;color:var(--text-muted);padding:12px;font-size:12px;cursor:pointer;font-family:var(--font);margin-top:4px">‹ Zurück</button>
     </div>
   `;
@@ -35889,7 +35894,7 @@ const FERT_CLASS_MAP = [
   [/rhizo|root|wurzel/i,                                             'Wurzelstimulator'],
   [/top.?max|boost|blüte.?stim|sugar|candy/i,                        'Blütestimulator'],
   [/bloom|flores|blüte/i,                                            'Basisdünger Blüte (Bloom)'],
-  [/grow|vega|wachstum|tnt/i,                                        'Basisdünger Wachstum (Grow)'],
+  [/grow|vega|wachstum|tnt/i,                                        'Basisdünger Wachstum'],
 ];
 
 /** Passende Düngerart zu einem Produktnamen — oder null, wenn keine sicher zuzuordnen ist. */
@@ -35905,7 +35910,7 @@ const LEXIKON = [
     { t: 'pH-Wert',
       brief: 'Das elektrische Milieu im Substrat — entscheidet ob Nährstoffe überhaupt aufgenommen werden können, egal wie viel da ist.',
       mechanism: 'Wurzeln nehmen Nährstoffe nur als <b>gelöste Ionen</b> auf. Dieser Kationenaustausch funktioniert in Torf- und Erdsubstraten nur in einem hochspezifischen elektrischen Fenster. Fällt der pH unter 6.0 → <b>Calcium und Magnesium werden blockiert</b> (Lockout), selbst wenn sie vorhanden sind. Steigt er über 6.5 → <b>Eisen, Mangan und Phosphor</b> werden blockiert.',
-      practice: '<b>Sweetspot in Erde/Torf:</b> 6.2–6.4, Ziel 6.4.<br><b>Coco:</b> 5.8–6.2.<br><b>Hydro (Canna/Advanced):</b> 5.5–6.5.<br><br>Gieß-pH immer am Ende einstellen (nach allen Düngern). Mit pH-Down (Phosphorsäure) runter, pH-Up (Kalilauge) hoch.<br><br><b>Runoff-pH messen:</b> Zeigt was im Substrat tatsächlich los ist — wenn Runoff 5.5 aber du gießt 6.4, driftet der Boden ab.',
+      practice: '<b>Sweetspot in Erde/Torf:</b> 6.2–6.4, Ziel 6.4.<br><b>Coco:</b> 5.8–6.2.<br><b>Hydro (Canna/Advanced):</b> 5.5–6.5.<br><br>Gieß-pH immer am Ende einstellen (nach allen Düngern). Mit pH-Down (Phosphorsäure) runter, pH-Up (Kalilauge) hoch.<br><br><b>Drain-pH messen:</b> Zeigt was im Substrat tatsächlich los ist — wenn der Drain 5.5 hat, du aber mit 6.4 gießt, driftet der Boden ab.',
       pitfall: 'Die meisten „Nährstoffmängel" sind in Wahrheit <b>pH-Lockouts</b> — Dünger ist da, wird aber nicht aufgenommen. Immer zuerst pH checken bevor du mehr düngst. Eine Drift von nur 0.3 Punkten reicht für Probleme.' },
     { t: 'EC-Wert (Osmotischer Druck)',
       brief: 'Misst die Gesamt-Nährstoffkonzentration. Steuert ob die Pflanze Wasser aufnehmen kann — oder ob das Substrat ihr welches entzieht.',
@@ -35995,15 +36000,15 @@ const LEXIKON = [
       pitfall: 'Lila bedeutet <b>nicht automatisch stärker oder besser</b>. Es ist Mode — Cannabinoid-Gehalt hat nichts mit Farbe zu tun. Manche grüne Strains haben mehr THC als lila. Kühle Nächte über 2 Wochen können auch schimmelanfällig machen bei hoher Luftfeuchte.' },
   ]},
   { cat: '💧 Bewässerung', items: [
-    { t: 'Restgewicht (Dryback · Trocken-Nass-Zyklus)',
-      brief: 'Das Intervall zwischen Gießen. Der wichtigste Hebel für gesunde Wurzeln — wichtiger als der Dünger selbst.',
+    { t: 'Restgewicht (Trocken-Nass-Zyklus)',
+      brief: 'Das Intervall zwischen Gießen (in Foren oft „Dryback" genannt). Der wichtigste Hebel für gesunde Wurzeln — wichtiger als der Dünger selbst.',
       mechanism: 'Wurzeln brauchen <b>Sauerstoff</b>. Wenn die Pflanze Wasser aufnimmt und es verdunstet, entsteht im Substrat leichter Unterdruck — der frischen Sauerstoff in die Wurzelzone zieht. Dauerfeuchtigkeit = kein Sog = keine Sauerstoff-Versorgung = faulende Wurzeln und schwaches Wurzelsystem.<br><br>Wurzeln wachsen bevorzugt dorthin, wo Wasser war und jetzt Sauerstoff ist. Ein Topf, der zwischen den Güssen nie leichter wird, begrenzt deshalb das Wurzelsystem — und damit die Endgröße der Pflanze.',
       practice: '<b>Gießpunkt:</b> In Erde wird gegossen, wenn der Topf beim Hebe-Test „Knapp“ ist — etwa ' + GIESSPUNKT.erde.von + '–' + GIESSPUNKT.erde.bis + ' % Restgewicht, in jeder Phase bis zur Ernte. Unter ' + GIESSPUNKT.erde.von + ' % beginnt Wasserstress. Coco wird viel früher gegossen, beim Hebe-Test „Mittel“ (' + GIESSPUNKT.coco.von + '–' + GIESSPUNKT.coco.bis + ' %).<br><br><b>Ab wann die Zahl gilt:</b> sobald ein Guss den ganzen Topf durchzieht — in der App ab Tag ' + DRAIN_AB_TAG + '. Beim Sämling im großen Topf wiegt vor allem Substrat ohne Wurzeln: Der Hebe-Test zeigt dann, ob der Topf noch nass ist, aber nicht, wann die Wurzel Wasser braucht. Bis dahin wird an den Gießtagen der App gegossen, mit ihrer Gießmenge.<br><br>Messen: Topf wiegen oder Hebe-Test mit Erfahrung. Die App kann beide Methoden (Einstellungen → Bewässerungs-Modus).<br><br><b>Praxis-Signal:</b> Topf fühlt sich leicht an, Pflanze ist nicht welk → guter Guss-Zeitpunkt. Lieber einen Tag zu spät als zu früh.',
       pitfall: 'Zu häufiges Gießen ist Problem Nr. 1 bei Einsteigern. Symptome von Überwässerung (hängende Blätter, gelbe untere Blätter) sehen oft wie „zu wenig Wasser" aus → User gießt noch mehr → Teufelskreis. Immer Topf-Gewicht prüfen, nicht Blätter deuten.' },
     { t: 'Sättigungsguss (Start-Guss)',
       brief: 'Der erste gründliche Guss an Tag 1, dem Keimstart — durchfeuchtet den ganzen Topf einmal komplett, in Etappen, damit nichts ersäuft.',
       mechanism: 'Ein trockener Topf hat wasserabweisende Stellen (trockene Nester). Ein einmaliger Sättigungsguss durchfeuchtet das <b>gesamte Substrat gleichmäßig</b> — so wächst die junge Wurzel in alle Richtungen statt nur nach unten. In 2-3 Etappen mit Pausen gegossen, damit sich das Wasser verteilt statt einfach durchzulaufen.',
-      practice: '<b>Tag 1 (Keimstart):</b> ~700 ml pH-Wasser (bei 11L-Topf) in 3 Etappen mit je ~15 Min Pause, nie auf den Samen. Keimt er im Glas oder Tuch, kommt er danach in die schon feuchte Erde. Danach <b>Tag 2-8: nur sprühen, nicht gießen</b> — der gesättigte Topf hält genug Feuchte. Ziel: einmal gleichmäßig feucht, dann ein langer Dryback.',
+      practice: '<b>Tag 1 (Keimstart):</b> ~700 ml pH-Wasser (bei 11L-Topf) in 3 Etappen mit je ~15 Min Pause, nie auf den Samen. Keimt er im Glas oder Tuch, kommt er danach in die schon feuchte Erde. Danach <b>Tag 2-8: nur sprühen, nicht gießen</b> — der gesättigte Topf hält genug Feuchte. Ziel: einmal gleichmäßig feucht, dann ein langes Abtrocknen.',
       pitfall: 'Nicht alles auf einmal gießen (läuft durch, trockene Nester bleiben). Und in der ersten Woche <b>nicht täglich nachgießen</b> — die kleinen Sämlingswurzeln ersaufen leicht. Überwässerung ist der häufigste Sämlings-Killer.' },
     { t: 'Vorbefeuchtet (Erde vorbereiten)',
       brief: 'Die trockene Erde etwa 24h vor Tag 1 anfeuchten, damit der Samen in gleichmäßig-feuchtes Substrat kommt — nicht knochentrocken, nicht nass.',
@@ -36048,7 +36053,7 @@ const LEXIKON = [
         '• <b>Verlust der Wurzel-Pilz-Symbiose</b> (Mykorrhiza, Bakterien) im äußeren Wurzelballen<br>' +
         '• <b>Substrat-Diskontinuität</b> — neuer Boden hat andere Wasserkapillarität, Wurzeln müssen sich neu „ausrichten"<br><br>' +
         '<b>Bei Automatics</b> ist dieser Stress besonders teuer, weil sie einen <b>genetisch fixierten Blütezeitgeber</b> haben. Sie starten die Blüte nach einer bestimmten Anzahl Tage unabhängig von ihrem Stresszustand. Wer in der Vegi-Phase 5–10 Tage durch Umtopfstress verliert, hat nicht nur weniger Vegi sondern auch weniger Blütemasse — das geht direkt vom Ertrag ab.<br><br>' +
-        '<b>Bei photoperiodischen Pflanzen</b> kann der Stress durch verlängerte Vegi-Phase kompensiert werden. Der Vorteil: kleinere Töpfe in frühen Phasen → bessere Wurzel-Sauerstoffversorgung durch häufigere Dryback-Zyklen → kräftigeres Wurzelsystem im Endbehälter.',
+        '<b>Bei photoperiodischen Pflanzen</b> kann der Stress durch verlängerte Vegi-Phase kompensiert werden. Der Vorteil: kleinere Töpfe in frühen Phasen → bessere Wurzel-Sauerstoffversorgung durch häufigere Trocken-Nass-Zyklen → kräftigeres Wurzelsystem im Endbehälter.',
       practice: '<b>Bei Automatics — Empfehlung: NICHT umtopfen</b><br>' +
         '<table style="width:100%;border-collapse:collapse;font-size:13px;margin-top:6px">' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Strategie für Autos</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Wasserglas → direkt 11 L Endbehälter</td></tr>' +
@@ -36062,7 +36067,7 @@ const LEXIKON = [
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Zeichen 2</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Wachstum verlangsamt trotz gutem Klima und Licht</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Zeichen 3</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Topf trocknet extrem schnell aus (Wurzeln dominieren das Substrat)</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Optimaler Zeitpunkt</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Morgens, direkt nach Lichtangang</td></tr>' +
-        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Tag vor dem Umtopfen</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Kein Guss — leichter Dryback macht Wurzelballen kompakter</td></tr>' +
+        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Tag vor dem Umtopfen</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Kein Guss — leichtes Abtrocknen macht Wurzelballen kompakter</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Neuer Topf</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Maximal 2–3× Volumen größer (nicht mehr)</td></tr>' +
         '</table>' +
         '<br>' +
@@ -36101,9 +36106,9 @@ const LEXIKON = [
       mechanism: 'Bewässerung erfolgt über Untersetzer oder Kapillarmatten. Die Pflanze saugt das Wasser durch <b>Kapillarkraft</b> nach oben durch das Substrat. Ergebnis: Wurzeln wachsen aktiv nach unten zum Wasser, obere Erdschicht bleibt trocken.',
       practice: '<b>So geht es:</b><br>1. Topf in flaches Wasserbad (2-3 cm Wasser-Höhe) stellen<br>2. Nach 10-30 Min rausnehmen wenn die Oberfläche des Substrats spürbar feuchter geworden ist<br>3. Topf kurz abtropfen lassen<br><br><b>Vorteile:</b><br>• Oberste Erdschicht trocken → Trauermücken haben keinen Brutplatz<br>• Tiefer wachsende Wurzeln → stabilere Pflanze<br>• Gleichmäßigere Durchfeuchtung<br><br><b>Wann einsetzen:</b> Bei Trauermücken-Befall als Hauptmaßnahme. Bei Jungpflanzen und Stecklingen zur Wurzel-Förderung.',
       pitfall: 'Zu lange im Wasser = Wurzelfäule-Risiko. Nicht über 30 Min. Nach bottom-watering muss auch normales „top-watering" mit Drain erfolgen, sonst sammeln sich Salze oben im Substrat (Umgekehrtes Problem: EC-Aufbau an der Oberfläche).' },
-    { t: 'Runoff-EC (Drain-Messung)',
+    { t: 'Drain-EC (Ablauf-Messung)',
       brief: 'EC des abgelaufenen Wassers messen — zeigt den tatsächlichen Zustand im Substrat, lange bevor Symptome sichtbar sind.',
-      mechanism: 'Der <b>Inflow-EC</b> (was du reingibst) kann perfekt sein — entscheidend ist der <b>Runoff-EC</b> (was unten rauskommt). Der Drain zeigt, was die Wurzeln wirklich „sehen". Bei voller Düngung ist er konzentrierter als das Gießwasser, weil die Pflanze Wasser schneller aufnimmt als Salz:<br>• bis zum ' + _zahlKomma(DRAIN_EC_VERHAELTNIS.gleich) + '-Fachen: Aufnahme und Zufuhr im Gleichgewicht<br>• bis zum ' + _zahlKomma(DRAIN_EC_VERHAELTNIS.voll) + '-Fachen: normal bei voller Düngung<br>• darüber: Salz reichert sich an<br>• unter dem Gießwasser: Die Pflanze nimmt mehr auf, als du zuführst — in der zweiten Blütehälfte normal',
+      mechanism: 'Der <b>Inflow-EC</b> (was du reingibst) kann perfekt sein — entscheidend ist der <b>Drain-EC</b> (was unten rauskommt). Der Drain zeigt, was die Wurzeln wirklich „sehen". Bei voller Düngung ist er konzentrierter als das Gießwasser, weil die Pflanze Wasser schneller aufnimmt als Salz:<br>• bis zum ' + _zahlKomma(DRAIN_EC_VERHAELTNIS.gleich) + '-Fachen: Aufnahme und Zufuhr im Gleichgewicht<br>• bis zum ' + _zahlKomma(DRAIN_EC_VERHAELTNIS.voll) + '-Fachen: normal bei voller Düngung<br>• darüber: Salz reichert sich an<br>• unter dem Gießwasser: Die Pflanze nimmt mehr auf, als du zuführst — in der zweiten Blütehälfte normal',
       practice: '<b>Messung:</b> Den ganzen Drain in einer breiten Wanne auffangen und die Menge messen, dann 5–10 ml davon mit dem EC-Meter.<br><br><b>So liest du den Wert:</b> ' + T.drainRegel() + '<br><br><b>Frequenz:</b> 1× pro Woche reicht, bei Problemen öfter.',
       pitfall: 'Erstmessung oft überraschend hoch (Substrat-eigene Salze). Erst nach 2–3 Güssen pendelt sich das System ein, dann vergleichen. Aus weniger als ' + DRAIN_ZIEL.min + ' % Drain misst du nur den Rand des Topfs — dann nicht werten.' },
     { t: 'Wassertemperatur',
@@ -36218,13 +36223,13 @@ const LEXIKON = [
     { t: 'Überdüngung',
       brief: 'Verbrannte Blattspitzen. Das häufigste Problem bei Einsteigern — „mehr hilft mehr" stimmt hier nicht.',
       mechanism: 'Bei zu hohem EC im Substrat kehrt sich der <b>osmotische Druck</b> um: Statt dass Wurzeln Wasser aufnehmen, <b>zieht das Substrat Wasser aus den Wurzeln raus</b>. Ergebnis: Die Pflanze „verbrennt" von innen — verdurstet in nasser Erde. Zuerst an den Blattspitzen sichtbar (dort verdunstet am meisten), dann weiter Richtung Blattmitte.',
-      practice: '<b>Typische Zeichen:</b><br>• Blattspitzen werden braun-knusprig, kräuseln sich nach unten<br>• Gelb-braune Ränder die sich nach innen ausbreiten<br>• Satte, dunkelgrüne Blätter mit „Klauen"-Form (klassisch bei N-Überschuss)<br><br><b>Sofortmaßnahmen:</b><br>1. Runoff-EC messen → bestätigt die Diagnose<br>2. Nächsten Guss nur Wasser (pH 6.4) bis Drain austritt<br>3. Bei schwerer Versalzung: 2-3× Topfvolumen flushen<br>4. Dünger-Dosis um 25-30 % reduzieren<br>5. Nächsten Guss vorsichtig beobachten',
-      pitfall: 'Häufigster Fehler: „Sie sieht schwächlich aus, also mehr düngen." Nein — erst <b>pH prüfen</b> (ein falscher pH erzeugt dasselbe Bild), dann Runoff-EC messen. Überdüngung ist oft schwerer zu heilen als Mangel, weil Salze lange im Substrat bleiben. Bereits eingetragene Schäden an Blättern wachsen nicht weg.' },
+      practice: '<b>Typische Zeichen:</b><br>• Blattspitzen werden braun-knusprig, kräuseln sich nach unten<br>• Gelb-braune Ränder die sich nach innen ausbreiten<br>• Satte, dunkelgrüne Blätter mit „Klauen"-Form (klassisch bei N-Überschuss)<br><br><b>Sofortmaßnahmen:</b><br>1. Drain-EC messen → bestätigt die Diagnose<br>2. Nächsten Guss nur Wasser (pH 6.4) bis Drain austritt<br>3. Bei schwerer Versalzung: 2-3× Topfvolumen flushen<br>4. Dünger-Dosis um 25-30 % reduzieren<br>5. Nächsten Guss vorsichtig beobachten',
+      pitfall: 'Häufigster Fehler: „Sie sieht schwächlich aus, also mehr düngen." Nein — erst <b>pH prüfen</b> (ein falscher pH erzeugt dasselbe Bild), dann Drain-EC messen. Überdüngung ist oft schwerer zu heilen als Mangel, weil Salze lange im Substrat bleiben. Bereits eingetragene Schäden an Blättern wachsen nicht weg.' },
     { t: 'Nährstoffmangel',
       brief: 'Wie du erkennst was fehlt — über Farbe, Position und Muster der Verfärbung.',
       mechanism: 'Jeder Nährstoff hat ein typisches Mangel-Bild. Die <b>Position</b> (unten/oben) sagt schon viel: <b>Mobile Nährstoffe</b> (N, P, K, Mg, Mo) werden aus alten Blättern in neue umgeleitet → Mangel zeigt sich <b>unten zuerst</b>. <b>Immobile</b> (Ca, B, Fe, Mn, Cu) bleiben wo sie sind → Mangel zeigt sich <b>oben</b>. Schwefel und Zink liegen dazwischen. Vergilbung von unten ist in der späten Blüte meist normale Seneszenz, kein Mangel — sie läuft langsam und gleichmäßig von unten nach oben. Geht es schnell, fleckig oder etagenweise, spricht das eher für einen Mangel.',
       practice: '<b>N-Mangel:</b> Untere Blätter gleichmäßig gelb, fallen ab.<br><b>P-Mangel:</b> Lila-bronzene Stiele und Adern, braune Blattränder.<br><b>K-Mangel:</b> Braune, trockene Blattränder und -spitzen (unten).<br><b>Ca-Mangel:</b> Braune Flecken auf neuen Blättern, verdrehtes Wachstum.<br><b>Mg-Mangel:</b> Gelbe Flecken zwischen grünen Blattadern (Intervenalchlorose).<br><b>Fe-Mangel:</b> Neue Blätter komplett gelb, Adern bleiben grün.',
-      pitfall: 'Viele Mängel werden durch <b>falschen pH</b> ausgelöst, nicht durch fehlende Dünger. Immer pH prüfen (6.2–6.4) bevor du mehr düngst. Mangelbild + pH-Drift + Runoff-EC zusammen denken.' },
+      pitfall: 'Viele Mängel werden durch <b>falschen pH</b> ausgelöst, nicht durch fehlende Dünger. Immer pH prüfen (6.2–6.4) bevor du mehr düngst. Mangelbild + pH-Drift + Drain-EC zusammen denken.' },
     { t: 'Mischreihenfolge',
       brief: 'Die Reihenfolge in der Dünger ins Wasser kommen — entscheidend für Wirksamkeit. Falsch = weiße Flocken und halbes Produkt wirkungslos.',
       mechanism: 'Bestimmte Nährstoffe <b>reagieren chemisch miteinander</b> wenn sie gleichzeitig in konzentrierter Form zusammenkommen. Klassische Ausfällungen: Ca²⁺ + PO₄³⁻ → Calciumphosphat (weiß, unlöslich). Die Reihenfolge lässt jedes Produkt erst <b>im verdünnten Zustand</b> sich verteilen bevor das nächste kommt.',
@@ -36284,7 +36289,7 @@ const LEXIKON = [
         '<b>Goldene Regel:</b> Eine Philosophie wählen und konsequent durchziehen. Hybrid-Ansätze nur mit klarem Plan und ausreichend Erfahrung. Im Zweifel als Anfänger: Bio in Light-Mix mit der Einsteiger-Vorlage (' + FERT_PRESETS[EINSTEIGER_VORLAGE.erde].name + '). Achtung bei All-Mix: Die BioBizz-Vorlagen der App sind für Light-Mix gerechnet. Das BioBizz-Schema sieht für All-Mix weniger Bio·Grow vor — 1 ml/L statt 2–4 wie bei Light-Mix. Nutzt du All-Mix, gib Bio·Grow höchstens in dieser Menge je Guss — maßgeblich ist die Menge, die der Eintrag am Gießtag nennt.' },
     { t: 'Düngepläne (Hersteller-Vergleich)',
       brief: 'Welche Linie für welches Setup? Vergleich der wichtigsten Hersteller-Pläne mit Stärken, Schwächen und typischen Anwendungsfällen.',
-      mechanism: 'Jede Düngerlinie ist ein <b>aufeinander abgestimmtes System</b> aus Basisdüngern und Additiven. Die Komponenten sind so designt dass sie <b>zusammen das richtige NPK-Verhältnis</b> für jede Phase ergeben. Beispiel: BioBizz Bio·Grow + Bio·Bloom verschiebt das Verhältnis je nach Mischverhältnis automatisch — in Veg mehr Grow, in Blüte mehr Bloom.<br><br>' +
+      mechanism: 'Jede Düngerlinie ist ein <b>aufeinander abgestimmtes System</b> aus Basisdüngern und Additiven. Die Komponenten sind so designt dass sie <b>zusammen das richtige NPK-Verhältnis</b> für jede Phase ergeben. Beispiel: BioBizz Bio·Grow + Bio·Bloom verschiebt das Verhältnis je nach Mischverhältnis automatisch — in Veg mehr Bio·Grow, in Blüte mehr Bio·Bloom.<br><br>' +
         '<b>Daher gilt:</b> Innerhalb einer Linie bleiben. Marken zu mischen (Canna Basis + BioBizz Booster) führt zu unkontrollierten Wechselwirkungen — die Hersteller-Empfehlungen sind nicht aufeinander abgestimmt.<br><br>' +
         '<b>Wichtige Linien-Familien:</b><br>' +
         '• <b>Bio-Linien:</b> BioBizz, Plagron Alga, Greenhouse Powder Feeding<br>' +
@@ -36433,7 +36438,7 @@ const LEXIKON = [
         '<b>2. EC zu hoch / Salzakkumulation:</b><br>' +
         'Bei zu hohem EC im Substrat <b>kehrt sich der osmotische Druck um</b>: Statt dass Wurzeln Wasser aus dem Substrat ziehen, zieht das Substrat Wasser aus den Wurzeln. Pflanze „verbrennt" und „verdurstet" gleichzeitig, obwohl alles feucht ist. Visueller Ausdruck: Klauen-förmige Blätter, verbrannte Spitzen.<br><br>' +
         '<b>3. Sauerstoffmangel an Wurzeln:</b><br>' +
-        'Dauerhaft feuchtes Substrat = keine Luft in den Bodenporen = Wurzeln ersticken. Aktiver Nährstoff-Transport in die Wurzel braucht Sauerstoff. Wurzeln werden geschwächt, dann anfällig für Pythium. Häufigste Ursache: Übergiessen ohne Dryback.',
+        'Dauerhaft feuchtes Substrat = keine Luft in den Bodenporen = Wurzeln ersticken. Aktiver Nährstoff-Transport in die Wurzel braucht Sauerstoff. Wurzeln werden geschwächt, dann anfällig für Pythium. Häufigste Ursache: Übergiessen ohne Abtrocknen.',
       practice: '<b>Diagnose-Algorithmus (in dieser Reihenfolge):</b><br>' +
         '<table style="width:100%;border-collapse:collapse;font-size:13px;margin-top:6px">' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)" width="20%"><b>Schritt</b></td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Aktion</b></td></tr>' +
@@ -36448,7 +36453,7 @@ const LEXIKON = [
         '<table style="width:100%;border-collapse:collapse;font-size:13px;margin-top:6px">' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>pH-Lockout</b></td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Zwischenguss mit pH-korrigiertem Wasser (2× Topfvolumen) — pH soll im Drain wieder 6.0–6.5 sein. Dann erst düngen.</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Salzakkumulation</b></td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Beim nächsten Guss mehr Volumen mit der normalen Nährlösung, bis reichlich Drain kommt. Eine Zwischenspülung mit klarem Wasser nur, wenn der Drain-EC über mehrere Güsse über dem ' + _zahlKomma(DRAIN_EC_VERHAELTNIS.voll) + '-Fachen des Gießwassers bleibt und die Pflanze Symptome zeigt.</td></tr>' +
-        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Sauerstoffmangel</b></td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Dryback abwarten — Topf trocken werden lassen, dann normaler Rhythmus. Bei nächstem Mix mehr Perlite einarbeiten.</td></tr>' +
+        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Sauerstoffmangel</b></td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Topf abtrocknen lassen, dann normaler Rhythmus. Bei nächstem Mix mehr Perlite einarbeiten.</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Mehrere Ursachen</b></td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Spülung als Universallösung — wäscht sowohl Salze raus als auch korrigiert pH bei richtigem Wasser-pH</td></tr>' +
         '</table>' +
         '<br>' +
@@ -36460,7 +36465,7 @@ const LEXIKON = [
         '<b>Prävention durch Routine:</b><br>' +
         '• Wöchentliches Drain-pH und Drain-EC messen<br>' +
         '• Konservativ dosieren — lieber etwas zu wenig als zu viel<br>' +
-        '• Strikten Dryback einhalten — verhindert Sauerstoffmangel<br>' +
+        '• Strikt abtrocknen lassen — verhindert Sauerstoffmangel<br>' +
         '• Bei Salzakkumulations-Tendenz: alle 4–6 Wochen präventiv 1× durchspülen',
       pitfall: '<b>Die Lockout-Spirale (klassischer Anfänger-Fehler):</b><br>' +
         '1. Pflanze zeigt Mangelsymptome (z.B. gelbe Blätter)<br>' +
@@ -36480,12 +36485,12 @@ const LEXIKON = [
         '<b>Goldene Regel:</b> Lockout-Verdacht → erst <b>Drain-pH und Drain-EC messen</b>, dann handeln. Mehr-düngen ist die häufigste Fehlerreaktion und macht es immer schlimmer.' },
     { t: 'Flushen (Zwischenguss)',
       brief: 'Gezieltes Durchspülen des Substrats um Salze rauszuwaschen. Nicht verwechseln mit dem finalen Flush vor der Ernte.',
-      mechanism: 'Durch das Eingießen großer Mengen <b>pH-reguliertem, dünger-freiem Wasser</b> werden die im Substrat angesammelten Salze aktiv ausgewaschen. Der Runoff-EC sinkt, der Lockout löst sich. Danach kann normale Düngung wieder ohne Blockade aufgenommen werden.',
-      practice: '<b>Wann flushen:</b><br>• Bei Überdüngung (Blattspitzen verbrennen)<br>• Bei Lockout durch Versalzung (Drain-EC über mehrere Güsse über dem ' + _zahlKomma(DRAIN_EC_VERHAELTNIS.voll) + '-Fachen des Gießwassers)<br>• Präventiv alle 4-6 Wochen bei intensiver Düngung<br><br><b>Wie:</b><br>1. Wasser auf pH 6.3-6.4 einstellen<br>2. 2-3× Topfvolumen langsam durchspülen (11 L Topf → 22-33 L)<br>3. Runoff-EC während Spülen messen — soll unter 1.0 sinken<br>4. Topf gut abtropfen lassen<br>5. Nächsten Guss mit leichter Enzym-Zugabe, halbe Dünger-Dosis',
+      mechanism: 'Durch das Eingießen großer Mengen <b>pH-reguliertem, dünger-freiem Wasser</b> werden die im Substrat angesammelten Salze aktiv ausgewaschen. Der Drain-EC sinkt, der Lockout löst sich. Danach kann normale Düngung wieder ohne Blockade aufgenommen werden.',
+      practice: '<b>Wann flushen:</b><br>• Bei Überdüngung (Blattspitzen verbrennen)<br>• Bei Lockout durch Versalzung (Drain-EC über mehrere Güsse über dem ' + _zahlKomma(DRAIN_EC_VERHAELTNIS.voll) + '-Fachen des Gießwassers)<br>• Präventiv alle 4-6 Wochen bei intensiver Düngung<br><br><b>Wie:</b><br>1. Wasser auf pH 6.3-6.4 einstellen<br>2. 2-3× Topfvolumen langsam durchspülen (11 L Topf → 22-33 L)<br>3. Drain-EC während Spülen messen — soll unter 1.0 sinken<br>4. Topf gut abtropfen lassen<br>5. Nächsten Guss mit leichter Enzym-Zugabe, halbe Dünger-Dosis',
       pitfall: 'Nicht jeden kleinen Mangel mit Flushen „fixen" — kostet die Pflanze 3-5 Tage Wachstum und kann Mikronährstoffe auswaschen die knapp waren. Flush ist das große Werkzeug, nicht die Erstlinien-Maßnahme. Niemals in der Peak-Blüte flushen — Stress in falscher Phase.' },
   ]},
   { cat: '🧪 Düngerarten', items: [
-    { t: 'Basisdünger Wachstum (Grow)',
+    { t: 'Basisdünger Wachstum',
       brief: 'Das Grundfutter der Wachstumsphase: stickstoffbetont, damit Blätter und Triebe zulegen. Fast jeder Hersteller hat genau einen davon.',
       mechanism: 'Enthält viel <b>Stickstoff (N)</b> und wenig Phosphor/Kalium — auf der Flasche als NPK-Verhältnis abzulesen, etwa 4-3-6. Stickstoff steckt im Blattgrün: Ohne ihn bleibt die Pflanze klein und hellgrün, mit zu viel wird sie dunkelgrün, weich und krankheitsanfällig.',
       practice: 'Typisch 1–4 ml/L, in vorgedüngter Erde (Light-Mix, All-Mix) die <b>ersten Wochen gar nicht</b> und danach sanfter als die Flaschenangabe beginnen und in kleinen Schritten steigern. Manche Pläne fahren ihn in der späten Blüte zurück, andere geben ihn bis zum Schluss (BioBizz 2026) — ganz gestrichen, bevor die Blüte fertig ist, kostet er Blütenmasse: Die Pflanze baut bis zuletzt auf. Beispiele: BioBizz Bio-Grow, Canna Terra Vega, Hesi TNT, Plagron Terra Grow, Terra Aquatica FloraGro.',
@@ -36493,7 +36498,7 @@ const LEXIKON = [
     { t: 'Basisdünger Blüte (Bloom)',
       brief: 'Das Grundfutter der Blütephase: weniger Stickstoff, mehr Phosphor und Kalium für Blütenansatz und Dicke.',
       mechanism: 'Verschiebt das <b>NPK-Verhältnis</b> zugunsten von P und K (etwa 2-7-4). Phosphor treibt Blütenbildung und Energiehaushalt, Kalium steuert Wasserhaushalt und Zuckertransport in die Blüte.',
-      practice: 'Ab Blühbeginn einschleichen und parallel den Grow-Dünger herunterfahren. Typisch 1–4 ml/L. In der letzten Phase wieder reduzieren, vor dem Spülen ganz weg. Beispiele: BioBizz Bio-Bloom, Canna Terra Flores, Hesi Blüte-Komplex, Plagron Terra Bloom, Terra Aquatica FloraMicro/Bloom.',
+      practice: 'Ab Blühbeginn einschleichen und parallel den Wachstumsdünger herunterfahren. Typisch 1–4 ml/L. In der letzten Phase wieder reduzieren, vor dem Spülen ganz weg. Beispiele: BioBizz Bio-Bloom, Canna Terra Flores, Hesi Blüte-Komplex, Plagron Terra Bloom, Terra Aquatica FloraMicro/Bloom.',
       pitfall: 'Zu früh und zu viel Blütedünger bringt keine größeren Blüten, sondern Salzstau. Der Übergang läuft über zwei bis drei Güsse, nicht von heute auf morgen.' },
     { t: 'PK-Booster (MKP, PK 13/14)',
       brief: 'Ein reiner Phosphor-Kalium-Zusatz ohne Stickstoff für die dicke Phase der Blüte. Sehr wirksam — und der Zusatz, mit dem am häufigsten überdosiert wird.',
@@ -36621,7 +36626,7 @@ const LEXIKON = [
       mechanism: 'Ein Zylinder mit <b>hochporöser Aktivkohle</b>. Abluft wird durchgesaugt, die <b>Terpen-Moleküle verfangen sich in den Poren</b>. Riecht nichts mehr → kein Cannabis-Geruch in Nachbarschaft. Physikalisches Prinzip: Adsorption an der riesigen inneren Oberfläche (1 g Aktivkohle = ~1000 m²).',
       practice: '<b>Dimensionierung:</b> AKF muss <b>gleich stark oder stärker</b> sein als die Abluft. Ein zu schwacher Filter = Luft rauscht durch ohne Kontakt = ungefilterte Abluft.<br><br><b>Wann austauschen:</b><br>• Nach 12-24 Monaten Standard-Betrieb<br>• Deutlich früher wenn durchgehend über 60 % Luftfeuchte<br>• Riech-Test: Außenseite des Zelts riechen → wenn Geruch durchkommt: Filter fertig<br><br><b>Positionierung:</b><br>• Am Ausgangs-Schlauch (drückende Abluft-Seite) oder direkt am Lüfter-Eingang<br>• Senkrecht aufhängen (Kondensation kann ablaufen)',
       pitfall: '<b>AKF sterben leise</b> — kein Warnsignal. Bei RLF > 70 % kondensiert Wasser in den Poren → Filter klebt zu → Geruch durchbricht plötzlich. Bei Dauer-Feuchte kann Filter schon nach 6 Monaten unbrauchbar sein. Immer AKF neu kaufen vor wichtigem Zyklus, nicht mitten drin nach Alter kontrollieren.' },
-    { t: 'Grow-Tent vs. Grow-Room',
+    { t: 'Zelt oder Raum',
       brief: 'Zelt oder eigener Raum? Für Hobby fast immer Zelt — außer bei großen Mengen.',
       mechanism: '<b>Zelt:</b> In-sich-geschlossenes Mikroklima mit reflektierenden Innenwänden (Mylar). Licht bleibt drin, Klima schnell regelbar, Volumen überschaubar.<br><br><b>Raum:</b> Ganzer Raum umgebaut. Mehr Platz, aber <b>große Luft-Volumen reagieren träge</b> — Temperatur-Änderungen dauern länger, Feuchte-Peaks schwer abzufangen.',
       practice: '<b>Zelt-Empfehlungen nach Pflanzenanzahl:</b><br>• 1-2 Pflanzen: 80×80 oder 100×100 cm<br>• 3-4 Pflanzen: 100×100 bis 120×120 cm<br>• 4-6 Pflanzen: 120×120 oder 150×150 cm<br>• Größer → eigener Raum sinnvoller<br><br><b>Höhe 200+ cm</b> einplanen für Fem-Photoperiode (Stretch in Blüte). Für Autos reichen 140-180 cm.<br><br><b>Marken-Empfehlungen:</b><br>• Mittlere Qualität: Mars Hydro, Vivosun<br>• Premium: Secret Jardin (DarkStreet, DarkRoom)',
@@ -36631,7 +36636,7 @@ const LEXIKON = [
     { t: 'Genotyp vs. Phänotyp',
       brief: 'Die DNA-Blaupause vs. die tatsächliche Pflanze. Gleiche Gene, verschiedene Umwelt = verschiedene Ergebnisse.',
       mechanism: '<b>Genotyp:</b> Der im Samen festgeschriebene, unveränderliche genetische Code. Die Blaupause.<br><br><b>Phänotyp:</b> Das tatsächliche Erscheinungsbild — Geruch, Farbe, Harz, Ertrag. Die gebaute Wirklichkeit.<br><br><b>Die Gleichung:</b> Phänotyp = Genotyp + Umweltbedingungen. Selbst 10 Samen derselben Mutter wachsen leicht verschieden. 10 Klone derselben Mutter in verschiedenen Umgebungen produzieren verschiedene Ergebnisse.',
-      practice: '<b>Crop Steering</b> ist die Kunst die Umwelt so perfekt zu steuern, dass die Pflanze ihr <b>genetisches Maximum</b> ausbilden muss.<br><br>Die Cup-Level-Hebel:<br>• VPD-Management (Transpiration steuern)<br>• PPFD/DLI-Optimierung<br>• pH/EC-Präzision<br>• Dryback-Kontrolle<br>• Spektrum-Feinjustage (UV in Spätblüte)<br><br>Gute Genetik + schlechte Umgebung = mittelmäßiger Phänotyp. Mittlere Genetik + perfekte Umgebung = kann Top-Genetik schlagen.',
+      practice: '<b>Crop Steering</b> ist die Kunst die Umwelt so perfekt zu steuern, dass die Pflanze ihr <b>genetisches Maximum</b> ausbilden muss.<br><br>Die Cup-Level-Hebel:<br>• VPD-Management (Transpiration steuern)<br>• PPFD/DLI-Optimierung<br>• pH/EC-Präzision<br>• Restgewicht-Kontrolle<br>• Spektrum-Feinjustage (UV in Spätblüte)<br><br>Gute Genetik + schlechte Umgebung = mittelmäßiger Phänotyp. Mittlere Genetik + perfekte Umgebung = kann Top-Genetik schlagen.',
       pitfall: 'Auf YouTube werden Ergebnisse oft dem Strain zugeschrieben — in Wahrheit macht die Umgebung oft 50 % des Unterschieds. „Ich hab Strain X angebaut und nur 40 g bekommen" heißt nicht zwingend der Strain ist schwach. Immer Umgebungs-Setup mitbewerten.' },
     { t: 'Photoperiodismus (Automatic vs. Photoperiodisch)',
       brief: 'Der wahre Unterschied zwischen Auto und Fem liegt nicht im Geschlecht — sondern im Blüte-Auslöser.',
@@ -36682,7 +36687,7 @@ const LEXIKON = [
       pitfall: 'Zu viel auf einmal = Shock, Wachstumsstopp von 5-10 Tagen. Bei Autos kann aggressive Defoliation den Ertrag halbieren. Die gesunden großen Fächerblätter (oben) sind <b>Kraftwerke</b> — nur weil sie groß sind ist kein Grund sie zu entfernen. Regel: wenn du zweifelst → dran lassen.' },
     { t: 'Lollipopping',
       brief: 'Das untere Drittel der Pflanze komplett ausräumen — kahler Stamm unten, alle Kraft in die Blüten oben. Die Pflanze sieht danach aus wie ein Lolli.',
-      mechanism: 'Nutzbares Licht dringt nur in die oberen ~30-40 cm des Kronendachs — die Lichtstärke (PPFD) sinkt mit dem Abstand zur Lampe <b>quadratisch</b>. Die unteren Triebe und Blüten-Ansätze bekommen kaum etwas ab und werden nur zu kleinen, luftigen <b>Popcorn-Buds</b> (auch „Larf" oder Untergrowth genannt): Sie kosten die Pflanze Energie, liefern aber fast nichts. Beim Lollipopping wird dieses untere Drittel <b>komplett entfernt</b> — die Pflanze steckt ihre Kraft (in der Blüte besonders Phosphor + Kalium) dann voll in die oberen Colas, die wirklich Licht abkriegen. Nebeneffekt: bessere Luftbewegung am Boden → weniger Schimmelrisiko.',
+      mechanism: 'Nutzbares Licht dringt nur in die oberen ~30-40 cm des Kronendachs — die Lichtstärke (PPFD) sinkt mit dem Abstand zur Lampe <b>quadratisch</b>. Die unteren Triebe und Blüten-Ansätze bekommen kaum etwas ab und werden nur zu kleinen, luftigen <b>Popcorn-Buds</b> (auch „Larf" genannt): Sie kosten die Pflanze Energie, liefern aber fast nichts. Beim Lollipopping wird dieses untere Drittel <b>komplett entfernt</b> — die Pflanze steckt ihre Kraft (in der Blüte besonders Phosphor + Kalium) dann voll in die oberen Colas, die wirklich Licht abkriegen. Nebeneffekt: bessere Luftbewegung am Boden → weniger Schimmelrisiko.',
       practice: '<b>Was weg kommt:</b><br>• Alle dünnen Triebe + Blüten-Ansätze im unteren Drittel, die es nie bis ins Kronendach schaffen<br>• Die kleinen Blätter und das Larf an diesen unteren Trieben<br>• Faustregel: alles unterhalb der Linie, bis zu der noch kräftiges Licht durchkommt<br><br><b>Was bleibt:</b> Die oberen Colas und die großen, gut belichteten Fächerblätter, die sie versorgen.<br><br><b>Wann (bei Fem):</b> Einmalig in der Blüte, <b>nach dem Stretch</b> (ca. Tag 21 / Blüte-Woche 2-3) — dann sieht man klar, was oben ankommt und was unten kümmert.<br><br><b>Wie:</b> 2-4 h vorher gießen (voller Turgor = saubere Wunden), sterile scharfe Schere, von unten nach oben sauber wegschneiden.',
       pitfall: '<b>Bei Autos sehr zurückhaltend!</b> Eine Auto kann einen großen Schnitt in ihrer kurzen, fest getakteten Lebenszeit nicht mehr auswachsen — lieber nur sichtbares Larf entfernen statt das ganze untere Drittel auf einmal. Generell: lieber <b>moderat und einmal</b> als alle paar Tage nachschneiden (Dauerstress). Und nicht zu hoch ausräumen — wer mehr als das untere Drittel wegnimmt, opfert Colas, die durchaus genug Licht gehabt hätten. Im Zweifel weniger schneiden.' },
     { t: 'Fimming (F.I.M.)',
@@ -36714,7 +36719,7 @@ const LEXIKON = [
       brief: 'In der Spätblüte werden Buds so schwer dass Stämme knicken. Stütze ist Pflicht, nicht Kür.',
       mechanism: 'Schwere reife Blüten erzeugen Hebelkräfte die selbst dicke Stämme knicken lassen. Ein geknickter Stamm <b>klemmt den Saftfluss ab</b> — die betroffene Cola hört auf zu reifen, Harz- und Cannabinoid-Synthese stoppen. Stütze verhindert das mechanische Versagen und sichert so den Ertrag der letzten kritischen 2-3 Wochen.',
       practice: '<b>Drei Haupt-Methoden:</b><br><br><b>1. Yo-Yos (Pflanzen-Haltegurte):</b> Kleine Rollen mit Haken, an der Zelt-Decke befestigt. Flexibel, einzelne Triebe werden damit hochgezogen. Gut für gezielte Unterstützung weniger Haupttriebe.<br><br><b>2. Stütznetze (Trellis):</b> Horizontales Netz oberhalb der Canopy (nicht durchs Netz wie SCROG, sondern drüber). Trägt das gesamte Gewicht.<br><br><b>3. Bambusstäbe:</b> Klassisch, günstig. Trieb an Stab mit weichem Band fixieren. Gut für einzelne besonders schwere Colas.<br><br><b>Timing:</b> Ab Woche 4-5 der Blüte proaktiv installieren, bevor Buds anfangen sich schwer durchzubiegen.',
-      pitfall: 'Zu spät eingesetzt (Stamm schon gebogen) = mechanischer Schaden bleibt. Zu starre Stütze = bei Dryback schrumpft Pflanze, Trieb bricht ab. Yo-Yos regelmäßig nachstellen. Bei Outdoor: Windlast beachten, feste Staketen tief in den Boden.' },
+      pitfall: 'Zu spät eingesetzt (Stamm schon gebogen) = mechanischer Schaden bleibt. Zu starre Stütze = beim Abtrocknen schrumpft die Pflanze, Trieb bricht ab. Yo-Yos regelmäßig nachstellen. Bei Outdoor: Windlast beachten, feste Staketen tief in den Boden.' },
   ]},
   { cat: '🌸 Lebensphasen', items: [
     { t: 'Keimung',
@@ -36768,7 +36773,7 @@ const LEXIKON = [
     { t: 'Sämlingsphase',
       brief: 'Die ersten 1–3 Wochen nach Keimung. Pflanze winzig aber empfindlich — wenig hilft mehr als viel. Tag 1–7 ist die kritische Phase.',
       mechanism: 'Vom Aufgang der Keimblätter (Kotyledonen) bis zu den ersten echten 3-Finger-Blättern. Das Wurzelsystem ist <b>noch nicht etabliert</b> — die Pflanze lebt von den Reserven im Samen, während die Keimblätter bereits Photosynthese betreiben. Wasser nimmt sie über die Wurzel auf, nicht über die Keimblätter.<br><br>' +
-        'In Tag 1–7 funktioniert <b>Topfgewicht-Dryback noch nicht</b>: ohne aktive Transpiration läuft Verdunstung anders ab als bei einer Pflanze mit Blattwerk. Tageswerte zur Wassermenge geben falsche Signale. Erst wenn die ersten echten Blätter da sind und die Pflanze aktiv transpiriert, greift das normale Hebe-Test/Dryback-System.<br><br>' +
+        'In Tag 1–7 funktioniert <b>das Gießen nach Topfgewicht noch nicht</b>: ohne aktive Transpiration läuft Verdunstung anders ab als bei einer Pflanze mit Blattwerk. Tageswerte zur Wassermenge geben falsche Signale. Erst wenn die ersten echten Blätter da sind und die Pflanze aktiv transpiriert, greift das normale Hebe-Test/Restgewicht-System.<br><br>' +
         'Sie reagiert in dieser Phase extrem empfindlich auf:<br>' +
         '• <b>Salz</b> (Dünger zu früh = Verbrennungen am Keimblatt-Rand)<br>' +
         '• <b>Trockenheit</b> (Wurzeln noch flach, kein Reserve-Sog möglich)<br>' +
@@ -36890,7 +36895,7 @@ const LEXIKON = [
         '• Zu lange warten → Trichome werden glasig-grau (overripe), THC abgebaut, Wirkung lässt nach<br>' +
         '• Pflanze für Foto-Session anfassen → Trichom-Schaden, Pistillen verfärben sich<br><br>' +
         'Wichtigster Punkt: <b>Trichome entscheiden, nicht der Kalender</b>. Eine 70-Tage-Auto kann mit 60 oder 90 Tagen reif sein, je nach Bedingungen.' },
-    { t: 'Hard Dryback (Ernte-Vorbereitung)',
+    { t: 'Abtrocknen vor dem IceFlush',
       brief: 'Nach dem letzten Spülgang nicht mehr gießen, bis der Topf den Gießpunkt erreicht (in Erde ' + GIESSPUNKT.erde.von + '–' + GIESSPUNKT.erde.bis + ' % Restgewicht, Hebe-Test „Knapp"; in Coco beim Hebe-Test „Mittel“ (' + GIESSPUNKT.coco.von + '–' + GIESSPUNKT.coco.bis + ' %)). Dann bleibt das Schmelzwasser des IceFlush im Topf. Ein Harz-Plus durch Trockenstress ist nicht belegt.',
       // (v1.5.196) Vorher: „gezielt auf ~35 % trocknen lassen … triggert leichten Stress", „regulär bei ~50 % nachgießen",
       // „35 % ist Ziel, 30 % ist Untergrenze" — nasser als der eigene Gießpunkt (Knapp = 30 %) und gegen die Stress-Grenze
@@ -36898,11 +36903,11 @@ const LEXIKON = [
       // Kontaktzeit für den Kältereiz" und „Trichome 70 %+ milchig" — nichts davon belegt (ANBAU.md 5.1, 11, 14).
       mechanism: 'Nach dem letzten Spülgang wird nicht mehr gegossen, bis der Topf den <b>Gießpunkt</b> erreicht — derselbe Punkt, an dem sonst gegossen wird. Dort ist mehr als die Hälfte des Wassers im Topf verbraucht.<br><br>' +
         '<b>Der technische Zweck:</b> Das Schmelzwasser des IceFlush bleibt im Topf, statt als Drain durchzulaufen. Dafür reicht der Gießpunkt; trockener muss es nicht werden.<br><br>' +
-        '<b>Was nicht belegt ist:</b> dass leichter Trockenstress mehr Harz bringt. Die App verspricht dafür nichts. Trockener als der Gießpunkt ist kein „stärkerer Dryback", sondern Wasserstress.',
+        '<b>Was nicht belegt ist:</b> dass leichter Trockenstress mehr Harz bringt. Die App verspricht dafür nichts. Trockener als der Gießpunkt ist kein „stärkeres Abtrocknen", sondern Wasserstress.',
       practice: '<b>Wann:</b><br>' +
         '• Die Tage zwischen dem letzten Spülgang und dem IceFlush — im Endspurt eingestellt<br>' +
-        '• Nur, wenn der Trichom-Check reif zeigt; der Hard-Dryback macht die Trichome nicht reifer<br><br>' +
-        '<b>Während des Hard-Drybacks:</b><br>' +
+        '• Nur, wenn der Trichom-Check reif zeigt; das Abtrocknen macht die Trichome nicht reifer<br><br>' +
+        '<b>Während des Abtrocknens:</b><br>' +
         '• <b>Kein Wasser</b> — der letzte Guss war der letzte Spülgang<br>' +
         '• Hebe-Test täglich<br>' +
         '• Ziel: Gießpunkt erreicht (Erde ' + GIESSPUNKT.erde.von + '–' + GIESSPUNKT.erde.bis + ' %, Coco ' + GIESSPUNKT.coco.von + '–' + GIESSPUNKT.coco.bis + ' % Restgewicht) am Tag des IceFlush<br>' +
@@ -36911,13 +36916,13 @@ const LEXIKON = [
         '• Das ist Wasserstress: einen kleinen Guss klares Wasser geben<br><br>' +
         '<b>Wenn der Topf am geplanten Tag noch über dem Gießpunkt liegt (Erde ' + GIESSPUNKT.erde.bis + ' %, Coco ' + GIESSPUNKT.coco.bis + ' %):</b><br>' +
         '• Den IceFlush im Endspurt um einen Tag verschieben — nicht mit vollem Topf ins Eis',
-      pitfall: '<b>Unter dem Gießpunkt</b> (Erde ' + GIESSPUNKT.erde.von + ' %, Coco ' + GIESSPUNKT.coco.von + ' % Restgewicht) wird es zu trocken — dieselbe Grenze wie sonst. Ein Hard-Dryback ist kein Rekordversuch im Trocknen.<br><br>' +
+      pitfall: '<b>Unter dem Gießpunkt</b> (Erde ' + GIESSPUNKT.erde.von + ' %, Coco ' + GIESSPUNKT.coco.von + ' % Restgewicht) wird es zu trocken — dieselbe Grenze wie sonst. Das Abtrocknen ist kein Rekordversuch im Trocknen.<br><br>' +
         '<b>Häufige Fehler:</b><br>' +
         '• Mit vollem Topf in den IceFlush → das Schmelzwasser läuft als Drain durch<br>' +
-        '• Hard-Dryback, obwohl der Trichom-Check noch nicht reif zeigt → du erntest zu früh<br>' +
+        '• Abtrocknen lassen, obwohl der Trichom-Check noch nicht reif zeigt → du erntest zu früh<br>' +
         '• Vergessen, dass eine Auto-Bewässerung läuft → der Topf trocknet nicht ab<br>' +
         '• Bei hängenden Blättern trotzdem warten → das ist Wasserstress, mit einem kleinen Guss abbrechen<br><br>' +
-        'Der Hard-Dryback ist <b>kein Pflichtschritt</b>. Wer ohne IceFlush erntet, braucht ihn nicht.' },
+        'Das Abtrocknen ist <b>kein Pflichtschritt</b>. Wer ohne IceFlush erntet, braucht es nicht.' },
     { t: 'Dunkelphase vor der Ernte (24–72 h)',
       // (v1.5.125) `ANBAU.md` 14: „Dunkelphase 24–72 h vor der Ernte. Kein belegter
       // THC-Zuwachs. Was belegt ist: Terpene sind flüchtig und verlieren sich unter Licht
@@ -36940,7 +36945,7 @@ const LEXIKON = [
         '3. <b>Temperatur</b>: kühler schont Terpene — aber nur so weit, wie die Luftfeuchte höchstens ' + KLIMA_ZIEL.dunkel.deckel + ' % bleibt. Beim Abkühlen steigt sie von selbst: 24 °C / 50 % werden bei 20 °C zu rund 64 %<br>' +
         '4. <b>Luftfeuchte höchstens ' + KLIMA_ZIEL.dunkel.deckel + ' %</b> — die Blüten sind jetzt am dichtesten, darüber kann Botrytis keimen. Entfeuchter weiterlaufen lassen<br>' +
         '5. <b>Lüfter weiterhin laufen</b> lassen — Luftbewegung gegen Schimmel, Klima-Kontrolle aufrecht<br>' +
-        '6. <b>Kein Wasser mehr</b> in dieser Phase (Hard Dryback ist eh schon erreicht)<br><br>' +
+        '6. <b>Kein Wasser mehr</b> in dieser Phase (das Abtrocknen ist eh schon erreicht)<br><br>' +
         '<b>Erntezeitpunkt am Ende der Dunkelphase:</b><br>' +
         '• <b>Direkt vor dem geplanten Lichtangang</b> ernten — ohne die Lampe wieder anzuschalten<br>' +
         // (v1.5.192) Vorher: „Cannabinoide und Terpene sind nachts maximal konzentriert (Pflanze hat hochgepumpt)" und
@@ -37041,7 +37046,7 @@ const LEXIKON = [
         '3. <b>Erste 2–3 Güsse:</b> normale Wassermenge — kein extra Spül-Volumen, das spült nur die obere Substrat-Schicht durch<br>' +
         '4. <b>Mittlere Phase (Tag 4–8):</b> 1× größerer Durchspülgang — etwa 2× Topfvolumen Wasser durchlaufen lassen, Drain auffangen<br>' +
         '5. <b>Drain-EC</b> fällt nach diesem großen Spülgang. Unter den EC deines Gießwassers kann er nicht fallen, und in Erde kann er danach wieder steigen — <b>das Spülende setzt der Plan</b>, keine Drain-EC-Zahl<br>' +
-        '6. <b>Letzter Guss vor Hard Dryback / Ernte:</b> bei manchen Protokollen mit nur CalMag (~0.2 ml/L) — kein voller Dünger mehr, aber Erhalt der Mineral-Versorgung<br><br>' +
+        '6. <b>Letzter Guss vor dem Abtrocknen / der Ernte:</b> bei manchen Protokollen mit nur CalMag (~0.2 ml/L) — kein voller Dünger mehr, aber Erhalt der Mineral-Versorgung<br><br>' +
         '<b>Was du in dieser Zeit siehst — überwiegend Seneszenz, die auch ohne Spülen kommt:</b><br>' +
         '• Untere Blätter werden gelb — langsam und gleichmäßig von unten nach oben<br>' +
         '• Die gelben Blätter werden später braun — lila nur bei Sorten mit der Anlage dazu<br>' +
@@ -37056,11 +37061,11 @@ const LEXIKON = [
         '• <b>Mit pH-Wasser <5.5 oder >7.0 spülen</b> → kann Wurzelschäden verursachen<br>' +
         '• <b>Während der Spülung „nochmal nachdüngen"</b> weil Pflanze gelb wird → die Vergilbung ist gewollt!<br><br>' +
         '<b>Mythos „Spülung ist immer nötig"</b>: Für Geschmack, Asche oder Inhaltsstoffe ist kein Vorteil belegt — in lebender Erde so wenig wie sonst. Spülen senkt die Salze im Substrat; in organischer Erde liefert das Substrat danach aber wieder nach. Wer spülen will, spült, und die App plant es sauber ein. Ein steigender Drain-EC spät in der Blüte ist in organischer Erde kein Beweis für zu viel Dünger: Die Erde liefert nach, und die Pflanze nimmt gegen Ende weniger auf.<br><br>' +
-        '<b>Spülung vs Iceflush vs Dryback:</b> Diese drei sind unterschiedliche Schritte und können kombiniert werden:<br>' +
+        '<b>Spülung vs Iceflush vs Abtrocknen:</b> Diese drei sind unterschiedliche Schritte und können kombiniert werden:<br>' +
         '• Spülung = <b>Salze raus</b> (über mehrere Tage, mit Wasser)<br>' +
-        '• Hard Dryback = <b>nicht gießen, bis der Topf den Gießpunkt erreicht</b> — nicht tiefer<br>' +
+        '• Abtrocknen = <b>nicht gießen, bis der Topf den Gießpunkt erreicht</b> — nicht tiefer<br>' +
         '• IceFlush = <b>Crushed Ice an den Topfrand</b> (einmal, kein Wasser dazu) — ein Trichom-Plus ist nicht belegt<br>' +
-        'Die typische Reihenfolge: Spülung → Hard Dryback → IceFlush → Dunkelphase → Ernte.' },
+        'Die typische Reihenfolge: Spülung → Abtrocknen → IceFlush → Dunkelphase → Ernte.' },
     { t: 'IceFlush',
       // (v1.5.125) Wirkungszusage entfernt. `ANBAU.md` 14: „IceFlush. Kein belegter
       // Trichom- oder Potenzeffekt. Die App sagt das selbst offen — dieser Ton ist richtig
@@ -37071,8 +37076,8 @@ const LEXIKON = [
       mechanism: 'Schmelzendes Eis kühlt die Wurzelzone am Topfrand für einige Stunden ab — wie weit, hängt von Topf, Substrat und Raum ab; gemessen hat es die App nicht. Bei Genetiken mit Anthocyan-Anlage kann Kälte die lila Färbung verstärken (siehe „Anthocyane"). Das Schmelzwasser bleibt im abgetrockneten Topf: Es läuft kein Drain, also wird auch nichts ausgespült.<br><br><b>Was NICHT belegt ist:</b> Der oft genannte „letzte Trichom-Schub". Kontrollierte Vergleiche dazu gibt es nicht; die kursierenden Zahlen (5–20 % mehr Trichome) stammen aus Erfahrungsberichten, nicht aus Messungen. Wer den IceFlush machen will, soll ihn machen — die App plant ihn sauber ein. Sie verspricht dir dafür aber nichts.<br><br>Wichtig: Crushed Ice schmilzt <b>langsam und gleichmäßig</b>. Eiswürfel sind zu kompakt (lokal zu kalt), Eisblöcke zu langsam, einfach kaltes Wasser kühlt zu schnell wieder ab. Einen gemessenen Vorteil der einen oder anderen Form gibt es nicht.',
       practice: '<b>Voraussetzungen vor dem IceFlush:</b><br>' +
         '• Trichome mit Lupe auf den Blütenkelchen geprüft (nicht auf den Blättchen, nicht an frisch nachgeschobenen Spitzen): klar höchstens ' + RIPE_CLEAR_DONE + ' %, Bernstein nahe an deinem eingestellten Ziel<br>' +
-        '• <b>Hard-Dryback</b>: nach dem letzten Spülgang nicht mehr gießen, bis der Topf den Gießpunkt erreicht (' + GIESSPUNKT.erde.von + '–' + GIESSPUNKT.erde.bis + ' % Restgewicht) — sonst läuft das Schmelzwasser als Drain durch<br>' +
-        '• Der letzte Guss vor dem Hard-Dryback ist der letzte Spülgang — kein Dünger<br>' +
+        '• <b>Abtrocknen</b>: nach dem letzten Spülgang nicht mehr gießen, bis der Topf den Gießpunkt erreicht (' + GIESSPUNKT.erde.von + '–' + GIESSPUNKT.erde.bis + ' % Restgewicht) — sonst läuft das Schmelzwasser als Drain durch<br>' +
+        '• Der letzte Guss vor dem Abtrocknen ist der letzte Spülgang — kein Dünger<br>' +
         '<br>' +
         '<b>Menge & Setup:</b><br>' +
         '• Etwa <b>1 Liter Crushed Ice pro Topf</b> bei 11L-Töpfen (skaliert mit Topfgröße — 8L → ~700 ml, 15L → ~1.5 L)<br>' +
@@ -37089,7 +37094,7 @@ const LEXIKON = [
       pitfall: '<b>Was schiefgehen kann:</b><br>' +
         '• <b>Mehr Eis ≠ besser</b> — je kälter die Wurzelzone, desto größer das Risiko für die Wurzeln. Die Temperatur im Topf bei 1 L je 11-L-Topf hat niemand gemessen; wer es wissen will, steckt ein Thermometer an den Rand<br>' +
         '• <b>IceFlush bei zu klaren Trichomen</b> = zu früh geerntet; der IceFlush macht die Trichome nicht reifer<br>' +
-        '• <b>Voller Topf statt Hard Dryback</b> = Schmelzwasser läuft als Drain durch, der Topf bleibt nass<br>' +
+        '• <b>Voller Topf statt Abtrocknen</b> = Schmelzwasser läuft als Drain durch, der Topf bleibt nass<br>' +
         '• <b>Eis auf den Stamm</b> = lokaler Frostschock, kein Effekt in der Wurzelzone<br>' +
         '• <b>Bei rein grünen Genetiken</b>: lila Verfärbung passiert nicht (Anthocyan-Anlage fehlt); einen Trichom-Effekt gibt es auch dann nicht<br>' +
         '• <b>Auto-Bewässerung weiter aktiv</b> — sofort abschalten vor dem IceFlush, sonst läuft Wasser nach und der Topf wird nass<br><br>' +
@@ -37122,7 +37127,7 @@ const LEXIKON = [
         '• <b>Bei zu früh angesetztem Splitting</b> (>72 h vor Ernte): Pflanze geht ein bevor Ernte möglich<br><br>' +
         '<b>Empfehlung:</b> <b>Nicht als Standard-Methode</b>. Wer experimentieren will: 1 von mehreren Pflanzen splitten, andere normal lassen, Ergebnisse separat trocknen und vergleichen — eigene Daten sammeln statt Foren-Mythen vertrauen. Bei einer einzigen wertvollen Pflanze: Finger weg.<br><br>' +
         '<b>Wer am Ende trotzdem etwas ausprobieren will:</b><br>' +
-        '• Hard Dryback (nicht gießen, bis der Topf den Gießpunkt erreicht — nicht tiefer)<br>' +
+        '• Abtrocknen (nicht gießen, bis der Topf den Gießpunkt erreicht — nicht tiefer)<br>' +
         '• IceFlush (Crushed Ice am Topfrand)<br>' +
         '• Dunkelphase 24–36 h<br>' +
         'Alle drei kommen ohne Schnitt aus und lassen sich sauber einplanen. Ein Plus an Harz oder Wirkung ist bei keinem belegt. Splitting dagegen ist eine offene Wunde.' },
@@ -37351,8 +37356,8 @@ const LEXIKON = [
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Stufe 5</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Bottom-Watering komplett — Oberfläche bleibt dauerhaft trocken, kein Brutplatz</td></tr>' +
         '</table>' +
         '<br>' +
-        'Mehrere Stufen <b>parallel</b> einsetzen — eine einzelne Maßnahme reicht selten. Drei Methoden gleichzeitig (z.B. Dryback + Gelbtafeln + BTI) ist die effektive Kombination.<br><br>' +
-        '<b>Prävention (zentral):</b> Konsequenter Dryback ist die einzige nachhaltige Lösung. Wer nach Topfgewicht gießt statt nach Kalender, hat selten Trauermücken.',
+        'Mehrere Stufen <b>parallel</b> einsetzen — eine einzelne Maßnahme reicht selten. Drei Methoden gleichzeitig (z.B. Abtrocknen + Gelbtafeln + BTI) ist die effektive Kombination.<br><br>' +
+        '<b>Prävention (zentral):</b> Konsequentes Abtrocknen ist die einzige nachhaltige Lösung. Wer nach Topfgewicht gießt statt nach Kalender, hat selten Trauermücken.',
       pitfall: '<b>Häufige Fehler:</b><br>' +
         '• <b>Erst chemisch, dann biologisch</b> — Chemie killt die Nematoden mit, biologische Bekämpfung versagt. Immer erst biologisch starten.<br>' +
         '• <b>Nur Gelbtafeln</b> — fangen die Adulten, aber die Larven (das eigentliche Problem) bleiben unten. Allein reicht nicht.<br>' +
@@ -37360,7 +37365,7 @@ const LEXIKON = [
         '• <b>Sand-Schicht nicht dick genug</b> — unter 1 cm wirkungslos, Adulte graben sich durch<br>' +
         '• <b>Substrat-Frische ignoriert</b> — neuer Substrat-Sack mit Trauermücken-Eiern → von Tag 1 Befall. Substrat im Zelt 1–2 Wochen trocken lagern bevor Verwendung<br>' +
         '• <b>Pflanzen aus Baumarkt/Garten</b> mit Topfballen ins Zelt → schleppt Trauermücken aktiv ein. Niemals fremde Topfpflanzen ungeprüft einbringen.<br><br>' +
-        '<b>Wenn die App ein Dryback-Warnsystem zeigt:</b> Trauermücken sind ein klares Signal dass im Wasserhaushalt was schiefläuft. Bevor man Mittel einsetzt, erst die Gieß-Routine kritisch prüfen — meist ist das die eigentliche Ursache.' },
+        '<b>Wenn die App eine Warnung zum Abtrocknen zeigt:</b> Trauermücken sind ein klares Signal dass im Wasserhaushalt was schiefläuft. Bevor man Mittel einsetzt, erst die Gieß-Routine kritisch prüfen — meist ist das die eigentliche Ursache.' },
     { t: 'Spinnmilben (Tetranychidae)',
       brief: 'Mikroskopisch kleine Sauger auf der Blattunterseite. Können in 2 Wochen ein Zelt komplett ruinieren. Lieben heiß+trocken, hassen kühl+feucht.',
       mechanism: 'Spinnmilben sind keine Insekten sondern <b>Spinnentiere</b>. Sie sitzen auf der Blattunterseite und <b>saugen Zellsaft</b> aus den einzelnen Zellen. Jede angestochene Zelle stirbt ab — das verursacht das typische Stippen-Muster auf der Blattoberseite (kleine helle Punkte). Bei starkem Befall verlieren Blätter so viele Zellen dass sie ihre Photosynthese-Kapazität verlieren.<br><br>' +
@@ -37509,7 +37514,7 @@ const LEXIKON = [
         '• <b>Luftbewegung</b> auch am Substrat — kein Stagnieren<br>' +
         '• <b>Mykorrhiza und Trichoderma</b> präventiv einsetzen — die Konkurrenz im Substrat verhindert dass Pythium dominant wird<br>' +
         '• <b>Bei Sämlingen:</b> nach dem Start-Guss bis Tag 9 nicht gießen, nur sprühen',
-      pitfall: '<b>Bei schwerem Befall meist nicht mehr zu retten</b> — die Wurzeln sind zu weit zerstört. Lehre: Prävention ist entscheidend, vor allem strikter Dryback.<br><br>' +
+      pitfall: '<b>Bei schwerem Befall meist nicht mehr zu retten</b> — die Wurzeln sind zu weit zerstört. Lehre: Prävention ist entscheidend, vor allem striktes Abtrocknen.<br><br>' +
         '<b>Häufige Fehler:</b><br>' +
         '• <b>Welke = mehr gießen</b>: klassischer Anfänger-Fehler. Bei Pythium ist mehr Wasser tödlich.<br>' +
         '• <b>H₂O₂ zu konzentriert</b>: 3% auf 1 L verdünnt = ok. Pures 3% direkt auf Wurzeln = Verbrennung. Verhältnis beachten.<br>' +
@@ -37517,7 +37522,7 @@ const LEXIKON = [
         '• <b>Altes Substrat behalten nach Befall</b>: Sporen bleiben drin, Befall kommt zurück. Komplett umtopfen.<br>' +
         '• <b>Hydro-Wassertemperatur ignoriert</b>: über 22°C ist die Hauptursache für Pythium in Hydro-Systemen<br>' +
         '• <b>Topf-Größen-Mismatch</b>: zu großer Topf bei Sämling → zu lange feucht → Pythium-Falle. Topf-Größe an Pflanzengröße anpassen.<br><br>' +
-        '<b>Wichtigste Lektion:</b> Pythium ist <b>fast immer ein Symptom für Übergiessen</b>. Wer den Hebe-Test/Dryback ernst nimmt, sieht es selten.' },
+        '<b>Wichtigste Lektion:</b> Pythium ist <b>fast immer ein Symptom für Übergiessen</b>. Wer den Hebe-Test/Restgewicht ernst nimmt, sieht es selten.' },
     { t: 'Umfallkrankheit (Damping-off)',
       brief: 'Keimlinge und junge Sämlinge fallen plötzlich um — der Stängel wird direkt an der Erdoberfläche dünn, glasig und knickt weg, obwohl oben noch alles grün aussieht. Schuld sind Pilze im Substrat, die bei Staunässe explodieren. Einmal umgefallen ist die Pflanze verloren — die einzige wirksame Hilfe ist Vorbeugen.',
       mechanism: '<b>Kein einzelner Erreger, sondern ein Sammelbild:</b> Mehrere Pilze im Substrat lösen dasselbe Schadbild aus. Betroffen ist <b>nur das früheste Stadium</b> — vom gequollenen Samen bis zum Sämling mit den ersten echten Blättern. Sobald die Stängelbasis fester wird (verholzt), sinkt das Risiko stark.<br><br>' +
@@ -37708,7 +37713,7 @@ const LEXIKON = [
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Verbrannte Blattspitzen</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">N-Überschuss oder zu hoher EC</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">EC im Drain messen → bei zu hoch: spülen</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Gespinste an Blättern + helle Punkte</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Spinnmilben</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Sofort behandeln — siehe Spinnmilben-Eintrag</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Silbrige Streifen auf Blättern</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Thripse</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Blautafeln + Behandlung — siehe Thripse-Eintrag</td></tr>' +
-        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Kleine schwarze Fliegen aus Erde</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Trauermücken — Übergiessen</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Dryback strenger, Gelbtafeln, BTI</td></tr>' +
+        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Kleine schwarze Fliegen aus Erde</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Trauermücken — Übergiessen</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Strenger abtrocknen, Gelbtafeln, BTI</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Cluster Insekten unter Blättern</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Blattläuse</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Mechanisch entfernen + Kaliseife</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Weißer mehliger Belag, abwischbar</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Echter Mehltau</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">RLF senken + sofort behandeln</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Welke trotz feuchter Erde</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Pythium / Wurzelfäule</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Sofort Gießen STOPPEN, H₂O₂-Spülung</td></tr>' +
@@ -37798,8 +37803,8 @@ const LEXIKON = [
       pitfall: 'Sonde 1× über Nacht in destilliertem Wasser stehen lassen → Sonde tot. Auch: Kalibrieren bei Raumtemperatur! Pufferlösung muss gleiche Temperatur wie Mess-Wasser haben, sonst Abweichung 0.1-0.3 pH. Im Winter: Lösung 30 Min vor Messung aus dem kalten Keller holen.' },
     { t: 'EC-Messgerät',
       brief: 'Robuster als pH-Meter, aber Reinigung trotzdem Pflicht. Salze auf den Elektroden = falsche Werte.',
-      mechanism: 'Das EC-Meter sendet einen <b>kleinen Wechselstrom</b> zwischen zwei Elektroden im Wasser. Je mehr gelöste Salze (= mehr Ionen), desto besser leitet das Wasser → höherer EC-Wert. Denselben Messwert schreibt man auf drei Arten: <b>mS/cm</b> (kleine Zahlen wie 1,4), <b>µS/cm</b> (große Zahlen wie 1400 — einfach ×1000) und <b>ppm</b> (US-Standard, 500er-Skala). Faustregel: <b>1,4 mS/cm = 1400 µS/cm ≈ 700 ppm</b>. Viele günstige Meter zeigen µS/cm an (große Zahlen). GrowSmart rechnet intern immer gleich — welche Schreibweise du im Eintrag siehst und eintippst, stellst du unter Einstellungen → EC-Einheit ein. Die Richtwerte in diesem Lexikon sind durchgehend in mS/cm angegeben (der Fach-Standard der Grow-Literatur).',
-      practice: '<b>Pflege:</b><br>• Nach Gebrauch mit destilliertem Wasser abspülen<br>• Salzablagerungen entfernen: 5 Min in verdünntem Essig (1 %) einlegen<br>• Kalibrieren mit EC-1.41-Pufferlösung (Standard) oder EC-2.77 für höhere Bereiche<br>• Aufbewahrung: trocken oder feucht beides OK (anders als pH)<br><br><b>Empfehlungen:</b><br>• 2-in-1: BlueLab Truncheon (EC + Temp, sehr robust)<br>• Combo: BlueLab Combo Meter (pH + EC + Temp, einer für alles)<br>• Budget: Hanna HI98301 (gut für Hobby)<br><br><b>Mess-Routine:</b> Vor Düngung den Inflow-EC messen → nach Gießen den Runoff-EC. Das Verhältnis zeigt, was im Substrat passiert: ' + T.drainRegelKurz() + '.',
+      mechanism: 'Das EC-Meter sendet einen <b>kleinen Wechselstrom</b> zwischen zwei Elektroden im Wasser. Je mehr gelöste Salze (= mehr Ionen), desto besser leitet das Wasser → höherer EC-Wert. Denselben Messwert schreibt man auf drei Arten: <b>mS/cm</b> (kleine Zahlen wie 1,4), <b>µS/cm</b> (große Zahlen wie 1400 — einfach ×1000) und <b>ppm</b> (US-Standard, 500er-Skala). Faustregel: <b>1,4 mS/cm = 1400 µS/cm ≈ 700 ppm</b>. Viele günstige Meter zeigen µS/cm an (große Zahlen). GrowSmart rechnet intern immer gleich — welche Schreibweise du im Eintrag siehst und eintippst, stellst du unter Einstellungen → EC-Einheit ein. Die Richtwerte in diesem Lexikon sind durchgehend in mS/cm angegeben (der Fach-Standard der Anbau-Literatur).',
+      practice: '<b>Pflege:</b><br>• Nach Gebrauch mit destilliertem Wasser abspülen<br>• Salzablagerungen entfernen: 5 Min in verdünntem Essig (1 %) einlegen<br>• Kalibrieren mit EC-1.41-Pufferlösung (Standard) oder EC-2.77 für höhere Bereiche<br>• Aufbewahrung: trocken oder feucht beides OK (anders als pH)<br><br><b>Empfehlungen:</b><br>• 2-in-1: BlueLab Truncheon (EC + Temp, sehr robust)<br>• Combo: BlueLab Combo Meter (pH + EC + Temp, einer für alles)<br>• Budget: Hanna HI98301 (gut für Hobby)<br><br><b>Mess-Routine:</b> Vor Düngung den Inflow-EC messen → nach Gießen den Drain-EC. Das Verhältnis zeigt, was im Substrat passiert: ' + T.drainRegelKurz() + '.',
       pitfall: 'Vergessen vor Messung umzurühren = Salz-Schichten falsch interpretiert. Auch: EC-Werte hängen von Temperatur ab — bei 15 °C andere Anzeige als bei 25 °C. Gute Meter haben Auto-Compensation, billige nicht. Falls keine ATC: Wasser auf 20 °C bringen vor Messung.' },
     { t: 'Timer / Smartplug',
       brief: 'Schalter für Licht-Zyklen. Digitale Smartplugs sind besser als mechanische — und billiger als gedacht.',
@@ -37855,7 +37860,7 @@ const LEXIKON = [
         '<b>➤ Silbrig-glänzende oder verkrüppelte Stellen an neuen Blättern:</b> könnten Thripse sein.<br><br>' +
         'Genaue Bestimmung Schritt für Schritt → <b>Pflanzen-Doktor</b> im Tab „Tipps".' },
     { t: 'Zwitter / Bananen / Nanners (Hermaphrodit, Pollensäcke)',
-      txt: '<b>Unter Stress bildet eine weibliche Pflanze männliche Teile aus</b> — gelbe, bananenförmige Fortsätze („Nanners") zwischen den Blüten, oder kleine traubenartige Pollensäcke. Warum das wichtig ist: Die Pflanze <b>bestäubt sich selbst</b> → Samen in den Buds, und kann den ganzen Grow bestäuben.<br><br>' +
+      txt: '<b>Unter Stress bildet eine weibliche Pflanze männliche Teile aus</b> — gelbe, bananenförmige Fortsätze („Nanners") zwischen den Blüten, oder kleine traubenartige Pollensäcke. Warum das wichtig ist: Die Pflanze <b>bestäubt sich selbst</b> → Samen in den Buds, und kann den ganzen Anbau bestäuben.<br><br>' +
         '<b>So erkennst du es:</b> gelbe, bananenförmige Spitzen, die aus den Blütenkelchen ragen, oder kleine runde Säckchen (wie ein Mini-Bananenbündel) tief in den Buds. Regelmäßig mit einer Lupe kontrollieren, besonders in der Spätblüte.<br><br>' +
         '<b>Häufigste Ursache — und das Erste, was du prüfst:</b> ein <b>Lichtleck in der Dunkelphase</b>. Schon Handy-Licht, eine LED-Standby-Lampe oder ein undichter Zelt-Reißverschluss unterbricht die Dunkelheit und löst Zwittern aus. Geh im Dunkeln ins Zelt und schau, ob irgendwo Licht reinkommt. Weitere Auslöser: Hitze-Stress, zu späte (überreife) Ernte, starke Verletzung, oder instabile Genetik.<br><br>' +
         '<b>Was tun (konservativ):</b><br>' +
@@ -37975,8 +37980,8 @@ const LEX_ALIASES = {
   'trocknen':        'Trocknung',
   'snap test':       'Snap-Test (Trocknungs-Indikator)',
   'snap-test':       'Snap-Test (Trocknungs-Indikator)',
-  'hard dryback':    'Hard Dryback (Ernte-Vorbereitung)',
-  'dryback':         'Hard Dryback (Ernte-Vorbereitung)',
+  'hard dryback':    'Abtrocknen vor dem IceFlush',
+  'dryback':         'Abtrocknen vor dem IceFlush',
   'iceflush':        'IceFlush',
   'ice flush':       'IceFlush',
   'ice':             'IceFlush',
@@ -38170,10 +38175,13 @@ const LEX_ALIASES = {
   'stretch':         'Stretch (Pre-Flower)',
   'pre-flower':      'Stretch (Pre-Flower)',
   'preflower':       'Stretch (Pre-Flower)',
-  'dryback':         'Restgewicht (Dryback · Trocken-Nass-Zyklus)',
-  'restgewicht':     'Restgewicht (Dryback · Trocken-Nass-Zyklus)',
-  'trocken-nass':    'Restgewicht (Dryback · Trocken-Nass-Zyklus)',
-  'runoff':          'Runoff-EC (Drain-Messung)',
+  'dryback':         'Restgewicht (Trocken-Nass-Zyklus)',
+  'restgewicht':     'Restgewicht (Trocken-Nass-Zyklus)',
+  'trocken-nass':    'Restgewicht (Trocken-Nass-Zyklus)',
+  'runoff':          'Drain-EC (Ablauf-Messung)',
+  'hard-dryback':    'Abtrocknen vor dem IceFlush',
+  'grow-tent':       'Zelt oder Raum',
+  'grow-room':       'Zelt oder Raum',
   'drain':           'Drain-Kontrolle',
   'ablaufwasser':    'Drain-Kontrolle',
   'iceflush':        'IceFlush',
@@ -38854,7 +38862,7 @@ function _lexFindClosest(qNorm) {
 const HOWTO = [
   { cat: '🚀 Loslegen', items: [
     { t: 'Was ist GrowSmart?',
-      txt: 'Dein digitales Grow-Tagebuch. Die App erinnert dich an Gießtage, rechnet deine Dünger-Dosen aus, warnt bei kritischen Werten und hält eine komplette Historie deines Zyklus fest. Alles läuft direkt auf deinem Handy — keine Registrierung, keine Cloud, deine Daten bleiben lokal.' },
+      txt: 'Dein digitales Tagebuch. Die App erinnert dich an Gießtage, rechnet deine Dünger-Dosen aus, warnt bei kritischen Werten und hält eine komplette Historie deines Zyklus fest. Alles läuft direkt auf deinem Handy — keine Registrierung, keine Cloud, deine Daten bleiben lokal.' },
     { t: 'App auf dem Handy installieren',
       txt: '<b>Android (Chrome/Samsung Internet):</b> Öffne die App-URL im Browser → Menü (drei Punkte) → "Zum Startbildschirm hinzufügen". Danach startet die App wie eine richtige App, auch offline.<br><br><b>iPhone (Safari):</b> URL öffnen → "Teilen"-Button (Quadrat mit Pfeil) → "Zum Home-Bildschirm". Achtung: unter iOS kann die App bei längerer Nichtnutzung den Speicher verlieren. Lieber regelmäßig Backups machen (siehe "Daten exportieren").' },
     { t: 'Einsteiger- oder Profi-Modus?',
@@ -38900,7 +38908,7 @@ const HOWTO = [
     { t: 'Spülen (Wo 9-10 im Master-Plan)',
       txt: 'Nur klares Wasser, kein Dünger mehr. Ziel: die Pflanze soll Nährstoffreste aus dem Substrat verbrauchen. Im Eintrag siehst du den "Spülen"-Hinweis. Gieße reichlich bis viel Ablaufwasser (Drain) unten durchläuft. Bei einem 11L-Topf sollten mindestens 1L Drain erzeugt werden. Drain sofort entsorgen, nie zurückgießen.' },
     { t: 'IceFlush',
-      txt: 'Crushed Ice am Topfrand verteilen (etwa 1 L je 11-L-Topf), 1–2 Tage vor der Ernte, nicht auf den Stamm. Wasser gießt du dazu keines — das Schmelzwasser zieht langsam ein, und der Topf bleibt so trocken wie nach dem Hard-Dryback. Beliebte Grower-Technik; bei Genetiken mit Anthocyan-Anlage können lila Farben entstehen. Ein Trichom-Plus ist wissenschaftlich nicht belegt.' },
+      txt: 'Crushed Ice am Topfrand verteilen (etwa 1 L je 11-L-Topf), 1–2 Tage vor der Ernte, nicht auf den Stamm. Wasser gießt du dazu keines — das Schmelzwasser zieht langsam ein, und der Topf bleibt so trocken wie nach dem Abtrocknen. Beliebte Grower-Technik; bei Genetiken mit Anthocyan-Anlage können lila Farben entstehen. Ein Trichom-Plus ist wissenschaftlich nicht belegt.' },
     { t: 'Trichom-Check',
       txt: 'Ab Blüte-Woche 6-7 mit einer Lupe (60x oder mehr) die Trichome an den Blüten anschauen. <b>Klar</b> = zu früh. <b>Milchig</b> = THC-Peak (euphorische Wirkung). <b>Bernstein</b> = abgebaut zu CBN (sedierend). Wie viel Bernstein es sein soll, entscheidest du — mehr Bernstein = ruhigere Wirkung, weniger Potenz. Dein Ziel legst du in den Einstellungen fest. Im Eintrag gibt es ein Trichom-Widget mit Prozent-Schiebern um deine Beobachtung festzuhalten.' },
     { t: 'Ernte',
@@ -38941,7 +38949,7 @@ const HOWTO = [
       txt: 'Das <b>entscheidende Ernte-Signal</b> bei Outdoor ist <b>nicht der Kalender</b> — es sind die Trichome (die Harzkristalle auf den Buds).<br><br><b>Werkzeug:</b> Jewelers Loupe (30-60× Lupe, 5-10€) oder USB-Mikroskop. Handykamera reicht nicht.<br><br><b>Die 3 Farbstufen:</b><br>• <b>Klar/durchsichtig:</b> Noch nicht reif. Ernte würde energiearm wirken.<br>• <b>Milchig-trüb:</b> Optimal-Punkt für <b>aktivierende</b> Wirkung (mehr THC, weniger CBN)<br>• <b>Amber/bernsteinfarben:</b> THC oxidiert zu CBN — <b>sedierende "Couch-Lock"-Wirkung</b><br><br><b>Wie viel Bernstein?</b> Das entscheidest du: mehr Bernstein = ruhigere Wirkung, weniger Potenz. Klare Trichome sind in jedem Fall unfertig — wer bei 30 % klar schneidet, verschenkt Ertrag und Wirkung.<br><br><b>Ab Blüte-Woche 7:</b> Alle 2-3 Tage checken. Die App erinnert dich dran.<br><br><b>Bei Herbst-Schimmelrisiko:</b> Lieber etwas früher ernten (bei 80% milchig) als perfekt aber versifft.' },
   ]},
   { cat: '🛠️ Werkzeuge im Tipps-Tab', items: [
-    { t: 'Grow-Lexikon',
+    { t: 'Lexikon',
       txt: 'Kompakte Erklärungen zu über 99 Begriffen: pH, EC, VPD, NPK, CalMag, Photosynthese, Phytochrom, Anthocyane, Trichom-Analyse, Schädlinge, Outdoor-Spezifika und mehr. Einträge sind aufklappbar. Viele Smart-Notes im Eintrag-Screen verlinken direkt zum passenden Lexikon-Eintrag.' },
     { t: 'Tipps',
       txt: 'Phasen-spezifische Kurztipps — je nach Zyklus-Stand zeigt die App relevante Hinweise (z.B. "Woche 3: Topping-Fenster offen!" oder "Blüte Wo 7: Trichome kontrollieren"). Viele Tipps sind antippbar und öffnen den Lexikon-Eintrag.' },
@@ -39623,7 +39631,7 @@ function renderGallery() {
       <div style="font-size:13px;color:var(--text-muted);margin-bottom:6px">Noch keine Fotos.</div>
       <div style="font-size:11px;color:var(--text-hint);line-height:1.55;max-width:280px;margin:0 auto 14px">
         Fotos hängst du im <b>Tageseintrag</b> an — ganz unten bei „Fotos 📷". Sie erscheinen
-        dann hier nach Monaten sortiert, und du siehst deinen Grow wachsen.
+        dann hier nach Monaten sortiert, und du siehst deinen Anbau wachsen.
       </div>
       ${_gibtZyklus ? `<button onclick="openEntry(todayISO())" style="background:var(--green-dk);color:#fff;border:none;border-radius:10px;padding:10px 18px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font)">Heutigen Eintrag öffnen</button>` : ''}
       </div>`;
@@ -40600,7 +40608,7 @@ const TOUR_ONBOARDING = {
       target: '#scr-dash.active .topbar',
       arrow: 'top',
       title: '🏠 Dein Dashboard',
-      body: 'Das ist deine Startseite. Hier siehst du jeden Zyklus auf einen Blick: was heute dran ist (z. B. gießen) und wichtige Warnungen. Oben rechts das ＋ bringt dich schnell zu einem Eintrag — so heißt es, wenn du festhältst, was du an einem Tag gemacht hast (gegossen, gedüngt, ein Foto …). Das ist dein Grow-Tagebuch.',
+      body: 'Das ist deine Startseite. Hier siehst du jeden Zyklus auf einen Blick: was heute dran ist (z. B. gießen) und wichtige Warnungen. Oben rechts das ＋ bringt dich schnell zu einem Eintrag — so heißt es, wenn du festhältst, was du an einem Tag gemacht hast (gegossen, gedüngt, ein Foto …). Das ist dein Tagebuch.',
     },
     {
       tab: 'dash',
@@ -40679,7 +40687,7 @@ const TOUR_FEATURES = {
       target: '#scr-dash.active .scroll',
       arrow: 'top',
       title: '⚡ Einsteiger- vs. Profi-Modus',
-      body: 'In den Einstellungen wechselst du zwischen Einsteiger- und Profi-Modus. Im Einsteiger-Modus blendet die App fortgeschrittene Felder aus — zum Beispiel das Ablaufwasser (engl. „Drain" oder „Runoff", das unten aus dem Topf herausläuft und über das man die Nährstoffe kontrolliert) oder die Trichome (die winzigen Harzkristalle auf den Blüten, an deren Farbe Profis den richtigen Erntezeitpunkt ablesen). So bleibt nur das Wesentliche sichtbar. Der Profi-Modus zeigt alles. Wechsle je nach Lust und Erfahrung — du kannst jederzeit zurück.',
+      body: 'In den Einstellungen wechselst du zwischen Einsteiger- und Profi-Modus. Im Einsteiger-Modus blendet die App fortgeschrittene Felder aus — zum Beispiel das Ablaufwasser (engl. „Drain", das unten aus dem Topf herausläuft und über das man die Nährstoffe kontrolliert) oder die Trichome (die winzigen Harzkristalle auf den Blüten, an deren Farbe Profis den richtigen Erntezeitpunkt ablesen). So bleibt nur das Wesentliche sichtbar. Der Profi-Modus zeigt alles. Wechsle je nach Lust und Erfahrung — du kannst jederzeit zurück.',
     },
     {
       tab: 'set',
@@ -40724,7 +40732,7 @@ const TOUR_GIESSEN = {
     {
       tab: 'dash',
       title: '⚖️ Wie viel? Der Topf ist die Wahrheit',
-      body: 'GrowSmart schlägt dir eine Gießmenge vor. Der verlässlichste Hinweis ist aber das Gewicht des Topfes: Heb ihn vor dem Gießen kurz an. Fühlt er sich noch richtig schwer an, ist genug Wasser drin — erst wenn er deutlich leichter geworden ist, wird wieder gegossen (das Wasser ist dann aufgebraucht). Dieses Abtrocknen nennt man „Dryback" oder Restgewicht, und es ist sogar gesund: Die Wurzeln bekommen zwischendurch Luft und wachsen kräftiger. Das Gefühl fürs Gewicht hast du nach wenigen Malen raus. Merksatz: Die Tage im Plan sind nur das Gerüst — was der Topf wiegt, ist die Wahrheit.',
+      body: 'GrowSmart schlägt dir eine Gießmenge vor. Der verlässlichste Hinweis ist aber das Gewicht des Topfes: Heb ihn vor dem Gießen kurz an. Fühlt er sich noch richtig schwer an, ist genug Wasser drin — erst wenn er deutlich leichter geworden ist, wird wieder gegossen (das Wasser ist dann aufgebraucht). Dieses Abtrocknen nennt man Restgewicht, und es ist sogar gesund: Die Wurzeln bekommen zwischendurch Luft und wachsen kräftiger. Das Gefühl fürs Gewicht hast du nach wenigen Malen raus. Merksatz: Die Tage im Plan sind nur das Gerüst — was der Topf wiegt, ist die Wahrheit.',
     },
     {
       tab: 'set',

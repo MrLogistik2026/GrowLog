@@ -644,7 +644,8 @@ async function starte() {
     const E = JSON.parse(a.E(`(function(){ S.beginnerMode = false; const c = S.cycles[0]; const out = {};
       const lies = (iso) => { setDebugDate(iso); openEntry(iso); renderEntry(iso); const t = document.getElementById('entry-body').textContent.replace(/\\s+/g, ' ');
         const f = document.getElementById('ph-' + c.id); const r = { t, platz: f ? f.getAttribute('placeholder') : null }; setDebugDate(''); return r; };
-      const e1 = lies('${L.erster}'); out.karte = (e1.t.match(/Woche 6[^—]{0,80}— pH (\\d,\\d+)/) || [])[1] || null;
+      // (v1.5.482) Die Wochenkarte ist oben eine Kopfzeile ohne pH; der Wochen-Tipp mit pH steht zugeklappt darunter („woran du es erkennst …“).
+      const e1 = lies('${L.erster}'); out.karte = (e1.t.match(/Woche 6[^—]{0,80}— pH (\\d,\\d+)/) || e1.t.match(/woran du es erkennst, was passiert[^—]{0,80}— pH (\\d,\\d+)/) || [])[1] || null;
       out.zielE = (e1.t.match(/Ziel: pH (\\d\\.\\d+)/) || [])[1] || null;
       const e2 = lies('${L.giess}'); out.ziel = (e2.t.match(/Ziel: pH (\\d\\.\\d+)/) || [])[1] || null; out.hint = (e2.t.match(/🎯 pH: (\\d\\.\\d+)/) || [])[1] || null;
       out.mischen = (e2.t.match(/→ pH auf (\\d\\.\\d+)/) || [])[1] || null; out.platz = e2.platz;

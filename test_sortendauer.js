@@ -237,7 +237,7 @@ function pruef(name, bedingung, info) {
       /Samentüte/.test(nl), nl.slice(0, 300));
 
     const sa = txt('Sensi Amnesia XXL Auto');
-    pruef('Gemessen: sagt "Aus einem echten Grow"', /echten Grow/.test(sa), sa.slice(0, 160));
+    pruef('Gemessen: sagt "Aus einem echten Grow"', /echten Anbau/.test(sa), sa.slice(0, 160));
     pruef('Gemessen: behauptet NICHT, hochgerechnet zu sein',
       !/[Hh]ochgerechnet/.test(sa), sa.slice(0, 160));
 

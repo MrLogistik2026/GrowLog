@@ -90,7 +90,7 @@ const kurz = (s) => String(s || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' '
     pruef('Kein „Hard Dryback auf 35 %", kein CalMag im letzten Guss, kein „knochentrocken", kein Drain-EC nach dem Schmelzen',
       !alt.test(html), (html.match(new RegExp('.{0,40}(' + alt.source + ').{0,40}')) || [''])[0]);
     pruef('Timeline und Schritte: Hard-Dryback bis zum Gießpunkt, das Schmelzwasser bleibt im Topf',
-      /Hard-Dryback: nach dem letzten Spülgang nicht mehr gießen, bis der Topf den Gießpunkt erreicht \(25–40 % Restgewicht\)/.test(html)
+      /Abtrocknen: nach dem letzten Spülgang nicht mehr gießen, bis der Topf den Gießpunkt erreicht \(25–40 % Restgewicht\)/.test(html)
       && /Nach dem IceFlush wird bis zur Ernte nicht mehr gegossen — das Schmelzwasser bleibt im Topf/.test(html));
   });
 

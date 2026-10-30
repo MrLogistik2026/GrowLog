@@ -158,7 +158,7 @@ const { boot } = require('./audit_lib');
     // In der Karte sichtbar
     goTo('gussplan'); renderGussplan();
     const t = document.getElementById('scr-gussplan').textContent;
-    out.inKarte = /Hard-Dryback/.test(t) && /Spülgänge/.test(t);
+    out.inKarte = /Abtrocknen/.test(t) && /Spülgänge/.test(t);
     if (!out.inKarte) fehler.push('Hard-Dryback oder Spülgänge fehlen in der Karte');
     return JSON.stringify({ out, fehler });
   })()`));

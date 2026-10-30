@@ -176,8 +176,8 @@ function pruef(name, bedingung, info) {
         c.growType = 'outdoor';
         var drauss = endspurtCard(c, iso);
         return JSON.stringify({
-          drinIce: /IceFlush/.test(drin), drinDry: /Hard-Dryback/.test(drin),
-          draussIce: /IceFlush/.test(drauss), draussDry: /Hard-Dryback/.test(drauss),
+          drinIce: /IceFlush/.test(drin), drinDry: /🌵 Abtrocknen/.test(drin),
+          draussIce: /IceFlush/.test(drauss), draussDry: /🌵 Abtrocknen/.test(drauss),
           draussErnte: /Ernte/.test(drauss), draussSpuelen: /Spülen ab/.test(drauss),
           drinLaenge: drin.length, draussLaenge: drauss.length
         });
