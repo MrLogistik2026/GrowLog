@@ -3,12 +3,11 @@
 Stand: **v1.5.498** · index.html 2,67 MB · 781 Funktionen
 Zuletzt fortgeschrieben am 30.10.2026 früh (Nachtarbeit 29./30.10.: Diagnose-Liste B01–B12 und U4 fertig, danach zwei
 Bedien-Prüfungen nach den Grundsätzen der Lager-App — Befunde in `.claude/notizen/ux/*.txt` und `.claude/tmp/ux2/bericht.txt`,
-abgearbeitet in v1.5.452–493, siehe Versionsliste in 0o. **Patrick am 30.10.2026 morgens zu den vier offenen Fragen: „Ja bau
+abgearbeitet in v1.5.452–498, siehe Versionsliste in 0o. **Patrick am 30.10.2026 morgens zu den vier offenen Fragen: „Ja bau
 bitte alles so“** — Einsteiger-Eintrag am Gießtag kürzen (erledigt v1.5.493: „Heute zu tun“ oben, Rest im Zuklapper, Profi zeichengleich), Diagnose-Umbauten
 U1–U3 (erledigt v1.5.490–492; U1 in einer fairen Fassung: jede passende Ursache bekommt den Phasen-Punkt — die Fassung „nur enge Listen“ ist gemessen und verworfen), Sämlings-Fenster nach dem Anlegen weg (erledigt v1.5.489), Temperaturgrenzen der
 Diagnose bleiben bei 30 °C / 18 °C (entschieden). **Weiter offen:** Assistent ohne ⓘ und mit Dauer-Frage vor der Sorte (Patrick
-08.10.: Assistent vorerst nicht umbauen — v1.5.468–471 waren Texte und eine weggelassene Frage), Profi-Startseite nennt Plan-Woche
-„Wo6“ und Blütewoche „Blüte Wo. 4“ nebeneinander (Test `test_runzwei` hängt an „Wo6“), Installationsname „Grow-Begleiter“ in
+08.10.: Assistent vorerst nicht umbauen — v1.5.468–471 waren Texte und eine weggelassene Frage), Installationsname „Grow-Begleiter“ in
 `manifest.json`.) Davor: Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
@@ -108,7 +107,7 @@ aus dem Gedächtnis bewertet, bewertet die Absicht, nicht den Stand. Für die n�
    nicht; `_autoBackup` (~5240) ersetzt die Kopie danach durch den leeren Stand — gemessen: stiller Totalverlust. Dazu
    `cycles: null` bricht den Start ab, `importData` (~25358) nimmt jede JSON-Datei und fährt keine Migrationen. Tests fehlen.
 4. **Umbau — Erntefenster als eine Quelle** nach Prüfplan 0m.2; darin ein Fehler: Ein höheres Bernstein-Ziel ergibt ein
-   *früheres* Fenster (Rückfall von `harvestWindow` auf die Samentüte, ~10339).
+   *früheres* Fenster (Rückfall von `harvestWindow` auf die Samentüte, ~10339) — **behoben in v1.5.497** (bei frischer Messung kein Fenster statt eines zu frühen); der Umbau selbst steht aus.
 5. **Umbau — Vorschau vor dem Sichern** (Abschnitt 1, Schritt 1). Der Fehler darin ist behoben: „Damit ergibt sich" rechnet
    seit v1.5.362 beim Tippen mit (`_kettenVorschauHTML`). Offen bleibt die Vorschau für die übrigen koppelnden Funktionen.
 6. **Umbau — Gießtag-Eintrag im Einsteiger-Modus entschlacken** (Abschnitt 1): Einsteiger spart dort 3 Felder, 0 Knöpfe.
@@ -117,7 +116,7 @@ aus dem Gedächtnis bewertet, bewertet die Absicht, nicht den Stand. Für die n�
 8. **Fehler — Düngeplan-Vorlagen fertig prüfen** (0n): Plagron, CANNA, Hesi ohne geklärten Dosis-Modus, Green Sensation,
    Produktnotizen mit Wirkungsversprechen, EC im Wachstum an drei Stellen verschieden.
 9. **Umbau — Lesbarkeit auf dem Handy:** Zoom-Sperre, Hinweisfarben und dunkle Flächen im hellen Thema sind behoben
-   (v1.5.354–356). Offen: 80 % des Textes ≤ 11 px, Tippflächen unter 44 px. Hebt die schwächste Note (T5 3,6) am stärksten.
+   (v1.5.354–356). Seit v1.5.498 Mindestschrift 11 px, Erklärtexte 12 px, häufige Knöpfe 44 px hoch (zentrale Regel in head.html). Offen: Pflanzen-Auswahl im Eintrag (24 px), Kalender-Tag-Nummern 9 px, ↩ ↪ 36 px breit.
 10. **Fehler — Begriffe-Prüfung Schritte 8–24:** „Dryback" 35×, „Grow" 8×, „Runoff" 14× sichtbar, Dezimalpunkt und -komma gemischt.
 
 **Reihenfolge ab jetzt:** Die Fehler aus den Hebeln 1–3 werden als Nächstes behoben, je mit eigener Version und Test —
@@ -462,7 +461,7 @@ Speicher-Befunde sind in v1.5.340–344 behoben. Rohdaten: Workflow wf_63d754b1-
 - v1.5.495: Tag-1-Karte nennt bei mehreren Töpfen die Menge je Topf wie der Satz darüber, mit „zusammen … für N Töpfe“ (`test_tag1_karte_je_topf.js`).
 - v1.5.496: Profi-Startseite: Plan-Woche heißt „Plan-Wo. 6“ neben der Blütewoche „Blüte Wo. 4“ (`test_runzwei.js`).
 - v1.5.497: Erntefenster: Ein höheres Bernstein-Ziel ergibt nie ein früheres Fenster — ohne Vorhersage bei frischer Messung kein Fenster statt Samentüte (`test_erntefenster_ziel.js`).
-- v1.5.498: Lesbarkeit: Mindestschrift 11 px, Erklärtexte 12 px, häufige Knöpfe mindestens 44 px hoch — eine zentrale Regel in head.html, im Browser auf 320 und 390 px geprüft (`test_lesbarkeit_groesse.js`).
+- v1.5.498: Lesbarkeit: Mindestschrift 11 px, Erklärtexte 12 px, häufige Knöpfe mindestens 44 px hoch — eine zentrale Regel in head.html, im Browser auf 320 und 390 px geprüft (`test_lesbarkeit_groesse.js`). Gesamtlauf auf 498: 406/406 grün.
 
 **Gegenprüfung von v1.5.364/365 (07.10.2026 nachts, Workflow wf_4cf817bf-629, drei Sonnet-Prüfer + Gegenprüfer).** Kein Fehlalarm
 in 33 App-Fassungen, allen Vorlagen und über 2800 Klicks; die schweren Befunde (unsichere Kopie zerstört den Hauptstand, Tropfen als
