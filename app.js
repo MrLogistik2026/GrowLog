@@ -1866,7 +1866,11 @@ function diagnoseProblems(symptoms, ctx = {}) {
     // allgemeinen Phasen-Bonus. Gerundet, damit 0,15 − 0,05 nicht als 0,10000000000000002
     // einen Gleichstand entscheidet.
     const mess = Math.round(Math.max(0, ctxBoost - _phaseB) * 1000) / 1000;
-    return { problem: p, score, matchedReasons, contextReasons, ctxBoost, mess, breite, rang };
+    // (v1.5.491) Abdeckung: wie viele der gewählten Merkmale der Eintrag trifft (Ort, Farben, Formen einzeln gezählt). Die Punktzahl
+    // zählt nur Bereiche; wer Weiß UND Gelb wählt, hat zwei Merkmale genannt, und ein Eintrag, der beide trifft, steht nicht hinter
+    // einem, der nur Gelb trifft (gemessen: Weiß + Gelb oben nannte die Überdüngung vor dem Foto-Bleaching, ANBAU.md 8.2).
+    const abdeckung = matchedLoc.length + matchedCol.length + matchedShp.length;
+    return { problem: p, score, matchedReasons, contextReasons, ctxBoost, mess, abdeckung, breite, rang };
   }).filter(Boolean);
 
   // (v1.5.124) Bei Punktgleichstand entschied bisher die Reihenfolge im Quelltext — also
@@ -1895,7 +1899,7 @@ function diagnoseProblems(symptoms, ctx = {}) {
   // gleichwertiger Treffer.
   return results
     .sort((a, b) => (b.score - a.score) || (b.mess - a.mess) || (b.ctxBoost - a.ctxBoost)
-      || (b.rang - a.rang) || (a.breite - b.breite))
+      || (b.abdeckung - a.abdeckung) || (b.rang - a.rang) || (a.breite - b.breite))
     .slice(0, 5);
 }
 
@@ -3831,7 +3835,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.490';
+const APP_VERSION = 'v1.5.491';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,

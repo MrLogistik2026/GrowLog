@@ -2,6 +2,16 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-30 — v1.5.491
+
+- **Bei gleicher Punktzahl entschied die Diagnose, ohne zu zählen, wie viele der genannten Merkmale ein Bild trifft.** Wer „Weiß“
+  und „Gelb“ oben wählte, bekam Überdüngung, Lichtmangel, Foto-Bleaching und Lichtbrand gleichauf — das Bleichen, das beide trifft,
+  stand nicht vorn. Befund U2 vom 08.10.2026; Patrick am 30.10.2026: „Ja bau bitte alles so“.
+- **Jetzt** gewinnt bei Gleichstand, wer mehr der gewählten Merkmale trifft (Feld `abdeckung` aus Ort, Farben und Formen) —
+  nach Punkten, Messwert und Kontext, vor dem Schweregrad. Platz 1 wechselt in 100 von 5280 Einzel- und 1047 von 16272
+  Mehrfach-Fällen; alle 27 klassischen Bilder bleiben richtig.
+- Test: `test_diagnose_u2_abdeckung.js` (21 Prüfungen, beide Zeitzonen; fällt auf v1.5.490 um). Gebaut von einem Sonnet-Helfer.
+
 ## 2026-10-30 — v1.5.490
 
 - **Die Diagnose achtete beim Ort zu wenig auf die erste Frage „oben oder unten?“** (ANBAU.md 6.1). Ein Eintrag, der zu keinem
