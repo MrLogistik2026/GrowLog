@@ -465,7 +465,7 @@ const T = {
     phWarningHigh: ({ inputPh, runoffPh, medium }) =>
       (medium === 'coco' || medium === 'hydro')
         ? `Drain-pH ${runoffPh.toFixed(1)} ist deutlich höher als Input ${inputPh.toFixed(1)} — im inerten Medium (kein Puffer) driftet die Wurzelzone basisch, Kalium-Lockout droht. Input-pH senken (${medium === 'hydro' ? 'Hydro' : 'Coco'} ${phTargetFor(medium).label}).`
-        : `Drain-pH ${runoffPh.toFixed(1)} liegt über Input ${inputPh.toFixed(1)}. In Erde ist das meist der Kalk-Puffer — <b>kein</b> Grund, den Input-pH zu senken. Weiter mit dem Zulauf im Ziel gießen (pH ${phTargetFor(medium).label}); nicht dauerhaft unter 6.0, um den Drain zu drücken (das bekämpft den Puffer und riskiert erst recht einen Lockout). Nur bei echten Mangel-Symptomen + über mehrere Güsse steigendem Drain-pH: 1× leichter Flush mit pH 6.5.`,
+        : `Drain-pH ${runoffPh.toFixed(1)} liegt über Input ${inputPh.toFixed(1)}. In Erde ist das meist der Kalk-Puffer — <b>kein</b> Grund, den Input-pH zu senken. Weiter mit dem Zulauf im Ziel gießen (pH ${phTargetFor(medium).label}); nicht dauerhaft unter 6.0, um den Drain zu drücken (das bekämpft den Puffer und riskiert erst recht einen Lockout). Nur bei echten Mangel-Symptomen + über Wochen steigendem Drain-pH: Messgerät und Zulauf-pH prüfen und den Drain-EC messen; nur bei zu hohem Drain-EC einmal mit Wasser im pH-Ziel (${phTargetFor(medium).label}) durchgießen — den Kalkpuffer löst das nicht auf.`,
 
     phWarningLow: ({ inputPh, runoffPh, medium }) =>
       (medium === 'coco' || medium === 'hydro')
@@ -1441,9 +1441,10 @@ const PROBLEMS = [
     },
     description: 'Mehrere Mangel-Symptome gleichzeitig, obwohl gedüngt wird. Klassischer Lockout — pH falsch, Wurzeln können nichts aufnehmen.',
     context: { phHigh: true, phLow: true, runoffDriftHigh: true, runoffDriftLow: true },
-    action: 'Input-pH messen und einstellen: Erde 6.2–6.5, Coco 5.8–6.2, Hydro 5.5–6.0. '
+    // (v1.5.505) pH-Lockout: Zielzahlen aus phTargetFor statt „Erde 6.2–6.5“ (ANBAU 4); kein Spülen mit festem pH 6.5.
+    action: 'Input-pH messen und einstellen: Erde ' + phTargetFor('erde').labelComma + ', Coco ' + phTargetFor('coco').labelComma + ', Hydro ' + phTargetFor('hydro').labelComma + '. '
       + '<b>In Erde wichtig:</b> Ein Drain-pH über dem Input ist meist der Kalkpuffer und normal — dann den Input NICHT senken und NICHT spülen, das verschärft den Mangel nur. '
-      + 'Erst wenn der Drain-pH über mehrere Güsse weiter steigt UND die Symptome zunehmen: einmal mit pH 6.5 spülen. '
+      + 'Erst wenn der Drain-pH über Wochen weiter steigt UND die Symptome zunehmen (junge Blätter hellgelb, Adern grün): Messgerät prüfen und den Drain-EC messen. Nur bei zu hohem Drain-EC (gültige Messung ab ' + DRAIN_ZIEL.min + ' % Drain) einmal mit Wasser im pH-Ziel (Erde ' + phTargetFor('erde').labelComma + ') durchgießen — den Kalkpuffer löst das nicht auf. '
       + 'In Coco/Hydro folgt der Drain dem Input — dort ist die pH-Korrektur am Input der richtige Hebel.',
     lexiconKey: 'ph_lockout',
   },
@@ -1647,7 +1648,8 @@ const PROBLEMS = [
     },
     description: 'Feine Spinnweben unter den Blättern, gelbe Stipple-Muster (wie Nadelstiche). Wenn unbehandelt: ganze Pflanze innerhalb einer Woche zerstört.',
     context: { tempWarm: true },
-    action: 'SOFORT handeln. Neem-Öl oder Schwefel-Spray alle 3 Tage. Pflanze isolieren. Luftfeuchte auf 60 %+ erhöhen (Milben mögen trockene Luft).',
+    // (v1.5.505) Spinnmilben: keine feste „60–65 % RLF“ gegen die Milben — in der Blüte gilt der Schimmel-Deckel aus KLIMA_ZIEL (ANBAU 2.2, 13.5).
+    action: 'SOFORT handeln. Neem-Öl oder Schwefel-Spray alle 3 Tage. Pflanze isolieren. Luftfeuchte nicht dauerhaft zu niedrig halten (Milben vermehren sich bei Wärme und trockener Luft schneller) — aber nur bis zum Ziel deiner Phase: In der Blüte gilt der Schimmel-Deckel (' + KLIMA_ZIEL.mittel.deckel + ' % in früher und mittlerer, ' + KLIMA_ZIEL.spaet.deckel + ' % in später Blüte).',
     lexiconKey: 'spider_mites',
   },
   {
@@ -3858,7 +3860,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.504';
+const APP_VERSION = 'v1.5.505';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -7347,7 +7349,7 @@ const INFO_TERMS = {
   spinnmilben: {
     title: 'Spinnmilben',
     text: 'Winzige Sauger auf der Blattunterseite, mit bloßem Auge kaum zu erkennen. Sie lieben heiß und trocken und können ein Zelt in zwei Wochen ruinieren.',
-    tip: 'Wöchentlich mit der Lupe die Blattunterseiten kontrollieren. Frühwarnzeichen: helle Sprenkel-Punkte auf der Blattoberseite. Bei Befall: relative Luftfeuchte (RLF) auf 60–65 % hochfahren (mögen sie nicht) und Raubmilben (nützliche Jäger-Milben) einsetzen.',
+    tip: 'Wöchentlich mit der Lupe die Blattunterseiten kontrollieren. Frühwarnzeichen: helle Sprenkel-Punkte auf der Blattoberseite. Bei Befall: die relative Luftfeuchte (RLF) nur bis zum Ziel deiner Phase anheben (trockene Luft fördert sie; in der Blüte höchstens ' + KLIMA_ZIEL.mittel.deckel + ' % in früher und mittlerer, ' + KLIMA_ZIEL.spaet.deckel + ' % in später Blüte) und Raubmilben (nützliche Jäger-Milben) einsetzen.',
     lex: 'Spinnmilben (Tetranychidae)',
   },
   thripse: {
@@ -7579,7 +7581,7 @@ const SYMPTOMS = [
         heading: 'Spitzen braun, krumm nach oben',
         verdict: '⚠ Überdüngung (Nutrient Burn)',
         color: 'var(--red)',
-        text: 'Zu hohe Düngerkonzentration. <b>Sofort:</b> Dosis um 30-50% reduzieren. Ggf. einmal nur mit reinem Wasser gießen (Zwischenguss). Bei EC-Messgerät: Drain-EC prüfen — ' + T.drainRegelKurz() + '.',
+        text: 'Zu hohe Düngerkonzentration. <b>Sofort:</b> beim nächsten Guss die Dosis halbieren. Bei schwerem Burn und ab Tag ' + DRAIN_AB_TAG + ' einmal mit klarem Wasser durchgießen, bis ' + DRAIN_ZIEL.min + '–' + DRAIN_ZIEL.max + ' % unten ablaufen. Bei EC-Messgerät: Drain-EC prüfen — ' + T.drainRegelKurz() + '.',
         when: 'Alle Phasen',
         lex: 'Überdüngung',
       },
@@ -7979,7 +7981,7 @@ const SYMPTOMS = [
         heading: 'Feine Gespinste + winzige helle Pünktchen unterm Blatt',
         verdict: '⚠⚠ Spinnmilben',
         color: 'var(--red)',
-        text: 'Winzige Spinnentierchen auf der Blattunterseite, später feine Netze in den Blattachseln. Vermehren sich extrem schnell bei Hitze und trockener Luft. <b>Lösung:</b> sofort isolieren, Luftfeuchte hoch + Temperatur runter, Blattunterseiten behandeln. Hartnäckig — mehrfach im 3-Tage-Takt drangehen.',
+        text: 'Winzige Spinnentierchen auf der Blattunterseite, später feine Netze in den Blattachseln. Vermehren sich extrem schnell bei Hitze und trockener Luft. <b>Lösung:</b> sofort isolieren, die Temperatur ins Ziel deiner Phase bringen, die Luftfeuchte nur bis zum Ziel anheben (in der Blüte höchstens ' + KLIMA_ZIEL.mittel.deckel + ' % in früher und mittlerer, ' + KLIMA_ZIEL.spaet.deckel + ' % in später Blüte), Blattunterseiten behandeln. Hartnäckig — mehrfach im 3-Tage-Takt drangehen.',
         when: 'Alle Phasen, v.a. heiß/trocken',
         lex: 'Spinnmilben (Tetranychidae)',
       },
@@ -16741,7 +16743,8 @@ function getCriticalWarning(category, value, p, c, t) {
         level: 'critical',
         icon: '🚨',
         title: `${value.toFixed(1)}°C — kritische Hitze`,
-        action: 'Über 32°C trocknen Trichome aus, Terpene verdampfen, Photosynthese stoppt. SOFORT kühlen: Lüftung maximieren, Lampe höher hängen, Tag-Lichtphase verschieben (z.B. nachts laufen lassen).',
+        // (v1.5.505) Hitze: „Photosynthese stoppt“ und „Trichome trocknen aus“ sind nicht belegt; belegt ist das Maximum um 30 °C (ANBAU 2.2) und der Stomata-Schluss bei hohem VPD (2.2).
+        action: 'Über 32 °C liegt die Luft 4–6 K über dem Temperatur-Ziel (höchstens 26–28 °C je Phase). Bei gleicher Luftfeuchte steigt dann das VPD stark; ein zu hohes VPD lässt die Pflanze die Stomata schließen und stoppt die CO₂-Aufnahme, und Terpene verdunsten schneller. SOFORT kühlen: Lüftung maximieren, Lampe höher hängen, Tag-Lichtphase verschieben (z.B. nachts laufen lassen).',
       };
     }
     if (value > 30) {
@@ -30916,7 +30919,9 @@ function renderEntry(iso) {
               <div style="display:flex;flex-direction:column;gap:6px;font-size:10px;color:var(--text-sub);line-height:1.5">
                 <div style="background:rgba(224,96,96,0.06);border-radius:6px;padding:6px 8px;color:var(--red)">⚠️ <b>Regel Nr. 1:</b> Nach Topfgewicht gießen, nicht nach Kalender!</div>
                 ${_drainMoeglich(p)
-                  ? `<div><b style="color:var(--blue)">① Vollsättigung:</b> Langsam gießen, bis ${DRAIN_ZIEL.min}–${DRAIN_ZIEL.max} % unten ablaufen${waterSug > 0 ? ` (~${waterSug} ml)` : ''}. Topfgewicht merken = 100% Referenz.</div>`
+                  ? (() => { const _gA = gussMengeJePflanze(c, p, iso); return (!_gA || _drainZuErwarten(c, iso, _gA)) /* (v1.5.505) dieselbe Regel wie Startseite und Lern-Status: Drain nur, wo er bei dieser Menge entstehen kann */
+                    ? `<div><b style="color:var(--blue)">① Vollsättigung:</b> Langsam gießen, bis ${DRAIN_ZIEL.min}–${DRAIN_ZIEL.max} % unten ablaufen${waterSug > 0 ? ` (~${waterSug} ml)` : ''}. Topfgewicht merken = 100% Referenz.</div>`
+                    : `<div><b style="color:var(--blue)">① Vollsättigung:</b> Gieß${waterSug > 0 ? ` ~${waterSug} ml` : ''} langsam in Etappen. ${_gA.V > 0 ? _keinDrainSatz(_gA) : "Drain entsteht erst, wenn mehr in den Topf kommt, als seit dem letzten Auffüllen fehlt"}. Ist der Topf einmal ganz durchgegossen, merk dir sein Gewicht als 100% Referenz.</div>`; })()
                   : `<div><b style="color:var(--blue)">① Noch nicht durchgießen:</b> Bis Tag ${DRAIN_AB_TAG - 1} hat die junge Pflanze kaum Wurzeln im Topf. Gieß an den Gießtagen der App ihre Menge${waterSug > 0 ? ` (~${waterSug} ml)` : ''} im Ring um den Stamm — unten läuft noch nichts ab, und das ist richtig. Ab Tag ${DRAIN_AB_TAG} wird durchgegossen, bis ${DRAIN_ZIEL.min}–${DRAIN_ZIEL.max} % unten ablaufen.</div>`}   <!-- (v1.5.372) F06 -->
                 <div>${c.medium === 'coco' ? '<b style="color:var(--teal)">② Feucht halten:</b> Coco nie ganz austrocknen lassen — nur leicht abtrocknen, dann wieder gießen. Die Wurzeln mögen es gleichmäßig feucht.' : '<b style="color:var(--teal)">② Rücktrocknung:</b> Finger weg! Trocknung zieht O₂ in die Wurzelzone = Motor für Wachstum.'}</div>
                 <div>${c.medium === 'coco' ? `<b style="color:var(--green)">③ Gießpunkt:</b> ${_drainMoeglich(p) ? '' : `Ab Tag ${DRAIN_AB_TAG}: `}Gießen sobald der Topf merklich leichter wird (Hebe-Test „${GIESSPUNKT.coco.knopf}“, ${GIESSPUNKT.coco.von}–${GIESSPUNKT.coco.bis} % Restgewicht) — jedes Mal mit Nährlösung. (${getInt(c, p?.ph || 'bloom') <= 1 ? 'meist täglich' : '~alle ' + getInt(c, p?.ph || 'bloom') + ' Tage'})` : `<b style="color:var(--green)">③ Sweetspot:</b> ${_drainMoeglich(p) ? '' : `Ab Tag ${DRAIN_AB_TAG}: `}Gießen im Sweet Spot bei ${GIESSPUNKT.erde.von}–${GIESSPUNKT.erde.bis} % Restgewicht (Hebe-Test „Knapp“). Obere 3–5 cm trocken. (~alle ${getInt(c, p?.ph || 'bloom')} Tage)`}</div>
@@ -36491,7 +36496,8 @@ const LEXIKON = [
     { t: 'Überdüngung',
       brief: 'Verbrannte Blattspitzen. Das häufigste Problem bei Einsteigern — „mehr hilft mehr" stimmt hier nicht.',
       mechanism: 'Bei zu hohem EC im Substrat kehrt sich der <b>osmotische Druck</b> um: Statt dass Wurzeln Wasser aufnehmen, <b>zieht das Substrat Wasser aus den Wurzeln raus</b>. Ergebnis: Die Pflanze „verbrennt" von innen — verdurstet in nasser Erde. Zuerst an den Blattspitzen sichtbar (dort verdunstet am meisten), dann weiter Richtung Blattmitte.',
-      practice: '<b>Typische Zeichen:</b><br>• Blattspitzen werden braun-knusprig, kräuseln sich nach unten<br>• Gelb-braune Ränder die sich nach innen ausbreiten<br>• Satte, dunkelgrüne Blätter mit „Klauen"-Form (klassisch bei N-Überschuss)<br><br><b>Sofortmaßnahmen:</b><br>1. Drain-EC messen → bestätigt die Diagnose<br>2. Nächsten Guss nur Wasser (pH 6.4) bis Drain austritt<br>3. Bei schwerer Versalzung: 2-3× Topfvolumen flushen<br>4. Dünger-Dosis um 25-30 % reduzieren<br>5. Nächsten Guss vorsichtig beobachten',
+      // (v1.5.505) Überdüngung: eine Kürzung („halbieren“ wie die Diagnose), kein „2–3× Topfvolumen“ (in den Topf passt nur, was ihm fehlt, ANBAU 1.1), Spülen erst ab Tag 25 (13.1), Drain-EC mit Gültigkeitsbedingung (5.1).
+      practice: '<b>Typische Zeichen:</b><br>• Blattspitzen werden braun-knusprig, kräuseln sich nach unten<br>• Gelb-braune Ränder die sich nach innen ausbreiten<br>• Satte, dunkelgrüne Blätter mit „Klauen"-Form (klassisch bei N-Überschuss)<br><br><b>Sofortmaßnahmen:</b><br>1. Topf anheben: Ein schwerer Topf spricht gegen Wassermangel, ein leichter lässt Trockenheit offen — an den Spitzen sieht beides gleich aus.<br>2. Beim nächsten Guss die Düngung halbieren. Welkt die Pflanze im nassen Topf, nicht mit derselben Nährlösung nachgießen.<br>3. Drain-EC messen: ' + T.drainRegelKurz() + '.<br>4. Nur bei schwerem Burn und ab Tag ' + DRAIN_AB_TAG + ': einmal mit klarem Wasser im pH-Ziel deines Substrats (Erde ' + phTargetFor('erde').labelComma + ' · Coco ' + phTargetFor('coco').labelComma + ') durchgießen, bis ' + DRAIN_ZIEL.min + '–' + DRAIN_ZIEL.max + ' % der Menge unten ablaufen — eine feste Literzahl gibt es nicht. Vorher nicht durchgießen: Der junge Topf bliebe lange nass.<br>5. Danach vorsichtig beobachten und bei jedem Guss den Drain-EC messen',
       pitfall: 'Häufigster Fehler: „Sie sieht schwächlich aus, also mehr düngen." Nein — erst <b>pH prüfen</b> (ein falscher pH erzeugt dasselbe Bild), dann Drain-EC messen. Überdüngung ist oft schwerer zu heilen als Mangel, weil Salze lange im Substrat bleiben. Bereits eingetragene Schäden an Blättern wachsen nicht weg.' },
     { t: 'Nährstoffmangel',
       brief: 'Wie du erkennst was fehlt — über Farbe, Position und Muster der Verfärbung.',
@@ -36626,12 +36632,12 @@ const LEXIKON = [
       practice: '<b>Produkte:</b> Cannazym (Canna), Sensizym (Advanced), Hesi PowerZyme.<br><br><b>Dosierung:</b> 2-4 ml/L einmal pro Woche oder bei jedem zweiten Guss.<br><br><b>Wichtig vor allem bei:</b><br>• Recycling-Substrat (alte Erde wiederverwenden)<br>• Langen Zyklen (Fem 3+ Monate)<br>• Hydro-Systemen (Biofilm-Prävention)<br>• Nach massivem Wurzelstress (Umtopfen bei Fem)',
       pitfall: 'Enzyme wirken <b>nur im lebenden Boden</b> — in sterilen Hydro-Tanks bei zu hoher Temperatur (über 25 °C Nährlösung) werden sie zerstört. Nicht mit starken Fungiziden oder Chlor-Wasser kombinieren.' },
     { t: 'Mykorrhiza & Bodenmikroben',
-      brief: 'Lebende Mikroorganismen die mit Wurzeln und Pflanze in Symbiose leben. Vergrößern Aufnahme-Fläche, schützen vor Pathogenen, machen Nährstoffe verfügbar. Einmal etabliert, lebenslang wirksam.',
+      brief: 'Lebende Mikroorganismen die mit Wurzeln und Pflanze in Symbiose leben. Vergrößern Aufnahme-Fläche, schützen vor Pathogenen, machen Nährstoffe verfügbar. Einmal etabliert, können sie bleiben — das hängt vom Substrat ab.',
       mechanism: 'Drei Hauptgruppen, alle drei mit eigener Funktion und meistens kombiniert eingesetzt:<br><br>' +
-        '<b>1. Mykorrhiza-Pilze:</b> Spezialisierte Bodenpilze die in die Wurzel <b>eindringen oder sie ummanteln</b>. Sie bilden ein feines Hyphen-Netzwerk im Substrat das die <b>aktive Wurzel-Absorptionsfläche um bis zu 700% vergrößert</b>. Der Pilz holt sich von der Pflanze Photosynthese-Zucker, im Gegenzug versorgt er sie mit Wasser und Nährstoffen die sie sonst nicht erreichen würde. Echte Symbiose — beide profitieren.<br><br>' +
-        '<b>2. Trichoderma:</b> Eine andere Pilzgruppe, die <b>Pathogene unterdrückt</b>. Trichoderma kolonisiert die Wurzelumgebung und konkurriert mit Pythium und anderen Wurzelfäule-Erregern um Platz und Nährstoffe. Effekt: drastisch reduziertes Risiko für Wurzelkrankheiten, besonders bei Sämlingen und nach Wurzelstress.<br><br>' +
+        '<b>1. Mykorrhiza-Pilze:</b> Spezialisierte Bodenpilze die in die Wurzel <b>eindringen oder sie ummanteln</b>. Sie bilden ein feines Hyphen-Netzwerk im Substrat das die <b>aktive Wurzel-Absorptionsfläche deutlich vergrößern kann</b> (wie stark, hängt von Pilzart, Substrat und Düngung ab; eine feste Zahl ist nicht belegt). Der Pilz holt sich von der Pflanze Photosynthese-Zucker, im Gegenzug versorgt er sie mit Wasser und Nährstoffen die sie sonst nicht erreichen würde. Echte Symbiose — beide profitieren.<br><br>' +
+        '<b>2. Trichoderma:</b> Eine andere Pilzgruppe, die <b>Pathogene unterdrückt</b>. Trichoderma kolonisiert die Wurzelumgebung und konkurriert mit Pythium und anderen Wurzelfäule-Erregern um Platz und Nährstoffe. Effekt: kann das Risiko für Wurzelkrankheiten senken, besonders bei Sämlingen und nach Wurzelstress — ersetzt aber nicht den Nass-Trocken-Zyklus.<br><br>' +
         '<b>3. Bacillus-Bakterien (B. subtilis, B. amyloliquefaciens):</b> Bodenbakterien die <b>Stoffwechselprodukte</b> ausscheiden, welche das Pflanzenwachstum fördern und gleichzeitig Pathogene hemmen. Bacillus subtilis ist auch als Blatt-Spray gegen Mehltau wirksam.<br><br>' +
-        '<b>Warum „lebenslang"?</b> Diese Mikroorganismen <b>etablieren sich</b> in der Wurzelumgebung und vermehren sich selbst — kein wiederholter Eintrag nötig. Voraussetzung: das Substrat muss „lebendig" sein und nicht durch starke Chemikalien sterilisiert werden.',
+        '<b>Warum bei Mykorrhiza meist nur einmal?</b> Mykorrhiza-Pilze können sich in der Wurzelumgebung <b>etablieren</b> und vermehren sich dann selbst — nach Herstellerangabe reicht deshalb meist ein einmaliger Eintrag. Bakterienprodukte (Bacillus) werden dagegen oft regelmäßig gegeben (siehe „Anwendung über Gießwasser“). Voraussetzung: das Substrat muss „lebendig" sein und nicht durch starke Chemikalien sterilisiert werden.',
       practice: '<b>Anwendung beim Einpflanzen / Umtopfen:</b><br>' +
         '<table style="width:100%;border-collapse:collapse;font-size:13px;margin-top:6px">' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Methode</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Pulver direkt an die Wurzel beim Einpflanzen oder Umtopfen</td></tr>' +
@@ -36680,7 +36686,8 @@ const LEXIKON = [
         '• <b>Bei jeder Düngung neu zugeben</b> → unnötig, etablierte Symbiose vermehrt sich selbst<br><br>' +
         '<b>Goldene Regel:</b> Einmal beim Einpflanzen oder Umtopfen <b>am Wurzelballen</b> ist optimal. Wer nach Wurzelfäule-Behandlung mit H₂O₂ neu pflanzen muss: dann 24 h warten, dann mit Mykorrhiza neu starten.' },
     { t: 'MKP (Mono-Kalium-Phosphat)',
-      brief: 'Ein reiner P-K-Booster (Phosphor + Kalium, 0-52-34) für den Blüte-Höhepunkt. Macht die Buds dichter — kurz und präzise eingesetzt.',
+      // (v1.5.505) MKP: keine Dichte-Zusage (ANBAU 14); der K-Booster-Vorbehalt kommt aus 6.2.
+      brief: 'Ein reiner P-K-Booster (Phosphor + Kalium, 0-52-34) für den Blüte-Höhepunkt. Zu viel Kalium verdrängt Magnesium — deshalb nur kurz einsetzen und nur, wenn die Magnesium-Versorgung bisher stabil war.',
       mechanism: 'In der mittleren bis späten Blüte will die Pflanze viel <b>Phosphor (P) und Kalium (K)</b> für Bud- und Harzbildung, aber wenig Stickstoff (N). MKP (KH₂PO₄) liefert genau P+K mit <b>null N</b> — so kann man die Blüte pushen, ohne die Pflanze blättrig zu halten. Sehr konzentriert, darum winzige Dosen.',
       practice: 'Nur in den Bud-Mast-Wochen (grob Blüte-Woche 7-9, Peak Woche 8). In warmem Wasser <b>vorlösen</b>. Sehr niedrig dosieren (z.B. 0.2-0.3 g/L). <b>EC im Auge behalten</b> — MKP hebt ihn schnell. Im Cup-Sieger-Plan ist GiDeli MKP als Produkt angelegt, steht seit dem V3.4-Stand aber in keiner Woche mit einer Dosis — wer es fahren will, trägt sie selbst ein.',
       pitfall: 'Überdosis verbrennt schnell (P/K-Lockout, braune Spitzen) und verdrängt andere Nährstoffe. Nicht in Vegi oder Früh-Blüte einsetzen. <b>Nach dem Anmischen immer EC messen.</b>' },
@@ -36719,10 +36726,10 @@ const LEXIKON = [
         '<br>' +
         '<b>Behandlungs-Strategien je nach Ursache:</b><br>' +
         '<table style="width:100%;border-collapse:collapse;font-size:13px;margin-top:6px">' +
-        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>pH-Lockout</b></td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Zwischenguss mit pH-korrigiertem Wasser (2× Topfvolumen) — pH soll im Drain wieder 6.0–6.5 sein. Dann erst düngen.</td></tr>' +
+        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>pH-Lockout</b></td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Den Zulauf auf das pH-Ziel deines Substrats einstellen (Erde ' + phTargetFor('erde').labelComma + ' · Coco ' + phTargetFor('coco').labelComma + '). In gekalkter Erde ist ein Drain-pH über dem Zulauf der Kalkpuffer und kein Befund — ihn nicht nach unten zwingen. Steigt er über Wochen weiter und werden junge Blätter hellgelb bei grünen Adern: Messgerät prüfen und den Drain-EC messen (gültig ab ' + DRAIN_ZIEL.min + ' % Drain). Nur bei zu hohem Drain-EC hilft einmaliges Durchgießen mit Wasser im pH-Ziel (ab Tag ' + DRAIN_AB_TAG + ', bis ' + DRAIN_ZIEL.min + '–' + DRAIN_ZIEL.max + ' % ablaufen); den Kalkpuffer löst es nicht auf.</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Salzakkumulation</b></td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Beim nächsten Guss mehr Volumen mit der normalen Nährlösung, bis reichlich Drain kommt. Eine Zwischenspülung mit klarem Wasser nur, wenn der Drain-EC über mehrere Güsse über dem ' + _zahlKomma(DRAIN_EC_VERHAELTNIS.voll) + '-Fachen des Gießwassers bleibt und die Pflanze Symptome zeigt.</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Sauerstoffmangel</b></td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Topf abtrocknen lassen, dann normaler Rhythmus. Bei nächstem Mix mehr Perlite einarbeiten.</td></tr>' +
-        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Mehrere Ursachen</b></td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Spülung als Universallösung — wäscht sowohl Salze raus als auch korrigiert pH bei richtigem Wasser-pH</td></tr>' +
+        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Mehrere Ursachen</b></td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Ursachen nacheinander ausschließen: erst pH am Zulauf, dann Drain-EC, dann das Gewicht des Topfs. Eine Spülung hilft nur gegen Salz, nicht gegen Kalkpuffer oder Sauerstoffmangel</td></tr>' +
         '</table>' +
         '<br>' +
         '<b>Erholungs-Phase nach Lockout:</b><br>' +
@@ -36734,7 +36741,7 @@ const LEXIKON = [
         '• Wöchentliches Drain-pH und Drain-EC messen<br>' +
         '• Konservativ dosieren — lieber etwas zu wenig als zu viel<br>' +
         '• Strikt abtrocknen lassen — verhindert Sauerstoffmangel<br>' +
-        '• Bei Salzakkumulations-Tendenz: alle 4–6 Wochen präventiv 1× durchspülen',
+        '• Salz bleibt eher unten, wenn bei jedem gedüngten Guss etwas Drain abläuft (Ziel ' + DRAIN_ZIEL.min + '–' + DRAIN_ZIEL.max + ' %); gespült wird nach Messung (Drain-EC), nicht nach Kalender',
       pitfall: '<b>Die Lockout-Spirale (klassischer Anfänger-Fehler):</b><br>' +
         '1. Pflanze zeigt Mangelsymptome (z.B. gelbe Blätter)<br>' +
         '2. Anfänger interpretiert „Mangel" → mehr Dünger<br>' +
@@ -36753,9 +36760,10 @@ const LEXIKON = [
         '<b>Goldene Regel:</b> Lockout-Verdacht → erst <b>Drain-pH und Drain-EC messen</b>, dann handeln. Mehr-düngen ist die häufigste Fehlerreaktion und macht es immer schlimmer.' },
     { t: 'Flushen (Zwischenguss)',
       brief: 'Gezieltes Durchspülen des Substrats um Salze rauszuwaschen. Nicht verwechseln mit dem finalen Flush vor der Ernte.',
-      mechanism: 'Durch das Eingießen großer Mengen <b>pH-reguliertem, dünger-freiem Wasser</b> werden die im Substrat angesammelten Salze aktiv ausgewaschen. Der Drain-EC sinkt, der Lockout löst sich. Danach kann normale Düngung wieder ohne Blockade aufgenommen werden.',
-      practice: '<b>Wann flushen:</b><br>• Bei Überdüngung (Blattspitzen verbrennen)<br>• Bei Lockout durch Versalzung (Drain-EC über mehrere Güsse über dem ' + _zahlKomma(DRAIN_EC_VERHAELTNIS.voll) + '-Fachen des Gießwassers)<br>• Präventiv alle 4-6 Wochen bei intensiver Düngung<br><br><b>Wie:</b><br>1. Wasser auf pH 6.3-6.4 einstellen<br>2. 2-3× Topfvolumen langsam durchspülen (11 L Topf → 22-33 L)<br>3. Drain-EC während Spülen messen — soll unter 1.0 sinken<br>4. Topf gut abtropfen lassen<br>5. Nächsten Guss mit leichter Enzym-Zugabe, halbe Dünger-Dosis',
-      pitfall: 'Nicht jeden kleinen Mangel mit Flushen „fixen" — kostet die Pflanze 3-5 Tage Wachstum und kann Mikronährstoffe auswaschen die knapp waren. Flush ist das große Werkzeug, nicht die Erstlinien-Maßnahme. Niemals in der Peak-Blüte flushen — Stress in falscher Phase.' },
+      mechanism: 'Durch das Eingießen von <b>pH-reguliertem, dünger-freiem Wasser</b>, bis unten Drain abläuft, werden die im Substrat angesammelten Salze ausgewaschen. Der Drain-EC sinkt, der Lockout löst sich. Danach kann normale Düngung wieder ohne Blockade aufgenommen werden.',
+      // (v1.5.505) Lexikon „Flushen“: kein „2–3× Topfvolumen“ (ANBAU 1.1), kein „Drain-EC unter 1,0“ (5.1), kein Vorbeugen nach Kalender (14), kein Enzym-Zusatz ohne Beleg.
+      practice: '<b>Wann flushen:</b><br>• Bei Überdüngung (Blattspitzen verbrennen)<br>• Bei Lockout durch Versalzung (Drain-EC über mehrere Güsse über dem ' + _zahlKomma(DRAIN_EC_VERHAELTNIS.voll) + '-Fachen des Gießwassers)<br>• Nicht nach Kalender, sondern nach Messung (Drain-EC). Vorgebeugt wird, indem bei jedem gedüngten Guss etwas Drain abläuft (Ziel ' + DRAIN_ZIEL.min + '–' + DRAIN_ZIEL.max + ' %)<br><br><b>Wie (ab Tag ' + DRAIN_AB_TAG + '):</b><br>1. Klares Wasser auf das pH-Ziel deines Substrats einstellen (Erde ' + phTargetFor('erde').labelComma + ' · Coco ' + phTargetFor('coco').labelComma + ')<br>2. Langsam gießen, bis ' + DRAIN_ZIEL.min + '–' + DRAIN_ZIEL.max + ' % der Menge unten ablaufen, den Drain in einer breiten Wanne auffangen. Eine feste Literzahl gibt es nicht: In den Topf passt nur, was ihm seit dem letzten Auffüllen fehlt, der Rest läuft ab<br>3. Drain-EC messen: Eine feste Zielzahl wie „unter 1,0“ gibt es nicht — wie weit er fällt, hängt von Substrat und deinem Gießwasser ab. In Erde kann der Wert danach wieder ansteigen, weil das Substrat nachliefert<br>4. Topf abtropfen lassen und bis zum Gießpunkt abtrocknen (Hebe-Test)<br>5. Den nächsten Guss mit halber Dünger-Dosis, danach wieder nach Plan',
+      pitfall: 'Nicht jeden kleinen Mangel mit Flushen „fixen": Ein Mangelbild hat oft andere Ursachen (pH, Antagonismus, Klima), und ein Flush hilft nur gegen Salz — er kann außerdem Nährstoffe auswaschen, die knapp waren. Erst die Ursache klären (Drain-EC, pH), dann spülen. Flush ist das große Werkzeug, nicht die Erstlinien-Maßnahme.' },
   ]},
   { cat: '🧪 Düngerarten', items: [
     { t: 'Basisdünger Wachstum',
@@ -36804,7 +36812,7 @@ const LEXIKON = [
       practice: 'Typisch 1–3 ml/L über die ganze Laufzeit, besonders im letzten Drittel und beim Spülen. Kühl und dunkel lagern, Enzyme verderben. Beispiele: Canna Cannazym, Hesi PowerZyme, Plagron Pure Zym, Advanced Nutrients Sensizym.',
       pitfall: 'Nicht mit Wasserstoffperoxid oder aggressiven Fungiziden kombinieren — die zerstören die Enzyme. Abgelaufene Flaschen sind wirkungslos, riechen aber weiterhin normal.' },
     { t: 'Mykorrhiza & Bodenbakterien',
-      brief: 'Lebende Pilze und Bakterien, die mit der Wurzel zusammenarbeiten und ihre Reichweite vervielfachen.',
+      brief: 'Lebende Pilze und Bakterien, die mit der Wurzel zusammenarbeiten und ihre Reichweite vergrößern können.',
       mechanism: 'Mykorrhiza-Pilze verwachsen mit der Wurzel und wirken wie eine <b>Verlängerung des Wurzelsystems</b>: Die Pflanze bekommt Wasser und Nährstoffe, der Pilz Zucker. Bakterienpräparate (Trichoderma, Bacillus) besetzen zusätzlich den Wurzelraum und halten Krankheitserreger klein.',
       practice: 'Pulver <b>trocken direkt an die Wurzel</b> geben — beim Aussäen, Umtopfen oder in ein Loch neben dem Stamm — und danach angießen. Einmalig, kein Nachdüngen nötig. Beispiele: HomeGrow24 Mykorrhiza, Plagron Mycorrhiza, Canna Bio Rhizotonic (Bakterien), Aptus Micromix Soil.',
       pitfall: 'Nicht ins Gießwasser rühren, die Sporen brauchen direkten Wurzelkontakt. Fungizide danach töten den Pilz mit ab. In rein mineralischer Fütterung mit hohem Salzgehalt siedelt sich wenig an.' },
@@ -36821,7 +36829,7 @@ const LEXIKON = [
     { t: 'pH-Regler (pH-Down / pH-Up)',
       brief: 'Stellt den pH des Gießwassers ein. Der wichtigste und billigste Zusatz überhaupt.',
       mechanism: 'Der pH entscheidet, <b>welche Nährstoffe die Wurzel überhaupt aufnehmen kann</b>. Liegt er daneben, hungert die Pflanze trotz vollem Dünger — das sieht aus wie Mangel, ist aber ein Aufnahmeproblem.',
-      practice: 'Ziel in Erde 6,2–6,5, in Coco und Hydro 5,5–6,0. <b>Immer zuletzt einstellen</b>, nachdem alle Zusätze drin sind — jeder Zusatz verschiebt den pH. Tropfenweise herantasten. Beispiele: Canna pH-Down/Up, Hesi pH-Minus, Plagron pH-Min, oder Zitronensäure als Notlösung.',
+      practice: 'Ziel nach Substrat: Erde ' + phTargetFor('erde').labelComma + ' · Coco ' + phTargetFor('coco').labelComma + ' · Hydro ' + phTargetFor('hydro').labelComma + '. <b>Immer zuletzt einstellen</b>, nachdem alle Zusätze drin sind — jeder Zusatz verschiebt den pH. Tropfenweise herantasten. Beispiele: Canna pH-Down/Up, Hesi pH-Minus, Plagron pH-Min, oder Zitronensäure als Notlösung.',
       pitfall: 'pH-Down ist konzentrierte Säure: nie unverdünnt an die Pflanze und nie ins Konzentrat. Der pH driftet im Vorratskanister über Tage — vor jedem Guss frisch messen.' },
     { t: 'Pflanzenstärkung (Aloe & Kräuterauszüge)',
       brief: 'Sanfte Bio-Aktivatoren, die Bodenleben und Pflanzenabwehr unterstützen. Kein Dünger, sondern Pflege.',
@@ -37311,9 +37319,10 @@ const LEXIKON = [
         '<b>Durchführung:</b><br>' +
         '1. <b>Düngung sofort stoppen</b> ab dem Spül-Start — auch keine Bio-Booster oder PK-Mittel<br>' +
         '2. <b>Klares Wasser, pH-eingestellt:</b> ' + phTargetFor('erde').label + ' für Erde, ' + phTargetFor('coco').label + ' für Coco, ' + phTargetFor('hydro').label + ' für Hydro<br>' +
-        '3. <b>Erste 2–3 Güsse:</b> normale Wassermenge — kein extra Spül-Volumen, das spült nur die obere Substrat-Schicht durch<br>' +
-        '4. <b>Mittlere Phase (Tag 4–8):</b> 1× größerer Durchspülgang — etwa 2× Topfvolumen Wasser durchlaufen lassen, Drain auffangen<br>' +
-        '5. <b>Drain-EC</b> fällt nach diesem großen Spülgang. Unter den EC deines Gießwassers kann er nicht fallen, und in Erde kann er danach wieder steigen — <b>das Spülende setzt der Plan</b>, keine Drain-EC-Zahl<br>' +
+        // (v1.5.505) Spülung: kein „2× Topfvolumen“ und keine Begründung „nur die obere Schicht“ (ANBAU 1.1, 14; offener Punkt aus UEBERGABE Abschnitt 10).
+        '3. <b>Jeder Guss in dieser Zeit:</b> gegossen wird am Gießpunkt (Hebe-Test), nicht nach einem festen Vielfachen des Topfvolumens. In den Topf passt nur, was ihm seit dem letzten Auffüllen fehlt; der Rest läuft als Drain ab<br>' +
+        '4. <b>Mit Drain gießen:</b> so, dass ' + DRAIN_ZIEL.min + '–' + DRAIN_ZIEL.max + ' % unten ablaufen, den Drain in einer breiten Wanne auffangen. Mehr Menge kostet Wasser und wäscht Dünger aus; für einen Qualitätsgewinn durchs Spülen gibt es keinen belastbaren Beleg<br>' +
+        '5. <b>Drain-EC</b> fällt beim Spülen. Wie weit, hängt von Substrat und Gießwasser ab, und in Erde kann er danach wieder steigen, weil das Substrat nachliefert — <b>das Spülende setzt der Plan</b>, keine Drain-EC-Zahl<br>' +
         '6. <b>Letzter Guss vor dem Abtrocknen / der Ernte:</b> bei manchen Protokollen mit nur CalMag (~0.2 ml/L) — kein voller Dünger mehr, aber Erhalt der Mineral-Versorgung<br><br>' +
         '<b>Was du in dieser Zeit siehst — überwiegend Seneszenz, die auch ohne Spülen kommt:</b><br>' +
         '• Untere Blätter werden gelb — langsam und gleichmäßig von unten nach oben<br>' +
@@ -37653,8 +37662,8 @@ const LEXIKON = [
         '<b>Eskalations-Stufen:</b><br>' +
         '<table style="width:100%;border-collapse:collapse;font-size:13px;margin-top:6px">' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)" width="30%"><b>Stufe</b></td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Maßnahme</b></td></tr>' +
-        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Sofort</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Temperatur unter 24°C senken — verlangsamt Vermehrung drastisch</td></tr>' +
-        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Sofort</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">RLF auf 60–65% erhöhen — Milben hassen Feuchte</td></tr>' +
+        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Sofort</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Temperatur ins Ziel deiner Phase senken — Wärme beschleunigt die Vermehrung</td></tr>' +
+        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Sofort</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Luftfeuchte bis zum Ziel deiner Phase anheben — in der Blüte nie über den Schimmel-Deckel (' + KLIMA_ZIEL.mittel.deckel + ' % in früher und mittlerer, ' + KLIMA_ZIEL.spaet.deckel + ' % in später Blüte)</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Stufe 1</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Stark befallene Blätter komplett entfernen, im Mülleimer außerhalb entsorgen</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Stufe 2</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Raubmilben (Phytoseiulus persimilis oder Neoseiulus californicus) — biologischer Gegenspieler</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Stufe 3</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Neem-Öl Spritzung (1% + Emulgator) als Sofortmaßnahme bis Raubmilben wirken — NUR in Veg, niemals in Blüte</td></tr>' +
@@ -37833,7 +37842,7 @@ const LEXIKON = [
       brief: 'Über 30 °C im Zelt. Klassisches „Taco-Blatt" — Blattränder rollen sich nach oben ein.',
       mechanism: 'Bei zu hoher Temperatur (>30 °C ohne CO₂-Anreicherung, >32 °C mit) schließt die Pflanze ihre Stomata zum Schutz vor Austrocknung. Folgen: <b>CO₂-Aufnahme stoppt</b> → Photosynthese stoppt → kein Wachstum. Gleichzeitig kann sie sich nicht mehr durch Transpiration kühlen → die Blätter überhitzen. Schutzreflex: Blattränder rollen nach oben → Oberfläche reduziert → weniger Wasserverlust („Taco-Blatt").',
       practice: '<b>Diagnose:</b><br>• Blattränder rollen sich nach oben ein („Taco")<br>• Blätter hängen schlaff trotz nasser Erde<br>• Wachstum stagniert<br>• Thermometer zeigt über 28-30 °C<br><br><b>Sofortmaßnahmen:</b><br>1. <b>Abluft auf Vollast</b><br>2. Lampen-Höhe vergrößern oder dimmen<br>3. Eiswürfel-Tray vor den Zuluft-Eingang stellen (kühlt einströmende Luft)<br>4. Temporär auf <b>Nacht-Zyklus umstellen</b> wenn tagsüber zu warm (Lampe nachts an, tagsüber aus)<br>5. <b>Klimaanlage</b> im Außenraum auf 22 °C<br><br><b>Im Sommer Indoor:</b> Zelt im Keller statt Wohnzimmer, oder LEC/LED statt HPS, oder Klimaanlage einplanen.',
-      pitfall: 'Häufiger Fehler: bei Hitzestress mehr gießen → Wurzeln verfaulen, weil Pflanze gar kein Wasser aufnehmen kann (Stomata zu). Erst Klima fixen, dann normales Gießen. Auch: VPD-Trick — kurzzeitig Luftfeuchte erhöhen (auf 65 %) entlastet die Pflanze, weil Transpirationsdruck sinkt.' },
+      pitfall: 'Häufiger Fehler: bei Hitzestress mehr gießen → Wurzeln verfaulen, weil Pflanze gar kein Wasser aufnehmen kann (Stomata zu). Erst Klima fixen, dann normales Gießen. Auch: VPD-Trick — kurzzeitig Luftfeuchte erhöhen (nur bis zum Schimmel-Deckel deiner Phase: ' + KLIMA_ZIEL.mittel.deckel + ' % in früher und mittlerer, ' + KLIMA_ZIEL.spaet.deckel + ' % in später Blüte) entlastet die Pflanze, weil Transpirationsdruck sinkt.' },
     { t: 'Kältestress',
       brief: 'Kälte bremst den Stoffwechsel. Kritisch wird es an der Wurzel: Unter 16 °C brechen Phosphor- und Wasseraufnahme ein — violette Stängel sind dann typisch.',
       mechanism: 'Niedrige Temperaturen verlangsamen alle Stoffwechselprozesse: Wurzelaktivität, Nährstoff-Aufnahme, Photosynthese. Sinkt die <b>Wurzelzone unter 16 °C</b>, brechen Phosphor- und Wasseraufnahme ein — der Phosphor ist da, kommt aber nicht in die Pflanze. Ein Topf auf kaltem Boden kühlt schneller als die Luft. Sichtbares Symptom: Anthocyane werden produziert (Schutz-Pigmente) → violette/rote Stängel und Blätter.',
@@ -37876,7 +37885,7 @@ const LEXIKON = [
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Tag/Nacht-Differenz</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Unter 8°C halten — Kondensation verhindern</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Inspektion</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Tägliche 1-Minuten-Sichtprüfung in Spätblüte</td></tr>' +
         '</table>',
-      pitfall: '<b>Bei starkem Befall nachts:</b> sofort am Folgetag früh ernten. Jeder Tag mit Botrytis verdoppelt den Schaden. Lieber 1 Woche zu früh ernten als die Hälfte der Buds verlieren.<br><br>' +
+      pitfall: '<b>Bei starkem Befall nachts:</b> sofort am Folgetag früh ernten. Jeder Tag mit Botrytis lässt den Befall weiter wachsen. Lieber 1 Woche zu früh ernten als die Hälfte der Buds verlieren.<br><br>' +
         '<b>Wenn Buds befallen:</b> die kann man <b>nicht mehr verwenden</b> — Mykotoxine sind gesundheitsgefährlich, besonders für Immungeschwächte. Niemals Botrytis-Buds rauchen oder verarbeiten — auch nicht „nur das gesunde Stück daneben". Großzügig wegschneiden.<br><br>' +
         '<b>Häufige Fehler:</b><br>' +
         '• <b>Befall geschüttelt</b> → Sporenwolke verteilt sich im ganzen Zelt, alle Buds in Gefahr<br>' +
@@ -37994,7 +38003,7 @@ const LEXIKON = [
         '</table>' +
         '<br>' +
         '<b>Universelle Erstmaßnahme:</b><br>' +
-        '1. <b>pH messen</b> im Drain-Wasser (sollte 6.0–6.5 in Erde sein, 5.5–6.2 in Coco)<br>' +
+        '1. <b>pH messen</b> im Drain-Wasser (in gekalkter Erde sind 6,8–7,2 normal, das ist der Kalkpuffer; in Coco liegt er nahe am Zulauf: ' + phTargetFor('coco').labelComma + ')<br>' +
         '2. <b>EC messen</b> im Drain (' + T.drainRegelKurz() + ')<br>' +
         '3. <b>Klima prüfen</b> (Temperatur, RLF, VPD)<br>' +
         '4. <b>Substrat prüfen</b> (zu trocken oder zu nass?)<br>' +
@@ -38038,7 +38047,7 @@ const LEXIKON = [
         '<b>Behandlung:</b><br>' +
         '<table style="width:100%;border-collapse:collapse;font-size:13px;margin-top:6px">' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Bei N-Mangel</b></td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">N-Komponente leicht erhöhen (z.B. Bio-Grow oder Equivalent), pH auf 6.2–6.4 prüfen, in 3–5 Tagen Besserung sichtbar</td></tr>' +
-        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Bei N-Überschuss</b></td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Mit klarem Wasser spülen (2× Topfvolumen), Dünger reduzieren, einige Tage warten<br>Bei sehr starkem Befall: eine Zwischenspülung mit klarem Wasser — ihr Ende setzt kein Drain-EC-Wert, in Erde kann er danach wieder steigen</td></tr>' +
+        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Bei N-Überschuss</b></td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Dünger reduzieren, einige Tage warten, Drain-EC messen (gültig ab ' + DRAIN_ZIEL.min + ' % Drain)<br>Bei sehr starkem Befall und Drain-EC über dem ' + _zahlKomma(DRAIN_EC_VERHAELTNIS.voll) + '-Fachen des Gießwassers: eine Zwischenspülung mit klarem Wasser, bis ' + DRAIN_ZIEL.min + '–' + DRAIN_ZIEL.max + ' % ablaufen (ab Tag ' + DRAIN_AB_TAG + ') — ihr Ende setzt kein Drain-EC-Wert, in Erde kann er danach wieder steigen</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Bei Lockout-Verdacht</b></td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">pH korrigieren, mit pH-eingestelltem Wasser spülen, 2 Tage warten, dann halbe Dosis Dünger</td></tr>' +
         '</table>' +
         '<br>' +
@@ -38107,8 +38116,8 @@ const LEXIKON = [
         '<b>➤ Ganze Pflanze blass + Erde ständig nass:</b> Überwässerung, die Wurzeln bekommen keine Luft. Weniger gießen, erst wenn der Topf spürbar leichter ist (Restgewicht).<br><br>' +
         '<b>Im Zweifel: pH messen, nicht nachdüngen.</b> Die meisten „Mängel" sind in Wahrheit ein pH-Problem. Für die genaue Ursache → <b>Pflanzen-Doktor</b> im Tab „Tipps".' },
     { t: 'Braune Spitzen (verbrannte Blattspitzen)',
-      txt: '<b>Braune, trockene Blattspitzen sind oft Überdüngung</b> („Nährstoff-Burn") — aber Trockenheit sieht genauso aus. Den Unterschied zeigt der Topf: Bei zu viel Dünger ist er feucht, bei Wassermangel trocken.<br><br>' +
-        'Erste Hilfe bei feuchtem Topf (konservativ): beim nächsten Guss die Düngermenge <b>halbieren</b>, oder einmal mit klarem, pH-eingestelltem Wasser durchspülen. Schon verbrannte Spitzen werden nicht wieder grün — es geht darum, dass es nicht weiter wandert.<br><br>' +
+      txt: '<b>Braune, trockene Blattspitzen sind oft Überdüngung</b> („Nährstoff-Burn") — aber Trockenheit sieht genauso aus. Der Hebe-Test hilft beim Unterscheiden: Ein leichter Topf spricht für Wassermangel. Ist er schwer, schließt das Wassermangel aus. Dann bleiben vor allem Überdüngung und Überwässerung, daneben Lichtbrand oder Hitze (auch sie machen Ränder braun). Der Drain-EC zeigt, ob Salz dahintersteckt.<br><br>' +
+        'Erste Hilfe bei feuchtem Topf (konservativ): beim nächsten Guss die Düngermenge <b>halbieren</b>, oder — ab Tag ' + DRAIN_AB_TAG + ' und nur bei schwerem Burn — einmal mit klarem, pH-eingestelltem Wasser durchgießen, bis ' + DRAIN_ZIEL.min + '–' + DRAIN_ZIEL.max + ' % unten ablaufen. Schon verbrannte Spitzen werden nicht wieder grün — es geht darum, dass es nicht weiter wandert.<br><br>' +
         '<b>➤ Verbrennen dagegen ganze obere Blätter direkt unter der Lampe</b> (gelb-braun, knistrig-trocken), liegt es an der Lampe — meist an Wärme. Miss die Lufttemperatur auf Höhe der obersten Blätter (Ziel bei Licht an: ' + _tempZielText() + '), verstärke Abluft und Umluft und hänge die Lampe höher oder dimme sie. Bleichen die Spitzen dagegen <b>weiß</b> aus, ist es zu viel Licht, nicht Wärme: Leistung zurücknehmen oder höher hängen. Die Hand sagt dir hier nichts — sie spürt nur Wärme, und eine LED kann ausbleichen, ohne heiß zu werden.<br><br>' +
         'Vorbeugen: Bei Unsicherheit lieber weniger als mehr — und höchstens bis zur Menge deines Plans steigern. Genaue Ursache → <b>Pflanzen-Doktor</b> im Tab „Tipps".' },
     { t: 'Hängende Blätter (schlaff / welk)',
@@ -39165,9 +39174,10 @@ const HOWTO = [
     { t: 'Eintrag öffnen',
       txt: 'Drei Wege: <b>(1)</b> Tippe auf die Zyklus-Karte oder die Heute-Karte → öffnet heute. <b>(2)</b> + Button oben rechts → heute. <b>(3)</b> Kalender → Datum antippen → dieser Tag. Der Zurück-Button ist kontextsensitiv: vom Dashboard gekommen führt er zurück zum Dashboard, vom Kalender gekommen zurück zum Kalender.' },
     { t: '✨ Empfohlene Werte übernehmen',
-      txt: 'An einem Gießtag, wenn Wasser und pH noch leer sind, erscheint oben im Eintrag ein prominenter Button in der Zyklusfarbe. Ein Tipp setzt: Wassermenge nach Empfehlung, pH 6.4, alle Dünger nach Plan in ml ausgerechnet, Temp 23.5°C und Luftfeuchte (RLF) 60% (nur falls leer — deine echten Messwerte werden nie überschrieben). Spart dir auf Gießtagen den manuellen Eintrag.' },
+      // (v1.5.505) „Empfohlene Werte übernehmen“: Temperatur und Luftfeuchte schreibt die App seit v1.5.186 nicht mehr (ANBAU 15: Messwerte werden nie geschätzt); pH kommt vom Substrat, nicht fest 6.4.
+      txt: 'An einem Gießtag, wenn Wasser und pH noch leer sind, erscheint oben im Eintrag ein prominenter Button in der Zyklusfarbe. Ein Tipp setzt: die Wassermenge nach Empfehlung; pH und EC auf das Ziel deines Substrats und deiner Plan-Woche; alle Dünger nach Plan, in ml ausgerechnet. Er füllt nur leere Felder — deine Messwerte bleiben stehen; an Tagen ohne Dünger wie Spülen oder IceFlush setzt er die Düngermengen auf 0. Diese Werte sind ein Vorschlag, keine Messung, und als solcher gekennzeichnet; ändere sie, wenn du gemessen hast. Temperatur und Luftfeuchte füllt die App nicht aus: Die trägst du nur ein, wenn du sie gemessen hast.' },
     { t: 'pH und EC eingeben',
-      txt: 'Die ±-Buttons gehen in 0.1-Schritten. Tippe den Wert, oder drücke lang auf + oder − um schnell hoch/runter zu zählen. Die Ziele (pH 6.2–6.4, EC 0.8–2.0) stehen rechts daneben. Bei Abweichungen erscheint eine farbige Warnung: Orange für Grenzwertig, Rot für gefährlich.' },
+      txt: 'Die ±-Buttons gehen in 0.1-Schritten. Tippe den Wert, oder drücke lang auf + oder − um schnell hoch/runter zu zählen. Die Ziele für dein Substrat und deine Plan-Woche stehen rechts daneben. Bei Abweichungen erscheint eine farbige Warnung: Orange für Grenzwertig, Rot für gefährlich.' },
     { t: 'Dünger abhaken beim Mischen',
       txt: 'Im Nährstoff-Abschnitt siehst du die Mischreihenfolge mit konkreten ml-Werten für deine Gießmenge. Tippe irgendwo auf eine Zeile um den Haken zu setzen — die ganze Zeile ist antippbar, nicht nur das ○. Die Haken bleiben erhalten auch wenn du zwischendurch an einem anderen Dünger die ± antippst, und setzen sich am nächsten Gießtag automatisch zurück. Die ±-Buttons und das Zahlenfeld ändern die Menge <b>nur für diesen Tag</b> — dein Düngeplan bleibt unangetastet. Unter einem geänderten Wert steht dann „✎ nur heute". Willst du den Plan selbst dauerhaft ändern, geht das unter <b>Dünger → Feintuning → Wochenplan</b>.' },
     { t: 'Umgebung: Temperatur & Luftfeuchte',

@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.504** · index.html 2,67 MB · 781 Funktionen
+Stand: **v1.5.505** · index.html 2,67 MB · 781 Funktionen
 Zuletzt fortgeschrieben am 30.10.2026 früh (Nachtarbeit 29./30.10.: Diagnose-Liste B01–B12 und U4 fertig, danach zwei
 Bedien-Prüfungen nach den Grundsätzen der Lager-App — Befunde in `.claude/notizen/ux/*.txt` und `.claude/tmp/ux2/bericht.txt`,
 abgearbeitet in v1.5.452–498, siehe Versionsliste in 0o. **Patrick am 30.10.2026 morgens zu den vier offenen Fragen: „Ja bau
@@ -531,6 +531,7 @@ Speicher-Befunde sind in v1.5.340–344 behoben. Rohdaten: Workflow wf_63d754b1-
 - v1.5.502: Profi-Eintrag: Drain-Zeile bricht auf schmalen Handys um statt 46 px überzustehen; Berichtigung der Aussage zu 498 (`test_drainzeile_umbruch.js`).
 - v1.5.503: Helles Thema: Kalenderzellen und Hinweiskarten folgen dem Thema statt fester Dunkelwerte (`test_helles_thema.js`).
 - v1.5.504: Schriften liegen in der App statt bei Google (fonts/, SIL OFL), Service Worker hält sie; Backup-Erinnerung auf der Startseite ab 14 Tagen (`test_datenschutz_schriften.js`).
+- v1.5.505: Nachschlagetexte nach ANBAU.md: Spülen und Durchgießen ohne Topfvolumen-Vielfache und Kalender, Drain-pH der Erde mit Kalkpuffer, Luftfeuchte nur bis zum Schimmel-Deckel, Wirkungszusagen gestrichen — 34 Stellen, Hebel 1 der Bewertung (`test_texte_anbau.js`).
 
 **Gegenprüfung von v1.5.364/365 (07.10.2026 nachts, Workflow wf_4cf817bf-629, drei Sonnet-Prüfer + Gegenprüfer).** Kein Fehlalarm
 in 33 App-Fassungen, allen Vorlagen und über 2800 Klicks; die schweren Befunde (unsichere Kopie zerstört den Hauptstand, Tropfen als
@@ -2251,6 +2252,10 @@ Mit `--parallel 5` waren am 17.09.2026 zusätzlich `test_dialog_und_namen` und `
 `test_dauerdruecken` trotz `EINZELN` — auf dem neuen und dem alten Stand einzeln grün. Bis das geklärt ist: mit
 `--parallel 4` laufen lassen und rote Läufe einzeln gegenprüfen, auf beiden Ständen.
 
+**Testnamen ohne „backup“, „sicherung“ oder „export“** (30.10.2026): Die `.gitignore` schließt diese Wörter zum Schutz von
+Sicherungsdateien breit aus — ein `test_datenschutz_backup.js` landete deshalb nicht im Repo, erst `git add` meldete es. Vor dem
+Commit `git check-ignore -v <datei>` laufen lassen, wenn ein neuer Name eines dieser Wörter enthält.
+
 **Tests mit Patricks Grow an einem bestimmten Tag setzen das Datum fest** (`setDebugDate`). Mit
 der echten Uhr fielen am 13.09.2026 15 Prüfungen in drei Dateien um — nicht wegen eines Fehlers,
 sondern weil sein Grow seit dem 09.09. geerntet ist. Neue Tests gegen seine Daten: Datum immer
@@ -2376,6 +2381,23 @@ mit echtem Zustand sichtbar.
 ---
 
 ## 10 · Kleinere offene Punkte
+
+- **Reste aus den Gegenprüfungen zu Hebel 1 und 2 (30.10.2026), alle Texte, nicht Teil von v1.5.505 ff.** Prüfberichte:
+  `.claude/tmp/neu/texte/gegenpruefung.md` (Abschnitt „Rest-Funde“) und `.claude/tmp/neu/substrat/gegenpruefung.md` („Seitenbefunde“).
+  - `ecWarningHigh` (~409): „in der Blüte kostet sie Ertrag, weil danach Nährstoffe fehlen“ — wie v1.5.443 an anderer Stelle (ANBAU 14).
+  - Lexikon-Tabelle „Bei Lockout-Verdacht“: unbedingt „mit pH-eingestelltem Wasser spülen, 2 Tage warten“ (wie A5: gegen pH hilft
+    Spülen nicht, 4.1/7.2). Lexikon „Flushen“: „der Lockout löst sich“ unbedingt, Auslöser „Blattspitzen verbrennen“ ohne Drain-EC (Regel 3).
+  - Spül-Tag-Vorlage (`getAutoFillTemplate`): Menge ×1,5 „mehr durchspülen!“, Notiz „pH 6.4 … ~25 % Drain“ — fester Erd-pH, 25 % statt
+    `DRAIN_ZIEL`, Vielfaches gegen 1.1.
+  - Mykorrhiza-Eintrag mit weiteren Zusagen („schützen vor Pathogenen“, „Schutz vor Pythium“, „Trockenstress-Resistenz“); PK-Booster
+    „Sehr wirksam“.
+  - Spinnmilben: Diagnose und Schnellhilfe „Neem-Öl oder Schwefel-Spray alle 3 Tage“ ohne Phase, das Lexikon „Neem NUR in Veg“.
+  - Botrytis: „Lieber 1 Woche zu früh ernten“ gegen ANBAU 11 — als Notmaßnahme vertretbar, den Zielkonflikt aussprechen.
+  - Echter Mehltau: „Milch-Wasser-Spray (1:10) oder Bacillus subtilis“ ist nicht belegt, Besprühen dichter Blüten widerspricht 13.5;
+    Mehltau fehlt in `ANBAU.md` ganz (gehört nach 13 oder 14, mit Quelle).
+  - Coco: dieselbe EC-Tabelle wie Erde (`EC_TARGETS`) und eine höhere Obergrenze 2,8 (`_ecHighCeilFor`) — eigene Coco-Korridore je Gabe
+    wären ein eigener Auftrag. Die Anstiegsregel für den Drain-pH in Erde (14 Tage, +0,3, über 7,2) ist Konvention, nicht ANBAU 4.1.
+  - pH-Zahlen im selben Eintrag gemischt mit Komma und Punkt (Hebel 10 der Bewertung).
 
 - **Mischreihenfolge: `ANBAU.md` 10 gegen App (offen, gefunden bei der CalMag-Prüfung am 08.10.2026).** `ANBAU.md` 10 setzt
   Chelate und Huminstoffe vor Phosphat-Zusätze und Basisdünger, lebende Produkte zuletzt, dazu Bittersalz direkt nach CalMag,

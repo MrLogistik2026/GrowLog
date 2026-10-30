@@ -6,13 +6,15 @@
 // Toppen-/Trainings-Block, Gieß-Karte mit Vorschlag, Lern-Status, Gieß-Guide und Gießanleitung — drei Mengen für einen Guss.
 //
 // GS_INDEX=<anderer Build> lässt den Test gegen einen alten Stand laufen; dort muss er umfallen.
-// GS_BASIS=<Build vor dem Umbau> schaltet zusätzlich den Byte-Vergleich des Profi-Eintrags ein (Vorgabe: .claude/tmp/basis488/index.html,
-// falls vorhanden).
+// GS_BASIS=<Build vor dem Umbau> schaltet zusätzlich den Byte-Vergleich des Profi-Eintrags ein (z. B. .claude/tmp/basis488/index.html).
+// (v1.5.505) Nur noch auf Wunsch: Seit v1.5.505 ändern Text-Berichtigungen nach ANBAU.md auch den Profi-Eintrag (Gießanleitung,
+// Hinweise), der Vergleich mit v1.5.488 wäre damit dauerhaft rot. Für v1.5.493 hat er seinen Zweck erfüllt; die Aufbau-Prüfungen
+// in Abschnitt 5 laufen weiter.
 const fs = require('fs');
 const path = require('path');
 const { JSDOM, VirtualConsole } = require('jsdom');
 const INDEX = process.env.GS_INDEX || path.join(__dirname, 'index.html');
-const BASIS = process.env.GS_BASIS || path.join(__dirname, '.claude', 'tmp', 'basis488', 'index.html');
+const BASIS = process.env.GS_BASIS || '';
 const HTML = fs.readFileSync(INDEX, 'utf8');
 // (v1.5.502) Die Drain-Zeile darf seitdem umbrechen — diese eine bewusste Änderung rechnet der Vergleich heraus, alles andere bleibt
 // zeichengenau gegen v1.5.488.
@@ -207,7 +209,7 @@ const aufgabe = (w) => { const k = w.document.querySelector('[data-ez-aufgabe]')
   // 5. Profi-Modus: unverändert
   {
     const profi = [[1, 1], [4, 4], [12, 12], [40, 50], [86, 86], [92, 92]];
-    const hatBasis = fs.existsSync(BASIS);
+    const hatBasis = !!BASIS && fs.existsSync(BASIS);
     const basisHtml = hatBasis ? fs.readFileSync(BASIS, 'utf8') : null;
     for (const [lo, hi] of profi) {
       const o = { min: lo, max: hi, want: lo === 40 ? 'giess' : '*', beginner: false };
@@ -221,7 +223,7 @@ const aufgabe = (w) => { const k = w.document.querySelector('[data-ez-aufgabe]')
         pruefe(norm(h) === norm(b.w.document.getElementById('entry-body').innerHTML), `Profi Tag ${e.r && e.r.tag}: Eintrag byte-gleich zu v1.5.488`);
       }
     }
-    if (!hatBasis) console.log('  (Byte-Vergleich mit der Basis übersprungen — keine Basis-Datei gefunden)');
+    if (!hatBasis) console.log('  (Byte-Vergleich mit der Basis übersprungen — GS_BASIS nicht gesetzt)');
   }
 
   pruefe(alleFehler.length === 0, 'Keine Laufzeitfehler: ' + alleFehler.slice(0, 3).join(' | '));

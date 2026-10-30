@@ -2,6 +2,35 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-30 — v1.5.505
+
+- **Nachschlagetexte versprachen oder verlangten, was `ANBAU.md` nicht trägt.** Hebel 1 der Bewertung vom 30.10.2026
+  (Fach-Befund 3, Profi-Befund 2; Patrick: „bau bitte schon mal 1-3“). 34 Stellen in Lexikon, Diagnose, Schnellhilfe,
+  Hilfetexten und Warnungen, sechs Gruppen:
+  - **Spülen und Durchgießen** (17 Stellen): kein „2–3× Topfvolumen“ mehr (in den Topf passt nur, was seit dem letzten
+    Auffüllen fehlt, 1.1), kein vorbeugender Spülgang „alle 4–6 Wochen“ (14), kein „Drain-EC soll unter 1,0 sinken“ (5.1).
+    Durchgegossen wird erst ab Tag 25, bis 15–20 % ablaufen, und nur bei schwerem Burn oder zu hohem Drain-EC. Das
+    Drain-pH-Soll für gekalkte Erde nennt jetzt den Kalkpuffer (6,8–7,2 normal, 4.1); Spül- und Ziel-pH kommen aus
+    `phTargetFor` statt aus festen 6,4 oder 6,5.
+  - **Gießanleitung ①** im Eintrag folgt derselben Drain-Regel wie Startseite und Lern-Status (`_keinDrainSatz`): Kommt bei
+    der Menge kein Drain, sagt sie das, statt „bis 15–20 % unten ablaufen“ zu verlangen.
+  - **Hilfetexte**: „Empfohlene Werte übernehmen“ nennt kein Klima mehr (die App füllt es seit v1.5.186 nicht aus);
+    „pH und EC eingeben“ ohne feste Erd-Zahlen.
+  - **Spinnmilben und Hitze**: Luftfeuchte nur bis zum Schimmel-Deckel der Phase (65 bzw. 60 % in der Blüte, 2.2, 13.5)
+    statt „auf 60–65 % hochfahren“.
+  - **Hitze über 32 °C**: statt „Photosynthese stoppt, Trichome trocknen aus“ der Mechanismus (Maximum um 30 °C, Stomata
+    schließen, Terpene verdunsten schneller).
+  - **Wirkungszusagen** (14): MKP „macht die Buds dichter“, Mykorrhiza „700 %“ und „lebenslang“, Trichoderma „drastisch“,
+    Botrytis „verdoppelt den Schaden“ — gestrichen; MKP nennt die Kalium-Magnesium-Regel aus 6.2.
+- Vor dem Einbau hat ein Sonnet-Prüfer jeden Ersatztext gegen `ANBAU.md` gehalten; 14 von 34 brauchten noch eine Änderung
+  (meist dieselbe Falle: eine unbelegte Aussage durch eine andere ersetzt).
+- Test: `test_texte_anbau.js` (31 Prüfungen, beide Zeitzonen; 23 fallen auf v1.5.504 um) — ein Wächter, der den ganzen
+  ausgelieferten Quelltext nach den alten Formen durchsucht.
+- Zwei Tests nachgezogen: `test_eintrag_einsteiger_kurz.js` vergleicht den Profi-Eintrag nur noch mit `GS_BASIS` Zeichen für
+  Zeichen mit v1.5.488 (die neuen Texte ändern ihn bewusst); `test_dialog_und_namen.js` liest alle `<style>`-Blöcke — seit
+  v1.5.504 stehen die Schriften in einem eigenen Block davor, der Test las nur den ersten und war seitdem rot. Die App war in
+  Ordnung; gefunden hat es erst ein breiterer Lauf.
+
 ## 2026-10-30 — v1.5.504
 
 - **Jeder Start lud Schriften von Google, während der Datenschutztext „keine Server“ sagt.** `head.html` holte ein Stylesheet von

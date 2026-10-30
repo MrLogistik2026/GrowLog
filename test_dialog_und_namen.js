@@ -90,7 +90,8 @@ function cssBlock(quelltext, selektor) {
   fail.push(...gerendert.problems);
 
   // ================= 1. + 2. CSS des Dialogs =================
-  const style = ev('document.querySelector("style").textContent');
+  // (v1.5.505) Alle <style>-Blöcke: Seit v1.5.504 stehen die Schriften in einem eigenen Block davor.
+  const style = ev('[...document.querySelectorAll("style")].map(s => s.textContent).join("\\n")');
   const box = cssBlock(style, '#modal-box');
   const msg = cssBlock(style, '#modal-msg');
   const btns = cssBlock(style, '.modal-btns');
