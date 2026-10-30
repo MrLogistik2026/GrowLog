@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.506** · index.html 2,67 MB · 781 Funktionen
+Stand: **v1.5.507** · index.html 2,67 MB · 781 Funktionen
 Zuletzt fortgeschrieben am 30.10.2026 früh (Nachtarbeit 29./30.10.: Diagnose-Liste B01–B12 und U4 fertig, danach zwei
 Bedien-Prüfungen nach den Grundsätzen der Lager-App — Befunde in `.claude/notizen/ux/*.txt` und `.claude/tmp/ux2/bericht.txt`,
 abgearbeitet in v1.5.452–498, siehe Versionsliste in 0o. **Patrick am 30.10.2026 morgens zu den vier offenen Fragen: „Ja bau
@@ -533,6 +533,7 @@ Speicher-Befunde sind in v1.5.340–344 behoben. Rohdaten: Workflow wf_63d754b1-
 - v1.5.504: Schriften liegen in der App statt bei Google (fonts/, SIL OFL), Service Worker hält sie; Backup-Erinnerung auf der Startseite ab 14 Tagen (`test_datenschutz_schriften.js`).
 - v1.5.505: Nachschlagetexte nach ANBAU.md: Spülen und Durchgießen ohne Topfvolumen-Vielfache und Kalender, Drain-pH der Erde mit Kalkpuffer, Luftfeuchte nur bis zum Schimmel-Deckel, Wirkungszusagen gestrichen — 34 Stellen, Hebel 1 der Bewertung (`test_texte_anbau.js`).
 - v1.5.506: EC-Ziel in vorgedüngter Erde bis Tag 21 nur als Obergrenze („Wasser genügt“), Coco-Hinweise ohne „höhere EC“ (`test_substrat_a.js`).
+- v1.5.507: CalMag nur bei ungepuffertem Coco oder weichem Wasser als Grundbedarf, Light-Mix im Lexikon nach ANBAU 13.2 (`test_substrat_b.js`).
 
 **Gegenprüfung von v1.5.364/365 (07.10.2026 nachts, Workflow wf_4cf817bf-629, drei Sonnet-Prüfer + Gegenprüfer).** Kein Fehlalarm
 in 33 App-Fassungen, allen Vorlagen und über 2800 Klicks; die schweren Befunde (unsichere Kopie zerstört den Hauptstand, Tropfen als

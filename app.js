@@ -3007,14 +3007,14 @@ const FERT_PRESETS = {
     // Blütedünger im Wochenplan steht.
     weekPhases: ['anzucht','anzucht','anzucht','bloom','bloom','bloom','bloom','bloom','bloom','flush','flush','ice'],
     name: 'CANNA Coco A+B',
-    medium: 'coco',   // inertes Substrat, pH 5,8-6,2, CalMag Pflicht
+    medium: 'coco',   // inertes Substrat, pH 5,8-6,2, CalMag bei ungepuffertem Coco Grundbedarf (v1.5.507)
     subtitle: 'Coco-Substrat · Mineral · 2-Komponenten-System · pH ' + phTargetFor('coco').label,
     doseMode: 'per-watering',
     mixOrder: ['CalMag','CANNA Coco A','CANNA Coco B','RHIZOTONIC','CANNAZYM','CANNABOOST','PK 13/14'],
-    mixInfo: 'Mineral-Plan für Coco-Substrat. Reihenfolge: 1. CalMag zuerst (Coco bindet Ca, daher Pflicht). 2. CANNA Coco A vollständig auflösen. 3. CANNA Coco B (immer A vor B, niemals zusammen ins Konzentrat — sonst Ausfällung!). 4. RHIZOTONIC für Wurzeln. 5. CANNAZYM (Enzyme). 6. CANNABOOST in Blüte. 7. PK 13/14 nur Wo 5-7. pH am Ende auf 5.8–6.2 (NICHT 6.2–6.4 wie Erde!).',
-    drainInfo: '🥥 Coco-Besonderheiten: Coco ist inert — Pflanze hängt komplett am Düngerwasser. Daher: jeder Guss MUSS Dünger enthalten (außer Spülung). pH-Bereich 5.8–6.2, NIE über 6.5. Drain bei jedem Guss anstreben (' + DRAIN_ZIEL.min + '–' + DRAIN_ZIEL.max + ' %), Drain-EC ' + T.drainRegelKurz() + '. CalMag durchgehend Pflicht, mit RO-Wasser noch mehr.',
+    mixInfo: 'Mineral-Plan für Coco-Substrat. Reihenfolge: 1. CalMag zuerst (ungepuffertes Coco bindet Calcium — dann ist CalMag Grundbedarf; vorgepuffertes Coco, auf dem Sack steht „gepuffert“, verhält sich anfangs neutraler). 2. CANNA Coco A vollständig auflösen. 3. CANNA Coco B (immer A vor B, niemals zusammen ins Konzentrat — sonst Ausfällung!). 4. RHIZOTONIC für Wurzeln. 5. CANNAZYM (Enzyme). 6. CANNABOOST in Blüte. 7. PK 13/14 nur Wo 5-7. pH am Ende auf 5.8–6.2 (NICHT 6.2–6.4 wie Erde!).',
+    drainInfo: '🥥 Coco-Besonderheiten: Coco ist inert — Pflanze hängt komplett am Düngerwasser. Daher: jeder Guss MUSS Dünger enthalten (außer Spülung). pH-Bereich 5.8–6.2, NIE über 6.5. Drain bei jedem Guss anstreben (' + DRAIN_ZIEL.min + '–' + DRAIN_ZIEL.max + ' %), Drain-EC ' + T.drainRegelKurz() + '. In ungepuffertem Coco gehört CalMag in jeden Guss (es bindet Calcium aus der Lösung); vorgepuffertes Coco verhält sich anfangs neutraler. Bei RO- oder weichem Wasser ist CalMag in jedem Substrat Grundversorgung.',
     weekFocus: {
-      1:  { phase: 'Sämling',   tip: 'Coco vorquellen mit CalMag + RHIZOTONIC. Sämling vorsichtig einsetzen.' },
+      1:  { phase: 'Sämling',   tip: 'Coco vorquellen mit RHIZOTONIC. CalMag laut Plan dazugeben: In ungepuffertem Coco ist es Grundbedarf, vorgepuffertes verhält sich anfangs neutraler, und bei weichem Wasser gehört es in jedem Substrat ins Gießwasser. Sämling vorsichtig einsetzen.' },
       2:  { phase: 'Vegi I',    tip: 'CANNA Coco A+B startet ab Tag 1 (Coco hat keine Vordüngung wie Erde).' },
       3:  { phase: 'Vegi II',   tip: 'A+B steigern. Drain-EC checken: ' + T.drainRegelKurz() + '.' },
       4:  { phase: 'Stretch',   tip: 'Pre-Blüte. CANNABOOST startet für Blütenbildung.' },
@@ -3028,7 +3028,7 @@ const FERT_PRESETS = {
       12: { phase: 'Ernte',     tip: 'Ernte vor dem Lichtangang. Trichom-Profil bestimmt Zeitpunkt.' },
     },
     products: [
-      { name: 'CalMag',        unit: 'ml/L', color: '#f0d050', note: '① Calcium & Magnesium (Pflicht in Coco!)' },
+      { name: 'CalMag',        unit: 'ml/L', color: '#f0d050', note: '① Calcium & Magnesium (in ungepuffertem Coco Grundbedarf)' },
       { name: 'CANNA Coco A',  unit: 'ml/L', color: '#4caf70', note: '② Basisdünger A (immer A vor B!)' },
       { name: 'CANNA Coco B',  unit: 'ml/L', color: '#e8884a', note: '② Basisdünger B (nach A einrühren)' },
       { name: 'RHIZOTONIC',    unit: 'ml/L', color: '#5aabf0', note: '③ Wurzelstimulator' },
@@ -3359,7 +3359,7 @@ function mediumName(m) { return MEDIUM_NAMEN[m] || m || 'Erde'; }
  * Passt ein Duengeplan zum Substrat der laufenden Zyklen?
  *
  * Das ist keine Geschmacksfrage: Coco ist inert und haengt komplett am
- * Duengerwasser (jeder Guss ein Feed, CalMag Pflicht, pH 5,8-6,2). Erde ist
+ * Duengerwasser (jeder Guss ein Feed, CalMag bei ungepuffertem Coco, pH 5,8-6,2). Erde ist
  * vorgeduengt und puffert (pH 6,2-6,5, nicht jeder Guss duengt). Wer den
  * falschen Plan faehrt, bekommt entweder Ueberduengung und pH-Absturz oder
  * einen schleichenden Mangel — beides kostet Ertrag.
@@ -3860,7 +3860,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.506';
+const APP_VERSION = 'v1.5.507';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -26106,7 +26106,7 @@ function _wizStepFertPlan(a) {
         canna: 'Terra Vega + Flores · Herstellerplan für Erde',
         hesi: 'TNT & Blüh Complex · Blüh Complex regelt den pH mit',
         plagron: 'Terra Grow + Bloom · mineralisch, für Erde',
-        canna_coco: 'A+B Mineral · CalMag Pflicht · jeder Guss ist ein Feed',
+        canna_coco: 'A+B Mineral · mit CalMag · jeder Guss ist ein Feed',
         ghe_flora: 'Micro + Grow + Bloom · Verhältnis wechselt je Phase',
         rainbow_auto: 'Plan-Blatt v2.1 · Automatics in Light-Mix · 8 Produkte · jeder Guss ein Feed',
       }[key] || '';
@@ -37120,7 +37120,7 @@ const LEXIKON = [
         'Wichtig: Haube nicht schlagartig abnehmen — schrittweise über 2–3 Tage. Zu schnelle RLF-Änderung stresst die Pflanze die noch kein ausgereiftes Transpirationssystem hat.<br><br>' +
         '<b>Düngung in der Sämlingsphase:</b><br>' +
         '• <b>All-Mix / Light-Mix:</b> Kein Dünger in den ersten 2 Wochen. Substrat-Vordüngung reicht.<br>' +
-        '• <b>Coco / inerte Substrate:</b> Ab Tag 1 leichte CalMag-Lösung (~0.3 ml/L), kein voller Dünger.<br>' +
+        '• <b>Coco / inerte Substrate:</b> CalMag in kleiner Menge laut Plan oder Flasche (in ungepuffertem Coco Grundbedarf, bei weichem Wasser in jedem Substrat), kein voller Dünger. Vorgepuffertes Coco, auf dem Sack steht „gepuffert“, verhält sich anfangs neutraler.<br>' +
         '• <b>POWHUMUS / Humins-Stoffe:</b> Sehr milde, ab Tag 1 möglich (10 ml/L)<br>' +
         '• <b>Aloe Vera:</b> Mild, ab Tag 1 möglich (25 ml/L im Sprühwasser)<br>' +
         '• <b>Voller Bio-Dünger (Bio-Grow / Bloom etc.):</b> Frühestens ab Woche 2 mit halber Dosis (~0.5 ml/L)',
@@ -37141,7 +37141,7 @@ const LEXIKON = [
     { t: 'Vegetationsphase',
       brief: 'Die Wachstumsphase. Pflanze baut Struktur auf — Stamm, Blätter, Wurzeln. Hier wird trainiert.',
       mechanism: 'Nach der Sämlingsphase startet das aktive Wachstum. Pflanze baut <b>Biomasse</b> auf (Blätter, Stiele) und das <b>Wurzelsystem</b>. Hoher Bedarf an <b>Stickstoff (N)</b> — primär für Chlorophyll und Proteine. Bei photoperiodischen Pflanzen kann diese Phase beliebig lang gehalten werden (18/6 Licht). Bei Autos läuft sie automatisch ~21 Tage und endet mit der Blüte-Phase.',
-      practice: _klimaLexListe('anzucht', 25) + '• Licht: 400-600 PPFD<br><br><b>Düngung (Erde):</b><br>• All-Mix: Erst ab Woche 3 leichte Düngung<br>• Light-Mix: Ab Woche 2 mit halber Dosis starten<br>• Coco: Vom ersten Tag an Vegi-Dünger + CalMag<br><br><b>Trainings-Fenster:</b><br>• Topping/FIM ab 4–5 Nodien (bei Automatics nur früh und nur bei kräftigen Pflanzen)<br>• LST von Anfang an möglich<br>• Mainlining ab Vegi-Mitte (nur Feminisierte)<br>• Nach einem Topping setzt die App den nächsten Guss frühestens auf den übernächsten Tag; gegossen wird nach dem Gießpunkt<br><br><b>Dauer:</b> Fem 4-8 Wochen frei wählbar; Autos fix 18-25 Tage.',
+      practice: _klimaLexListe('anzucht', 25) + '• Licht: 400-600 PPFD<br><br><b>Düngung (Erde und Coco):</b><br>• All-Mix: Erst ab Woche 3 leichte Düngung<br>• Light-Mix: vorgedüngt, braucht in den ersten zwei bis drei Wochen praktisch nichts — danach Dünger laut Plan<br>• Coco: Vom ersten Tag an Vegi-Dünger nach Plan (das Substrat bringt keinen mit), in ungepuffertem Coco dazu CalMag<br><br><b>Trainings-Fenster:</b><br>• Topping/FIM ab 4–5 Nodien (bei Automatics nur früh und nur bei kräftigen Pflanzen)<br>• LST von Anfang an möglich<br>• Mainlining ab Vegi-Mitte (nur Feminisierte)<br>• Nach einem Topping setzt die App den nächsten Guss frühestens auf den übernächsten Tag; gegossen wird nach dem Gießpunkt<br><br><b>Dauer:</b> Fem 4-8 Wochen frei wählbar; Autos fix 18-25 Tage.',
       pitfall: 'Bei Fems oft zu früh auf 12/12 umgestellt → Pflanze zu klein → Ertrag halbiert. Mindestens 4 Wochen Vegi für ordentliche Größe einplanen. Bei Autos: aggressives HST in Vegi → kostet 5-10 Tage = direkt Ertragsverlust. Bei Autos nur LST.' },
     { t: 'Stretch (Pre-Flower)',
       brief: 'Die ersten 2-3 Wochen Blüte. Pflanze verdoppelt oder verdreifacht ihre Höhe — hier wird gnadenlos gestreckt.',

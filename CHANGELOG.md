@@ -2,6 +2,18 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-30 — v1.5.507
+
+- **„CalMag Pflicht in Coco“ stand ohne Bedingung** in der CANNA-Coco-Vorlage (Misch-Info, Drain-Info, Produktnotiz, Woche 1), im
+  Assistenten und im Lexikon. Nach `ANBAU.md` 7.1 bindet *ungepuffertes* Coco Calcium; vorgepuffertes ist mit Ca vorbeladen und
+  verhält sich anfangs neutraler. Hebel 2 der Bewertung.
+- **Jetzt** nennen alle Stellen die Bedingung „ungepuffert“ (Merkmal auf dem Sack: „gepuffert“), dazu weiches oder RO-Wasser als
+  zweiten Grund (3). Die Vorlage dosiert CalMag unverändert in jeder Woche (0,3/0,4/0,3) — der Assistent sagt deshalb „mit CalMag“.
+  Lexikon Sämling und Anzucht ohne feste 0,3 ml/L, „laut Plan oder Flasche“.
+- **Light-Mix im Lexikon**: „vorgedüngt, braucht in den ersten zwei bis drei Wochen praktisch nichts — danach Dünger laut Plan“ statt
+  „ab Woche 2 mit halber Dosis“ (13.2).
+- Test: `test_substrat_b.js` (15 Prüfungen, beide Zeitzonen; 11 fallen auf v1.5.506 um). Dosen gegen den Fingerabdruck geprüft.
+
 ## 2026-10-30 — v1.5.506
 
 - **Am Tag 12 zeigte ein Light-Mix-Zyklus „EC-Ziel 0,7–1,0“ direkt neben „Keine Dünger konfiguriert“.** Vorgedüngte Erde braucht in
