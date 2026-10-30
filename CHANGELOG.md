@@ -2,6 +2,20 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-30 — v1.5.513
+
+- **Fehler: Die Spül-Vorlage („Tag automatisch ausfüllen“ am Spültag) trug 50 % mehr ein, als Karte und Eintrag am selben Tag
+  nennen** — gemessen am Spültag mit 11-L-Topf: Erde 3 Pflanzen 16 900 statt 11 250 ml, Coco 8 550 statt 5 700 ml. Die Vorlage
+  rechnete ×1,5 („mehr durchspülen!“) und, beim Nachtragen eines anderen Tages, mit der heutigen Pflanzenzahl und dem heutigen
+  Topf. Die Notiz nannte dazu fest „pH 6.4 … ~25 % Drain“. `ANBAU.md` 1.1: In den Topf passt nur, was seit dem letzten Auffüllen
+  fehlt, mehr läuft als Drain ab; 15: Messwerte nie schätzen.
+- **Jetzt** nehmen Spül- und IceFlush-Vorlage die Menge aus `waterSuggestion(c, p, iso)` — dieselbe Rechnung wie die Karte, am Tag
+  des Eintrags. pH aus dem Ziel des Substrats bzw. der Plan-Woche, Drain-Ziel aus `DRAIN_ZIEL`. Nachgemessen mit einer Pflanze
+  weniger am Eintragstag: Vorlage gleich Karte (Erde 7 500, Coco 3 800, IceFlush 1 400 ml); ohne `iso` wären es 11 250 / 5 700 /
+  2 100 ml gewesen.
+- **Offen** (Rechenfrage, kein Text): Die Spülmenge selbst (`pot × 341` ml je Pflanze) liegt über dem, was nach 1.1 in den Topf passt.
+- Test: `test_rest_2.js` (17 Prüfungen, beide Zeitzonen, Verhaltenstest in jsdom; fällt auf v1.5.512 um).
+
 ## 2026-10-30 — v1.5.512
 
 - **Reste der Gegenprüfung zu Hebel 1, Lockout und Flushen.** Die Lexikon-Tabelle „Bei Lockout-Verdacht“ verlangte unbedingt

@@ -3926,7 +3926,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.512';
+const APP_VERSION = 'v1.5.513';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -34295,15 +34295,18 @@ function getAutoFillTemplate(c, p, a, iso) {
 
   // SPÜL-TAG (Flush)
   if (a === 'spuelen') {
-    let waterMl = (typeof waterSuggestion === 'function') ? waterSuggestion(c, p) : 200;
-    waterMl = Math.round(waterMl * 1.5 / 50) * 50; // mehr durchspülen!
+    // (v1.5.513) Menge wie Spül-Karte, Gieß-Fahrplan und Eintrag: waterSuggestion mit dem Tag des Eintrags (iso), ohne ×1,5.
+    // Ohne iso rechnete die Vorlage mit heute — beim Nachtragen eines anderen Tages kam eine andere Menge als auf der Karte.
+    // In den Topf passt nur, was ihm fehlt, der Rest läuft als Drain ab (ANBAU 1.1); mehr Wasser spült nicht besser.
+    let waterMl = (typeof waterSuggestion === 'function') ? waterSuggestion(c, p, iso) : 200;
+    waterMl = Math.round(waterMl / 50) * 50;
     tpl.water = String(waterMl);
     tpl.ph = pht.midText;
     tpl.ec = '0';                  // KLARES Wasser
     tpl.doses = {};
     tpl._allDosesZero = true;
     tpl.liftAfterPct = 100;
-    tpl.notePlaceholder = 'Klares Wasser, pH 6.4, kein Dünger. ~25% Drain auffangen — der ist EC-fett, Salze raus.';
+    tpl.notePlaceholder = 'Klares Wasser, pH ' + pht.midText + ', kein Dünger. Gießen, bis ' + DRAIN_ZIEL.min + '–' + DRAIN_ZIEL.max + ' % unten ablaufen; den Drain in einer breiten Wanne auffangen und den EC messen.';
     tpl._actionType = 'flush';
     return tpl;
   }
@@ -34313,7 +34316,7 @@ function getAutoFillTemplate(c, p, a, iso) {
   // 1L Crushed Ice/Topf ≈ 700ml Wasser geschmolzen bei 11L Topf.
   // pH 6.0 (Spülwasser-Norm), EC 0 (klares Wasser, kein Dünger).
   if (a === 'ice') {
-    const waterMl = (typeof waterSuggestion === 'function') ? waterSuggestion(c, p) : 700;
+    const waterMl = (typeof waterSuggestion === 'function') ? waterSuggestion(c, p, iso) : 700;   // (v1.5.513) mit dem Tag des Eintrags
     tpl.water = String(waterMl);
     tpl.ph = '6.0';
     tpl.ec = '0';
