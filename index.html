@@ -4822,7 +4822,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.480';
+const APP_VERSION = 'v1.5.481';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -31599,7 +31599,10 @@ function renderEntry(iso) {
           </details>` : '';
         const mixSteps = activeMixProducts.length > 0
           ? `<div style="background:var(--card);border:0.5px solid var(--border);border-top:none;border-radius:0 0 10px 10px;padding:10px 12px">
-              <div style="font-size:10px;color:var(--text-hint);margin-bottom:6px;font-weight:600">⚗️ MISCHREIHENFOLGE <span class="mix-header-water" data-cycle="${c.id}" style="color:var(--text-muted);font-weight:400">${waterAmt > 0 ? `· für ${fmtWater(waterAmt)}` : ''}</span></div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:6px">
+                <div style="font-size:10px;color:var(--text-hint);font-weight:600">⚗️ MISCHREIHENFOLGE <span class="mix-header-water" data-cycle="${c.id}" style="color:var(--text-muted);font-weight:400">${waterAmt > 0 ? `· für ${fmtWater(waterAmt)}` : ''}</span></div>
+                ${mixActive.length > 0 ? `<button onclick="mixAllesPlan('${c.id}')" title="Setzt bei allen Düngern dieser Liste den Haken mit der Plan-Menge — ein Tipp statt einer je Produkt. Eigene Mengen bleiben stehen." style="font-size:10px;font-weight:600;padding:4px 9px;border-radius:6px;border:0.5px solid rgba(76,175,112,0.4);background:rgba(76,175,112,0.12);color:var(--green);cursor:pointer;font-family:var(--font)">✓ Alles wie im Plan gemischt</button>` : ''}
+              </div>
               ${c.medium === 'coco' ? `<div style="font-size:10px;color:var(--teal);background:rgba(90,200,180,0.08);border-radius:6px;padding:5px 8px;margin-bottom:6px;line-height:1.45">🥥 <b>Coco:</b> Ungepuffertes Coco bindet Calcium aus der Lösung — darum gehört CalMag dann in jede Mischung. Vorgepuffertes Coco (auf dem Sack steht „gepuffert“) ist mit Calcium vorbeladen und verhält sich anfangs neutraler.</div>` : ''}
               ${mixActive.length > 0
                 ? mixActive.map((n, i) => renderMixRow(n, i, true)).join('')
@@ -33880,6 +33883,48 @@ function toggleMixCheck(cId, prodId) {
   saveS();
   vibrate(10);
   // Re-render entry to reflect visual check state
+  if (editISO) renderEntry(editISO);
+}
+
+/**
+ * (v1.5.481) „✓ Alles wie im Plan gemischt“: Haken und Plan-Menge für alle Produkte der Mischreihenfolge mit Plan-Dosis > 0.
+ * Bestätigung, kein Vorschlag — kein _suggestedDoses-Eintrag, die Mengen zählen in der Bilanz als gegeben. Kein Umschalter:
+ * ein zweiter Tap ändert nichts. Eine eigene, getippte Menge bleibt (nur der Haken kommt dazu); Produkte mit Plan 0 bleiben frei.
+ * Menge und Rundung wie die Zeile selbst (data-plan/-water/-unit/-decimals) und wie markTodayDone (calcDose).
+ */
+function mixAllesPlan(cId) {
+  if (!editISO || !cId) return;
+  ensE(cId);
+  const cd = S.entries[editISO].cycleData[cId];
+  const felder = [...document.querySelectorAll(`#scr-entry .mix-calc[data-cycle="${cId}"]`)];
+  let gesetzt = 0, ohneWasser = 0;
+  felder.forEach(f => {
+    const prodId = f.dataset.prod;
+    const plan = parseFloat(f.dataset.plan);
+    if (!prodId || !(plan > 0)) return;                       // Plan-Dosis 0: unberührt
+    const wasser = parseFloat(f.dataset.water);
+    const dez = parseInt(f.dataset.decimals, 10);
+    const menge = calcDose(plan, wasser, f.dataset.unit, isFinite(dez) ? dez : 1);
+    if (!(menge > 0)) { ohneWasser++; return; }
+    if (!cd.doses) cd.doses = {};
+    if (!cd.mixChecks) cd.mixChecks = {};
+    const eigen = parseFloat(cd.doses[prodId]) > 0 && !_istVorschlagDosis(cd, prodId);
+    if (!eigen) {
+      cd.doses[prodId] = menge;
+      if (!cd.doseRef) cd.doseRef = {};
+      if (isFinite(wasser) && wasser > 0) cd.doseRef[prodId] = wasser;
+    }
+    if (cd._suggestedDoses) delete cd._suggestedDoses[prodId];
+    cd.mixChecks[prodId] = true;
+    gesetzt++;
+  });
+  if (!gesetzt) {
+    if (ohneWasser) toast('Trag erst die Wassermenge ein — ohne sie gibt es keine Mengen.');
+    return;
+  }
+  _entryDirty = true;
+  saveS();
+  vibrate(10);
   if (editISO) renderEntry(editISO);
 }
 

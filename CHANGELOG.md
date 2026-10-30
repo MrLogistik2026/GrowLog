@@ -2,6 +2,17 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-30 — v1.5.481
+
+- **Wer genau nach Plan gemischt hat, musste jeden Dünger einzeln abhaken** — bei Rainbow bis zu 15 Taps. „✓ Erledigt“ bucht
+  die Mengen nur als Vorschlag („~“), weil niemand bestätigt hat, dass wirklich so gemischt wurde (ANBAU.md 15).
+  Gießtag-Prüfung 29.10.2026, Punkt 8; offener Punkt 7 der Nachtprüfung vom 07.10.
+- **Jetzt** steht in der Kopfzeile der Mischreihenfolge „✓ Alles wie im Plan gemischt“ (`mixAllesPlan`): ein Tipp setzt bei allen
+  Düngern mit Plan-Menge den Haken und die Menge. Das ist eine Bestätigung, kein Vorschlag — ohne Kennzeichen `_suggestedDoses`,
+  also „✓“ statt „~“, und die Bilanz zählt die Mengen als gegeben. Plan 0 bleibt frei, eine selbst getippte Menge bleibt stehen
+  (nur der Haken kommt dazu), ein zweiter Tipp ändert nichts. Ohne Wassermenge gibt es nur den Hinweis, sie zuerst einzutragen.
+- Test: `test_eintrag_alles_wie_plan.js` (15 Prüfungen, beide Zeitzonen; fällt auf v1.5.479 um). Gebaut von einem Sonnet-Helfer.
+
 ## 2026-10-30 — v1.5.480
 
 - **Im Einsteiger-Eintrag stand jeder Dünger zweimal zum Eintragen.** Die Tabelle „Dünger diese Woche“ (Ist-Felder, `uDose`) und
