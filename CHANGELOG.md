@@ -2,6 +2,17 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-30 — v1.5.485
+
+- **Nach „Mittel“ auf der Startseite gießen lassen, danach im Eintrag „Topf war noch feucht … Nächstes Mal warten“.** Die Warnung
+  galt ab Restgewicht 70, also für jedes „Mittel“ — auch am Gießtag, an dem die App bei „Mittel“ bewusst gießen lässt (v1.5.284:
+  ein Knopf belegt nicht, dass der Topf drei Tage hält). Gefunden bei der zweiten Bedien-Prüfung am 30.10.2026 (Befund 1).
+- **Jetzt** fragt die Warnung dieselbe Regel wie die Startseite: Sie kommt nur, wo `giessenLautMessung` vor dem Guss „nicht
+  gießen“ gesagt hätte (voll oder feucht), oder an einem Tag ohne Gießtag über dem Gießpunkt. `giessenLautMessung(c, iso,
+  vorDemGuss)` beurteilt dafür die Lage vor dem Guss, auch wenn er schon eingetragen ist. Die Ausnahme für Coco entfällt — dort
+  greift jetzt derselbe Gießpunkt („Mittel“), nicht eine feste 70.
+- Test: `test_eintrag_feuchtwarnung.js` (9 Prüfungen, beide Zeitzonen; fällt auf v1.5.484 um).
+
 ## 2026-10-30 — v1.5.484
 
 - **Zwei Gruppen am selben Gießtag hatten oben im Eintrag nur eine Zeile** („0/6 eingetragen“). Sie fasste Wasser und pH beider

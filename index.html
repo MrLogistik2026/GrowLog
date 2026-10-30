@@ -4822,7 +4822,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.484';
+const APP_VERSION = 'v1.5.485';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -14965,7 +14965,7 @@ function _reserveStatus(c, iso, restHeute) {
  *
  * An einem Tag ohne Gießtag: unter dem Gießpunkt oder _reserveStatus (morgen darunter) → gießen, sonst keine Aussage.
  */
-function giessenLautMessung(c, iso) {
+function giessenLautMessung(c, iso, vorDemGuss) {   // (v1.5.485) vorDemGuss: wie vor dem Guss, auch wenn er schon eingetragen ist
   if (!c || !iso || !c.startDate || c.growType === 'outdoor' || c.medium === 'hydro') return null;
   const p = phase(iso, c);
   // Ab Tag 25 wie _reserveStatus und die Drain-Regel — auch bei Autos, deren Blüte schon an Tag 22 beginnt.
@@ -14976,7 +14976,7 @@ function giessenLautMessung(c, iso) {
   const akt = getAction(iso, c);
   if (giesstag && akt !== 'giess' && akt !== 'giess_anz') return null;   // Spülen, IceFlush, Sättigung: der Plan
   const cd = _gussCd(c, iso);
-  if (cd && _gussZahl(cd.water) > 0) return null;   // heute schon gegossen: die Messung war vor dem Guss
+  if (!vorDemGuss && cd && _gussZahl(cd.water) > 0) return null;   // heute schon gegossen: die Messung war vor dem Guss
   const r = restgewichtHeute(c, iso);
   if (r == null) return null;
   const gp = giesspunktFor(c);
@@ -17875,7 +17875,13 @@ function getEntryWarnings(cd, p, e, c, iso) {
     if (_V > 0 && waterVal / (_gussPflanzen(c, cd || {}, iso) || 1) > _V * 1.15) {
       out.push({ type: 'info', text: `💧 Mehr, als in den Topf passt: höchstens ~${_V} ml je Pflanze, der Rest läuft unten als Drain heraus. Das schadet nicht, spült aber Dünger aus.` });
     }
-    if (_rH != null && _rH >= 70 && !(contextFor(c, iso) || {}).isCoco) {
+    // (v1.5.485) Gewarnt wird nur, wo die App vor dem Guss selbst „heute nicht gießen“ gesagt hätte (giessenLautMessung: voll oder
+    // feucht) oder — an einem Tag ohne Gießtag — der Topf noch über dem Gießpunkt lag. Vorher hieß jedes „Mittel“ (≥ 70) „zu früh
+    // gegossen“, auch am Gießtag, an dem die Startseite bei „Mittel“ gießen lässt (v1.5.284: ein Knopf belegt keine drei Tage
+    // Reserve). Bedien-Prüfung 30.10.2026, Befund 1: Startseite „etwa 1500 ml gießen“, danach im Eintrag „Nächstes Mal warten“.
+    const _lm = _rH != null ? giessenLautMessung(c, iso, true) : null;
+    const _zuFrueh = _rH != null && ((_lm && _lm.giessen === false) || (!_lm && !isGiessTag(iso, c) && _rH >= _gp.bis));
+    if (_zuFrueh) {
       out.push({ type: 'warn', text: `💧 Topf war noch feucht (Hebe-Test ~${Math.round(_rH)} %). Zu häufiges Gießen verdrängt die Luft aus dem Topf, und die Wurzeln brauchen Sauerstoff. Nächstes Mal warten, bis er leichter ist (Gießpunkt ${_gp.von}–${_gp.bis} %).` });
     }
   } else if (p && waterVal > 0 && (isVegiPhase(p.ph) || p.ph === 'bloom')) {
