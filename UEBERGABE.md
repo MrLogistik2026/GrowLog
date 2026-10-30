@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.511** · index.html 2,67 MB · 781 Funktionen
+Stand: **v1.5.512** · index.html 2,67 MB · 781 Funktionen
 Zuletzt fortgeschrieben am 30.10.2026 früh (Nachtarbeit 29./30.10.: Diagnose-Liste B01–B12 und U4 fertig, danach zwei
 Bedien-Prüfungen nach den Grundsätzen der Lager-App — Befunde in `.claude/notizen/ux/*.txt` und `.claude/tmp/ux2/bericht.txt`,
 abgearbeitet in v1.5.452–498, siehe Versionsliste in 0o. **Patrick am 30.10.2026 morgens zu den vier offenen Fragen: „Ja bau
@@ -88,6 +88,15 @@ Schnitt frei), v1.5.500 (pH-Grenzen der Diagnose nach Substrat), v1.5.501 (IceFl
 9. Erntefenster als eine Quelle (springt mit Patricks Daten zwischen 96–110 und 121–139), Bernstein-Ziel im Einsteiger-Modus (app.js
    ~23847). Umbau, L.
 10. Outdoor und Hydro — erst ANBAU.md um Outdoor ergänzen. Patricks Entscheidung, dann L.
+
+**Patrick am 30.10.2026:** „bau bitte schon mal 1-3“ — und: „Ich denke das wir vorerst Outdoor und Hydro komplett sein lassen, und
+uns erst auf den kompletten Indoorbereich fokusieren. Wenn wir dort mindestens eine 9/10 erreicht haben, und ich auch zufrieden bin,
+dann können wir über Hydro und Outdoor reden.“ **Outdoor- und Hydro-Befunde werden bis dahin nur notiert, nicht gebaut.**
+
+**Stand der Hebel 1–3:** Hebel 3 erledigt in v1.5.504, Hebel 1 in v1.5.505, Hebel 2 in v1.5.506–511 — je vorher von einem
+Sonnet-Prüfer gegen `ANBAU.md` gehalten (14 von 34 bzw. 10 Ersatztexten brauchten eine Änderung). Gesamtlauf auf 511: 431/432 grün,
+rot nur `test_dauerdruecken` unter Last (einzeln grün, auch auf 504). Die Reste beider Gegenprüfungen (Abschnitt 10, erster Punkt)
+werden als eigene Versionen ab 512 nachgezogen.
 
 **Grenzen der Bauart** (ehrlich, aus `final.md`): ohne Server keine Sicherung zwischen Geräten (T2 kaum über 8); Fotos im
 localStorage ~37 Stück (IndexedDB wäre L); eine große Datei — externes, gecachtes Skript senkt den Kaltstart, Wartbarkeit hebt nur
@@ -538,6 +547,7 @@ Speicher-Befunde sind in v1.5.340–344 behoben. Rohdaten: Workflow wf_63d754b1-
 - v1.5.509: Erde-pH unter 6,0 wird gemeldet (Mikroflora), Mangan/Aluminium erst unter 5,5; Lexikon pH nach ANBAU 4 (`test_substrat_d.js`).
 - v1.5.510: Coco-Zyklen lesen „Substrat“ statt „Erde“, Hebe-Zeilen folgen dem Coco-Gießpunkt (`test_substrat_e.js`).
 - v1.5.511: Diagnose: Mehltau und Bleichen mit Unterscheidung, „Löcher“ ohne geratene Ursache, neue Blätter + gelb mit Calcium/Eisen vorn (`test_substrat_f.js`).
+- v1.5.512: Lockout und Flushen nach ANBAU: Spülen nur bei zu hohem Drain-EC, kein Ertragsversprechen in der EC-Warnung (`test_rest_1.js`).
 
 **Gegenprüfung von v1.5.364/365 (07.10.2026 nachts, Workflow wf_4cf817bf-629, drei Sonnet-Prüfer + Gegenprüfer).** Kein Fehlalarm
 in 33 App-Fassungen, allen Vorlagen und über 2800 Klicks; die schweren Befunde (unsichere Kopie zerstört den Hauptstand, Tropfen als

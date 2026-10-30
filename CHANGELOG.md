@@ -2,6 +2,19 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-30 — v1.5.512
+
+- **Reste der Gegenprüfung zu Hebel 1, Lockout und Flushen.** Die Lexikon-Tabelle „Bei Lockout-Verdacht“ verlangte unbedingt
+  „mit pH-eingestelltem Wasser spülen, 2 Tage warten“, der Eintrag „Flushen“ sagte „der Lockout löst sich“ und nannte „Blattspitzen
+  verbrennen“ allein als Auslöser; die EC-Warnung behauptete „in der Blüte kostet sie Ertrag, weil danach Nährstoffe fehlen“.
+  `ANBAU.md` 4.1/7.2: Den Kalkpuffer überwindet man nicht durch Spülen, ein hoher Drain-pH in gekalkter Erde ist normal; 5.1: Drain-EC
+  zählt erst ab gültiger Messung; Regel 3: ein Symptom hat selten eine Ursache; 14: kein Ertragsversprechen.
+- **Jetzt:** erst Zulauf-pH, dann Drain-EC (gültig ab `DRAIN_ZIEL.min` % Drain), dann das Gewicht des Topfs; durchgegossen wird nur bei
+  zu hohem Drain-EC, ab Tag 25 und bis 15–20 % ablaufen. „Ein Lockout durch Versalzung kann sich lösen“, Überdüngung mit Drain-EC als
+  Bestätigung; in Erde kann der Drain-EC danach wieder ansteigen, weil das Substrat nachliefert.
+- Test: `test_rest_1.js` (12 Prüfungen, beide Zeitzonen; fällt auf v1.5.511 um). `test_lexikon.js` zählt die Stellen mit „kann wieder
+  steigen“ jetzt sechsmal statt fünfmal.
+
 ## 2026-10-30 — v1.5.511
 
 - **Drei Diagnose-Reste aus der Bewertung** (Hebel 2): Echter Mehltau und Foto-Bleaching waren beide „weiß“ ohne Unterscheidung;

@@ -400,8 +400,8 @@ function pruef(name, bedingung, info) {
       pruef('Nirgends mehr: ' + re.source, !re.test(q), (q.match(new RegExp('.{0,60}' + re.source + '.{0,30}', 'i')) || [''])[0]));
     pruef('Dunkelphase vor der Ernte: kein Trichom-Versprechen, der belegte Grund (Terpene, ANBAU.md 14)',
       /ein Plus an Trichomen oder THC ist nicht belegt; ein kühler, dunkler Schnitt schont die Terpene/.test(q));
-    pruef('Spülende: an allen fünf Stellen „kann" wieder steigen (bei echter Anreicherung bleibt er unten, ANBAU.md 5.1)',
-      (q.match(/kann er (nach dem Spülen|danach) wieder (an)?steigen/gi) || []).length === 5, (q.match(/kann er (nach dem Spülen|danach) wieder (an)?steigen/gi) || []).length + ' Stellen');
+    pruef('Spülende: an allen sechs Stellen „kann" wieder steigen (bei echter Anreicherung bleibt er unten, ANBAU.md 5.1)',
+      (q.match(/kann er (nach dem Spülen|danach) wieder (an)?steigen/gi) || []).length === 6, (q.match(/kann er (nach dem Spülen|danach) wieder (an)?steigen/gi) || []).length + ' Stellen');
   }
 
   // (v1.5.253) Die Mobilität stand an drei Stellen anders als in ANBAU.md 6.1 — Schwefel und Zink als unbeweglich, Bor und
