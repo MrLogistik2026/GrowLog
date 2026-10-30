@@ -95,8 +95,9 @@ dann können wir über Hydro und Outdoor reden.“ **Outdoor- und Hydro-Befunde 
 
 **Stand der Hebel 1–3:** Hebel 3 erledigt in v1.5.504, Hebel 1 in v1.5.505, Hebel 2 in v1.5.506–511 — je vorher von einem
 Sonnet-Prüfer gegen `ANBAU.md` gehalten (14 von 34 bzw. 10 Ersatztexten brauchten eine Änderung). Gesamtlauf auf 511: 431/432 grün,
-rot nur `test_dauerdruecken` unter Last (einzeln grün, auch auf 504). Die Reste beider Gegenprüfungen (Abschnitt 10, erster Punkt)
-werden als eigene Versionen ab 512 nachgezogen.
+rot nur `test_dauerdruecken` unter Last (einzeln grün, auch auf 504). Die Reste beider Gegenprüfungen sind in v1.5.512–517
+nachgezogen, wieder vorher gegengeprüft (14 von 24 Texten geändert, darunter ein Rechenfehler: Die Spül-Vorlage trug 50 % mehr ein
+als die Karte, v1.5.513). Was davon offen bleibt, steht in Abschnitt 10, erster Punkt.
 
 **Grenzen der Bauart** (ehrlich, aus `final.md`): ohne Server keine Sicherung zwischen Geräten (T2 kaum über 8); Fotos im
 localStorage ~37 Stück (IndexedDB wäre L); eine große Datei — externes, gecachtes Skript senkt den Kaltstart, Wartbarkeit hebt nur
@@ -2403,22 +2404,16 @@ mit echtem Zustand sichtbar.
 
 ## 10 · Kleinere offene Punkte
 
-- **Reste aus den Gegenprüfungen zu Hebel 1 und 2 (30.10.2026), alle Texte, nicht Teil von v1.5.505 ff.** Prüfberichte:
-  `.claude/tmp/neu/texte/gegenpruefung.md` (Abschnitt „Rest-Funde“) und `.claude/tmp/neu/substrat/gegenpruefung.md` („Seitenbefunde“).
-  - `ecWarningHigh` (~409): „in der Blüte kostet sie Ertrag, weil danach Nährstoffe fehlen“ — wie v1.5.443 an anderer Stelle (ANBAU 14).
-  - Lexikon-Tabelle „Bei Lockout-Verdacht“: unbedingt „mit pH-eingestelltem Wasser spülen, 2 Tage warten“ (wie A5: gegen pH hilft
-    Spülen nicht, 4.1/7.2). Lexikon „Flushen“: „der Lockout löst sich“ unbedingt, Auslöser „Blattspitzen verbrennen“ ohne Drain-EC (Regel 3).
-  - Spül-Tag-Vorlage (`getAutoFillTemplate`): Menge ×1,5 „mehr durchspülen!“, Notiz „pH 6.4 … ~25 % Drain“ — fester Erd-pH, 25 % statt
-    `DRAIN_ZIEL`, Vielfaches gegen 1.1.
-  - Mykorrhiza-Eintrag mit weiteren Zusagen („schützen vor Pathogenen“, „Schutz vor Pythium“, „Trockenstress-Resistenz“); PK-Booster
-    „Sehr wirksam“.
-  - Spinnmilben: Diagnose und Schnellhilfe „Neem-Öl oder Schwefel-Spray alle 3 Tage“ ohne Phase, das Lexikon „Neem NUR in Veg“.
-  - Botrytis: „Lieber 1 Woche zu früh ernten“ gegen ANBAU 11 — als Notmaßnahme vertretbar, den Zielkonflikt aussprechen.
-  - Echter Mehltau: „Milch-Wasser-Spray (1:10) oder Bacillus subtilis“ ist nicht belegt, Besprühen dichter Blüten widerspricht 13.5;
-    Mehltau fehlt in `ANBAU.md` ganz (gehört nach 13 oder 14, mit Quelle).
+- **Reste aus den Gegenprüfungen zu Hebel 1 und 2 (30.10.2026) — erledigt in v1.5.512–517** (Lockout/Flushen, Spül-Vorlage,
+  Mykorrhiza/PK-Booster, Sprühen nur vor der Blüte, Botrytis, Mehltau/Septoria; Prüfberichte in `.claude/tmp/neu/rest/`). **Offen davon:**
+  - Mehltau fehlt in `ANBAU.md` ganz — gehört mit Quelle nach 13 oder 14, damit Diagnose und Lexikon eine Grundlage haben.
+  - Die Spülmenge selbst (`pot × 341` ml je Pflanze in `_waterSuggestionRawUncapped`) liegt über dem, was nach `ANBAU.md` 1.1 in den
+    Topf passt — eine Rechenfrage, eigene Prüfung nötig (Startseite, Karte, Vorlage und Gieß-Fahrplan nutzen sie gemeinsam).
   - Coco: dieselbe EC-Tabelle wie Erde (`EC_TARGETS`) und eine höhere Obergrenze 2,8 (`_ecHighCeilFor`) — eigene Coco-Korridore je Gabe
-    wären ein eigener Auftrag. Die Anstiegsregel für den Drain-pH in Erde (14 Tage, +0,3, über 7,2) ist Konvention, nicht ANBAU 4.1.
-  - pH-Zahlen im selben Eintrag gemischt mit Komma und Punkt (Hebel 10 der Bewertung).
+    wären ein eigener Auftrag. Die Anstiegsregel für den Drain-pH in Erde (v1.5.508: 14 Tage, +0,3, über 7,2) ist Konvention, nicht 4.1.
+  - In den ersten 21 Tagen warnt Erde ohne Plan-Dosis nicht mehr „deutlich über dem Ziel“ (v1.5.506), nur die allgemeine Obergrenze
+    meldet — eine Warnung über die Gießwasser-EC wäre der genauere Weg.
+  - pH-Zahlen im selben Eintrag gemischt mit Komma und Punkt (Hebel 8 der Bewertung).
 
 - **Mischreihenfolge: `ANBAU.md` 10 gegen App (offen, gefunden bei der CalMag-Prüfung am 08.10.2026).** `ANBAU.md` 10 setzt
   Chelate und Huminstoffe vor Phosphat-Zusätze und Basisdünger, lebende Produkte zuletzt, dazu Bittersalz direkt nach CalMag,
