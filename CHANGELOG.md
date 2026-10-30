@@ -2,6 +2,16 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-30 — v1.5.517
+
+- **Echter Mehltau und Septoria mit unbelegten Mitteln:** Die Diagnose empfahl „Milch-Wasser-Spray (1:10) oder Bacillus subtilis“,
+  das Lexikon Milchsäure-Spray („tötet Pilz“), Bacillus „auch in früher Blüte“ und „RLF aggressiv senken“. `ANBAU.md` führt Mehltau
+  nicht; 13.5: Nässe auf Blüten führt zu Botrytis.
+- **Jetzt:** befallene Blätter entfernen, Luftbewegung, Luftfeuchte unter den Deckel der Phase (`KLIMA_ZIEL`), in der Blüte nichts
+  auf die Blüten sprühen; ein Sprühmittel höchstens vor der Blüte, ohne Wirkungsversprechen. **Offen:** Mehltau gehört mit Quelle in
+  `ANBAU.md` (13 oder 14).
+- Test: `test_rest_6.js` (9 Prüfungen, beide Zeitzonen; fällt auf v1.5.516 um).
+
 ## 2026-10-30 — v1.5.516
 
 - **Botrytis: „Lieber 1 Woche zu früh ernten als die Hälfte der Buds verlieren“** stand ohne Einordnung — gegen `ANBAU.md` 11 (zu früh

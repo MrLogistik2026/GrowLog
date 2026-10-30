@@ -2789,7 +2789,8 @@ const PROBLEMS = [
     breite: 8,
     description: 'Weißer, pudriger Belag auf Blatt-Oberseiten — sieht aus wie Mehlstaub. Breitet sich schnell aus. <b>Unterscheidung zum Foto-Bleaching:</b> Der Belag lässt sich mit dem Finger abwischen und sitzt auf dem Blatt, auch an unteren und schattigen Stellen. Bleichen sitzt im Gewebe der lichtnächsten Blütenspitzen und lässt sich nicht abwischen.',
     context: { humidityHigh: true },
-    action: 'Betroffene Blätter entfernen. Milch-Wasser-Spray (1:10) oder Bacillus subtilis. Luftfeuchte senken, Luftbewegung stark erhöhen.',
+    // (v1.5.517) Echter Mehltau: belegbare Handgriffe statt Milch-Wasser-Spray (ANBAU 13.5, 2.2).
+    action: 'Betroffene Blätter entfernen und außerhalb des Zelts entsorgen. Luftbewegung stark erhöhen; in der Blüte die Luftfeuchte unter dem Deckel halten (' + KLIMA_ZIEL.mittel.deckel + ' % in früher und mittlerer, ' + KLIMA_ZIEL.spaet.deckel + ' % in später Blüte). In der Blüte nichts auf die Blüten sprühen — Nässe fördert Schimmel. Vor der Blüte ist ein Sprühmittel möglich, seine Wirkung ist für Cannabis nicht gemessen.',
     lexiconKey: 'powdery_mildew',
   },
 
@@ -4978,7 +4979,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.516';
+const APP_VERSION = 'v1.5.517';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -38947,9 +38948,10 @@ const LEXIKON = [
         '• Beim ersten Anzeichen sofort handeln, nicht „abwarten ob es weggeht"<br><br>' +
         '<b>Behandlung nach Phase:</b><br>' +
         '<table style="width:100%;border-collapse:collapse;font-size:13px;margin-top:6px">' +
-        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Veg-Phase</b></td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Kaliumbicarbonat 5 g/L Spray (erhöht pH auf Blattoberfläche, tötet Pilz)<br>Bacillus subtilis (z.B. Serenade) als systemischen Schutz<br>Milchsäure-Spray (1 Teil Milch : 9 Teile Wasser) — milde Alternative<br>Neem-Öl 1% Spray<br>Schwefel-Verdampfer (industrielle Lösung)</td></tr>' +
-        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Frühe Blüte</b></td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Nur noch Bacillus subtilis (lebende Bakterien), Kaliumbicarbonat sehr vorsichtig nur auf Blätter, niemals direkt auf Blüten</td></tr>' +
-        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Spätblüte</b></td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">KEINE Sprühungen direkt auf Blüten! Befallene Blätter komplett entfernen<br>RLF aggressiv senken, Lüfter maximieren<br>Bei Bud-Befall: betroffene Buds opfern, Rest schnell ernten</td></tr>' +
+        // (v1.5.517) Lexikon Mehltau: keine Wirkungsbehauptungen (tötet Pilz, Milchsäure-Spray) ohne Beleg (ANBAU 14).
+        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Veg-Phase</b></td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Vor der Blüte sind Sprühmittel möglich (Kaliumbicarbonat, Bacillus subtilis, Neem-Öl, Schwefel); eine Wirkung gegen Mehltau ist für Cannabis nicht gemessen<br>Zuerst befallene Blätter entfernen und die Luftbewegung erhöhen</td></tr>' +
+        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Frühe Blüte</b></td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">In der Blüte nichts auf die Blüten sprühen (Nässe fördert Schimmel). Befallene Blätter entfernen, Luftbewegung erhöhen, Luftfeuchte unter dem Deckel halten (' + KLIMA_ZIEL.frueh.deckel + ' % in früher Blüte)</td></tr>' +
+        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Spätblüte</b></td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">KEINE Sprühungen direkt auf Blüten! Befallene Blätter komplett entfernen<br>Luftfeuchte unter dem Deckel halten (' + KLIMA_ZIEL.spaet.deckel + ' %), Luftbewegung erhöhen<br>Bei Bud-Befall: betroffene Buds opfern, Rest schnell ernten</td></tr>' +
         '</table>',
       pitfall: '<b>Erstes Anzeichen wird gerne übersehen</b> oder als Staub abgetan. PM in der Spätblüte = Ernte gefährdet, da kein Spray-Fenster mehr.<br><br>' +
         '<b>Wenn Buds befallen sind:</b> die kann man <b>nicht mehr essen oder rauchen</b> — Mykotoxine sind gesundheitsgefährlich, besonders für Immungeschwächte. Lieber wegwerfen als Risiko. Mehltau-Buds zu rauchen ist gefährlich.<br><br>' +
@@ -39161,7 +39163,7 @@ const LEXIKON = [
         '4. <b>RLF senken</b> auf 50% oder darunter<br>' +
         '5. <b>Defoliation</b> der unteren Blätter zur Belüftungs-Verbesserung<br>' +
         '6. <b>Kupfermittel</b> als Spray (z.B. Bordeaux-Brühe) — nur in Veg-Phase, niemals in Blüte<br>' +
-        '7. <b>Bacillus subtilis</b> als biologisches Fungizid, kann auch in früher Blüte<br><br>' +
+        '7. <b>Bacillus subtilis</b> wird als biologisches Fungizid angeboten; eine Wirkung ist für Cannabis nicht gemessen. In der Blüte nichts auf die Blüten sprühen (Nässe fördert Schimmel)<br><br>' +
         '<b>Prävention:</b> Pflanzen-Vitalität durch ausgewogene Düngung sicherstellen — eine kräftige Pflanze wird selten massiv von Septoria befallen. Im Outdoor: bei nassem Wetter Pflanzen unter Dach stellen wenn möglich.',
       pitfall: '<b>Häufige Fehler:</b><br>' +
         '• <b>Mit Mg-Mangel verwechselt</b> → mehr CalMag gegeben → Pflanze geschwächt durch Antagonismus → Septoria verschlimmert<br>' +
