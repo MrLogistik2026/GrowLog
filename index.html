@@ -266,25 +266,25 @@ input, textarea, [contenteditable] { -webkit-user-select: text; user-select: tex
 }
 .nav-btn.active { opacity: 1; }
 .nav-icon { font-size: 20px; line-height: 1; }
-.nav-label { font-size: 10px; color: var(--green); font-weight: 600; font-family: var(--font); }
+.nav-label { font-size: 11px; color: var(--green); font-weight: 600; font-family: var(--font); }
 
 /* ===================== CARDS ===================== */
 .card { background: var(--card); border-radius: 14px; border: 0.5px solid var(--border); padding: 14px; }
 .sect-head {
-  font-size: 11px; color: var(--green); font-weight: 600;
+  font-size: 12px; color: var(--green); font-weight: 600;
   letter-spacing: 0.06em; text-transform: uppercase; padding: 3px 0 2px;
 }
 
 /* ===================== STATS ===================== */
 .stat-row { display: flex; gap: 8px; }
 .stat-box { flex: 1; background: var(--surface); border-radius: 10px; padding: 10px 12px; border: 0.5px solid var(--border); }
-.stat-lbl { font-size: 10px; color: var(--text-hint); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 2px; }
+.stat-lbl { font-size: 11px; color: var(--text-hint); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 2px; }
 .stat-val { font-size: 18px; font-weight: 600; }
-.stat-unit { font-size: 11px; color: var(--text-hint); }
+.stat-unit { font-size: 12px; color: var(--text-hint); }
 
 /* ===================== INPUTS ===================== */
 .inp-wrap { display: flex; flex-direction: column; gap: 3px; flex: 1; }
-.inp-label { font-size: 11px; color: var(--text-hint); font-weight: 500; }
+.inp-label { font-size: 12px; color: var(--text-hint); font-weight: 500; }
 .inp-field {
   background: var(--card); border: 0.5px solid var(--border); border-radius: 7px;
   padding: 11px 12px; color: var(--text-sub); font-size: 14px; font-family: var(--font);
@@ -308,7 +308,7 @@ input.suggested:focus { color: var(--text) !important; font-style: normal; opaci
   padding: 12px; display: flex; align-items: center; justify-content: space-between; gap: 10px;
 }
 .vpd-val { font-size: 22px; font-weight: 600; color: var(--teal); font-family: var(--mono); }
-.vpd-pill { padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 500; display: inline-block; margin-top: 3px; }
+.vpd-pill { padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 500; display: inline-block; margin-top: 3px; }
 .vpd-scale { display: flex; height: 5px; border-radius: 3px; overflow: hidden; }
 .vpd-seg { flex: 1; }
 .vpd-mrow { position: relative; height: 8px; }
@@ -329,8 +329,8 @@ input.suggested:focus { color: var(--text) !important; font-style: normal; opaci
 .cal-cell.today { border: 2px solid #fff !important; }
 .cal-num { font-size: 14px; color: var(--text-sub); font-weight: 700; line-height: 1; }
 .cal-cell.today .cal-num { color: #fff; }
-.cal-tag { font-size: 7.5px; color: rgba(255,255,255,0.6); line-height: 1; margin-top: 1px; text-align: center; }
-.cal-tag2 { display: flex; justify-content: center; gap: 2px; font-size: 7px; letter-spacing: -0.2px; white-space: nowrap; max-width: 100%; }
+.cal-tag { font-size: 9px; color: rgba(255,255,255,0.6); line-height: 1; margin-top: 1px; text-align: center; }
+.cal-tag2 { display: flex; justify-content: center; gap: 2px; font-size: 9px; letter-spacing: -0.2px; white-space: nowrap; max-width: 100%; }
 .cal-icon { font-size: 13px; line-height: 1; margin-bottom: 1px; display: inline-flex; align-items: center; justify-content: center; height: 16px; width: 16px; }
 .cal-icon svg { width: 100%; height: 100%; display: block; }
 .cal-dot { width: 4px; height: 4px; border-radius: 50%; position: absolute; bottom: 2px; right: 3px; background: rgba(255,255,255,0.7); }
@@ -348,7 +348,7 @@ input.suggested:focus { color: var(--text) !important; font-style: normal; opaci
   display: grid; grid-template-columns: 1fr 58px 68px 60px;
   padding: 5px 10px; border-bottom: 0.5px solid var(--border);
 }
-.nth { font-size: 11px; font-weight: 500; }
+.nth { font-size: 12px; font-weight: 500; }
 .nth:not(:first-child) { text-align: right; }
 .nut-row-tbl {
   display: grid; grid-template-columns: 1fr 58px 68px 60px;
@@ -359,7 +359,7 @@ input.suggested:focus { color: var(--text) !important; font-style: normal; opaci
 .nut-row-tbl:nth-child(even) { background: var(--surface); }
 .nt-name { font-size: 12px; color: #bbb; }
 .nt-hint { font-size: 12px; text-align: right; font-family: var(--mono); }
-.nt-calc { font-size: 11px; text-align: right; font-family: var(--mono); color: var(--green); }
+.nt-calc { font-size: 12px; text-align: right; font-family: var(--mono); color: var(--green); }
 .nt-inp {
   background: #1e1e1e; border: 0.5px solid var(--border); border-radius: 5px;
   padding: 3px 6px; color: #ddd; font-size: 12px; font-family: var(--mono);
@@ -416,14 +416,14 @@ input.suggested:focus { color: var(--text) !important; font-style: normal; opaci
 /* ===================== DURATION GRID ===================== */
 .dur-grid { display: flex; flex-wrap: wrap; gap: 8px; }
 .dur-box { display: flex; flex-direction: column; gap: 3px; width: calc(33% - 6px); }
-.dur-lbl { font-size: 11px; color: var(--text-hint); }
+.dur-lbl { font-size: 12px; color: var(--text-hint); }
 .dur-inp {
   background: var(--card2); border: 0.5px solid var(--border); border-radius: 7px;
   padding: 10px 6px; color: var(--text-sub); font-size: 14px; text-align: center;
   width: 100%; outline: none; font-family: var(--mono); min-height: 44px;
   box-sizing: border-box;
 }
-.sub-head { font-size: 11px; color: var(--text-hint); font-weight: 500; margin-top: 8px; margin-bottom: 4px; }
+.sub-head { font-size: 12px; color: var(--text-hint); font-weight: 500; margin-top: 8px; margin-bottom: 4px; }
 
 /* ===================== SWITCHES ===================== */
 .sw-row { display: flex; align-items: center; justify-content: space-between; padding: 5px 0; }
@@ -595,7 +595,7 @@ input:checked + .sl:before { transform: translateX(18px); background: var(--gree
   font-size: 13px; color: var(--text-muted); font-weight: 500;
 }
 #input-modal-hint {
-  font-size: 11px; color: var(--text-hint); line-height: 1.5; margin-bottom: 16px;
+  font-size: 12px; color: var(--text-hint); line-height: 1.5; margin-bottom: 16px;
   min-height: 16px;
 }
 #input-modal-cancel {
@@ -619,7 +619,7 @@ input:checked + .sl:before { transform: translateX(18px); background: var(--gree
   display: inline-flex; align-items: center; gap: 3px;
   background: linear-gradient(135deg, #2a1500, #1a0a00);
   border: 0.5px solid rgba(232,136,74,0.35); border-radius: 16px;
-  padding: 3px 8px; font-size: 10px; color: var(--orange); font-weight: 600;
+  padding: 3px 8px; font-size: 11px; color: var(--orange); font-weight: 600;
 }
 .legal-body p { margin: 0 0 8px; }
 .legal-body p:last-child { margin-bottom: 0; }
@@ -676,7 +676,7 @@ input:checked + .sl:before { transform: translateX(18px); background: var(--gree
 }
 .mix-num {
   width: 20px; height: 20px; border-radius: 50%; background: var(--green-dk);
-  color: var(--green); font-size: 10px; font-weight: 700;
+  color: var(--green); font-size: 11px; font-weight: 700;
   display: flex; align-items: center; justify-content: center; flex-shrink: 0;
 }
 
@@ -691,7 +691,7 @@ input:checked + .sl:before { transform: translateX(18px); background: var(--gree
 }
 .ph-hint {
   background: var(--green-bg); border: 0.5px solid var(--green-dk);
-  border-radius: 8px; padding: 8px 12px; font-size: 11px; color: var(--green);
+  border-radius: 8px; padding: 8px 12px; font-size: 12px; color: var(--green);
   margin-top: 6px; text-align: center;
 }
 
@@ -781,7 +781,7 @@ input:checked + .sl:before { transform: translateX(18px); background: var(--gree
 }
 .tour-popup-x:active { background: rgba(232,136,74,0.2); transform: scale(0.92); }
 .tour-popup-step {
-  font-size: 10px; color: var(--text-hint); margin-left: auto;
+  font-size: 11px; color: var(--text-hint); margin-left: auto;
 }
 /* Step indicator dots */
 .tour-dots {
@@ -800,6 +800,21 @@ body.beginner .advanced-ctl { display: none !important; }
 /* (v1.5.48) Lexikon-Tabellen: Spalten nicht zerquetschen, damit der Rahmen seitlich
    geschoben werden kann statt die letzte Spalte abzuschneiden. */
 .lex-td { min-width:104px; }
+
+/* ===================== LESBARKEIT UND TIPPFLÄCHEN (v1.5.498) ===================== */
+/* Inline-Schriftgrößen stehen an rund 1 400 Stellen in app.js. Statt jede einzeln anzufassen: Mindestgröße 11 px für
+ * Kleingedrucktes, Erklärtexte (bisher 11 px) 12 px. Die Kalenderzellen sind ausgenommen (Zelle ist nur ~50 px breit). */
+[style*="font-size:7px"]:not(.cal-grid *), [style*="font-size:8px"]:not(.cal-grid *),
+[style*="font-size:9px"]:not(.cal-grid *), [style*="font-size:10px"]:not(.cal-grid *) { font-size: 11px !important; }
+[style*="font-size:11px"]:not(.cal-grid *) { font-size: 12px !important; }
+/* Tippflächen: mindestens 44 px hoch (Apple HIG, Material). Breite nur dort, wo der Knopf schmal ist und Platz hat. */
+[onclick*="dashHebeTest("], [onclick*="jumpToEntryField("], [onclick^="changeMonth("], [onclick^="closeDiagnostics"],
+[onclick^="entryNav("], [onclick^="applyRecommended"], [onclick^="openDiagnostics"], [onclick^="openDuenger"],
+[onclick^="archiveCycle"], [onclick^="doShiftFromEntry"], [onclick^="openTrainingPicker"], [onclick^="openPlantSheet"],
+[onclick^="openGussSheet"], [onclick^="toggleBeginnerMode"], button[onclick^="doUndo"], button[onclick^="doRedo"] { min-height: 44px !important; }
+[onclick^="changeMonth("], [onclick^="closeDiagnostics"], [onclick^="entryNav("], #entry-back { min-width: 44px !important; }
+#entry-back { min-height: 44px !important; }
+button[onclick^="doUndo"], button[onclick^="doRedo"] { min-width: 36px !important; }
 </style>
 </head>
 <body>
@@ -4867,7 +4882,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.497';
+const APP_VERSION = 'v1.5.498';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,

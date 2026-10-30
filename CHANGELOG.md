@@ -2,6 +2,25 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-30 — v1.5.498
+
+- **Die Schrift war fast überall zu klein, viele Knöpfe zu schmal zum Tippen.** Gemessen am 30.10.2026 (v1.5.493): Auf Startseite,
+  Eintrag und Einstellungen standen 55–90 % des Textes auf 10–11 px, im Eintrag bis 6 % auf 7–9 px, im Kalender die Tag-Nummern auf
+  7–7,5 px; die Hebe-Knöpfe der Startseite waren 28 px hoch, Sprung-Chips, ‹ ›, ✕ und mehrere Knöpfe im Eintrag unter 44 px.
+  Bewertung vom 17.09.2026: Barrierefreiheit 3,6 von 10, die schwächste Note (Hebel 9).
+- **Jetzt** hebt eine zentrale Regel in `head.html` Inline-Schriften von 7–10 px auf 11 px und Erklärtexte von 11 auf 12 px
+  (ausgenommen die Kalenderzellen, dort 9 px statt 7–7,5); 15 Klassen (Navigation, Beschriftungen, Kennzahlen) steigen um eine Stufe.
+  Die häufig benutzten Knöpfe — Hebe-Knöpfe, Sprung-Chips, Tagwechsel, Zurück, Monatswechsel, ✕ der Diagnose und die Knöpfe im
+  Eintrag — sind mindestens 44 px hoch, die schmalen auch 44 px breit (↩ ↪ 36 px, sonst wird die Kopfzeile zu eng). Keine der rund
+  1 400 Einzelstellen in `app.js` ist angefasst.
+- **Im Browser geprüft** auf 320 × 700 und 390 × 760 px, Startseite, Eintrag, Kalender, Einstellungen, Tipps, beide Modi: keine
+  horizontale Überbreite. Nicht übernommen aus dem Vorschlag des Helfers: eine unsichtbar vergrößerte ⓘ-Fläche — sie ragte 14 px über
+  Nachbarknöpfe (Hebe-Test) und hätte deren Tipps abgefangen.
+- **Offen:** Pflanzen-Auswahl im Eintrag („🌱 1 Pflanze ›“, 24 px hoch), Kalender-Tag-Nummern bei 9 px, ↩ ↪ nur 36 px breit —
+  jeweils ein Umbau der Zeile.
+- Test: `test_lesbarkeit_groesse.js` (41 Prüfungen der wirksamen Regeln, beide Zeitzonen; fällt auf v1.5.497 um). Gemessen und
+  gebaut von einem Sonnet-Helfer, im Browser nachgeprüft.
+
 ## 2026-10-30 — v1.5.497
 
 - **Ein höheres Bernstein-Ziel ergab ein früheres Erntefenster.** Konnte die Trichom-Rechnung das eigene Ziel nicht vorhersagen —
