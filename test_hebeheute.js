@@ -25,12 +25,12 @@ const HTML = fs.readFileSync(process.env.GS_INDEX || path.join(__dirname, 'index
   const E = (s) => w.eval(s);
   const fehler = []; let n = 0;
   const pruefe = (ok, text) => { n++; if (!ok) fehler.push(text); };
-  const liste = (restPct, tageZurueck) => JSON.parse(E(`(function(){ S.cycles = []; S.entries = {}; const heute = todayISO();
+  const liste = (restPct, tageZurueck, form) => JSON.parse(E(`(function(){ S.cycles = []; S.entries = {}; const heute = todayISO();
     const c = addCyc({ name: 'Test', startDate: isoPlus(heute, -20), seedType: 'auto', growType: 'indoor', medium: 'erde', potSize: 11,
       plantCount: 1, startMethod: 'saturated' }, { still: true }); S.cycles = [c]; selId = c.id;
     const tag = isoPlus(heute, -${tageZurueck}); S.entries[tag] = { cycleData: {} }; S.entries[tag].cycleData[c.id] = { restPct: ${restPct} };
     const ctx = buildDiagnosticContext(c);
-    const r = diagnoseProblems({ location: ['allLeaves'], colors: [], shapes: ['crispy'] }, ctx);
+    const r = diagnoseProblems({ location: ['allLeaves'], colors: [], shapes: [${JSON.stringify(form || 'crispy')}] }, ctx);
     return JSON.stringify(r.map(x => x.problem.id)); })()`));
 
   let l = liste(95, 0);
@@ -42,8 +42,10 @@ const HTML = fs.readFileSync(process.env.GS_INDEX || path.join(__dirname, 'index
   pruefe(l.includes('underwatering'), 'B heute Trocken: Wassermangel fehlt: ' + l);
   l = liste(95, 1);
   pruefe(l.includes('underwatering'), 'C gestern Voll: Wassermangel fehlt in der Liste: ' + l);
-  l = liste(20, 1);
-  pruefe(l.includes('overwatering'), 'D gestern Trocken: Überwässerung fehlt in der Liste: ' + l);
+  // (v1.5.492) Mit „knusprig“ fiel die Überwässerung auf Platz 6, weil Wurzelfäule und Spinnmilben den Phasen-Punkt jetzt auch
+  // bekommen — nicht ausgeschlossen, nur nicht unter den ersten fünf. Geprüft wird die Regel deshalb am Bild „hängend“.
+  l = liste(20, 1, 'wilting');
+  pruefe(l.includes('overwatering'), 'D gestern Trocken (hängend): Überwässerung fehlt in der Liste: ' + l);
 
   if (errors.length) fehler.push('Konsolenfehler: ' + errors.slice(0, 3).join(' | '));
   console.log(fehler.length ? 'FEHL (' + fehler.length + '/' + n + ')\n' + fehler.join('\n') : 'OK (' + n + ' Prüfungen)');

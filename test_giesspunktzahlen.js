@@ -101,10 +101,10 @@ const zaehle = (s, teil) => String(s || '').split(teil).length - 1;
     && !r.alle.some(a => /unter 45 %/.test(a)), r.nass);
   pruef('Diagnose „Trauermücken": bis zum Gießpunkt', !!r.muecken && /Erde bis zum Gießpunkt abtrocknen lassen/.test(r.muecken), r.muecken);
   const roh = fs.readFileSync(path.join(__dirname, 'app.js'), 'utf8');
-  pruef('Sämlings-Hinweis (beide Startarten): Gießpunkt erst ab DRAIN_AB_TAG, aus GIESSPUNKT, Coco mit „Mittel"',
-    zaehle(roh, 'Ab Tag ${DRAIN_AB_TAG}: gießen, wenn der Topf den Gießpunkt erreicht (${_gp})') === 2
-    && zaehle(roh, 'Tag 9–${DRAIN_AB_TAG - 1}: an den Gießtagen der App gießen') === 2
-    && roh.includes('const _gpc = giesspunktFor(c)'));   // (v1.5.200) vorher fester Coco-Ausdruck, jetzt GIESSPUNKT je Substrat
+  // (v1.5.489) Das Sämlings-Hinweis-Fenster nach dem Anlegen gibt es nicht mehr — mit ihm keine feste Gießpunkt-Zahl dort.
+  pruef('Sämlings-Hinweis-Fenster entfernt: keine eigene Gießpunkt-Zeile mehr im Quelltext',
+    zaehle(roh, 'Ab Tag ${DRAIN_AB_TAG}: gießen, wenn der Topf den Gießpunkt erreicht (${_gp})') === 0
+    && !/Tag 9\+: ~40 %|ab Tag 15 ~30–40 %/.test(roh));
   const html = E(`buildChartsSection(S.cycles[0].id)`);
   pruef('Restgewicht-Diagramm (abgeschaltet): Legende aus GIESSPUNKT, falls es Daten gibt',
     !/Sweet-Spot 30–50%/.test(html) && (!/Restgewicht-Verlauf/.test(html) || html.includes(`Gießpunkt ${band}`)), (html.match(/Restgewicht-Verlauf.{0,160}/) || ['(keine Restgewicht-Daten)'])[0]);

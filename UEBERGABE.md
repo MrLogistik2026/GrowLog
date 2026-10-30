@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.491** · index.html 2,67 MB · 781 Funktionen
+Stand: **v1.5.492** · index.html 2,67 MB · 781 Funktionen
 Zuletzt fortgeschrieben am 30.10.2026 früh (Nachtarbeit 29./30.10.: Diagnose-Liste B01–B12 und U4 fertig, danach zwei
 Bedien-Prüfungen nach den Grundsätzen der Lager-App — Befunde in `.claude/notizen/ux/*.txt` und `.claude/tmp/ux2/bericht.txt`,
 abgearbeitet in v1.5.452–489, siehe Versionsliste in 0o. **Patrick am 30.10.2026 morgens zu den vier offenen Fragen: „Ja bau
@@ -456,6 +456,7 @@ Speicher-Befunde sind in v1.5.340–344 behoben. Rohdaten: Workflow wf_63d754b1-
 - v1.5.489: Kein Sämlings-Protokoll-Fenster mehr nach dem Anlegen eines Zyklus — die Startseite sagt es Tag für Tag (Patrick 30.10.: „Ja bau bitte alles so“; `test_tag1mengen.js` C).
 - v1.5.490: Diagnose: Ein Bild, das zu keinem gewählten Ort passt, bekommt die halbe Punktzahl (U3, ANBAU.md 6.1) (`test_diagnose_u3_ort.js`).
 - v1.5.491: Diagnose: Bei Gleichstand gewinnt, wer mehr der gewählten Merkmale trifft (U2) (`test_diagnose_u2_abdeckung.js`).
+- v1.5.492: Diagnose: Die Phase schließt aus, sie zeichnet nicht aus — jede passende Ursache bekommt denselben Phasen-Punkt, Überwässerung ohne Phasenliste, `vorrang` für die Wasser-Ursachen, kein „Taco“ beim Bleichen (U1) (`test_diagnose_u1_phase.js`).
 
 **Gegenprüfung von v1.5.364/365 (07.10.2026 nachts, Workflow wf_4cf817bf-629, drei Sonnet-Prüfer + Gegenprüfer).** Kein Fehlalarm
 in 33 App-Fassungen, allen Vorlagen und über 2800 Klicks; die schweren Befunde (unsichere Kopie zerstört den Hauptstand, Tropfen als

@@ -49,15 +49,17 @@ const HTML = fs.readFileSync(process.env.GS_INDEX || path.join(__dirname, 'index
   }
   // 2. Dasselbe in der Vegi.
   r = d(HAENGEND, { phase: 'vegi', restHigh: true });
-  pruefe(platz(r, 'overwatering') === 0, `Vegi + nass: Überwässerung auf Platz 1 — ${zeig(r)}`);
+  // (v1.5.492) Wurzelfäule hat keine Phasenliste und bekommt den Phasen-Punkt jetzt wie die Überwässerung; bei Gleichstand steht
+  // sie als die ernstere Folge vorn (ANBAU.md 13.1, 15). Geprüft wird: beide auf Platz 1 und 2, vor allem ohne Messwert.
+  pruefe(platz(r, 'overwatering') <= 1 && platz(r, 'root_rot') <= 1, `Vegi + nass: Überwässerung und Wurzelfäule auf Platz 1 und 2 — ${zeig(r)}`);
   pruefe(platz(r, 'fungus_gnats') < platz(r, 'heat_stress'), `Vegi + nass: Trauermücken vor Hitzestress — ${zeig(r)}`);
   // 3. Topf trocken: Wassermangel vorn, wie bisher.
   r = d(HAENGEND, { phase: 'bloom', restLow: true });
   pruefe(platz(r, 'underwatering') === 0, `Blüte + trocken: Wassermangel auf Platz 1 — ${zeig(r)}`);
   // 4. Neue Blätter gelb, pH zu hoch: der pH-Lockout vor den Einträgen, die nur die Phase haben.
   r = d({ location: ['newLeaves'], colors: ['yellow'], shapes: [] }, { phase: 'bloom', phHigh: true });
-  pruefe(platz(r, 'iron_deficiency') === 0, `pH hoch: Eisen-Mangel auf Platz 1 — ${zeig(r)}`);
-  pruefe(platz(r, 'ph_lockout') === 1, `pH hoch: pH-Lockout auf Platz 2 — ${zeig(r)}`);
+  pruefe(platz(r, 'iron_deficiency') <= 1, `pH hoch: Eisen-Mangel auf Platz 1 oder 2 — ${zeig(r)}`);
+  pruefe(platz(r, 'ph_lockout') <= 1, `pH hoch: pH-Lockout auf Platz 1 oder 2 — ${zeig(r)}`);
   // 5. Zu warm: der Hitzestress hat jetzt eine Temperatur und steht vorn.
   r = d(HAENGEND, { phase: 'bloom', tempHot: true, tempWarm: true });
   pruefe(platz(r, 'heat_stress') === 0, `Blüte + zu warm: Hitzestress auf Platz 1 — ${zeig(r)}`);

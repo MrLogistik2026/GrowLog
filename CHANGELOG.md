@@ -2,6 +2,34 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-30 — v1.5.492
+
+- **Der Phasen-Punkt der Diagnose hing an der Datenpflege, nicht am Bild.** Nur Einträge mit Phasenliste bekamen ihn; Wurzelfäule,
+  Spinnmilben, Trauermücken und pH-Lockout haben keine Liste und bekamen ihn nie. „Alle Blätter hängend“ in der Blüte nannte so den
+  Hitzestress (ohne gemessene Wärme) vor Wurzelfäule und Überwässerung, „Alte Blätter + Flecken + Spinnweben“ den Magnesium-Mangel
+  vor den Spinnmilben. Die Überwässerung stand dazu mit der Liste „Anzucht, Wachstum“ in der Blüte als unpassend da (ANBAU.md 13.1:
+  sie kommt in jeder Phase vor). Befund U1 vom 08.10.2026; Patrick am 30.10.2026: „Ja bau bitte alles so“.
+- **Jetzt** schließt die Phase aus, sie zeichnet nicht aus: Jede Ursache, die in der Phase vorkommen kann, bekommt denselben
+  Punkt, auch ohne Liste; die Überwässerung hat keine Liste mehr. Bei Gleichstand der Wasser-Ursachen gilt ein festes Feld
+  `vorrang`: Überwässerung vor Überdüngung vor Wassermangel (13.1, 13.2, 15) — hinter dem Schweregrad, Wurzelfäule bleibt vorn.
+  Foto-Bleaching führt kein „Taco“ (curlUp) mehr (8.2: Hochwölben ist Hitze, Bleichen färbt weiß).
+- **Verworfen nach Messung:** Die Fassung des Helfers gab den Phasen-Punkt nur Einträgen mit enger Liste. Sie stellte Kalium (nur
+  Blüte) vor Stickstoff bei gelben unteren Blättern ohne braune Ränder und Foto-Bleaching gleichauf mit Eisen bei gelben oberen
+  Blättern und hohem pH. Mit der jetzigen Regel steht Stickstoff wieder vorn, Eisen und pH-Lockout teilen Platz 1 (der Lockout als
+  „ernst“ zuerst — die Ursache ist die Verfügbarkeit, ANBAU.md 4), Foto-Bleaching folgt dahinter.
+- Gemessen: Platz 1 wechselt in 836 von 5280 Einzel- und 2679 von 16272 Mehrfach-Fällen (größte Gruppen: Spinnweben → Spinnmilben,
+  hängend → Wurzelfäule/Wassermangel statt Dünger/Hitze); alle 27 klassischen Bilder bleiben richtig. `test_diagnose.js` und
+  `test_diagnose_messwert.js` verlangen jetzt Eisen und Lockout auf Platz 1 und 2 statt Eisen zuerst.
+- **Offen, gesehen beim Messen (vorbestehend):** „Alte Blätter + hängend + Topf leicht“ nennt den Kältestress (ohne gemessene Kälte)
+  vor dem Wassermangel, weil ein Bild mit „Alle Blätter“ für „alte Blätter“ nicht als Ortstreffer zählt.
+- Test: `test_diagnose_u1_phase.js` (33 Prüfungen, beide Zeitzonen; fällt auf v1.5.491 um).
+- Nachgezogen: `test_hebeheute.js` D prüft „gestern trocken schließt die Überwässerung nicht aus“ am Bild „hängend“ (bei
+  „knusprig“ stand sie jetzt auf Platz 6 — nicht ausgeschlossen, nur nicht unter den ersten fünf); `test_diagnose_messwert.js`
+  verlangt bei „Wachstum + Topf nass“ Überwässerung und Wurzelfäule auf Platz 1 und 2.
+- **Nachgezogen für v1.5.489:** `test_giesspunktzahlen.js` prüfte die Gießpunkt-Zeile im entfernten Sämlings-Fenster und war seit
+  489 rot; der eingeschränkte Lauf für 489 hatte ihn nicht dabei. Er prüft jetzt, dass die Zeile weg ist. Lehre wie bei 482: Wer
+  Text entfernt, sucht die Tests über den Text (`grep` nach einem Satzstück), nicht nur über den Funktionsnamen.
+
 ## 2026-10-30 — v1.5.491
 
 - **Bei gleicher Punktzahl entschied die Diagnose, ohne zu zählen, wie viele der genannten Merkmale ein Bild trifft.** Wer „Weiß“

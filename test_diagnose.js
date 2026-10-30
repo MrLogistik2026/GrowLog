@@ -117,13 +117,13 @@ function pruef(name, bedingung, info) {
   console.log('B - Das Eisenbild landet jetzt oben, aber nur mit dem passenden Kontext');
   {
     const mitPh = d({ location: ['newLeaves'], colors: ['yellow'] }, { phHigh: true, phase: 'bloom' });
-    pruef('Mit "pH zu hoch" steht Eisen an erster Stelle',
-      mitPh[0] === 'iron_deficiency', JSON.stringify(mitPh.slice(0, 3)));
+    pruef('Mit "pH zu hoch" stehen Eisen und pH-Lockout auf Platz 1 und 2',
+      mitPh.indexOf('iron_deficiency') <= 1 && mitPh.indexOf('ph_lockout') <= 1, JSON.stringify(mitPh.slice(0, 3)));
 
     const mitDrift = d({ location: ['newLeaves'], colors: ['yellow'] },
       { phHigh: true, runoffDriftHigh: true, phase: 'bloom' });
     pruef('Mit driftendem Drain-pH stehen Eisen und pH-Lockout vorn',
-      mitDrift[0] === 'iron_deficiency' && mitDrift.indexOf('ph_lockout') <= 2,
+      mitDrift.indexOf('iron_deficiency') <= 1 && mitDrift.indexOf('ph_lockout') <= 1,
       JSON.stringify(mitDrift.slice(0, 3)));
 
     pruef('ph_lockout ist ueberhaupt sichtbar geworden',

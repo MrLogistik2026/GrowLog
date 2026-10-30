@@ -1394,6 +1394,7 @@ const PROBLEMS = [
   },
   {
     id: 'nutrient_burn',
+    vorrang: 2,
     name: 'Nährstoff-Burn (Überdüngung)',
     category: 'nutrient',
     severity: 'high',
@@ -1451,6 +1452,7 @@ const PROBLEMS = [
   // -------------------------------------------------------------------
   {
     id: 'overwatering',
+    vorrang: 3, // (v1.5.492) bei Gleichstand: Überwässerung vor Überdüngung vor Wassermangel (ANBAU.md 13.1, 13.2, 15)
     name: 'Überwässerung',
     category: 'water',
     severity: 'high',
@@ -1461,7 +1463,9 @@ const PROBLEMS = [
     },
     description: 'Blätter hängen nach unten obwohl Topf nass ist. Stamm kann weich werden. Langsames Wachstum. Klassisch: „aussieht wie Wassermangel, ist aber Wasserüberschuss".',
     // (v1.5.439) Ein federleichter Topf im Hebe-Test von heute schließt Überwässerung aus (ANBAU.md 15, Regel 2).
-    context: { restHigh: true, phase: ['vegi', 'anzucht'], ignoreWennTrocken: true },
+    // (v1.5.492) Keine Phasenliste: Überwässerung kommt in jeder Phase vor (ANBAU.md 1, 13.1 — am häufigsten beim Sämling, aber
+    // nicht nur). Mit der Liste „Anzucht, Wachstum“ galt sie in der Blüte als unpassend und fiel bei „hängend“ aus den ersten fünf.
+    context: { restHigh: true, ignoreWennTrocken: true },
     // (v1.5.442) Erst die Gegenprobe am Topf — bei „hängend“ stehen Überwässerung, Wassermangel und Überdüngung nebeneinander,
     // und „GIESSEN STOPPEN“ ohne Bedingung ist bei einem leichten Topf genau falsch (ANBAU.md 1, 5; Regel 3).
     action: 'Erst den Topf anheben (Hebe-Test). Ist er schwer, GIESSEN STOPPEN — erst wieder gießen, wenn er den Gießpunkt erreicht (Erde: Hebe-Test „' + GIESSPUNKT.erde.knopf + '“, unter ' + GIESSPUNKT.erde.bis + ' % Restgewicht; Coco: „' + GIESSPUNKT.coco.knopf + '“; vor Tag ' + DRAIN_AB_TAG + ' am nächsten Gießtag der App, wenn der Topf dann nicht mehr nass ist). Wurzeln brauchen Sauerstoff, und nasses Substrat verdrängt ihn. Untersetzer leeren. Danach nicht öfter gießen, als der Hebe-Test sagt — nass macht zu häufiges Gießen, nicht eine volle Menge mit Drain. '
@@ -1470,6 +1474,7 @@ const PROBLEMS = [
   },
   {
     id: 'underwatering',
+    vorrang: 1,
     name: 'Wassermangel / Dehydration',
     category: 'water',
     severity: 'high',
@@ -1556,7 +1561,9 @@ const PROBLEMS = [
       location: ['newLeaves', 'buds', 'allLeaves'],
       // (v1.5.441) Weiß ist das Kennzeichen (ANBAU.md 8.2); breite 7 = bisherige Profillänge, damit sich keine Gleichstände verschieben.
       color: ['white', 'paleGreen', 'yellow'],
-      shape: ['spotted', 'curlUp'],
+      // (v1.5.492) Kein curlUp: Taco/Hochwölben ist das Bild des thermischen Stresses (ANBAU.md 8.2), Bleichen färbt weiß. Mit
+      // curlUp stand Foto-Bleaching bei „Neue Blätter + Taco“ vor dem Hitzestress. breite bleibt 7.
+      shape: ['spotted'],
     },
     breite: 7,
     description: 'Die lichtnächsten Spitzen, meist die oberen Blüten, bleichen weiß aus, scharf begrenzt (NICHT braun-verbrannt). Sieht nach viel Harz aus, ist aber ausgeblichenes Gewebe: An diesen Spitzen kommt mehr Licht an, als die Blätter verarbeiten können. Typisch bei sehr hoher Lichtmenge am Canopy: ausbleichen kann es praktisch erst ab etwa ' + LICHT_ZIEL.bluete.bleichAb + ' PPFD.',
@@ -1822,9 +1829,17 @@ function diagnoseProblems(symptoms, ctx = {}) {
     const pCtx = p.context || {};
     let ctxBoost = 0;
     let _phaseB = 0;
-    if (pCtx.phase && ctx.phase) {
-      if (pCtx.phase.includes(ctx.phase) || (pCtx.phase.includes('vegi') && ['anzucht','vorzucht','vegi_out','abhärten'].includes(ctx.phase))) {
-        ctxBoost += 0.05; _phaseB = 0.05; contextReasons.push(`passt zur Phase ${_phasenWort(ctx.phase)}`);
+    // (v1.5.492) Die Phase schließt aus, sie zeichnet nicht aus: Jede Ursache, die in dieser Phase vorkommen kann, bekommt
+    // denselben Phasen-Punkt — auch die ohne Phasenliste (Überwässerung, Wurzelfäule, Spinnmilben, Trauermücken). Vorher bekamen
+    // nur Einträge MIT Liste den Punkt; bei „Alle Blätter + hängend“ in der Blüte stand so der Hitzestress (Liste Wachstum + Blüte)
+    // vor Wurzelfäule und Überwässerung (ohne Liste), allein wegen der Datenpflege (Befund U1, 08.10.2026). Gemessen und verworfen
+    // (30.10.2026): „Punkt nur für enge Listen“ — das stellte Kalium (nur Blüte) vor Stickstoff bei gelben unteren Blättern ohne
+    // braune Ränder und Foto-Bleaching gleichauf mit Eisen bei gelben oberen Blättern und hohem pH.
+    if (ctx.phase) {
+      const _phPasst = !pCtx.phase || pCtx.phase.includes(ctx.phase) || (pCtx.phase.includes('vegi') && ['anzucht','vorzucht','vegi_out','abhärten'].includes(ctx.phase));
+      if (_phPasst) {
+        ctxBoost += 0.05; _phaseB = 0.05;
+        if (pCtx.phase) contextReasons.push(`passt zur Phase ${_phasenWort(ctx.phase)}`);
       }
     }
     if (pCtx.phHigh && ctx.phHigh) { ctxBoost += 0.05; contextReasons.push('pH zu hoch'); }
@@ -1869,8 +1884,9 @@ function diagnoseProblems(symptoms, ctx = {}) {
     // (v1.5.491) Abdeckung: wie viele der gewählten Merkmale der Eintrag trifft (Ort, Farben, Formen einzeln gezählt). Die Punktzahl
     // zählt nur Bereiche; wer Weiß UND Gelb wählt, hat zwei Merkmale genannt, und ein Eintrag, der beide trifft, steht nicht hinter
     // einem, der nur Gelb trifft (gemessen: Weiß + Gelb oben nannte die Überdüngung vor dem Foto-Bleaching, ANBAU.md 8.2).
+    const vorrang = p.vorrang || 0;
     const abdeckung = matchedLoc.length + matchedCol.length + matchedShp.length;
-    return { problem: p, score, matchedReasons, contextReasons, ctxBoost, mess, abdeckung, breite, rang };
+    return { problem: p, score, matchedReasons, contextReasons, ctxBoost, mess, abdeckung, vorrang, breite, rang };
   }).filter(Boolean);
 
   // (v1.5.124) Bei Punktgleichstand entschied bisher die Reihenfolge im Quelltext — also
@@ -1899,7 +1915,7 @@ function diagnoseProblems(symptoms, ctx = {}) {
   // gleichwertiger Treffer.
   return results
     .sort((a, b) => (b.score - a.score) || (b.mess - a.mess) || (b.ctxBoost - a.ctxBoost)
-      || (b.abdeckung - a.abdeckung) || (b.rang - a.rang) || (a.breite - b.breite))
+      || (b.abdeckung - a.abdeckung) || (b.rang - a.rang) || (b.vorrang - a.vorrang) || (a.breite - b.breite))
     .slice(0, 5);
 }
 
@@ -3835,7 +3851,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.491';
+const APP_VERSION = 'v1.5.492';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
