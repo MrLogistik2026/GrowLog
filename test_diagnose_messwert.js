@@ -34,7 +34,8 @@ const HTML = fs.readFileSync(process.env.GS_INDEX || path.join(__dirname, 'index
   // Treffer mit Punktzahl und der Frage, ob ihr Kontext etwas aussagt (alles außer „passt zur Phase“).
   const d = (sym, ctx) => JSON.parse(E(`JSON.stringify(diagnoseProblems(${JSON.stringify(sym)}, ${JSON.stringify(ctx)})
     .map(x => ({ id: x.problem.id, p: Math.round(x.score * 1000),
-      sagt: x.contextReasons.some(r => !r.startsWith('passt zur Phase') && !r.startsWith('in der späten Blüte')) })))`));
+      // (v1.5.490) Der Ort-Abschlag („gewählter Ort passt nicht …“) ist eine Begründung, aber kein Messwert, der etwas stützt.
+      sagt: x.contextReasons.some(r => !r.startsWith('passt zur Phase') && !r.startsWith('in der späten Blüte') && !r.startsWith('gewählter Ort passt nicht')) })))`));
   const platz = (liste, id) => { const i = liste.findIndex((x) => x.id === id); return i < 0 ? 99 : i; };
   const zeig = (liste) => liste.map((x) => x.id + ' ' + x.p / 10).join(' | ');
 

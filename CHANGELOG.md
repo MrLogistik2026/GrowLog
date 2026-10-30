@@ -2,6 +2,21 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-30 — v1.5.490
+
+- **Die Diagnose achtete beim Ort zu wenig auf die erste Frage „oben oder unten?“** (ANBAU.md 6.1). Ein Eintrag, der zu keinem
+  gewählten Ort passt, zählte trotzdem voll mit: „Neue Blätter + hängend“ in der Blüte nannte die Knospenfäule (NOTFALL) mit 38 %,
+  „Stängel + hängend“ sogar zuerst — ohne dass Blüten gewählt waren. Befund U3 vom 08.10.2026; Patrick am 30.10.2026: „Ja bau
+  bitte alles so“.
+- **Jetzt** bekommt ein Eintrag, der zu keinem gewählten Ort passt, die halbe Punktzahl; der Grund steht in der Begründung
+  („gewählter Ort passt nicht zu diesem Bild“). „Alle Blätter“ gilt als jeder Blattort, ein Eintrag mit „Alle Blätter“ passt zu
+  jedem Blatt — Überdüngung, Wassermangel und Kalium werden nicht zu Unrecht gestraft. Faktor 0,5 gegen 0,6 und 0,67 gemessen:
+  Platz 1 mit falschem Ort trotz passender Alternative in 2400 Einzelfällen bei 0,5 noch 30-mal (vorher 398), bei 0,6/0,67 165/170.
+- Gemessen über alle Auswahlen: Platz 1 wechselt in 1038 von 5280 Einzel- und 1930 von 16272 Mehrfach-Fällen, vor allem bei Stängel
+  und Wurzeln. Alle 27 klassischen Bilder bleiben richtig. Gebaut und gemessen von einem Sonnet-Helfer, nachgemessen.
+- Test: `test_diagnose_u3_ort.js` (25 Prüfungen, beide Zeitzonen; fällt auf v1.5.489 um).
+- Nachgezogen: `test_diagnose_messwert.js` zählt den Ort-Abschlag nicht als stützenden Messwert (die Regel „Messwert vor Phase bei Gleichstand“ prüfte sonst den Hinweis selbst).
+
 ## 2026-10-30 — v1.5.489
 
 - **Nach dem Anlegen eines Zyklus sprang 800 ms später das Fenster „🌱 Sämlings-Protokoll“ auf** — ein Tipp mehr direkt nach dem

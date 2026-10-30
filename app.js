@@ -1793,6 +1793,19 @@ function diagnoseProblems(symptoms, ctx = {}) {
     // Mindestens 1 Bereich muss matchen — sonst raus
     if (areas === 0) return null;
 
+    // (v1.5.490) Ort-Abschlag (ANBAU.md 6.1: „Die diagnostische Erstfrage lautet immer: oben oder unten?“; 15). Wer einen Ort
+    // gewählt hat und der Eintrag passt zu keinem davon, bekommt die Hälfte der Punkte — Farbe oder Form allein tragen dann keine
+    // Notfall-Diagnose mehr. Gemessen vorher: „Neue Blätter + hängend“ in der Blüte nannte Knospenfäule (NOTFALL) ohne gewählte
+    // Blüten, „Stängel + hängend“ stellte sie an Platz 1. „Alle Blätter“ gilt als jedes Blatt, und ein Eintrag mit „Alle Blätter“
+    // gilt für jeden Blattort; sonst würde die Überdüngung bei „Alte Blätter“ oder der Wassermangel bei „Neue Blätter“ gestraft.
+    let _ortFalsch = false;
+    if (sLocation.length > 0 && matchedLoc.length === 0) {
+      const _blatt = ['oldLeaves', 'newLeaves', 'allLeaves'];
+      const _passt = (pLoc.includes('allLeaves') && sLocation.some(l => _blatt.includes(l)))
+        || (sLocation.includes('allLeaves') && pLoc.some(l => _blatt.includes(l)));
+      _ortFalsch = !_passt;
+    }
+
     // Basisscore: 0-1 je nach Anzahl übereinstimmender Bereiche
     let score = areas / 3;
 
@@ -1842,6 +1855,7 @@ function diagnoseProblems(symptoms, ctx = {}) {
     if (pCtx.ignoreWennTrocken && ctx.restLow && ctx.restHeute) return null;
 
     score = Math.min(1, score + ctxBoost);
+    if (_ortFalsch) { score *= 0.5; contextReasons.push('gewählter Ort passt nicht zu diesem Bild (halbe Punktzahl)'); }
     // Breite des Profils = wie viele Symptome der Eintrag überhaupt listet. Dient nur der
     // Reihenfolge bei Gleichstand (siehe unten), nicht der Punktzahl.
     // (v1.5.441) Ein Eintrag kann seine Breite festschreiben (p.breite), damit ein neues Merkmal wie „weiß“ die
@@ -3817,7 +3831,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.489';
+const APP_VERSION = 'v1.5.490';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
