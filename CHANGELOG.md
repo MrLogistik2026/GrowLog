@@ -2,6 +2,15 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-30 — v1.5.508
+
+- **Drain-pH 6,9 in gekalkter Erde löste den Drift-Alarm aus.** Nach `ANBAU.md` 4.1 sind 6,8–7,2 dort das erwartete Gleichgewicht
+  (Kalkpuffer); ein Befund ist erst ein Wert, der über Wochen weiter steigt. Hebel 2 der Bewertung.
+- **Jetzt** meldet die App in Erde einen hohen Drain-pH (`_drainPhHochBefund`) nur über 7,2 oder wenn er über Wochen steigt — drei
+  gültige Messungen in 28 Tagen über mindestens 14 Tage, keine tiefer als die vorige, zusammen mindestens 0,3 höher. Diese Zahlen
+  sind eine Konvention (4.1 nennt „über Wochen“ ohne Zahl). Coco und Hydro bleiben bei der engen Regel.
+- Test: `test_substrat_c.js` (13 Prüfungen, beide Zeitzonen; 5 fallen auf v1.5.507 um).
+
 ## 2026-10-30 — v1.5.507
 
 - **„CalMag Pflicht in Coco“ stand ohne Bedingung** in der CANNA-Coco-Vorlage (Misch-Info, Drain-Info, Produktnotiz, Woche 1), im

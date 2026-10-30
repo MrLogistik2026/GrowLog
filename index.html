@@ -2975,6 +2975,36 @@ function diagnoseProblems(symptoms, ctx = {}) {
 }
 
 /**
+ * (v1.5.508) Ist ein Drain-pH weit über dem Gießwasser ein Befund — oder das Gleichgewicht des Substrats?
+ *
+ * ANBAU.md 4.1: In gekalktem Torf ist ein Drain-pH von 6,8–7,2 bei einem Zulauf von 6,2–6,4 das erwartete Gleichgewicht (Kalkpuffer),
+ * keine Störung; in Coco und Hydro folgt der Drain dem Zulauf, dort ist die Abweichung ein Signal. Ein Befund wird der Wert in Erde nur,
+ * wenn er über dem Normalband liegt (über 7,2) oder über Wochen weiter steigt (mindestens drei gültige Messungen in 28 Tagen über
+ * mindestens 14 Tage, jede nicht tiefer als die davor, insgesamt mindestens 0,3 höher). Die weiteren Bedingungen aus 4.1 — Chlorose an
+ * jungen Blättern, minimaler Drain — tragen die Symptomwahl der Diagnose und `drainFlow` (nur gültiger Ablauf zählt).
+ * Vorher hieß schon Erde-Drain 6,9 bei Zulauf 6,3 „Drain-pH weit über dem Gießwasser“ und gab dem pH-Lockout Punkte, während der Eintrag
+ * für dieselbe Messung „Erde-Puffer, normal“ sagte.
+ */
+function _drainPhHochBefund(c, iso, cd) {
+  const med = (c && c.medium) || 'erde';
+  if (med === 'coco' || med === 'hydro') return true;
+  const rp = parseFloat(cd && cd.runoffPh);
+  if (!isFinite(rp)) return false;
+  if (rp > 7.2) return true;
+  const reihe = [];
+  for (let d = 28; d >= 0; d--) {
+    const i2 = isoPlus(iso, -d);
+    const x = S.entries && S.entries[i2] && S.entries[i2].cycleData && S.entries[i2].cycleData[c.id];
+    if (!x) continue;
+    const v = parseFloat(x.runoffPh), fl = drainFlow(x);
+    if (isFinite(v) && fl && fl.gueltig) reihe.push({ d, v });
+  }
+  if (reihe.length < 3 || reihe[0].d - reihe[reihe.length - 1].d < 14) return false;
+  for (let i = 1; i < reihe.length; i++) if (reihe[i].v < reihe[i - 1].v) return false;
+  return reihe[reihe.length - 1].v - reihe[0].v >= 0.3;
+}
+
+/**
  * Extrahiert kontextuelle Hinweise aus App-Daten für einen Zyklus zur
  * Verwendung mit diagnoseProblems(). Nutzt contextFor, letzte Entries,
  * Runoff-Analyse, etc.
@@ -3097,7 +3127,7 @@ function buildDiagnosticContext(c, iso = null) {
     // (v1.5.150) Eine nicht beurteilbare Ablaufmessung ist auch für die Diagnose kein Befund.
     if (ra.ecGueltig !== false && ra.ecStatus === 'warning-high') result.ecDeltaPos = true;
     if (ra.ecGueltig !== false && ra.ecStatus === 'warning-low') result.ecDeltaNeg = true;
-    if (ra.phGueltig !== false && ra.phStatus === 'warning-high') result.runoffDriftHigh = true;
+    if (ra.phGueltig !== false && ra.phStatus === 'warning-high' && _drainPhHochBefund(c, latestEntry.iso || refISO, latestEntry.cd)) result.runoffDriftHigh = true;   // (v1.5.508) Erde: nur über dem Normalband oder steigend
     if (ra.phGueltig !== false && ra.phStatus === 'warning-low') result.runoffDriftLow = true;
   }
 
@@ -4912,7 +4942,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.507';
+const APP_VERSION = 'v1.5.508';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
