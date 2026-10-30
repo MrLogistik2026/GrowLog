@@ -37,6 +37,69 @@ werden. Wer hier etwas über Pflanzen entscheidet, liest dort nach, statt zu sch
 
 ---
 
+## 0p · Bewertung vom 30.10.2026 — v1.5.498, gemessen
+
+Patrick am 30.10.2026: „Mach die Bewertung“ — dieselbe Skala, dieselben Kategorien und Gewichte wie am 17.09. (Abschnitt 0o).
+Fünf Sonnet-Prüfer (Anfänger, Profi, Fachwissen, Technik, Stimmigkeit) haben den eingefrorenen Stand v1.5.498 unabhängig gemessen
+(jsdom, Technik zusätzlich echtes Chrome mit axe und Drosselung), ein sechster hat kalibriert und jeden schweren und die wichtigsten
+mittleren Befunde selbst nachgestellt. Auftrag, Rohdaten, Skripte: `.claude/notizen/bewertung_2026-10-30/` (`auftrag.md`,
+`<sicht>.json/.md`, `final.json/.md`), Mess-Skripte unter `.claude/tmp/bewertung/<sicht>/` (vergänglich).
+
+**Ergebnis: 6,7 von 10** (17.09.: 6,4) — Anfänger **6,7** (6,2), Profi **6,8** (6,6). Größte Sprünge: H6 Einstellungen 5,0 → 6,7,
+T5 Barrierefreiheit 3,6 → 4,5, I5 Ernte 5,2 → 6,0, I6 Diagnose 6,0 → 6,6, H1 Anfänger 6,2 → 6,8. Gesunken: T4 Geschwindigkeit
+7,3 → 6,5 (erstmals im echten Browser mit Drosselung gemessen: Kaltstart 4,2 s bei 4× CPU — die 2,8-MB-Datei wird jedes Mal neu
+gelesen), T3 6,6 → 6,5, T6 5,6 → 5,5. Schwächste Stellen: S2 Outdoor 4,5, T5 4,5, T6 5,5, S1 Coco/Hydro 5,7.
+
+| Kategorie | 17.09. | 30.10. |
+|---|---|---|
+| H1 Anfänger · H2 Profi · H3 Erstkontakt | 6,2 · 6,6 · 6,5 | 6,8 · 6,9 · 7,0 |
+| H4 Gießtag · H5 Übersicht · H6 Einstellungen | 6,7 · 6,0 · 5,0 | 7,0 · 6,5 · 6,7 |
+| I1 Intelligenz · I2 Gießmenge · I3 Düngung | 7,2 · 7,6 · 6,4 | 7,3 · 7,7 · 6,6 |
+| I4 Klima · I5 Ernte · I6 Diagnose | 8,0 · 5,2 · 6,0 | 8,2 · 6,0 · 6,6 |
+| F1 Richtigkeit · F2 Ehrlichkeit · F3 Schutz | 6,5 · 6,9 · 6,6 | 6,9 · 7,1 · 6,9 |
+| F4 Lexikon · F5 Sprache · K1 Konsistenz | 6,9 · 6,2 · 6,1 | 7,0 · 6,4 · 6,4 |
+| T1 Stabilität · T2 Daten · T3 Offline | 7,5 · 6,3 · 6,6 | 7,8 · 6,5 · 6,5 |
+| T4 Tempo · T5 Barrierefreiheit · T6 Wartbarkeit · T7 Tests | 7,3 · 3,6 · 5,6 · 6,7 | 6,5 · 4,5 · 5,5 · 7,0 |
+| S1 Coco/Hydro · S2 Outdoor · S3 Design | 5,5 · 4,3 · 6,0 | 5,7 · 4,5 · 6,2 |
+
+**Schon während der Bewertung behoben** (nicht in die Noten eingerechnet): v1.5.499 (schwer: gerechnete Trichom-Werte gaben den
+Schnitt frei), v1.5.500 (pH-Grenzen der Diagnose nach Substrat), v1.5.501 (IceFlush 0 bleibt 0), v1.5.502 (Profi-Eintrag auf
+390/320 px zu breit), v1.5.503 (helles Thema: Kalender und Hinweiskarten).
+
+**Die zehn größten Hebel** (Schätzung des Gegenprüfers, zusammen etwa +0,5 → rund 7,3; Einzelheiten und Belege in `final.md`):
+1. Nachschlagetexte und Wirkungszusagen an ANBAU.md angleichen, mit Wächter-Test über den ganzen Quelltext (Lexikon „Überdüngung“/
+   „Flushen“ mit 2–3× Topfvolumen und Drain-EC < 1,0; Spinnmilben „RLF 60–65 %“ ohne Blüte-Grenze; „Macht die Buds dichter“;
+   Anleitung „Empfohlene Werte übernehmen“ nennt Temp/RLF, die die App nicht schreibt). Fehler, M.
+2. Substrat-Gültigkeit überall: EC-Korridor nach Substrat und Vordüngung (Light-Mix Tag 12 „EC 0,7–1,0“ bei „Keine Dünger“), „CalMag
+   Pflicht“ nur bei ungepuffertem Coco, Drain-Drift in Erde (6,9 ist normal, ANBAU.md 4.1), Diagnose-Reste (Mehltau gegen
+   Foto-Bleaching, „Löcher“ ohne Eintrag, „neu + gelb“ ohne pH). Fehler, S–M.
+3. Datenschutz und Datensicherung: Schriften lokal statt von Google (der Text sagt „keine Server“), Backup-Erinnerung auf der
+   Startseite ab 14 Tagen. Fehler, S.
+4. Einsteiger-Gießtag weiter entschlacken: Heute-Karte als Satz oder Liste (nicht beides), Hebe-Test-Frage vor der Menge, gemeinsamer
+   Ansatz bei zwei Gruppen. Umbau, M–L.
+5. Barrierefreiheit: Karten per Tastatur erreichbar, Überschriften, aria-live, Labels, Kontrast Navigation/Speichern, helles Thema
+   fertig. Umbau, M.
+6. Folgenvorschau auch für „Plan laden“ (hängt einen laufenden Zyklus um: Plan-Woche 9 → 11, alle Dosen anders) und Substratwechsel.
+   Umbau, M.
+7. Test-Gate vor dem Veröffentlichen plus Browser-Tests (Überbreite, Kontrast, Tastatur) — die Befunde von 502/503 lagen genau in
+   dieser Lücke. Umbau, M.
+8. Eine Zahlenformat-Funktion (Komma überall: „pH auf 6.4 · EC 1.5–1.9“ neben „5,1 L“), Wortschatz-Wächter („Ernte-Log“, „Ablauf“,
+   „Flush“), Blüte-Stufennamen aus einer Quelle (`stageForCycle` gegen `bluetestufe`). M.
+9. Erntefenster als eine Quelle (springt mit Patricks Daten zwischen 96–110 und 121–139), Bernstein-Ziel im Einsteiger-Modus (app.js
+   ~23847). Umbau, L.
+10. Outdoor und Hydro — erst ANBAU.md um Outdoor ergänzen. Patricks Entscheidung, dann L.
+
+**Grenzen der Bauart** (ehrlich, aus `final.md`): ohne Server keine Sicherung zwischen Geräten (T2 kaum über 8); Fotos im
+localStorage ~37 Stück (IndexedDB wäre L); eine große Datei — externes, gecachtes Skript senkt den Kaltstart, Wartbarkeit hebt nur
+das Zerlegen von `renderEntry` (2 642 Zeilen); Herstellerdosen nur mit den Blättern prüfbar; über ~8 bei H1/H3/T5 nur mit Tests an
+echten Einsteigern, Handys und Bildschirmlesern begründbar.
+
+**Daraus zu lernen:** Meine eigene Aussage zu v1.5.498 („keine Überbreite“) war falsch, weil meine Messung scrollende Behälter
+ausließ — der Technik-Prüfer fand die 46 px im echten Chrome. Layout misst man im Browser am Bildschirm selbst, an einem Tag, an dem
+alle Blöcke stehen.
+
+---
+
 ## 0o · Bewertung vom 17.09.2026 — Referenz für die nächsten Versionen
 
 Patrick am 17.09.2026: „Ich hätte gerne eine Einschätzung und Bewertung wie die App funktioniert … in einer 1–10 Skala
