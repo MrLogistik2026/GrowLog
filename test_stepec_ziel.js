@@ -27,10 +27,10 @@ const HTML = fs.readFileSync(process.env.GS_INDEX || path.join(__dirname, 'index
   const E = (s) => w.eval(s);
   const fehler = []; let n = 0;
   const pruefe = (ok, text) => { n++; if (!ok) fehler.push(text); };
-  // Tag 12 (Erde, indoor): Ziel-EC 0,8 mS als Platzhalter; Einheit wählbar.
+  // Tag 24 (Erde, indoor, ohne Plan, nach der Vordüngung): Ziel-EC der Tabelle als Platzhalter; Einheit wählbar.
   const lauf = (einheit, dir) => JSON.parse(E(`(function(){ S.cycles = []; S.entries = {}; S.beginnerMode = false; S.ecUnit = ${JSON.stringify(einheit)};
     const heute = todayISO();
-    const c = addCyc({ name: 'Test', startDate: isoPlus(heute, -11), seedType: 'auto', growType: 'indoor', medium: 'erde', potSize: 11,
+    const c = addCyc({ name: 'Test', startDate: isoPlus(heute, -23), seedType: 'auto', growType: 'indoor', medium: 'erde', potSize: 11,
       plantCount: 1, startMethod: 'saturated' }, { still: true }); S.cycles = [c]; selId = c.id;
     openEntry(heute);
     const el = document.getElementById('ec-' + c.id);
@@ -42,7 +42,7 @@ const HTML = fs.readFileSync(process.env.GS_INDEX || path.join(__dirname, 'index
 
   let r = lauf('mS', 1);
   pruefe(!r.fehlt, 'A EC-Feld fehlt im Eintrag');
-  pruefe(Math.abs(r.ph - 0.8) < 0.001, 'A Platzhalter sollte 0.8 sein, ist ' + r.ph + ' (Testlage verschoben)');
+  pruefe(r.ph > 0.3 && r.ph < 2, 'A Platzhalter sollte ein Tabellenwert über 0 sein, ist ' + r.ph + ' (Testlage verschoben)');
   pruefe(Math.abs(r.wert - (r.ph + r.schritt)) < 0.0051, 'A leeres Feld, „+“ in mS: erwartet ' + (r.ph + r.schritt).toFixed(2) + ', steht ' + r.wert);
   r = lauf('mS', -1);
   pruefe(Math.abs(r.wert - (r.ph - r.schritt)) < 0.0051, 'B leeres Feld, „−“ in mS: erwartet ' + (r.ph - r.schritt).toFixed(2) + ', steht ' + r.wert);

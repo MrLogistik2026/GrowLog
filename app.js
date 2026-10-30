@@ -3860,7 +3860,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.505';
+const APP_VERSION = 'v1.5.506';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -16425,6 +16425,19 @@ const GERM_GUIDES = {
 };
 
 /**
+ * (v1.5.506) Gibt der Düngeplan in dieser Plan-Woche überhaupt eine Dosis vor? Ohne Plan, ohne Produkte oder bei einer Woche
+ * ohne Dosis lautet die Antwort ja, „keine Dosis“. Grundlage für das EC-Ziel vorgedüngter Erde (getEcTarget).
+ */
+function _planOhneDosis(c, iso, p) {
+  if (typeof hasFertPlan === 'function' && !hasFertPlan(c)) return true;
+  try {
+    const w = fertPlanWeek(c, iso, p);
+    const d = (typeof getWeekDoses === 'function') ? (getWeekDoses(c.id, w, c) || {}) : {};
+    return !Object.values(d).some(v => parseFloat(v) > 0);
+  } catch (e) { return false; }
+}
+
+/**
  * Liefert das EC-Ziel {def, min, max, label, week} für einen Tag — basierend auf
  * der GESAMT-Woche (wie der Düngeplan via fertWk), NICHT der phasen-relativen Woche.
  * Erkennt Wasser-Tage (Erhaltungsguss). Gibt null in Ernte/Trocknung (kein Gießen).
@@ -16464,6 +16477,19 @@ function getEcTarget(c, p, iso) {
     // das so (Rainbow Woche 13: das Plan-Blatt nennt keinen Korridor). Kein Rückfall auf die
     // allgemeine Tabelle — deren Zahl wäre für diesen Plan erfunden.
     if (p.ph !== 'flush' && p.ph !== 'ice') return null;
+  }
+
+  // (v1.5.506) Vorgedüngte Erde, Anzucht, und der Plan dosiert diese Woche nichts: Das Ziel ist die Sämlings-Spanne, nicht
+  // „Vegi 0,7–1,0“. Die Tabelle gilt für Erde mit Dünger; Light-Mix trägt die ersten zwei bis drei Wochen von selbst
+  // (ANBAU.md 13.2, 5), und wo keine Dosis kommt, wäre ein Ziel von 0,7–1,0 ein Ziel ohne Quelle — die App meldete am Tag 12 „EC Ziel
+  // 0,7–1,0“ direkt neben „Keine Dünger“ (Fachprüfung 30.10.2026). Hat der Plan eigene EC-Ziele, gilt er (Block oben); in Coco gibt es
+  // keine Vordüngung, dort bleibt die Tabelle (ANBAU.md 7.1).
+  // (v1.5.506) Nur eine Obergrenze (0,6 = Sämlings-Spanne, ANBAU.md 5), kein Mindestwert: Wo nichts dosiert wird, misst das Gießwasser nur seinen
+  // Eigen-EC (3) — ein Mindestwert von 0,4 wäre mit reinem Wasser nicht erreichbar und verleitete zum Düngen (13.2, 15). Platzhalter 0 wie am
+  // Sämling Tag 1–7. Gilt nur für die ersten drei Wochen (13.2: „in den ersten zwei bis drei Wochen praktisch nichts“) und nur für vorgedüngte
+  // Erde wie Light-Mix; die App weiß nicht, welche Erde im Topf ist — bei ungedüngter Erde braucht es von Anfang an einen Plan mit Dosis.
+  if (p.ph === 'anzucht' && (c.medium || 'erde') === 'erde' && (p.day || 0) <= 21 && _planOhneDosis(c, iso, p)) {
+    return { ...EC_TARGETS[1], min: 0, def: 0, nurObergrenze: true, label: 'Vorgedüngte Erde — Wasser genügt', week: null };
   }
 
   if (p.ph === 'flush') return { ...EC_TARGETS[11], week: 11 };
@@ -17004,7 +17030,7 @@ function getEntryWarnings(cd, p, e, c, iso) {
       ? `ℹ Dünger-Wert unter dem Ziel dieser Woche (${_spanne}). Prüfe, ob alle Mittel aus dem Plan in der Kanne waren. Bei Bio-Dünger ist ein niedrigerer Wert normal.`
       : `ℹ️ EC ${ecFmt(ecVal)} unter dem Ziel dieser Plan-Woche (${_spanne}). Kam alles aus dem Plan in die Kanne? Organischer Dünger zeigt sich im EC nur zum Teil — dann ist das kein Mangel; mehr als die Plan-Dosis ist nicht nötig.`;
     out.push({ type: 'info', text });
-  } else if (_ecZ && isFinite(_ecZ.max) && _ecZ.max > 0 && ecVal > _ecZ.max * 1.3 && p && p.ph !== 'flush' && p.ph !== 'ice'
+  } else if (_ecZ && isFinite(_ecZ.max) && _ecZ.max > 0 && ecVal > _ecZ.max * 1.3 && !_ecZ.nurObergrenze && p && p.ph !== 'flush' && p.ph !== 'ice'
              && !getCriticalWarning('ec', ecVal, p, c)) {
     // (v1.5.374) Deutlich über dem Ziel der Plan-Woche (mehr als ein Drittel darüber — eine Konvention, wie die Korridore selbst,
     // ANBAU.md 5). Vorher blieb der Eintrag stumm, solange die allgemeine Obergrenze nicht erreicht war: Blüte-Woche 9 bei EC 2,4
@@ -17985,7 +18011,7 @@ function getTodayAction(c, p, a, iso) {
         _duengerZeile,
       ] : [
         `Ca. <b>${waterMl} ml</b> Wasser${_drainKommtA ? `, bis ${DRAIN_ZIEL.min}–${DRAIN_ZIEL.max} % unten ablaufen` : ''}`,
-        `pH auf <b>${pht.midText}</b> einstellen${_ecZ ? ` · EC im Ziel ${ecFmt(_ecZ.min)}–${ecFmt(_ecZ.max)} ${ecUnitLabel()}` : ''}`,
+        `pH auf <b>${pht.midText}</b> einstellen${_ecZ ? (_ecZ.nurObergrenze ? ` · EC bis ${ecFmt(_ecZ.max)} ${ecUnitLabel()} (Wasser genügt)` : ` · EC im Ziel ${ecFmt(_ecZ.min)}–${ecFmt(_ecZ.max)} ${ecUnitLabel()}`) : ''}`,
         _duengerZeile,
       ],
       hint: isOutdoor
@@ -23604,7 +23630,7 @@ function renderSet() {
               <option value="coco" ${d.medium==='coco'?'selected':''}>🥥 Coco</option>
               <option value="hydro" disabled ${d.medium==='hydro'?'selected':''}>💧 Hydro (bald verfügbar)</option>
             </select>
-            <div style="font-size:10px;color:var(--text-hint);line-height:1.4;padding:4px 4px 0">${d.medium==='hydro' ? 'Hydro: Wurzeln im Nährlösungs-Tank, kein Gießen. pH 5.5–6.0, Tank täglich prüfen & alle 7–14 Tage wechseln.' : d.medium==='coco' ? 'Coco: häufiger gießen, pH 5.8–6.2, höhere EC, CalMag wichtig.' : 'Erde: Gießen nach Restgewicht, pH 6.2–6.4, verzeihend.'}</div>
+            <div style="font-size:10px;color:var(--text-hint);line-height:1.4;padding:4px 4px 0">${d.medium==='hydro' ? 'Hydro: Wurzeln im Nährlösungs-Tank, kein Gießen. pH 5.5–6.0, Tank täglich prüfen & alle 7–14 Tage wechseln.' : d.medium==='coco' ? 'Coco: häufiger gießen und bei jedem Guss etwas Dünger statt selten viel (Coco hält kaum Nährstoffe zurück), pH 5.8–6.2. Ungepuffertes Coco braucht CalMag; auf dem Sack steht „gepuffert“, wenn es mit Calcium vorbeladen ist. Weißt du es nicht: CalMag laut Plan geben.' : 'Erde: Gießen nach Restgewicht, pH 6.2–6.4, verzeihend.'}</div>
           </div>
 
           </div>
@@ -25998,7 +26024,7 @@ function _wizStepPotSize(a) {
         <button onclick="_wizAnswers.medium='coco';_renderWiz()" style="flex:1;background:${med==='coco'?'rgba(76,175,112,0.15)':'var(--card2)'};border:1.5px solid ${med==='coco'?'var(--green)':'var(--border)'};border-radius:10px;padding:12px;font-size:13px;color:${med==='coco'?'var(--green)':'var(--text)'};font-weight:${med==='coco'?'700':'500'};cursor:pointer;font-family:var(--font)">🥥 Coco</button>
         ${S.beginnerMode ? '' : `<button onclick="toast('💧 Hydro kommt bald — wähl solange Erde oder Coco')" style="flex:1;background:var(--card2);border:1.5px dashed var(--border);border-radius:10px;padding:12px;font-size:13px;color:var(--text-hint);font-weight:500;cursor:not-allowed;opacity:0.6;font-family:var(--font)">💧 Hydro <span style="font-size:10px;font-weight:600">· bald</span></button>`}
       </div>
-      <div style="font-size:11px;color:var(--text-sub);line-height:1.45;margin-top:8px">${med==='hydro' ? 'Hydro (z.B. DWC): Wurzeln hängen in belüfteter Nährlösung — kein Gießen, dafür tägliche Tank-Pflege (pH, EC, Wassertemp). Etwas anspruchsvoller, verzeiht Fehler weniger.' : med==='coco' ? 'Kokos-Substrat: wird häufiger gegossen als Erde und braucht etwas andere pH- und EC-Werte.' : 'Klassische Blumenerde: verzeiht am meisten, ideal für den Einstieg.'}</div>
+      <div style="font-size:11px;color:var(--text-sub);line-height:1.45;margin-top:8px">${med==='hydro' ? 'Hydro (z.B. DWC): Wurzeln hängen in belüfteter Nährlösung — kein Gießen, dafür tägliche Tank-Pflege (pH, EC, Wassertemp). Etwas anspruchsvoller, verzeiht Fehler weniger.' : med==='coco' ? 'Kokos-Substrat: wird häufiger gegossen als Erde, jede Gabe enthält etwas weniger Dünger (es hält kaum Nährstoffe zurück), und es braucht einen etwas niedrigeren pH.' : 'Klassische Blumenerde: verzeiht am meisten, ideal für den Einstieg.'}</div>
     </div>
 
     <div style="background:rgba(76,175,112,0.08);border:1px solid rgba(76,175,112,0.3);border-radius:12px;padding:12px 14px;margin-bottom:16px">
@@ -29501,7 +29527,10 @@ function renderEntry(iso) {
     const ecPh = ecT ? String(ecT.def) : '';
     // (v1.5.165) Ohne EC-Ziel keine erfundene Spanne. Vorher stand dann fest 0,8–2,0 — und in der Nährstoff-
     // Box sogar immer, auch in der Anzucht direkt neben dem Feld mit „Ziel 700–1000“.
-    const ecRange = ecT ? (ecT.waterOnly ? 'nur Wasser' : `${ecFmt(ecT.min)}–${ecFmt(ecT.max)}`) : '';
+    // (v1.5.506) Vorgedüngte Erde (nurObergrenze): „bis 0,6“ statt „0,4–0,6“, dazu der Satz, warum Wasser genügt (ANBAU.md 13.2)
+    const ecNurOben = !!(ecT && ecT.nurObergrenze);
+    const ecWasserSatz = S.beginnerMode ? 'Wasser genügt — die Erde ist schon gedüngt' : 'Wasser genügt, Light-Mix ist vorgedüngt';
+    const ecRange = ecT ? (ecT.waterOnly ? 'nur Wasser' : (ecNurOben ? `bis ${ecFmt(ecT.max)}` : `${ecFmt(ecT.min)}–${ecFmt(ecT.max)}`)) : '';
     const pht = phZielFuer(c, iso, p);
     // Düngeplan-Woche: zentral über fertPlanWeek bestimmen — die EINE Quelle für die
     // Dünge-Woche. Sie achtet auf plan-eigene Tag-Spannen (weekDayBounds, z. B. Peak
@@ -30575,7 +30604,7 @@ function renderEntry(iso) {
             </div>
           </div>
           <div>
-            <div style="font-size:10px;color:var(--text-hint);margin-bottom:2px">EC${ecT && !ecT.waterOnly ? ` <span style="color:var(--text-sub);font-size:9px;font-weight:600">Ziel ${ecRange}</span> ${ecUnitChip()}` : (ecT && ecT.waterOnly ? ` <span style="color:var(--blue);font-size:9px">Wasser-Tag ·</span> ${ecUnitChip()}` : ` ${ecUnitChip()}`)}${S.beginnerMode ? ' <span style="color:var(--text-hint);font-size:9px;font-weight:400">(optional)</span>' + infoBtn('ec') : ''}</div>
+            <div style="font-size:10px;color:var(--text-hint);margin-bottom:2px">EC${ecT && !ecT.waterOnly ? ` <span style="color:var(--text-sub);font-size:9px;font-weight:600">Ziel ${ecRange}</span> ${ecUnitChip()}${ecNurOben ? ` <span style="color:var(--text-sub);font-size:9px;font-weight:400">— ${ecWasserSatz}</span>` : ''}` : (ecT && ecT.waterOnly ? ` <span style="color:var(--blue);font-size:9px">Wasser-Tag ·</span> ${ecUnitChip()}` : ` ${ecUnitChip()}`)}${S.beginnerMode ? ' <span style="color:var(--text-hint);font-size:9px;font-weight:400">(optional)</span>' + infoBtn('ec') : ''}</div>
             <div style="display:flex;align-items:center;gap:3px">
               <button onclick="stepEC('${c.id}',-1)" class="stepper-btn">−</button>
               <input class="inp-field${cd._suggested?.ec ? ' suggested' : ''}" type="number" step="${ecStep()}" min="0" max="${ecMax()}" id="ec-${c.id}" value="${cd.ec ? ecDisp(parseFloat(cd.ec)) : ''}" placeholder="${ecDisp(parseFloat(ecPh || '1.4'))}"
@@ -30585,7 +30614,7 @@ function renderEntry(iso) {
             </div>
           </div>
           <div style="flex:1;text-align:right;font-size:10px;color:var(--text-hint);line-height:1.5">
-            ${S.beginnerMode ? `pH ${pht.label} ist optimal` : `Ziel: pH ${pht.midText}${ecT ? ` · EC ${!ecT.waterOnly ? ecRange : `${ecFmt(0.3)}–${ecFmt(0.4)} (Wasser-Tag)`} ${ecUnitLabel()}` : ''}${_drainMoeglich(p) ? '<br>Drain entsorgen!' : ''}`}   <!-- (v1.5.386) wie die Zielzeile (v1.5.372): vor Tag 25 kein Drain -->
+            ${S.beginnerMode ? `pH ${pht.label} ist optimal` : `Ziel: pH ${pht.midText}${ecT ? ` · EC ${!ecT.waterOnly ? ecRange : `${ecFmt(0.3)}–${ecFmt(0.4)} (Wasser-Tag)`} ${ecUnitLabel()}${ecNurOben ? ' — ' + ecWasserSatz : ''}` : ''}${_drainMoeglich(p) ? '<br>Drain entsorgen!' : ''}`}   <!-- (v1.5.386) wie die Zielzeile (v1.5.372): vor Tag 25 kein Drain -->
           </div>
         </div>
         ${phEcCritWarnHTML}
@@ -38665,6 +38694,9 @@ function lexCycleNote(itemTitle) {
     if (!et) return wrap('In dieser Phase wird nicht (mehr) gedüngt — kein EC-Ziel.');
     if (et.waterOnly) return wrap(`Gerade <b>Wasser-Phase</b> — nur leichtes/klares Wasser, EC ~${ecFmt(0.3)}–${ecFmt(0.4)} ${ecUnitLabel()}.`);
     const _lastEc = _lastCycVal(c, 'ec');
+    if (et.nurObergrenze) {   // (v1.5.506) vorgedüngte Erde: Wasser genügt, kein „hochdüngen“; gilt für Light-Mix u. ä., bei ungedüngter Erde braucht es von Anfang an einen Plan
+      return wrap(`Richtwert jetzt (${et.label}): <b>EC bis ${ecFmt(et.max)} ${ecUnitLabel()}</b> — Light-Mix ist vorgedüngt, in den ersten Wochen genügt Wasser. Das gilt für vorgedüngte Erde; bei ungedüngter Erde brauchst du von Anfang an einen Plan.${dev(_lastCycVal(c, 'ec') === null ? null : ecDisp(_lastCycVal(c, 'ec')), 0, ecDisp(et.max), ' ' + ecUnitLabel(), '', 'etwas darüber — miss dein Gießwasser pur: Sein Eigen-EC zählt mit.')}`);
+    }
     return wrap(`Richtwert jetzt (${et.label}): <b>EC ${ecFmt(et.min)}–${ecFmt(et.max)} ${ecUnitLabel()}</b>.${dev(_lastEc === null ? null : ecDisp(_lastEc), ecDisp(et.min), ecDisp(et.max), ' ' + ecUnitLabel(), 'niedrig — du könntest etwas hochdüngen.', 'hoch — nächstes Mal verdünnen oder einen Wasser-Tag einlegen.')}`);
   }
   if (itemTitle === 'pH-Wert') {

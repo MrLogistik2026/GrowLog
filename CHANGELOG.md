@@ -2,6 +2,20 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-30 — v1.5.506
+
+- **Am Tag 12 zeigte ein Light-Mix-Zyklus „EC-Ziel 0,7–1,0“ direkt neben „Keine Dünger konfiguriert“.** Vorgedüngte Erde braucht in
+  den ersten zwei bis drei Wochen praktisch nichts (`ANBAU.md` 13.2) — die App verlangte trotzdem die Wachstums-Spanne und hätte
+  bei reinem Wasser „zu niedrig“ gemeldet. Hebel 2 der Bewertung vom 30.10.2026 (Fach-Befund 4; Patrick: „bau bitte schon mal 1-3“).
+- **Jetzt** gilt in Erde bis Tag 21, solange der Plan in der Woche nichts dosiert: nur eine Obergrenze (bis 0,6, die Sämlings-Spanne
+  aus 5), Platzhalter 0, Satz „Wasser genügt, Light-Mix ist vorgedüngt“; keine Untergrenzen-Meldung, kein „hochdüngen“ im Lexikon.
+  Die Warnung „deutlich über dem Ziel“ ist in diesem Fenster aus, weil keine Stelle die Gießwasser-EC dafür kennt — die allgemeine
+  Obergrenze (`_ecHighCeilFor`) meldet weiter.
+- **Coco-Hinweise** in Einstellungen und Assistent ohne „höhere EC“: Coco hält kaum Nährstoffe zurück, deshalb bei jedem Guss etwas
+  Dünger statt selten viel (`ANBAU.md` 7.1).
+- Test: `test_substrat_a.js` (22 Prüfungen, beide Zeitzonen; 13 fallen auf v1.5.505 um). `test_stepec_ziel.js` legt seine Prüflage
+  auf Tag 24 (vorher Tag 12, dort ist der Platzhalter jetzt 0).
+
 ## 2026-10-30 — v1.5.505
 
 - **Nachschlagetexte versprachen oder verlangten, was `ANBAU.md` nicht trägt.** Hebel 1 der Bewertung vom 30.10.2026
