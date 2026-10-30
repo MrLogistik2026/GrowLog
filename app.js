@@ -3858,7 +3858,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.503';
+const APP_VERSION = 'v1.5.504';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -19032,7 +19032,7 @@ function renderDash() {
       })()
     : '';  // Profi-Modus: leer, weil die Sektionen oben schon direkt gerendert werden
 
-  document.getElementById('dash-body').innerHTML = `${demoBanner}${catchupBanner}${flipCard}${actionCards}${quietBanner}${todayCard}${alertHTML}${diagHintsHTML}${weatherWidget()}${multiCycLabel}${S.beginnerMode && act.length > 0 ? '' : stats}<div class="sect-head">Meine Zyklen</div>${empty}${cards}${act.length > 0 ? _neuerZyklusKnopf() : ''}
+  document.getElementById('dash-body').innerHTML = `${demoBanner}${catchupBanner}${flipCard}${actionCards}${quietBanner}${todayCard}${alertHTML}${_dashBackupHinweis()}${diagHintsHTML}${weatherWidget()}${multiCycLabel}${S.beginnerMode && act.length > 0 ? '' : stats}<div class="sect-head">Meine Zyklen</div>${empty}${cards}${act.length > 0 ? _neuerZyklusKnopf() : ''}
     ${S.beginnerMode && act.length > 0 ? '' : chartsHTML}
     ${S.beginnerMode && act.length > 0 ? '' : galleryHTML}
     ${symptomBtn}
@@ -19077,6 +19077,28 @@ function entryHasContent(iso) {
  * (v1.5.309) Der Weg zu einem neuen Zyklus von der Startseite. Bisher gab es ihn nur im leeren Zustand; mit einem Zyklus
  * (auch einem fertigen) führte er über Einstellungen → „＋ Neu" — Patrick fand ihn nicht, als Run 02 im Zelt stand.
  */
+/**
+ * (v1.5.504) Erinnerung an die Sicherung auf der Startseite — ab 14 Tagen ohne Backup, dieselbe Regel wie die Karte in den
+ * Einstellungen (`_backupInfo().due`). Die Einträge liegen nur in diesem Browser: Gelöschte Website-Daten oder ein neues Handy
+ * heißen sonst „alles weg“. Vorher stand die Erinnerung nur in den Einstellungen, die man selten öffnet (Bewertung 30.10.2026,
+ * B10). Erst ab einer Woche Einträgen, nicht im Demo-Zyklus; „Später“ blendet sie drei Tage aus.
+ */
+function _dashBackupHinweis() {
+  if (typeof hasDemoCycle === 'function' && hasDemoCycle()) return '';
+  if (Object.keys(S.entries || {}).length < 7) return '';
+  if (S._backupSpaeter && S._backupSpaeter > todayISO()) return '';
+  let bi = null;
+  try { bi = _backupInfo(); } catch (e) { return ''; }
+  if (!bi || !bi.due) return '';
+  const wann = bi.lastExport ? `Letzte Sicherung vor ${bi.daysSinceExport} Tagen` : 'Noch keine Sicherung';
+  return `<div class="alert" data-backup-hinweis="1" style="background:rgba(90,171,240,0.10);border-color:rgba(90,171,240,0.45);align-items:center">
+    <span style="font-size:16px;flex-shrink:0">💾</span>
+    <div style="flex:1;font-size:12px;color:var(--text-sub);line-height:1.5"><b>${wann}.</b> Deine Einträge liegen nur in diesem Browser — ein Tipp speichert sie als Datei.</div>
+    <button onclick="event.stopPropagation();exportData();renderDash()" style="flex-shrink:0;background:var(--blue);border:none;color:#fff;font-size:12px;font-weight:600;padding:8px 12px;border-radius:8px;cursor:pointer;font-family:var(--font)">Sichern</button>
+    <button onclick="event.stopPropagation();S._backupSpaeter=isoPlus(todayISO(),3);saveS();renderDash()" style="flex-shrink:0;background:none;border:none;color:var(--text-muted);font-size:12px;padding:8px 6px;cursor:pointer;font-family:var(--font)">Später</button>
+  </div>`;
+}
+
 function _neuerZyklusKnopf() {
   return `<button onclick="openCycleWizard('dash')" style="width:100%;margin-top:2px;background:transparent;border:1px dashed var(--border);border-radius:14px;padding:13px;font-size:13px;color:var(--green);cursor:pointer;font-family:var(--font);font-weight:600">＋ Neuen Zyklus anlegen <span style="display:block;font-size:10px;color:var(--text-hint);font-weight:400;margin-top:2px">Neue Pflanzen im Zelt? Ein Zyklus je Gruppe, die am selben Tag gekeimt ist.</span></button>`;
 }
@@ -24967,6 +24989,7 @@ function showLegalInfo() {
         <ul>
           <li><b>Wetter-Widget (optional):</b> Ruft bei Aktivierung die Open-Meteo-API auf. Dabei werden GPS-Koordinaten übertragen. Open-Meteo selbst protokolliert laut eigener Aussage keine Nutzer-Daten.</li>
           <li><b>Foto-Funktion:</b> Fotos werden lokal komprimiert und im Browser gespeichert. Sie verlassen dein Gerät nicht.</li>
+          <li><b>Schriften:</b> liegen in der App selbst — beim Start wird nichts von fremden Servern geladen.</li>
           <li><b>Export:</b> JSON-Backup und PDF-Bericht erstellst du selbst und kontrollierst wohin sie gehen.</li>
         </ul>
         <p>Wenn du den Browser-Speicher löschst, sind alle Daten weg. Erstelle regelmäßig Backups (Einstellungen → Backup).</p>

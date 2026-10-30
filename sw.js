@@ -13,7 +13,7 @@
  * Wichtig: Nur gleiche Herkunft (same-origin) wird behandelt. Fremde Anfragen laufen
  * unveraendert durch, damit nichts kaputtgeht, was die App sonst noch laedt.
  */
-const CACHE = 'growsmart-v3';
+const CACHE = 'growsmart-v4';   // (v1.5.504) Schriften im Grundbestand
 const ASSETS = [
   './',
   './index.html',
@@ -22,6 +22,12 @@ const ASSETS = [
   './icon-192.png',
   './icon-512.png',
   './icon-maskable-512.png',
+  './fonts/dm-sans-latin.woff2',
+  './fonts/dm-sans-latin-ext.woff2',
+  './fonts/dm-mono-400-latin.woff2',
+  './fonts/dm-mono-400-latin-ext.woff2',
+  './fonts/dm-mono-500-latin.woff2',
+  './fonts/dm-mono-500-latin-ext.woff2',
 ];
 
 self.addEventListener('install', (e) => {

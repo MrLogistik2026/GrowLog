@@ -2,6 +2,20 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-30 — v1.5.504
+
+- **Jeder Start lud Schriften von Google, während der Datenschutztext „keine Server“ sagt.** `head.html` holte ein Stylesheet von
+  fonts.googleapis.com und die Dateien von fonts.gstatic.com (DM Sans, DM Mono). Dazu stand die Erinnerung an die Sicherung nur in
+  den Einstellungen — die Einträge liegen aber nur in diesem Browser. Bewertung vom 30.10.2026, Technik-Befund 4 und B10; Hebel 3,
+  Patrick: „bau bitte schon mal 1-3“.
+- **Jetzt** liegen die sechs Schriftdateien in `fonts/` (zusammen rund 104 KB, von fonts.gstatic.com übernommen, SIL Open Font
+  License — die Lizenztexte liegen daneben) und werden über `@font-face` aus der App geladen; der Service Worker hält sie im
+  Grundbestand (Cache `growsmart-v4`), offline zeichnet die App wie online. Der Datenschutztext nennt das. Im Browser geprüft:
+  0 Anfragen an Google, DM Sans und DM Mono aus `./fonts`.
+- **Backup-Erinnerung auf der Startseite** (`_dashBackupHinweis`): ab 14 Tagen ohne Sicherung (dieselbe Regel wie in den
+  Einstellungen) und ab 7 Einträgen, mit „Sichern“ und „Später“ (drei Tage Ruhe); nicht im Demo-Zyklus.
+- Test: `test_datenschutz_schriften.js` (13 Prüfungen, beide Zeitzonen; fällt auf v1.5.503 um).
+
 ## 2026-10-30 — v1.5.503
 
 - **Das helle Thema war an zentralen Stellen kaputt.** Kalenderzellen hatten feste Dunkelwerte (#151515, #1a1a1a und dunkle

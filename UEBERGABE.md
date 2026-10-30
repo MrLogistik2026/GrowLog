@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.503** · index.html 2,67 MB · 781 Funktionen
+Stand: **v1.5.504** · index.html 2,67 MB · 781 Funktionen
 Zuletzt fortgeschrieben am 30.10.2026 früh (Nachtarbeit 29./30.10.: Diagnose-Liste B01–B12 und U4 fertig, danach zwei
 Bedien-Prüfungen nach den Grundsätzen der Lager-App — Befunde in `.claude/notizen/ux/*.txt` und `.claude/tmp/ux2/bericht.txt`,
 abgearbeitet in v1.5.452–498, siehe Versionsliste in 0o. **Patrick am 30.10.2026 morgens zu den vier offenen Fragen: „Ja bau
@@ -530,6 +530,7 @@ Speicher-Befunde sind in v1.5.340–344 behoben. Rohdaten: Workflow wf_63d754b1-
 - v1.5.501: IceFlush 0 Tage bleibt 0 — keine Eis-Phase, Ernte entsprechend früher; vorher wurde aus der 0 still eine 3 (`test_iceflush_null.js`).
 - v1.5.502: Profi-Eintrag: Drain-Zeile bricht auf schmalen Handys um statt 46 px überzustehen; Berichtigung der Aussage zu 498 (`test_drainzeile_umbruch.js`).
 - v1.5.503: Helles Thema: Kalenderzellen und Hinweiskarten folgen dem Thema statt fester Dunkelwerte (`test_helles_thema.js`).
+- v1.5.504: Schriften liegen in der App statt bei Google (fonts/, SIL OFL), Service Worker hält sie; Backup-Erinnerung auf der Startseite ab 14 Tagen (`test_datenschutz_schriften.js`).
 
 **Gegenprüfung von v1.5.364/365 (07.10.2026 nachts, Workflow wf_4cf817bf-629, drei Sonnet-Prüfer + Gegenprüfer).** Kein Fehlalarm
 in 33 App-Fassungen, allen Vorlagen und über 2800 Klicks; die schweren Befunde (unsichere Kopie zerstört den Hauptstand, Tropfen als
