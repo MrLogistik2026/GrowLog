@@ -2,6 +2,16 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-30 — v1.5.501
+
+- **IceFlush 0 Tage wurde still zu 3.** `iceLenFor` las `c.iceDays || 3` — die 0 galt als „nicht gesetzt“. Der Endspurt erlaubt
+  0–5 Tage: Der Knopf sprang von 1 über 0 auf 3, die Wirkungs-Vorschau meldete die Ernte einen Tag später statt früher, und die
+  Kette plante drei Eistage, die niemand wollte. Gefunden bei der Bewertung vom 30.10.2026 (Profi-Befund 5).
+- **Jetzt** bleibt 0 eine 0: keine IceFlush-Phase, kein Eistag, Ernte entsprechend früher (Messung: IceFlush 3/2/1/0 → Ernte
+  Tag 95/94/93/92, Endspurt und Erntezähler gleich). Auch das Dunkelphasen-Banner im Eintrag liest `iceLenFor`. Kein Code setzt
+  `iceDays` von selbst auf 0, in Patricks Daten steht 2 — eine 0 kommt nur von jemandem, der „kein IceFlush“ eingestellt hat.
+- Test: `test_iceflush_null.js` (6 Prüfungen, beide Zeitzonen; fällt auf v1.5.500 um).
+
 ## 2026-10-30 — v1.5.500
 
 - **Die Diagnose bewertete den pH der letzten Tage mit den Grenzen für Erde, egal welches Substrat.** `buildDiagnosticContext`

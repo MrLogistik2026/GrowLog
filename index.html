@@ -4888,7 +4888,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.500';
+const APP_VERSION = 'v1.5.501';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -10162,7 +10162,11 @@ function mediumIntervals(medium) {
  */
 function iceLenFor(c) {
   if (!c) return PHASE_DEFAULTS.iceDays;
-  return c.growType === 'outdoor' ? 0 : (c.iceDays || PHASE_DEFAULTS.iceDays);
+  // (v1.5.501) 0 heißt „kein IceFlush“ und bleibt 0 — der Endspurt erlaubt 0–5 Tage. Vorher machte `c.iceDays || 3` aus der 0 eine 3:
+  // Der Knopf sprang von 1 über 0 auf 3, und die Vorschau meldete die Ernte einen Tag später statt früher.
+  if (c.growType === 'outdoor') return 0;
+  const _ice = parseInt(c.iceDays, 10);
+  return Number.isFinite(_ice) && _ice >= 0 ? _ice : PHASE_DEFAULTS.iceDays;
 }
 
 /**
@@ -30663,7 +30667,7 @@ function renderEntry(iso) {
     let iceRecoveryBanner = '';
     if (p && p.ph === 'ice' && a !== 'ice' && c.growType !== 'outdoor') {
       const dayInIce = p.day - (anzuchtLenFor(c) + (c.bloomDays || PHASE_DEFAULTS.bloomDays) + (c.flushDays || PHASE_DEFAULTS.flushDays));
-      const totalIceDays = (c.iceDays || PHASE_DEFAULTS.iceDays);
+      const totalIceDays = iceLenFor(c);   // (v1.5.501) eine Quelle, 0 bleibt 0
       const isLastIceDay = dayInIce >= totalIceDays;
       iceRecoveryBanner = `<div style="background:linear-gradient(135deg,rgba(192,132,252,0.08),rgba(192,132,252,0.04));border:1px solid rgba(192,132,252,0.3);border-radius:10px;padding:10px 12px;margin-bottom:8px;display:flex;align-items:center;gap:10px">
         <span style="font-size:18px">🌑</span>
