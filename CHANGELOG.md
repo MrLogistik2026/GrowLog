@@ -2,6 +2,15 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-30 — v1.5.515
+
+- **Sprühmittel ohne Phasengrenze:** Diagnose und Schnellhilfe nannten bei Spinnmilben „Neem-Öl oder Schwefel-Spray alle 3 Tage“, das
+  Lexikon „Neem nur in der Vegi“; Blattläuse „In Blüte: Kaliseife“ und „Abspritzen mit Wasser“, Thripse Bacillus thuringiensis ohne
+  Grenze. `ANBAU.md` 13.5: Nässe auf dichten Blüten ist der Weg zu Botrytis.
+- **Jetzt** überall: Sprühmittel und Abspritzen nur vor der Blüte, in der Blüte nichts auf die Blüten; dort befallene Blätter und
+  Triebspitzen mechanisch entfernen, ohne Wasser. Keine neuen Mittel, die vorhandenen mit Grenze; „tötet“ gestrichen.
+- Test: `test_rest_4.js` (11 Prüfungen, beide Zeitzonen; fällt auf v1.5.514 um).
+
 ## 2026-10-30 — v1.5.514
 
 - **Wirkungszusagen um Mykorrhiza, Bacillus und PK-Booster** (Reste der Gegenprüfung zu Hebel 1): „schützen vor Pathogenen“,

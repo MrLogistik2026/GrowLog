@@ -1651,7 +1651,7 @@ const PROBLEMS = [
     description: 'Feine Spinnweben unter den Blättern, gelbe Stipple-Muster (wie Nadelstiche). Wenn unbehandelt: ganze Pflanze innerhalb einer Woche zerstört.',
     context: { tempWarm: true },
     // (v1.5.505) Spinnmilben: keine feste „60–65 % RLF“ gegen die Milben — in der Blüte gilt der Schimmel-Deckel aus KLIMA_ZIEL (ANBAU 2.2, 13.5).
-    action: 'SOFORT handeln. Neem-Öl oder Schwefel-Spray alle 3 Tage. Pflanze isolieren. Luftfeuchte nicht dauerhaft zu niedrig halten (Milben vermehren sich bei Wärme und trockener Luft schneller) — aber nur bis zum Ziel deiner Phase: In der Blüte gilt der Schimmel-Deckel (' + KLIMA_ZIEL.mittel.deckel + ' % in früher und mittlerer, ' + KLIMA_ZIEL.spaet.deckel + ' % in später Blüte).',
+    action: 'SOFORT handeln. Vor der Blüte: Neem-Öl oder Schwefel-Spray alle 3 Tage; in der Blüte nichts auf die Blüten sprühen (Nässe fördert Schimmel), dort befallene Blätter entfernen. Pflanze isolieren. Luftfeuchte nicht dauerhaft zu niedrig halten (Milben vermehren sich bei Wärme und trockener Luft schneller) — aber nur bis zum Ziel deiner Phase: In der Blüte gilt der Schimmel-Deckel (' + KLIMA_ZIEL.mittel.deckel + ' % in früher und mittlerer, ' + KLIMA_ZIEL.spaet.deckel + ' % in später Blüte).',
     lexiconKey: 'spider_mites',
   },
   {
@@ -1666,7 +1666,7 @@ const PROBLEMS = [
     },
     description: 'Silbrig-metallische Streifen und Flecken, winzige schwarze Punkte (Kot). Kleine längliche Insekten sichtbar bei genauem Hinsehen.',
     context: {},
-    action: 'Gelbtafeln für Monitoring, Neem-Öl oder Bacillus thuringiensis. Pflanze isolieren, bei starkem Befall Umtopfen in frische Erde.',
+    action: 'Gelbtafeln für Monitoring; Sprühmittel (Neem-Öl oder Bacillus thuringiensis) nur vor der Blüte. Pflanze isolieren, bei starkem Befall Umtopfen in frische Erde.',
     lexiconKey: 'thrips',
   },
   {
@@ -1681,7 +1681,7 @@ const PROBLEMS = [
     },
     description: 'Grüne, schwarze oder weiße Läuse an Triebspitzen und Blatt-Unterseiten. Klebriger Honigtau auf Blättern. Kräuselnde neue Blätter.',
     context: {},
-    action: 'Abspritzen mit Wasser, dann Kali-Seife oder Neem. Bei starkem Befall: Marienkäfer (biologisch) oder Insektizid. Zu-Luft prüfen.',
+    action: 'Vor der Blüte: Abspritzen mit Wasser, dann Kali-Seife oder Neem. In der Blüte nichts auf die Blüten sprühen, befallene Triebspitzen entfernen. Bei starkem Befall: Marienkäfer (biologisch) oder Insektizid. Zu-Luft prüfen.',
     lexiconKey: 'aphids',
   },
   {
@@ -3926,7 +3926,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.514';
+const APP_VERSION = 'v1.5.515';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -7738,7 +7738,7 @@ const SYMPTOMS = [
         heading: 'Kleine Punkte + silbrige Stellen',
         verdict: '⚠⚠ Spinnmilben!',
         color: 'var(--red)',
-        text: 'Blattunterseite mit Lupe anschauen — siehst du winzige bewegliche Punkte oder feine Spinnweben? <b>Sofort handeln:</b> Pflanze mit Neemöl besprühen (Blattunterseite!). Bei starkem Befall: Predatoren (Raubmilben) bestellen.',
+        text: 'Blattunterseite mit Lupe anschauen — siehst du winzige bewegliche Punkte oder feine Spinnweben? <b>Sofort handeln:</b> Vor der Blüte die Pflanze mit Neemöl besprühen (Blattunterseite!); in der Blüte nichts auf die Blüten sprühen, befallene Blätter entfernen. Bei starkem Befall: Predatoren (Raubmilben) bestellen.',
         when: 'Alle Phasen',
         lex: 'Spinnmilben (Tetranychidae)',
       },
@@ -8375,7 +8375,7 @@ const FAQ = [
     q: 'Woran erkenne ich Schädlinge?',
     icon: '🐛',
     category: 'Probleme',
-    a: 'Regelmäßig <b>Blattunterseiten</b> mit Lupe prüfen. <b>Weiße Pünktchen + Spinnweben</b> → Spinnmilben. <b>Schwarze oder grüne Fliegen</b> → Blattläuse oder Trauermücken. <b>Sticky Honig-Tropfen</b> → Thripse. Bei Befall: Neemöl spritzen und Pflanze isolieren.',
+    a: 'Regelmäßig <b>Blattunterseiten</b> mit Lupe prüfen. <b>Weiße Pünktchen + Spinnweben</b> → Spinnmilben. <b>Schwarze oder grüne Fliegen</b> → Blattläuse oder Trauermücken. <b>Sticky Honig-Tropfen</b> → Thripse. Bei Befall: Pflanze isolieren; vor der Blüte Neemöl spritzen, in der Blüte nichts auf die Blüten sprühen.',
     lex: 'Spinnmilben (Tetranychidae)',
   },
   {
@@ -37863,7 +37863,7 @@ const LEXIKON = [
       pitfall: '<b>Häufige Fehler:</b><br>' +
         '• <b>Nur Blätter behandeln</b> → Puppen im Substrat überleben, Befall kommt zurück. Substrat MUSS mitbehandelt werden.<br>' +
         '• <b>Gelbtafeln statt blauen</b> → fast wirkungslos. Blautafeln sind die richtigen für Thripse.<br>' +
-        '• <b>In der Blütephase auf Buds sprühen</b> → Schimmelrisiko. Nur Blätter behandeln oder auf Raubinsekten umsteigen.<br>' +
+        '• <b>In der Blütephase auf Buds sprühen</b> → Schimmelrisiko. In der Blüte nichts auf die Blüten sprühen: befallene Teile entfernen oder auf Raubinsekten umsteigen.<br>' +
         '• <b>Behandlung zu früh abgebrochen</b> — der Zyklus dauert mit Puppenstadium 2–3 Wochen. Mindestens 4 Wochen durchziehen.<br>' +
         '• <b>Nur eine Befall-Welle behandelt</b> — die Eier liegen schon. Mindestens 3 Spritzungen im Abstand von 5–7 Tagen.<br>' +
         '• <b>Mit Spinnmilben verwechselt</b> und falsch behandelt — Raubmilben gegen Spinnmilben helfen NICHT gegen Thripse. Genau diagnostizieren.<br><br>' +
@@ -38068,7 +38068,7 @@ const LEXIKON = [
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)" width="30%"><b>Stufe</b></td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)"><b>Maßnahme</b></td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Stufe 1</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Befallene Blätter und Triebspitzen direkt abschneiden und außerhalb entsorgen</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Stufe 2</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Mit Wasserstrahl (kalt, nicht zu hart) abspülen — physisch entfernen</td></tr>' +
-        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Stufe 3</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Kaliseife-Lösung (2%) auf Blattunterseiten sprühen — tötet durch Austrocknung</td></tr>' +
+        '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Stufe 3</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Kaliseife-Lösung (2%) auf Blattunterseiten sprühen — nur vor der Blüte</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Stufe 4</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Marienkäfer (Adalia bipunctata) oder Schlupfwespen (Aphidius colemani) als biologische Kontrolle</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Stufe 5</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Neem-Öl 1% Spray — systemische Wirkung nach Aufnahme, NUR in Veg</td></tr>' +
         '</table>' +
@@ -38079,7 +38079,7 @@ const LEXIKON = [
         '• <b>Nur Stelle abgewischt</b>, Unterseite oder Triebspitze nicht kontrolliert → Restpopulation überlebt<br>' +
         '• <b>Honigtau nicht entfernt</b> → Rußtaupilz siedelt sich an → längerfristiger Schaden auch nach Bekämpfung der Läuse<br>' +
         '• <b>Marienkäfer + Insektizid gleichzeitig</b> → Gegenspieler werden mit getötet<br>' +
-        '• <b>In der Blüte mit Wasser abgespritzt</b> → nasse Buds = Schimmelrisiko. In Blüte: Kaliseife oder mechanisches Entfernen ohne Wasser<br>' +
+        '• <b>In der Blüte mit Wasser abgespritzt</b> → nasse Buds = Schimmelrisiko. In der Blüte nichts auf die Blüten sprühen: befallene Triebspitzen mechanisch entfernen, ohne Wasser<br>' +
         '• <b>Mitgebrachte Outdoor-Pflanzen</b> direkt ins Zelt → Blattlaus-Eier oft schon dran<br><br>' +
         '<b>Vorteile gegenüber anderen Schädlingen:</b> Blattläuse sind sichtbar, langsam, mechanisch entfernbar. Wer früh erkennt, ist mit zwei Behandlungen durch. Tägliche Kontrolle ist die einzige echte Maßnahme.' },
     { t: 'Septoria (Blattflecken)',
