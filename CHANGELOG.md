@@ -2,6 +2,19 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-30 — v1.5.484
+
+- **Zwei Gruppen am selben Gießtag hatten oben im Eintrag nur eine Zeile** („0/6 eingetragen“). Sie fasste Wasser und pH beider
+  Gruppen zusammen; die Sprung-Chips führten nur in Gruppe 1, und ob beide fertig sind, stand nirgends. Gießtag-Prüfung am
+  29.10.2026, Punkt 6.
+- **Jetzt** steht ab zwei Gruppen je Gruppe eine Zeile mit Name und Symbol in ihrer Farbe, eigenem Zähler und den sechs Chips
+  (`_gruppenFortschrittHTML`); jeder Chip springt ins Feld genau dieser Gruppe, auch das Foto (`jumpToEntryField` suchte das erste
+  Foto-Feld im Eintrag). Temperatur und Luftfeuchte gehören zum Zelt und zählen in jeder Zeile. Sind alle sechs Punkte jeder Gruppe
+  eingetragen, steht einmal „✓ Alle N Gruppen sind komplett eingetragen“. Mit einer Gruppe ist die Kopfzeile byte-gleich zu vorher.
+  Vorhandene Regeln aus v1.5.304 und v1.5.467 (`_gilt`, Vorschlag „~“) werden weiterverwendet.
+- `test_zyklus2.js` Abschnitt G liest die Zähler und Wasser-Sprungziele jetzt je Gruppe.
+- Test: `test_eintrag_zwei_gruppen.js` (24 Prüfungen, beide Zeitzonen; fällt auf v1.5.483 um). Gebaut von einem Sonnet-Helfer.
+
 ## 2026-10-30 — v1.5.483
 
 - **„Grow“, „Dryback“ und „Runoff“ standen weiter sichtbar in der App** — gemessen 31×, 43× und 15× auf den Hauptbildschirmen,

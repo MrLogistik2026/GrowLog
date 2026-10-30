@@ -311,9 +311,11 @@ function pruef(name, bedingung, info) {
       a.E(`editISO = '${TAG}'; renderEntry('${TAG}')`);
       const body = a.window.document.getElementById('entry-body');
       const txt = (body?.textContent || '').replace(/\s+/g, ' ');
-      const m = txt.match(/(\d)\/6 eingetragen/);
-      const knopf = Array.from(body?.querySelectorAll('button') || []).find(b => /jumpToEntryField\('[^']+','water'\)/.test(b.getAttribute('onclick') || ''));
-      return { n: m ? +m[1] : null, wasserZiel: knopf ? (knopf.getAttribute('onclick').match(/jumpToEntryField\('([^']+)'/) || [])[1] : null };
+      const alle = Array.from(txt.matchAll(/(\d)\/6 eingetragen/g)).map(x => +x[1]);
+      const knoepfe = Array.from(body?.querySelectorAll('button') || []).filter(b => /jumpToEntryField\('[^']+','water'\)/.test(b.getAttribute('onclick') || ''));
+      const ziele = knoepfe.map(k => (k.getAttribute('onclick').match(/jumpToEntryField\('([^']+)'/) || [])[1]);
+      // (v1.5.484) Ab zwei Gruppen steht je Gruppe eine Zeile: n = erste Zeile, alle = Zähler je Gruppe, ziele = Wasser-Sprungziele je Gruppe.
+      return { n: alle.length ? alle[0] : null, alle, ziele, wasserZiel: ziele[0] || null };
     };
     a.E(`(() => { editISO = '${TAG}'; ensE('${an}'); S.entries['${TAG}'].cycleData['${an}'].water = 2100; saveS(); })()`);
     const z1 = zeile();
@@ -323,10 +325,10 @@ function pruef(name, bedingung, info) {
     const due = a.E(`gussFaellig(S.cycles.find(x => x.id === '${mi}'), '${TAG}')`);
     const z2 = zeile();
     pruef('G2 zweite Gruppe mit Guss heute, noch ohne Wasser: Wasser offen, der Sprung führt zu ihr',
-      due ? (z2.n === 0 && z2.wasserZiel === mi) : true, { due, z2, mi });
+      due ? (z2.alle.length === 2 && z2.alle[0] === 1 && z2.alle[1] === 0 && z2.ziele[1] === mi) : true, { due, z2, mi });
     a.E(`(() => { editISO = '${TAG}'; ensE('${mi}'); S.entries['${TAG}'].cycleData['${mi}'].water = 700; saveS(); })()`);
     const z3 = zeile();
-    pruef('G3 beide Gruppen gegossen: Wasser erledigt', z3.n === 1, z3);
+    pruef('G3 beide Gruppen gegossen: Wasser bei beiden erledigt', z3.alle.length === 2 && z3.alle.every(x => x === 1), z3);
     pruef('G4 keine JS-Fehler', a.errors.length === 0, a.errors[0]);
   }
 

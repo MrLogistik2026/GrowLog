@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.483** · index.html 2,67 MB · 781 Funktionen
+Stand: **v1.5.484** · index.html 2,67 MB · 781 Funktionen
 Zuletzt fortgeschrieben am 30.10.2026 früh (Nachtarbeit 29./30.10.: Diagnose-Liste B01–B12 und U4 fertig, danach zwei
 Bedien-Prüfungen nach den Grundsätzen der Lager-App — Befunde in `.claude/notizen/ux/*.txt` und `.claude/tmp/ux2/bericht.txt`,
 abgearbeitet in v1.5.452–487, siehe Versionsliste in 0o. **Offen aus der zweiten Prüfung:** Einsteiger-Eintrag am Gießtag
@@ -447,6 +447,7 @@ Speicher-Befunde sind in v1.5.340–344 behoben. Rohdaten: Workflow wf_63d754b1-
 - v1.5.481: „✓ Alles wie im Plan gemischt“ in der Mischreihenfolge — ein Tipp bestätigt alle Plan-Dünger mit Menge, „✓“ statt „~“ (`test_eintrag_alles_wie_plan.js`).
 - v1.5.482: Wochenkarte im Eintrag als kurze Kopfzeile „Plan-Woche N gilt ab heute“ mit „Passt“ / „Noch ein paar Tage …“, der lange Text zugeklappt unter den Gießfeldern (`test_eintrag_wochenkarte.js`).
 - v1.5.483: Begriffe bereinigt: Grow → Anbau/Zyklus/Tagebuch, Dryback → Restgewicht/Abtrocknen, Runoff → Drain; Lexikon-Titel samt Verweisen, alte Wörter finden weiter (`test_begriffe_sichtbar.js`). Gesamtlauf 381/382, der eine rote Test (`test_runzwei`, Folge von 482) nachgezogen.
+- v1.5.484: Eintrag mit zwei Gruppen: je Gruppe eine Zeile mit eigenem Zähler und Sprung-Chips, „✓ Alle N Gruppen komplett“ (`test_eintrag_zwei_gruppen.js`).
 
 **Gegenprüfung von v1.5.364/365 (07.10.2026 nachts, Workflow wf_4cf817bf-629, drei Sonnet-Prüfer + Gegenprüfer).** Kein Fehlalarm
 in 33 App-Fassungen, allen Vorlagen und über 2800 Klicks; die schweren Befunde (unsichere Kopie zerstört den Hauptstand, Tropfen als

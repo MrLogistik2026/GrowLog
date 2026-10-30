@@ -4822,7 +4822,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.483';
+const APP_VERSION = 'v1.5.484';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -29974,6 +29974,32 @@ function openEntryAndScroll(iso, elementId) {
 }
 
 /**
+ * (v1.5.484) Fortschrittszeilen des Tageseintrags bei mehreren Gruppen — je Gruppe eine Zeile mit Name, eigenem Zähler
+ * und eigenen Sprung-Chips. Gemessen am 29.10.2026 (Gießtag-Prüfung, Punkt 6): Bei zwei Zyklen am selben Tag gab es oben
+ * nur EINE Zeile („0/6 eingetragen“), die Wasser und pH beider Gruppen zusammenfasste; die zweite Gruppe hatte keinen
+ * Sprung-Chip, und ob beide fertig sind, stand nirgends. Die App kannte die Antwort je Gruppe längst (`_gilt`) — sie
+ * wurde nur zu einem Zähler verrechnet. Temperatur und Luftfeuchte gehören zum Zelt und zählen darum in jeder Zeile.
+ * `reihen`: [{ c: Zyklus, chips: [{ ok, vor, icon, label, ziel }] }] — dieselben sechs Chips wie bei einer Gruppe.
+ */
+function _gruppenFortschrittHTML(reihen, tippHint) {
+  const alleFertig = reihen.every(r => r.chips.every(ch => ch.ok));
+  const zeilen = reihen.map(r => {
+    const n = r.chips.filter(ch => ch.ok).length;
+    const farbe = col(r.c).hex;
+    return `<div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;border-left:3px solid ${farbe};padding-left:7px">
+      <span style="font-size:11px;font-weight:700;color:${farbe}">${sym(r.c)} ${escHtml(r.c.name)}</span>
+      <span style="font-size:11px;color:var(--green);font-weight:700">${n}/${r.chips.length} <span style="font-weight:500">eingetragen</span></span>
+      ${r.chips.map(ch => `<button onclick="jumpToEntryField('${r.c.id}','${ch.ziel}')" title="${ch.vor ? VORSCHLAG_TITEL + ' — antippen springt zum Feld ' + ch.label : 'Zum Feld ' + ch.label + ' (' + escHtml(r.c.name) + ') springen'}" style="font-size:10px;padding:3px 7px;border-radius:6px;border:0.5px solid ${ch.ok ? 'rgba(76,175,112,0.3)' : 'var(--border)'};background:${ch.ok ? 'rgba(76,175,112,0.15)' : 'var(--surface)'};color:${ch.ok ? 'var(--green)' : (ch.vor ? 'var(--text-sub)' : 'var(--text-hint)')};opacity:${ch.ok ? '1' : '0.75'};cursor:pointer;font-family:var(--font)">${ch.ok ? '✓' : (ch.vor ? '~' : '')}${ch.icon} ${ch.label}</button>`).join('')}
+    </div>`;
+  }).join('');
+  return `<div data-gruppen-fortschritt="1" style="display:flex;flex-direction:column;gap:6px;padding:7px 10px;background:rgba(76,175,112,0.05);border:0.5px solid rgba(76,175,112,0.2);border-radius:10px">
+      ${zeilen}
+      ${alleFertig ? `<div style="font-size:11px;font-weight:700;color:var(--green)">✓ Alle ${reihen.length} Gruppen sind komplett eingetragen</div>` : ''}
+      ${tippHint}
+    </div>`;
+}
+
+/**
  * (v1.5.114) Springt im Tageseintrag zu einem der sechs Tagesfelder.
  *
  * Gemessen am 06.09.2026 an Patricks Tag 104: Der Eintrag ist an einem Gießtag
@@ -29998,7 +30024,8 @@ function jumpToEntryField(cId, was) {
   else if (was === 'temp') el = document.getElementById('et');
   else if (was === 'rh') el = document.getElementById('er');
   else if (was === 'note') el = document.getElementById('note-' + cId) || body.querySelector('.note-ta');
-  else if (was === 'photo') el = body.querySelector('.photo-add') || body.querySelector('.photo-grid');
+  // (v1.5.484) Foto: bei mehreren Gruppen das Foto-Feld der angetippten Gruppe, nicht das erste im Eintrag.
+  else if (was === 'photo') el = Array.from(body.querySelectorAll('.photo-add')).find(x => (x.getAttribute('onclick') || '').includes("'" + cId + "'")) || body.querySelector('.photo-add') || body.querySelector('.photo-grid');
   // (v1.5.475) Hebe-Test: Gewichtsfeld (Waage), sonst die Knopfreihe bzw. der Regler (Bauchgefühl/Finger/Slider).
   else if (was === 'hebe') {
     el = document.getElementById('weight-g-' + cId);
@@ -32784,6 +32811,20 @@ function renderEntry(iso) {
     const tippHint = S.beginnerMode
       ? `<div style="width:100%;font-size:9px;color:var(--text-hint);margin-top:3px">Antippen springt zum passenden Feld</div>`
       : '';
+    // (v1.5.484) Ab zwei Gruppen mit stehenden Pflanzen: eine Zeile je Gruppe statt einer zusammengerechneten.
+    if (_zeile.length >= 2) {
+      const _reihen = _zeile.map(c => {
+        return { c, chips: [
+          { ok: _gilt(c, 'water'), icon: '💧', label: 'Wasser', ziel: 'water' },
+          { ok: _gilt(c, 'ph'), vor: !_gilt(c, 'ph') && !!_cdVon(c).ph && _istVorschlag(_cdVon(c), 'ph'), icon: '🧪', label: 'pH', ziel: 'ph' },
+          { ok: hasTemp, icon: '🌡', label: 'Temp', ziel: 'temp' },
+          { ok: hasRh, icon: '💨', label: 'RLF', ziel: 'rh' },
+          { ok: _hatNotiz(c), icon: '📝', label: 'Notiz', ziel: 'note' },
+          { ok: _hatFoto(c), icon: '📸', label: 'Foto', ziel: 'photo' },
+        ] };
+      });
+      fillStatusChip = _gruppenFortschrittHTML(_reihen, tippHint);
+    } else
     fillStatusChip = `<div style="display:flex;align-items:center;gap:5px;padding:7px 10px;background:rgba(76,175,112,0.05);border:0.5px solid rgba(76,175,112,0.2);border-radius:10px;flex-wrap:wrap">
       <span style="font-size:11px;color:var(--green);font-weight:700;margin-right:2px">${filled}/${total} <span style="font-weight:500">eingetragen</span></span>
       ${chips.map(ch => `<button onclick="jumpToEntryField('${(_sprungZiel[ch.ziel] || fc).id}','${ch.ziel}')" title="${ch.vor ? VORSCHLAG_TITEL + ' — antippen springt zum Feld ' + ch.label : 'Zum Feld ' + ch.label + ' springen'}" style="font-size:10px;padding:3px 7px;border-radius:6px;border:0.5px solid ${ch.ok ? 'rgba(76,175,112,0.3)' : 'var(--border)'};background:${ch.ok ? 'rgba(76,175,112,0.15)' : 'var(--surface)'};color:${ch.ok ? 'var(--green)' : (ch.vor ? 'var(--text-sub)' : 'var(--text-hint)')};opacity:${ch.ok ? '1' : '0.75'};cursor:pointer;font-family:var(--font)">${ch.ok ? '✓' : (ch.vor ? '~' : '')}${ch.icon} ${ch.label}</button>`).join('')}
