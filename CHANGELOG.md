@@ -2,6 +2,18 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-30 — v1.5.480
+
+- **Im Einsteiger-Eintrag stand jeder Dünger zweimal zum Eintragen.** Die Tabelle „Dünger diese Woche“ (Ist-Felder, `uDose`) und
+  die Mischreihenfolge (Mengenfelder, `uMixDoseTotal`) schreiben beide `cd.doses` — am Gießtag 16 Felder für 8 Dünger, und eine
+  Eingabe oben zeichnete die Mischzeile darunter nicht nach. Gefunden bei der Gießtag-Prüfung am 29.10.2026 (Punkt 5).
+- **Jetzt** fehlt die Ist-Tabelle im Einsteiger-Modus, sobald der Plan eine Mischreihenfolge hat; Überschrift und „Plan ✏“
+  bleiben, eingetragen wird in der Mischreihenfolge (dort steht die Plan-Menge je Zeile). Der Profi behält beide; nach einer
+  Eingabe in „Ist“ zieht die Mischzeile nach (`_entryNeuNachFeld`, ohne Fokusverlust). Ein geleertes Ist-Feld löscht die eigene
+  Dosis (der Plan gilt wieder), statt 0 zu speichern — sonst zeigte die Mischzeile „∅“. Einsteiger-Gießtag (Tag 45, Rainbow):
+  22 → 14 Felder.
+- Test: `test_eintrag_duenger_einmal.js` (14 Prüfungen, beide Zeitzonen; fällt auf v1.5.479 um). Gebaut von einem Sonnet-Helfer.
+
 ## 2026-10-29 — v1.5.479
 
 - **Dieselbe Pflanze hieß auf der Startseite „Anzucht · Tag 10“ und „Sämling · Tag 10“.** Das sind zwei Dinge — die Phase des

@@ -3807,7 +3807,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.479';
+const APP_VERSION = 'v1.5.480';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -30438,7 +30438,7 @@ function renderEntry(iso) {
             <span class="nt-calc" data-cycle="${c.id}" data-prod="${prod.id}" data-plan="${plan}" data-unit="${prod.unit || 'ml/L'}" data-decimals="${_ntDec}">${calcVal !== '—' ? calcVal + ' ' + dUnit : '—'}</span>
             <input class="nt-inp" style="border-color:${prod.color}44" type="number" step="0.1"
               value="${logged}" placeholder="${calcVal !== '—' ? calcVal : '0'}"
-              oninput="uDose('${c.id}','${prod.id}',this.value)"/>
+              oninput="uDose('${c.id}','${prod.id}',this.value)" onchange="_entryNeuNachFeld()"/>
           </div>`;
         }).join('');
 
@@ -30644,12 +30644,14 @@ function renderEntry(iso) {
         const autoFeedHint = (c.seedType === 'auto' && p && (p.ph === 'anzucht' || (p.ph === 'bloom' && (p.week || 0) <= 4)))
           ? `<div style="background:rgba(240,208,80,0.06);border:0.5px solid rgba(240,208,80,0.25);border-radius:10px;padding:10px 12px;margin-bottom:8px;font-size:11px;color:var(--text-sub);line-height:1.5">⚡ <b style="color:var(--yellow)">Autos brauchen oft weniger Dünger</b> als normale Pflanzen. Wenn sich die Blattspitzen nach unten krallen oder die Blätter dunkelgrün glänzen → beim nächsten Mal weniger geben.</div>`
           : '';
+        // (v1.5.480) Einsteiger: keine zweite Eingabestelle für dieselben Dosen — die Mischreihenfolge trägt sie ein.
+        const _ohneIst = !!S.beginnerMode && !!mixSteps;
         nutSection = `${waterDayToggle}${waterInput}${autoFeedHint}
           <div class="nut-tbl-hdr" style="background:${cl.dk};border:0.5px solid ${cl.hex}44;border-bottom:none">
             <span style="font-size:12px;font-weight:600;color:#fff">🧪 ${S.beginnerMode ? 'Dünger diese Woche' : `Nährstoffe Plan-Wo.${wk}`}</span>
             <button onclick="openDuenger()" style="background:none;border:none;color:${cl.hex};font-size:11px;cursor:pointer">Plan ✏</button>
           </div>
-          <div class="nut-tbl-wrap" style="border-color:${cl.hex}33;background:var(--surface)">
+          ${_ohneIst ? '' : `<div class="nut-tbl-wrap" style="border-color:${cl.hex}33;background:var(--surface)">
             <div class="nut-tbl-head" style="background:${cl.dk}">
               <span class="nth" style="color:${cl.hex}">Produkt</span>
               <span class="nth" style="text-align:right;color:${cl.hex}88">Plan/L</span>
@@ -30657,7 +30659,7 @@ function renderEntry(iso) {
               <span class="nth" style="text-align:right;color:${cl.hex}">Ist</span>
             </div>
             ${prodRows || `<div style="padding:10px 12px;font-size:12px;color:var(--text-muted)">Keine Dünger konfiguriert. <span style="color:var(--blue);cursor:pointer" onclick="openDuenger()">Dünger einrichten →</span></div>`}
-          </div>
+          </div>`}
           ${mixSteps}
           ${S.beginnerMode ? '' : `<div class="ph-hint">🎯 pH: ${pht.midText}${ecT && !ecT.waterOnly ? ` · EC: ${ecRange} ${ecUnitLabel()}` : ''}${_drainMoeglich(p) ? ` · Drain: ${DRAIN_ZIEL.min}–${DRAIN_ZIEL.max} %` : ''}</div>`}
           ${c.medium === 'hydro' ? hydroResBlock : `<div style="background:var(--card);border:0.5px solid var(--border);border-radius:10px;overflow:hidden;margin-top:6px">
@@ -33006,7 +33008,9 @@ function uDose(cId, pid, v) {
   _entryDirty = true;
   ensE(cId);
   const cd = S.entries[editISO].cycleData[cId];
-  cd.doses[pid] = parseFloat(v) || 0;
+  // (v1.5.480) Leeres Feld = keine eigene Dosis (Plan gilt), nicht 0 — sonst zeigte die Mischzeile nach dem Neuzeichnen „∅“.
+  if (String(v == null ? '' : v).trim() === '') { delete cd.doses[pid]; if (cd.doseRef) delete cd.doseRef[pid]; }
+  else cd.doses[pid] = parseFloat(v) || 0;
   // User tippt manuell → nicht mehr "nur vorgeschlagen"
   if (cd._suggestedDoses) delete cd._suggestedDoses[pid];
 }
