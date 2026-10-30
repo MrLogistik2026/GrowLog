@@ -99,32 +99,14 @@ const ECHT = (pot, medium, methode) => `(function(){
     pruef(`7 L Coco: „${dir} ml je Topf Erstguss"`, t.includes(`${dir} ml je Topf Erstguss`) && !/150ml Erstguss/.test(t), stelle);
   }
 
-  console.log('\nC - Sämlings-Hinweis nach dem Anlegen');
+  console.log('\nC - Nach dem Anlegen springt kein Sämlings-Fenster auf (seit v1.5.489)');
   {
-    const hinweis = async (pot, med, methode) => {
-      E(`S.cycles = []; S.entries = {}; S._seedlingProtocolShown = false;
-        window._neu = addCyc({ name: 'Neu', seedType: 'auto', medium: '${med}', growType: 'indoor' });
-        _neu.growType = 'indoor'; _neu.startMethod = '${methode}'; _neu.potSize = ${pot}; _neu.plantCount = 1; saveS();`);
-      await warte(1100);
-      const t = E(`document.body.textContent.replace(/\\s+/g, ' ')`);
-      E(`typeof _modalResolve === 'function' && _modalResolve(true)`);
-      await warte(80);
-      return (t.match(/App-Plan für Sämlinge.*?Tipp: Sämlings-Haube/) || ['(Hinweis nicht gefunden)'])[0];
-    };
-    {
-      const sat = E(ECHT(7, 'coco', 'saturated'));
-      const ph = E(`phTargetFor('coco').label`);
-      const t = await hinweis(7, 'coco', 'saturated');
-      pruef(`Vorbefeuchtet, 7 L Coco: Sättigungsguss ~${sat} ml`, t.includes(`Sättigungsguss ~${sat} ml`), t.slice(0, 260));
-      pruef(`Vorbefeuchtet, Coco: pH ${ph} statt 6.2–6.5`, t.includes(`pH ${ph}`) && !/6\.2–6\.5/.test(t), (t.match(/pH [\d.–]+/g) || []).join(', '));
-      pruef('Vorbefeuchtet: 24h vor Tag 1, kein „48h", keine ~400 ml', /24h vor Tag 1/.test(t) && !/48h/.test(t) && !/~400 ?ml/.test(t), t.slice(0, 160));
-    }
-    {
-      const dir = E(ECHT(11, 'erde', 'direct'));
-      const t = await hinweis(11, 'erde', 'direct');
-      pruef(`Direkt, 11 L Erde: Erstguss ~${dir} ml`, t.includes(`~${dir} ml pH-Wasser`), t.slice(0, 200));
-      pruef('Direkt: kein „Samen in trockene Erde" mehr (Tag 1 = Keimstart)', !/Samen in trockene Erde/.test(t) && /Keimstart/.test(t), t.slice(0, 200));
-    }
+    E(`S.cycles = []; S.entries = {}; S._seedlingProtocolShown = false;
+      window._neu = addCyc({ name: 'Neu', seedType: 'auto', medium: 'coco', growType: 'indoor' });
+      _neu.growType = 'indoor'; _neu.startMethod = 'saturated'; _neu.potSize = 7; _neu.plantCount = 1; saveS();`);
+    await warte(1100);
+    const t = E(`document.body.textContent.replace(/\\s+/g, ' ')`);
+    pruef('Kein „App-Plan für Sämlinge“ nach dem Anlegen', !/App-Plan für Sämlinge/.test(t), (t.match(/App-Plan für Sämlinge.{0,80}/) || [''])[0]);
   }
 
   console.log('\nD - Quelltext');

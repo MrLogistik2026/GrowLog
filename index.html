@@ -4832,7 +4832,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.488';
+const APP_VERSION = 'v1.5.489';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -27937,57 +27937,12 @@ function addCyc(overrides, opts) {
   if (scr) scr.scrollTop = 0;
   toast(`🌱 ${c.name} erstellt — Start: ${fmtDE(c.startDate, {day:'2-digit',month:'2-digit'})}`);
 
-  // SÄMLINGS-PROTOKOLL-HINWEIS: nur Indoor-Anzucht, nur einmalig pro App-Installation.
-  // Erklärt das Sprüh-vs-Gießen-Prinzip und Tag-0-Vorbefeuchten, bevor der User
-  // einen kritischen Anfängerfehler macht. Nicht aufdringlich — kann weggewischt werden.
-  //
-  // Mai 2026: zwei methodenabhängige Texte. Der vorherige Text mischte zwei
-  // Schulen ("7 Tage NICHT gießen" + "Tag 1 Sättigungsguss 700ml") — das las
-  // sich widersprüchlich. Plus: pH war als "pH-Wasser" angegeben (kein konkreter
-  // Wert), "Dryback" war nicht klar definiert. Jetzt: konkrete pH-Werte (6.2–6.5),
-  // "Restgewicht" statt "Dryback" (linguistisch konsistent mit dem Rest der App),
-  // klar formulierte Tag-für-Tag-Schritte.
-  if (c.growType === 'indoor' && !S._seedlingProtocolShown) {
-    S._seedlingProtocolShown = true;
-    saveS();
-    setTimeout(() => {
-      const sm = c.startMethod || 'saturated';
-      // (v1.5.169) Mengen und pH aus Topf und Substrat — vorher fest ~400/~700/~150 ml und pH 6.2–6.5 auch bei Coco.
-      const _phL = phTargetFor(c.medium).label;
-      const _sat = _tag1MengeJeTopf(c, 'saturated'), _dir = _tag1MengeJeTopf(c, 'direct');
-      // (v1.5.197) Gießpunkt aus GIESSPUNKT, genannt erst ab DRAIN_AB_TAG — vorher „Tag 9+: ~40 %, ab Tag 15 ~30–40 %“.
-      const _gpc = giesspunktFor(c);   // (v1.5.200) aus GIESSPUNKT je Substrat — vorher standen die Coco-Zahlen hier fest
-      const _gp = `Hebe-Test „${_gpc.knopf}“, ${_gpc.von}–${_gpc.bis} % Restgewicht`;
-      const msg = sm === 'direct' ? `Du hast 'Direkt' gewählt — Tag 1 ohne vollen Sättigungsguss, dafür kleinere Tagesgüsse.
-
-App-Plan für Sämlinge:
-• Tag 1 (Keimstart): Erde nicht vorbefeuchtet, ~${_dir} ml pH-Wasser (pH ${_phL}) je Topf in die Mitte, wo der Samen liegt oder hinkommt
-• Tag 2–8: Bei Bedarf ~30ml pro Tag — kein striktes Sprüh-Verbot, aber dosiert. Erde sollte nie ganz austrocknen, aber auch nie pfützen
-• Tag 9–${DRAIN_AB_TAG - 1}: an den Gießtagen der App gießen, mit ihrer Gießmenge — der Topf wiegt vor allem Substrat ohne Wurzeln, der Hebe-Test zeigt nur, ob er noch nass ist
-• Ab Tag ${DRAIN_AB_TAG}: gießen, wenn der Topf den Gießpunkt erreicht (${_gp})
-
-Vorteil dieser Methode: Wurzel wächst aktiv nach unten weil sie das Wasser suchen muss. Weniger Risiko von durchgenässtem Topf — Pythium-Druck geringer als bei Sättigung.
-
-Achtung: Etwas höheres Pflegerisiko bei Vergessen — der Topf hat weniger Wasserpuffer als bei der Sättigungsmethode. Wenn die Erde sich oben fest und hart anfühlt: kurz mit pH-Wasser einsprühen, dann normal weiter.
-
-💡 Tipp: Sämlings-Haube
-Bei Raumluft unter 65% RLF: transparente Kuppel über den Sämling stellen. Hebt die Luftfeuchte über dem Topf und verhindert Welken — Lüftungsschlitze offen lassen, sonst schlägt sich Wasser nieder. DIY: PET-Flasche umgekehrt aufstülpen. Komplette Anleitung im Lexikon → "Sämlings-Haube".` : `Du hast 'Vorbefeuchtet' (Sättigungsmethode) gewählt — ein klarer Initialguss am Tag 1, dann konsequente Ruhe.
-
-App-Plan für Sämlinge:
-• 24h vor Tag 1: Erde mit pH-Wasser (pH ${_phL}) anfeuchten, bis sie sich wie ein ausgewrungener Schwamm anfühlt — trockenes Substrat nimmt sonst schlecht Wasser an
-• Tag 1 (Keimstart): Einmaliger Sättigungsguss ~${_sat} ml je Topf in 3 Etappen mit je 15 min Pause (Wasser sickert besser ein, keine Pfützen)
-• Tag 2–8: KEIN weiteres Gießen — nur Sprühen (3–5 Sprühstöße auf die Oberfläche, pH ${_phL}, nicht auf die Keimblätter)
-• Tag 9–${DRAIN_AB_TAG - 1}: an den Gießtagen der App gießen, mit ihrer Gießmenge — der Topf wiegt vor allem Substrat ohne Wurzeln, der Hebe-Test zeigt nur, ob er noch nass ist
-• Ab Tag ${DRAIN_AB_TAG}: gießen, wenn der Topf den Gießpunkt erreicht (${_gp})
-
-Warum kein Gießen Tag 2–8?
-Sämlings-Wurzeln reichen wenige Zentimeter. Voll durchnässte Erde ohne aufnehmende Wurzel ist genau die Bedingung, unter der Pythium keimende Samen befällt (Wurzelfäule, für den Keimling meist tödlich). Der einmalige Sättigungsguss am Tag 1 stellt die Erde ein — danach trinkt der Sämling aus der oberen Schicht, gesprüht reicht.
-
-💡 Tipp: Sämlings-Haube
-Bei Raumluft unter 65% RLF: transparente Kuppel über den Sämling stellen. Hebt die Luftfeuchte über dem Topf und verhindert Welken — Lüftungsschlitze offen lassen, sonst schlägt sich Wasser nieder. DIY: PET-Flasche umgekehrt aufstülpen. Komplette Anleitung im Lexikon → "Sämlings-Haube".`;
-      customConfirm('🌱 Sämlings-Protokoll', msg, 'Verstanden', 'var(--green)').catch(() => {});
-    }, 800);
-  }
+  // (v1.5.489) Kein Sämlings-Protokoll-Fenster mehr. Es sprang 800 ms nach dem Anlegen auf (ein Tipp mehr, direkt nach dem
+  // Assistenten) und wiederholte als Block, was die Startseite Tag für Tag sagt: Tag 1 Sättigungsguss mit Menge, pH und Mitteln
+  // (_tag1MittelText, _tag1Keimsatz), Tag 2–8 sprühen, ab Tag 9 die Gießtage der App, ab Tag 25 der Gießpunkt. Dazu standen dort
+  // unbelegte Sätze („Wurzel wächst aktiv nach unten, weil sie das Wasser suchen muss“, „Pythium-Druck geringer“ — ANBAU.md 14, 16).
+  // Patrick am 30.10.2026 (Bedien-Prüfung 2, Befund 5): „Ja bau bitte alles so“. Die Sämlings-Haube bleibt im Lexikon und als
+  // Training der Anzucht wählbar. S._seedlingProtocolShown bleibt als Kennzeichen im Stand stehen.
   return c;
 }
 

@@ -2,6 +2,18 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-30 — v1.5.489
+
+- **Nach dem Anlegen eines Zyklus sprang 800 ms später das Fenster „🌱 Sämlings-Protokoll“ auf** — ein Tipp mehr direkt nach dem
+  Assistenten, und als Block dasselbe, was die Startseite Tag für Tag sagt (Tag 1 Sättigungsguss mit Menge, pH und Mitteln, Tag 2–8
+  sprühen, ab Tag 9 die Gießtage, ab Tag 25 der Gießpunkt). Dazu standen dort zwei unbelegte Sätze („Wurzel wächst aktiv nach unten,
+  weil sie das Wasser suchen muss“, „Pythium-Druck geringer“). Zweite Bedien-Prüfung am 30.10.2026, Befund 5; Patrick: „Ja bau bitte
+  alles so“.
+- **Jetzt** kein Fenster mehr. Die Sämlings-Haube bleibt im Lexikon und als Training der Anzucht. `S._seedlingProtocolShown` bleibt
+  als Kennzeichen im Stand (Tests setzen es weiter).
+- Test: `test_tag1mengen.js` Abschnitt C prüft jetzt, dass nach dem Anlegen kein Fenster aufspringt (beide Zeitzonen; fällt auf
+  v1.5.488 um); die Mengen-Prüfungen des alten Fensters decken Abschnitt A/B und `test_tag1_mittelmengen.js` auf der Startseite ab.
+
 ## 2026-10-30 — v1.5.488
 
 - **Der Satz über den neuen Hebe-Knöpfen im Diagnose-Ergebnis meinte noch den Eintrag:** „Trag den Hebe-Test ein … gespeichert

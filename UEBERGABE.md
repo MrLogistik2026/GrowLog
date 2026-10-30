@@ -1,16 +1,15 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.488** · index.html 2,67 MB · 781 Funktionen
+Stand: **v1.5.489** · index.html 2,67 MB · 781 Funktionen
 Zuletzt fortgeschrieben am 30.10.2026 früh (Nachtarbeit 29./30.10.: Diagnose-Liste B01–B12 und U4 fertig, danach zwei
 Bedien-Prüfungen nach den Grundsätzen der Lager-App — Befunde in `.claude/notizen/ux/*.txt` und `.claude/tmp/ux2/bericht.txt`,
-abgearbeitet in v1.5.452–488, siehe Versionsliste in 0o. **Offen aus der zweiten Prüfung:** Einsteiger-Eintrag am Gießtag
-noch fast so lang wie im Profi-Modus (8 Felder / 53 Knöpfe gegen 19 / 54; Banner, Toppen-Block, drei Mengen, Lern-Status vor
-den Feldern), Assistent ohne ⓘ und mit Dauer-Frage vor der Sorte (Patrick 08.10.: Assistent vorerst nicht umbauen —
-v1.5.468–471 waren Texte und eine weggelassene Frage), Sämlings-Protokoll-Fenster nach dem Anlegen (einmalig, ~26935) wiederholt die Tag-1-Karte und
-nennt Unbelegtes („Wurzel wächst aktiv nach unten, weil sie das Wasser suchen muss“, „Pythium-Druck geringer“ — gegen ANBAU.md 16
-halten), Profi-Startseite
-nennt Plan-Woche „Wo6“ und Blütewoche „Blüte Wo. 4“ nebeneinander (Test `test_runzwei` hängt an „Wo6“), Diagnose-Umbauten
-U1–U3, Temperaturgrenzen 30/18 °C, Installationsname „Grow-Begleiter“ in `manifest.json`.) Davor: Fünf Fehler behoben: Der Widerspruch zwischen
+abgearbeitet in v1.5.452–489, siehe Versionsliste in 0o. **Patrick am 30.10.2026 morgens zu den vier offenen Fragen: „Ja bau
+bitte alles so“** — Einsteiger-Eintrag am Gießtag kürzen (oben nur das Heutige, Rest eine Ebene tiefer; in Arbeit), Diagnose-Umbauten
+U1–U3 (in Arbeit, je eigene Version mit Messung), Sämlings-Fenster nach dem Anlegen weg (erledigt v1.5.489), Temperaturgrenzen der
+Diagnose bleiben bei 30 °C / 18 °C (entschieden). **Weiter offen:** Assistent ohne ⓘ und mit Dauer-Frage vor der Sorte (Patrick
+08.10.: Assistent vorerst nicht umbauen — v1.5.468–471 waren Texte und eine weggelassene Frage), Profi-Startseite nennt Plan-Woche
+„Wo6“ und Blütewoche „Blüte Wo. 4“ nebeneinander (Test `test_runzwei` hängt an „Wo6“), Installationsname „Grow-Begleiter“ in
+`manifest.json`.) Davor: Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
 mehr mit Züchter-Bestwerten (v1.5.98), erfasste Ernteerträge sind nicht mehr unsichtbar und
 die Ernte-Kacheln widersprechen der Erntekarte nicht mehr (v1.5.99), und **die Düngermengen
@@ -269,7 +268,7 @@ wf_0586d0bf-d3d (vergänglich). **Offen, nach Nutzen geordnet** (Umbauten oder P
    → „Drain“, „Erde dauer-feucht“ → „Topf schwer (heute)“). Gemessener Nebeneffekt von PE: Platz 1 wechselt in 3,9 % der Einzelfälle,
    keine eindeutige Verschlechterung. **Umbauten (U1–U4):** Phasen-Bonus nur bei trennscharfer Liste und ein Feld `vorrang` für die
    Wasser-Ursachen (13.1/13.2), Abdeckung als Gleichstandskriterium, Abschlag bei falschem Ort (0g), Zusatzfrage „Wie fühlt sich der
-   Topf an?“ im Assistenten, wenn heute kein Hebe-Test vorliegt. tempHot ab 30 °C / tempCold bis 18 °C sind Konvention (B12).
+   Topf an?“ im Assistenten, wenn heute kein Hebe-Test vorliegt. tempHot ab 30 °C / tempCold bis 18 °C sind Konvention (B12) — Patrick 30.10.2026: bleiben so.
 9. Zyklus-Vergleich ohne Ertrag, g je Pflanze, Tage bis Ernte; Barrierefreiheit (Schrift ≤ 11 px,
    Tippflächen); Fotos als Base64 füllen den Speicher (~30 Fotos); kein Test-Gate vor dem Veröffentlichen.
 Weitere Ideen der Prüfer: gemeinsamer Mischansatz für zwei Zyklen am selben Gießtag („zusammen 4800 ml"), Sicherungs-Erinnerung
@@ -414,7 +413,7 @@ Speicher-Befunde sind in v1.5.340–344 behoben. Rohdaten: Workflow wf_63d754b1-
 - v1.5.446: Schnellhilfe „Ganzes Blatt blass“ ohne „CalMag + Schwefel über Blattdünger“ — erst oben oder unten, Magnesium wie die Diagnose, Coco-Ausnahme, Licht als dritte Ursache (B09).
 - v1.5.447: Magnesium überall in derselben Reihenfolge — Booster aussetzen, pH prüfen, dann Bittersalz (Schnellhilfe „Adern grün“ und Lexikon nannten zuerst den pH).
 - v1.5.448: Startseiten-Hinweis „Topf schwer“ erst nach zwei schweren Messungen; das ✕ gilt nur für dieselben Signale, ein neues Signal bringt den Hinweis zurück (B06, `test_diaghinweis.js`).
-- v1.5.449: Diagnose sagt „Drain“ statt „Runoff“ und „Topf schwer (heute gemessen)“ statt „Erde dauer-feucht“ — Begründungen, Startseiten-Hinweis, Kontext-Zeile (B12, `test_diagnose_etiketten.js`). **Offen (Patricks Entscheidung):** tempHot ab 30 °C und tempCold bis 18 °C sind Konventionen der Raumluft, nicht ANBAU.md.
+- v1.5.449: Diagnose sagt „Drain“ statt „Runoff“ und „Topf schwer (heute gemessen)“ statt „Erde dauer-feucht“ — Begründungen, Startseiten-Hinweis, Kontext-Zeile (B12, `test_diagnose_etiketten.js`). tempHot ab 30 °C und tempCold bis 18 °C sind Konventionen der Raumluft, nicht ANBAU.md — **Patrick 30.10.2026: bleiben so.**
 - v1.5.450: Schnellhilfe „Pflanze welkt nur unter starker Lampe“ ohne „Dimmer auf 70–80%“ und „LED über 400 W“ — Topf anheben, dann Abstand/Leistung, Abluft und Umluft (ANBAU.md 8.2).
 - v1.5.451: Kein „Pflanze tiefer eingraben“ mehr bei gestreckten Pflanzen (drei Stellen) — eine Stütze statt Umsetzen, das bei Automatics Tage kostet (ANBAU.md 7.4, 9).
 - v1.5.452: **Fehler:** Substrat, Samentüten-Wochen und Samentyp gingen beim Sichern der Einstellungen still verloren (draftTouched fehlte seit v1.5.86) — behoben, `test_entwurf_wege.js`.
@@ -454,6 +453,7 @@ Speicher-Befunde sind in v1.5.340–344 behoben. Rohdaten: Workflow wf_63d754b1-
 - v1.5.486: Einstellungs-Vorschau zählt einen heute noch offenen Gießtag als nächsten Guss („Menge am nächsten Gießtag (heute)“) (`test_einstellungen_wirkung_heute.js`).
 - v1.5.487: Diagnose-Ergebnis mit fünf Hebe-Knöpfen — ein Tipp trägt den Hebe-Test ein, die Auswertung rechnet sofort damit; „Im Eintrag öffnen“ bleibt (`test_diagnose_hebe_eintippen.js`).
 - v1.5.488: Satz über den Hebe-Knöpfen im Diagnose-Ergebnis meint die Knöpfe („tipp, wie er sich anfühlt“), nicht mehr den Eintrag. Gesamtlauf auf 487: 390/390 grün.
+- v1.5.489: Kein Sämlings-Protokoll-Fenster mehr nach dem Anlegen eines Zyklus — die Startseite sagt es Tag für Tag (Patrick 30.10.: „Ja bau bitte alles so“; `test_tag1mengen.js` C).
 
 **Gegenprüfung von v1.5.364/365 (07.10.2026 nachts, Workflow wf_4cf817bf-629, drei Sonnet-Prüfer + Gegenprüfer).** Kein Fehlalarm
 in 33 App-Fassungen, allen Vorlagen und über 2800 Klicks; die schweren Befunde (unsichere Kopie zerstört den Hauptstand, Tropfen als
