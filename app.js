@@ -3926,7 +3926,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.513';
+const APP_VERSION = 'v1.5.514';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -36780,11 +36780,11 @@ const LEXIKON = [
       practice: '<b>Produkte:</b> Cannazym (Canna), Sensizym (Advanced), Hesi PowerZyme.<br><br><b>Dosierung:</b> 2-4 ml/L einmal pro Woche oder bei jedem zweiten Guss.<br><br><b>Wichtig vor allem bei:</b><br>• Recycling-Substrat (alte Erde wiederverwenden)<br>• Langen Zyklen (Fem 3+ Monate)<br>• Hydro-Systemen (Biofilm-Prävention)<br>• Nach massivem Wurzelstress (Umtopfen bei Fem)',
       pitfall: 'Enzyme wirken <b>nur im lebenden Boden</b> — in sterilen Hydro-Tanks bei zu hoher Temperatur (über 25 °C Nährlösung) werden sie zerstört. Nicht mit starken Fungiziden oder Chlor-Wasser kombinieren.' },
     { t: 'Mykorrhiza & Bodenmikroben',
-      brief: 'Lebende Mikroorganismen die mit Wurzeln und Pflanze in Symbiose leben. Vergrößern Aufnahme-Fläche, schützen vor Pathogenen, machen Nährstoffe verfügbar. Einmal etabliert, können sie bleiben — das hängt vom Substrat ab.',
+      brief: 'Lebende Mikroorganismen die mit Wurzeln und Pflanze in Symbiose leben. Können die Aufnahme-Fläche der Wurzel vergrößern; ein Nutzen für Cannabis ist für diese App nicht gemessen. Einmal etabliert, können sie bleiben — das hängt vom Substrat ab.',
       mechanism: 'Drei Hauptgruppen, alle drei mit eigener Funktion und meistens kombiniert eingesetzt:<br><br>' +
         '<b>1. Mykorrhiza-Pilze:</b> Spezialisierte Bodenpilze die in die Wurzel <b>eindringen oder sie ummanteln</b>. Sie bilden ein feines Hyphen-Netzwerk im Substrat das die <b>aktive Wurzel-Absorptionsfläche deutlich vergrößern kann</b> (wie stark, hängt von Pilzart, Substrat und Düngung ab; eine feste Zahl ist nicht belegt). Der Pilz holt sich von der Pflanze Photosynthese-Zucker, im Gegenzug versorgt er sie mit Wasser und Nährstoffen die sie sonst nicht erreichen würde. Echte Symbiose — beide profitieren.<br><br>' +
         '<b>2. Trichoderma:</b> Eine andere Pilzgruppe, die <b>Pathogene unterdrückt</b>. Trichoderma kolonisiert die Wurzelumgebung und konkurriert mit Pythium und anderen Wurzelfäule-Erregern um Platz und Nährstoffe. Effekt: kann das Risiko für Wurzelkrankheiten senken, besonders bei Sämlingen und nach Wurzelstress — ersetzt aber nicht den Nass-Trocken-Zyklus.<br><br>' +
-        '<b>3. Bacillus-Bakterien (B. subtilis, B. amyloliquefaciens):</b> Bodenbakterien die <b>Stoffwechselprodukte</b> ausscheiden, welche das Pflanzenwachstum fördern und gleichzeitig Pathogene hemmen. Bacillus subtilis ist auch als Blatt-Spray gegen Mehltau wirksam.<br><br>' +
+        '<b>3. Bacillus-Bakterien (B. subtilis, B. amyloliquefaciens):</b> Bodenbakterien die <b>Stoffwechselprodukte</b> ausscheiden, die als Wachstumsförderer und gegen Pathogene angeboten werden; eine Wirkung ist für Cannabis nicht gemessen. Bacillus subtilis wird auch als Blatt-Spray gegen Mehltau angeboten, auch dort ist eine Wirkung für Cannabis nicht gemessen. In der Blüte nichts auf die Blüten sprühen (Nässe fördert Schimmel).<br><br>' +
         '<b>Warum bei Mykorrhiza meist nur einmal?</b> Mykorrhiza-Pilze können sich in der Wurzelumgebung <b>etablieren</b> und vermehren sich dann selbst — nach Herstellerangabe reicht deshalb meist ein einmaliger Eintrag. Bakterienprodukte (Bacillus) werden dagegen oft regelmäßig gegeben (siehe „Anwendung über Gießwasser“). Voraussetzung: das Substrat muss „lebendig" sein und nicht durch starke Chemikalien sterilisiert werden.',
       practice: '<b>Anwendung beim Einpflanzen / Umtopfen:</b><br>' +
         '<table style="width:100%;border-collapse:collapse;font-size:13px;margin-top:6px">' +
@@ -36810,10 +36810,10 @@ const LEXIKON = [
         '<br>' +
         '<b>Besonders wertvoll bei:</b><br>' +
         '• <b>Biologischem Anbau</b> in lebender Erde — natürlicher Synergie-Effekt<br>' +
-        '• <b>Outdoor</b> — Wurzeln sind Stress-Faktoren ausgesetzt, Symbiose macht robuster<br>' +
-        '• <b>Sämlings-Phase</b> — Schutz vor Pythium und anderen Wurzelfäule-Erregern<br>' +
-        '• <b>Nach Umtopfen</b> — beschleunigt Wurzel-Etablierung und reduziert Schock<br>' +
-        '• <b>Trockenstress-Resistenz</b> — Pilz-Hyphen erreichen Wasser tiefer im Substrat<br><br>' +
+        '• <b>Outdoor</b> — Wurzeln sind Stress-Faktoren ausgesetzt; ob die Symbiose dagegen hilft, ist für Cannabis nicht gemessen<br>' +
+        '• <b>Sämlings-Phase</b> — Pythium wird durch Dauernässe begünstigt; ein Schutz durch Mikroben ist für Cannabis nicht gemessen und ersetzt den Nass-Trocken-Zyklus nicht<br>' +
+        '• <b>Nach Umtopfen</b> — ob es die Wurzel-Etablierung beschleunigt oder den Schock mindert, ist für Cannabis nicht gemessen<br>' +
+        '• <b>Trockenstress</b> — ob Mykorrhiza dagegen hilft, ist für Cannabis nicht gemessen; gegossen wird weiter am Gießpunkt<br><br>' +
         '<b>Aktivierungs-Tipps:</b><br>' +
         '• Erst-Anwendung in feuchtem Substrat (nicht knochentrocken)<br>' +
         '• Substrat-Temperatur 18–25°C — kalt = Pilze schlafen, heiß = Pilze sterben<br>' +
@@ -36926,10 +36926,10 @@ const LEXIKON = [
       practice: 'Ab Blühbeginn einschleichen und parallel den Wachstumsdünger herunterfahren. Typisch 1–4 ml/L. In der letzten Phase wieder reduzieren, vor dem Spülen ganz weg. Beispiele: BioBizz Bio-Bloom, Canna Terra Flores, Hesi Blüte-Komplex, Plagron Terra Bloom, Terra Aquatica FloraMicro/Bloom.',
       pitfall: 'Zu früh und zu viel Blütedünger bringt keine größeren Blüten, sondern Salzstau. Der Übergang läuft über zwei bis drei Güsse, nicht von heute auf morgen.' },
     { t: 'PK-Booster (MKP, PK 13/14)',
-      brief: 'Ein reiner Phosphor-Kalium-Zusatz ohne Stickstoff für die dicke Phase der Blüte. Sehr wirksam — und der Zusatz, mit dem am häufigsten überdosiert wird.',
+      brief: 'Ein reiner Phosphor-Kalium-Zusatz ohne Stickstoff für die dicke Phase der Blüte. Ein Nutzen für größere oder schwerere Blüten ist für Cannabis nicht gemessen. Eine Überdosis verbrennt (EC, Abschnitt 5).',
       mechanism: 'Liefert <b>P und K in konzentrierter Form</b>, ohne den Stickstoff mitzuschleppen, den die Pflanze zu diesem Zeitpunkt nicht mehr will. Mono-Kalium-Phosphat (MKP, KH₂PO₄, 0-52-34) ist die reine Salzvariante, PK 13/14 die Fertigmischung.',
       practice: 'Nur im Schwellfenster, meist zwei bis drei Wochen um die Blütemitte. MKP sehr niedrig ansetzen (0,2–0,3 g/L) und in warmem Wasser vorlösen. Nach dem Anmischen <b>immer EC messen</b> — PK-Booster heben ihn deutlich. Beispiele: GiDeli MKP, Canna PK 13/14, Hesi PK 13/14, Plagron Green Sensation, Advanced Nutrients Big Bud.',
-      pitfall: 'Überdosis verbrennt: braune Blattspitzen, dann Lockout, weil zu viel P und K die Aufnahme von Calcium und Magnesium blockiert. Nicht zusätzlich zu einem Blütedünger geben, der schon PK-lastig ist — beides zusammen ist schnell doppelt.' },
+      pitfall: 'Überdosis verbrennt: braune Blattspitzen, dann Lockout, weil zu viel Kalium die Aufnahme von Magnesium und Calcium verdrängt. Ein K-Booster kommt nur dazu, wenn die Magnesium-Versorgung bisher stabil war; nach Magnesium-Symptomen bleibt er draußen, und zusätzliches Magnesium gleichzeitig ist kein sauberer Ersatz — es verschiebt das Verhältnis erneut. Nicht zusätzlich zu einem Blütedünger geben, der schon PK-lastig ist — beides zusammen ist schnell doppelt.' },
     { t: 'CalMag (Calcium & Magnesium)',
       brief: 'Ergänzt Calcium und Magnesium. Nötig bei weichem Leitungswasser, Osmosewasser und ungepuffertem Coco.',
       mechanism: '<b>Calcium</b> baut Zellwände, <b>Magnesium</b> steckt im Blattgrün. Hartes Wasser (viel Gesamthärte) bringt beides mit, weiches kaum. Ungepuffertes Coco bindet Calcium zusätzlich an sich. Ob Calcium oben ankommt, hängt außerdem an der Verdunstung: Calcium wandert nur mit dem Wasserstrom ins Blatt.',
@@ -36962,7 +36962,7 @@ const LEXIKON = [
       pitfall: 'Nicht mit Wasserstoffperoxid oder aggressiven Fungiziden kombinieren — die zerstören die Enzyme. Abgelaufene Flaschen sind wirkungslos, riechen aber weiterhin normal.' },
     { t: 'Mykorrhiza & Bodenbakterien',
       brief: 'Lebende Pilze und Bakterien, die mit der Wurzel zusammenarbeiten und ihre Reichweite vergrößern können.',
-      mechanism: 'Mykorrhiza-Pilze verwachsen mit der Wurzel und wirken wie eine <b>Verlängerung des Wurzelsystems</b>: Die Pflanze bekommt Wasser und Nährstoffe, der Pilz Zucker. Bakterienpräparate (Trichoderma, Bacillus) besetzen zusätzlich den Wurzelraum und halten Krankheitserreger klein.',
+      mechanism: 'Mykorrhiza-Pilze verwachsen mit der Wurzel und wirken wie eine <b>Verlängerung des Wurzelsystems</b>: Die Pflanze bekommt Wasser und Nährstoffe, der Pilz Zucker. Bakterien- und Pilzpräparate (Trichoderma, Bacillus) werden zusätzlich gegen Krankheitserreger im Wurzelraum angeboten; eine Wirkung ist für Cannabis nicht gemessen.',
       practice: 'Pulver <b>trocken direkt an die Wurzel</b> geben — beim Aussäen, Umtopfen oder in ein Loch neben dem Stamm — und danach angießen. Einmalig, kein Nachdüngen nötig. Beispiele: HomeGrow24 Mykorrhiza, Plagron Mycorrhiza, Canna Bio Rhizotonic (Bakterien), Aptus Micromix Soil.',
       pitfall: 'Nicht ins Gießwasser rühren, die Sporen brauchen direkten Wurzelkontakt. Fungizide danach töten den Pilz mit ab. In rein mineralischer Fütterung mit hohem Salzgehalt siedelt sich wenig an.' },
     { t: 'Wurzelstimulator',
@@ -37938,7 +37938,7 @@ const LEXIKON = [
         '• <b>Nach Restgewicht gießen</b> — Erde zwischen den Güssen bis zum Gießpunkt abtrocknen lassen (' + GIESSPUNKT.erde.von + '–' + GIESSPUNKT.erde.bis + ' % Restgewicht)<br>' +
         '• <b>Wassertemperatur</b> 18–22°C, niemals kaltes Leitungswasser direkt<br>' +
         '• <b>Luftbewegung</b> auch am Substrat — kein Stagnieren<br>' +
-        '• <b>Mykorrhiza und Trichoderma</b> präventiv einsetzen — die Konkurrenz im Substrat verhindert dass Pythium dominant wird<br>' +
+        '• <b>Mykorrhiza und Trichoderma</b> sind Mikroorganismen-Produkte: ein Schutz vor Pythium ist für Cannabis nicht gemessen; vorbeugen heißt Nass-Trocken-Zyklus<br>' +
         '• <b>Bei Sämlingen:</b> nach dem Start-Guss bis Tag 9 nicht gießen, nur sprühen',
       pitfall: '<b>Bei schwerem Befall meist nicht mehr zu retten</b> — die Wurzeln sind zu weit zerstört. Lehre: Prävention ist entscheidend, vor allem striktes Abtrocknen.<br><br>' +
         '<b>Häufige Fehler:</b><br>' +

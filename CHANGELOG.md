@@ -2,6 +2,15 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-30 — v1.5.514
+
+- **Wirkungszusagen um Mykorrhiza, Bacillus und PK-Booster** (Reste der Gegenprüfung zu Hebel 1): „schützen vor Pathogenen“,
+  „Schutz vor Pythium“, „Trockenstress-Resistenz“, „reduziert Umtopf-Schock“, beim PK-Booster „Sehr wirksam“ und „zu viel P und K
+  blockiert Ca/Mg“. `ANBAU.md` 14 führt Mykorrhiza nicht — die Texte sagen jetzt „kann“ und „für Cannabis nicht gemessen“; Pythium
+  wird durch Dauernässe begünstigt (1, 13.1). Der PK-Booster nennt die Regel aus 6.2: Ein Überschuss an Kalium verdrängt Magnesium
+  und Calcium, eingesetzt nur, wenn die Mg-Versorgung stabil war.
+- Test: `test_rest_3.js` (11 Prüfungen, beide Zeitzonen; fällt auf v1.5.513 um).
+
 ## 2026-10-30 — v1.5.513
 
 - **Fehler: Die Spül-Vorlage („Tag automatisch ausfüllen“ am Spültag) trug 50 % mehr ein, als Karte und Eintrag am selben Tag
