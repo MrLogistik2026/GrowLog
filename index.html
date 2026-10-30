@@ -3339,8 +3339,8 @@ function _diagHebeKnopfHTML(results, ctx, c) {
   if (ctx.restHeute && !ctx._topfAngabe) return '';
   const t = diagState.topf;
   const vorschlag = (t === 'leicht' || t === 'schwer')
-    ? `<div style="font-size:11px;color:var(--text-muted);line-height:1.5;margin-bottom:8px">Dein Eindruck „${t === 'leicht' ? 'leicht' : 'schwer'}“ ist erst ein Vorschlag. Trag den Hebe-Test ein, dann rechnet die App mit der Messung — gespeichert wird nur, was du dort eingibst.</div>`
-    : `<div style="font-size:11px;color:var(--text-muted);line-height:1.5;margin-bottom:8px">Der Topf trennt Durst von zu viel Wasser. Heb ihn an und trag ein, wie er sich anfühlt.</div>`;
+    ? `<div style="font-size:11px;color:var(--text-muted);line-height:1.5;margin-bottom:8px">Dein Eindruck „${t === 'leicht' ? 'leicht' : 'schwer'}“ ist erst ein Vorschlag (blau markiert). Heb den Topf an und tipp, wie er sich anfühlt — dann rechnet die Auswertung mit der Messung.</div>`
+    : `<div style="font-size:11px;color:var(--text-muted);line-height:1.5;margin-bottom:8px">Der Topf trennt Durst von zu viel Wasser. Heb ihn an und tipp, wie er sich anfühlt — dann rechnet die Auswertung mit der Messung.</div>`;
   return `<div data-diag-hebe style="margin-top:16px;padding:12px;background:var(--card);border:0.5px solid var(--border);border-radius:12px">
     ${vorschlag}
     ${_diagHebeKnoepfe(t)}
@@ -4832,7 +4832,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.487';
+const APP_VERSION = 'v1.5.488';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,

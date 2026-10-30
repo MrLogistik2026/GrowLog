@@ -44,6 +44,8 @@ const HTML = fs.readFileSync(process.env.GS_INDEX || path.join(__dirname, 'index
   pruefe(markiert === 'dry,low', '„leicht“ markiert Knapp und Trocken (' + markiert + ')');
   pruefe(!/restPct/.test(E(`JSON.stringify(S.entries)`)), 'Ohne Tipp wird nichts gespeichert');
   pruefe(q('#diag-wizard [data-diag-eintrag]').length === 1, 'Zweiter Weg „Im Eintrag öffnen“ bleibt');
+  // (v1.5.488) Der Satz über den Knöpfen meint die Knöpfe — nicht mehr „was du dort (im Eintrag) eingibst“
+  pruefe(!/dort eingibst/.test(w.document.getElementById('diag-wizard').textContent) && /tipp, wie er sich anfühlt/.test(w.document.getElementById('diag-wizard').textContent), 'Satz über den Knöpfen: „tipp, wie er sich anfühlt“ statt „was du dort eingibst“');
   // 2. Tipp auf „Trocken“ (unter dem Gießpunkt; „Knapp“ ist bei Erde der Gießpunkt selbst): eingetragen, Auswertung mit der Messung
   const knapp = w.document.querySelector('#diag-wizard [data-diag-hebe-knopf="dry"]');
   if (knapp) knapp.click();

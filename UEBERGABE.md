@@ -1,12 +1,14 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.487** · index.html 2,67 MB · 781 Funktionen
+Stand: **v1.5.488** · index.html 2,67 MB · 781 Funktionen
 Zuletzt fortgeschrieben am 30.10.2026 früh (Nachtarbeit 29./30.10.: Diagnose-Liste B01–B12 und U4 fertig, danach zwei
 Bedien-Prüfungen nach den Grundsätzen der Lager-App — Befunde in `.claude/notizen/ux/*.txt` und `.claude/tmp/ux2/bericht.txt`,
-abgearbeitet in v1.5.452–487, siehe Versionsliste in 0o. **Offen aus der zweiten Prüfung:** Einsteiger-Eintrag am Gießtag
+abgearbeitet in v1.5.452–488, siehe Versionsliste in 0o. **Offen aus der zweiten Prüfung:** Einsteiger-Eintrag am Gießtag
 noch fast so lang wie im Profi-Modus (8 Felder / 53 Knöpfe gegen 19 / 54; Banner, Toppen-Block, drei Mengen, Lern-Status vor
 den Feldern), Assistent ohne ⓘ und mit Dauer-Frage vor der Sorte (Patrick 08.10.: Assistent vorerst nicht umbauen —
-v1.5.468–471 waren Texte und eine weggelassene Frage), Sämlings-Protokoll-Fenster wiederholt die Tag-1-Karte, Profi-Startseite
+v1.5.468–471 waren Texte und eine weggelassene Frage), Sämlings-Protokoll-Fenster nach dem Anlegen (einmalig, ~26935) wiederholt die Tag-1-Karte und
+nennt Unbelegtes („Wurzel wächst aktiv nach unten, weil sie das Wasser suchen muss“, „Pythium-Druck geringer“ — gegen ANBAU.md 16
+halten), Profi-Startseite
 nennt Plan-Woche „Wo6“ und Blütewoche „Blüte Wo. 4“ nebeneinander (Test `test_runzwei` hängt an „Wo6“), Diagnose-Umbauten
 U1–U3, Temperaturgrenzen 30/18 °C, Installationsname „Grow-Begleiter“ in `manifest.json`.) Davor: Fünf Fehler behoben: Der Widerspruch zwischen
 Plan-Erntetag und Trichom-Messung wird ausgesprochen (v1.5.97), die Sortenliste plant nicht
@@ -451,6 +453,7 @@ Speicher-Befunde sind in v1.5.340–344 behoben. Rohdaten: Workflow wf_63d754b1-
 - v1.5.485: Eintrag warnt „Topf war noch feucht“ nur, wo die App vor dem Guss selbst „nicht gießen“ gesagt hätte — nicht mehr nach „Mittel“ am Gießtag (`test_eintrag_feuchtwarnung.js`).
 - v1.5.486: Einstellungs-Vorschau zählt einen heute noch offenen Gießtag als nächsten Guss („Menge am nächsten Gießtag (heute)“) (`test_einstellungen_wirkung_heute.js`).
 - v1.5.487: Diagnose-Ergebnis mit fünf Hebe-Knöpfen — ein Tipp trägt den Hebe-Test ein, die Auswertung rechnet sofort damit; „Im Eintrag öffnen“ bleibt (`test_diagnose_hebe_eintippen.js`).
+- v1.5.488: Satz über den Hebe-Knöpfen im Diagnose-Ergebnis meint die Knöpfe („tipp, wie er sich anfühlt“), nicht mehr den Eintrag. Gesamtlauf auf 487: 390/390 grün.
 
 **Gegenprüfung von v1.5.364/365 (07.10.2026 nachts, Workflow wf_4cf817bf-629, drei Sonnet-Prüfer + Gegenprüfer).** Kein Fehlalarm
 in 33 App-Fassungen, allen Vorlagen und über 2800 Klicks; die schweren Befunde (unsichere Kopie zerstört den Hauptstand, Tropfen als

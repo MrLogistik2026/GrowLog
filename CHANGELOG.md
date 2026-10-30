@@ -2,6 +2,14 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-30 — v1.5.488
+
+- **Der Satz über den neuen Hebe-Knöpfen im Diagnose-Ergebnis meinte noch den Eintrag:** „Trag den Hebe-Test ein … gespeichert
+  wird nur, was du dort eingibst.“ Seit v1.5.487 wird direkt dort getippt. Gesehen beim Durchklicken im Browser.
+- **Jetzt:** „Dein Eindruck ‚leicht‘ ist erst ein Vorschlag (blau markiert). Heb den Topf an und tipp, wie er sich anfühlt — dann
+  rechnet die Auswertung mit der Messung.“ Ohne Topf-Antwort entsprechend.
+- Test: `test_diagnose_hebe_eintippen.js` um eine Prüfung erweitert (14, beide Zeitzonen; fällt auf v1.5.487 um).
+
 ## 2026-10-30 — v1.5.487
 
 - **„Hebe-Test eintragen“ im Diagnose-Ergebnis war ein Umweg.** Der Knopf schloss den Assistenten und öffnete den Eintrag; dort
