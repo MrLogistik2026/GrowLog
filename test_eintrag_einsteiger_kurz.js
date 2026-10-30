@@ -14,7 +14,12 @@ const { JSDOM, VirtualConsole } = require('jsdom');
 const INDEX = process.env.GS_INDEX || path.join(__dirname, 'index.html');
 const BASIS = process.env.GS_BASIS || path.join(__dirname, '.claude', 'tmp', 'basis488', 'index.html');
 const HTML = fs.readFileSync(INDEX, 'utf8');
-const norm = (h) => h.replace(/\d{13}/g, 'CID').replace(/p_[a-z0-9]{8}/g, 'PID');
+// (v1.5.502) Die Drain-Zeile darf seitdem umbrechen — diese eine bewusste Änderung rechnet der Vergleich heraus, alles andere bleibt
+// zeichengenau gegen v1.5.488.
+const norm = (h) => h.replace(/\d{13}/g, 'CID').replace(/p_[a-z0-9]{8}/g, 'PID')
+  .replace(/<!-- \(v1\.5\.502\)[\s\S]*?-->\s*/g, '')
+  .replace('display:flex;align-items:center;flex-wrap:wrap;gap:8px;row-gap:6px;padding:0 4px', 'display:flex;align-items:center;gap:8px;padding:0 4px')
+  .replace('style="flex:1;min-width:90px;text-align:right;', 'style="flex:1;text-align:right;');
 
 async function neu(html) {
   const errors = [];

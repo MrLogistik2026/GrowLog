@@ -3858,7 +3858,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.501';
+const APP_VERSION = 'v1.5.502';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -30581,7 +30581,9 @@ function renderEntry(iso) {
               </div>
               <span id="runoff-status-${c.id}" style="font-size:10px;font-family:var(--mono)">${hasDiff ? `<span style="color:${_runoffSevColor(ra.boxSeverity)}">${ra.phLabel} · ${ra.ecLabel}</span>` : ''}</span>
             </div>
-            <div style="display:flex;align-items:center;gap:8px;padding:0 4px">
+            <!-- (v1.5.502) flex-wrap: Drain-pH, Drain-EC, Ablauf und Hinweis passten auf 390 px nicht in eine Reihe — der Eintrag stand
+                 46 px über (gemessen in Chrome, Gießtag im Profi-Modus). Jetzt bricht die Reihe um. -->
+            <div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;row-gap:6px;padding:0 4px">
               <div>
                 <div style="font-size:10px;color:var(--text-hint);margin-bottom:2px">Drain pH</div>
                 <div style="display:flex;align-items:center;gap:3px">
@@ -30610,7 +30612,7 @@ function renderEntry(iso) {
                     oninput="uEF('${c.id}','drainMl',this.value);refreshRunoffAnalysis('${c.id}')"/>
                 </div>
               </div>
-              <div id="runoff-delta-${c.id}" style="flex:1;text-align:right;font-size:10px;color:var(--text-hint);line-height:1.4">
+              <div id="runoff-delta-${c.id}" style="flex:1;min-width:90px;text-align:right;font-size:10px;color:var(--text-hint);line-height:1.4">
                 ${hasDiff ? `Δ pH ${ra.phDelta !== null ? (ra.phDelta > 0 ? '+' : '') + ra.phDelta.toFixed(1) : '—'}<br>Δ EC ${ra.ecDelta !== null ? (ra.ecDelta > 0 ? '+' : '') + ra.ecDelta.toFixed(1) : '—'}` : 'Drain-Wasser messen'}
               </div>
             </div>

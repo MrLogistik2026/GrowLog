@@ -2,6 +2,20 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-30 — v1.5.502
+
+- **Der Gießtag-Eintrag im Profi-Modus stand auf 390 px 46 px über und scrollte seitlich.** Die Drain-Zeile (Drain-pH und Drain-EC
+  mit ±-Knöpfen, Ablauf in ml, Hinweis) passte nicht in eine Reihe. Gemessen von der Bewertung am 30.10.2026 im echten Chrome
+  (Technik-Befund 3); auf v1.5.497 schon genauso, also keine Folge von 498.
+- **Jetzt** darf die Reihe umbrechen (`flex-wrap`), der Hinweis hat eine Mindestbreite. Im Browser nachgemessen mit Patricks Daten,
+  Tag 101–113, Profi und Einsteiger, auf 320 und 390 px: keine Überbreite mehr.
+- **Berichtigung zu v1.5.498:** Dort steht „keine horizontale Überbreite“ auf 320/390 px. Das stimmte nicht: Meine Messung ließ
+  Elemente in scrollenden Behältern aus — genau dort stand die Drain-Zeile über — und prüfte nur einen Zyklus ohne Drain-Zeile.
+  Lehre: Überbreite am scrollenden Bildschirm selbst messen (`scrollWidth` des `#scr-…`) und an einem Tag, an dem alle Blöcke stehen.
+- Test: `test_drainzeile_umbruch.js` (4 Prüfungen, beide Zeitzonen; fällt auf v1.5.501 um). jsdom rechnet kein Layout — geprüft
+  wird die Umbruch-Regel, die Breite im Browser.
+- `test_eintrag_einsteiger_kurz.js`: Der Profi-Byte-Vergleich gegen v1.5.488 rechnet die bewusst geänderte Drain-Zeile heraus.
+
 ## 2026-10-30 — v1.5.501
 
 - **IceFlush 0 Tage wurde still zu 3.** `iceLenFor` las `c.iceDays || 3` — die 0 galt als „nicht gesetzt“. Der Endspurt erlaubt
