@@ -160,7 +160,7 @@ const aufgabe = (w) => { const k = w.document.querySelector('[data-ez-aufgabe]')
 
   // 3. Jeder Tagestyp zeigt oben seine Aufgabe
   const tage = [
-    ['Sättigungsguss (Tag 1)', { min: 1, max: 1 }, /Sättigungsguss/, /je Pflanze/],
+    ['Sättigungsguss (Tag 1)', { min: 1, max: 1 }, /Sättigungsguss/, /je (Pflanze|Topf)/],   // (v1.5.495) die Karte nennt selbst „je Topf“
     ['Sprüh-Tag', { min: 4, max: 4 }, /sprühen/, null],
     ['Anzucht-Gießtag', { min: 12, max: 12 }, /Anzucht gießen/, /ml je Pflanze/],
     ['Tag ohne Gießen', { min: 40, max: 40 }, /Ruhiger Tag/, null],

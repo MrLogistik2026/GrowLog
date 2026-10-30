@@ -2,6 +2,16 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-30 — v1.5.495
+
+- **Am Tag 1 standen bei mehreren Töpfen zwei Etappen-Mengen auf der Startseite:** der Satz „3 Etappen je ~250 ml je Topf“
+  (v1.5.142) und darunter die Karte „2100 ml in 3 Etappen zu je ~700 ml“ — die Summe für drei Töpfe. Wer der Karte folgt, gießt in
+  den ersten Topf 700 ml auf einmal. Gefunden bei der Prüfung des Einsteiger-Eintrags am 30.10.2026.
+- **Jetzt** nennt die Karte „700 ml je Topf in 3 Etappen zu je ~250 ml … — zusammen 2100 ml für 3 Töpfe“, mit derselben Etappe
+  wie der Satz (mindestens 50 ml). Mit einem Topf bleibt sie wie bisher.
+- Test: `test_tag1_karte_je_topf.js` (7 Prüfungen, beide Zeitzonen; fällt auf v1.5.494 um).
+- `test_eintrag_einsteiger_kurz.js` lässt für Tag 1 „je Topf“ gelten — die Aufgabenzeile übernimmt die Karte, die die Menge jetzt selbst je Topf nennt.
+
 ## 2026-10-30 — v1.5.494
 
 - **Die Lexikon-Suche nach „super cropping“ oder „supercrop“ fand nichts.** Beide Suchwörter zeigten auf einen Titel

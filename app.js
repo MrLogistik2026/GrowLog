@@ -3852,7 +3852,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.494';
+const APP_VERSION = 'v1.5.495';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -17831,14 +17831,19 @@ function getTodayAction(c, p, a, iso) {
     // Auf 50 runden, damit die Zahl zur Formulierung "je ~250 ml" passt, die
     // plainSentence im Erklaertext direkt darueber nennt. Zwei verschiedene
     // Zahlen auf derselben Karte verunsichern mehr, als die Praezision nuetzt.
-    const etappe = Math.round(satMl / 3 / 50) * 50;
+    // (v1.5.495) Bei mehreren Töpfen je Topf, wie der Satz darüber (plainSentence, v1.5.142) — vorher stand auf derselben Karte
+    // „3 Etappen je ~250 ml je Topf“ und darunter „2100 ml in 3 Etappen zu je ~700 ml“ (die Summe für alle Töpfe).
+    const _satN = getEffectivePlantCount(c, iso);
+    const _satJe = (_satN > 1 && satMl > 0) ? Math.round(satMl / _satN) : satMl;
+    const etappe = Math.max(50, Math.round(_satJe / 3 / 50) * 50);   // wie der Satz darüber: mindestens 50 ml
     return {
       title: '💦 Heute: Sättigungsguss (Tag 1)',
       icon: '💦',
       color: cl.hex,
       steps: [
         `Wasser anmischen: pH ${pht.midText}, EC höchstens 0,6 — ${_tag1MittelText(c, iso)}`,
-        `<b>${satMl} ml in 3 Etappen</b> zu je ~${etappe} ml, dazwischen jeweils 15 min Pause`,
+        _satN > 1 ? `<b>${_satJe} ml je Topf in 3 Etappen</b> zu je ~${etappe} ml, dazwischen jeweils 15 min Pause — zusammen ${satMl} ml für ${_satN} Töpfe`
+          : `<b>${satMl} ml in 3 Etappen</b> zu je ~${etappe} ml, dazwischen jeweils 15 min Pause`,
         'Kreisförmig von außen nach innen gießen — nie direkt auf den Samen',
         _tag1Keimsatz(c),
         _tag1Referenz(c),
