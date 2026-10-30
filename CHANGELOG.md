@@ -2,6 +2,20 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-30 — v1.5.499
+
+- **Schwer: Ein gerechneter Trichom-Wert gab den Schnitt frei.** „Heutigen Stand berechnen“ (`fillTrichToday`) speicherte den
+  Rechenwert wie eine Lupen-Messung, und `ernteFreigabe` las ihn als Messung. Bei Lupenwerten 60/40/24/14 % klar (vor 9/6/3/1 Tagen)
+  wurden daraus heute 8,3 % klar — die Startseite sagte „Ernte möglich … gemessen heute“ statt „noch nicht schneiden“. Zu früh ernten
+  ist der teuerste Fehler und nicht rückholbar (ANBAU.md 11); Messwerte werden nie geschätzt eingetragen (15). Gefunden bei der
+  Bewertung vom 30.10.2026 (Fach-Befund 1); stand als Schritt 2 im Prüfplan 0m.2 offen.
+- **Jetzt** tragen Rechenwerte aus „Heutigen Stand berechnen“ und „Verlauf angleichen“ das Kennzeichen `gerechnet`. Ernte-Freigabe,
+  das Urteil der Trichom-Karte („Erntereif“), Prognose, Erntefenster und Sprung-Erkennung rechnen nur mit Lupen-Werten
+  (`_trichHistory` lässt Rechenwerte weg, außer mit `mitGerechnet`). Die Berichtigen-Liste zeigt sie mit „≈“, damit man sie
+  überschreiben oder löschen kann; wer eine Zahl selbst eintippt, macht den Wert wieder zur Messung.
+- Grenze: Rechenwerte aus der Zeit vor v1.5.499 tragen kein Kennzeichen und zählen weiter als Messung (Patricks Run 01: 0m.2).
+- Test: `test_trichome_gerechnet.js` (13 Prüfungen, beide Zeitzonen; fällt auf v1.5.498 genau am Befund um: Freigabe „reif“ bei 8,3 %).
+
 ## 2026-10-30 — v1.5.498
 
 - **Die Schrift war fast überall zu klein, viele Knöpfe zu schmal zum Tippen.** Gemessen am 30.10.2026 (v1.5.493): Auf Startseite,

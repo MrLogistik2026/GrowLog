@@ -3852,7 +3852,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.498';
+const APP_VERSION = 'v1.5.499';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -31428,7 +31428,7 @@ function renderEntry(iso) {
     // Karte auch über einen übernommenen Stand — an Patricks Tag 111 „Fast bereit" aus den Werten von Tag 110 — und ohne jede
     // Messung über die Vorgabe 70/25/5: „Noch zu viel klar — Geduld!", obwohl niemand geschaut hatte (Regel 2). Der übernommene
     // Stand bleibt sichtbar, mit dem Hinweis und dem Knopf „Heute geschaut".
-    const _trichHeute = !!(cd.trichomes && (cd.trichomes.clear !== undefined || cd.trichomes.milky !== undefined || cd.trichomes.amber !== undefined));
+    const _trichHeute = !!(cd.trichomes && !cd.trichomes.gerechnet && (cd.trichomes.clear !== undefined || cd.trichomes.milky !== undefined || cd.trichomes.amber !== undefined));   // (v1.5.499) gerechnet ≠ geschaut
     // (v1.5.46) Der Trichom-Check war im Einsteiger-Modus erst sichtbar, wenn schon Werte
     // drinstanden — man musste also wissen, wo man sie einträgt, um das Feld zu sehen.
     // Gleichzeitig sagt die App auf der Startseite „Blütewoche 10 — Trichome checken!".
@@ -34570,10 +34570,11 @@ async function fillTrichToday(cId, iso) {
   _entryDirty = true;
   ensE(cId);
   const cd = S.entries[iso].cycleData[cId];
-  cd.trichomes = { clear: v.clear, milky: v.milky, amber: v.amber };
+  // (v1.5.499) Gerechnet, nicht gemessen — das Kennzeichen hält den Wert aus Ernte-Freigabe, Urteil und Prognose (siehe _trichHistory).
+  cd.trichomes = { clear: v.clear, milky: v.milky, amber: v.amber, gerechnet: true };
   saveS();
   vibrate(10);
-  toast('Heutiger Stand eingetragen');
+  toast('Heutiger Stand eingetragen (gerechnet)');
   if (editISO) renderEntry(editISO);
 }
 
@@ -34674,7 +34675,7 @@ async function smoothTrichTail(cId, iso) {
     // Selbst beobachtetes Bernstein bleibt; sonst wird auch Bernstein gleichmäßig geführt.
     const am = alt.aMan ? (parseFloat(alt.amber) || 0)
       : _tRound((parseFloat(anker.amber) || 0) + ((parseFloat(last.amber) || 0) - (parseFloat(anker.amber) || 0)) * frac);
-    cd.trichomes = { clear: cl, amber: am, milky: _tRound(100 - cl - am), aMan: !!alt.aMan };
+    cd.trichomes = { clear: cl, amber: am, milky: _tRound(100 - cl - am), aMan: !!alt.aMan, gerechnet: true };   // (v1.5.499) Rechenwerte
   }
   saveS();
   vibrate(10);
@@ -34754,7 +34755,7 @@ function _trichHistoryEditor(c, iso) {
   // berichtigen. An Tag 95 fehlten so 15 der 47 Messungen. Wer im Diagramm einen Ausreißer
   // entdeckte, der später lag, musste erst zu dessen Tag navigieren, um ihn zu ändern.
   // Der Zweck der Liste ist das Berichtigen einer Messreihe, nicht die Ansicht eines Tages.
-  const hist = _trichHistory(c.id, c, null);
+  const hist = _trichHistory(c.id, c, null, true);   // (v1.5.499) auch Rechenwerte — hier werden sie berichtigt
   if (hist.length < 2) return '';
   const dayOf = (i) => isoDiff(i, c.startDate) + 1;
   const heuteTag = iso ? dayOf(iso) : null;
@@ -34779,7 +34780,7 @@ function _trichHistoryEditor(c, iso) {
         (heuteTag !== null && dayOf(h.iso) === heuteTag)
           ? 'color:var(--green);font-weight:700'
           : 'color:var(--text-hint)'
-      }">T${dayOf(h.iso)}</span>
+      }"${h.gerechnet ? ' title="gerechnet, nicht gemessen"' : ''}>${h.gerechnet ? '≈' : ''}T${dayOf(h.iso)}</span>
       <span style="flex:1">${fld(h, 'clear', '#8a7fd0')}</span>
       <span style="flex:1">${fld(h, 'milky', 'var(--text-sub)')}</span>
       <span style="flex:1">${fld(h, 'amber', '#e08040')}</span>
@@ -34822,7 +34823,13 @@ function _clearForAmber(amber) {
 }
 
 /** Alle Trichom-Messungen eines Zyklus bis einschliesslich iso, aeltester zuerst. */
-function _trichHistory(cId, cyc, untilIso) {
+/**
+ * (v1.5.499) Gerechnete Werte („Heutigen Stand berechnen“, „Verlauf angleichen“, Kennzeichen `gerechnet`) zählen nur mit
+ * `mitGerechnet` — die Berichtigen-Liste zeigt sie, damit man sie überschreiben oder löschen kann. Prognose, Erntefenster,
+ * Sprung-Erkennung und Ernte-Freigabe rechnen nur mit Lupen-Werten. Vorher gab ein Rechenwert den Schnitt frei: aus 14 % klar
+ * wurde 8,3 % „gemessen heute“ (Bewertung 30.10.2026, Fach-Befund 1; UEBERGABE 0m.2 Schritt 2; ANBAU.md 11, 15).
+ */
+function _trichHistory(cId, cyc, untilIso, mitGerechnet) {
   if (!S.entries) return [];
   const start = cyc && cyc.startDate ? cyc.startDate : null;
   return Object.keys(S.entries)
@@ -34832,9 +34839,10 @@ function _trichHistory(cId, cyc, untilIso) {
       const cd = S.entries[k] && S.entries[k].cycleData && S.entries[k].cycleData[cId];
       const t = cd && cd.trichomes;
       if (!t) return null;
+      if (t.gerechnet && !mitGerechnet) return null;
       const clear = parseFloat(t.clear), amber = parseFloat(t.amber), milky = parseFloat(t.milky);
       if (!isFinite(clear) && !isFinite(amber)) return null;
-      return { iso: k, clear: clear || 0, milky: milky || 0, amber: amber || 0 };
+      return { iso: k, clear: clear || 0, milky: milky || 0, amber: amber || 0, gerechnet: !!t.gerechnet };
     })
     .filter(Boolean);
 }
@@ -34888,7 +34896,7 @@ function ernteFreigabe(c, iso) {
   for (const k of tage) {
     const cd = S.entries[k] && S.entries[k].cycleData && S.entries[k].cycleData[c.id];
     const t = cd && cd.trichomes;
-    if (t && isFinite(parseFloat(t.clear))) { m = { iso: k, klar: parseFloat(t.clear), bernstein: parseFloat(t.amber) || 0 }; break; }
+    if (t && !t.gerechnet && isFinite(parseFloat(t.clear))) { m = { iso: k, klar: parseFloat(t.clear), bernstein: parseFloat(t.amber) || 0 }; break; }   // (v1.5.499) nie ein Rechenwert
   }
   if (!m) return { status: 'ohneMessung' };
   const ziel = _targetAmber(c);
@@ -35625,6 +35633,7 @@ function uTrich(cId, field, v, atIso) {
     cd.trichomes = _pv ? { clear: _pv.clear, milky: _pv.milky, amber: _pv.amber, aMan: _pv.aMan } : { clear: 70, milky: 25, amber: 5 };
   }
   const t = cd.trichomes;
+  if (t.gerechnet) delete t.gerechnet;   // (v1.5.499) selbst eingetippt = gemessen
   // (v1.4.92) Eine Nachkommastelle: Wer unter der Lupe ein bis zwei bernsteinfarbene
   // Koepfchen unter mehreren hundert sieht, liegt bei 0,2-0,4 % — mit ganzen Prozent
   // muesste er auf 0 oder 1 runden. Gerade bei Ernte-Zielen um 2-5 % ist das der
