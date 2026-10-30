@@ -2,6 +2,16 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-30 — v1.5.500
+
+- **Die Diagnose bewertete den pH der letzten Tage mit den Grenzen für Erde, egal welches Substrat.** `buildDiagnosticContext`
+  galt fest „über 6,6 hoch, unter 6,0 niedrig“. Coco mit 5,8 oder 5,9 — mitten im eigenen Ziel 5,8–6,2 — hieß „pH-Werte liegen
+  niedrig“ und setzte den pH-Lockout mit 77 % auf Platz 1; Coco mit 6,5 im Lockout-Bereich blieb stumm. Gefunden bei der Bewertung
+  vom 30.10.2026 (Fach-Befund 2 und Profi-Befund 3 unabhängig voneinander).
+- **Jetzt** kommen die Grenzen aus dem Ziel des Substrats (`phTargetFor`, ANBAU.md 4): 0,2 über bzw. unter der Spanne — Erde wie
+  bisher 6,6 / 6,0, Coco 6,4 / 5,6, Hydro 6,2 / 5,3. Regel 1 aus ANBAU.md: jede Schwelle braucht ihre Gültigkeitsbedingung.
+- Test: `test_diagnose_ph_substrat.js` (10 Prüfungen, beide Zeitzonen; fällt auf v1.5.499 um).
+
 ## 2026-10-30 — v1.5.499
 
 - **Schwer: Ein gerechneter Trichom-Wert gab den Schnitt frei.** „Heutigen Stand berechnen“ (`fillTrichToday`) speicherte den

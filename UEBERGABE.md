@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.499** · index.html 2,67 MB · 781 Funktionen
+Stand: **v1.5.500** · index.html 2,67 MB · 781 Funktionen
 Zuletzt fortgeschrieben am 30.10.2026 früh (Nachtarbeit 29./30.10.: Diagnose-Liste B01–B12 und U4 fertig, danach zwei
 Bedien-Prüfungen nach den Grundsätzen der Lager-App — Befunde in `.claude/notizen/ux/*.txt` und `.claude/tmp/ux2/bericht.txt`,
 abgearbeitet in v1.5.452–498, siehe Versionsliste in 0o. **Patrick am 30.10.2026 morgens zu den vier offenen Fragen: „Ja bau
@@ -463,6 +463,7 @@ Speicher-Befunde sind in v1.5.340–344 behoben. Rohdaten: Workflow wf_63d754b1-
 - v1.5.497: Erntefenster: Ein höheres Bernstein-Ziel ergibt nie ein früheres Fenster — ohne Vorhersage bei frischer Messung kein Fenster statt Samentüte (`test_erntefenster_ziel.js`).
 - v1.5.498: Lesbarkeit: Mindestschrift 11 px, Erklärtexte 12 px, häufige Knöpfe mindestens 44 px hoch — eine zentrale Regel in head.html, im Browser auf 320 und 390 px geprüft (`test_lesbarkeit_groesse.js`). Gesamtlauf auf 498: 406/406 grün.
 - v1.5.499: **Schwer:** Gerechnete Trichom-Werte („Heutigen Stand berechnen“, „Verlauf angleichen“) tragen ein Kennzeichen und geben den Schnitt nicht mehr frei (`test_trichome_gerechnet.js`).
+- v1.5.500: Diagnose: pH „hoch/niedrig“ nach dem Ziel des Substrats (Coco 6,4/5,6, Hydro 6,2/5,3, Erde wie bisher 6,6/6,0) (`test_diagnose_ph_substrat.js`).
 
 **Gegenprüfung von v1.5.364/365 (07.10.2026 nachts, Workflow wf_4cf817bf-629, drei Sonnet-Prüfer + Gegenprüfer).** Kein Fehlalarm
 in 33 App-Fassungen, allen Vorlagen und über 2800 Klicks; die schweren Befunde (unsichere Kopie zerstört den Hauptstand, Tropfen als

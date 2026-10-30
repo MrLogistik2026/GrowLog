@@ -1967,8 +1967,14 @@ function buildDiagnosticContext(c, iso = null) {
   });
   if (phCount >= 2) {
     const phAvg = phSum / phCount;
-    if (phAvg > 6.6) result.phHigh = true;
-    else if (phAvg < 6.0) result.phLow = true;
+    // (v1.5.500) Grenzen aus dem Ziel des Substrats (phTargetFor, ANBAU.md 4): 0,2 über bzw. unter der Spanne — für Erde wie
+    // bisher 6,6 / 6,0, für Coco 6,4 / 5,6, für Hydro 6,2 / 5,3. Vorher galten die Erde-Grenzen überall: Coco mit 5,8 (im eigenen
+    // Ziel) hieß „pH-Werte liegen niedrig“, Coco mit 6,5 (Lockout-Bereich) blieb stumm. Regel 1 aus ANBAU.md: jede Schwelle
+    // braucht ihre Gültigkeitsbedingung, und Substrat ist eine Eingangsgröße.
+    const _phz = phTargetFor(c && c.medium);
+    const _phHoch = Math.round((_phz.hi + 0.2) * 10) / 10, _phTief = Math.round((_phz.lo - 0.2) * 10) / 10;
+    if (phAvg > _phHoch) result.phHigh = true;
+    else if (phAvg < _phTief) result.phLow = true;
   }
 
   // Temperatur aus dem letzten Entry
@@ -3852,7 +3858,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.499';
+const APP_VERSION = 'v1.5.500';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
