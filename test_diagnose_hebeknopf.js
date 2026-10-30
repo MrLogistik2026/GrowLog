@@ -43,11 +43,12 @@ async function lade() {
   const top3 = E(`JSON.stringify(diagnoseProblems({location: diagState.location, colors: diagState.colors, shapes: diagState.shapes}, _diagKontext().ctx).slice(0,3).map(x => x.problem.id))`);
   pruefe(/overwatering|underwatering|root_rot|nutrient_burn/.test(top3), 'A Vorbedingung: keine Wasser-Ursache unter den ersten drei: ' + top3);
   pruefe(!!knopf(), 'A hängend mit Zyklus: Knopf fehlt');
-  pruefe(/Hebe-Test eintragen/.test(w.document.getElementById('diag-wizard').textContent), 'A Knopftext fehlt');
+  // (v1.5.487) fünf Hebe-Knöpfe direkt im Ergebnis; der Weg in den Eintrag ist der zweite Knopf
+  pruefe(w.document.querySelectorAll('#diag-wizard [data-diag-hebe-knopf]').length === 5, 'A fünf Hebe-Knöpfe fehlen');
   // Klick
   E(`window.__sprung = []; const _j = jumpToEntryField; jumpToEntryField = function(c, was) { window.__sprung.push(was); return _j.apply(this, arguments); };`);
   const vorher = E(`JSON.stringify(S.entries)`);
-  if (knopf()) knopf().querySelector('button').click();
+  if (knopf()) knopf().querySelector('[data-diag-eintrag]').click();
   await warte(300);
   pruefe(!w.document.getElementById('diag-wizard'), 'A Assistent nach Klick noch offen');
   pruefe(E(`document.getElementById('scr-entry').classList.contains('active')`), 'A Eintrag nicht geöffnet');
@@ -62,7 +63,7 @@ async function lade() {
   ergebnis(true, ['allLeaves'], ['wilting'], 'leicht');
   pruefe(!!knopf(), 'B leicht: Knopf fehlt');
   pruefe(knopf() && /Vorschlag/.test(knopf().textContent), 'B leicht: Hinweis „Vorschlag“ fehlt');
-  if (knopf()) knopf().querySelector('button').click();
+  if (knopf()) knopf().querySelector('[data-diag-eintrag]').click();
   await warte(300);
   pruefe(!/restPct/.test(E(`JSON.stringify(S.entries)`)), 'B leicht: Antwort wurde still gespeichert: ' + E(`JSON.stringify(S.entries)`));
 

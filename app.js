@@ -2328,8 +2328,18 @@ function _diagHebeKnopfHTML(results, ctx, c) {
     : `<div style="font-size:11px;color:var(--text-muted);line-height:1.5;margin-bottom:8px">Der Topf trennt Durst von zu viel Wasser. Heb ihn an und trag ein, wie er sich anfühlt.</div>`;
   return `<div data-diag-hebe style="margin-top:16px;padding:12px;background:var(--card);border:0.5px solid var(--border);border-radius:12px">
     ${vorschlag}
-    <button onclick="diagHebeEintragen()" style="width:100%;padding:13px;background:var(--blue);border:none;border-radius:10px;font-size:13px;font-weight:700;color:#fff;cursor:pointer;font-family:var(--font)">⚖️ Hebe-Test eintragen</button>
+    ${_diagHebeKnoepfe(t)}
+    <button data-diag-eintrag onclick="diagHebeEintragen()" style="width:100%;margin-top:8px;padding:9px;background:transparent;border:0.5px solid var(--border);border-radius:10px;font-size:11px;color:var(--text-sub);cursor:pointer;font-family:var(--font)">📝 Im Eintrag öffnen (Waage, Notiz)</button>
   </div>`;
+}
+
+/**
+ * (v1.5.487) Die fünf Hebe-Knöpfe im Diagnose-Ergebnis. Der Eindruck aus der Topf-Frage (leicht/mittel/schwer) ist nur
+ * markiert, nicht gewählt — er deckt zwei Knöpfe ab und bleibt ein Vorschlag, bis jemand tippt (ANBAU.md 15).
+ */
+function _diagHebeKnoepfe(topf) {
+  const nahe = { leicht: ['low', 'dry'], mittel: ['medium', 'soon'], schwer: ['full', 'medium'] }[topf] || [];
+  return `<div style="display:flex;gap:4px">${Object.keys(LIFT_FEEL_TEXTE).map(k => `<button data-diag-hebe-knopf="${k}" onclick="diagHebeTest('${k}')" title="${LIFT_FEEL_TEXTE[k].zeile}" style="flex:1;min-width:52px;background:${nahe.includes(k) ? 'rgba(90,171,240,0.12)' : 'transparent'};border:1px solid ${nahe.includes(k) ? 'var(--blue)' : 'var(--border)'};color:var(--text);border-radius:8px;padding:8px 2px;font-size:11px;cursor:pointer;font-family:var(--font)">${LIFT_FEEL_TEXTE[k].icon}<br>${LIFT_FEEL_TEXTE[k].kurz}</button>`).join('')}</div>`;
 }
 
 /** (v1.5.475) Schließt den Assistenten, öffnet den heutigen Eintrag und springt zum Hebe-Test. Speichert nichts. */
@@ -3807,7 +3817,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.486';
+const APP_VERSION = 'v1.5.487';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -18297,10 +18307,13 @@ function _dashHebeZeile(c, p, a, iso, td) {
   const knoepfe = Object.keys(LIFT_FEEL_TEXTE).map(k => `<button onclick="event.stopPropagation();dashHebeTest('${c.id}','${k}')" title="${LIFT_FEEL_TEXTE[k].zeile}" style="flex:1;min-width:52px;background:transparent;border:1px solid ${td.color}55;color:var(--text);border-radius:8px;padding:6px 2px;font-size:11px;cursor:pointer;font-family:var(--font)">${LIFT_FEEL_TEXTE[k].icon}<br>${LIFT_FEEL_TEXTE[k].kurz}</button>`).join('');
   return `<div style="margin-top:8px"><div style="font-size:11px;color:var(--text-sub);margin-bottom:4px">⚖️ Erst anheben — wie schwer ist der Topf?</div><div style="display:flex;gap:4px">${knoepfe}</div></div>`;
 }
-/** (v1.5.473) Trägt den Hebe-Test von heute aus der Startseite ein — dieselben Werte wie die Leiste im Eintrag (LIFT_FEEL_VALUES). */
-function dashHebeTest(cId, feel) {
+/**
+ * (v1.5.487) Trägt einen Hebe-Test von heute ein — dieselben Werte wie die Leiste im Eintrag (LIFT_FEEL_VALUES). Ein Weg für
+ * die Startseite (v1.5.473) und das Diagnose-Ergebnis. Gibt zurück, ob gespeichert wurde.
+ */
+function _hebeTestHeute(cId, feel) {
   const pct = LIFT_FEEL_VALUES[feel];
-  if (pct === undefined) return;
+  if (pct === undefined || !cId) return false;
   pushUndo();
   const iso = todayISO();
   if (!S.entries[iso]) S.entries[iso] = { temp: '', humidity: '', cycleData: {} };
@@ -18310,8 +18323,25 @@ function dashHebeTest(cId, feel) {
   cd.restPct = pct;
   cd._restPctUserSet = true;
   vibrate(15);
-  if (saveS()) toast(`Hebe-Test eingetragen: ${LIFT_FEEL_TEXTE[feel].kurz}`);
+  return !!saveS();
+}
+/** (v1.5.473) Hebe-Test von heute aus der Startseite. */
+function dashHebeTest(cId, feel) {
+  if (_hebeTestHeute(cId, feel)) toast(`Hebe-Test eingetragen: ${LIFT_FEEL_TEXTE[feel].kurz}`);
   renderDash();
+}
+/**
+ * (v1.5.487) Hebe-Test von heute aus dem Diagnose-Ergebnis: ein Tipp trägt ihn ein, die Auswertung rechnet sofort mit der
+ * Messung (buildDiagnosticContext: restHeute) statt mit dem Eindruck aus der Topf-Frage. Vorher führte „Hebe-Test eintragen“ in
+ * den Eintrag, wo dieselbe Antwort noch einmal getippt werden musste — 8 Taps, und die Diagnose sah die Messung nicht mehr
+ * (Bedien-Prüfung 30.10.2026, Befund 2).
+ */
+function diagHebeTest(feel) {
+  const cId = diagState.cycleId;
+  if (!_hebeTestHeute(cId, feel)) return;
+  diagState.topf = null;   // die Messung ersetzt den Eindruck
+  toast(`Hebe-Test eingetragen: ${LIFT_FEEL_TEXTE[feel].kurz} — die Auswertung rechnet jetzt damit`);
+  renderDiagWizard();
 }
 
 function renderDash() {

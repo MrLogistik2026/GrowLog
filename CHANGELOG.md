@@ -2,6 +2,20 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-30 — v1.5.487
+
+- **„Hebe-Test eintragen“ im Diagnose-Ergebnis war ein Umweg.** Der Knopf schloss den Assistenten und öffnete den Eintrag; dort
+  musste dieselbe Antwort noch einmal getippt werden (8 Taps), und die Diagnose sah die Messung danach nicht mehr. Gefunden bei der
+  zweiten Bedien-Prüfung am 30.10.2026 (Befund 2).
+- **Jetzt** stehen die fünf Hebe-Knöpfe direkt im Ergebnis (`_diagHebeKnoepfe`, `diagHebeTest`). Ein Tipp trägt den Hebe-Test von
+  heute ein, die Topf-Angabe weicht der Messung, und die Auswertung rechnet sofort neu. Der Eindruck aus der Topf-Frage ist nur
+  markiert („leicht“ → Knapp und Trocken), gespeichert wird erst auf Tipp (ANBAU.md 15). „📝 Im Eintrag öffnen (Waage, Notiz)“
+  bleibt als zweiter Weg. Startseite und Diagnose tragen über dieselbe Funktion ein (`_hebeTestHeute`).
+- Beim Bauen gesehen: „Knapp“ ist bei Erde der Gießpunkt selbst und gilt in der Diagnose nicht als „leicht“ (B05); erst „Trocken“
+  nimmt die Überwässerung aus der Liste.
+- `test_diagnose_hebeknopf.js` klickt jetzt den zweiten Weg und zählt die fünf Knöpfe.
+- Test: `test_diagnose_hebe_eintippen.js` (13 Prüfungen, beide Zeitzonen; fällt auf v1.5.486 um).
+
 ## 2026-10-30 — v1.5.486
 
 - **Die Vorschau über „Änderungen sichern“ übersah den heutigen Gießtag.** Sie suchte den nächsten Guss mit `nextGiessTag`, und
