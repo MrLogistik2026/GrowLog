@@ -2,6 +2,16 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-30 — v1.5.510
+
+- **Coco-Zyklen lasen „Erde“ in Keim-, Sämlings- und Gießtexten** („Direkt in Erde“, „die Erde direkt am Samen“, „aus der Erde
+  spülen“), und die Hebe-Test-Zeilen nannten „Mittel — noch Wasser drin“, obwohl „Mittel“ in Coco der Gießpunkt ist
+  (`ANBAU.md` 1.2). Hebel 2 der Bewertung.
+- **Jetzt** setzt `_subWort` bei Coco „Substrat“ ein (Erde bleibt wörtlich); der Sämling „lebt von den Reserven im Samen, Coco bringt
+  selbst keinen Dünger mit“ (16, 7.1). Die Hebe-Zeilen folgen bei Coco dem Gießpunkt („Mittel“: jetzt gießen). Für alle Substrate:
+  Drain sagt etwas über die Wurzelzone im Topf, nicht über „die Erde“ (5.1).
+- Test: `test_substrat_e.js` (14 Prüfungen, beide Zeitzonen; 9 fallen auf v1.5.509 um).
+
 ## 2026-10-30 — v1.5.509
 
 - **Ein Zulauf-pH von 5,6–5,9 in Erde blieb ohne Hinweis**, und die Warnung nannte „Ca/Mg werden blockiert“. Nach `ANBAU.md` 4 gilt

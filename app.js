@@ -429,7 +429,7 @@ const T = {
       + `Das ist ${schwach ? 'wenig' : 'zu wenig'}, um daraus etwas abzulesen: Bei so kleinem Durchfluss läuft das Wasser überwiegend am Topfrand entlang, statt durch den Wurzelballen zu ziehen. `
       + `Was du auffängst, ist dann die konzentrierte Restlösung vom Vorgänger-Guss — sie misst sich <b>systematisch zu hoch</b>. `
       + `<b>Die Werte werden deshalb nicht bewertet.</b> Für eine belastbare Messung beim nächsten Mal so lange gießen, bis etwa <b>ein Fünftel</b> der Gießmenge unten ankommt `
-      + `(bei ${Math.round(gegossen)} ml also rund ${Math.round(gegossen * 0.2)} ml Ablauf). Erst dann sagen pH und EC etwas über die Erde im Topf.`,
+      + `(bei ${Math.round(gegossen)} ml also rund ${Math.round(gegossen * 0.2)} ml Ablauf). Erst dann sagen pH und EC etwas über die Wurzelzone im Topf.`,
 
     flowHigh: ({ pct }) =>
       `<b>${String(pct).replace('.', ',')} % Ablauf</b> — die Messung ist gültig, aber bei so viel Durchfluss spülst du bereits mit. `
@@ -3890,7 +3890,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.509';
+const APP_VERSION = 'v1.5.510';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -16406,18 +16406,44 @@ function _tag1MengeJeTopf(vorlage, startMethod) {
 
 /** (v1.5.168) Die Keimmethode eines Zyklus — Papiertuch, solange keine gewählt ist. Keimungskarte und Sämlings-Pflege lesen hier. */
 /**
+ * (v1.5.510) Das Substrat beim Namen nennen. Die Sämlings-, Keim- und Gießtexte sprechen von „der Erde“; ein Coco-Zyklus las dort
+ * „Säst du direkt in die Erde“ und „der Sämling lebt von der Erde“ (Fachprüfung 30.10.2026, S1). Für Coco setzt die Funktion
+ * „Substrat“ in der richtigen Form ein, für Erde bleibt der Text unverändert. Nur für feste Wendungen der App-Texte gedacht.
+ */
+function _subWort(c, s) {
+  if (!c || c.medium !== 'coco' || typeof s !== 'string') return s;
+  return s
+    .replace(/Direkt in Erde/g, 'Direkt ins Substrat')
+    .replace(/in die feuchte Erde/g, 'ins feuchte Substrat')
+    .replace(/in die Erde/g, 'ins Substrat')
+    .replace(/Eine durchnässte Erde/g, 'Ein durchnässtes Substrat')
+    .replace(/durchnässte Erde/g, 'durchnässtes Substrat')
+    .replace(/nasse Erde/g, 'nasses Substrat')
+    .replace(/feuchte Erde/g, 'feuchtes Substrat')
+    .replace(/Erde feucht/g, 'Substrat feucht')
+    .replace(/Erde aufgraben/g, 'Substrat aufgraben')
+    .replace(/aus der Erde/g, 'aus dem Substrat')
+    .replace(/von der Erde/g, 'vom Substrat')
+    .replace(/Erdoberfläche/g, 'Substratoberfläche')
+    .replace(/(sobald|Wird) sie dort oben hell/g, '$1 es dort oben hell')
+    .replace(/\bdie Erde\b/g, 'das Substrat')
+    .replace(/\bDie Erde\b/g, 'Das Substrat')
+    .replace(/\bErde\b/g, 'Substrat');
+}
+
+/**
  * (v1.5.217) Der Gieß-Tipp fuer Saemlingstage. Er haengt an der Aktion und an der Menge, nicht am Tag:
  * Am Saettigungsguss sind es 3 Durchgaenge mit der Brause, an Spruehtagen 3–5 Spruehstoesse an der Erde
  * am Samen (v1.5.215), und sonst entscheidet die Menge, ob Messbecher oder Gießkanne das Werkzeug ist.
  * Vorher entschied der Tag — dieselben 35 ml hießen an Tag 4 Sprühflasche und an Tag 8 Gießkanne,
  * und der Saettigungsguss mit 700 ml stand unter dem Sprühflaschen-Tipp der Keimphase.
  */
-function _saemlingGiessTipp(aktion, mlJePflanze) {
+function _saemlingGiessTipp(aktion, mlJePflanze, c) {
   if (aktion === 'saettigung') return 'Sättigungsguss: feine Brause, 3 Durchgänge mit 15 Minuten Pause, kreisförmig von außen — nie auf den Samen.';
-  if (aktion === 'sprueh') return 'Heute nur 3–5 Sprühstöße auf die Erde am Samen oder Keimling — kein Gießen.';
+  if (aktion === 'sprueh') return _subWort(c, 'Heute nur 3–5 Sprühstöße auf die Erde am Samen oder Keimling — kein Gießen.');
   const ml = parseFloat(mlJePflanze);
   if (ml > 0 && ml <= 50) return 'So wenig gießt du am genauesten mit einem Messbecher oder ganz feinem Strahl, im Ring um den Keimling — die Gießkanne ist dafür zu grob.';
-  return 'Feine Gießkanne, dünner Strahl im Ring um den Keimling — nicht auf ihn. Erde feucht, nicht nass.';
+  return _subWort(c, 'Feine Gießkanne, dünner Strahl im Ring um den Keimling — nicht auf ihn. Erde feucht, nicht nass.');
 }
 
 function _keimMethode(c) {
@@ -17711,9 +17737,9 @@ function _tag1Referenz(c) {
  */
 function _tag1Keimsatz(c) {
   const m = _keimMethode(c);
-  if (m === 'water') return `Keimst du im Wasserglas: den Samen jetzt ins Glas legen (${KEIMUNG.glasStdVon}–${KEIMUNG.glasStdBis} Stunden, nie länger), danach in die feuchte Erde — nicht schon heute in die Erde.`;
-  if (m === 'paper') return `Keimst du im Papiertuch: den Samen jetzt zwischen zwei feuchte Tücher legen und erst in die Erde setzen, wenn die Keimwurzel ${KEIMUNG.wurzelMmVon}–${KEIMUNG.wurzelMmBis} mm lang ist (meist nach ${KEIMUNG.wurzelTageVon}–${KEIMUNG.wurzelTageBis} Tagen).`;
-  return 'Säst du direkt in die Erde: den Samen erst nach dem letzten Durchgang legen.';
+  if (m === 'water') return _subWort(c, `Keimst du im Wasserglas: den Samen jetzt ins Glas legen (${KEIMUNG.glasStdVon}–${KEIMUNG.glasStdBis} Stunden, nie länger), danach in die feuchte Erde — nicht schon heute in die Erde.`);
+  if (m === 'paper') return _subWort(c, `Keimst du im Papiertuch: den Samen jetzt zwischen zwei feuchte Tücher legen und erst in die Erde setzen, wenn die Keimwurzel ${KEIMUNG.wurzelMmVon}–${KEIMUNG.wurzelMmBis} mm lang ist (meist nach ${KEIMUNG.wurzelTageVon}–${KEIMUNG.wurzelTageBis} Tagen).`);
+  return _subWort(c, 'Säst du direkt in die Erde: den Samen erst nach dem letzten Durchgang legen.');
 }
 
 function plainSentence(action, c, p, waterMl) {
@@ -17746,7 +17772,7 @@ function plainSentence(action, c, p, waterMl) {
   }
   // SPRÜH-PHASE (Tag 2–8): NICHT gießen!
   if (action === 'sprueh') {
-    return `<b>Heute nur sprühen, nicht gießen!</b> Sobald die Erde direkt am Samen oder am Keimling oben hell wird: 3–5 Sprühstöße pH-Wasser genau auf diese Stelle. Eine durchnässte Erde ohne aktive Wurzel ist ein Schimmelparadies — der häufigste Anfänger-Killer.`;
+    return _subWort(c, `<b>Heute nur sprühen, nicht gießen!</b> Sobald die Erde direkt am Samen oder am Keimling oben hell wird: 3–5 Sprühstöße pH-Wasser genau auf diese Stelle. Eine durchnässte Erde ohne aktive Wurzel ist ein Schimmelparadies — der häufigste Anfänger-Killer.`);
   }
   // (v1.5.267) Gießtag mit vollem Topf: Der Hebe-Test von heute sagt „Voll", die Menge ist deshalb 0 (gussMengeJePflanze,
   // Quelle 'voll'). Der Satz sagte trotzdem „Gib deiner Pflanze heute etwa 0 ml … bis unten etwas herausläuft", während der
@@ -17778,7 +17804,7 @@ function plainSentence(action, c, p, waterMl) {
         : null; })() || `Gib ${_wem} heute etwa <b>${_jeTopf(waterMl)} ml</b> ${GIESSWASSER_TEXT}${_zusammen(waterMl)}. Langsam gießen, bis unten etwas herausläuft: ${DRAIN_ZIEL.min}–${DRAIN_ZIEL.max} % der Menge als Drain sind richtig so.`;
   }
   if (action === 'spuelen') {
-    return `Heute nur klares Wasser ohne Dünger — davon ${_jeTopfWort}ungefähr <b>${_jeTopf(waterMl)} ml</b>${_zusammen(waterMl)}. Das spült die letzten Nährsalze aus der Erde.`;
+    return `Heute nur klares Wasser ohne Dünger — davon ${_jeTopfWort}ungefähr <b>${_jeTopf(waterMl)} ml</b>${_zusammen(waterMl)}. Das spült die letzten Nährsalze ${_subWort(c, 'aus der Erde')}.`;
   }
   if (action === 'ice') {
     // (v1.5.143) Am IceFlush wird Eis gelegt, nicht gegossen — so sagt es die Karte im Tageseintrag
@@ -17952,8 +17978,8 @@ function getTodayAction(c, p, a, iso) {
         // (v1.5.215) Der Samen liegt 0,5–1 cm tief (KEIMUNG). Wer wartet, bis 1–2 cm trocken sind,
         // wartet, bis der Samen selbst trocken liegt — und die Keimwurzel ist nach dem Durchbruch
         // nicht mehr austrocknungsfest (Pereira et al. 2018). Gefragt ist die Stelle, nicht die Tiefe.
-        'Erst schauen: wird die Erde direkt über dem Samen oder um den Keimling hell? Dann sprühen.',
-        `3–5 Sprühstöße pH-Wasser (pH ${pht.midText}) auf die Erdoberfläche — nicht auf die Keimblätter`,
+        _subWort(c, 'Erst schauen: wird die Erde direkt über dem Samen oder um den Keimling hell? Dann sprühen.'),
+        _subWort(c, `3–5 Sprühstöße pH-Wasser (pH ${pht.midText}) auf die Erdoberfläche — nicht auf die Keimblätter`),
         'Heute kein Gießen und kein Hebe-Test: Sprühen ändert das Topfgewicht nicht messbar',
       ],
       hint: `Ab Tag 9 beginnt der normale Gießrhythmus — noch ${restTage} ${restTage === 1 ? 'Tag' : 'Tage'} sprühen.`,
@@ -18429,9 +18455,9 @@ function _dashHebeZeile(c, p, a, iso, td) {
     if (JSON.stringify(td).includes('Hebe-Test')) return '';   // die Karte nennt die Messung schon selbst (voll, feucht)
     const k =Object.keys(LIFT_FEEL_VALUES).find(x => Math.abs(LIFT_FEEL_VALUES[x] - parseFloat(cd.restPct)) < 1);
     const t = k ? LIFT_FEEL_TEXTE[k] : null;
-    return `<div style="font-size:11px;color:var(--text-muted);margin-top:8px">⚖️ Hebe-Test heute: ${t ? t.icon + ' <b>' + t.kurz + '</b> — ' + t.zeile : Math.round(parseFloat(cd.restPct)) + ' %'}</div>`;
+    return `<div style="font-size:11px;color:var(--text-muted);margin-top:8px">⚖️ Hebe-Test heute: ${t ? t.icon + ' <b>' + t.kurz + '</b> — ' + _liftZeile(k, c) : Math.round(parseFloat(cd.restPct)) + ' %'}</div>`;
   }
-  const knoepfe = Object.keys(LIFT_FEEL_TEXTE).map(k => `<button onclick="event.stopPropagation();dashHebeTest('${c.id}','${k}')" title="${LIFT_FEEL_TEXTE[k].zeile}" style="flex:1;min-width:52px;background:transparent;border:1px solid ${td.color}55;color:var(--text);border-radius:8px;padding:6px 2px;font-size:11px;cursor:pointer;font-family:var(--font)">${LIFT_FEEL_TEXTE[k].icon}<br>${LIFT_FEEL_TEXTE[k].kurz}</button>`).join('');
+  const knoepfe = Object.keys(LIFT_FEEL_TEXTE).map(k => `<button onclick="event.stopPropagation();dashHebeTest('${c.id}','${k}')" title="${_liftZeile(k, c)}" style="flex:1;min-width:52px;background:transparent;border:1px solid ${td.color}55;color:var(--text);border-radius:8px;padding:6px 2px;font-size:11px;cursor:pointer;font-family:var(--font)">${LIFT_FEEL_TEXTE[k].icon}<br>${LIFT_FEEL_TEXTE[k].kurz}</button>`).join('');
   return `<div style="margin-top:8px"><div style="font-size:11px;color:var(--text-sub);margin-bottom:4px">⚖️ Erst anheben — wie schwer ist der Topf?</div><div style="display:flex;gap:4px">${knoepfe}</div></div>`;
 }
 /**
@@ -21775,7 +21801,7 @@ function renderGussplan() {
   for (let d = 1, az = anzuchtLenFor(c); d <= az; d++) if (getAction(isoPlus(c.startDate, d - 1), c) === 'sprueh') _spruehTage.push(d);
   const _spruehHinweis = (_spruehTage.length && _heuteTag <= _spruehTage[_spruehTage.length - 1])
     ? `<div style="font-size:10px;color:var(--yellow);margin-top:5px;line-height:1.5;background:rgba(240,208,80,0.06);border:0.5px solid rgba(240,208,80,0.2);border-radius:7px;padding:7px 9px">
-        🫧 <b>Tag ${_spruehTage[0]}–${_spruehTage[_spruehTage.length - 1]}: nur Sprühen, kein Guss.</b> Ein paar Sprühstöße auf die Erde am Samen
+        🫧 <b>Tag ${_spruehTage[0]}–${_spruehTage[_spruehTage.length - 1]}: nur Sprühen, kein Guss.</b> Ein paar Sprühstöße auf ${_subWort(c, 'die Erde')} am Samen
         genügen — das steht auf der Startseite und im Kalender. Hier stehen nur die Güsse.
       </div>`
     : '';
@@ -29789,7 +29815,7 @@ function renderEntry(iso) {
               const _proTopf = _n > 0 ? Math.round(waterSug / _n / 10) * 10 : waterSug;
               return `<div style="font-size:11px;color:var(--text-muted);line-height:1.4;margin-top:2px">~${Math.round(getPotSize(c) / 11 * 1000)} ml Crushed Ice pro Topf am RAND verteilen (nicht Mitte) — schmilzt zu etwa <b>${_proTopf} ml je Topf</b>${_n > 1 ? `, zusammen ~${waterSug} ml für ${_n} Töpfe` : ''}. 4–6h schmelzen, dann Licht AUS.</div>`;
             })() : ''}
-            ${a === 'sprueh' ? `<div style="font-size:11px;color:var(--text-muted);line-height:1.4;margin-top:2px">3–5 Sprühstöße auf die Erde am Samen oder Keimling, sobald sie dort oben hell wird.</div>` : ''}
+            ${a === 'sprueh' ? `<div style="font-size:11px;color:var(--text-muted);line-height:1.4;margin-top:2px">${_subWort(c, '3–5 Sprühstöße auf die Erde am Samen oder Keimling, sobald sie dort oben hell wird.')}</div>` : ''}
             ${a === 'saettigung' ? `<div style="font-size:11px;color:var(--text-muted);line-height:1.4;margin-top:2px">3 Etappen je ~${Math.max(50, Math.round(waterSug / Math.max(1, getEffectivePlantCount(c, iso)) / 3 / 50) * 50)} ml${getEffectivePlantCount(c, iso) > 1 ? ' je Topf' : ''} mit 15 min Pause — ${_tag1MittelText(c, iso)}.</div>` : ''}
             ${(a === 'giess' || a === 'giess_anz') ? `<div style="font-size:10px;color:${cl.hex};opacity:0.85;margin-top:3px">👆 Tippen: Guss eintragen oder Menge anpassen</div>` : ''}
           </div>
@@ -29969,13 +29995,13 @@ function renderEntry(iso) {
         <div style="display:flex;gap:6px;margin-bottom:10px">
           ${['water', 'paper', 'direct'].map(m => {
             const g = GERM_GUIDES[m], on = germSel === m;
-            return `<button onclick="setGermMethod('${c.id}','${m}')" style="flex:1;background:${on ? 'rgba(76,175,112,0.15)' : 'var(--card2)'};border:1.5px solid ${on ? 'var(--green)' : 'var(--border)'};border-radius:9px;padding:8px 4px;font-size:11px;color:${on ? 'var(--green)' : 'var(--text)'};font-weight:${on ? '700' : '500'};cursor:pointer;font-family:var(--font);line-height:1.3">${g.icon}<br>${g.label}${m === 'direct' ? '<br><span style="font-size:9px;font-weight:600;opacity:0.75">empfohlen</span>' : ''}</button>`;
+            return `<button onclick="setGermMethod('${c.id}','${m}')" style="flex:1;background:${on ? 'rgba(76,175,112,0.15)' : 'var(--card2)'};border:1.5px solid ${on ? 'var(--green)' : 'var(--border)'};border-radius:9px;padding:8px 4px;font-size:11px;color:${on ? 'var(--green)' : 'var(--text)'};font-weight:${on ? '700' : '500'};cursor:pointer;font-family:var(--font);line-height:1.3">${g.icon}<br>${_subWort(c, g.label)}${m === 'direct' ? '<br><span style="font-size:9px;font-weight:600;opacity:0.75">empfohlen</span>' : ''}</button>`;
           }).join('')}
         </div>
         <ol style="margin:0;padding-left:18px;font-size:11px;color:var(--text-sub);line-height:1.6">
-          ${GERM_GUIDES[germSel].steps.map(s => `<li>${s}</li>`).join('')}
+          ${GERM_GUIDES[germSel].steps.map(s => `<li>${_subWort(c, s)}</li>`).join('')}
         </ol>
-        <div style="background:rgba(90,171,240,0.06);border-radius:8px;padding:8px 10px;margin-top:10px;font-size:10px;color:var(--text-hint);line-height:1.45">💡 Immer: sauber arbeiten (Hände waschen), den Samen nicht quetschen. Bis der Keimling da ist: ${KLIMA_ZIEL.saemling.temp[0]}–${KLIMA_ZIEL.saemling.temp[1]} °C, feucht, nicht nass. Licht braucht der Samen nicht — der Keimling ab dem Moment, in dem er die Erde durchbricht.</div>
+        <div style="background:rgba(90,171,240,0.06);border-radius:8px;padding:8px 10px;margin-top:10px;font-size:10px;color:var(--text-hint);line-height:1.45">💡 Immer: sauber arbeiten (Hände waschen), den Samen nicht quetschen. Bis der Keimling da ist: ${KLIMA_ZIEL.saemling.temp[0]}–${KLIMA_ZIEL.saemling.temp[1]} °C, feucht, nicht nass. Licht braucht der Samen nicht — der Keimling ab dem Moment, in dem er ${_subWort(c, 'die Erde')} durchbricht.</div>
       </div>` : '';
 
     if (isWaterDay) {
@@ -30451,7 +30477,7 @@ function renderEntry(iso) {
             ~${perPlantSugWD} ml/Pflanze${effPlants > 1 ? ` <span style="color:var(--text-muted);font-weight:400;font-size:12px">(${totalSugWD} ml total)</span>` : ''}
           </div>
           <div style="font-size:10px;color:var(--text-muted);margin-top:3px;line-height:1.4">
-            ${_saemlingGiessTipp(a, perPlantSugWD)}
+            ${_saemlingGiessTipp(a, perPlantSugWD, c)}
           </div>
         </div>`;
       } else {
@@ -31325,7 +31351,7 @@ function renderEntry(iso) {
         </div>
         <div style="font-size:10px;color:var(--text-muted);margin-top:3px;line-height:1.4">
           ${p.ph === 'anzucht' && p.day <= 10
-            ? _saemlingGiessTipp(_aHint, perPlantSug)
+            ? _saemlingGiessTipp(_aHint, perPlantSug, c)
             : `Topf ${getPotSize(c)}L · ${getInt(c, p?.ph || 'bloom')}d Intervall · smarte Empfehlung`}
         </div>
       </div>` : '';
@@ -31573,12 +31599,12 @@ function renderEntry(iso) {
       // Keimungskarte und nehmen deren Schritte wörtlich — vorher stand hier „Samen einpflanzen“, während die
       // Karte daneben mit vorgewähltem Papiertuch „nach 2–5 Tagen in Erde setzen“ sagte.
       const _germ = _keimMethode(c);
-      const _gs = GERM_GUIDES[_germ].steps;
+      const _gs = GERM_GUIDES[_germ].steps.map(x => _subWort(c, x));
       const dayHints = {
         1: { do: `Tag 1 ist dein Keimstart. ${_gs[0]}`, avoid: 'Wasser direkt auf den Samen gießen oder ihn alle paar Stunden hervorholen.' },
         2: _germ === 'water' ? { do: `${_gs[1]} ${_gs[2]}`, avoid: 'Den Samen länger im Wasser lassen, als oben steht — er erstickt.' }
           : _germ === 'paper' ? { do: `${_gs[2]} ${_gs[3]}`, avoid: 'Die Tücher austrocknen lassen oder die Keimwurzel anfassen.' }
-          : { do: `${_gs[1]} ${_gs[2]}`, avoid: 'Erde aufgraben um zu schauen ob der Samen schon keimt.' },
+          : { do: `${_gs[1]} ${_gs[2]}`, avoid: _subWort(c, 'Erde aufgraben um zu schauen ob der Samen schon keimt.') },
         3: _germ === 'paper'
           ? { do: `Noch keine Keimwurzel? Tücher feucht halten. Ist sie ${KEIMUNG.wurzelMmVon}–${KEIMUNG.wurzelMmBis} mm lang: heute einsetzen.`, avoid: 'Warten, bis die Wurzel länger ist — je länger sie wird, desto leichter bricht sie beim Einsetzen.' }
           : { do: 'Der Samen liegt in der Erde. Die Stelle über ihm feucht halten — zu sehen ist noch nichts, und das ist normal.', avoid: 'Zum Nachsehen ausgraben oder die Erde am Samen austrocknen lassen.' },
@@ -31599,7 +31625,8 @@ function renderEntry(iso) {
         // (v1.5.455) Die Mischliste steht nur an Gießtagen im Eintrag. Vorher hieß es an jedem Sämlingstag „die Mengen stehen in der
         // Mischliste“ — auch an Sprüh- und Ruhetagen, an denen es keine gibt.
         ? `Dein Plan sieht diese Woche ${_saemDosen} Produkt${_saemDosen === 1 ? '' : 'e'} vor — ${isGiessTag(iso, c) ? 'die Mengen stehen unten in der Mischliste' : (() => { const _ng = nextGiessTag(c, iso); return _ng ? `die Mengen siehst du am nächsten Gießtag (${_ng.days === 1 ? 'morgen' : fmtDE(_ng.iso, { day: '2-digit', month: '2-digit' })}) im Eintrag` : 'die Mengen siehst du am nächsten Gießtag im Eintrag'; })()}. Light-Mix-Erde ist schon vorgedüngt: Mehr, als der Plan vorsieht, braucht ein Sämling nicht.`
-        : 'Dein Plan sieht diese Woche keinen vor — der Sämling lebt von der Erde.';
+        // (v1.5.510) Coco ist nicht vorgedüngt (ANBAU.md 7.1, 13.2): Dort lebt der Sämling von den Reserven im Samen, nicht vom Substrat.
+        : (c.medium === 'coco' ? 'Dein Plan sieht diese Woche keinen vor — der Sämling lebt von den Reserven im Samen; Coco bringt selbst keinen Dünger mit.' : 'Dein Plan sieht diese Woche keinen vor — der Sämling lebt von der Erde.');
       return `
       <div style="background:linear-gradient(135deg,rgba(122,194,90,0.12),rgba(122,194,90,0.04));border:1px solid rgba(122,194,90,0.4);border-radius:12px;padding:12px 14px;margin-top:8px">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
@@ -31611,7 +31638,7 @@ function renderEntry(iso) {
         ${_ez(`<div style="padding:8px 10px;background:rgba(0,0,0,0.2);border-radius:8px;font-size:11px;color:var(--text-sub);line-height:1.55">
           <b style="color:var(--text)">💡 Sämling-Grundregeln:</b><br>
           • <b>Klima:</b> ${KLIMA_ZIEL.saemling.temp[0]}–${KLIMA_ZIEL.saemling.temp[1]} °C · ${_klimaRlfSpanne(klimaRlfFenster(KLIMA_ZIEL.saemling, NaN))} RLF · VPD ${KLIMA_ZIEL.saemling.vpd[0]}–${KLIMA_ZIEL.saemling.vpd[1]} kPa<br>
-          • <b>Wasser:</b> Bis der Keimling steht, nur die Stelle am Samen feucht halten — mit der Sprühflasche. Danach feine Gießkanne, dünner Strahl im Ring; die Menge für jeden Gießtag steht oben im Eintrag. Erde feucht halten, NICHT nass.<br>
+          • <b>Wasser:</b> Bis der Keimling steht, nur die Stelle am Samen feucht halten — mit der Sprühflasche. Danach feine Gießkanne, dünner Strahl im Ring; die Menge für jeden Gießtag steht oben im Eintrag. ${_subWort(c, 'Erde feucht halten, NICHT nass.')}<br>
           • <b>Dünger:</b> ${_saemDuenger}<br>
           • <b>Licht:</b> 30–50cm Abstand, 50–70% Power. Sämling streckt sich → zu wenig Licht.<br>
           • <b>pH:</b> ${phTargetFor(c.medium).label} — das Ziel für ${c.medium === 'coco' ? 'Coco' : (c.medium === 'hydro' ? 'Hydro' : 'Erde')}
@@ -32597,6 +32624,20 @@ const LIFT_FEEL_VALUES = { full: 95, medium: 70, soon: 50, low: 30, dry: 20 };
  * las zwei Sprachen für denselben Griff. Kurzwort + Zusatz stehen in der Eintragsleiste, das Kurzwort mit der erklärenden
  * Zeile im Guss-Blatt; die Kurzwörter stimmen mit den Texten der App überein („Knapp“, „Mittel“ in GIESSPUNKT).
  */
+/**
+ * (v1.5.510) Die erklärende Zeile zu einem Hebe-Test-Knopf, passend zum Substrat. Erde: Gießpunkt „Knapp“; Coco: Gießpunkt „Mittel“
+ * (GIESSPUNKT), was leichter ist, liegt schon darunter (Meldung „Zu trocken für Coco“, ANBAU.md 7.1).
+ */
+function _liftZeile(feel, c) {
+  const t = LIFT_FEEL_TEXTE[feel];
+  if (!c || c.medium !== 'coco') return t.zeile;
+  return ({
+    medium: 'der Gießpunkt für Coco — jetzt gießen',
+    soon: 'schon unter dem Gießpunkt für Coco — jetzt gießen',
+    low: 'zu trocken für Coco — sofort gießen',
+    dry: 'federleicht — das Coco ist ausgetrocknet, sofort gießen',
+  })[feel] || t.zeile;
+}
 const LIFT_FEEL_TEXTE = {
   full:   { icon: '💧', kurz: 'Voll',    hint: 'frisch',   zeile: 'schwer wie frisch gegossen — eigentlich noch nicht nötig' },
   medium: { icon: '🟢', kurz: 'Mittel',  hint: 'feucht',   zeile: 'noch gut schwer — noch Wasser drin' },
@@ -33109,7 +33150,7 @@ function _runoffFlowLine(ra, cd) {
   if (!ra || !ra.flow) {
     return (cd && (cd.runoffPh || cd.runoffEc))
       ? `<div style="font-size:10px;color:var(--yellow);padding:0 4px;line-height:1.45">⚠ Ohne Ablaufmenge lässt sich nicht sagen, ob die Messung etwas taugt — trag sie oben ein.</div>`
-      : `<div style="font-size:10px;color:var(--text-hint);padding:0 4px;line-height:1.45">Auffangen, messen, Menge eintragen — Ziel ${DRAIN_ZIEL.min}–${DRAIN_ZIEL.max} %${parseFloat(cd && cd.water) > 0 ? `, bei ${Math.round(parseFloat(cd.water))} ml also ${Math.round(parseFloat(cd.water) * DRAIN_ZIEL.min / 100)}–${Math.round(parseFloat(cd.water) * DRAIN_ZIEL.max / 100)} ml` : ''}. Erst ab ${DRAIN_ZIEL.min} % sagen pH und EC im Drain etwas über die Erde im Topf. Stofftopf oder Air-Pot: in einer breiten Wanne auffangen — der Drain läuft dort auch seitlich heraus, ein Untersetzer fängt zu wenig.</div>`;
+      : `<div style="font-size:10px;color:var(--text-hint);padding:0 4px;line-height:1.45">Auffangen, messen, Menge eintragen — Ziel ${DRAIN_ZIEL.min}–${DRAIN_ZIEL.max} %${parseFloat(cd && cd.water) > 0 ? `, bei ${Math.round(parseFloat(cd.water))} ml also ${Math.round(parseFloat(cd.water) * DRAIN_ZIEL.min / 100)}–${Math.round(parseFloat(cd.water) * DRAIN_ZIEL.max / 100)} ml` : ''}. Erst ab ${DRAIN_ZIEL.min} % sagen pH und EC im Drain etwas über die Wurzelzone im Topf. Stofftopf oder Air-Pot: in einer breiten Wanne auffangen — der Drain läuft dort auch seitlich heraus, ein Untersetzer fängt zu wenig.</div>`;
   }
   const f = ra.flow;
   const farbe = f.guete === 'gut' ? 'var(--green)'
@@ -33412,7 +33453,8 @@ function openGussHebe(cId, iso) {
   overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
   const fbtn = 'width:100%;padding:11px 12px;border-radius:10px;font-size:13px;cursor:pointer;font-family:var(--font);text-align:left;background:var(--card2);border:0.5px solid var(--border);color:var(--text)';
   // (v1.5.465) Dieselben Kurzwörter wie in der Eintragsleiste (LIFT_FEEL_TEXTE); die erklärende Zeile steht dahinter.
-  const feels = ['dry', 'low', 'soon', 'medium', 'full'].map(f => [f, LIFT_FEEL_TEXTE[f].icon + ' ' + LIFT_FEEL_TEXTE[f].kurz, LIFT_FEEL_TEXTE[f].zeile]);
+  const _cHz = (S.cycles || []).find(x => x.id === cId);
+  const feels = ['dry', 'low', 'soon', 'medium', 'full'].map(f => [f, LIFT_FEEL_TEXTE[f].icon + ' ' + LIFT_FEEL_TEXTE[f].kurz, _liftZeile(f, _cHz)]);
   const btns = feels.map(([f, label, hint]) => `<button onclick="gussHebeSet('${cId}','${iso}','${f}')" style="${fbtn}"><span style="font-weight:600">${label}</span> <span style="font-size:10px;color:var(--text-hint)">· ${hint}</span></button>`).join('');
   overlay.innerHTML = `
     <div style="background:var(--card);border:0.5px solid var(--border);border-radius:18px 18px 0 0;padding:20px 16px 16px;max-width:440px;width:100%;max-height:80vh;overflow-y:auto" class="scroll">
@@ -33859,7 +33901,7 @@ function _gussLueckeStatus(c, inter) {
     status: 'ungemessen',
     color: 'var(--yellow)',
     label: 'Nicht gemessen — ein Guss fehlt im Eintrag',
-    text: `Am ${datum} (Tag ${tag}) war ein Guss geplant, eingetragen ist seitdem keiner. Die ~${Math.round(inter.pct)}% sind deshalb nur gerechnet, nicht gemessen. <b>Hast du gegossen?</b> Dann trag den Guss dort nach, danach rechnet die App richtig weiter. <b>Nicht gegossen?</b> Dann prüf den Topf und tipp oben, was du fühlst — gegossen wird erst, wenn er wirklich abgetrocknet ist. Auf nasse Erde gegossen, fehlt den Wurzeln die Luft.`
+    text: `Am ${datum} (Tag ${tag}) war ein Guss geplant, eingetragen ist seitdem keiner. Die ~${Math.round(inter.pct)}% sind deshalb nur gerechnet, nicht gemessen. <b>Hast du gegossen?</b> Dann trag den Guss dort nach, danach rechnet die App richtig weiter. <b>Nicht gegossen?</b> Dann prüf den Topf und tipp oben, was du fühlst — gegossen wird erst, wenn er wirklich abgetrocknet ist. Auf ${_subWort(c, 'nasse Erde')} gegossen, fehlt den Wurzeln die Luft.`
       + `<div style="margin-top:6px"><button onclick="event.stopPropagation();openEntry('${ziel}')" style="background:var(--card);border:0.5px solid var(--border);border-radius:6px;padding:5px 10px;font-size:11px;color:var(--yellow);cursor:pointer;font-family:var(--font)">Tag ${tag} nachtragen</button></div>`,
   };
 }
@@ -34182,7 +34224,7 @@ function getAutoFillTemplate(c, p, a, iso) {
 
     // Notiz-Vorschlag
     if (isSeedling) {
-      tpl.notePlaceholder = 'Mit Sprühflasche oder dünnem Strahl — Erde feucht halten, NICHT nass.';
+      tpl.notePlaceholder = _subWort(c, 'Mit Sprühflasche oder dünnem Strahl — Erde feucht halten, NICHT nass.');
     } else if (ph === 'anzucht') {
       tpl.notePlaceholder = 'Gleichmäßig durchgießen, 15–20% Drain auffangen.';
     } else if (bluetestufe(p) === 'frueh') {

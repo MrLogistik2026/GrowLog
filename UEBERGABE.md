@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.509** · index.html 2,67 MB · 781 Funktionen
+Stand: **v1.5.510** · index.html 2,67 MB · 781 Funktionen
 Zuletzt fortgeschrieben am 30.10.2026 früh (Nachtarbeit 29./30.10.: Diagnose-Liste B01–B12 und U4 fertig, danach zwei
 Bedien-Prüfungen nach den Grundsätzen der Lager-App — Befunde in `.claude/notizen/ux/*.txt` und `.claude/tmp/ux2/bericht.txt`,
 abgearbeitet in v1.5.452–498, siehe Versionsliste in 0o. **Patrick am 30.10.2026 morgens zu den vier offenen Fragen: „Ja bau
@@ -536,6 +536,7 @@ Speicher-Befunde sind in v1.5.340–344 behoben. Rohdaten: Workflow wf_63d754b1-
 - v1.5.507: CalMag nur bei ungepuffertem Coco oder weichem Wasser als Grundbedarf, Light-Mix im Lexikon nach ANBAU 13.2 (`test_substrat_b.js`).
 - v1.5.508: Drain-pH in gekalkter Erde: 6,8–7,2 ist normal, Befund erst über 7,2 oder bei stetigem Anstieg über Wochen (`test_substrat_c.js`).
 - v1.5.509: Erde-pH unter 6,0 wird gemeldet (Mikroflora), Mangan/Aluminium erst unter 5,5; Lexikon pH nach ANBAU 4 (`test_substrat_d.js`).
+- v1.5.510: Coco-Zyklen lesen „Substrat“ statt „Erde“, Hebe-Zeilen folgen dem Coco-Gießpunkt (`test_substrat_e.js`).
 
 **Gegenprüfung von v1.5.364/365 (07.10.2026 nachts, Workflow wf_4cf817bf-629, drei Sonnet-Prüfer + Gegenprüfer).** Kein Fehlalarm
 in 33 App-Fassungen, allen Vorlagen und über 2800 Klicks; die schweren Befunde (unsichere Kopie zerstört den Hauptstand, Tropfen als
