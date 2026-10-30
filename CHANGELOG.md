@@ -2,6 +2,18 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-30 — v1.5.482
+
+- **Die Wochenkarte „Woche 5 ist durch. Weiter zu Woche 6?“ stand im Eintrag vor dem Hebe-Test, rund 2000 Zeichen lang** — und
+  tat so, als kämen die neuen Mengen erst mit der Zusage. Mengen und Mischliste darunter rechnen aber schon mit der neuen Woche
+  (`fertPlanWeek` folgt dem Kalender): Vorschlag und Bestätigung waren vertauscht. Gießtag-Prüfung 29.10.2026, Punkt 4.
+- **Jetzt** steht oben eine kurze Zeile „Plan-Woche N gilt ab heute — Mengen sind schon angepasst“ (oder „die Mengen bleiben
+  gleich“) mit „Passt“ und „Noch ein paar Tage in Woche N−1 bleiben“ — dieselben Funktionen wie vorher (`confirmPlanWeek`,
+  `holdPlanWeek(…, 3)`). Der lange Text (woran man es an der Pflanze sieht, was beide Wege bewirken, Umkehrbarkeit) steht
+  zugeklappt unter den Gießfeldern (`_planWeekQuestion(c, iso, teil)`). Die Hinweis-Karte „Plan-Woche N beginnt“ bleibt oben.
+- `test_wochenfolgen.js` sucht die neuen Knopf-Worte statt „Noch dranbleiben“.
+- Test: `test_eintrag_wochenkarte.js` (19 Prüfungen, beide Zeitzonen; fällt auf v1.5.479 um). Gebaut von einem Sonnet-Helfer.
+
 ## 2026-10-30 — v1.5.481
 
 - **Wer genau nach Plan gemischt hat, musste jeden Dünger einzeln abhaken** — bei Rainbow bis zu 15 Taps. „✓ Erledigt“ bucht

@@ -49,7 +49,8 @@ const { boot } = require('./audit_lib');
     if (/Dosierung bleibt gleich/.test(t)) fehler.push('B: behauptet fälschlich unveränderte Dosierung');
 
     // Beide Knöpfe weiterhin da, plus Hinweis auf Umkehrbarkeit
-    out.knoepfe = /Weiter zu Woche/.test(t) && /Noch dranbleiben/.test(t);
+    // (v1.5.482) Kopfzeile „Passt“ / „Noch ein paar Tage in Woche N bleiben“, der lange Text („Weiter zu Woche“) zugeklappt darunter
+    out.knoepfe = /Weiter zu Woche/.test(t) && /Passt/.test(t) && /Noch ein paar Tage in Woche \\d+ bleiben/.test(t);
     out.umkehrbar = /rückgängig machen/.test(t);
     if (!out.knoepfe) fehler.push('ein Knopf fehlt');
     if (!out.umkehrbar) fehler.push('Hinweis auf Umkehrbarkeit fehlt');

@@ -3807,7 +3807,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.481';
+const APP_VERSION = 'v1.5.482';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -11543,7 +11543,7 @@ function _planWochenDiffText(diff) {
  * sondern die Pflanze. Wer nicht antwortet, bei dem läuft der Plan normal weiter:
  * weniger Dünger ist im Zweifel das kleinere Übel als zu viel.
  */
-function _planWeekQuestion(c, iso) {
+function _planWeekQuestion(c, iso, teil) {   // (v1.5.482) teil: 'kopf' | 'detail' | leer = beides
   if (!c || !c.startDate || iso !== todayISO()) return '';
   const plan = getPlanForCycle(c);
   // (v1.5.51) Raster aus dem Rückgrat, sonst die festen Grenzen — dieselbe Quelle wie fertPlanWeek.
@@ -11571,6 +11571,7 @@ function _planWeekQuestion(c, iso) {
   // Frage und ohne Verschieben; Spülen und IceFlush setzt die Endspurt-Kette.
   const _phW = (w) => (plan && Array.isArray(plan.weekPhases) && plan.weekPhases[w - 1]) || (_planWocheIstAnzucht(plan, w) ? 'anzucht' : 'bloom');
   if (_phW(wk - 1) !== 'bloom' || _phW(wk) !== 'bloom') {
+    if (teil === 'detail') return '';                       // (v1.5.482) die Hinweis-Karte bleibt ganz oben
     const _aend = _planWochenDiffText(_planWochenDiff(plan, wk));
     if (!fokus && !_aend) return '';
     return `<div style="background:rgba(90,171,240,0.07);border:1px solid rgba(90,171,240,0.35);border-radius:10px;padding:12px;margin:8px 0">
@@ -11578,45 +11579,41 @@ function _planWeekQuestion(c, iso) {
     <div style="font-size:11px;color:var(--text-sub);line-height:1.55;margin-top:4px">${fokus ? fokus + '<br>' : ''}${_aend ? 'Ab heute: ' + _aend : 'Die Mengen bleiben gleich.'}</div>
   </div>`;
   }
-  return `<div style="background:rgba(90,171,240,0.07);border:1px solid rgba(90,171,240,0.35);border-radius:10px;padding:12px;margin:8px 0">
-    <div style="font-size:13px;font-weight:600;color:rgba(90,171,240,0.95)">🧪 Woche ${wk - 1} ist durch. Weiter zu Woche ${wk}?</div>
-    <div style="font-size:11px;color:var(--text-sub);line-height:1.55;margin-top:4px">${fokus ? fokus + '<br>' : ''}
-      <b>Schau die Pflanze an, nicht den Kalender:</b> Werden die Blüten noch sichtbar dicker und sind die Blätter noch satt grün, ist Woche ${wk - 1} noch nicht fertig — dann bleib dran. Sonst weiter.</div>
-    ${(() => {
-      // (v1.5.62) FOLGEN STATT REGELN. Die Karte erklärte, WANN man was wählen sollte, aber
-      // nicht, WAS dann passiert. Für einen Anfänger ist das eine Entscheidung im Blindflug.
-      // Beide Möglichkeiten zeigen jetzt ihr konkretes Ergebnis: welche Dosen sich ändern
-      // und wohin Spülstart und Ernte wandern. Ändert sich nichts, steht auch das da —
-      // dann ist die Entscheidung nämlich unkritisch, und das darf man wissen.
-      // Im kopierten Plan heißen die Wochen „w14"; im Preset stehen sie als Zahl.
-      const _diff = _planWochenDiff(plan, wk);
-
-      const _anz = anzuchtLenFor(c);
-      const _hc = harvestCountdown(c, iso);
-      const _ernteTag = (_hc && _hc.harvestISO) ? isoDiff(_hc.harvestISO, c.startDate) + 1 : null;
-      const _spuelTag = _anz + (c.bloomDays || PHASE_DEFAULTS.bloomDays) + 1;
-
-      const _weiterTxt = _planWochenDiffText(_diff) || ('Dosierung bleibt gleich — Woche ' + wk + ' hat dieselben Mengen.');
-
-      return `<div style="display:flex;flex-direction:column;gap:6px;margin-top:10px">
-        <div style="background:rgba(76,175,112,0.07);border:0.5px solid rgba(76,175,112,0.3);border-radius:9px;padding:9px 11px">
-          <div style="font-size:11px;font-weight:700;color:var(--green)">Wenn du weitergehst</div>
-          <div style="font-size:11px;color:var(--text-sub);line-height:1.5;margin-top:2px">${_weiterTxt}<br>
-            <span style="color:var(--text-hint)">Spülen bleibt Tag ${_spuelTag}${_ernteTag ? ` · Ernte bleibt Tag ${_ernteTag}` : ''}.</span></div>
-        </div>
-        <div style="background:var(--card2);border:0.5px solid var(--border);border-radius:9px;padding:9px 11px">
-          <div style="font-size:11px;font-weight:700;color:var(--text-sub)">Wenn du dranbleibst</div>
-          <div style="font-size:11px;color:var(--text-sub);line-height:1.5;margin-top:2px">Woche ${wk - 1} gilt 3 Tage länger, die Mengen ändern sich vorerst nicht.<br>
-            <span style="color:var(--text-hint)">Spülen Tag ${_spuelTag} → <b>${_spuelTag + 3}</b>${_ernteTag ? ` · Ernte Tag ${_ernteTag} → <b>${_ernteTag + 3}</b>` : ''}. Danach fragt die App wieder.</span></div>
-        </div>
-      </div>
-      <div style="display:flex;gap:6px;margin-top:9px">
-        <button onclick="event.stopPropagation();confirmPlanWeek('${c.id}')" style="flex:1;background:var(--green);border:none;border-radius:8px;padding:10px;font-size:12px;font-weight:600;color:#fff;cursor:pointer;font-family:var(--font)">Weiter zu Woche ${wk}</button>
-        <button onclick="event.stopPropagation();holdPlanWeek('${c.id}',3)" style="flex:1;background:var(--card2);border:0.5px solid var(--border);border-radius:8px;padding:10px;font-size:12px;color:var(--text-sub);cursor:pointer;font-family:var(--font)">Noch dranbleiben</button>
-      </div>
-      <div style="font-size:9px;color:var(--text-hint);margin-top:6px;text-align:center">Beides lässt sich jederzeit rückgängig machen — ＋3/−3 in der Plan-Zeile.</div>`;
-    })()}
+  // (v1.5.62) FOLGEN STATT REGELN: beide Möglichkeiten zeigen ihr konkretes Ergebnis (Dosen, Spülstart, Ernte).
+  // Im kopierten Plan heißen die Wochen „w14“; im Preset stehen sie als Zahl.
+  const _diff = _planWochenDiff(plan, wk);
+  const _anz = anzuchtLenFor(c);
+  const _hc = harvestCountdown(c, iso);
+  const _ernteTag = (_hc && _hc.harvestISO) ? isoDiff(_hc.harvestISO, c.startDate) + 1 : null;
+  const _spuelTag = _anz + (c.bloomDays || PHASE_DEFAULTS.bloomDays) + 1;
+  const _diffTxt = _planWochenDiffText(_diff);
+  const _weiterTxt = _diffTxt || ('Dosierung bleibt gleich — Woche ' + wk + ' hat dieselben Mengen.');
+  // (v1.5.482) Kopfzeile: ehrlich — die Mengen darunter rechnen schon mit der neuen Woche; die Knöpfe bestätigen oder halten.
+  const kopf = `<div style="background:rgba(90,171,240,0.07);border:1px solid rgba(90,171,240,0.35);border-radius:10px;padding:8px 10px;margin:8px 0;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+    <div style="flex:1 1 100%;font-size:12px;font-weight:600;color:rgba(90,171,240,0.95);line-height:1.4">🧪 Plan-Woche ${wk} gilt ab heute — ${_diffTxt ? 'Mengen sind schon angepasst' : 'die Mengen bleiben gleich'}</div>
+    <button onclick="event.stopPropagation();confirmPlanWeek('${c.id}')" style="flex:1 1 auto;background:var(--green);border:none;border-radius:8px;padding:8px 10px;font-size:12px;font-weight:600;color:#fff;cursor:pointer;font-family:var(--font)">Passt</button>
+    <button onclick="event.stopPropagation();holdPlanWeek('${c.id}',3)" style="flex:2 1 auto;background:var(--card2);border:0.5px solid var(--border);border-radius:8px;padding:8px 10px;font-size:12px;color:var(--text-sub);cursor:pointer;font-family:var(--font)">Noch ein paar Tage in Woche ${wk - 1} bleiben</button>
   </div>`;
+  // Der lange Text: zugeklappt, unter den Gießfeldern (der Eintrag ruft _planWeekQuestion(…, 'detail') dort auf).
+  const detail = `<details style="background:rgba(90,171,240,0.05);border:0.5px solid rgba(90,171,240,0.3);border-radius:10px;padding:8px 10px;margin:8px 0">
+    <summary style="font-size:11px;font-weight:600;color:rgba(90,171,240,0.95);cursor:pointer">Woche ${wk - 1} ist durch. Weiter zu Woche ${wk}? — woran du es erkennst, was passiert</summary>
+    <div style="font-size:11px;color:var(--text-sub);line-height:1.55;margin-top:6px">${fokus ? fokus + '<br>' : ''}
+      <b>Schau die Pflanze an, nicht den Kalender:</b> Werden die Blüten noch sichtbar dicker und sind die Blätter noch satt grün, ist Woche ${wk - 1} noch nicht fertig — dann bleib dran. Sonst weiter.</div>
+    <div style="display:flex;flex-direction:column;gap:6px;margin-top:10px">
+      <div style="background:rgba(76,175,112,0.07);border:0.5px solid rgba(76,175,112,0.3);border-radius:9px;padding:9px 11px">
+        <div style="font-size:11px;font-weight:700;color:var(--green)">Wenn du weitergehst</div>
+        <div style="font-size:11px;color:var(--text-sub);line-height:1.5;margin-top:2px">${_weiterTxt}<br>
+          <span style="color:var(--text-hint)">Spülen bleibt Tag ${_spuelTag}${_ernteTag ? ` · Ernte bleibt Tag ${_ernteTag}` : ''}.</span></div>
+      </div>
+      <div style="background:var(--card2);border:0.5px solid var(--border);border-radius:9px;padding:9px 11px">
+        <div style="font-size:11px;font-weight:700;color:var(--text-sub)">Wenn du dranbleibst</div>
+        <div style="font-size:11px;color:var(--text-sub);line-height:1.5;margin-top:2px">Woche ${wk - 1} gilt 3 Tage länger, die Mengen ändern sich vorerst nicht.<br>
+          <span style="color:var(--text-hint)">Spülen Tag ${_spuelTag} → <b>${_spuelTag + 3}</b>${_ernteTag ? ` · Ernte Tag ${_ernteTag} → <b>${_ernteTag + 3}</b>` : ''}. Danach fragt die App wieder.</span></div>
+      </div>
+    </div>
+    <div style="font-size:9px;color:var(--text-hint);margin-top:6px;text-align:center">Beides lässt sich jederzeit rückgängig machen — ＋3/−3 in der Plan-Zeile.</div>
+  </details>`;
+  return teil === 'kopf' ? kopf : (teil === 'detail' ? detail : kopf + detail);
 }
 
 /**
@@ -31168,10 +31165,11 @@ function renderEntry(iso) {
       ${giessCard || ''}
       ${toppingBtn}
       ${trainingBtn}
-      ${(iso === todayISO()) ? (_planWeekQuestion(c, iso) || _planStatusLine(c, iso)) : _planStatusLine(c, iso, true)}
+      ${(iso === todayISO()) ? (_planWeekQuestion(c, iso, 'kopf') || _planStatusLine(c, iso)) : _planStatusLine(c, iso, true)}
 
       ${nutSection}
-      ${waterRow}`;
+      ${waterRow}
+      ${(iso === todayISO()) ? _planWeekQuestion(c, iso, 'detail') : ''}`;   // (v1.5.482) langer Wochentext zugeklappt unter den Gießfeldern
   }).join('');
 
   // (v1.5.187) Temperatur- und Luftfeuchte-Zeile samt kritischer Warnung kommen aus _klimaEntryTeile (oben), damit uEnv
