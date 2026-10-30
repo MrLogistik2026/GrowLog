@@ -2,6 +2,15 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-30 — v1.5.516
+
+- **Botrytis: „Lieber 1 Woche zu früh ernten als die Hälfte der Buds verlieren“** stand ohne Einordnung — gegen `ANBAU.md` 11 (zu früh
+  ernten ist der teuerste Fehler); dazu „Luftfeuchte < 50 %“ als feste Zahl.
+- **Jetzt** sprechen Lexikon, Diagnose und Schnellhilfe den Zielkonflikt aus: früher ernten nur als Notmaßnahme bei sich
+  ausbreitendem Befall, befallene Teile großzügig entfernen; sonst gilt die Trichom-Reife. Luftfeuchte unter den Deckel der Phase
+  aus `KLIMA_ZIEL` (13.5).
+- Test: `test_rest_5.js` (7 Prüfungen, beide Zeitzonen; fällt auf v1.5.515 um).
+
 ## 2026-10-30 — v1.5.515
 
 - **Sprühmittel ohne Phasengrenze:** Diagnose und Schnellhilfe nannten bei Spinnmilben „Neem-Öl oder Schwefel-Spray alle 3 Tage“, das

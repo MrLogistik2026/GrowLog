@@ -2768,7 +2768,7 @@ const PROBLEMS = [
     },
     description: 'Buds werden braun/grau innen, feinstaubiger grauer Schimmel. Oft in dichten, kolossalen Buds bei hoher Luftfeuchte.',
     context: { phase: ['bloom', 'flush'], humidityHigh: true },
-    action: 'NOTFALL. Befallene Buds SOFORT entfernen (mindestens 5 cm gesunder Anteil weg). Luftfeuchte auf < 50 %. Luftbewegung erhöhen. Bei starkem Befall: früh ernten.',
+    action: 'NOTFALL. Befallene Buds SOFORT entfernen (mindestens 5 cm gesunder Anteil weg). Luftfeuchte unter den Deckel deiner Phase bringen (' + KLIMA_ZIEL.mittel.deckel + ' % in früher und mittlerer, ' + KLIMA_ZIEL.spaet.deckel + ' % in später Blüte). Luftbewegung erhöhen. Breitet sich der Befall trotzdem aus: früher ernten nur als Notmaßnahme, sonst gilt die Trichom-Reife.',
     lexiconKey: 'bud_rot',
   },
   {
@@ -4978,7 +4978,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.515';
+const APP_VERSION = 'v1.5.516';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -9067,7 +9067,7 @@ const SYMPTOMS = [
         heading: 'Graue, watteartige Fäule INNEN in der Blüte',
         verdict: '⚠⚠ Knospenfäule (Botrytis)',
         color: 'var(--red)',
-        text: 'Der gefährlichste Spätblüten-Schaden: ein Grauschimmel frisst die Blüte von innen, ein Bud wird braun, weich und zerfällt zu „Staub". Breitet sich rasend aus. <b>Sofort handeln:</b> befallene Stelle großzügig herausschneiden (mind. 5 cm ins gesunde Gewebe, saubere Schere danach desinfizieren), Pflanze NICHT von oben befeuchten. <b>Ursache abstellen:</b> Luftfeuchte senken — in der späten Blüte höchstens ' + KLIMA_ZIEL.spaet.deckel + ' %, im Ziel ' + _klimaLexRlf2K('spaet', 24) + ' —, Luftbewegung erhöhen, sehr dichte Buds ausdünnen. Bei starkem Befall lieber etwas früher ernten als alles verlieren.',
+        text: 'Der gefährlichste Spätblüten-Schaden: ein Grauschimmel frisst die Blüte von innen, ein Bud wird braun, weich und zerfällt zu „Staub". Breitet sich rasend aus. <b>Sofort handeln:</b> befallene Stelle großzügig herausschneiden (mind. 5 cm ins gesunde Gewebe, saubere Schere danach desinfizieren), Pflanze NICHT von oben befeuchten. <b>Ursache abstellen:</b> Luftfeuchte senken — in der späten Blüte höchstens ' + KLIMA_ZIEL.spaet.deckel + ' %, im Ziel ' + _klimaLexRlf2K('spaet', 24) + ' —, Luftbewegung erhöhen, sehr dichte Buds ausdünnen. Breitet sich der Befall trotzdem weiter aus, ist früher ernten die Notmaßnahme — sonst gilt die Trichom-Reife (zu früh ernten lässt sich nicht korrigieren).',
         when: 'Mittlere/späte Blüte, Luftfeuchte über ' + KLIMA_ZIEL.spaet.deckel + '–' + KLIMA_ZIEL.mittel.deckel + ' %',
         lex: 'Schimmel (Botrytis)',
       },
@@ -39076,7 +39076,7 @@ const LEXIKON = [
         '4. Schere mit Isopropanol desinfizieren bevor du weiterschneidest<br>' +
         '5. Im Zelt: <b>RLF sofort auf <45%</b> senken, Luftzirkulation maximieren<br>' +
         '6. Alle umliegenden Buds täglich auf Ausbreitung kontrollieren<br>' +
-        '7. Bei massivem Befall in der Spätblüte: <b>früh ernten</b> ist besser als alles verlieren<br><br>' +
+        '7. Breitet sich der Befall in der Spätblüte trotzdem weiter aus: früher ernten als Notmaßnahme — sonst gilt die Trichom-Reife<br><br>' +
         '<b>Prävention (zentral, einzige verlässliche Methode):</b><br>' +
         '<table style="width:100%;border-collapse:collapse;font-size:13px;margin-top:6px">' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">RLF Spätblüte</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Unter 45% halten — Hauptmaßnahme</td></tr>' +
@@ -39086,7 +39086,8 @@ const LEXIKON = [
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Tag/Nacht-Differenz</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Unter 8°C halten — Kondensation verhindern</td></tr>' +
         '<tr><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Inspektion</td><td style="padding:6px 8px;border:1px solid rgba(255,255,255,0.08)">Tägliche 1-Minuten-Sichtprüfung in Spätblüte</td></tr>' +
         '</table>',
-      pitfall: '<b>Bei starkem Befall nachts:</b> sofort am Folgetag früh ernten. Jeder Tag mit Botrytis lässt den Befall weiter wachsen. Lieber 1 Woche zu früh ernten als die Hälfte der Buds verlieren.<br><br>' +
+      // (v1.5.516) Botrytis: früh ernten nur als Notmaßnahme, sonst gilt die Trichom-Reife (ANBAU 11, 13.5).
+      pitfall: '<b>Bei sich ausbreitendem Befall:</b> befallene Teile sofort und großzügig entfernen — jeder Tag lässt den Befall weiter wachsen. Früher ernten ist nur die Notmaßnahme, wenn er sich trotzdem weiter ausbreitet. Es ist ein Zielkonflikt: Zu früh ernten ist der teuerste und nicht korrigierbare Fehler (Trichome). Ohne weiteren Befall gilt die Trichom-Reife.<br><br>' +
         '<b>Wenn Buds befallen:</b> die kann man <b>nicht mehr verwenden</b> — Mykotoxine sind gesundheitsgefährlich, besonders für Immungeschwächte. Niemals Botrytis-Buds rauchen oder verarbeiten — auch nicht „nur das gesunde Stück daneben". Großzügig wegschneiden.<br><br>' +
         '<b>Häufige Fehler:</b><br>' +
         '• <b>Befall geschüttelt</b> → Sporenwolke verteilt sich im ganzen Zelt, alle Buds in Gefahr<br>' +

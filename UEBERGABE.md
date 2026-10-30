@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.515** · index.html 2,67 MB · 781 Funktionen
+Stand: **v1.5.516** · index.html 2,67 MB · 781 Funktionen
 Zuletzt fortgeschrieben am 30.10.2026 früh (Nachtarbeit 29./30.10.: Diagnose-Liste B01–B12 und U4 fertig, danach zwei
 Bedien-Prüfungen nach den Grundsätzen der Lager-App — Befunde in `.claude/notizen/ux/*.txt` und `.claude/tmp/ux2/bericht.txt`,
 abgearbeitet in v1.5.452–498, siehe Versionsliste in 0o. **Patrick am 30.10.2026 morgens zu den vier offenen Fragen: „Ja bau
@@ -551,6 +551,7 @@ Speicher-Befunde sind in v1.5.340–344 behoben. Rohdaten: Workflow wf_63d754b1-
 - v1.5.513: **Fehler:** Spül- und IceFlush-Vorlage trugen 50 % mehr ein als die Karte und rechneten beim Nachtragen mit heute — jetzt `waterSuggestion(c, p, iso)` (`test_rest_2.js`).
 - v1.5.514: Mykorrhiza, Bacillus und PK-Booster ohne Wirkungszusagen, K/Mg-Regel aus ANBAU 6.2 (`test_rest_3.js`).
 - v1.5.515: Sprühmittel und Abspritzen bei Spinnmilben, Thripsen und Blattläusen nur vor der Blüte (`test_rest_4.js`).
+- v1.5.516: Botrytis: früher ernten nur als Notmaßnahme, Luftfeuchte unter den Deckel aus KLIMA_ZIEL (`test_rest_5.js`).
 
 **Gegenprüfung von v1.5.364/365 (07.10.2026 nachts, Workflow wf_4cf817bf-629, drei Sonnet-Prüfer + Gegenprüfer).** Kein Fehlalarm
 in 33 App-Fassungen, allen Vorlagen und über 2800 Klicks; die schweren Befunde (unsichere Kopie zerstört den Hauptstand, Tropfen als
