@@ -2,6 +2,16 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-30 — v1.5.509
+
+- **Ein Zulauf-pH von 5,6–5,9 in Erde blieb ohne Hinweis**, und die Warnung nannte „Ca/Mg werden blockiert“. Nach `ANBAU.md` 4 gilt
+  in organischen Substraten: nie unter 6,0, weil darunter die Mikroflora einbricht, die den Dünger aufschließt; Mangan und
+  Aluminium werden erst unter 5,5 mobil. Hebel 2 der Bewertung.
+- **Jetzt** meldet das pH-Feld in Erde ab unter 6,0 die Mikroflora und die schlechtere Ca/Mg-Verfügbarkeit, unter 5,5 zusätzlich
+  Mangan und Aluminium; Ziel aus `phTargetFor`. Das Lexikon zum pH-Wert folgt 4 (zu niedrig: unter 5,5 in Erde; zu hoch: über 6,8,
+  Eisenchlorose an jungen Blättern).
+- Test: `test_substrat_d.js` (17 Prüfungen, beide Zeitzonen; 9 fallen auf v1.5.508 um).
+
 ## 2026-10-30 — v1.5.508
 
 - **Drain-pH 6,9 in gekalkter Erde löste den Drift-Alarm aus.** Nach `ANBAU.md` 4.1 sind 6,8–7,2 dort das erwartete Gleichgewicht

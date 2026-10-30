@@ -3890,7 +3890,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.508';
+const APP_VERSION = 'v1.5.509';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -16671,17 +16671,23 @@ function getCriticalWarning(category, value, p, c, t) {
     // Coco (5.8–6.2) und Hydro (5.5–6.0) haben ein engeres Fenster als Erde — pH 6.8 ist
     // in Coco/Hydro schon Fe/Mn-Lockout, in Erde noch grenzwertig ok.
     const _phMed = c && c.medium;
-    const phWarnLo = _phMed === 'hydro' ? 5.2 : 5.5;
+    // (v1.5.509) Erde: Untergrenze aus dem Ziel des Substrats (phTargetFor, lo − 0,2 = 6,0) — dieselbe Schwelle wie die Warnung im Eintrag
+    // (getEntryWarnings). Vorher blieb das Feld bei Erde-pH 5,6 stumm (nur unter 5,5 kam eine Meldung), obwohl ANBAU.md 4 sagt: nie unter
+    // 6,0 in organischen Substraten — dort bricht die Mikroflora ein, die den Dünger aufschließt. Coco und Hydro bleiben wie bisher.
+    const _erdeMed = _phMed !== 'hydro' && _phMed !== 'coco';
+    const phWarnLo = _phMed === 'hydro' ? 5.2 : (_phMed === 'coco' ? 5.5 : Math.round((_phNot.lo - 0.2) * 10) / 10);
     const phWarnHi = _phMed === 'hydro' ? 6.3 : (_phMed === 'coco' ? 6.5 : 7.0);
     if (value < phWarnLo || value > phWarnHi) {
       const _phT = phTargetFor(_phMed);
       return {
         level: 'high',
         icon: '⚠️',
-        title: `pH ${value.toFixed(1)} außerhalb des Aufnahme-Fensters`,
+        title: (_erdeMed && value >= 5.5 && value < phWarnLo) ? `pH ${value.toFixed(1)} unter dem Ziel für Erde` : `pH ${value.toFixed(1)} außerhalb des Aufnahme-Fensters`,   // (v1.5.509) ANBAU.md 4: 5,5–5,99 in Erde ist eine Bodenleben-Frage, kein Aufnahme-Fenster
         action: ph === 'flush' || ph === 'ice'
           ? `In Spülung/IceFlush ist pH-Drift weniger kritisch — Ziel ${_phT.label}.`
-          : `Zu niedriger pH → Ca/Mg-Lockout, zu hoher → Fe/Mn-Lockout. Ziel ${_phMed === 'coco' ? 'Coco' : (_phMed === 'hydro' ? 'Hydro' : 'Erde')} ${_phT.label}. Nächsten Guss korrigieren.`,
+          : (_erdeMed && value < phWarnLo
+            ? `Unter ${phWarnLo.toFixed(1)} lässt in Erde das Bodenleben nach — die Mikroorganismen, die Nährstoffe aus der Erde und aus organischem Dünger freisetzen. Unter 5,5 werden außerdem Mangan und Aluminium löslich, und Calcium und Magnesium werden schlechter verfügbar. Ziel Erde ${_phT.label}: Stell den nächsten Guss richtig ein.`
+            : `Zu niedriger pH → Ca/Mg-Lockout, zu hoher → Fe/Mn-Lockout. Ziel ${_phMed === 'coco' ? 'Coco' : (_phMed === 'hydro' ? 'Hydro' : 'Erde')} ${_phT.label}. Nächsten Guss korrigieren.`),
       };
     }
   }
@@ -17019,7 +17025,9 @@ function getEntryWarnings(cd, p, e, c, iso) {
     } else if (phVal < warnLo) {
       const text = S.beginnerMode
         ? `pH ${phVal.toFixed(1)} etwas zu sauer — Ziel: ${pht.labelComma}.`
-        : `⚠ pH ${phVal.toFixed(1)} unter ${warnLo.toFixed(1)} — Ca/Mg werden blockiert (Lockout). Ziel: ${pht.label}.`;
+        : (c && (c.medium === 'coco' || c.medium === 'hydro')
+          ? `⚠ pH ${phVal.toFixed(1)} unter ${warnLo.toFixed(1)} — Ca/Mg werden blockiert (Lockout). Ziel: ${pht.label}.`
+          : `⚠ pH ${phVal.toFixed(1)} unter ${warnLo.toFixed(1)} — in Erde lässt darunter das Bodenleben nach (Mikroorganismen, die Nährstoffe freisetzen). Ziel: ${pht.label}.`);   // (v1.5.509) ANBAU.md 4
       out.push({ type: 'warn', text });
     } else if (phVal > errHi) {
       const text = S.beginnerMode
@@ -36241,7 +36249,7 @@ const LEXIKON = [
   { cat: '🌱 Grundlagen', items: [
     { t: 'pH-Wert',
       brief: 'Das elektrische Milieu im Substrat — entscheidet ob Nährstoffe überhaupt aufgenommen werden können, egal wie viel da ist.',
-      mechanism: 'Wurzeln nehmen Nährstoffe nur als <b>gelöste Ionen</b> auf. Dieser Kationenaustausch funktioniert in Torf- und Erdsubstraten nur in einem hochspezifischen elektrischen Fenster. Fällt der pH unter 6.0 → <b>Calcium und Magnesium werden blockiert</b> (Lockout), selbst wenn sie vorhanden sind. Steigt er über 6.5 → <b>Eisen, Mangan und Phosphor</b> werden blockiert.',
+      mechanism: 'Wurzeln nehmen Nährstoffe nur als <b>gelöste Ionen</b> auf. Dieser Kationenaustausch funktioniert in Torf- und Erdsubstraten nur in einem hochspezifischen elektrischen Fenster. Ist der pH zu niedrig (in Erde unter 5,5), werden <b>Mangan und Aluminium mobil</b>, Calcium und Magnesium schlechter verfügbar, und die Mikroflora bricht ein. Ist er zu hoch (über 6,8), gehen <b>Eisen, Mangan, Zink und Bor</b> in schwerlösliche Formen über — klassisch ist die Eisenchlorose: hellgelbe junge Blätter bei zunächst grün bleibenden Adern.',
       practice: '<b>Sweetspot in Erde/Torf:</b> 6.2–6.4, Ziel 6.4.<br><b>Coco:</b> 5.8–6.2.<br><b>Hydro (Canna/Advanced):</b> 5.5–6.5.<br><br>Gieß-pH immer am Ende einstellen (nach allen Düngern). Mit pH-Down (Phosphorsäure) runter, pH-Up (Kalilauge) hoch.<br><br><b>Drain-pH messen:</b> Zeigt was im Substrat tatsächlich los ist — wenn der Drain 5.5 hat, du aber mit 6.4 gießt, driftet der Boden ab.',
       pitfall: 'Die meisten „Nährstoffmängel" sind in Wahrheit <b>pH-Lockouts</b> — Dünger ist da, wird aber nicht aufgenommen. Immer zuerst pH checken bevor du mehr düngst. Eine Drift von nur 0.3 Punkten reicht für Probleme.' },
     { t: 'EC-Wert (Osmotischer Druck)',
