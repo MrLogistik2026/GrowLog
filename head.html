@@ -329,6 +329,18 @@ input.suggested:focus { color: var(--text) !important; font-style: normal; opaci
 .cal-cell.today { border: 2px solid #fff !important; }
 .cal-num { font-size: 14px; color: var(--text-sub); font-weight: 700; line-height: 1; }
 .cal-cell.today .cal-num { color: #fff; }
+/* (v1.5.503) Helles Thema: Die Zellen standen fest auf #151515 — 27 von 36 Kalenderzellen waren schwarz, der weiße „heute“-Rand
+ * verschwand. Dieselben Regeln für „auto“ bei hellem System. */
+:root[data-theme="light"] .cal-cell { background: var(--card2); border-color: var(--border); }
+:root[data-theme="light"] .cal-cell.today { border-color: var(--text) !important; }
+:root[data-theme="light"] .cal-cell.today .cal-num { color: var(--text); }
+:root[data-theme="light"] .cal-tag { color: var(--text-hint); }
+@media (prefers-color-scheme: light) {
+  :root[data-theme="auto"] .cal-cell { background: var(--card2); border-color: var(--border); }
+  :root[data-theme="auto"] .cal-cell.today { border-color: var(--text) !important; }
+  :root[data-theme="auto"] .cal-cell.today .cal-num { color: var(--text); }
+  :root[data-theme="auto"] .cal-tag { color: var(--text-hint); }
+}
 .cal-tag { font-size: 9px; color: rgba(255,255,255,0.6); line-height: 1; margin-top: 1px; text-align: center; }
 .cal-tag2 { display: flex; justify-content: center; gap: 2px; font-size: 9px; letter-spacing: -0.2px; white-space: nowrap; max-width: 100%; }
 .cal-icon { font-size: 13px; line-height: 1; margin-bottom: 1px; display: inline-flex; align-items: center; justify-content: center; height: 16px; width: 16px; }

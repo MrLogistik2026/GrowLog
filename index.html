@@ -329,6 +329,18 @@ input.suggested:focus { color: var(--text) !important; font-style: normal; opaci
 .cal-cell.today { border: 2px solid #fff !important; }
 .cal-num { font-size: 14px; color: var(--text-sub); font-weight: 700; line-height: 1; }
 .cal-cell.today .cal-num { color: #fff; }
+/* (v1.5.503) Helles Thema: Die Zellen standen fest auf #151515 — 27 von 36 Kalenderzellen waren schwarz, der weiße „heute“-Rand
+ * verschwand. Dieselben Regeln für „auto“ bei hellem System. */
+:root[data-theme="light"] .cal-cell { background: var(--card2); border-color: var(--border); }
+:root[data-theme="light"] .cal-cell.today { border-color: var(--text) !important; }
+:root[data-theme="light"] .cal-cell.today .cal-num { color: var(--text); }
+:root[data-theme="light"] .cal-tag { color: var(--text-hint); }
+@media (prefers-color-scheme: light) {
+  :root[data-theme="auto"] .cal-cell { background: var(--card2); border-color: var(--border); }
+  :root[data-theme="auto"] .cal-cell.today { border-color: var(--text) !important; }
+  :root[data-theme="auto"] .cal-cell.today .cal-num { color: var(--text); }
+  :root[data-theme="auto"] .cal-tag { color: var(--text-hint); }
+}
 .cal-tag { font-size: 9px; color: rgba(255,255,255,0.6); line-height: 1; margin-top: 1px; text-align: center; }
 .cal-tag2 { display: flex; justify-content: center; gap: 2px; font-size: 9px; letter-spacing: -0.2px; white-space: nowrap; max-width: 100%; }
 .cal-icon { font-size: 13px; line-height: 1; margin-bottom: 1px; display: inline-flex; align-items: center; justify-content: center; height: 16px; width: 16px; }
@@ -4888,7 +4900,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.502';
+const APP_VERSION = 'v1.5.503';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -19512,8 +19524,9 @@ function renderDash() {
         <button onclick="dismissMilestone('${a.cId}','${a.key}')" style="background:none;border:none;color:var(--text-muted);font-size:16px;cursor:pointer;padding:0 4px" aria-label="Ausblenden">✕</button>
       </div>`;
     }
-    const bg = { warn: '#1a1000', info: '#001020', success: '#001a00', tip: '#101000' }[a.type] || '#111';
-    const bc = { warn: '#6a4000', info: '#004080', success: '#006000', tip: '#606000' }[a.type] || '#333';
+    // (v1.5.503) Getönte Flächen statt fester Fast-Schwarz-Werte: Im hellen Thema stand der Text auf #101000 (Kontrast 2,16 : 1).
+    const bg = { warn: 'rgba(240,150,40,0.10)', info: 'rgba(90,171,240,0.10)', success: 'rgba(76,175,112,0.10)', tip: 'rgba(210,190,50,0.10)' }[a.type] || 'var(--card2)';
+    const bc = { warn: 'rgba(240,150,40,0.45)', info: 'rgba(90,171,240,0.45)', success: 'rgba(76,175,112,0.45)', tip: 'rgba(210,190,50,0.45)' }[a.type] || 'var(--border)';
     // Alerts with action=trichome jump to the trichome widget in today's entry
     const clickable = a.action === 'trichome' && a.cId;
     const extraAttr = clickable
@@ -20175,10 +20188,10 @@ function renderCal() {
     // Action-type color mapping (v0.8.91): highlight key events beyond just emoji
     // Gießen stays in cycle-color. Ernte = gold. Spülen = light-blue. Ice = teal. Trocknen = amber.
     const ACT_COLORS = {
-      ernte:    { bg: '#2a1f08', border: '#f0c050aa' },  // gold/amber — high-value event
-      spuelen:  { bg: '#082028', border: '#5ab0d888' },  // light blue — water-related
-      ice:      { bg: '#0a2428', border: '#6fdce088' },  // teal — cold
-      trocknen: { bg: '#1f1408', border: '#c88a4888' },  // warm brown — drying
+      ernte:    { bg: 'rgba(240,192,80,0.14)', border: '#f0c050aa' },  // gold/amber — high-value event
+      spuelen:  { bg: 'rgba(90,176,216,0.14)', border: '#5ab0d888' },  // light blue — water-related
+      ice:      { bg: 'rgba(111,220,224,0.14)', border: '#6fdce088' },  // teal — cold
+      trocknen: { bg: 'rgba(200,138,72,0.14)', border: '#c88a4888' },  // warm brown — drying
     };
 
     // PHASE-ÜBERGANG-MARKER (Phase 3 Schritt 3):
@@ -20234,7 +20247,8 @@ function renderCal() {
       }
     }
 
-    let bg = '#151515', border = 'transparent';
+    // (v1.5.503) Zellfarben aus dem Thema (--surface, --card) bzw. durchscheinend — feste Dunkelwerte machten im hellen Thema 27 von 36 Zellen schwarz.
+    let bg = 'var(--surface)', border = 'transparent';
     // PLAN vs EINGETRAGEN: Wenn ein Tag eine geplante Aktion hat (actionDay)
     // aber noch KEINEN Eintrag, soll er deutlich dezenter aussehen — der User
     // Plan vs. erledigt: Gießtage haben IMMER denselben kräftigen grünen Rahmen —
@@ -20244,27 +20258,27 @@ function renderCal() {
     const isPlannedNotLogged = actionDay && !hasEntry;
     const planAlpha = '77';   // Gießtag-Rahmen IMMER kräftig — Plan-Status zeigt Füllung + Punkt, nicht der Rahmen
     const planBgFactor = isPlannedNotLogged ? 0.4 : 1.0;  // visuell dezenter
-    if (isStart) { bg = '#1e1a04'; border = '#f0d050aa'; }
+    if (isStart) { bg = 'rgba(240,208,80,0.10)'; border = '#f0d050aa'; }
     else if (isTransplantDay) {
       // Auspflanz-Tag: warmes Orange-Gelb (Sonne)
-      bg = '#2a1f08'; border = '#f0a850aa';
+      bg = 'rgba(240,168,80,0.14)'; border = '#f0a850aa';
     }
     else if (actionDay && ACT_COLORS[actionDay.a]) {
       // Use special color for key actions (ernte, spuelen, ice, trocknen)
-      bg = isPlannedNotLogged ? '#1a1a1a' : ACT_COLORS[actionDay.a].bg;
+      bg = isPlannedNotLogged ? 'var(--card)' : ACT_COLORS[actionDay.a].bg;
       border = ACT_COLORS[actionDay.a].border;   // immer voll — Plan-Status über Füllung + Punkt
     }
     else if (actionDay) {
       const cl = col(actionDay.c);
-      bg = isPlannedNotLogged ? '#1a1a1a' : cl.dk;
+      bg = isPlannedNotLogged ? 'var(--card)' : cl.dk;
       border = cl.hex + planAlpha;
     }
     else if (manualWaterDay) {
       // Outdoor-Manuell: User-Eintrag mit Wasser → wie normaler Gießtag dargestellt
       const cl = col(manualWaterDay.c); bg = cl.dk; border = cl.hex + '77';
     }
-    else if (isToppingRest) { bg = '#150820'; border = 'rgba(176,106,200,0.3)'; }
-    else if (isSkipped) { bg = '#1a1010'; border = 'rgba(224,96,96,0.15)'; }
+    else if (isToppingRest) { bg = 'rgba(176,106,200,0.10)'; border = 'rgba(176,106,200,0.3)'; }
+    else if (isSkipped) { bg = 'rgba(224,96,96,0.08)'; border = 'rgba(224,96,96,0.15)'; }
 
     let icon = '';
     if (isStart) icon = START_ICON;

@@ -2,6 +2,20 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-30 — v1.5.503
+
+- **Das helle Thema war an zentralen Stellen kaputt.** Kalenderzellen hatten feste Dunkelwerte (#151515, #1a1a1a und dunkle
+  Aktionsfarben) — im hellen Thema waren 27 von 36 Zellen schwarz, der weiße „heute“-Rand verschwand. Die Hinweiskarten der
+  Startseite standen fest auf #101000/#1a1000, der Text dort bei Kontrast 2,16 : 1. Gefunden bei der Bewertung vom 30.10.2026
+  (Technik-Befund 2, im echten Chrome mit axe gemessen); im Code stand es seit Langem als „bekannte Limitation“.
+- **Jetzt** nehmen die Zellen die Themenfarben (`--surface`, `--card`) bzw. durchscheinende Tönungen für Ernte, Spülen, IceFlush,
+  Trocknen, Start, Auspflanzen, Ruhetag und übersprungene Tage; „heute“ ist im hellen Thema dunkel umrandet, dieselben Regeln gelten
+  für „auto“ bei hellem System. Die Hinweiskarten sind getönt statt fast schwarz. Im Browser nachgesehen: hell 0 von 31 Zellen
+  dunkel, das dunkle Thema sieht aus wie vorher.
+- **Offen:** Weitere feste Dunkelwerte in Inline-Stilen (die Bewertung zählte 13–32 Kontrastfälle je Bildschirm im hellen Thema),
+  die inaktive Navigation (2,06 : 1).
+- Test: `test_helles_thema.js` (7 Prüfungen, beide Zeitzonen; fällt auf v1.5.502 um).
+
 ## 2026-10-30 — v1.5.502
 
 - **Der Gießtag-Eintrag im Profi-Modus stand auf 390 px 46 px über und scrollte seitlich.** Die Drain-Zeile (Drain-pH und Drain-EC
