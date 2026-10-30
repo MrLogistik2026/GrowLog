@@ -145,7 +145,7 @@ function pruef(name, bedingung, info) {
       c.startDate = '2026-06-01'; c.startMethod = '${startM}'; c.potSize = 11; c.germMethod = '${germ}'; saveS();
       const iso = isoPlus(c.startDate, ${tag - 1}); setDebugDate(iso); openEntry(iso);
       const t = document.getElementById('scr-entry').textContent.replace(/\\s+/g, ' ');
-      const box = (t.match(/Sämlings-Pflege[^]{0,700}/) || [''])[0];
+      const box = (t.match(/Sämlings-Pflege[^]{0,700}/) || [''])[0] + ' ' + (t.match(/Sämling-Grundregeln[^]{0,700}/) || [''])[0];   // (v1.5.493) Grundregeln liegen im Zuklapper
       return JSON.stringify({ box, heute: (box.match(/✅ Heute:(.*?)⛔/) || ['', ''])[1].trim() });
     })()`));
     const t3direkt = pflege('direct', 'saturated', 3), t3tuch = pflege('paper', 'saturated', 3);

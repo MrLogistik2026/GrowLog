@@ -3851,7 +3851,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.492';
+const APP_VERSION = 'v1.5.493';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -29279,6 +29279,137 @@ async function entryNav(dir) {
   }, { passive: true });
 })();
 
+/**
+ * (v1.5.493) Einsteiger-Tageseintrag: oben die Aufgabe von heute, darunter nur, was heute eingetragen wird; Erklär- und
+ * Nebenblöcke liegen gesammelt in EINEM zugeklappten Bereich am Ende. Befund (zweite Bedien-Prüfung, 30.10.2026, Befund 3):
+ * Am Gießtag hatte der Einsteiger 8 Felder / 53 Knöpfe / 3922 Zeichen, der Profi 19 / 54 / 4287 — kaum schlanker; vor den
+ * Feldern standen Banner, Toppen-Block, drei Mengen, Lern-Status und der Gieß-Guide (UEBERGABE.md 0c und 1). Nichts wird
+ * entfernt: Die Blöcke tragen im Einsteiger-Modus eine Marke (`_ez`) und wandern nach dem Zeichnen in den Zuklapper
+ * (`_entryEinsteigerKompakt`). Im Profi-Modus gibt `_ez` den Text unverändert zurück — sein Eintrag bleibt byte-gleich.
+ * Die Aufgabenzeile baut keine neue Regel: Sie liest `getTodayAction` (dieselbe Antwort wie die Startseiten-Karte),
+ * `_gussHeuteErledigt` und `giessenLautMessung`.
+ */
+let _entryMehrOffen = '';   // Tag, an dem der Zuklapper offen ist — überlebt das Neuzeichnen beim Tippen
+function _ez(html, key, cid) {
+  if (!S.beginnerMode || !html || !String(html).trim()) return html;
+  return `<div data-ez="${key || 'mehr'}"${cid ? ` data-ez-c="${cid}"` : ''} style="display:contents">${html}</div>`;
+}
+function _ezWenn(cond, html) { return cond ? _ez(html) : html; }
+
+/** Die Aufgabe eines Zyklus für den Tag: { titel, schritte: [HTML], hinweis } oder null (Zyklus ohne Phase). */
+function _entryAufgabeFuer(c, iso, body) {
+  const p = phase(iso, c);
+  if (!p) return null;
+  const a = getAction(iso, c);
+  let ta = null;
+  try { ta = getTodayAction(c, p, a, iso); } catch (e) { ta = null; }
+  const erl = _gussHeuteErledigt(c, iso);
+  const n = getEffectivePlantCount(c, iso);
+  const je = !!(c.scaleByPlants && n > 1);   // dieselbe Bedingung wie das Mengenfeld: ml je Pflanze
+  let titel = '', schritte = [], hinweis = '';
+  if (erl && (erl.status === 'gegossen' || erl.status === 'erledigt')) {
+    titel = erl.status === 'gegossen' ? `✓ Gegossen — ${erl.ml} ml eingetragen` : '✓ Gießtag erledigt';
+    schritte = ['Fehlt nur noch, was du heute sonst misst oder notierst — die Felder stehen darunter.'];
+  } else if (ta) {
+    titel = ta.title || '';
+    schritte = (ta.steps || []).filter(Boolean).slice();
+    hinweis = ta.hint || '';
+    // Eine Menge: Das Feld darunter zählt je Pflanze, die Karte nannte die Summe — zwei Zahlen für denselben Guss.
+    if ((a === 'giess' || a === 'giess_anz' || a === 'spuelen') && je && schritte[0]) {
+      schritte[0] = schritte[0].replace(/<b>(\d+) ml<\/b>/, (m, ml) => `<b>${Math.round(ml / n)} ml je Pflanze</b>`);
+    }
+    if (a === 'saettigung' && je && schritte[1]) {
+      // Sättigungsguss je Pflanze, wie die Karte im Eintrag (Etappe = Menge je Pflanze / 3, auf 50 gerundet).
+      schritte[1] = schritte[1].replace(/<b>(\d+) ml in 3 Etappen<\/b> zu je ~\d+ ml/, (m, ml) => `<b>${Math.round(ml / n)} ml je Pflanze in 3 Etappen</b> zu je ~${Math.max(50, Math.round(ml / n / 3 / 50) * 50)} ml`);
+    }
+    const _ohneTest = (c.weightMode === 'lift' || c.weightMode === 'finger' || c.weightMode === 'scale') && c.medium !== 'hydro'
+      && (p.day || 1) >= DRAIN_AB_TAG && restgewichtHeute(c, iso) == null && !/noch (voll|feucht)/.test(titel);
+    if ((a === 'giess' || a === 'giess_anz') && _ohneTest) {
+      schritte.unshift('Erst den Topf anheben und den Hebe-Test unten antippen — ist er noch voll, heute nicht gießen.');
+    }
+  } else {
+    let gm = null;
+    try { gm = giessenLautMessung(c, iso); } catch (e) { gm = null; }
+    if (gm && gm.giessen) {
+      const ml = waterSuggestion(c, p, iso);
+      const mlTxt = ml > 0 ? ` — etwa <b>${je ? Math.round(ml / n) : ml} ml${je ? ' je Pflanze' : ''}</b>` : '';
+      titel = '💧 Der Topf ist am Gießpunkt — heute gießen';
+      schritte = [`Auch ohne Gießtag: Der Hebe-Test sagt, der Topf braucht Wasser${mlTxt}.`];
+    } else {
+      titel = '🌿 Ruhiger Tag — kein Guss';
+      schritte = ['Sieh kurz nach den Pflanzen. Notiz oder Foto, wenn dir etwas auffällt.'];
+    }
+  }
+  if (body && body.querySelector('#trich-' + c.id)) {
+    schritte.push(`<a onclick="document.getElementById('trich-${c.id}').scrollIntoView({behavior:'smooth',block:'center'})" style="color:var(--green);cursor:pointer;text-decoration:underline">🔬 Trichome prüfen und eintragen</a>`);
+  }
+  return { titel, schritte, hinweis };
+}
+
+/**
+ * Nach dem Zeichnen im Einsteiger-Modus: Aufgabenzeile nach oben, markierte Blöcke in den Zuklapper vor „Speichern".
+ * Ein Block mit der Marke „karte" (die Gieß-Karte des Tages) wandert nur, wenn die Aufgabenzeile seine Aufgabe schon nennt.
+ * `jumpToEntryField` öffnet den Zuklapper von selbst (es klappt jedes `<details>` über dem Ziel auf).
+ */
+function _entryEinsteigerKompakt(act, iso, saved) {
+  const body = document.getElementById('entry-body');
+  if (!body || !S.beginnerMode) return;
+  const wz = _wachsendeZyklen(act, iso);
+  const zeile = wz.length ? wz : [_fuehrenderZyklus(act, iso) || act[0]];
+  const aufgaben = {};
+  zeile.forEach(c => {
+    let r = null;
+    try { r = _entryAufgabeFuer(c, iso, body); } catch (e) { r = null; }
+    if (r) aufgaben[c.id] = r;
+  });
+  const marken = Array.from(body.querySelectorAll('[data-ez]')).filter(el => !el.parentElement.closest('[data-ez]'))
+    .filter(el => el.getAttribute('data-ez') !== 'karte' || !!aufgaben[el.getAttribute('data-ez-c')]);
+  const hinweise = [];
+  // Ernste Meldungen (Typ err) des Eintrags und die Klima-Warnung bleiben oben sichtbar: Sie stehen unten an ihren Feldern,
+  // und die Aufgabenzeile sagt hier, dass es sie gibt — sonst läse „Gegossen ✓“ wie Entwarnung.
+  const warnungen = [];
+  zeile.forEach(c => {
+    try {
+      const p = phase(iso, c);
+      const cd = (saved && saved.cycleData && saved.cycleData[c.id]) || {};
+      getEntryWarnings(cd, p, saved || {}, c, iso).filter(w => w && w.type === 'err').slice(0, 2).forEach(w => warnungen.push(escHtml(String(w.text).replace(/^\s*⚠️?\s*/, ''))));
+    } catch (e) { /* ohne Warnung weiter */ }
+  });
+  const _krit = document.getElementById('klima-krit');
+  const _kritKopf = _krit && _krit.querySelector('div[style*="font-weight:700"]');
+  if (_kritKopf && _kritKopf.textContent.trim()) warnungen.push(escHtml(_kritKopf.textContent.trim()) + ' — Näheres bei „Umgebung“');
+  const mehrere = zeile.length > 1;
+  const aufgabenHTML = zeile.filter(c => aufgaben[c.id]).map(c => {
+    const r = aufgaben[c.id];
+    const cl = col(c);
+    if (r.hinweis) hinweise.push(`<div style="font-size:11px;color:var(--text-sub);line-height:1.5;margin-bottom:6px">💡 ${mehrere ? `<b style="color:${cl.hex}">${escHtml(c.name)}</b>: ` : ''}${r.hinweis}</div>`);
+    return `<div${mehrere ? ` style="border-left:3px solid ${cl.hex};padding-left:8px;margin-top:6px"` : ''}>
+      ${mehrere ? `<div style="font-size:10px;font-weight:700;color:${cl.hex}">${sym(c)} ${escHtml(c.name)}</div>` : ''}
+      <div style="font-size:13px;font-weight:700;color:var(--text);line-height:1.35">${r.titel}</div>
+      ${r.schritte.map(s => `<div style="font-size:12px;color:var(--text-sub);line-height:1.5;margin-top:2px">• ${s}</div>`).join('')}
+    </div>`;
+  }).join('');
+  const speichern = body.querySelector('.big-save');
+  if (marken.length || hinweise.length) {
+    const d = document.createElement('details');
+    d.setAttribute('data-ez-mehr', '1');
+    d.setAttribute('ontoggle', `_entryMehrOffen=this.open?'${iso}':''`);
+    if (_entryMehrOffen === iso) d.open = true;
+    d.style.cssText = 'margin-top:8px;margin-bottom:8px;background:var(--card);border:0.5px solid var(--border);border-radius:12px';
+    d.innerHTML = `<summary style="cursor:pointer;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12px;font-weight:600;color:var(--text-sub);font-family:var(--font)"><span>Mehr eintragen und Erklärungen</span><span style="font-size:11px;color:var(--text-hint)">▾</span></summary><div data-ez-inhalt="1" style="padding:0 12px 12px">${hinweise.join('')}</div>`;
+    const inhalt = d.querySelector('[data-ez-inhalt]');
+    marken.forEach(el => { el.style.display = ''; inhalt.appendChild(el); });
+    if (speichern) body.insertBefore(d, speichern); else body.appendChild(d);
+  }
+  if (aufgabenHTML) {
+    const k = document.createElement('div');
+    k.setAttribute('data-ez-aufgabe', '1');
+    k.style.cssText = 'background:rgba(76,175,112,0.07);border:0.5px solid rgba(76,175,112,0.3);border-radius:12px;padding:10px 12px;margin-bottom:8px';
+    k.innerHTML = `<div style="font-size:10px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:2px">📋 ${iso === todayISO() ? 'Heute zu tun' : 'Aufgabe an diesem Tag'}</div>${warnungen.map(t => `<div data-ez-warnung="1" style="font-size:12px;font-weight:600;color:var(--red);line-height:1.45;margin-top:3px">⚠ ${t}</div>`).join('')}${aufgabenHTML}<div style="font-size:10px;color:var(--text-hint);line-height:1.45;margin-top:8px">Pflicht ist nur das Wasser — pH, EC und Klima helfen, wenn du messen kannst. Weitere Felder und alle Erklärungen stehen ganz unten unter „Mehr eintragen und Erklärungen“.</div>`;
+    body.insertBefore(k, body.firstChild);
+  }
+}
+
 function renderEntry(iso) {
   _entryRenderNr++;
   const act = active();
@@ -29501,7 +29632,7 @@ function renderEntry(iso) {
     // sich, warum an einem Tag außerhalb des Rhythmus gegossen werden soll.
     const _mvHead = (Array.isArray(c.gussMoves) && c.gussMoves.some(m => m.to === iso)) ? _gussMoveCard(c, iso) : '';
     const giessCard = a
-      ? _mvHead + `<div ${(a === 'giess' || a === 'giess_anz') ? `onclick="openGussSheet('${c.id}','${iso}')"` : ''} style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:${cl.hex}11;border:0.5px solid ${cl.hex}33;border-radius:10px;margin-bottom:8px${(a === 'giess' || a === 'giess_anz') ? ';cursor:pointer' : ''}">
+      ? _mvHead + _ez(`<div ${(a === 'giess' || a === 'giess_anz') ? `onclick="openGussSheet('${c.id}','${iso}')"` : ''} style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:${cl.hex}11;border:0.5px solid ${cl.hex}33;border-radius:10px;margin-bottom:8px${(a === 'giess' || a === 'giess_anz') ? ';cursor:pointer' : ''}">
           <span style="font-size:24px">${ACT_ICON[a] || '💧'}</span>
           <div style="flex:1">
             <div style="font-size:13px;font-weight:600;color:${cl.hex}">${
@@ -29560,7 +29691,7 @@ function renderEntry(iso) {
           ? `<button onclick="resetEntry('${c.id}','${iso}')" style="width:100%;background:var(--surface);border:0.5px solid rgba(224,96,96,0.3);border-radius:10px;padding:8px;font-size:11px;color:var(--red);cursor:pointer;font-family:var(--font);margin-bottom:8px;opacity:0.85">
               🗑 Eintrag zurücksetzen <span style="font-size:10px;opacity:0.7">· Werte für diesen Tag löschen</span>
             </button>`
-          : ''}` : ''}`
+          : ''}` : ''}`, 'karte', c.id)
       : (!a && p && Array.isArray(c.gussMoves) && c.gussMoves.some(m => m.from === iso))
         ? _gussMoveCard(c, iso)
       : (!a && p && _dryLeadIn(c, iso, p.ph, _ivAt(c, p.ph, iso)))
@@ -30324,9 +30455,9 @@ function renderEntry(iso) {
       })();
       const waterInput = `<div style="display:flex;flex-direction:column;gap:8px">
         ${a === 'ice' ? _renderIceFlushPanel(c, iso) : ''}
-        ${liftTestBlock}
-        ${waterDayHint}
-        ${_learnStatus}
+        ${_ezWenn(!/data-sect="hebe"/.test(liftTestBlock), liftTestBlock)}
+        ${_ezWenn(!isToppingTodayWD, waterDayHint)}
+        ${_ez(_learnStatus)}
         ${(['giess','giess_anz','spuelen'].includes(a) && !parseFloat(cd.water) && !parseFloat(cd.ph))
           ? `<button onclick="applyRecommended('${c.id}',${wk})" style="width:100%;background:linear-gradient(135deg,${cl.hex}22,${cl.hex}11);border:1px solid ${cl.hex}66;border-radius:10px;padding:10px 14px;font-size:13px;color:${cl.hex};cursor:pointer;font-family:var(--font);font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px">
               <span style="font-size:16px">✨</span><span>Tag automatisch ausfüllen</span>
@@ -30349,7 +30480,7 @@ function renderEntry(iso) {
               </div>
             </div>
           </div>
-          <div style="flex:1;background:var(--card);border:0.5px solid var(--border);border-radius:8px;padding:8px 10px;display:flex;flex-direction:column;justify-content:center;gap:3px;min-width:110px">
+          ${_ez(`<div style="flex:1;background:var(--card);border:0.5px solid var(--border);border-radius:8px;padding:8px 10px;display:flex;flex-direction:column;justify-content:center;gap:3px;min-width:110px">
             <div style="font-size:9px;color:var(--text-hint);font-weight:600;text-transform:uppercase;letter-spacing:0.03em">🚰 Gieß-Guide</div>
             ${(() => {
               // (v1.2.75) GIESS-GUIDE reserve-bewusst: Ist die Gieß-Reserve aktiv,
@@ -30375,7 +30506,7 @@ function renderEntry(iso) {
                  <div style="font-size:10px;color:var(--text-sub);line-height:1.4"><span style="color:var(--blue)">●</span> ${growDay <= 10 ? 'Ring um Sämling' : growDay <= 18 ? 'Radius vergrößern' : 'Ganzer Topf'}</div>`
             }
             <div style="font-size:10px;color:var(--text-sub);line-height:1.4"><span style="color:var(--blue)">●</span> ${pot}L · ~alle ${iv}d${(() => { const _gV = gussMengeJePflanze(c, p, iso); if (_gV && _gV.V) return ` · höchstens ~${_gV.V} ml/Guss`; const _cap = _waterCapPerPot(c, p); return _cap ? ` · max ~${_cap} ml/Guss` : ''; })()}</div>
-          </div>
+          </div>`)}
         </div>
         ${plantsBadge}
         <div style="display:flex;align-items:center;gap:8px;padding:0 4px">
@@ -30722,7 +30853,7 @@ function renderEntry(iso) {
           </div>`}
           ${mixSteps}
           ${S.beginnerMode ? '' : `<div class="ph-hint">🎯 pH: ${pht.midText}${ecT && !ecT.waterOnly ? ` · EC: ${ecRange} ${ecUnitLabel()}` : ''}${_drainMoeglich(p) ? ` · Drain: ${DRAIN_ZIEL.min}–${DRAIN_ZIEL.max} %` : ''}</div>`}
-          ${c.medium === 'hydro' ? hydroResBlock : `<div style="background:var(--card);border:0.5px solid var(--border);border-radius:10px;overflow:hidden;margin-top:6px">
+          ${c.medium === 'hydro' ? hydroResBlock : _ez(`<div style="background:var(--card);border:0.5px solid var(--border);border-radius:10px;overflow:hidden;margin-top:6px">
             <div onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none';this.querySelector('.gtgl').textContent=this.nextElementSibling.style.display==='none'?'▸':'▾'" style="padding:8px 12px;cursor:pointer;display:flex;align-items:center;gap:6px">
               <span style="font-size:13px">🚰</span>
               <span style="flex:1;font-size:11px;font-weight:600;color:var(--blue)">Gießanleitung (${c.medium === 'coco' ? 'Coco — feucht halten' : 'Restgewicht'})</span>
@@ -30741,7 +30872,7 @@ function renderEntry(iso) {
                 ${_drainMoeglich(p) ? `<div><b style="color:var(--orange)">🚿 Drain:</b> ${DRAIN_ZIEL.min}–${DRAIN_ZIEL.max} % Drain bei jedem Guss. Drain-Wasser sofort entsorgen!</div>` : ''}
               </div>
             </div>
-          </div>`}`;
+          </div>`)}`;
 
       } else {
         // Flush/Ice: "Nur klares Wasser" hint + Zusätze-Eingabe (user can still log products they use)
@@ -31099,7 +31230,10 @@ function renderEntry(iso) {
           <span style="font-size:12px;color:var(--text-hint)">›</span>
         </div>`;
       })();
-      nonWaterDayBlock = isPostHarvest ? fullLift : (fullLift + nextGussInfo + drybackInfo + waterHint + _esw + autoFillBtn);
+      // (v1.5.493) Einsteiger: Trocknungs-Vorhersage, Mengen-Empfehlung „falls heute“, Endspurt-Wegweiser und das Ausfüllen
+      // liegen im Zuklapper; ebenso die Hinweiskarte „Hebe-Test überspringen“ (das Messfeld selbst bleibt).
+      const _flSkip = _ezWenn(!/data-sect="hebe"/.test(fullLift), fullLift);
+      nonWaterDayBlock = isPostHarvest ? _flSkip : (_flSkip + nextGussInfo + _ez(drybackInfo + waterHint + _esw + autoFillBtn));
     }
 
     // KRITISCHE pH/EC-WARNUNG für den Nicht-Wassertag-Pfad (waterRow).
@@ -31190,11 +31324,11 @@ function renderEntry(iso) {
           </div>
         </div>
       </div>
-      ${germCard || ''}
+      ${_ezWenn(p && p.day > 1, germCard || '')}
       ${hardDrybackBanner || ''}
-      ${compFactorBanner || ''}
+      ${_ez(compFactorBanner || '')}
       ${iceRecoveryBanner || ''}
-        ${(c.offsetHistory && c.offsetHistory.length > 0) ? `
+        ${_ez((c.offsetHistory && c.offsetHistory.length > 0) ? `
           <div style="margin-bottom:8px;background:rgba(232,136,74,0.06);border:0.5px solid rgba(232,136,74,0.2);border-radius:8px;overflow:hidden">
             <div onclick="toggleOffsetList('${c.id}')" style="padding:8px 10px;display:flex;align-items:center;gap:8px;cursor:pointer">
               <span style="font-size:14px">↔</span>
@@ -31221,11 +31355,11 @@ function renderEntry(iso) {
               }).join('')}
             </div>
           </div>
-        ` : ''}
+        ` : '')}
       ${giessCard || ''}
-      ${toppingBtn}
-      ${trainingBtn}
-      ${(iso === todayISO()) ? (_planWeekQuestion(c, iso, 'kopf') || _planStatusLine(c, iso)) : _planStatusLine(c, iso, true)}
+      ${_ezWenn(!showUndoTop, toppingBtn)}
+      ${_ezWenn(trainingEventsToday.length === 0, trainingBtn)}
+      ${(iso === todayISO()) ? (_planWeekQuestion(c, iso, 'kopf') || _ez(_planStatusLine(c, iso))) : _ez(_planStatusLine(c, iso, true))}
 
       ${nutSection}
       ${waterRow}
@@ -31349,7 +31483,7 @@ function renderEntry(iso) {
         </div>
         <div style="font-size:12px;color:var(--text);line-height:1.5;margin-bottom:8px"><b style="color:var(--green)">✅ Heute:</b> ${hint.do}</div>
         <div style="font-size:12px;color:var(--text-sub);line-height:1.5;margin-bottom:10px"><b style="color:var(--orange)">⛔ Vermeiden:</b> ${hint.avoid}</div>
-        <div style="padding:8px 10px;background:rgba(0,0,0,0.2);border-radius:8px;font-size:11px;color:var(--text-sub);line-height:1.55">
+        ${_ez(`<div style="padding:8px 10px;background:rgba(0,0,0,0.2);border-radius:8px;font-size:11px;color:var(--text-sub);line-height:1.55">
           <b style="color:var(--text)">💡 Sämling-Grundregeln:</b><br>
           • <b>Klima:</b> ${KLIMA_ZIEL.saemling.temp[0]}–${KLIMA_ZIEL.saemling.temp[1]} °C · ${_klimaRlfSpanne(klimaRlfFenster(KLIMA_ZIEL.saemling, NaN))} RLF · VPD ${KLIMA_ZIEL.saemling.vpd[0]}–${KLIMA_ZIEL.saemling.vpd[1]} kPa<br>
           • <b>Wasser:</b> Bis der Keimling steht, nur die Stelle am Samen feucht halten — mit der Sprühflasche. Danach feine Gießkanne, dünner Strahl im Ring; die Menge für jeden Gießtag steht oben im Eintrag. Erde feucht halten, NICHT nass.<br>
@@ -31359,7 +31493,7 @@ function renderEntry(iso) {
         </div>
         <div style="margin-top:8px;font-size:11px;color:var(--text-hint);line-height:1.5">
           📖 Mehr im Lexikon: <span style="color:var(--green);text-decoration:underline;cursor:pointer" onclick="openLexikonEntry('Sämlingsphase')">Sämlingsphase</span> · <span style="color:var(--green);text-decoration:underline;cursor:pointer" onclick="openLexikonEntry('VPD (Vapour Pressure Deficit)')">VPD</span>
-        </div>
+        </div>`)}
       </div>`;
     })() : '';
 
@@ -31859,7 +31993,7 @@ function renderEntry(iso) {
     </div>` : '';
 
   document.getElementById('entry-body').innerHTML = `
-    ${entryHelpBanner}
+    ${_ez(entryHelpBanner)}
     ${topBar}
     ${noActive}
     ${blocks}
@@ -31868,6 +32002,9 @@ function renderEntry(iso) {
     ${archBlocks}
     ${act.length > 0 ? `<button class="big-save" style="background:${col(act[0]).hex}" onclick="saveEntry()">💾 Speichern</button>` : ''}
     <div style="height:20px"></div>`;
+
+  // (v1.5.493) Einsteiger: Aufgabe nach oben, Erklär- und Nebenblöcke in den Zuklapper (_entryEinsteigerKompakt).
+  if (S.beginnerMode && act.length > 0) _entryEinsteigerKompakt(act, iso, saved);
 
   // (v1.5.121) Ohne Zyklus gibt es nichts zu speichern. Beide Speichern-Knöpfe — der große
   // unten und die Pille in der Kopfzeile — standen trotzdem da, und ein Druck darauf tat

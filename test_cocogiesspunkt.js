@@ -149,7 +149,9 @@ const kurz = (s) => String(s || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' '
     const roh = fs.readFileSync(path.join(__dirname, 'app.js'), 'utf8');
     const code = roh.split('\n').filter(z => !/^\s*(\/\/|\*|\/\*)/.test(z)).join('\n');
     const alt = ['etwa 60–70 %', '~60–70%', 'isCoco ? 60'].filter(s => code.includes(s));
-    pruef('Sämlings-Hinweis aus giesspunktFor, keine festen Coco-Zahlen mehr', roh.includes('const _gpc = giesspunktFor(c)') && alt.length === 0, alt.join(' | '));
+    // (v1.5.489) Das Sämlings-Hinweis-Fenster (dort stand `_gpc = giesspunktFor(c)`) gibt es nicht mehr; geprüft bleibt, dass
+    // nirgends feste Coco-Zahlen stehen.
+    pruef('Keine festen Coco-Zahlen mehr (das Sämlings-Fenster ist seit v1.5.489 entfernt)', !roh.includes('App-Plan für Sämlinge') && alt.length === 0, alt.join(' | '));
   });
 
   pruef('Keine JS-Fehler im Lauf', errors.length === 0, errors.slice(0, 2).join(' | '));

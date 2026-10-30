@@ -77,7 +77,7 @@ const LAUF = (start) => `(function(){
     const k = getTodayAction(c, p, a, iso) || {};
     setDebugDate(iso); openEntry(iso);
     const eintrag = document.getElementById('scr-entry').textContent.replace(/\\s+/g, ' ');
-    tage.push({ d, wk, dosen, schritte: (k.steps || []).join(' | '), pflege: (eintrag.match(/Sämlings-Pflege[^]{0,900}/) || [''])[0] });
+    tage.push({ d, wk, dosen, schritte: (k.steps || []).join(' | '), pflege: (() => { const k = (eintrag.match(/Sämlings-Pflege[^]{0,900}/) || [''])[0]; return k ? k + ' ' + (eintrag.match(/Sämling-Grundregeln[^]{0,900}/) || [''])[0] : ''; })() });   // (v1.5.493) Grundregeln liegen im Zuklapper; ohne Karte (ab Tag 11) bleibt es leer
   }
   return JSON.stringify(tage);
 })()`;

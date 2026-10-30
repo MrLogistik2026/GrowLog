@@ -2,6 +2,32 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-30 — v1.5.493
+
+- **Der Einsteiger-Eintrag am Gießtag war kaum schlanker als der Profi-Eintrag.** Vor dem Mengenfeld standen das Banner „Keine
+  Panik“, der Toppen-Block, Lern-Status, Gieß-Guide, Planzeile und drei Mengen für denselben Guss. Zweite Bedien-Prüfung am
+  30.10.2026, Befund 3; UEBERGABE Abschnitt 1 („Aufgabenzeile oben, Rest hinter ‚Mehr eintragen‘“). Patrick am 30.10.2026: „Ja bau
+  bitte alles so“.
+- **Jetzt** steht im Einsteiger-Modus oben „📋 Heute zu tun“ — aus `getTodayAction` (dieselbe Antwort wie die Startseite),
+  `_gussHeuteErledigt` und `giessenLautMessung`, eine Menge in der Einheit des Felds (ml je Pflanze), ernste Warnungen und die
+  Schimmel-Warnung rot dazu. Darunter nur, was heute eingetragen wird: Hebe-Test, Menge, Dünger/Mischreihenfolge, pH/EC, Umgebung,
+  Trichome, Notiz, Foto, dazu Spül-, IceFlush-, Topping- und Wochenfrage, wenn sie heute dran sind. Alles andere (Banner, Lern-Status,
+  Gieß-Guide, Planzeile, Toppen-Knopf außerhalb der Topping-Tage, Verschiebungen, Keimungs-Karte ab Tag 2, Sämlings-Grundregeln,
+  Vorhersagen) steht gesammelt in einem Zuklapper „Mehr eintragen und Erklärungen“ vor „Speichern“ — nichts ist entfernt. Kein
+  Eingabefeld liegt im Zuklapper; `jumpToEntryField` öffnet ihn trotzdem, falls nötig.
+- **Profi-Modus unverändert:** Die Blöcke tragen nur im Einsteiger-Modus eine Marke (`_ez`); im Profi-Modus ist der Eintrag an 68
+  geprüften Fällen zeichengleich zu v1.5.488.
+- Gemessen (sichtbare Zeichen, davon vor dem Mengenfeld): Gießtag 2623 (1799) → 1546 (891), Sprüh-Tag 2561 → 1345, Sättigungsguss
+  2938 → 2098, zwei Gruppen am Gießtag 4942 (1869) → 2859 (1194). Ruhe- und Spültage sparen wenig — dort tragen Hebe-Test und
+  Umgebung Eingaben.
+- `test_keimung.js` und `test_anzuchtduenger.js` lesen die Sämlings-Grundregeln jetzt im Zuklapper.
+- Test: `test_eintrag_einsteiger_kurz.js` (105 Prüfungen mit Profi-Byte-Vergleich gegen `.claude/tmp/basis488`, sonst 99; beide
+  Zeitzonen; fällt auf v1.5.488 mit 56 Prüfungen um). Gebaut von einem Sonnet-Helfer, zwei Sätze nachgeschärft („Pflicht ist nur das
+  Wasser“ statt „Nur das Wasser ist wichtig“; „ist er noch voll“ statt „noch schwer“ — bei „Mittel“ lässt die App gießen).
+- **Nachgezogen für v1.5.489:** `test_cocogiesspunkt.js` prüfte ebenfalls eine Zeile des entfernten Sämlings-Fensters
+  (`_gpc = giesspunktFor(c)`) und war seit 489 rot — gefunden im Lauf über alle Eintrag-Tests. Er prüft jetzt, dass das Fenster
+  weg ist und nirgends feste Coco-Zahlen stehen. Damit sind es zwei Tests, die der eingeschränkte Lauf für 489 nicht hatte.
+
 ## 2026-10-30 — v1.5.492
 
 - **Der Phasen-Punkt der Diagnose hing an der Datenpflege, nicht am Bild.** Nur Einträge mit Phasenliste bekamen ihn; Wurzelfäule,
