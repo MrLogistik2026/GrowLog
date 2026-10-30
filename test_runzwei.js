@@ -232,7 +232,7 @@ async function starte() {
     const r = JSON.parse(a.E(`(function(){ S.beginnerMode = false; const c = S.cycles[0]; const iso = todayISO(); const p = phase(iso, c);
       const wk = fertPlanWeek(c, iso, p); const soll = String((FERT_PRESETS.rainbow_auto.weekFocus[wk] || {}).phase || '').split(' · ')[0];
       goTo('dash'); renderDash(); const t = document.getElementById('scr-dash').textContent.replace(/\\s+/g, ' ');
-      const m = t.match(new RegExp('Wo' + wk + ' ([^·]{0,40})'));
+      const m = t.match(new RegExp('Plan-Wo\\\\. ' + wk + ' ([^·]{0,40})'));   // (v1.5.496) „Plan-Wo. N“
       return JSON.stringify({ wk, soll, ist: m ? m[1].trim() : null }); })()`));
     pruefe(r.soll && r.ist && r.ist.startsWith(r.soll), `F09 Startseite nennt Plan-Woche ${r.wk} „${r.ist}" statt „${r.soll}"`);
   }
@@ -607,7 +607,7 @@ async function starte() {
     pruefe(/Woche 2: \(heute Plan-Tag 13\)/.test(fl(r.t18p.blatt)), `F12-9 Plan-Blatt: der Wochen-Tipp nennt nicht den heutigen Plan-Tag: ${fl(r.t18p.blatt).slice(-900)}`);
     // (v1.5.409)
     // Zwei Wochenzählungen: Die Plan-Woche („Wo2 …") ist die der Startseite; die Phasen-Woche heißt in der Blüte „Blüte Wo.", in der Anzucht entfällt sie
-    pruefe(/Anzucht · Tag 18 · Wo2 /.test(fl(r.t18p.dash)) && !/ · Wo\. \d+ · Tag/.test(fl(r.t18p.dash)), `F12-10 Profi, Anzucht: neben der Plan-Woche „Wo2" steht noch eine unbeschriftete „Wo. 3": ${fl(r.t18p.dash).slice(0, 600)}`);
+    pruefe(/Anzucht · Tag 18 · Plan-Wo\. 2 /.test(fl(r.t18p.dash)) && !/ · Wo\. \d+ · Tag/.test(fl(r.t18p.dash)), `F12-10 Profi, Anzucht: neben der Plan-Woche „Wo2" steht noch eine unbeschriftete „Wo. 3": ${fl(r.t18p.dash).slice(0, 600)}`);
     pruefe(/Blüte Wo\. 1 · Tag 33/.test(fl(r.t33p.dash)) && !/ · Wo\. \d+ · Tag/.test(fl(r.t33p.dash)), `F12-11 Profi, Blüte: die Phasen-Woche heißt nicht „Blüte Wo.": ${fl(r.t33p.dash).slice(0, 600)}`);
     pruefe(!/ Wo\. \d+ · Tag/.test(fl(r.t18e.dash)), `F12-12 Einsteiger sieht keine Wochenzahl auf der Zyklus-Karte: ${fl(r.t18e.dash).slice(0, 400)}`);
   }

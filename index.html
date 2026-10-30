@@ -4867,7 +4867,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.495';
+const APP_VERSION = 'v1.5.496';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -19533,7 +19533,7 @@ function renderDash() {
       const subLine = (!p && c.startDate && c.startDate <= today) ? '✓ Fertig — alle Phasen vorbei'
         : (S.beginnerMode || hideFertWk)
         ? `${_phasenAnzeige(p).icon} ${_phasenAnzeige(p).name} · ${phaseDayLabel(p)}`
-        : `${_phasenAnzeige(p).icon} ${_phasenAnzeige(p).name} · ${phaseDayLabel(p)} · <span style="color:${cl.hex}">Wo${fertWk}</span> ${_wochenName}`;
+        : `${_phasenAnzeige(p).icon} ${_phasenAnzeige(p).name} · ${phaseDayLabel(p)} · <span style="color:${cl.hex}">Plan-Wo. ${fertWk}</span> ${_wochenName}`;   // (v1.5.496) „Plan-Wo.“ statt „Wo“: daneben steht die Blütewoche („Blüte Wo. 4“) — vorher zwei unbeschriftete Wochenzahlen
       return `<div style="display:flex;align-items:center;gap:8px;padding:3px 0">
         <span style="font-size:16px">${sym(c)}</span>
         <div style="flex:1">

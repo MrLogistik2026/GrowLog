@@ -1,6 +1,6 @@
 # GrowSmart — Übergabe
 
-Stand: **v1.5.495** · index.html 2,67 MB · 781 Funktionen
+Stand: **v1.5.496** · index.html 2,67 MB · 781 Funktionen
 Zuletzt fortgeschrieben am 30.10.2026 früh (Nachtarbeit 29./30.10.: Diagnose-Liste B01–B12 und U4 fertig, danach zwei
 Bedien-Prüfungen nach den Grundsätzen der Lager-App — Befunde in `.claude/notizen/ux/*.txt` und `.claude/tmp/ux2/bericht.txt`,
 abgearbeitet in v1.5.452–493, siehe Versionsliste in 0o. **Patrick am 30.10.2026 morgens zu den vier offenen Fragen: „Ja bau
@@ -460,6 +460,7 @@ Speicher-Befunde sind in v1.5.340–344 behoben. Rohdaten: Workflow wf_63d754b1-
 - v1.5.493: Einsteiger-Eintrag: oben „Heute zu tun“ und nur die heutigen Felder, alles andere im Zuklapper „Mehr eintragen und Erklärungen“; Profi zeichengleich (`test_eintrag_einsteiger_kurz.js`). Gesamtlauf auf 493: 398/398 grün.
 - v1.5.494: Lexikon-Suche: „super cropping“, „supercrop“ und „hst“ führen auf „HST (High Stress)“ statt ins Leere (`test_lexikon_aliase_hst.js`).
 - v1.5.495: Tag-1-Karte nennt bei mehreren Töpfen die Menge je Topf wie der Satz darüber, mit „zusammen … für N Töpfe“ (`test_tag1_karte_je_topf.js`).
+- v1.5.496: Profi-Startseite: Plan-Woche heißt „Plan-Wo. 6“ neben der Blütewoche „Blüte Wo. 4“ (`test_runzwei.js`).
 
 **Gegenprüfung von v1.5.364/365 (07.10.2026 nachts, Workflow wf_4cf817bf-629, drei Sonnet-Prüfer + Gegenprüfer).** Kein Fehlalarm
 in 33 App-Fassungen, allen Vorlagen und über 2800 Klicks; die schweren Befunde (unsichere Kopie zerstört den Hauptstand, Tropfen als

@@ -2,6 +2,15 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-30 — v1.5.496
+
+- **Auf der Profi-Startseite standen zwei unbeschriftete Wochenzahlen nebeneinander:** „Wo6 Frühblüte“ (die Woche des Düngeplans)
+  und auf der Zyklus-Karte „Blüte Wo. 4“ (die Blütewoche). Ein Leser hält das für einen Widerspruch. Zweite Bedien-Prüfung am
+  30.10.2026, Befund 9.
+- **Jetzt** heißt die Plan-Woche „Plan-Wo. 6 Frühblüte“; die Blütewoche bleibt „Blüte Wo. 4“. Der Einsteiger-Modus zeigt die
+  Plan-Woche dort weiter nicht.
+- `test_runzwei.js` (F09, F12-10) sucht „Plan-Wo. N“.
+
 ## 2026-10-30 — v1.5.495
 
 - **Am Tag 1 standen bei mehreren Töpfen zwei Etappen-Mengen auf der Startseite:** der Satz „3 Etappen je ~250 ml je Topf“
