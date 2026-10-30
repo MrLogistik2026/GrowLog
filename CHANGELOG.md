@@ -2,6 +2,20 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-30 — v1.5.497
+
+- **Ein höheres Bernstein-Ziel ergab ein früheres Erntefenster.** Konnte die Trichom-Rechnung das eigene Ziel nicht vorhersagen —
+  mehr als 60 Tage voraus, laut Kurve unerreichbar oder die Kurve passt nicht zur Pflanze —, fiel `harvestWindow` auf Samentüte oder
+  Plan zurück. Die lagen früher als das, was die frische Messung sagte. Nachgemessen am 30.10.2026 (Tag 96, Samentüte 10–11 Wochen):
+  Ziel 25 % → Tag 135–154, Ziel 40 % → Tag 70–77, also schon vorbei. Gemeldet in der Bewertung vom 17.09.2026 (Hebel 4).
+- **Jetzt** nennt die App bei frischer Messung (höchstens 3 Tage alt), noch nicht erreichtem Ziel und fehlender Vorhersage kein
+  Fenster statt eines zu frühen (ANBAU.md 11: zu früh ernten ist der teuerste Fehler). Ohne frische Messung bleibt die Samentüte die
+  Grundlage. Die Ziele 10/15/25 % liefern unverändert Tag 105–109 / 115–124 / 135–154.
+- **Offen, gesehen dabei:** Ist das Bernstein-Ziel schon erreicht, nennt `harvestWindow` weiter Samentüte oder Plan (in der Messung
+  Tag 70–77 bzw. 93, an Tag 96). Ob dann „heute“ stehen soll, hängt an der Freigabe Klar ≤ 10 % (`ernteFreigabe`) — gehört zum
+  Umbau „Erntefenster als eine Quelle“.
+- Test: `test_erntefenster_ziel.js` (8 Prüfungen, beide Zeitzonen; fällt auf v1.5.496 um).
+
 ## 2026-10-30 — v1.5.496
 
 - **Auf der Profi-Startseite standen zwei unbeschriftete Wochenzahlen nebeneinander:** „Wo6 Frühblüte“ (die Woche des Düngeplans)

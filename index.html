@@ -4867,7 +4867,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.496';
+const APP_VERSION = 'v1.5.497';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -13232,6 +13232,16 @@ function harvestWindow(c, iso) {
     if (fc && !fc.curveOff && !fc.unreachable && !fc.reached
         && isFinite(fc.dayLo) && isFinite(fc.dayHi) && (fc.ageDays || 0) <= 3) {
       return { lo: fc.dayLo, hi: fc.dayHi, basis: 'trichome', planTag };
+    }
+    // (v1.5.497) Frische Messung, eigenes Bernstein-Ziel noch nicht erreicht, aber keine Vorhersage — das Ziel liegt mehr als
+    // 60 Tage voraus, ist laut Kurve nicht erreichbar, oder die Kurve passt nicht zu dieser Pflanze: dann kein Fenster aus Samentüte
+    // oder Plan. Beide lägen früher als das, was die Messung sagt. Vorher ergab ein höheres Ziel ein FRÜHERES Fenster (gemessen am
+    // 30.10.2026: Ziel 25 % → Tag 135–154, Ziel 40 % → Samentüte Tag 70–77, schon vorbei; Bewertung 17.09.2026, Hebel 4). Zu früh
+    // ernten ist der teuerste Fehler (ANBAU.md 11) — lieber kein Termin als ein zu früher.
+    if (!(fc && fc.reached)) {
+      const _h = _trichHistory(c.id, c, ref);
+      const _l = _h.length ? _h[_h.length - 1] : null;
+      if (_l && isoDiff(ref, _l.iso) <= 3 && _l.amber < _targetAmber(c)) return null;
     }
   }
 
