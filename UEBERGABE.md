@@ -3,8 +3,8 @@
 Stand: **v1.5.493** · index.html 2,67 MB · 781 Funktionen
 Zuletzt fortgeschrieben am 30.10.2026 früh (Nachtarbeit 29./30.10.: Diagnose-Liste B01–B12 und U4 fertig, danach zwei
 Bedien-Prüfungen nach den Grundsätzen der Lager-App — Befunde in `.claude/notizen/ux/*.txt` und `.claude/tmp/ux2/bericht.txt`,
-abgearbeitet in v1.5.452–489, siehe Versionsliste in 0o. **Patrick am 30.10.2026 morgens zu den vier offenen Fragen: „Ja bau
-bitte alles so“** — Einsteiger-Eintrag am Gießtag kürzen (oben nur das Heutige, Rest eine Ebene tiefer; in Arbeit), Diagnose-Umbauten
+abgearbeitet in v1.5.452–493, siehe Versionsliste in 0o. **Patrick am 30.10.2026 morgens zu den vier offenen Fragen: „Ja bau
+bitte alles so“** — Einsteiger-Eintrag am Gießtag kürzen (erledigt v1.5.493: „Heute zu tun“ oben, Rest im Zuklapper, Profi zeichengleich), Diagnose-Umbauten
 U1–U3 (erledigt v1.5.490–492; U1 in einer fairen Fassung: jede passende Ursache bekommt den Phasen-Punkt — die Fassung „nur enge Listen“ ist gemessen und verworfen), Sämlings-Fenster nach dem Anlegen weg (erledigt v1.5.489), Temperaturgrenzen der
 Diagnose bleiben bei 30 °C / 18 °C (entschieden). **Weiter offen:** Assistent ohne ⓘ und mit Dauer-Frage vor der Sorte (Patrick
 08.10.: Assistent vorerst nicht umbauen — v1.5.468–471 waren Texte und eine weggelassene Frage), Profi-Startseite nennt Plan-Woche
@@ -457,7 +457,7 @@ Speicher-Befunde sind in v1.5.340–344 behoben. Rohdaten: Workflow wf_63d754b1-
 - v1.5.490: Diagnose: Ein Bild, das zu keinem gewählten Ort passt, bekommt die halbe Punktzahl (U3, ANBAU.md 6.1) (`test_diagnose_u3_ort.js`).
 - v1.5.491: Diagnose: Bei Gleichstand gewinnt, wer mehr der gewählten Merkmale trifft (U2) (`test_diagnose_u2_abdeckung.js`).
 - v1.5.492: Diagnose: Die Phase schließt aus, sie zeichnet nicht aus — jede passende Ursache bekommt denselben Phasen-Punkt, Überwässerung ohne Phasenliste, `vorrang` für die Wasser-Ursachen, kein „Taco“ beim Bleichen (U1) (`test_diagnose_u1_phase.js`).
-- v1.5.493: Einsteiger-Eintrag: oben „Heute zu tun“ und nur die heutigen Felder, alles andere im Zuklapper „Mehr eintragen und Erklärungen“; Profi zeichengleich (`test_eintrag_einsteiger_kurz.js`).
+- v1.5.493: Einsteiger-Eintrag: oben „Heute zu tun“ und nur die heutigen Felder, alles andere im Zuklapper „Mehr eintragen und Erklärungen“; Profi zeichengleich (`test_eintrag_einsteiger_kurz.js`). Gesamtlauf auf 493: 398/398 grün.
 
 **Gegenprüfung von v1.5.364/365 (07.10.2026 nachts, Workflow wf_4cf817bf-629, drei Sonnet-Prüfer + Gegenprüfer).** Kein Fehlalarm
 in 33 App-Fassungen, allen Vorlagen und über 2800 Klicks; die schweren Befunde (unsichere Kopie zerstört den Hauptstand, Tropfen als
