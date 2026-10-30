@@ -3807,7 +3807,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.485';
+const APP_VERSION = 'v1.5.486';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -24481,7 +24481,10 @@ function _wirkungSnap(c) {
   const heute = todayISO();
   const r = { ernte: null, naechster: null, menge: null, giess14: 0, verpasst: 0, plan: null };
   try { const st = endspurtState(c, heute); if (st && st.ernteTag) r.ernte = isoPlus(c.startDate, st.ernteTag - 1); } catch (e) {}
-  try { const ng = nextGiessTag(c, heute); if (ng) { r.naechster = ng.iso; const p = phase(ng.iso, c); r.menge = Math.round(waterSuggestion(c, p, ng.iso) || 0); } } catch (e) {}
+  // (v1.5.486) Ist heute Gießtag und noch nicht gegossen, ist heute der nächste Guss — nextGiessTag sucht erst ab morgen. Vorher
+  // nannte die Vorschau bei Topf 11 → 15 L nur den übernächsten Gießtag, während die Menge von heute um ein Viertel sprang
+  // (Bedien-Prüfung 30.10.2026, Befund 7).
+  try { const ng = (isGiessTag(heute, c) && !_gussHeuteErledigt(c, heute)) ? { iso: heute } : nextGiessTag(c, heute); if (ng) { r.naechster = ng.iso; const p = phase(ng.iso, c); r.menge = Math.round(waterSuggestion(c, p, ng.iso) || 0); } } catch (e) {}
   for (let i = 0; i < 14; i++) { try { if (isGiessTag(isoPlus(heute, i), c)) r.giess14++; } catch (e) {} }
   try { r.verpasst = getCatchupCandidates(c).length; } catch (e) {}
   try { r.plan = (getPlanForCycle(c) || {}).name || null; } catch (e) {}
@@ -24510,7 +24513,7 @@ function _wirkungZeilen(sel, d, touched) {
   const z = [];
   if (a.ernte !== b.ernte) z.push(`Ernte: ${tag(a.ernte)} → <b>${tag(b.ernte)}</b>`);
   if (a.naechster !== b.naechster) z.push(`Nächster Guss: ${tag(a.naechster)} → <b>${tag(b.naechster)}</b>`);
-  if (a.menge != null && b.menge != null && Math.abs(a.menge - b.menge) >= 50) z.push(`Menge am nächsten Gießtag: ${liter(a.menge)} → <b>${liter(b.menge)}</b>`);
+  if (a.menge != null && b.menge != null && Math.abs(a.menge - b.menge) >= 50) z.push(`Menge am nächsten Gießtag${b.naechster === heute ? ' (heute)' : ''}: ${liter(a.menge)} → <b>${liter(b.menge)}</b>`);
   if (a.giess14 !== b.giess14) z.push(`Gießtage in den nächsten 14 Tagen: ${a.giess14} → <b>${b.giess14}</b>`);
   if (a.plan !== b.plan) z.push(`Düngeplan: ${a.plan || 'keiner'} → <b>${b.plan || 'keiner'}</b>`);
   const dv = b.verpasst - a.verpasst;

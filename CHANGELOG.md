@@ -2,6 +2,16 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-30 — v1.5.486
+
+- **Die Vorschau über „Änderungen sichern“ übersah den heutigen Gießtag.** Sie suchte den nächsten Guss mit `nextGiessTag`, und
+  das beginnt erst morgen. Bei Topf 11 → 15 L stand „Menge am nächsten Gießtag 2,9 → 3,4 L“ für einen späteren Tag, während
+  sich die Menge von heute von 2,8 auf 3,2 L änderte — ohne Zeile dazu. Gefunden bei der zweiten Bedien-Prüfung am 30.10.2026
+  (Befund 7); Fehler in v1.5.463.
+- **Jetzt** gilt ein heute noch offener Gießtag (`_gussHeuteErledigt`) als nächster Guss, die Zeile heißt dann „Menge am
+  nächsten Gießtag (heute)“; ist heute schon gegossen, bleibt es beim nächsten Gießtag.
+- Test: `test_einstellungen_wirkung_heute.js` (6 Prüfungen, beide Zeitzonen; fällt auf v1.5.485 um).
+
 ## 2026-10-30 — v1.5.485
 
 - **Nach „Mittel“ auf der Startseite gießen lassen, danach im Eintrag „Topf war noch feucht … Nächstes Mal warten“.** Die Warnung
