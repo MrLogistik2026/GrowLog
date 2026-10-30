@@ -1346,6 +1346,7 @@ const PROBLEMS = [
   },
   {
     id: 'ca_deficiency',
+    immobil: true,   // (v1.5.511) unbeweglicher Nährstoff: Mangel zeigt sich nur oben (ANBAU.md 6.1)
     name: 'Calcium-Mangel (Ca)',
     category: 'nutrient',
     severity: 'medium',
@@ -1371,6 +1372,7 @@ const PROBLEMS = [
     // das ist richtig: Ohne pH-Auffälligkeit ist Calcium der bessere erste Verdacht,
     // mit hohem pH das Eisen.
     id: 'iron_deficiency',
+    immobil: true,   // (v1.5.511) siehe ca_deficiency
     name: 'Eisen-Mangel (Fe) — meist eine pH-Frage',
     category: 'nutrient',
     severity: 'medium',
@@ -1568,7 +1570,7 @@ const PROBLEMS = [
       shape: ['spotted'],
     },
     breite: 7,
-    description: 'Die lichtnächsten Spitzen, meist die oberen Blüten, bleichen weiß aus, scharf begrenzt (NICHT braun-verbrannt). Sieht nach viel Harz aus, ist aber ausgeblichenes Gewebe: An diesen Spitzen kommt mehr Licht an, als die Blätter verarbeiten können. Typisch bei sehr hoher Lichtmenge am Canopy: ausbleichen kann es praktisch erst ab etwa ' + LICHT_ZIEL.bluete.bleichAb + ' PPFD.',
+    description: 'Die lichtnächsten Spitzen, meist die oberen Blüten, bleichen weiß aus, scharf begrenzt (NICHT braun-verbrannt). Sieht nach viel Harz aus, ist aber ausgeblichenes Gewebe: An diesen Spitzen kommt mehr Licht an, als die Blätter verarbeiten können. Typisch bei sehr hoher Lichtmenge am Canopy: ausbleichen kann es praktisch erst ab etwa ' + LICHT_ZIEL.bluete.bleichAb + ' PPFD. <b>Unterscheidung zum Echten Mehltau:</b> Wisch mit dem Finger über die weiße Stelle — lässt sie sich abwischen, ist es ein Belag (Mehltau), kein Bleichen. Bleichen sitzt an den lichtnächsten Blütenspitzen, nicht an unteren oder verdeckten Stellen.',
     context: { phase: ['bloom'] },
     // (v1.5.445) Vorher „LED um 15–20 cm anheben oder Dimmer auf 60–70% bis Ernte“ — feste Zahlen ohne Beleg, an vier Stellen
     // verschieden, und „bis Ernte“ kostet Ertrag: Im Bestand steigt er mit dem Licht (ANBAU.md 8.1). „Trichome trüb-braun: lieber jetzt
@@ -1724,10 +1726,16 @@ const PROBLEMS = [
     severity: 'high',
     symptoms: {
       location: ['allLeaves', 'newLeaves'],
-      color: [],
+      // (v1.5.511) Weiß ist das Kennzeichen des Belags. Ohne die Farbe stand Foto-Bleaching bei „Weiß + Flecken“ mit 100 % vor dem
+      // Echten Mehltau mit 77 %, obwohl beide Bilder weiß sind und ein Handgriff sie trennt: Der Belag lässt sich abwischen, Bleichen
+      // (nur an den lichtnächsten Blütenspitzen, ANBAU.md 8.2) nicht. Die Breite steht bewusst bei 8: Bei gleicher Punktzahl und ohne
+      // hohe Luftfeuchte (die den Mehltau im Kontext hebt, 13.5) steht Bleichen weiter vor dem Belag — „Weiß“ allein an den oberen
+      // Blättern bleibt Bleichen, so wie das Bild „Weiß oben“ es verlangt.
+      color: ['white'],
       shape: ['spotted'],
     },
-    description: 'Weißer, pudriger Belag auf Blatt-Oberseiten — sieht aus wie Mehlstaub. Breitet sich schnell aus.',
+    breite: 8,
+    description: 'Weißer, pudriger Belag auf Blatt-Oberseiten — sieht aus wie Mehlstaub. Breitet sich schnell aus. <b>Unterscheidung zum Foto-Bleaching:</b> Der Belag lässt sich mit dem Finger abwischen und sitzt auf dem Blatt, auch an unteren und schattigen Stellen. Bleichen sitzt im Gewebe der lichtnächsten Blütenspitzen und lässt sich nicht abwischen.',
     context: { humidityHigh: true },
     action: 'Betroffene Blätter entfernen. Milch-Wasser-Spray (1:10) oder Bacillus subtilis. Luftfeuchte senken, Luftbewegung stark erhöhen.',
     lexiconKey: 'powdery_mildew',
@@ -1780,6 +1788,15 @@ function diagnoseProblems(symptoms, ctx = {}) {
   const sLocation = symptoms.location || [];
   const sColors = symptoms.colors || [];
   const sShapes = symptoms.shapes || [];
+
+  // (v1.5.511) Formen, die kein Eintrag der Liste führt („Löcher“ ist wählbar, passt aber zu keinem Problem). Vorher fiel die Wahl
+  // „Löcher“ still weg, und es blieben Fantasietreffer nach dem Ort allein (Wurzelfäule, Spinnmilben, Überwässerung, je 38 %).
+  // Ohne Farbe und ohne eine Form, die ein Eintrag kennt, gibt es kein Bild — dann ist die ehrliche Antwort „keine Übereinstimmung“.
+  // Mit weiteren Merkmalen zählen diese, und die App sagt, dass die Form nicht mitgewertet wurde (formenOhneBild, renderDiagStep4).
+  const formenOhneBild = sShapes.filter(sh => !PROBLEMS.some(p => (p.symptoms.shape || []).includes(sh) || Object.keys(p.shapeWenn || {}).includes(sh)));
+  if (formenOhneBild.length && !sColors.length && sShapes.every(sh => formenOhneBild.includes(sh))) {
+    const leer = []; leer.formenOhneBild = formenOhneBild; return leer;
+  }
 
   const results = PROBLEMS.map(p => {
     // Symptom-Score: anteilige Übereinstimmung zwischen User-Input und Problem-Profil
@@ -1889,7 +1906,12 @@ function diagnoseProblems(symptoms, ctx = {}) {
     // einem, der nur Gelb trifft (gemessen: Weiß + Gelb oben nannte die Überdüngung vor dem Foto-Bleaching, ANBAU.md 8.2).
     const vorrang = p.vorrang || 0;
     const abdeckung = matchedLoc.length + matchedCol.length + matchedShp.length;
-    return { problem: p, score, matchedReasons, contextReasons, ctxBoost, mess, abdeckung, vorrang, breite, rang };
+    // (v1.5.511) Oben oder unten? ANBAU.md 6.1: Calcium, Eisen (Mangan, Bor, Kupfer) sind im Phloem unbeweglich — ihr Mangel steht nur an
+    // den jungen Blättern; gelbe obere Blätter sind nie ein einfacher Stickstoff-Mangel. Ist „Neue Blätter“ die einzige Ortsangabe und nur eine Farbe gewählt (keine Form), stehen
+    // diese Einträge bei gleicher Punktzahl vor den übrigen — nur NOTFALL-Einträge (Schädlinge, Fäule) bleiben davor, bei Unsicherheit gilt die
+    // sichere Seite (15). Vorher verdrängte der Schweregrad sie hinter fünf breiter gelistete Einträge: bei „Neue Blätter + gelb“ ohne pH-Angabe standen Eisen und Calcium nicht in den ersten fünf).
+    const immobilOben = (p.immobil && sLocation.length === 1 && sLocation[0] === 'newLeaves' && sShapes.length === 0 && matchedLoc.length > 0 && matchedCol.length > 0) ? 1 : 0;
+    return { problem: p, score, matchedReasons, contextReasons, ctxBoost, mess, abdeckung, immobilOben, vorrang, breite, rang };
   }).filter(Boolean);
 
   // (v1.5.124) Bei Punktgleichstand entschied bisher die Reihenfolge im Quelltext — also
@@ -1916,10 +1938,12 @@ function diagnoseProblems(symptoms, ctx = {}) {
   //      als einer, der auf zehn passt.
   // Die Punktzahlen selbst bleiben unverändert, es ändert sich nur die Reihenfolge
   // gleichwertiger Treffer.
-  return results
+  const sortiert = results
     .sort((a, b) => (b.score - a.score) || (b.mess - a.mess) || (b.ctxBoost - a.ctxBoost)
-      || (b.abdeckung - a.abdeckung) || (b.rang - a.rang) || (b.vorrang - a.vorrang) || (a.breite - b.breite))
+      || (b.abdeckung - a.abdeckung) || ((b.rang === 3) - (a.rang === 3)) || (b.immobilOben - a.immobilOben) || (b.rang - a.rang) || (b.vorrang - a.vorrang) || (a.breite - b.breite))
     .slice(0, 5);
+  sortiert.formenOhneBild = formenOhneBild;
+  return sortiert;
 }
 
 /**
@@ -2436,11 +2460,23 @@ function renderDiagStep4() {
     shapes: diagState.shapes,
   }, ctx);
 
+  // (v1.5.511) Gewählte Formen ohne Bild in der Liste (z. B. „Löcher“) beim Namen nennen, statt sie still wegzulassen
+  const _ohneBild = (results.formenOhneBild || []).map(k => _diagWort('shape', k));
+  // (v1.5.511) Ohne Bild heißt nicht harmlos (ANBAU.md, Kopf: nachfragen statt raten; 15: im Zweifel die sichere Seite). Der alte Schlusssatz „Das muss
+  // nicht schlimm sein“ stand direkt hinter „Löcher“, einem aktiven Schaden am Blatt. Jetzt: ehrliche Antwort plus ein Handgriff, ohne Ursache zu nennen.
+  const _ohneBildNamen = _ohneBild.length ? `„${_ohneBild.join('“, „')}“` : '';
+  const _ohneBildLeer = _ohneBild.length
+    ? `${_ohneBildNamen} kennt die App nicht — für diese Form hat sie kein Bild, und raten will sie nicht. Das heißt nicht, dass es harmlos ist: Such beide Blattseiten und die Erdoberfläche mit der Lupe nach Tieren oder Spuren ab, mach ein Foto und vergleiche es morgen mit dem Vortag.`
+    : '';
+  const _ohneBildSatz = _ohneBild.length
+    ? `${_ohneBildNamen} kennt die App nicht und hat sie nicht mitgewertet — gewertet sind nur die anderen Merkmale.`
+    : '';
+
   if (results.length === 0) {
     return `<div>
       <div style="font-size:18px;font-weight:700;margin-bottom:8px">Keine klare Übereinstimmung</div>
       <div style="font-size:13px;color:var(--text-sub);line-height:1.6;margin-bottom:16px">
-        Die beschriebenen Symptome passen zu keiner der häufigen Anbau-Probleme in unserer Datenbank. Das muss nicht schlimm sein — es kann auch heißen dass die Symptome zu unspezifisch waren.
+        ${_ohneBildLeer || 'Die beschriebenen Symptome passen zu keiner der häufigen Anbau-Probleme in unserer Datenbank. Das muss nicht schlimm sein — es kann auch heißen dass die Symptome zu unspezifisch waren.'}
       </div>
       <div style="padding:14px;background:var(--card);border-radius:12px;border:0.5px solid var(--border);font-size:12px;color:var(--text-sub);line-height:1.6">
         <b style="color:var(--text)">Was jetzt?</b><br>
@@ -2469,7 +2505,7 @@ function renderDiagStep4() {
 
   return `<div>
     <div style="font-size:18px;font-weight:700;margin-bottom:4px">Wahrscheinlichste Ursachen</div>
-    <div style="font-size:12px;color:var(--text-muted);margin-bottom:16px">Top ${results.length} sortiert nach Übereinstimmung. Die App schlägt vor — du entscheidest.</div>
+    <div style="font-size:12px;color:var(--text-muted);margin-bottom:16px">Top ${results.length} sortiert nach Übereinstimmung. Die App schlägt vor — du entscheidest.${_ohneBildSatz ? ' <b>Hinweis:</b> ' + _ohneBildSatz : ''}</div>
     ${ctxLine}
     <div style="display:flex;flex-direction:column;gap:12px">
       ${results.map((r, i) => renderDiagResultCard(r, i)).join('')}
@@ -3890,7 +3926,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.510';
+const APP_VERSION = 'v1.5.511';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,

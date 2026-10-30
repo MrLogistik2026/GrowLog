@@ -2,6 +2,17 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-30 — v1.5.511
+
+- **Drei Diagnose-Reste aus der Bewertung** (Hebel 2): Echter Mehltau und Foto-Bleaching waren beide „weiß“ ohne Unterscheidung;
+  „Löcher“ führte kein Eintrag, die App nannte trotzdem Wurzelfäule und Spinnmilben mit je 38 %; „neue Blätter + gelb“ ohne pH
+  stellte Ursachen vor Calcium und Eisen, die nach `ANBAU.md` 6.1 nur oben erscheinen.
+- **Jetzt** nennen beide Einträge das Unterscheidungskriterium (Mehltau lässt sich abwischen und sitzt auch unten; Bleichen sitzt im
+  Gewebe der lichtnächsten Spitzen, 8.2). „Löcher“ allein ergibt „keine klare Übereinstimmung“ mit Lupe und Foto als nächstem Schritt
+  statt einer geratenen Ursache; mit weiteren Merkmalen steht dazu, dass Löcher nicht mitgewertet sind. Bei „neue Blätter“ als
+  einzigem Ort stehen Calcium und Eisen bei gleicher Punktzahl vorn (6.1, 15).
+- Test: `test_substrat_f.js` (21 Prüfungen, beide Zeitzonen; 12 fallen auf v1.5.510 um).
+
 ## 2026-10-30 — v1.5.510
 
 - **Coco-Zyklen lasen „Erde“ in Keim-, Sämlings- und Gießtexten** („Direkt in Erde“, „die Erde direkt am Samen“, „aus der Erde
