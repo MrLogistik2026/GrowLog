@@ -2,6 +2,16 @@
 
 Neueste zuoberst. Je Eintrag: Datum, was geändert wurde, warum.
 
+## 2026-10-30 — v1.5.494
+
+- **Die Lexikon-Suche nach „super cropping“ oder „supercrop“ fand nichts.** Beide Suchwörter zeigten auf einen Titel
+  „Supercropping“, den es nicht gibt; „hst“ und „high stress training“ führten nur zum Eintrag „Topping“. Gefunden bei der
+  Begriffe-Bereinigung am 30.10.2026.
+- **Jetzt** führen alle auf „HST (High Stress)“ — der Eintrag erklärt Super-Cropping Schritt für Schritt samt der Grenze für
+  Automatics; „supercropping“ und „super-cropping“ sind dazugekommen. Das Training „Super-Cropping“ verweist ins Lexikon. Geprüft
+  wird zusätzlich, dass kein Suchwort mehr auf einen fehlenden Titel zeigt.
+- Test: `test_lexikon_aliase_hst.js` (5 Prüfungen, beide Zeitzonen; fällt auf v1.5.493 um).
+
 ## 2026-10-30 — v1.5.493
 
 - **Der Einsteiger-Eintrag am Gießtag war kaum schlanker als der Profi-Eintrag.** Vor dem Mengenfeld standen das Banner „Keine

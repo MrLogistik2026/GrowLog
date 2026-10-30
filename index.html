@@ -1350,6 +1350,7 @@ const T = {
       icon: '💪',
       phase: 'vegi-bloom',
       short: 'Stängel sanft knicken, ohne die Haut zu brechen — der Trieb lässt sich dann flach legen; an der Knickstelle bildet sich eine Verdickung.',
+      lex: 'HST (High Stress)',   // (v1.5.494) vorher ohne Lexikon-Verweis
     },
     defoliation: {
       label: 'Defoliation (Entlauben)',
@@ -4866,7 +4867,7 @@ const SK = 'growsmart_v4';
 // v1.0.0 war erstes stabiles Release, v1.1.0 = neue Minor mit Settings-Akkordeon,
 // Pausen-Verlängerungs-Fix, Hebe-Test-Status-Sync, Topping-Phasenwechsel-Fix.
 // Erstes Release einer Minor-Version (z.B. v1.1.0) ohne Patch-Suffix, danach zweistellig.
-const APP_VERSION = 'v1.5.493';
+const APP_VERSION = 'v1.5.494';
 
 // Feature-Flag (v1.2.91): Outdoor-Anbau vorerst ausgeblendet — die App konzentriert
 // sich auf Indoor. Schaltet NUR sichtbare Outdoor-UI ab (Grow-Typ-Auswahl im Zyklus,
@@ -39333,8 +39334,11 @@ const LEX_ALIASES = {
   'lst':             'LST (Low Stress)',
   'low stress training': 'LST (Low Stress)',
   'low stress':      'LST (Low Stress)',
-  'hst':             'Topping',
-  'high stress training': 'Topping',
+  // (v1.5.494) HST und Super-Cropping erklärt der Eintrag „HST (High Stress)“ (Schritt für Schritt, mit der Automatic-Grenze). Vorher
+  // führten „super cropping“ und „supercrop“ auf einen Titel „Supercropping“, den es nicht gibt — die Suche fand nichts —, und
+  // „hst“ nur auf „Topping“.
+  'hst':             'HST (High Stress)',
+  'high stress training': 'HST (High Stress)',
   'fim':             'Fimming (F.I.M.)',
   'fimming':         'Fimming (F.I.M.)',
   'mainline':        'Mainlining / Manifolding',
@@ -39345,8 +39349,10 @@ const LEX_ALIASES = {
   'screen of green': 'SCROG (Screen of Green)',
   'sog':             'SOG (Sea of Green)',
   'sea of green':    'SOG (Sea of Green)',
-  'super cropping':  'Supercropping',
-  'supercrop':       'Supercropping',
+  'super cropping':  'HST (High Stress)',
+  'super-cropping':  'HST (High Stress)',
+  'supercropping':   'HST (High Stress)',
+  'supercrop':       'HST (High Stress)',
   'defoliation':     'Defoliation (Entlaubung)',
   'entlauben':       'Defoliation (Entlaubung)',
   'entlaubung':      'Defoliation (Entlaubung)',
